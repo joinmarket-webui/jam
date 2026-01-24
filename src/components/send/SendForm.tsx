@@ -1,5 +1,6 @@
+import { useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
+import { getAddressInfo, validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -8,6 +9,7 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import { cn, pseudoRandomInteger } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
+import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { Input } from '../ui/input'
@@ -147,6 +149,15 @@ export function SendForm({
   })
 
   const values = useWatch({ control })
+  const address = useWatch({ control, name: 'destination.address' })
+
+  const addressInfo = useMemo(() => {
+    try {
+      return address !== undefined ? getAddressInfo(address) : undefined
+    } catch (_ignoredOnPurpose) {
+      return undefined
+    }
+  }, [address])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)}>
@@ -155,25 +166,33 @@ export function SendForm({
           {t('send.label_recipient')}
         </Label>
 
-        <Input
-          id="send-destination"
-          {...register('destination.address', {
-            required: true,
-            disabled,
-          })}
-          type="text"
-          className=""
-          placeholder={t('send.placeholder_recipient')}
-        />
-        {errors.destination && (
-          <>
-            <div className="light:text-red-700 text-xs text-red-500">
-              {t('send.feedback_invalid_destination_address')}
-            </div>
-            {/* TODO: feedback_invalid_source_jar */}
-            {/* TODO: feedback_reused_address */}
-          </>
-        )}
+        <div className="relative">
+          <Input
+            id="send-destination"
+            {...register('destination.address', {
+              required: true,
+              disabled,
+            })}
+            type="text"
+            className=""
+            placeholder={t('send.placeholder_recipient')}
+          />
+          {errors.destination && (
+            <>
+              <div className="light:text-red-700 text-xs text-red-500">
+                {t('send.feedback_invalid_destination_address')}
+              </div>
+              {/* TODO: feedback_invalid_source_jar */}
+              {/* TODO: feedback_reused_address */}
+            </>
+          )}
+
+          {addressInfo?.network && addressInfo.network !== 'mainnet' && (
+            <Badge variant="outline" className="absolute top-1/2 right-3 -translate-y-1/2">
+              {addressInfo.network}
+            </Badge>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
