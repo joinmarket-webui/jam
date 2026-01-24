@@ -115,9 +115,7 @@ export function CopyButton({ text, successText = text, successTextTimeout = 1_50
         }
       }}
     >
-      <div className="d-flex align-items-center justify-content-center">
-        {showValueCopiedConfirmation ? successText : text}
-      </div>
+      {showValueCopiedConfirmation ? successText : text}
     </Copyable>
   )
 }

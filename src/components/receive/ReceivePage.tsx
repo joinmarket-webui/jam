@@ -16,6 +16,8 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress, Milliseconds } from '@/types/global'
+import { buttonVariants } from '../ui/button-variants'
+import { CopyButton } from '../ui/jam/CopyButton'
 import { BitcoinAmountInput } from './BitcoinAmountInput'
 import { BitcoinQR } from './BitcoinQR'
 
@@ -36,7 +38,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [amount, setAmount] = useState<AmountSats>()
   const [bitcoinAddress, setBitcoinAddress] = useState<BitcoinAddress>()
-  const [copied, setCopied] = useState(false)
 
   const { currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
   const { walletBalanceSummary } = useWalletBalanceSummary()
@@ -75,16 +76,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       toast.error(t('receive.error_loading_address_failed'))
     }
   }, [getAddressQuery.error, t])
-
-  const copyToClipboard = () => {
-    if (bitcoinAddress) {
-      navigator.clipboard.writeText(bitcoinAddress)
-      setCopied(true)
-      toast.success(t('global.button_copy_text_confirmed'))
-    } else {
-      toast.error(t('receive.error_copy_address_failed'))
-    }
-  }
 
   const shareAddress = () => {
     if ('share' in navigator && bitcoinAddress) {
@@ -127,11 +118,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     }
     return amount.toString()
   }
-
-  useEffect(() => {
-    const timer = setTimeout(() => setCopied(false), 1_500)
-    return () => clearTimeout(timer)
-  }, [copied])
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -182,15 +168,28 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               )}
             </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={copyToClipboard}
+            <CopyButton
+              className={buttonVariants({
+                size: 'sm',
+                variant: 'outline',
+              })}
               disabled={getAddressQuery.isFetching || !bitcoinAddress}
-            >
-              {copied ? <CopyCheckIcon /> : <CopyIcon />}
-              {copied ? t('global.button_copy_text_confirmed') : t('global.button_copy_text')}
-            </Button>
+              value={bitcoinAddress!}
+              text={
+                <>
+                  <CopyIcon />
+                  {t('global.button_copy_text')}
+                </>
+              }
+              successText={
+                <>
+                  <CopyCheckIcon />
+                  {t('global.button_copy_text_confirmed')}
+                </>
+              }
+              onSuccess={() => toast.success(t('global.button_copy_text_confirmed'))}
+              onError={() => toast.error(t('receive.error_copy_address_failed'))}
+            />
 
             {'share' in navigator && (
               <Button
