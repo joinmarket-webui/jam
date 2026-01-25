@@ -3,7 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
-import { MilkIcon, XIcon } from 'lucide-react'
+import { BrushCleaningIcon, MilkIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +17,7 @@ import type { BalanceSummary } from '@/lib/balanceSummary'
 import { cn, delayedPromise, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
@@ -27,6 +28,7 @@ import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
+import { Switch } from '../ui/switch'
 import JarSelectorDialog from './JarSelectorDialog'
 import type { SendFormValues } from './types'
 
@@ -120,41 +122,42 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
         })
         .required(),
       amount: yup
-        .object({
+        .object()
+        .shape({
           isSweep: yup.boolean().default(false).required(),
-          amount: yup
-            .number()
-            .integer()
-            .when('isSweep', {
-              is: (val: boolean) => val === true,
-              then: (schema) => schema.min(0).max(0).optional(),
-              otherwise: (schema) =>
-                schema
-                  .min(1)
-                  .max(21_000_000 * 100_000_000)
-                  .required(),
-            }),
+          amount: yup.number().when('isSweep', {
+            is: (val: boolean) => val === true,
+            then: (schema) =>
+              schema
+                .transform((value) => (Number.isNaN(value) ? null : value))
+                .nullable()
+                .optional(),
+            otherwise: (schema) =>
+              schema
+                .integer()
+                .min(1)
+                .max(21_000_000 * 100_000_000)
+                .required(),
+          }),
         })
         .required(),
 
       isCoinJoin: yup.boolean().default(FORM_INPUT_DEFAULT_VALUES.isCoinJoin).required(),
-      numCollaborators: yup
-        .number()
-        .integer()
-        .when('isCoinJoin', {
-          is: (val: boolean) => val === true,
-          then: (schema) =>
-            schema
-              .default(initialNumCollaborators(minNumCollaborators))
-              .min(minNumCollaborators)
-              .max(MAX_NUM_COLLABORATORS)
-              .required(),
-          otherwise: (schema) =>
-            schema
-              .transform((value) => (Number.isNaN(value) ? null : value))
-              .nullable()
-              .optional(),
-        }),
+      numCollaborators: yup.number().when('isCoinJoin', {
+        is: (val: boolean) => val === true,
+        then: (schema) =>
+          schema
+            .integer()
+            .default(initialNumCollaborators(minNumCollaborators))
+            .min(minNumCollaborators)
+            .max(MAX_NUM_COLLABORATORS)
+            .required(),
+        otherwise: (schema) =>
+          schema
+            .transform((value) => (Number.isNaN(value) ? null : value))
+            .nullable()
+            .optional(),
+      }),
     })
     .required()
 }
@@ -213,7 +216,10 @@ export function SendForm({
   const values = useWatch({ control })
   const sourceJarIndex = useWatch({ control, name: 'sourceJarIndex' })
   const destinationAddress = useWatch({ control, name: 'destination.address' })
+  const destinationDisplayAddress = useWatch({ control, name: 'destination.displayAddress' })
   const destinationJarIndex = useWatch({ control, name: 'destination.fromJar' })
+  const isSweep = useWatch({ control, name: 'amount.isSweep' })
+  const amountDisplaySweepAmount = useWatch({ control, name: 'amount.displaySweepAmount' })
 
   const destinationAddressInfo = useMemo(() => {
     try {
@@ -236,8 +242,7 @@ export function SendForm({
       <AddressFromJarSelectorDialog
         open={showAddressFromJarSelectorDialog}
         onOpenChange={setShowAddressFromJarSelectorDialog}
-        title="title"
-        subtitle="subtitle"
+        title={t('send.title_jar_selector')}
         walletFileName={walletFileName}
         jars={jars}
         disabledJars={sourceJar === undefined ? [] : [sourceJar]}
@@ -249,28 +254,47 @@ export function SendForm({
           setValue('destination.fromJar', undefined, { shouldValidate: true })
         }}
         onConfirm={async (jarIndex, addressInfo) => {
-          await delayedPromise(333)
           setValue('destination.address', addressInfo.address, { shouldValidate: true })
           setValue('destination.fromJar', jarIndex, { shouldValidate: true })
+
+          const jar = jars.find((it) => it.jarIndex === jarIndex)
+          const displayAddress = `${jar?.name} (${addressInfo.address})`
+          setValue('destination.displayAddress', displayAddress, { shouldValidate: false })
+
           setShowAddressFromJarSelectorDialog(false)
         }}
       />
       <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)}>
         <div className="space-y-2">
-          <div className="grid grid-cols-5 gap-4">
-            {jars.map((jar, index) => (
-              <SelectableJar
-                key={index}
-                name={jar.name}
-                color={jar.color}
-                balance={jar.balanceSummary.calculatedTotalBalanceInSats}
-                totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
-                isSelected={sourceJarIndex === index}
-                onClick={() => setValue('sourceJarIndex', index)}
-                disabled={jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
-              />
-            ))}
-          </div>
+          <Field className="space-y-4" data-invalid={errors.sourceJarIndex !== undefined}>
+            <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
+            <div className="grid grid-cols-5 gap-4">
+              {jars.map((jar, index) => (
+                <SelectableJar
+                  key={index}
+                  name={jar.name}
+                  color={jar.color}
+                  balance={jar.balanceSummary.calculatedTotalBalanceInSats}
+                  totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+                  isSelected={sourceJarIndex === jar.jarIndex}
+                  onClick={() => {
+                    setValue('sourceJarIndex', jar.jarIndex)
+
+                    if (isSweep) {
+                      setValue('amount.isSweep', false, { shouldValidate: true })
+                      setValue('amount.displaySweepAmount', undefined, { shouldValidate: false })
+                      setValue('amount.amount', undefined, { shouldValidate: true })
+                    }
+                    if (destinationJarIndex === jar.jarIndex) {
+                      setValue('destination.address', undefined, { shouldValidate: true })
+                      setValue('destination.fromJar', undefined, { shouldValidate: true })
+                    }
+                  }}
+                  disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
+                />
+              ))}
+            </div>
+          </Field>
 
           {errors.sourceJarIndex && (
             <div className="text-destructive text-xs">{t('send.feedback_invalid_source_jar')}</div>
@@ -293,7 +317,7 @@ export function SendForm({
               <Input
                 id="send-destination"
                 {...register('destination.address', {
-                  required: true,
+                  required: destinationJar === undefined,
                   disabled,
                 })}
                 type="text"
@@ -302,7 +326,9 @@ export function SendForm({
 
               <Button
                 id="show-address-from-jar-selector-trigger"
+                type="button"
                 size="icon"
+                disabled={disabled}
                 onClick={() => setShowAddressFromJarSelectorDialog(true)}
               >
                 <MilkIcon />
@@ -316,14 +342,17 @@ export function SendForm({
               <Input
                 id="send-destination-address-from-jar"
                 type="text"
+                value={destinationDisplayAddress || ''}
+                disabled={disabled}
                 readOnly
-                value={`${destinationJar?.name} (${destinationAddress})`}
               />
 
               <Button
                 id="clear-address-from-jar-selector-trigger"
+                type="button"
                 size="icon"
                 variant="outline"
+                disabled={disabled}
                 onClick={() => {
                   setValue('destination.address', undefined, { shouldValidate: true })
                   setValue('destination.fromJar', undefined, { shouldValidate: true })
@@ -344,31 +373,110 @@ export function SendForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="send-amount" className="text-sm font-medium">
-            {t('send.label_amount_input')}
-          </Label>
-          <div className="relative">
-            <div className="absolute top-1/2 left-0 flex -translate-y-1/2 items-center px-3">
-              {FieldPrefixSatSymbol}
-            </div>
+          <Field data-invalid={errors.amount !== undefined}>
+            <FieldLabel htmlFor="send-amount">{t('send.label_amount_input')}</FieldLabel>
 
-            <Input
-              id="send-amount"
-              {...register('amount.amount', {
-                required: true,
-                disabled,
+            <ButtonGroup
+              className={cn('relative', {
+                hidden: isSweep === true,
               })}
-              type="number"
-              className="pl-9"
-              placeholder={t('send.placeholder_amount_input')}
-            />
-          </div>
-          {errors.amount && <div className="text-destructive text-xs">{t('send.feedback_invalid_amount')}</div>}
+            >
+              <Input
+                id="send-amount"
+                {...register('amount.amount', {
+                  required: false,
+                  disabled,
+                })}
+                type="number"
+                className="pl-9"
+                placeholder={t('send.placeholder_amount_input')}
+              />
+              <div className="absolute top-1/2 left-0 flex -translate-y-1/2 items-center px-3">
+                {FieldPrefixSatSymbol}
+              </div>
+              <Button
+                id="btn-sweep-trigger"
+                type="button"
+                disabled={
+                  disabled || sourceJar === undefined || sourceJar.balanceSummary.calculatedAvailableBalanceInSats <= 0
+                }
+                onClick={() => {
+                  setValue('amount.isSweep', true, { shouldValidate: true })
+                  const displayAmount = `${sourceJar?.name} (${sourceJar?.balanceSummary.calculatedAvailableBalanceInSats})`
+                  setValue('amount.displaySweepAmount', displayAmount, { shouldValidate: false })
+
+                  setValue('amount.amount', undefined, { shouldValidate: true })
+                }}
+              >
+                <BrushCleaningIcon /> {t('send.button_sweep')}
+              </Button>
+            </ButtonGroup>
+
+            <ButtonGroup
+              className={cn('relative', {
+                hidden: isSweep !== true,
+              })}
+            >
+              <Input
+                id="send-amount-sweep-from-jar"
+                className="pl-9"
+                type="text"
+                value={amountDisplaySweepAmount || ''}
+                disabled={disabled}
+                readOnly
+              />
+              <div className="absolute top-1/2 left-0 flex -translate-y-1/2 items-center px-3">
+                {FieldPrefixSatSymbol}
+              </div>
+              <Button
+                id="btn-sweep-clear-trigger"
+                type="button"
+                disabled={disabled}
+                onClick={() => {
+                  setValue('amount.isSweep', false, { shouldValidate: true })
+                  setValue('amount.displaySweepAmount', undefined, { shouldValidate: false })
+
+                  setValue('amount.amount', undefined, { shouldValidate: true })
+                }}
+              >
+                <XIcon /> {t('send.button_clear_sweep')}
+              </Button>
+            </ButtonGroup>
+          </Field>
+          {errors.amount?.amount && <div className="text-destructive text-xs">{t('send.feedback_invalid_amount')}</div>}
         </div>
+
+        <Accordion type="single" collapsible>
+          <AccordionItem value="options">
+            <AccordionTrigger>{t('send.sending_options')}</AccordionTrigger>
+            <AccordionContent className="flex flex-col gap-4">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="switch-is-collaborative-transaction"
+                    checked={values.isCoinJoin}
+                    onCheckedChange={(checked) =>
+                      setValue('isCoinJoin', checked, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      })
+                    }
+                    disabled={disabled}
+                  />
+                  <Label htmlFor="switch-is-collaborative-transaction" className="flex flex-col items-start gap-0">
+                    <div className="font-medium">{t('send.toggle_coinjoin')}</div>
+                    <div className="text-muted-foreground text-sm">{t('send.toggle_coinjoin_subtitle')}</div>
+                  </Label>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         <Button
           type="submit"
-          variant={disabled ? 'outline' : undefined}
+          variant={disabled ? 'outline' : values.isCoinJoin !== true ? 'destructive' : undefined}
           disabled={disabled || isSubmitting}
           className="w-full"
           size="lg"
@@ -379,7 +487,13 @@ export function SendForm({
               {t('send.text_sending')}
             </>
           ) : (
-            <>{t('send.button_send')}</>
+            <>
+              {values.isCoinJoin !== true ? (
+                <>{t('send.button_send_without_improved_privacy')}</>
+              ) : (
+                <>{t('send.button_send')}</>
+              )}
+            </>
           )}
         </Button>
 
@@ -396,6 +510,10 @@ export function SendForm({
               <div className="overflow-scroll">
                 <code className="light:text-red-700 text-red-800">values:</code>
                 <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
+              </div>
+              <div className="overflow-scroll">
+                <code className="light:text-red-700 text-red-800">schema:</code>
+                <pre className="text-xs">{JSON.stringify(schema, null, 2)}</pre>
               </div>
             </CardContent>
           </Card>
