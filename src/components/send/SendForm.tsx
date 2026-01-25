@@ -113,6 +113,7 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
       destination: yup
         .object({
           fromJar: yup.number().optional(),
+          displayAddress: yup.string().optional(),
           address: yup
             .string()
             .test('valid-address-test', 'Invalid bitcoin address.', (value) => {
@@ -125,6 +126,7 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
         .object()
         .shape({
           isSweep: yup.boolean().default(false).required(),
+          displaySweepAmount: yup.string().optional(),
           amount: yup.number().when('isSweep', {
             is: (val: boolean) => val === true,
             then: (schema) =>
@@ -252,6 +254,7 @@ export function SendForm({
           toast.error(t('receive.error_loading_address_failed'))
           setValue('destination.address', undefined, { shouldValidate: true })
           setValue('destination.fromJar', undefined, { shouldValidate: true })
+          setValue('destination.displayAddress', undefined, { shouldValidate: true })
         }}
         onConfirm={async (jarIndex, addressInfo) => {
           setValue('destination.address', addressInfo.address, { shouldValidate: true })
@@ -264,7 +267,7 @@ export function SendForm({
           setShowAddressFromJarSelectorDialog(false)
         }}
       />
-      <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)}>
+      <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
           <Field className="space-y-4" data-invalid={errors.sourceJarIndex !== undefined}>
             <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
@@ -278,16 +281,17 @@ export function SendForm({
                   totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                   isSelected={sourceJarIndex === jar.jarIndex}
                   onClick={() => {
-                    setValue('sourceJarIndex', jar.jarIndex)
+                    setValue('sourceJarIndex', jar.jarIndex, { shouldValidate: true })
 
-                    if (isSweep) {
+                    if (isSweep === true) {
                       setValue('amount.isSweep', false, { shouldValidate: true })
-                      setValue('amount.displaySweepAmount', undefined, { shouldValidate: false })
+                      setValue('amount.displaySweepAmount', undefined, { shouldValidate: true })
                       setValue('amount.amount', undefined, { shouldValidate: true })
                     }
                     if (destinationJarIndex === jar.jarIndex) {
                       setValue('destination.address', undefined, { shouldValidate: true })
                       setValue('destination.fromJar', undefined, { shouldValidate: true })
+                      setValue('destination.displayAddress', undefined, { shouldValidate: true })
                     }
                   }}
                   disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
@@ -356,6 +360,7 @@ export function SendForm({
                 onClick={() => {
                   setValue('destination.address', undefined, { shouldValidate: true })
                   setValue('destination.fromJar', undefined, { shouldValidate: true })
+                  setValue('destination.displayAddress', undefined, { shouldValidate: true })
                 }}
               >
                 <XIcon />
@@ -510,6 +515,18 @@ export function SendForm({
               <div className="overflow-scroll">
                 <code className="light:text-red-700 text-red-800">values:</code>
                 <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
+              </div>
+              <div className="overflow-scroll">
+                <code className="light:text-red-700 text-red-800">errors:</code>
+                <pre className="text-xs">{JSON.stringify(errors.sourceJarIndex?.message, null, 2)}</pre>
+
+                <pre className="text-xs">{JSON.stringify(errors.destination?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.destination?.address?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.destination?.fromJar?.message, null, 2)}</pre>
+
+                <pre className="text-xs">{JSON.stringify(errors.amount?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.amount?.amount?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.amount?.isSweep?.message, null, 2)}</pre>
               </div>
               <div className="overflow-scroll">
                 <code className="light:text-red-700 text-red-800">schema:</code>

@@ -26,6 +26,7 @@ export const SelectableJar = ({
   const radioRef = useRef<HTMLInputElement>(null)
   return (
     <button
+      type="button"
       className={cn('flex flex-col items-center gap-4', {
         'cursor-pointer': !disabled,
         'cursor-not-allowed': disabled,

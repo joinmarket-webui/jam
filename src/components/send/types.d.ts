@@ -9,6 +9,8 @@ export type TxFee = {
 export type DestinationValue =
   | {
       address: BitcoinAddress
+      fromJar: undefined
+      displayAddress: undefined
     }
   | {
       address: BitcoinAddress
@@ -20,6 +22,7 @@ export type AmountValue =
   | {
       amount: AmountSats
       isSweep: false
+      displaySweepAmount: undefined
     }
   | {
       amount: undefined
