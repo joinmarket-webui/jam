@@ -156,9 +156,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertTriangleIcon />
             <AlertTitle>{/* TODO: i18n */}Error while sending non-collaborative transaction</AlertTitle>
             <AlertDescription className="">
-              Not more is known other than
-              <span className="inline font-mono">"{triggerNonCollarborativeTransaction.error.message}"</span>
-              Please validate your inputs and try again.
+              <p>
+                The exact reason is not entirely clear, only the following is known:{' '}
+                <span className="inline font-mono font-semibold">
+                  "{triggerNonCollarborativeTransaction.error.message}"
+                </span>
+                <br />
+              </p>
+              <p>Please validate your inputs and try again.</p>
             </AlertDescription>
           </Alert>
         ) : (
