@@ -58,7 +58,7 @@ export default function JarSelectorDialog({
           {subtitle && <DialogDescription>{subtitle}</DialogDescription>}
         </DialogHeader>
 
-        <div className="space-y-2">
+        <div className="py-4">
           <div className="grid grid-cols-5 gap-4">
             {jars.map((jar, index) => (
               <SelectableJar
@@ -75,11 +75,11 @@ export default function JarSelectorDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+        <DialogFooter className="sm:justify-center">
+          <Button className="flex-1" variant="outline" onClick={handleClose}>
             {t('modal.confirm_button_reject')}
           </Button>
-          <Button onClick={confirm} disabled={!selectedJar || isConfirming}>
+          <Button className="flex-1" onClick={confirm} disabled={!selectedJar || isConfirming}>
             {isConfirming ? (
               <>
                 <Spinner className="motion-reduce:hidden" />

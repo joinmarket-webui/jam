@@ -6,18 +6,25 @@ export type TxFee = {
   unit?: TxFeeUnit
 }
 
-export type DestinationValue = {
-  address: BitcoinAddress
-  fromJar?: JarIndex
-}
+export type DestinationValue =
+  | {
+      address: BitcoinAddress
+    }
+  | {
+      address: BitcoinAddress
+      fromJar: JarIndex
+      displayAddress: string
+    }
 
 export type AmountValue =
   | {
       amount: AmountSats
+      isSweep: false
     }
   | {
-      //displayValue: AmountSats
+      amount: undefined
       isSweep: true
+      displaySweepAmount: string
     }
 
 export interface SendFormValues {
