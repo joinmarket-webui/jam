@@ -89,7 +89,7 @@ const MAX_NUM_COLLABORATORS = 99
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
 
 const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
-  sourceJarIndex: undefined,
+  source: undefined,
   destination: undefined,
   amount: undefined,
   txFee: undefined,
@@ -100,20 +100,25 @@ const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
 const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
   return yup
     .object({
-      sourceJarIndex: yup
-        .number()
-        .integer()
-        .test(
-          'valid-source-jar-index-test',
-          'Invalid source jar index.',
-          (value) =>
-            (jars.find((it) => it.jarIndex === value)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
-        )
+      source: yup
+        .object({
+          fromJar: yup
+            .number()
+            .integer()
+            .test(
+              'valid-source-jar-index-test',
+              'Invalid source jar index.',
+              (value) =>
+                (jars.find((it) => it.jarIndex === value)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
+            )
+            .required(),
+          displaySource: yup.string().required(),
+        })
         .required(),
       destination: yup
         .object({
           fromJar: yup.number().optional(),
-          displayAddress: yup.string().optional(),
+          displayAddress: yup.string().required(),
           address: yup
             .string()
             .test('valid-address-test', 'Invalid bitcoin address.', (value) => {
@@ -126,12 +131,30 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
         .object()
         .shape({
           isSweep: yup.boolean().default(false).required(),
-          displaySweepAmount: yup.string().optional(),
+          sweepAmount: yup.number().when('isSweep', {
+            is: (val: boolean) => val === true,
+            then: (schema) =>
+              schema
+                .integer()
+                .min(1)
+                .max(21_000_000 * 100_000_000)
+                .required(),
+            otherwise: (schema) =>
+              schema
+                .transform(() => null)
+                .nullable()
+                .optional(),
+          }),
+          displaySweepAmount: yup.string().when('isSweep', {
+            is: (val: boolean) => val === true,
+            then: (schema) => schema.required(),
+            otherwise: (schema) => schema.optional(),
+          }),
           amount: yup.number().when('isSweep', {
             is: (val: boolean) => val === true,
             then: (schema) =>
               schema
-                .transform((value) => (Number.isNaN(value) ? null : value))
+                .transform(() => null)
                 .nullable()
                 .optional(),
             otherwise: (schema) =>
@@ -143,7 +166,6 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
           }),
         })
         .required(),
-
       isCoinJoin: yup.boolean().default(FORM_INPUT_DEFAULT_VALUES.isCoinJoin).required(),
       numCollaborators: yup.number().when('isCoinJoin', {
         is: (val: boolean) => val === true,
@@ -156,7 +178,7 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
             .required(),
         otherwise: (schema) =>
           schema
-            .transform((value) => (Number.isNaN(value) ? null : value))
+            .transform(() => null)
             .nullable()
             .optional(),
       }),
@@ -206,7 +228,6 @@ export function SendForm({
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
-    //getValues,
     setValue,
   } = useForm<SendFormValues, unknown, SendFormValues>({
     mode: 'onSubmit',
@@ -216,7 +237,7 @@ export function SendForm({
   })
 
   const values = useWatch({ control })
-  const sourceJarIndex = useWatch({ control, name: 'sourceJarIndex' })
+  const sourceJarIndex = useWatch({ control, name: 'source.fromJar' })
   const destinationAddress = useWatch({ control, name: 'destination.address' })
   const destinationDisplayAddress = useWatch({ control, name: 'destination.displayAddress' })
   const destinationJarIndex = useWatch({ control, name: 'destination.fromJar' })
@@ -262,14 +283,14 @@ export function SendForm({
 
           const jar = jars.find((it) => it.jarIndex === jarIndex)
           const displayAddress = `${jar?.name} (${addressInfo.address})`
-          setValue('destination.displayAddress', displayAddress, { shouldValidate: false })
+          setValue('destination.displayAddress', displayAddress, { shouldValidate: true })
 
           setShowAddressFromJarSelectorDialog(false)
         }}
       />
       <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
-          <Field className="space-y-4" data-invalid={errors.sourceJarIndex !== undefined}>
+          <Field className="space-y-4" data-invalid={errors.source !== undefined}>
             <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
             <div className="grid grid-cols-5 gap-4">
               {jars.map((jar, index) => (
@@ -281,10 +302,13 @@ export function SendForm({
                   totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                   isSelected={sourceJarIndex === jar.jarIndex}
                   onClick={() => {
-                    setValue('sourceJarIndex', jar.jarIndex, { shouldValidate: true })
+                    setValue('source.fromJar', jar.jarIndex, { shouldValidate: true })
+                    const displaySource = `${jar.name} (#${jar.jarIndex})`
+                    setValue('source.displaySource', displaySource, { shouldValidate: true })
 
                     if (isSweep === true) {
                       setValue('amount.isSweep', false, { shouldValidate: true })
+                      setValue('amount.sweepAmount', undefined, { shouldValidate: true })
                       setValue('amount.displaySweepAmount', undefined, { shouldValidate: true })
                       setValue('amount.amount', undefined, { shouldValidate: true })
                     }
@@ -300,9 +324,7 @@ export function SendForm({
             </div>
           </Field>
 
-          {errors.sourceJarIndex && (
-            <div className="text-destructive text-xs">{t('send.feedback_invalid_source_jar')}</div>
-          )}
+          {errors.source && <div className="text-destructive text-xs">{t('send.feedback_invalid_source_jar')}</div>}
         </div>
 
         <div className="space-y-2">
@@ -323,6 +345,9 @@ export function SendForm({
                 {...register('destination.address', {
                   required: destinationJar === undefined,
                   disabled,
+                  onChange: (value: string) => {
+                    setValue('destination.displayAddress', value, { shouldValidate: true })
+                  },
                 })}
                 type="text"
                 placeholder={t('send.placeholder_recipient')}
@@ -407,8 +432,11 @@ export function SendForm({
                 }
                 onClick={() => {
                   setValue('amount.isSweep', true, { shouldValidate: true })
+                  setValue('amount.sweepAmount', sourceJar?.balanceSummary.calculatedAvailableBalanceInSats, {
+                    shouldValidate: true,
+                  })
                   const displayAmount = `${sourceJar?.name} (${sourceJar?.balanceSummary.calculatedAvailableBalanceInSats})`
-                  setValue('amount.displaySweepAmount', displayAmount, { shouldValidate: false })
+                  setValue('amount.displaySweepAmount', displayAmount, { shouldValidate: true })
 
                   setValue('amount.amount', undefined, { shouldValidate: true })
                 }}
@@ -439,7 +467,8 @@ export function SendForm({
                 disabled={disabled}
                 onClick={() => {
                   setValue('amount.isSweep', false, { shouldValidate: true })
-                  setValue('amount.displaySweepAmount', undefined, { shouldValidate: false })
+                  setValue('amount.sweepAmount', undefined, { shouldValidate: true })
+                  setValue('amount.displaySweepAmount', undefined, { shouldValidate: true })
 
                   setValue('amount.amount', undefined, { shouldValidate: true })
                 }}
@@ -518,11 +547,14 @@ export function SendForm({
               </div>
               <div className="overflow-scroll">
                 <code className="light:text-red-700 text-red-800">errors:</code>
-                <pre className="text-xs">{JSON.stringify(errors.sourceJarIndex?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.source?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.source?.fromJar?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.source?.displaySource?.message, null, 2)}</pre>
 
                 <pre className="text-xs">{JSON.stringify(errors.destination?.message, null, 2)}</pre>
                 <pre className="text-xs">{JSON.stringify(errors.destination?.address?.message, null, 2)}</pre>
                 <pre className="text-xs">{JSON.stringify(errors.destination?.fromJar?.message, null, 2)}</pre>
+                <pre className="text-xs">{JSON.stringify(errors.destination?.displayAddress?.message, null, 2)}</pre>
 
                 <pre className="text-xs">{JSON.stringify(errors.amount?.message, null, 2)}</pre>
                 <pre className="text-xs">{JSON.stringify(errors.amount?.amount?.message, null, 2)}</pre>

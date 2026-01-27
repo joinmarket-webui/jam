@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { directsendMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
@@ -20,6 +20,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Card, CardContent } from '../ui/card'
 import { Spinner } from '../ui/spinner'
+import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import type { SendFormValues } from './types'
 
@@ -38,11 +39,27 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
+  const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
+  const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
 
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
 
-  const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
+  const availableUtxosForPayment = useMemo(() => {
+    const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
+    if (sourceJarIndex === undefined) {
+      return undefined
+    }
+    return (jars[sourceJarIndex]?.utxos || [])
+      .filter((utxo) => !utxo.frozen)
+      .sort((a, b) => a.confirmations - b.confirmations)
+  }, [jars, sendFromValuesAwaitingConfirmation])
+
+  const {
+    feeConfigValues,
+    maxFeesConfigMissing,
+    isLoading: isLoadingFeeConfig,
+  } = useFeeConfigValidation({ walletFileName })
 
   const directSendMutation = useMutation({
     ...directsendMutation({ client }),
@@ -57,7 +74,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       if (data.destination === undefined || !isValidBitcoinAddress(data.destination.address)) {
         throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
       }
-      if (data.sourceJarIndex === undefined) {
+      if (data.source?.fromJar === undefined) {
         throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
       }
       if (data.amount.isSweep === true && data.amount.amount !== undefined) {
@@ -66,8 +83,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
       const body = {
         amount_sats: data.amount.isSweep === true ? 0 : data.amount.amount,
-        destination: data.destination!.address,
-        mixdepth: data.sourceJarIndex,
+        destination: data.destination.address,
+        mixdepth: data.source.fromJar,
       }
       const response = await directSendMutation.mutateAsync({
         path: {
@@ -101,7 +118,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     }
   }
 
-  const onSubmit: SubmitHandler<SendFormValues> = async (data) => {
+  const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data) => {
     console.table(data)
     if (data.isCoinJoin !== true) {
       await onSubmitDirectSend(data)
@@ -112,7 +129,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     }
   }
 
-  if (isLoading) {
+  const onSubmit: SubmitHandler<SendFormValues> = async (data) => {
+    setSendFromValuesAwaitingConfirmation(data)
+    setShowPaymentConfirmDialog(true)
+  }
+
+  if (isLoadingFeeConfig) {
     return (
       <div className="mx-auto max-w-4xl space-y-3 p-4">
         <div className="m-2 flex items-center justify-center gap-2">
@@ -130,6 +152,32 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         onOpenChange={setShowFeeConfigDialog}
         walletFileName={walletFileName}
       />
+      {sendFromValuesAwaitingConfirmation && (
+        <PaymentConfirmDialog
+          open={showPaymentConfirmDialog}
+          onOpenChange={setShowPaymentConfirmDialog}
+          title={t('send.confirm_send_modal.title')}
+          subtitle={
+            sendFromValuesAwaitingConfirmation.isCoinJoin === true ? (
+              <span className="light:text-green-600/80 text-green-700/80">
+                {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
+              </span>
+            ) : (
+              <span className="text-destructive">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</span>
+            )
+          }
+          values={sendFromValuesAwaitingConfirmation}
+          onConfirm={async () => {
+            setShowPaymentConfirmDialog(false)
+            await onPaymentConfirmed(sendFromValuesAwaitingConfirmation)
+          }}
+          meta={{
+            feeConfigValues: feeConfigValues,
+            availableUtxos: availableUtxosForPayment,
+          }}
+          debug={isDeveloperMode}
+        />
+      )}
       <div className="mx-auto max-w-4xl space-y-3 p-4">
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
