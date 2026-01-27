@@ -4,7 +4,7 @@ import { InfoIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { Utxo } from '@/hooks/useQueryUtxos'
-import { isValidNumber, SATS } from '@/lib/utils'
+import { factorToPercentage, isValidNumber, SATS } from '@/lib/utils'
 import type { AmountSats, WithRequiredProperty } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Button } from '../ui/button'
@@ -15,11 +15,15 @@ import { Spinner } from '../ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import type { SendFormValues } from './types'
 
+type EstimateMaxCollaboraterFeeResult = {
+  maxFee: AmountSats
+  fractionOfAmount: number
+}
 const estimateMaxCollaboraterFee = (
   feeConfigValues: FeeConfigValues,
   amount: AmountSats,
   numCollaborators: number,
-): AmountSats => {
+): EstimateMaxCollaboraterFeeResult => {
   if (feeConfigValues === undefined) {
     throw new Error('Invalid state: Missing fee config values.')
   }
@@ -27,13 +31,29 @@ const estimateMaxCollaboraterFee = (
   if (!isValidNumber(maxFeeAbs)) {
     throw new Error('Invalid state: Missing "max_cj_fee_abs" fee config value.')
   }
-  const maxFeeRel = parseInt(feeConfigValues?.max_cj_fee_rel || '', 10)
+  const maxFeeRel = parseFloat(feeConfigValues?.max_cj_fee_rel || '')
   if (!isValidNumber(maxFeeRel)) {
     throw new Error('Invalid state: Missing "max_cj_fee_rel" fee config value.')
   }
 
-  const maxFeePerCollaborator = Math.max(Math.ceil(amount * maxFeeRel), maxFeeAbs)
-  return numCollaborators > 0 ? Math.min(maxFeePerCollaborator * numCollaborators, amount) : 0
+  const maxFeePerCollaborator: AmountSats = Math.max(Math.ceil(amount * maxFeeRel), maxFeeAbs)
+  const maxFee: AmountSats = numCollaborators > 0 ? Math.min(maxFeePerCollaborator * numCollaborators, amount) : 0
+  const fractionOfAmount = amount > 0 ? maxFee / amount : 0
+  return {
+    maxFee,
+    fractionOfAmount,
+  }
+}
+
+const maxCollaboraterFee = (
+  feeConfigValues: FeeConfigValues,
+  values: SendFormValues,
+): EstimateMaxCollaboraterFeeResult | undefined => {
+  if (!values.isCoinJoin || values.numCollaborators === undefined) {
+    return undefined
+  }
+  const amount = values.amount?.isSweep === true ? values.amount.sweepAmount : values.amount?.amount
+  return !amount ? undefined : estimateMaxCollaboraterFee(feeConfigValues, amount, values.numCollaborators)
 }
 
 type PaymentConfirmDialogProps = WithRequiredProperty<
@@ -66,12 +86,9 @@ export default function PaymentConfirmDialog({
   const [isConfirming, setIsConfirming] = useState(false)
 
   const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (!values.isCoinJoin || values.numCollaborators === undefined || meta.feeConfigValues === undefined) {
-      return undefined
-    }
-    const amount = values.amount?.isSweep === true ? values.amount.sweepAmount : values.amount?.amount
-    return !amount ? undefined : estimateMaxCollaboraterFee(meta.feeConfigValues, amount, values.numCollaborators)
-  }, [values, meta])
+    if (meta.feeConfigValues === undefined) return undefined
+    return maxCollaboraterFee(meta.feeConfigValues, values)
+  }, [values, meta.feeConfigValues])
 
   const handleClose = () => {
     onOpenChange(false)
@@ -133,7 +150,14 @@ export default function PaymentConfirmDialog({
 
               <div className="col-span-4 flex items-center gap-1">
                 &le;
-                <Balance valueString={String(estimatedMaxCollaboratorFee)} convertToUnit={SATS} showBalance={true} />
+                <Balance
+                  valueString={String(estimatedMaxCollaboratorFee.maxFee)}
+                  convertToUnit={SATS}
+                  showBalance={true}
+                />
+                <span className="text-muted-foreground text-xs">
+                  ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
+                </span>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <InfoIcon className="size-4 cursor-help" />
