@@ -148,7 +148,7 @@ export function EarnForm({
     getValues,
     setValue,
   } = useForm<EarnFormValues, unknown, EarnFormValues>({
-    mode: 'all',
+    mode: 'onSubmit',
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
     // force type (see https://github.com/react-hook-form/resolvers/issues/807)
     resolver: yupResolver(schema) as Resolver<EarnFormValues, unknown, EarnFormValues>,
@@ -175,12 +175,11 @@ export function EarnForm({
           <div className="space-y-2">
             <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
               <FieldLabel htmlFor="offerAbsoluteFee">
-                {' '}
                 {t('earn.label_abs_fee', {
                   fee: '', // empty on purpose
                 })}
               </FieldLabel>
-              <FieldDescription>{t('earn.description_abs_fee')}</FieldDescription>
+              <FieldDescription className="text-xs">{t('earn.description_abs_fee')}</FieldDescription>
               <InputGroup>
                 <InputGroupInput
                   id="offerAbsoluteFee"
@@ -206,7 +205,7 @@ export function EarnForm({
                   fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
                 })}
               </FieldLabel>
-              <FieldDescription>{t('earn.description_rel_fee')}</FieldDescription>
+              <FieldDescription className="text-xs">{t('earn.description_rel_fee')}</FieldDescription>
               <InputGroup>
                 <InputGroupInput
                   id="offerRelativeFeeInPercent"
@@ -268,7 +267,7 @@ export function EarnForm({
       <Button
         type="submit"
         variant={disabled && !isWaitingMakerStart ? 'outline' : undefined}
-        disabled={disabled || !isValid || isSubmitting}
+        disabled={disabled || isSubmitting || isWaitingMakerStart}
         className="w-full"
         size="lg"
       >
