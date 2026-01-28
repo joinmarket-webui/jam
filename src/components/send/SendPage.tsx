@@ -45,14 +45,20 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
 
-  const availableUtxosForPayment = useMemo(() => {
+  const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
-    if (sourceJarIndex === undefined) {
-      return undefined
-    }
-    return (jars[sourceJarIndex]?.utxos || [])
-      .filter((utxo) => !utxo.frozen)
-      .sort((a, b) => a.confirmations - b.confirmations)
+    if (sourceJarIndex === undefined) return
+    return jars[sourceJarIndex]
+  }, [jars, sendFromValuesAwaitingConfirmation])
+
+  const availableUtxosForPayment = useMemo(() => {
+    return (sourceJar?.utxos || []).filter((utxo) => !utxo.frozen).sort((a, b) => a.confirmations - b.confirmations)
+  }, [sourceJar])
+
+  const destinationJar = useMemo(() => {
+    const destinationJarIndex = sendFromValuesAwaitingConfirmation?.destination?.fromJar
+    if (destinationJarIndex === undefined) return
+    return jars[destinationJarIndex]
   }, [jars, sendFromValuesAwaitingConfirmation])
 
   const {
@@ -152,7 +158,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         onOpenChange={setShowFeeConfigDialog}
         walletFileName={walletFileName}
       />
-      {sendFromValuesAwaitingConfirmation && (
+      {sourceJar && sendFromValuesAwaitingConfirmation && (
         <PaymentConfirmDialog
           open={showPaymentConfirmDialog}
           onOpenChange={setShowPaymentConfirmDialog}
@@ -174,6 +180,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           meta={{
             feeConfigValues: feeConfigValues,
             availableUtxos: availableUtxosForPayment,
+            sourceJar,
+            destinationJar,
           }}
           debug={isDeveloperMode}
         />
