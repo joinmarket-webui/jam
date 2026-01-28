@@ -4,23 +4,22 @@ import { useQuery } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { SelectableJar } from '@/components/ui/jam/SelectableJar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
+import { useJars } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
-import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
+import { cn, type WalletFileName } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress, Milliseconds } from '@/types/global'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
-import { Label } from '../ui/label'
-import { BitcoinAmountInput } from './BitcoinAmountInput'
 import { BitcoinQR } from './BitcoinQR'
+import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320 // "h-[320px] w-[320px]" <- Comment for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 
@@ -36,13 +35,21 @@ interface ReceivePageProps {
 
 export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const { t } = useTranslation()
-  const [selectedJarIndex, setSelectedJarIndex] = useState(0)
-  const [amount, setAmount] = useState<AmountSats>()
-  const [bitcoinAddress, setBitcoinAddress] = useState<BitcoinAddress>()
-
-  const { currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
-  const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
+
+  const [selectedJarIndex, setSelectedJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
+  const [amount, setAmount] = useState<AmountSats>()
+
+  const [receiveFormDefaultValues] = useState({
+    source: {
+      fromJar: selectedJarIndex,
+    },
+    amount: {
+      amount: undefined,
+    },
+  })
+
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const client = useApiClient()
 
@@ -67,10 +74,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   })
-
-  if (getAddressQuery.data?.address && bitcoinAddress !== getAddressQuery.data?.address) {
-    setBitcoinAddress(getAddressQuery.data.address)
-  }
 
   useEffect(() => {
     if (getAddressQuery.error) {
@@ -97,29 +100,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     await getAddressQuery.refetch()
   }, [getAddressQuery])
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    if (value === '') {
-      setAmount(undefined)
-      return
-    }
-
-    const numValue = parseFloat(value)
-    if (currency === 'btc') {
-      setAmount(btcToSats(numValue.toString()))
-    } else {
-      setAmount(Math.floor(numValue))
-    }
-  }
-
-  const getDisplayAmount = () => {
-    if (!amount) return ''
-    if (currency === 'btc') {
-      return satsToBtc(amount.toString()).toFixed(8)
-    }
-    return amount.toString()
-  }
-
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
@@ -128,10 +108,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
         <CardContent className="flex w-full flex-col items-center justify-center gap-2">
           {getAddressQuery.isFetching ? (
             <Skeleton className={`h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`} />
-          ) : bitcoinAddress ? (
+          ) : getAddressQuery.data?.address ? (
             <BitcoinQR
               className="animate-in fade-in duration-1000"
-              address={bitcoinAddress}
+              address={getAddressQuery.data.address}
               amount={amount}
               width={QRCODE_WIDTH}
             />
@@ -150,7 +130,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             <Skeleton className="h-5 w-[65%]" />
           ) : (
             <p className="animate-in fade-in text-center font-mono text-sm break-all duration-1000 select-all">
-              {bitcoinAddress}
+              {getAddressQuery.data?.address}
             </p>
           )}
 
@@ -174,8 +154,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 size: 'sm',
                 variant: 'outline',
               })}
-              disabled={getAddressQuery.isFetching || !bitcoinAddress}
-              value={bitcoinAddress!}
+              disabled={getAddressQuery.isFetching || !getAddressQuery.data?.address}
+              value={getAddressQuery.data?.address ?? ''}
               text={
                 <>
                   <CopyIcon />
@@ -196,8 +176,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={async () => await shareAddress(bitcoinAddress!)}
-                disabled={getAddressQuery.isFetching || !bitcoinAddress}
+                onClick={async () => await shareAddress(getAddressQuery.data!.address)}
+                disabled={getAddressQuery.isFetching || !getAddressQuery.data?.address}
               >
                 <ShareIcon />
                 {t('receive.button_share_address')}
@@ -211,36 +191,17 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
         <AccordionItem value="options">
           <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4">
-            <div className="space-y-4">
-              <Label>{t('receive.label_source_jar')}</Label>
-
-              <div className="grid grid-cols-5 gap-4">
-                {jars.map((jar, index) => (
-                  <SelectableJar
-                    key={index}
-                    name={jar.name}
-                    color={jar.color}
-                    balance={jar.balanceSummary.calculatedTotalBalanceInSats}
-                    totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
-                    isSelected={selectedJarIndex === index}
-                    onClick={() => setSelectedJarIndex(index)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className={'mx-1' /* add x-spacing for focus state*/}>
-              <BitcoinAmountInput
-                label={t('receive.label_amount_input')}
-                placeholder={t('receive.placeholder_amount_input')}
-                currency={currency}
-                value={getDisplayAmount()}
-                onChange={handleAmountChange}
-                toggleCurrencyUnit={toggleCurrencyUnit}
-                isPrivate={isPrivate}
-                disabled={getAddressQuery.isFetching || !bitcoinAddress}
-              />
-            </div>
+            <ReceiveForm
+              className={'mx-1' /* add x-spacing for input component focus state*/}
+              defaultValues={receiveFormDefaultValues}
+              jars={jars}
+              disabled={getAddressQuery.isFetching}
+              debug={isDeveloperMode}
+              onSubmit={(values) => {
+                setSelectedJarIndex(values.source?.fromJar)
+                setAmount(values.amount.amount)
+              }}
+            />
           </AccordionContent>
         </AccordionItem>
       </Accordion>
