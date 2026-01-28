@@ -158,7 +158,7 @@ export function EarnForm({
   const watchOfferType = useWatch({ control, name: 'offerType' })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)}>
+    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
       <OfferTypeInput
         disabled={disabled}
         defaultValue={FORM_INPUT_DEFAULT_VALUES.offerType}
