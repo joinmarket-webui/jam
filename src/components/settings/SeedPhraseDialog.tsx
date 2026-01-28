@@ -242,7 +242,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
                     id="switch-reveal-seed"
                     checked={revealSeed}
                     onCheckedChange={(checked) => setRevealSeed(checked)}
-                    disabled={!seedQuery.data || !seedQuery.isFetching}
+                    disabled={!seedQuery.data || seedQuery.isFetching}
                   />
                   <Label htmlFor="switch-reveal-seed">{t('settings.reveal_seed')}</Label>
                 </div>

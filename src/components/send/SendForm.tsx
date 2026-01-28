@@ -112,13 +112,11 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
                 (jars.find((it) => it.jarIndex === value)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
             )
             .required(),
-          displaySource: yup.string().required(),
         })
         .required(),
       destination: yup
         .object({
           fromJar: yup.number().optional(),
-          displayAddress: yup.string().required(),
           address: yup
             .string()
             .test('valid-address-test', 'Invalid bitcoin address.', (value) => {
@@ -144,11 +142,6 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
                 .transform(() => null)
                 .nullable()
                 .optional(),
-          }),
-          displaySweepAmount: yup.string().when('isSweep', {
-            is: (val: boolean) => val === true,
-            then: (schema) => schema.required(),
-            otherwise: (schema) => schema.optional(),
           }),
           amount: yup.number().when('isSweep', {
             is: (val: boolean) => val === true,
@@ -239,10 +232,8 @@ export function SendForm({
   const values = useWatch({ control })
   const sourceJarIndex = useWatch({ control, name: 'source.fromJar' })
   const destinationAddress = useWatch({ control, name: 'destination.address' })
-  const destinationDisplayAddress = useWatch({ control, name: 'destination.displayAddress' })
   const destinationJarIndex = useWatch({ control, name: 'destination.fromJar' })
   const isSweep = useWatch({ control, name: 'amount.isSweep' })
-  const amountDisplaySweepAmount = useWatch({ control, name: 'amount.displaySweepAmount' })
 
   const destinationAddressInfo = useMemo(() => {
     try {
@@ -253,12 +244,24 @@ export function SendForm({
   }, [destinationAddress])
 
   const sourceJar = useMemo(() => {
+    if (sourceJarIndex === undefined) return
     return jars.find((it) => it.jarIndex === sourceJarIndex)
   }, [jars, sourceJarIndex])
 
   const destinationJar = useMemo(() => {
-    return destinationJarIndex === undefined ? undefined : jars.find((it) => it.jarIndex === destinationJarIndex)
+    if (destinationJarIndex === undefined) return
+    return jars.find((it) => it.jarIndex === destinationJarIndex)
   }, [jars, destinationJarIndex])
+
+  const destinationDisplayAddress = useMemo(() => {
+    if (destinationJar === undefined || destinationAddressInfo === undefined) return
+    return `${destinationJar?.name} (${destinationAddressInfo.address})`
+  }, [destinationAddressInfo, destinationJar])
+
+  const amountDisplaySweepAmount = useMemo(() => {
+    if (isSweep !== true || sourceJar === undefined) return
+    return `${sourceJar?.name} (${sourceJar?.balanceSummary.calculatedAvailableBalanceInSats})`
+  }, [isSweep, sourceJar])
 
   return (
     <>
@@ -275,15 +278,10 @@ export function SendForm({
           toast.error(t('receive.error_loading_address_failed'))
           setValue('destination.address', undefined, { shouldValidate: true })
           setValue('destination.fromJar', undefined, { shouldValidate: true })
-          setValue('destination.displayAddress', undefined, { shouldValidate: true })
         }}
         onConfirm={async (jarIndex, addressInfo) => {
           setValue('destination.address', addressInfo.address, { shouldValidate: true })
           setValue('destination.fromJar', jarIndex, { shouldValidate: true })
-
-          const jar = jars.find((it) => it.jarIndex === jarIndex)
-          const displayAddress = `${jar?.name} (${addressInfo.address})`
-          setValue('destination.displayAddress', displayAddress, { shouldValidate: true })
 
           setShowAddressFromJarSelectorDialog(false)
         }}
@@ -303,19 +301,15 @@ export function SendForm({
                   isSelected={sourceJarIndex === jar.jarIndex}
                   onClick={() => {
                     setValue('source.fromJar', jar.jarIndex, { shouldValidate: true })
-                    const displaySource = `${jar.name} (#${jar.jarIndex})`
-                    setValue('source.displaySource', displaySource, { shouldValidate: true })
 
                     if (isSweep === true) {
                       setValue('amount.isSweep', false, { shouldValidate: true })
                       setValue('amount.sweepAmount', undefined, { shouldValidate: true })
-                      setValue('amount.displaySweepAmount', undefined, { shouldValidate: true })
                       setValue('amount.amount', undefined, { shouldValidate: true })
                     }
                     if (destinationJarIndex === jar.jarIndex) {
                       setValue('destination.address', undefined, { shouldValidate: true })
                       setValue('destination.fromJar', undefined, { shouldValidate: true })
-                      setValue('destination.displayAddress', undefined, { shouldValidate: true })
                     }
                   }}
                   disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
@@ -345,10 +339,8 @@ export function SendForm({
                 {...register('destination.address', {
                   required: destinationJar === undefined,
                   disabled,
-                  onChange: (value: string) => {
-                    setValue('destination.displayAddress', value, { shouldValidate: true })
-                  },
                 })}
+                className="h-auto"
                 type="text"
                 placeholder={t('send.placeholder_recipient')}
               />
@@ -356,11 +348,11 @@ export function SendForm({
               <Button
                 id="show-address-from-jar-selector-trigger"
                 type="button"
-                size="icon"
                 disabled={disabled}
                 onClick={() => setShowAddressFromJarSelectorDialog(true)}
               >
                 <MilkIcon />
+                <span className="sr-only">{/* TODO: i18n */} Choose Jar</span>
               </Button>
             </ButtonGroup>
             <ButtonGroup
@@ -370,6 +362,7 @@ export function SendForm({
             >
               <Input
                 id="send-destination-address-from-jar"
+                className="h-auto"
                 type="text"
                 value={destinationDisplayAddress || ''}
                 disabled={disabled}
@@ -379,16 +372,14 @@ export function SendForm({
               <Button
                 id="clear-address-from-jar-selector-trigger"
                 type="button"
-                size="icon"
                 variant="outline"
                 disabled={disabled}
                 onClick={() => {
                   setValue('destination.address', undefined, { shouldValidate: true })
                   setValue('destination.fromJar', undefined, { shouldValidate: true })
-                  setValue('destination.displayAddress', undefined, { shouldValidate: true })
                 }}
               >
-                <XIcon />
+                <XIcon /> {t('global.clear')}
               </Button>
             </ButtonGroup>
           </Field>
@@ -418,7 +409,7 @@ export function SendForm({
                   disabled,
                 })}
                 type="number"
-                className="pl-9"
+                className="h-auto pl-9"
                 placeholder={t('send.placeholder_amount_input')}
               />
               <div className="absolute top-1/2 left-0 flex -translate-y-1/2 items-center px-3">
@@ -435,9 +426,6 @@ export function SendForm({
                   setValue('amount.sweepAmount', sourceJar?.balanceSummary.calculatedAvailableBalanceInSats, {
                     shouldValidate: true,
                   })
-                  const displayAmount = `${sourceJar?.name} (${sourceJar?.balanceSummary.calculatedAvailableBalanceInSats})`
-                  setValue('amount.displaySweepAmount', displayAmount, { shouldValidate: true })
-
                   setValue('amount.amount', undefined, { shouldValidate: true })
                 }}
               >
@@ -452,7 +440,7 @@ export function SendForm({
             >
               <Input
                 id="send-amount-sweep-from-jar"
-                className="pl-9"
+                className="h-auto pl-9"
                 type="text"
                 value={amountDisplaySweepAmount || ''}
                 disabled={disabled}
@@ -464,12 +452,11 @@ export function SendForm({
               <Button
                 id="btn-sweep-clear-trigger"
                 type="button"
+                variant="outline"
                 disabled={disabled}
                 onClick={() => {
                   setValue('amount.isSweep', false, { shouldValidate: true })
                   setValue('amount.sweepAmount', undefined, { shouldValidate: true })
-                  setValue('amount.displaySweepAmount', undefined, { shouldValidate: true })
-
                   setValue('amount.amount', undefined, { shouldValidate: true })
                 }}
               >
@@ -549,12 +536,10 @@ export function SendForm({
                 <code className="light:text-red-700 text-red-800">errors:</code>
                 <pre className="text-xs">{JSON.stringify(errors.source?.message, null, 2)}</pre>
                 <pre className="text-xs">{JSON.stringify(errors.source?.fromJar?.message, null, 2)}</pre>
-                <pre className="text-xs">{JSON.stringify(errors.source?.displaySource?.message, null, 2)}</pre>
 
                 <pre className="text-xs">{JSON.stringify(errors.destination?.message, null, 2)}</pre>
                 <pre className="text-xs">{JSON.stringify(errors.destination?.address?.message, null, 2)}</pre>
                 <pre className="text-xs">{JSON.stringify(errors.destination?.fromJar?.message, null, 2)}</pre>
-                <pre className="text-xs">{JSON.stringify(errors.destination?.displayAddress?.message, null, 2)}</pre>
 
                 <pre className="text-xs">{JSON.stringify(errors.amount?.message, null, 2)}</pre>
                 <pre className="text-xs">{JSON.stringify(errors.amount?.amount?.message, null, 2)}</pre>
