@@ -14,7 +14,7 @@ import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
-import { cn, delayedPromise, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
+import { cn, delayedPromise, pseudoRandomInteger, SATS, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -24,6 +24,8 @@ import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { Field, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
+import { inputVariants } from '../ui/input-variants'
+import { Balance } from '../ui/jam/Balance'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Label } from '../ui/label'
@@ -253,16 +255,6 @@ export function SendForm({
     return jars.find((it) => it.jarIndex === destinationJarIndex)
   }, [jars, destinationJarIndex])
 
-  const destinationDisplayAddress = useMemo(() => {
-    if (destinationJar === undefined || destinationAddressInfo === undefined) return
-    return `${destinationJar?.name} (${destinationAddressInfo.address})`
-  }, [destinationAddressInfo, destinationJar])
-
-  const amountDisplaySweepAmount = useMemo(() => {
-    if (isSweep !== true || sourceJar === undefined) return
-    return `${sourceJar?.name} (${sourceJar?.balanceSummary.calculatedAvailableBalanceInSats})`
-  }, [isSweep, sourceJar])
-
   return (
     <>
       <AddressFromJarSelectorDialog
@@ -360,19 +352,25 @@ export function SendForm({
                 hidden: destinationJar === undefined,
               })}
             >
-              <Input
+              <div
                 id="send-destination-address-from-jar"
-                className="h-auto"
-                type="text"
-                value={destinationDisplayAddress || ''}
-                disabled={disabled}
-                readOnly
-              />
+                className={cn(
+                  inputVariants(),
+                  'flex items-center justify-between gap-2',
+                  'bg-input/50 dark:bg-input/80 h-auto',
+                )}
+              >
+                <span className="font-mono break-all select-all">{values.destination?.address}</span>
+                <Badge className="text-sm" variant="default">
+                  {destinationJar?.name} <span className="text-xs">#{destinationJar?.jarIndex}</span>
+                </Badge>
+              </div>
 
               <Button
                 id="clear-address-from-jar-selector-trigger"
                 type="button"
                 variant="outline"
+                className="h-auto"
                 disabled={disabled}
                 onClick={() => {
                   setValue('destination.address', undefined, { shouldValidate: true })
@@ -434,21 +432,26 @@ export function SendForm({
             </ButtonGroup>
 
             <ButtonGroup
-              className={cn('relative', {
+              className={cn({
                 hidden: isSweep !== true,
               })}
             >
-              <Input
+              <div
                 id="send-amount-sweep-from-jar"
-                className="h-auto pl-9"
-                type="text"
-                value={amountDisplaySweepAmount || ''}
-                disabled={disabled}
-                readOnly
-              />
-              <div className="absolute top-1/2 left-0 flex -translate-y-1/2 items-center px-3">
-                {FieldPrefixSatSymbol}
+                className={cn(
+                  inputVariants(),
+                  'flex items-center justify-between gap-2',
+                  'bg-input/50 dark:bg-input/80 h-auto',
+                )}
+                aria-disabled
+              >
+                <Balance valueString={String(values.amount?.sweepAmount)} convertToUnit={SATS} showBalance={true} />
+
+                <Badge className="text-sm" variant="default">
+                  {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
+                </Badge>
               </div>
+
               <Button
                 id="btn-sweep-clear-trigger"
                 type="button"
