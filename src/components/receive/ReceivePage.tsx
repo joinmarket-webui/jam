@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getaddressOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
@@ -16,6 +16,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress, Milliseconds } from '@/types/global'
+import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { BitcoinQR } from './BitcoinQR'
@@ -37,12 +38,17 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const { t } = useTranslation()
   const { jars } = useJars()
 
-  const [selectedJarIndex, setSelectedJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
+  const [sourceJarIndex, setSourceJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
   const [amount, setAmount] = useState<AmountSats>()
+
+  const sourceJar = useMemo(() => {
+    if (sourceJarIndex === undefined) return
+    return jars[sourceJarIndex]
+  }, [jars, sourceJarIndex])
 
   const [receiveFormDefaultValues] = useState({
     source: {
-      fromJar: selectedJarIndex,
+      fromJar: sourceJar?.jarIndex,
     },
     amount: {
       amount: undefined,
@@ -57,7 +63,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     client,
     path: {
       walletname: encodeURIComponent(walletFileName!),
-      mixdepth: String(selectedJarIndex),
+      mixdepth: String(sourceJar?.jarIndex),
     },
   })
 
@@ -66,7 +72,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     queryFn: withQueryDelay(getAddressQueryOptions.queryFn, {
       delayAfter: 21,
     }),
-    enabled: walletFileName !== undefined && selectedJarIndex !== undefined,
+    enabled: walletFileName !== undefined && sourceJarIndex !== undefined,
     staleTime: GET_ADDRESS_QUERY_TALE_TIME,
     retry: false,
     retryOnMount: false,
@@ -127,11 +133,17 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
           )}
 
           {getAddressQuery.isFetching ? (
-            <Skeleton className="h-5 w-[65%]" />
+            <>
+              <Skeleton className="mt-0.5 h-5 w-[24rem]" />
+              <Skeleton className="h-6 w-[84px]" />
+            </>
           ) : (
-            <p className="animate-in fade-in text-center font-mono text-sm break-all duration-1000 select-all">
-              {getAddressQuery.data?.address}
-            </p>
+            <div className="animate-in fade-in space-y-2 text-center duration-1000">
+              <p className="font-mono text-sm break-all select-all">{getAddressQuery.data?.address}</p>
+              <Badge className="text-sm" variant="default">
+                {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
+              </Badge>
+            </div>
           )}
 
           <div className="mt-4 flex items-center gap-2">
@@ -198,7 +210,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               disabled={getAddressQuery.isFetching}
               debug={isDeveloperMode}
               onSubmit={(values) => {
-                setSelectedJarIndex(values.source?.fromJar)
+                setSourceJarIndex(values.source?.fromJar)
                 setAmount(values.amount.amount)
               }}
             />
