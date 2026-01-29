@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { TFunction } from 'i18next'
 import { ScrollTextIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -10,7 +10,7 @@ import { AppNavbar } from '@/components/layout/AppNavbar'
 import { Button } from '@/components/ui/button'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
-import { APP_DISPLAY_VERSION } from '@/constants/jam'
+import { APP_DISPLAY_VERSION, JAM_DEFAULT_THEME } from '@/constants/jam'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
@@ -42,7 +42,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
 
   const { version: joinmarketVersion } = useQueryJmInfo()
 
-  const { resolvedTheme, setTheme } = useTheme()
+  const { resolvedTheme = JAM_DEFAULT_THEME, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
   const { formatAmount, currencySymbol } = useJamDisplayContext()
@@ -58,10 +58,23 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const isMobile = useIsMobile()
   const { isLogsEnabled, isLogsSupported } = useFeatures()
 
+  // Adds a keyboard shortcut to toggle the logs overlay.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'l' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
+        setIsLogsOverlayOpen((open) => !open)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   return (
     <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
       <AppNavbar
-        theme={resolvedTheme || 'dark'}
+        theme={resolvedTheme}
         isLoading={isFetching}
         rescanInfo={rescanStatus.rescanInfo}
         walletName={walletName}
