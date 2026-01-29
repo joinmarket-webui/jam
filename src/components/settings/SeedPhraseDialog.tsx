@@ -15,10 +15,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { WalletFileName } from '@/lib/utils'
-import type { SeedPhrase, WithRequiredProperty } from '@/types/global'
+import type { Milliseconds, SeedPhrase, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
@@ -30,15 +29,22 @@ type SeedPhraseDialogProps = WithRequiredProperty<
 > & {
   walletFileName: WalletFileName
   hashedPassword: string
+  autoCloseTimeout: Milliseconds
 }
 
 // TODO: use react-hook-form and yup schema
-export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPassword }: SeedPhraseDialogProps) => {
+export const SeedPhraseDialog = ({
+  open,
+  onOpenChange,
+  walletFileName,
+  hashedPassword,
+  autoCloseTimeout,
+}: SeedPhraseDialogProps) => {
   const { t } = useTranslation()
 
   const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
   const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
-  const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
+  const [timeLeft, setTimeLeft] = useState(autoCloseTimeout)
 
   if (timeLeft <= 0 && passwordVerifiedAt !== undefined) {
     setPasswordVerifiedAt(undefined)
@@ -76,18 +82,18 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
 
     const seedDisplayedAt = Math.max(seedQuery.dataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
-      setTimeLeft(Math.max(0, seedDisplayedAt + JAM_SEED_MODAL_TIMEOUT - Date.now()))
+      setTimeLeft(Math.max(0, seedDisplayedAt + autoCloseTimeout - Date.now()))
     }, 333)
 
     return () => {
       clearInterval(interval)
     }
-  }, [seedQuery.dataUpdatedAt, passwordVerifiedAt])
+  }, [seedQuery.dataUpdatedAt, passwordVerifiedAt, autoCloseTimeout])
 
   const handleClose = () => {
     onOpenChange(false)
     setPasswordVerifiedAt(undefined)
-    setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+    setTimeLeft(autoCloseTimeout)
     setRevealSeed(false)
     queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
   }
@@ -109,7 +115,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
               walletFileName={walletFileName}
               hashedPassword={hashedPassword}
               onSubmit={() => {
-                setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+                setTimeLeft(autoCloseTimeout)
                 setPasswordVerifiedAt(Date.now())
               }}
               onCancel={handleClose}
@@ -174,7 +180,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
               <div className="flex w-full items-center justify-between">
                 <div
                   className={cx('text-muted-foreground flex items-center gap-1 text-sm', {
-                    'text-destructive animate-pulse': secondsLeft <= 10,
+                    'text-destructive! animate-pulse': secondsLeft <= 10,
                   })}
                 >
                   <ClockIcon className="h-4 w-4" />
