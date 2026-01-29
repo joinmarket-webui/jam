@@ -3,7 +3,7 @@ import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/re
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'
-import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, CopyIcon, CheckIcon, AlertCircleIcon } from 'lucide-react'
+import { AlertTriangleIcon, ClockIcon, CopyIcon, CheckIcon, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -16,13 +16,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useJars, useDetectNetwork, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { deriveAccountXpub } from '@/lib/bip32'
-import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
@@ -32,6 +30,7 @@ import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { Spinner } from '../ui/spinner'
+import { PasswordVerificationForm } from '../utils/PasswordVerificationForm'
 
 const HD_PATH_PURPOSE: number = 84
 
@@ -188,14 +187,16 @@ type AccountXpubsDialogProps = WithRequiredProperty<
 
 export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedPassword }: AccountXpubsDialogProps) => {
   const { t } = useTranslation()
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+
   const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
   const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [passwordVerificationError, setPasswordVerificationError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
-  const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
+
+  if (timeLeft <= 0 && passwordVerifiedAt !== undefined) {
+    setPasswordVerifiedAt(undefined)
+  }
+
+  const secondsLeft = Math.max(0, Math.round(timeLeft / 1_000))
 
   const { network } = useDetectNetwork()
 
@@ -223,9 +224,7 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
     queryKey: accountXpubsQueryKey,
     queryFn: withQueryDelay(
       async () => {
-        if (!seedQuery.data) {
-          return undefined
-        }
+        if (!seedQuery.data) return undefined
         return await deriveAccountXpubsFromSeed(seedQuery.data, network, jars)
       },
       {
@@ -246,13 +245,9 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
   }, [open, isPasswordVerified, seedQuery])
 
   useEffect(() => {
-    if (passwordVerifiedAt === undefined) {
-      setTimeLeft(0)
-      return
-    }
-    setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+    if (passwordVerifiedAt === undefined) return
 
-    const xpubsDisplayedAt = Math.max(seedQuery.dataUpdatedAt, passwordVerifiedAt)
+    const xpubsDisplayedAt = Math.max(accountXpubs.dataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
       setTimeLeft(Math.max(0, xpubsDisplayedAt + JAM_SEED_MODAL_TIMEOUT - Date.now()))
     }, 333)
@@ -260,58 +255,17 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
     return () => {
       clearInterval(interval)
     }
-  }, [seedQuery.dataUpdatedAt, passwordVerifiedAt])
-
-  useEffect(() => {
-    if (timeLeft <= 0) {
-      setShowPassword(false)
-      setPassword('')
-      setPasswordVerifiedAt(undefined)
-      setPasswordVerificationError(undefined)
-    }
-  }, [timeLeft])
-
-  const handlePasswordSubmit = () => {
-    if (!password) return
-
-    setIsSubmitting(true)
-    setTimeout(async () => {
-      try {
-        const hashed = await hashPassword(password, walletFileName)
-        if (hashed === hashedPassword) {
-          setPasswordVerifiedAt(Date.now())
-          setPasswordVerificationError(undefined)
-        } else {
-          setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error_password_incorrect'))
-        }
-      } catch (error) {
-        const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
-        setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error', { reason }))
-        console.error('Password verification error:', error)
-      } finally {
-        setIsSubmitting(false)
-      }
-    }, 4)
-  }
+  }, [accountXpubs.dataUpdatedAt, passwordVerifiedAt])
 
   const handleClose = () => {
     onOpenChange(false)
-    setShowPassword(false)
-    setPassword('')
     setPasswordVerifiedAt(undefined)
-    setPasswordVerificationError(undefined)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
 
     // Remove sensitive data from query cache on close: If a user verifies the
     // password again without closing the dialog, no re-fetching takes place.
     queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
     queryClient.removeQueries({ queryKey: accountXpubsQueryKey })
-  }
-
-  const handleKeyDown = async (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && password && !isPasswordVerified) {
-      await handlePasswordSubmit()
-    }
   }
 
   return (
@@ -327,48 +281,15 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
               <DialogDescription>{t('settings.xpubs_modal.verification.subtitle')}</DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">{t('settings.xpubs_modal.verification.label_password')}</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={t('settings.xpubs_modal.verification.placeholder_password')}
-                    className={passwordVerificationError ? 'border-destructive' : ''}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                  </Button>
-                </div>
-                {passwordVerificationError && <p className="text-destructive text-sm">{passwordVerificationError}</p>}
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>
-                {t('global.cancel')}
-              </Button>
-              <Button onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Spinner className="motion-reduce:hidden" />
-                    {t('settings.xpubs_modal.verification.text_button_submitting')}
-                  </>
-                ) : (
-                  t('settings.xpubs_modal.verification.text_button_submit')
-                )}
-              </Button>
-            </DialogFooter>
+            <PasswordVerificationForm
+              walletFileName={walletFileName}
+              hashedPassword={hashedPassword}
+              onSubmit={() => {
+                setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+                setPasswordVerifiedAt(Date.now())
+              }}
+              onCancel={handleClose}
+            />
           </>
         ) : (
           <>

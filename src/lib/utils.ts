@@ -56,12 +56,23 @@ export const shortenStringMiddle = (value: string, chars = 8, separator = HORIZO
   return `${value.substring(0, prefixLength)}${separator}${value.substring(value.length - prefixLength)}`
 }
 
-export const setIntervalDebounced = (
-  callback: () => Promise<void>,
+export function debounce<T extends unknown[], U>(callback: (...args: T) => PromiseLike<U> | U, wait: number) {
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  return (...args: T): Promise<U> => {
+    clearTimeout(timer)
+    return new Promise((resolve) => {
+      timer = setTimeout(() => resolve(callback(...args)), wait)
+    })
+  }
+}
+
+export function setIntervalDebounced(
+  callback: () => PromiseLike<void> | void,
   delay: number,
   onTimerIdChanged: (timerId: NodeJS.Timeout) => void,
   onError: (error: unknown, loop: () => void) => void = (_, loop) => loop(),
-) => {
+) {
   ;(function loop() {
     onTimerIdChanged(
       setTimeout(async () => {
