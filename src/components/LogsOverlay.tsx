@@ -12,7 +12,7 @@ type LogsOverlayProps = WithRequiredProperty<
   isSupported?: boolean
 }
 
-export function LogsOverlay({ open, onOpenChange, isSupported }: LogsOverlayProps) {
+export function LogsOverlay({ open, onOpenChange, isSupported = true }: LogsOverlayProps) {
   const { t } = useTranslation()
   return (
     <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
