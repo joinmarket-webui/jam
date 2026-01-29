@@ -6,69 +6,77 @@ import { Button } from '@/components/ui/button'
 import { cn, satsToBtc } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 
+const DEFAULT_ERROR_CORRECTION: QRCode.QRCodeErrorCorrectionLevel = 'high'
+const DEFAULT_IMAGE_MEDIA_TYPE: QRCode.QRCodeDataURLType = 'image/png'
+
 interface BitcoinQRProps {
   className?: string
+  width: number
   address: BitcoinAddress
   amount?: AmountSats
   errorCorrectionLevel?: QRCode.QRCodeErrorCorrectionLevel
-  width?: number
+  type?: QRCode.QRCodeDataURLType
 }
 
-export const BitcoinQR = ({ className, address, amount, errorCorrectionLevel = 'H', width = 260 }: BitcoinQRProps) => {
+export const BitcoinQR = ({
+  className,
+  width,
+  address,
+  amount,
+  errorCorrectionLevel = DEFAULT_ERROR_CORRECTION,
+  type = DEFAULT_IMAGE_MEDIA_TYPE,
+}: BitcoinQRProps) => {
   const { t } = useTranslation()
   const [data, setData] = useState<string>()
-  const [image, setImage] = useState<string>()
+  const [imageDataUrl, setImageDataUrl] = useState<string>()
 
   useEffect(() => {
     const btc = amount ? satsToBtc(String(amount)) || 0 : 0
     const uri = `bitcoin:${address}${btc > 0 ? `?amount=${btc.toFixed(8)}` : ''}`
 
+    const abortCtrl = new AbortController()
     QRCode.toDataURL(uri, {
+      type,
       errorCorrectionLevel,
       width,
     })
       .then((val) => {
-        setImage(val)
+        if (abortCtrl.signal.aborted) return
+        setImageDataUrl(val)
         setData(uri)
       })
       .catch(() => {
-        setImage(undefined)
+        if (abortCtrl.signal.aborted) return
+        setImageDataUrl(undefined)
         setData(uri)
       })
-  }, [address, amount, errorCorrectionLevel, width])
 
-  const downloadQR = () => {
-    if (!image) return
-
-    const link = document.createElement('a')
-    link.href = image
-    link.download = `bitcoin-qr-${address}.png`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    return () => abortCtrl.abort()
+  }, [address, amount, errorCorrectionLevel, width, type])
 
   return (
     <div
       className={cn('group/qrcode relative flex items-center justify-center', className)}
       style={{ height: width, width: width }}
     >
-      {image && (
+      {imageDataUrl && (
         <>
           <img
             className="transition-all duration-500 group-hover/qrcode:blur-[2px]"
-            src={image}
+            src={imageDataUrl}
             alt={data}
             title={data}
           />
           <Button
             variant="secondary"
             className="absolute hidden items-center justify-center group-hover/qrcode:flex"
-            onClick={downloadQR}
             aria-label={t('receive.button_download_qr')}
+            asChild
           >
-            <DownloadIcon className="motion-safe:animate-bounce" />
-            {t('receive.button_download_qr')}
+            <a href={imageDataUrl} type={type} download={`bitcoin-qr-${address}.png`}>
+              <DownloadIcon className="motion-safe:animate-bounce" />
+              {t('receive.button_download_qr')}
+            </a>
           </Button>
         </>
       )}
