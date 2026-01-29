@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { isDevMode } from '@/constants/debugFeatures'
+import { useFeatures } from '@/hooks/useFeatures'
 import { fetchLog } from '@/lib/api/logs'
 import { cn, delayedPromise } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -130,9 +131,22 @@ function LogContent({ value, refresh }: LogContentProps) {
 export const LogsPage = () => {
   const authState = useStore(authStore, (state) => state.state)
   const { t } = useTranslation()
+  const { isLogsSupported } = useFeatures()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [logFileContent, setLogFileContent] = useState<string>()
+
+  if (!isLogsSupported) {
+    return (
+      <div className="mx-auto max-w-4xl space-y-3 p-4">
+        <PageTitle title={t('logs.title')} />
+        <Alert variant="warning">
+          <AlertTriangleIcon />
+          <AlertDescription>{t('logs.error_not_supported')}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   const refresh = useCallback(
     async (signal: AbortSignal) => {

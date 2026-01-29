@@ -130,14 +130,26 @@ function LogViewer({ value, refresh }: LogViewerProps) {
 interface LogsContentProps {
   className?: string
   enabled: boolean
+  isSupported?: boolean
 }
 
-export const LogsContent = ({ enabled, className }: LogsContentProps) => {
+export const LogsContent = ({ enabled, className, isSupported = true }: LogsContentProps) => {
   const authState = useStore(authStore, (state) => state.state)
   const { t } = useTranslation()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [logFileContent, setLogFileContent] = useState<string>()
+
+  if (!isSupported) {
+    return (
+      <div className={cn('flex flex-col items-center justify-center gap-4 p-8', className)}>
+        <Alert variant="warning">
+          <AlertTriangleIcon />
+          <AlertDescription>{t('logs.error_not_supported')}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   const refresh = useCallback(
     async (signal: AbortSignal) => {

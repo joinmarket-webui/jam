@@ -50,7 +50,7 @@ type AppFooterProps = Pick<BetaWarningModalProps, 'jamVersion' | 'joinmarketVers
   websocketInfo?: JmWebsocketInfo
   onClickCheatsheet: () => void
   onClickOrderbook: () => void
-  onClickLogs: () => void
+  onClickLogs?: () => void
 }
 
 export function AppFooter({
@@ -92,10 +92,12 @@ export function AppFooter({
             <BookOpenIcon />
             <span className="hidden sm:inline-block">{t('footer.orderbook')}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={onClickLogs} title={t('footer.logs')}>
-            <ScrollTextIcon />
-            <span className="hidden sm:inline-block">{t('footer.logs')}</span>
-          </Button>
+          {onClickLogs && (
+            <Button variant="outline" size="sm" onClick={onClickLogs} title={t('footer.logs')}>
+              <ScrollTextIcon />
+              <span className="hidden sm:inline-block">{t('footer.logs')}</span>
+            </Button>
+          )}
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-4 text-xs">

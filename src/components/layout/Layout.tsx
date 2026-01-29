@@ -1,18 +1,22 @@
 import { useState } from 'react'
 import type { TFunction } from 'i18next'
+import { ScrollTextIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { AppFooter } from '@/components/layout/AppFooter'
 import { AppNavbar } from '@/components/layout/AppNavbar'
+import { Button } from '@/components/ui/button'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { APP_DISPLAY_VERSION } from '@/constants/jam'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
+import { useFeatures } from '@/hooks/useFeatures'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import type { WalletFileName } from '@/lib/utils'
@@ -51,6 +55,8 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
   const [isLogsOverlayOpen, setIsLogsOverlayOpen] = useState(false)
+  const isMobile = useIsMobile()
+  const { isLogsEnabled, isLogsSupported } = useFeatures()
 
   return (
     <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
@@ -76,12 +82,24 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         joinmarketVersion={joinmarketVersion}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
-        onClickLogs={() => setIsLogsOverlayOpen(true)}
+        onClickLogs={isLogsEnabled ? () => setIsLogsOverlayOpen(true) : undefined}
       />
 
       <Cheatsheet open={cheatsheet.open} onOpenChange={cheatsheet.onOpenChange} />
       <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
-      <LogsOverlay open={isLogsOverlayOpen} onOpenChange={setIsLogsOverlayOpen} />
+      <LogsOverlay open={isLogsOverlayOpen} onOpenChange={setIsLogsOverlayOpen} isSupported={isLogsSupported} />
+
+      {isMobile && isLogsEnabled && (
+        <Button
+          variant="default"
+          size="icon"
+          className="fixed right-4 bottom-20 z-50 h-14 w-14 rounded-full shadow-lg"
+          onClick={() => setIsLogsOverlayOpen(true)}
+          title={t('footer.logs')}
+        >
+          <ScrollTextIcon className="h-6 w-6" />
+        </Button>
+      )}
     </div>
   )
 }
