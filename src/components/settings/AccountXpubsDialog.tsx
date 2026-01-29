@@ -17,14 +17,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useJars, useDetectNetwork, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { deriveAccountXpub } from '@/lib/bip32'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
-import type { JarIndex, SeedPhrase, WithRequiredProperty } from '@/types/global'
+import type { JarIndex, Milliseconds, SeedPhrase, WithRequiredProperty } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
@@ -183,14 +182,21 @@ type AccountXpubsDialogProps = WithRequiredProperty<
 > & {
   walletFileName: WalletFileName
   hashedPassword: string
+  autoCloseTimeout: Milliseconds
 }
 
-export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedPassword }: AccountXpubsDialogProps) => {
+export const AccountXpubsDialog = ({
+  open,
+  onOpenChange,
+  walletFileName,
+  hashedPassword,
+  autoCloseTimeout,
+}: AccountXpubsDialogProps) => {
   const { t } = useTranslation()
 
   const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
   const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
-  const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
+  const [timeLeft, setTimeLeft] = useState(autoCloseTimeout)
 
   if (timeLeft <= 0 && passwordVerifiedAt !== undefined) {
     setPasswordVerifiedAt(undefined)
@@ -249,18 +255,18 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
 
     const xpubsDisplayedAt = Math.max(accountXpubs.dataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
-      setTimeLeft(Math.max(0, xpubsDisplayedAt + JAM_SEED_MODAL_TIMEOUT - Date.now()))
+      setTimeLeft(Math.max(0, xpubsDisplayedAt + autoCloseTimeout - Date.now()))
     }, 333)
 
     return () => {
       clearInterval(interval)
     }
-  }, [accountXpubs.dataUpdatedAt, passwordVerifiedAt])
+  }, [accountXpubs.dataUpdatedAt, passwordVerifiedAt, autoCloseTimeout])
 
   const handleClose = () => {
     onOpenChange(false)
     setPasswordVerifiedAt(undefined)
-    setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+    setTimeLeft(autoCloseTimeout)
 
     // Remove sensitive data from query cache on close: If a user verifies the
     // password again without closing the dialog, no re-fetching takes place.
@@ -285,7 +291,7 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
               walletFileName={walletFileName}
               hashedPassword={hashedPassword}
               onSubmit={() => {
-                setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+                setTimeLeft(autoCloseTimeout)
                 setPasswordVerifiedAt(Date.now())
               }}
               onCancel={handleClose}
@@ -346,7 +352,7 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
               <div className="flex w-full items-center justify-between">
                 <div
                   className={cn('text-muted-foreground flex items-center gap-1 text-sm', {
-                    'text-destructive animate-pulse': secondsLeft <= 10,
+                    'text-destructive! animate-pulse': secondsLeft <= 10,
                   })}
                 >
                   <ClockIcon className="h-4 w-4" />
