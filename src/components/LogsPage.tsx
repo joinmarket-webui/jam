@@ -136,18 +136,6 @@ export const LogsPage = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const [logFileContent, setLogFileContent] = useState<string>()
 
-  if (!isLogsSupported) {
-    return (
-      <div className="mx-auto max-w-4xl space-y-3 p-4">
-        <PageTitle title={t('logs.title')} />
-        <Alert variant="warning">
-          <AlertTriangleIcon />
-          <AlertDescription>{t('logs.error_not_supported')}</AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
-
   const refresh = useCallback(
     async (signal: AbortSignal) => {
       if (!authState?.auth?.token) {
@@ -192,6 +180,18 @@ export const LogsPage = () => {
     },
     [t, authState],
   )
+
+  if (!isLogsSupported) {
+    return (
+      <div className="mx-auto max-w-4xl space-y-3 p-4">
+        <PageTitle title={t('logs.title')} />
+        <Alert variant="warning">
+          <AlertTriangleIcon />
+          <AlertDescription>{t('logs.error_not_supported')}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   if (!isInitialized) {
     const abortCtrl = new AbortController()

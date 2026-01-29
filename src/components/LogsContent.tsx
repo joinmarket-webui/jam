@@ -140,17 +140,6 @@ export const LogsContent = ({ enabled, className, isSupported = true }: LogsCont
   const [isInitialized, setIsInitialized] = useState(false)
   const [logFileContent, setLogFileContent] = useState<string>()
 
-  if (!isSupported) {
-    return (
-      <div className={cn('flex flex-col items-center justify-center gap-4 p-8', className)}>
-        <Alert variant="warning">
-          <AlertTriangleIcon />
-          <AlertDescription>{t('logs.error_not_supported')}</AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
-
   const refresh = useCallback(
     async (signal: AbortSignal) => {
       if (!authState?.auth?.token) {
@@ -191,6 +180,17 @@ export const LogsContent = ({ enabled, className, isSupported = true }: LogsCont
     },
     [t, authState],
   )
+
+  if (!isSupported) {
+    return (
+      <div className={cn('flex flex-col items-center justify-center gap-4 p-8', className)}>
+        <Alert variant="warning">
+          <AlertTriangleIcon />
+          <AlertDescription>{t('logs.error_not_supported')}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   if (enabled && !isInitialized) {
     const abortCtrl = new AbortController()
