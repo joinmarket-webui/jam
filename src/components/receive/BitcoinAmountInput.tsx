@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import type { Currency } from '@/types/global'
+import { Label } from '../ui/label'
 
 interface BitcoinAmountInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
   currency: Currency
@@ -24,8 +25,8 @@ export const BitcoinAmountInput = ({
   ...inputProps
 }: BitcoinAmountInputProps) => {
   return (
-    <>
-      {label && <p className="mb-2 text-sm">{label}</p>}
+    <div className="space-y-2">
+      {label && <Label>{label}</Label>}
       <div className="flex w-full items-center gap-2">
         <div className="relative flex-1">
           <div onClick={toggleCurrencyUnit} className="absolute inset-y-0 left-0 flex items-center px-1">
@@ -54,6 +55,6 @@ export const BitcoinAmountInput = ({
           <ArrowUpDownIcon />
         </Button>
       </div>
-    </>
+    </div>
   )
 }

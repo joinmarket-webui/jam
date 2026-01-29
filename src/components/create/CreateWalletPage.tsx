@@ -73,6 +73,7 @@ const CreateWalletPage = () => {
         const { data: sessionInfo } = await session({ client })
         if (sessionInfo?.session === true) {
           console.warn('Active session detected:', sessionInfo)
+          // TODO: i18n
           toast.error(
             `Cannot create wallet as "${walletDisplayName(
               (sessionInfo?.wallet_name || 'Unknown') as WalletFileName,
@@ -125,7 +126,7 @@ const CreateWalletPage = () => {
       })
       setStep('seed')
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet'
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet' // TODO: i18n
       toast.error(errorMessage)
     } finally {
       setIsCreating(false)

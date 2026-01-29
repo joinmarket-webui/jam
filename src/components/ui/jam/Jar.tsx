@@ -11,12 +11,25 @@ interface JarProps {
   currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
   totalBalance?: AmountSats
   onClick?: () => void
+  className?: string
 }
 
-export function Jar({ name, amount, color, currencySymbol, formatAmount, totalBalance = 0, onClick }: JarProps) {
+export function Jar({
+  name,
+  amount,
+  color,
+  currencySymbol,
+  formatAmount,
+  totalBalance = 0,
+  onClick,
+  className,
+}: JarProps) {
   return (
-    <div
-      className="group/jar flex flex-row items-center gap-2 transition-all duration-300 hover:scale-105 sm:flex-col"
+    <button
+      className={cn(
+        'group/jar flex flex-row items-center gap-2 transition-all duration-300 hover:scale-105 sm:flex-col',
+        className,
+      )}
       onClick={onClick}
     >
       <JarIcon amount={amount} totalBalance={totalBalance} color={color} />
@@ -29,6 +42,6 @@ export function Jar({ name, amount, color, currencySymbol, formatAmount, totalBa
           {currencySymbol('sm')}
         </div>
       </div>
-    </div>
+    </button>
   )
 }

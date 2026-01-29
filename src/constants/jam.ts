@@ -7,6 +7,8 @@ export const APP_DISPLAY_VERSION = (() => {
   return toSemVer(packageInfoVersion)
 })()
 
+export const JAM_DEFAULT_THEME: 'dark' | 'light' = import.meta.env.VITE_JAM_DEFAULT_THEME === 'light' ? 'light' : 'dark'
+
 export const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 
 export const TX_FEES_FACTOR_MIN = 0 // 0%
