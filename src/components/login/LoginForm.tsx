@@ -56,13 +56,12 @@ export const LoginFormComponent = ({
   disabled,
 }: LoginFormComponentProps) => {
   const { t } = useTranslation()
-  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>(preselectedWallet)
+
+  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>(
+    (preselectedWallet ?? wallets.length === 1) ? wallets[0] : undefined,
+  )
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-
-  if (wallets.length === 1 && selectedWallet === undefined) {
-    setSelectedWallet(wallets[0])
-  }
 
   return (
     <form
