@@ -14,7 +14,7 @@ type CreateStepDetailsInputProps = ComponentProps<typeof CreateWalletForm> & {
   sessionInfo: SessionResponse | undefined
 }
 
-export const CreateStepDetailsInput = ({ onSubmit, isSubmitting, sessionInfo }: CreateStepDetailsInputProps) => {
+export const CreateStepDetailsInput = ({ sessionInfo, ...createFormProps }: CreateStepDetailsInputProps) => {
   return (
     <>
       {sessionInfo?.session === true ? (
@@ -37,7 +37,7 @@ export const CreateStepDetailsInput = ({ onSubmit, isSubmitting, sessionInfo }: 
           </AlertDescription>
         </Alert>
       ) : (
-        <CreateWalletForm onSubmit={onSubmit} isSubmitting={isSubmitting} />
+        <CreateWalletForm {...createFormProps} />
       )}
       <div className="text-center">
         <p className="text-muted-foreground text-sm">

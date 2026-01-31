@@ -1,115 +1,172 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
+import type { TFunction } from 'i18next'
 import { EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react'
+import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
+import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
+import { cn, type WalletFileName } from '@/lib/utils'
+import { Field, FieldLabel } from '../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Spinner } from '../ui/spinner'
 
+interface CreateFormValues {
+  walletName: string
+  password: string
+  confirmPassword: string
+}
+
+const createFormSchema = (wallets: WalletFileName[], t: TFunction) => {
+  return yup
+    .object({
+      walletName: yup
+        .string()
+        .trim()
+        .max(MAX_WALLET_NAME_LENGTH)
+        .required()
+        .test('valid-wallet-name-test', t('create_wallet.feedback_invalid_wallet_name'), (value) => {
+          return /^[\w-]+$/.test(value)
+        })
+        .test('valid-wallet-name-exists-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
+          return !wallets.includes((value + JM_WALLET_FILE_EXTENSION) as WalletFileName)
+        }),
+      password: yup.string().min(1).required(),
+      confirmPassword: yup
+        .string()
+        .required()
+        .test(
+          'valid-confirm-password-test',
+          t('create_wallet.feedback_invalid_password_confirm'),
+          (value, { parent: { password } }) => {
+            return value === password
+          },
+        ),
+    })
+    .required()
+}
+
 type CreateWalletFormProps = {
-  onSubmit: (args: { walletName: string; password: string; confirmPassword: string }) => Promise<void>
-  isSubmitting: boolean
+  className?: string
+  wallets: WalletFileName[]
+  onSubmit: SubmitHandler<CreateFormValues>
+  disabled?: boolean
 }
 
 // TODO: use react-hook-form and yup schema
-export const CreateWalletForm = ({ onSubmit, isSubmitting }: CreateWalletFormProps) => {
+export const CreateWalletForm = ({ className, wallets, onSubmit, disabled }: CreateWalletFormProps) => {
   const { t } = useTranslation()
-  const [walletName, setWalletName] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
 
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  const schema = useMemo(() => {
+    return createFormSchema(wallets, t)
+  }, [wallets, t])
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
+    resolver: yupResolver(schema),
+  })
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        onSubmit({
-          walletName,
-          password,
-          confirmPassword,
-        })
-      }}
-      className="space-y-4"
-      noValidate
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
-        <Label htmlFor="wallet-name">{t('create_wallet.label_wallet_name')}</Label>
-        <Input
-          id="wallet-name"
-          type="text"
-          value={walletName}
-          onChange={(e) => setWalletName(e.target.value)}
-          disabled={isSubmitting}
-          placeholder={t('create_wallet.placeholder_wallet_name')}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">{t('create_wallet.label_password')}</Label>
-        <div className="relative">
-          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+        <Field data-invalid={errors.walletName !== undefined}>
+          <FieldLabel htmlFor="create-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>
           <Input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isSubmitting}
-            placeholder={t('create_wallet.placeholder_password')}
-            maxLength={MAX_WALLET_NAME_LENGTH}
-            className="pr-10 pl-10"
-            required
+            id="create-wallet-name"
+            {...register('walletName', {
+              required: true,
+              disabled,
+            })}
+            type="text"
+            placeholder={t('create_wallet.placeholder_wallet_name')}
+            autoComplete="off"
           />
-          <Button
-            tabIndex={-1}
-            type="button"
-            variant="link"
-            size="icon"
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
-            onClick={() => {
-              setShowConfirmPassword(false)
-              setShowPassword((val) => !val)
-            }}
-          >
-            {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-          </Button>
-        </div>
+        </Field>
+        {errors.walletName?.message && <div className="text-destructive text-xs">{errors.walletName.message}</div>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirm-password">{t('create_wallet.label_password_confirm')}</Label>
-        <div className="relative">
-          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-          <Input
-            id="confirm-password"
-            type={showConfirmPassword ? 'text' : 'password'}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={isSubmitting}
-            placeholder={t('create_wallet.placeholder_password_confirm')}
-            className="pr-10 pl-10"
-            required
-          />
-          <Button
-            tabIndex={-1}
-            type="button"
-            variant="link"
-            size="icon"
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
-            onClick={() => {
-              setShowPassword(false)
-              setShowConfirmPassword((val) => !val)
-            }}
-          >
-            {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
-          </Button>
-        </div>
+        <Field data-invalid={errors.password !== undefined}>
+          <FieldLabel htmlFor="create-password">{t('create_wallet.label_password')}</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="create-password"
+              {...register('password', {
+                required: true,
+                disabled,
+              })}
+              type={showPassword ? 'text' : 'password'}
+              placeholder={t('create_wallet.placeholder_password')}
+              autoComplete="off"
+            />
+            <InputGroupAddon align="inline-start">
+              <LockIcon />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              <Button
+                tabIndex={-1}
+                type="button"
+                variant="link"
+                size="icon"
+                onClick={() => setShowPassword((val) => !val)}
+              >
+                {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
+        {errors.password && (
+          <div className="text-destructive text-xs">{t('create_wallet.feedback_invalid_password')}</div>
+        )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting} size="lg">
+      <div className="space-y-2">
+        <Field data-invalid={errors.confirmPassword !== undefined}>
+          <FieldLabel htmlFor="create-confirm-password">{t('create_wallet.label_password_confirm')}</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="create-confirm-password"
+              {...register('confirmPassword', {
+                required: true,
+                disabled,
+              })}
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder={t('create_wallet.placeholder_password_confirm')}
+              autoComplete="off"
+            />
+            <InputGroupAddon align="inline-start">
+              <LockIcon />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              <Button
+                tabIndex={-1}
+                type="button"
+                variant="link"
+                size="icon"
+                onClick={() => setShowConfirmPassword((val) => !val)}
+              >
+                {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
+        {errors.confirmPassword && (
+          <div className="text-destructive text-xs">{t('create_wallet.feedback_invalid_password_confirm')}</div>
+        )}
+      </div>
+
+      <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="lg">
         {isSubmitting ? (
           <>
             <Spinner className="motion-reduce:hidden" />
