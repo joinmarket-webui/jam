@@ -12,16 +12,17 @@ type Story = StoryObj<typeof CreateStepDetailsInput>
 
 export const Default: Story = {
   args: {
+    wallets: ['Satoshi.jmdat'],
+    mode: 'onChange',
     onSubmit: async () => alert('Submit clicked!'),
-    isSubmitting: false,
     sessionInfo: undefined,
   },
 }
 
 export const WithActiveSession: Story = {
   args: {
+    wallets: [],
     onSubmit: async () => alert('Submit clicked!'),
-    isSubmitting: false,
     sessionInfo: {
       session: true,
       wallet_name: 'Satoshi.jmdat',
