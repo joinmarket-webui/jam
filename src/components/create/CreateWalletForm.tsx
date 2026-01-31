@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import type { TFunction } from 'i18next'
 import { EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react'
-import { useForm, type SubmitHandler } from 'react-hook-form'
+import { useForm, type Mode, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
@@ -54,10 +54,17 @@ type CreateWalletFormProps = {
   wallets: WalletFileName[]
   onSubmit: SubmitHandler<CreateFormValues>
   disabled?: boolean
+  mode?: Mode
 }
 
 // TODO: use react-hook-form and yup schema
-export const CreateWalletForm = ({ className, wallets, onSubmit, disabled }: CreateWalletFormProps) => {
+export const CreateWalletForm = ({
+  className,
+  wallets,
+  onSubmit,
+  disabled,
+  mode = 'onSubmit',
+}: CreateWalletFormProps) => {
   const { t } = useTranslation()
 
   const [showPassword, setShowPassword] = useState(false)
@@ -72,8 +79,7 @@ export const CreateWalletForm = ({ className, wallets, onSubmit, disabled }: Cre
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    mode: 'onSubmit',
-    reValidateMode: 'onSubmit',
+    mode,
     resolver: yupResolver(schema),
   })
 
@@ -88,7 +94,6 @@ export const CreateWalletForm = ({ className, wallets, onSubmit, disabled }: Cre
               required: true,
               disabled,
             })}
-            type="text"
             placeholder={t('create_wallet.placeholder_wallet_name')}
             autoComplete="off"
           />
