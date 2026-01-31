@@ -51,7 +51,10 @@ const LoginPage = () => {
     }),
   })
 
-  const activeWalletOrNull = jmSession?.wallet_name !== undefined ? (jmSession?.wallet_name as WalletFileName) : null
+  const activeWalletOrNull =
+    jmSession?.wallet_name !== undefined && jmSession.wallet_name !== 'None'
+      ? (jmSession?.wallet_name as WalletFileName)
+      : null
   const wallets = sortWallets((listWalletsData?.wallets || []) as WalletFileName[], activeWalletOrNull)
 
   const unlockWallet = useMutation({
@@ -164,7 +167,6 @@ const LoginPage = () => {
                       makerRunning={makerRunning}
                       coinjoinInProgress={coinjoinInProgress}
                       disabled={login.isPending || listWalletsFetching}
-                      isSubmitting={login.isPending}
                       onSubmit={handleSubmit}
                     />
                   )}
