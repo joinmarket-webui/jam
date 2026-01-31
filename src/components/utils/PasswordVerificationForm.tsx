@@ -83,7 +83,6 @@ export const PasswordVerificationForm = ({
         <Field data-invalid={errors.password !== undefined}>
           <FieldLabel htmlFor="password-verification-input-password">{t(/* TODO: i18n */ 'Password')}</FieldLabel>
           <InputGroup>
-            {' '}
             <InputGroupInput
               id="password-verification-input-password"
               {...register('password', {

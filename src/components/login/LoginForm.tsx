@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import { Field, FieldLabel } from '../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 
 const LoginFormSkeleton = () => {
   return (
@@ -75,62 +75,72 @@ export const LoginFormComponent = ({
       className="space-y-4"
     >
       <div className="space-y-2">
-        <Label htmlFor="wallet-select">{/* TODO: i18n */}Wallet</Label>
-        <Select
-          value={selectedWallet ?? undefined}
-          onValueChange={(it) => setSelectedWallet(it as WalletFileName)}
-          disabled={disabled || isSubmitting || wallets.length === 0}
-          required
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={/* TODO: i18n */ wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'} />
-          </SelectTrigger>
-          <SelectContent>
-            {wallets?.map((wallet, index) => (
-              <SelectItem key={index} value={wallet} className="text-base">
-                {shortenStringMiddle(walletDisplayName(wallet), 32)}
-                {activeWallet === wallet ? (
-                  <>
-                    <span
-                      className={cn('py-1 text-xs', {
-                        'text-muted-foreground/50': !(makerRunning || coinjoinInProgress),
-                        'light:text-green-600 animate-pulse text-green-300/90': makerRunning || coinjoinInProgress,
-                      })}
-                    >
-                      {t('wallets.wallet_preview.wallet_active')}
-                    </span>
-                  </>
-                ) : undefined}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Field>
+          <FieldLabel htmlFor="login-wallet-select">{/* TODO: i18n */}Wallet</FieldLabel>
+          <Select
+            name="login-wallet-select"
+            value={selectedWallet ?? undefined}
+            onValueChange={(it) => setSelectedWallet(it as WalletFileName)}
+            disabled={disabled || isSubmitting || wallets.length === 0}
+            required
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue
+                placeholder={/* TODO: i18n */ wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {wallets?.map((wallet, index) => (
+                <SelectItem key={index} value={wallet} className="text-base">
+                  {shortenStringMiddle(walletDisplayName(wallet), 32)}
+                  {activeWallet === wallet ? (
+                    <>
+                      <span
+                        className={cn('py-1 text-xs', {
+                          'text-muted-foreground/50': !(makerRunning || coinjoinInProgress),
+                          'light:text-green-600 animate-pulse text-green-300/90': makerRunning || coinjoinInProgress,
+                        })}
+                      >
+                        {t('wallets.wallet_preview.wallet_active')}
+                      </span>
+                    </>
+                  ) : undefined}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">{/* TODO: i18n */}Password</Label>
-        <div className="relative">
-          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2 transform" />
-          <Input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={disabled || isSubmitting}
-            placeholder={t('wallets.wallet_preview.placeholder_password')}
-            className="pr-10 pl-10"
-          />
-          <Button
-            tabIndex={-1}
-            type="button"
-            variant="link"
-            size="icon"
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
-            onClick={() => setShowPassword((val) => !val)}
-          >
-            {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-          </Button>
-        </div>
+        <Field>
+          <FieldLabel htmlFor="login-password">{t(/* TODO: i18n */ 'Password')}</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="login-password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={disabled || isSubmitting}
+              placeholder={t('wallets.wallet_preview.placeholder_password')}
+              autoComplete="off"
+            />
+            <InputGroupAddon align="inline-start">
+              <LockIcon />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              <Button
+                tabIndex={-1}
+                type="button"
+                variant="link"
+                size="icon"
+                onClick={() => setShowPassword((val) => !val)}
+              >
+                {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
       </div>
 
       <Button type="submit" className="w-full" disabled={disabled || isSubmitting || !selectedWallet} size="lg">
