@@ -73,7 +73,6 @@ export const PasswordVerificationForm = ({
   } = useForm({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
-    // force type (see https://github.com/react-hook-form/resolvers/issues/807)
     resolver: yupResolver(schema),
   })
 
