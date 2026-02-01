@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { RowModel } from '@tanstack/react-table'
+import type { RowModel, RowSelectionState } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
-import { AlertTriangleIcon } from 'lucide-react'
+import { AlertTriangleIcon, ThermometerSnowflakeIcon, ThermometerSunIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
+import { toast } from 'sonner'
 import {
   useAccountSummary,
   useAddressSummary,
@@ -12,13 +12,13 @@ import {
   type AddressSummary,
   type Jar,
 } from '@/context/JamWalletInfoContext'
-import type { Utxo } from '@/hooks/useQueryUtxos'
+import type { Utxo, UtxoId } from '@/hooks/useQueryUtxos'
 import { utxoTags } from '@/lib/tags'
 import { cn } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
+import { Button } from '../ui/button'
 import { Balance } from '../ui/jam/Balance'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountDetailsTabContent } from './AccountDetailsTabContent'
@@ -52,14 +52,39 @@ interface UtxosContentProps {
   addressSummary: AddressSummary
 }
 
-export const UtxosContent = ({ enabled: _enabled, addressSummary, jar }: UtxosContentProps) => {
+export const UtxosContent = ({ enabled, addressSummary, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
 
   const [_tableRowModel, setTableRowModel] = useState<RowModel<UtxoTableEntry>>()
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const tableEntries = useMemo(() => {
     return jar.utxos.map((it) => utxoToTableEntry(it, addressSummary, t))
   }, [addressSummary, t, jar])
+
+  const utxosByUtxoId = useMemo(
+    () =>
+      jar.utxos.reduce(
+        (acc, utxo) => {
+          acc[utxo.utxo] = utxo
+          return acc
+        },
+        {} as Record<UtxoId, Utxo>,
+      ),
+    [jar.utxos],
+  )
+
+  const selectedUtxos = useMemo(() => {
+    return Object.entries(rowSelection)
+      .filter(([_, checked]) => checked === true)
+      .map(([key]) => utxosByUtxoId[key as UtxoId])
+  }, [rowSelection, utxosByUtxoId])
+
+  const allSelectedUtxosFrozen = selectedUtxos.every((it) => it.frozen === true)
+  const allSelectedUtxosUnfrozen = selectedUtxos.every((it) => it.frozen === false)
+
+  const operationsEnabled = enabled && selectedUtxos.length > 0
+  // TODO: makerRunning, takerRunner, rescanRunning, etc.
 
   return (
     <>
@@ -73,11 +98,39 @@ export const UtxosContent = ({ enabled: _enabled, addressSummary, jar }: UtxosCo
           </Trans>
         </div>
       </div>
+      <div
+        className={cn('flex items-center gap-2', {
+          invisible: Object.values(rowSelection).length === 0,
+        })}
+      >
+        <Button
+          size="sm"
+          disabled={!operationsEnabled || allSelectedUtxosFrozen}
+          onClick={() => {
+            toast.error('Freezing not yet implemented!')
+          }}
+        >
+          <ThermometerSnowflakeIcon />
+          {t('jar_details.utxo_list.button_freeze')}
+        </Button>
+        <Button
+          size="sm"
+          disabled={!operationsEnabled || allSelectedUtxosUnfrozen}
+          onClick={() => {
+            toast.error('Unfreezing not yet implemented!')
+          }}
+        >
+          <ThermometerSunIcon />
+          {t('jar_details.utxo_list.button_unfreeze')}
+        </Button>
+        {}
+      </div>
       <JarUtxosTable
         tableEntries={tableEntries}
-        selectedEntries={[]}
         pinnedEntries={[]}
         globalFilter={''}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
         onChange={(table) => {
           setTableRowModel(table.getFilteredRowModel())
         }}
@@ -99,14 +152,19 @@ interface WalletJarsDetailsContentProps {
   enabled: boolean
   selectJarIndex?: JarIndex
   className?: string
+  debug?: boolean
 }
 
-export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }: WalletJarsDetailsContentProps) => {
+export const WalletJarsDetailsContent = ({
+  enabled,
+  className,
+  selectJarIndex,
+  debug,
+}: WalletJarsDetailsContentProps) => {
   const { t } = useTranslation()
   const { jars } = useJars()
   const { addressSummary } = useAddressSummary()
   const { accountSummary } = useAccountSummary()
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const [activeJar, setActiveJar] = useState<Jar | undefined>(() => {
     const jar = jars.find((it) => it.jarIndex === selectJarIndex)
@@ -187,7 +245,7 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
           <TabsTrigger value="jar_details" className="cursor-pointer" disabled={!enabled}>
             {t('jar_details.title_tab_jar_details')}
           </TabsTrigger>
-          {isDeveloperMode && (
+          {debug && (
             <TabsTrigger value="dev" className="cursor-pointer" disabled={!enabled}>
               Dev <DevBadge />
             </TabsTrigger>
@@ -208,7 +266,7 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
             </Alert>
           )}
         </TabsContent>
-        {isDeveloperMode && (
+        {debug && (
           <TabsContent value="dev">
             <div className="overflow-scroll">
               <code className="light:text-red-700 text-red-800">activeJar:</code>
