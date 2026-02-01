@@ -13,6 +13,7 @@ import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
+import { useFeatures } from '@/hooks/useFeatures'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import type { WalletFileName } from '@/lib/utils'
@@ -51,6 +52,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
   const [isLogsOverlayOpen, setIsLogsOverlayOpen] = useState(false)
+  const { isLogsEnabled } = useFeatures()
 
   // Adds a keyboard shortcut to toggle the logs overlay.
   useEffect(() => {
@@ -89,7 +91,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         joinmarketVersion={joinmarketVersion}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
-        onClickLogs={() => setIsLogsOverlayOpen(true)}
+        onClickLogs={isLogsEnabled ? () => setIsLogsOverlayOpen(true) : undefined}
       />
 
       <Cheatsheet open={cheatsheet.open} onOpenChange={cheatsheet.onOpenChange} />
