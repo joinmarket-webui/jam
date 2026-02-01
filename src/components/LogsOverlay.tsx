@@ -5,14 +5,9 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import type { WithRequiredProperty } from '@/types/global'
 import { LogsContent } from './LogsContent'
 
-type LogsOverlayProps = WithRequiredProperty<
-  Omit<ComponentProps<typeof Dialog>, 'children'>,
-  'open' | 'onOpenChange'
-> & {
-  isSupported?: boolean
-}
+type LogsOverlayProps = WithRequiredProperty<Omit<ComponentProps<typeof Dialog>, 'children'>, 'open' | 'onOpenChange'>
 
-export function LogsOverlay({ open, onOpenChange, isSupported = true }: LogsOverlayProps) {
+export function LogsOverlay({ open, onOpenChange }: LogsOverlayProps) {
   const { t } = useTranslation()
   return (
     <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
@@ -24,7 +19,7 @@ export function LogsOverlay({ open, onOpenChange, isSupported = true }: LogsOver
         </DialogHeader>
 
         <div className="overflow-hidden">
-          <LogsContent enabled={open} className="flex h-full flex-col" isSupported={isSupported} />
+          <LogsContent enabled={open} className="flex h-full flex-col" />
         </div>
       </DialogContent>
     </Dialog>
