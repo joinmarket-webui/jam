@@ -16,7 +16,9 @@ import {
   type FilterFn,
   type FilterFnOption,
   type Table as TableType,
+  type Row,
 } from '@tanstack/react-table'
+import { SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -51,6 +53,34 @@ const fuzzyFilter: FilterFn<UtxoTableEntry> = (row, columnId, value, addMeta) =>
   return itemRank.passed
 }
 
+const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
+  return (
+    <TableRow
+      key={row.id}
+      className={cn({
+        'light:bg-blue-500/30! bg-blue-900/50!': row.original.frozen === true,
+        'light:bg-yellow-500/30! bg-yellow-950!': row.getIsSelected(),
+      })}
+    >
+      {row.getVisibleCells().map((cell) => {
+        const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
+        const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
+        return (
+          <TableCell
+            key={cell.id}
+            className={cn({
+              'text-center': alignCenter,
+              'text-right': alignRight,
+            })}
+          >
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        )
+      })}
+    </TableRow>
+  )
+}
+
 interface JarUtxosTableProps {
   globalFilter?: string
   tableEntries: UtxoTableEntry[]
@@ -75,6 +105,31 @@ export const JarUtxosTable = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns = useMemo<ColumnDef<UtxoTableEntry, any>[]>(
     () => [
+      columnHelper.accessor('frozen', {
+        header: () => <div className="flex items-center"></div>,
+        sortingFn: (a, b) => {
+          const val = (a.original.frozen ? 1 : 0) - (b.original.frozen ? 1 : 0)
+          if (val !== 0) return val
+          // tie-break using confirmations
+          const aid = Number(a.original.confirmations)
+          const bid = Number(b.original.confirmations)
+          return aid - bid
+        },
+        cell: (info) => {
+          return (
+            <div className="flex justify-center">
+              {info.getValue() === true ? (
+                <div className="flex justify-center">
+                  <SnowflakeIcon className="size-4" />
+                </div>
+              ) : undefined}
+            </div>
+          )
+        },
+        meta: {
+          align: 'center',
+        } as UtxoTableColumnMeta,
+      }),
       columnHelper.accessor('value', {
         header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
         sortingFn: (a, b) => {
@@ -263,45 +318,11 @@ export const JarUtxosTable = ({
           </TableHeader>
           <TableBody className=":bg-foreground [&>tr:nth-child(odd)]:bg-foreground/10 [&>tr]:hover:bg-foreground/20!">
             {tableTopRows().map((row) => (
-              <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
-                {row.getVisibleCells().map((cell) => {
-                  const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                  const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
-                  return (
-                    <TableCell
-                      key={cell.id}
-                      className={cn({
-                        'text-center': alignCenter,
-                        'text-right': alignRight,
-                      })}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  )
-                })}
-              </TableRow>
+              <UtxoTableRow key={row.id} row={row} />
             ))}
-            {table.getCenterRows().map((row) => {
-              return (
-                <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
-                  {row.getVisibleCells().map((cell) => {
-                    const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                    const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
-                    return (
-                      <TableCell
-                        key={cell.id}
-                        className={cn({
-                          'text-center': alignCenter,
-                          'text-right': alignRight,
-                        })}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    )
-                  })}
-                </TableRow>
-              )
-            })}
+            {table.getCenterRows().map((row) => (
+              <UtxoTableRow key={row.id} row={row} />
+            ))}
           </TableBody>
         </Table>
       </div>
