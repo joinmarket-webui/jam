@@ -13,20 +13,10 @@ import {
   type RowPinningState,
   type RowSelectionState,
   type VisibilityState,
-  type Column,
   type FilterFn,
   type FilterFnOption,
   type Table as TableType,
 } from '@tanstack/react-table'
-import {
-  ArrowUpDownIcon,
-  SortDescIcon,
-  SortAscIcon,
-  ArrowUp01Icon,
-  ArrowDown10Icon,
-  ArrowDownZAIcon,
-  ArrowUpAZIcon,
-} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -35,6 +25,7 @@ import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress, HdPath } from '@/types/global'
 import { Balance } from '../ui/jam/Balance'
+import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 
 const ITEMS_PER_PAGE = 25
@@ -60,24 +51,6 @@ type BranchEntryTableColumnMeta =
       alphabetic?: boolean
     }
   | undefined
-
-interface SortIconProps {
-  className?: string
-  sortKey: SortKey
-  column: Column<BranchEntryTableRow, unknown>
-}
-const SortIcon = ({ column, className }: SortIconProps) => {
-  const dir = column.getIsSorted()
-  if (!dir) return <ArrowUpDownIcon className={className} />
-  const meta = column.columnDef.meta as BranchEntryTableColumnMeta
-  if (meta?.numeric === true) {
-    return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
-  }
-  if (meta?.alphabetic === true) {
-    return dir === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
-  }
-  return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
-}
 
 const fuzzyFilter: FilterFn<BranchEntryTableRow> = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -299,7 +272,7 @@ export const BranchEntryTable = ({
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {canSort ? <SortIcon className="size-4" sortKey={key} column={header.column} /> : undefined}
+                        {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
                       </div>
                     </TableHead>
                   )
