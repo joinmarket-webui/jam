@@ -32,6 +32,7 @@ export const Sizes: Story = {
       <Button size="sm">sm</Button>
       <Button size="default">default</Button>
       <Button size="lg">lg</Button>
+      <Button size="xxl">xxl</Button>
       <Button size="icon-xs">
         <BitcoinIcon />
       </Button>

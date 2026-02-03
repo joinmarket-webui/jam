@@ -86,7 +86,7 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
         type="submit"
         disabled={disabled || !isValid || isSubmitting || rescanInfo.rescanning}
         className="w-full"
-        size="lg"
+        size="xxl"
       >
         {isSubmitting || rescanInfo.rescanning
           ? t('rescan_chain.text_button_submitting')

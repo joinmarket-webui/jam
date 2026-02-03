@@ -171,7 +171,7 @@ export const CreateWalletForm = ({
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="lg">
+      <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="xxl">
         {isSubmitting ? (
           <>
             <Spinner className="motion-reduce:hidden" />

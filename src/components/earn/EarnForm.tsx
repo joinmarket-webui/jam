@@ -269,7 +269,7 @@ export function EarnForm({
         variant={disabled && !isWaitingMakerStart ? 'outline' : undefined}
         disabled={disabled || isSubmitting || isWaitingMakerStart}
         className="w-full"
-        size="lg"
+        size="xxl"
       >
         {isSubmitting || isWaitingMakerStart ? (
           <>

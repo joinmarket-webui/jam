@@ -340,6 +340,8 @@ export function SendForm({
               <Button
                 id="show-address-from-jar-selector-trigger"
                 type="button"
+                variant="outline"
+                size="lg"
                 disabled={disabled}
                 onClick={() => setShowAddressFromJarSelectorDialog(true)}
               >
@@ -370,6 +372,7 @@ export function SendForm({
                 id="clear-address-from-jar-selector-trigger"
                 type="button"
                 variant="outline"
+                size="lg"
                 className="h-auto"
                 disabled={disabled}
                 onClick={() => {
@@ -416,6 +419,8 @@ export function SendForm({
               <Button
                 id="btn-sweep-trigger"
                 type="button"
+                variant="outline"
+                size="lg"
                 disabled={
                   disabled || sourceJar === undefined || sourceJar.balanceSummary.calculatedAvailableBalanceInSats <= 0
                 }
@@ -456,6 +461,8 @@ export function SendForm({
                 id="btn-sweep-clear-trigger"
                 type="button"
                 variant="outline"
+                size="lg"
+                className="h-auto"
                 disabled={disabled}
                 onClick={() => {
                   setValue('amount.isSweep', false, { shouldValidate: true })
@@ -503,7 +510,7 @@ export function SendForm({
           variant={disabled ? 'outline' : values.isCoinJoin !== true ? 'destructive' : undefined}
           disabled={disabled || isSubmitting}
           className="w-full"
-          size="lg"
+          size="xxl"
         >
           {isSubmitting ? (
             <>
