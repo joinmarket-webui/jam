@@ -7,6 +7,7 @@
     "button_copy_text_confirmed": "Copied",
     "next": "Next",
     "back": "Back",
+    "error": "Error",
     "close": "Close",
     "abort": "Abort",
     "cancel": "Cancel",
@@ -530,13 +531,17 @@
       "select_jar": {
         "text_primary_button": "Next",
         "text_secondary_button": "Cancel",
-        "description": "Select a jar to fund the fidelity bond from."
+        "description": "Select a jar to fund the fidelity bond from.",
+        "alert_no_jars_available": "No jars with available UTXOs found."
       },
       "select_utxos": {
         "text_primary_button": "Next",
         "text_primary_button_unsafe": "Select potentially less private UTXOs",
         "text_secondary_button": "Cancel",
         "description": "Select one or more UTXOs from Jar {{ jar }} to use for the fidelity bond.",
+        "button_select_all": "Select All",
+        "button_deselect_all": "Deselect All",
+        "label_total": "Total:",
         "utxo_card": {
           "confirmations": "{{ confs }} Confirmations",
           "label_frozen": "frozen",
@@ -575,6 +580,7 @@
         "text_secondary_button": "Done",
         "label_lock_date": "Locked until",
         "label_address": "Time-locked address",
+        "label_transaction_id": "Transaction ID",
         "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?"
       },
       "unfreeze_utxos": {

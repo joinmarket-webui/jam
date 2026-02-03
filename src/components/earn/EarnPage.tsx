@@ -27,6 +27,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
 import { Spinner } from '../ui/spinner'
+import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
 import { EarnForm, type EarnFormValues } from './EarnForm'
 import { FidelityBondCard } from './FidelityBondCard'
 import { OfferCard } from './OfferCard'
@@ -71,6 +72,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<UtxoId>()
   const [renewFidelityBondId, setRenewFidelityBondId] = useState<UtxoId>()
+  const [showCreateFidelityBondDialog, setShowCreateFidelityBondDialog] = useState(false)
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
@@ -263,21 +265,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
               <CardAction></CardAction>
             </CardHeader>
-            <CardContent>
-              <Alert variant="warning">
-                <AlertTriangleIcon />
-                <AlertTitle>Under construction</AlertTitle>
-                <AlertDescription>Not yet completely implemented.</AlertDescription>
-              </Alert>
-            </CardContent>
             <CardFooter className="gap-2">
-              <Button variant="default" disabled>
-                {/*TODO: i18n*/}
-                Create Fidelity Bond
-              </Button>
-              <Button variant="ghost" disabled>
-                {/*TODO: i18n*/}
-                Learn more
+              <Button variant="default" onClick={() => setShowCreateFidelityBondDialog(true)}>
+                {t('earn.fidelity_bond.create_form.button_create')}
               </Button>
             </CardFooter>
           </Card>
@@ -341,6 +331,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       <FeeLimitDialog
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
+        walletFileName={walletFileName}
+      />
+
+      {/* Create Fidelity Bond Dialog */}
+      <CreateFidelityBondDialog
+        open={showCreateFidelityBondDialog}
+        onOpenChange={setShowCreateFidelityBondDialog}
         walletFileName={walletFileName}
       />
 
