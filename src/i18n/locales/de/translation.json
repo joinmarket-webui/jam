@@ -343,6 +343,7 @@
   "receive": {
     "title": "Empfangen",
     "subtitle": "Befülle deine Wallet, indem du Sats an die unten stehende Adresse schickst. ",
+    "text_copy_address": "Adresse kopiert",
     "error_loading_address_failed": "Neue Adresse kann nicht ermittelt werden.",
     "error_copy_address_failed": "Adresse konnte nicht kopiert werden",
     "button_copy_address": "Kopieren",
