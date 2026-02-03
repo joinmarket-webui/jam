@@ -45,12 +45,13 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   return (
     <>
       <WalletJarsDetailsOverlay
-        selectJarIndex={selectedJar?.jarIndex}
         open={isWalletJarsDetailsOpen}
         onOpenChange={(open) => {
           setIsWalletJarsDetailsOpen(open)
           setSelectedJar((current) => (open ? current : undefined))
         }}
+        walletFileName={walletFileName}
+        selectedJarIndex={selectedJar?.jarIndex}
       />
       <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
