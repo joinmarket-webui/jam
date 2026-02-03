@@ -11,9 +11,13 @@ type WalletJarsDetailsOverlayProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
   'open' | 'onOpenChange'
 > &
-  Pick<ComponentProps<typeof WalletJarsDetailsContent>, 'selectJarIndex'>
+  Pick<ComponentProps<typeof WalletJarsDetailsContent>, 'selectedJarIndex' | 'walletFileName'>
 
-export function WalletJarsDetailsOverlay({ open, onOpenChange, selectJarIndex }: WalletJarsDetailsOverlayProps) {
+export function WalletJarsDetailsOverlay({
+  open,
+  onOpenChange,
+  ...jarDetailsConentProps
+}: WalletJarsDetailsOverlayProps) {
   const { t } = useTranslation()
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
@@ -30,8 +34,8 @@ export function WalletJarsDetailsOverlay({ open, onOpenChange, selectJarIndex }:
           <WalletJarsDetailsContent
             enabled={open}
             className="flex h-full flex-col overflow-auto p-2 pt-0"
-            selectJarIndex={selectJarIndex}
             debug={isDeveloperMode}
+            {...jarDetailsConentProps}
           />
         </div>
       </DialogContent>

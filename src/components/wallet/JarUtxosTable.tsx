@@ -191,7 +191,6 @@ interface JarUtxosTableProps {
   tableEntries: UtxoTableEntry[]
   pinnedEntries: UtxoTableEntry[]
   onChange?: (table: TableType<UtxoTableEntry>) => void
-  rowSelection?: RowSelectionState
   onRowSelectionChange?: OnChangeFn<RowSelectionState>
 }
 
@@ -200,7 +199,6 @@ export const JarUtxosTable = ({
   tableEntries,
   pinnedEntries,
   onChange,
-  rowSelection,
   onRowSelectionChange,
 }: JarUtxosTableProps) => {
   const { t } = useTranslation()
@@ -218,6 +216,8 @@ export const JarUtxosTable = ({
     top: [],
     bottom: [],
   })
+
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const table = useReactTable<UtxoTableEntry>({
     data: tableEntries,
@@ -243,7 +243,12 @@ export const JarUtxosTable = ({
     getRowId: (row) => row.utxo,
     onSortingChange: setSorting,
     onRowPinningChange: setRowPinning,
-    onRowSelectionChange: onRowSelectionChange,
+    onRowSelectionChange: (rowSelection) => {
+      setRowSelection(rowSelection)
+      if (onRowSelectionChange !== undefined) {
+        onRowSelectionChange(rowSelection)
+      }
+    },
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
