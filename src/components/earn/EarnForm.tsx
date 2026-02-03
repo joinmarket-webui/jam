@@ -6,7 +6,6 @@ import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { SatSymbol } from '@/components/ui/jam/CurrencySymbol'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -15,6 +14,10 @@ import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { DevBadge } from '../dev/DevBadge'
+import { Card, CardContent, CardHeader } from '../ui/card'
+import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Spinner } from '../ui/spinner'
 
 const FieldPrefixSatSymbol = (
@@ -45,15 +48,30 @@ const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
 }
 
 const baseSchema = yup
-  .object()
-  .shape({
+  .object({
     offerType: yup.string<OfferType>().default(FORM_INPUT_DEFAULT_VALUES.offerType).required(),
-    offerAbsoluteFee: yup.number().integer().min(JAM.OFFER_FEE_ABS_MIN).optional(),
-    offerRelativeFeeInPercent: yup
+    offerAbsoluteFee: yup
       .number()
-      .min(factorToPercentage(JAM.OFFER_FEE_REL_MIN))
-      .max(factorToPercentage(JAM.OFFER_FEE_REL_MAX))
-      .optional(),
+      .integer()
+      .when('offerType', {
+        is: (val: OfferType) => val === OFFERTYPE_ABS,
+        then: (schema) => schema.min(JAM.OFFER_FEE_ABS_MIN).required(),
+        otherwise: (schema) =>
+          schema
+            .transform((value) => (Number.isNaN(value) ? null : value))
+            .nullable()
+            .optional(),
+      }),
+    offerRelativeFeeInPercent: yup.number().when('offerType', {
+      is: (val: OfferType) => val === OFFERTYPE_REL,
+      then: (schema) =>
+        schema.min(factorToPercentage(JAM.OFFER_FEE_REL_MIN)).max(factorToPercentage(JAM.OFFER_FEE_REL_MAX)).required(),
+      otherwise: (schema) =>
+        schema
+          .transform((value) => (Number.isNaN(value) ? null : value))
+          .nullable()
+          .optional(),
+    }),
   })
   .required()
 
@@ -103,6 +121,7 @@ interface EarnFormProps {
   /* TODO: make offerMinsizeMax mandatory */
   offerMinsizeMax?: AmountSats
   disabled?: boolean
+  debug?: boolean
 }
 
 export function EarnForm({
@@ -111,11 +130,12 @@ export function EarnForm({
   onSubmit,
   disabled,
   offerMinsizeMax = OFFER_MINSIZE_MAX_PLACEHODLER,
+  debug = false,
 }: EarnFormProps) {
   const { t } = useTranslation()
 
   const schema = baseSchema.concat(
-    yup.object().shape({
+    yup.object({
       offerMinAmount: yup.number().integer().min(JAM.OFFER_MINSIZE_MIN).max(offerMinsizeMax).required(),
     }),
   )
@@ -128,16 +148,17 @@ export function EarnForm({
     getValues,
     setValue,
   } = useForm<EarnFormValues, unknown, EarnFormValues>({
-    mode: 'all',
+    mode: 'onSubmit',
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
     // force type (see https://github.com/react-hook-form/resolvers/issues/807)
     resolver: yupResolver(schema) as Resolver<EarnFormValues, unknown, EarnFormValues>,
   })
 
+  const values = useWatch({ control })
   const watchOfferType = useWatch({ control, name: 'offerType' })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)}>
+    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
       <OfferTypeInput
         disabled={disabled}
         defaultValue={FORM_INPUT_DEFAULT_VALUES.offerType}
@@ -152,51 +173,53 @@ export function EarnForm({
       <Tabs value={watchOfferType}>
         <TabsContent value={OFFERTYPE_ABS}>
           <div className="space-y-2">
-            <Label htmlFor="offerAbsoluteFee" className="text-sm font-medium">
-              {t('earn.label_abs_fee', {
-                fee: '', // empty on purpose
-              })}
-            </Label>
-            <p className="text-muted-foreground text-xs">{t('earn.description_abs_fee')}</p>
-            <div className="relative">
-              <div className="absolute top-1/2 left-3 -translate-y-1/2">{FieldPrefixSatSymbol}</div>
-
-              <Input
-                {...register('offerAbsoluteFee', {
-                  disabled,
+            <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
+              <FieldLabel htmlFor="offerAbsoluteFee">
+                {t('earn.label_abs_fee', {
+                  fee: '', // empty on purpose
                 })}
-                type="number"
-                step={1}
-                className="bg-background pl-10"
-              />
-            </div>
+              </FieldLabel>
+              <FieldDescription className="text-xs">{t('earn.description_abs_fee')}</FieldDescription>
+              <InputGroup>
+                <InputGroupInput
+                  id="offerAbsoluteFee"
+                  {...register('offerAbsoluteFee', {
+                    disabled,
+                  })}
+                  type="number"
+                  step={1}
+                />
+                <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
+              </InputGroup>
+            </Field>
             {errors.offerAbsoluteFee && (
-              <div className="light:text-red-700 text-xs text-red-500">{t('earn.feedback_invalid_abs_fee')}</div>
+              <div className="text-destructive text-xs">{t('earn.feedback_invalid_abs_fee')}</div>
             )}
           </div>
         </TabsContent>
         <TabsContent value={OFFERTYPE_REL}>
           <div className="space-y-2">
-            <Label htmlFor="offerRelativeFeeInPercent" className="text-sm font-medium">
-              {t('earn.label_rel_fee', {
-                fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
-              })}
-            </Label>
-            <p className="text-muted-foreground text-xs">{t('earn.description_rel_fee')}</p>
-            <div className="relative">
-              <div className="absolute top-1/2 left-3 -translate-y-1/2">%</div>
-
-              <Input
-                {...register('offerRelativeFeeInPercent', {
-                  disabled,
+            <Field data-invalid={errors.offerRelativeFeeInPercent !== undefined}>
+              <FieldLabel htmlFor="offerRelativeFeeInPercent">
+                {t('earn.label_rel_fee', {
+                  fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
                 })}
-                type="number"
-                step={factorToPercentage(JAM.OFFER_FEE_REL_STEP)}
-                className="bg-background pl-10"
-              />
-            </div>
+              </FieldLabel>
+              <FieldDescription className="text-xs">{t('earn.description_rel_fee')}</FieldDescription>
+              <InputGroup>
+                <InputGroupInput
+                  id="offerRelativeFeeInPercent"
+                  {...register('offerRelativeFeeInPercent', {
+                    disabled,
+                  })}
+                  type="number"
+                  step={factorToPercentage(JAM.OFFER_FEE_REL_STEP)}
+                />
+                <InputGroupAddon align="inline-start">%</InputGroupAddon>
+              </InputGroup>
+            </Field>
             {errors.offerRelativeFeeInPercent && (
-              <div className="light:text-red-700 text-xs text-red-500">
+              <div className="text-destructive text-xs">
                 {t('earn.feedback_invalid_rel_fee', {
                   feeRelPercentageMin: `${factorToPercentage(JAM.OFFER_FEE_REL_MIN)}%`,
                   feeRelPercentageMax: `${factorToPercentage(JAM.OFFER_FEE_REL_MAX)}%`,
@@ -206,28 +229,28 @@ export function EarnForm({
           </div>
         </TabsContent>
       </Tabs>
-      <div className="space-y-2">
-        <Label htmlFor="offerMinAmount" className="text-sm font-medium">
-          {t('earn.label_min_amount_input')}
-        </Label>
-        <p className="text-muted-foreground text-xs">{/*TODO: i18n t('earn.description_min_amount_input')*/}</p>
-        <div className="relative">
-          <div className="absolute top-1/2 left-3 -translate-y-1/2">{FieldPrefixSatSymbol}</div>
 
-          <Input
-            {...register('offerMinAmount', {
-              required: true,
-              disabled,
-            })}
-            type="number"
-            max={offerMinsizeMax}
-            step={1}
-            className="bg-background pl-10"
-            placeholder={t('earn.placeholder_min_amount_input')}
-          />
-        </div>
+      <div className="space-y-2">
+        <Field data-invalid={errors.offerMinAmount !== undefined}>
+          <FieldLabel htmlFor="offerMinAmount">{t('earn.label_min_amount_input')}</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="offerMinAmount"
+              {...register('offerMinAmount', {
+                required: true,
+                disabled,
+              })}
+              type="number"
+              max={offerMinsizeMax}
+              step={1}
+              placeholder={t('earn.placeholder_min_amount_input')}
+            />
+            <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
+          </InputGroup>
+        </Field>
+
         {errors.offerMinAmount && (
-          <div className="light:text-red-700 text-xs text-red-500">
+          <div className="text-destructive text-xs">
             {errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max' ? (
               <>
                 {t('earn.feedback_invalid_min_amount_range', {
@@ -244,9 +267,9 @@ export function EarnForm({
       <Button
         type="submit"
         variant={disabled && !isWaitingMakerStart ? 'outline' : undefined}
-        disabled={disabled || !isValid || isSubmitting}
+        disabled={disabled || isSubmitting || isWaitingMakerStart}
         className="w-full"
-        size="lg"
+        size="xxl"
       >
         {isSubmitting || isWaitingMakerStart ? (
           <>
@@ -257,6 +280,24 @@ export function EarnForm({
           <>{t('earn.button_start')}</>
         )}
       </Button>
+
+      {debug && (
+        <Card className="mt-8">
+          <CardHeader className="grid">
+            <DevBadge className="justify-self-end" />
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">isValid:</code>
+              <pre className="text-xs">{JSON.stringify(isValid, null, 2)}</pre>
+            </div>
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">values:</code>
+              <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </form>
   )
 }

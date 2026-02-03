@@ -28,10 +28,21 @@ export const Variants: Story = {
 export const Sizes: Story = {
   render: () => (
     <div className="flex items-center justify-center gap-8">
+      <Button size="xs">xs</Button>
       <Button size="sm">sm</Button>
       <Button size="default">default</Button>
       <Button size="lg">lg</Button>
+      <Button size="xxl">xxl</Button>
+      <Button size="icon-xs">
+        <BitcoinIcon />
+      </Button>
+      <Button size="icon-sm">
+        <BitcoinIcon />
+      </Button>
       <Button size="icon">
+        <BitcoinIcon />
+      </Button>
+      <Button size="icon-lg">
         <BitcoinIcon />
       </Button>
     </div>

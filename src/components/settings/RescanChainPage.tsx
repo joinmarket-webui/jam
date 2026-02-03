@@ -77,7 +77,7 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
           />
         </div>
         {errors.blockHeight && (
-          <div className="text-muted-foreground light:text-red-700 text-xs text-red-500">
+          <div className="text-destructive text-xs">
             <span>{t('rescan_chain.feedback_invalid_blockheight', { min: INPUT_BLOCK_HEIGHT_MIN })}</span>
           </div>
         )}
@@ -86,7 +86,7 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
         type="submit"
         disabled={disabled || !isValid || isSubmitting || rescanInfo.rescanning}
         className="w-full"
-        size="lg"
+        size="xxl"
       >
         {isSubmitting || rescanInfo.rescanning
           ? t('rescan_chain.text_button_submitting')

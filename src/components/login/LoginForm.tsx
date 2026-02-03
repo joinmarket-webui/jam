@@ -1,14 +1,18 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
+import type { TFunction } from 'i18next'
 import { EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react'
+import { useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import { Field, FieldLabel } from '../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 
 const LoginFormSkeleton = () => {
   return (
@@ -28,70 +32,89 @@ const LoginFormSkeleton = () => {
   )
 }
 
-interface LoginFormData {
+interface LoginFormValues {
   walletFileName: WalletFileName
   password: string
 }
 
+const loginFormSchema = (wallets: WalletFileName[], _t: TFunction) => {
+  return yup
+    .object({
+      walletFileName: yup.string<WalletFileName>().oneOf(wallets).required(),
+      password: yup.string().required(),
+    })
+    .required()
+}
+
 type LoginFormComponentProps = {
+  className?: string
   wallets: WalletFileName[]
   activeWallet?: WalletFileName
   preselectedWallet?: WalletFileName
   makerRunning: boolean
   coinjoinInProgress: boolean
   disabled: boolean
-  isSubmitting: boolean
-  onSubmit: (val: LoginFormData) => Promise<void>
+  onSubmit: SubmitHandler<LoginFormValues>
 }
 
-/* TODO: use react-hook-form and yup schema */
 export const LoginFormComponent = ({
+  className,
   wallets,
   activeWallet,
   preselectedWallet = activeWallet,
   makerRunning,
   coinjoinInProgress,
-  isSubmitting,
   onSubmit,
   disabled,
 }: LoginFormComponentProps) => {
   const { t } = useTranslation()
-  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>(preselectedWallet)
-  const [password, setPassword] = useState('')
+
   const [showPassword, setShowPassword] = useState(false)
 
-  if (wallets.length === 1 && selectedWallet === undefined) {
-    setSelectedWallet(wallets[0])
-  }
+  const schema = useMemo(() => {
+    return loginFormSchema(wallets, t)
+  }, [wallets, t])
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+  } = useForm({
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
+    defaultValues: {
+      walletFileName: preselectedWallet ?? (wallets.length === 1 ? wallets[0] : undefined),
+    },
+    resolver: yupResolver(schema),
+  })
+
+  const values = useWatch({ control })
 
   return (
-    <form
-      onSubmit={(e: React.FormEvent) => {
-        e.preventDefault()
-
-        if (!selectedWallet) return
-
-        onSubmit({ walletFileName: selectedWallet, password })
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
-        <Label htmlFor="wallet-select">{/* TODO: i18n */}Wallet</Label>
-        <Select
-          value={selectedWallet ?? undefined}
-          onValueChange={(it) => setSelectedWallet(it as WalletFileName)}
-          disabled={disabled || isSubmitting || wallets.length === 0}
-          required
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={/* TODO: i18n */ wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'} />
-          </SelectTrigger>
-          <SelectContent>
-            {wallets?.map((wallet, index) => (
-              <SelectItem key={index} value={wallet} className="text-base">
-                {shortenStringMiddle(walletDisplayName(wallet), 32)}
-                {activeWallet === wallet ? (
-                  <>
+        <Field data-invalid={errors.walletFileName !== undefined}>
+          <FieldLabel>{/* TODO: i18n */}Wallet</FieldLabel>
+          <Select
+            onValueChange={(val: WalletFileName) => setValue('walletFileName', val, { shouldValidate: true })}
+            value={values.walletFileName ?? ''}
+            {...register('walletFileName', {
+              required: true,
+              disabled: disabled || wallets.length === 0,
+            })}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue
+                placeholder={/* TODO: i18n */ wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {wallets?.map((wallet, index) => (
+                <SelectItem key={index} value={wallet} className="text-base">
+                  {shortenStringMiddle(walletDisplayName(wallet), 32)}
+                  {activeWallet === wallet ? (
                     <span
                       className={cn('py-1 text-xs', {
                         'text-muted-foreground/50': !(makerRunning || coinjoinInProgress),
@@ -100,41 +123,47 @@ export const LoginFormComponent = ({
                     >
                       {t('wallets.wallet_preview.wallet_active')}
                     </span>
-                  </>
-                ) : undefined}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                  ) : undefined}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">{/* TODO: i18n */}Password</Label>
-        <div className="relative">
-          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2 transform" />
-          <Input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={disabled || isSubmitting}
-            placeholder={t('wallets.wallet_preview.placeholder_password')}
-            className="pr-10 pl-10"
-          />
-          <Button
-            tabIndex={-1}
-            type="button"
-            variant="link"
-            size="icon"
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
-            onClick={() => setShowPassword((val) => !val)}
-          >
-            {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-          </Button>
-        </div>
+        <Field data-invalid={errors.password !== undefined}>
+          <FieldLabel htmlFor="login-password">{t(/* TODO: i18n */ 'Password')}</FieldLabel>
+          <InputGroup>
+            <InputGroupInput
+              id="login-password"
+              {...register('password', {
+                required: true,
+                disabled,
+              })}
+              type={showPassword ? 'text' : 'password'}
+              placeholder={t('wallets.wallet_preview.placeholder_password')}
+              autoComplete="off"
+            />
+            <InputGroupAddon align="inline-start">
+              <LockIcon />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              <Button
+                tabIndex={-1}
+                type="button"
+                variant="link"
+                size="icon"
+                onClick={() => setShowPassword((val) => !val)}
+              >
+                {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
       </div>
 
-      <Button type="submit" className="w-full" disabled={disabled || isSubmitting || !selectedWallet} size="lg">
+      <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="xxl">
         {isSubmitting ? (
           <>
             <Spinner className="motion-reduce:hidden" />

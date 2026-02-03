@@ -45,9 +45,13 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   return (
     <>
       <WalletJarsDetailsOverlay
-        selectJarIndex={selectedJar?.jarIndex}
         open={isWalletJarsDetailsOpen}
-        onOpenChange={setIsWalletJarsDetailsOpen}
+        onOpenChange={(open) => {
+          setIsWalletJarsDetailsOpen(open)
+          setSelectedJar((current) => (open ? current : undefined))
+        }}
+        walletFileName={walletFileName}
+        selectedJarIndex={selectedJar?.jarIndex}
       />
       <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
@@ -72,11 +76,11 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             )}
           </div>
           <div className="mt-2 flex w-full justify-center gap-4">
-            <Button size="lg" className="flex-1" variant="default" onClick={() => navigate(routes.receive)}>
+            <Button size="xxl" className="flex-1" variant="default" onClick={() => navigate(routes.receive)}>
               <DownloadIcon />
               {t('current_wallet.button_deposit')}
             </Button>
-            <Button size="lg" className="flex-1" variant="outline" onClick={() => navigate(routes.send)}>
+            <Button size="xxl" className="flex-1" variant="outline" onClick={() => navigate(routes.send)}>
               <UploadIcon />
               {t('current_wallet.button_withdraw')}
             </Button>
@@ -120,8 +124,9 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                 {jars.map((jar, index) => (
                   <Tooltip key={index}>
                     <TooltipTrigger asChild>
-                      <div className="flex cursor-pointer flex-col items-center transition-all duration-300 hover:scale-105">
+                      <div className="flex flex-col items-center transition-all duration-300 hover:scale-105">
                         <Jar
+                          className="cursor-zoom-in"
                           name={jar.name}
                           amount={jar.balanceSummary.calculatedTotalBalanceInSats}
                           color={jar.color}
@@ -140,12 +145,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
           </div>
         </div>
         <div className="flex w-full max-w-xl justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refetchWalletData()}
-            className="flex items-center gap-2 text-gray-500"
-          >
+          <Button variant="ghost" size="xs" onClick={() => refetchWalletData()}>
             <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
             {t('global.refresh')}
           </Button>

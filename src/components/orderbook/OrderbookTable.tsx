@@ -13,20 +13,10 @@ import {
   type RowPinningState,
   type RowSelectionState,
   type VisibilityState,
-  type Column,
   type FilterFn,
   type FilterFnOption,
   type Table as TableType,
 } from '@tanstack/react-table'
-import {
-  ArrowUpDownIcon,
-  SortDescIcon,
-  SortAscIcon,
-  ArrowUp01Icon,
-  ArrowDown10Icon,
-  ArrowDownZAIcon,
-  ArrowUpAZIcon,
-} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Balance } from '@/components/ui/jam/Balance'
@@ -35,6 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn, BTC } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { SortIcon } from '../ui/jam/SortIcon'
 
 const ITEMS_PER_PAGE = 25
 
@@ -77,25 +68,6 @@ type OrderTableColumnMeta =
       alphabetic?: boolean
     }
   | undefined
-
-interface SortIconProps {
-  className?: string
-  sortKey: SortKey
-  column: Column<OrderTableEntry, unknown>
-}
-const SortIcon = ({ column, className }: SortIconProps) => {
-  const dir = column.getIsSorted()
-  if (!dir) return <ArrowUpDownIcon className={className} />
-
-  const meta = column.columnDef.meta as OrderTableColumnMeta
-  if (meta?.numeric === true) {
-    return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
-  }
-  if (meta?.alphabetic === true) {
-    return dir === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
-  }
-  return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
-}
 
 const fuzzyFilter: FilterFn<OrderTableEntry> = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -373,7 +345,7 @@ export const OrderbookTable = ({
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {canSort ? <SortIcon className="size-4" sortKey={key} column={header.column} /> : undefined}
+                        {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
                       </div>
                     </TableHead>
                   )

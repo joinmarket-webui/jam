@@ -97,7 +97,7 @@ export const CreateStepConfirm = ({ walletFileName, password, seedphrase, onConf
       <Button
         onClick={async () => await onConfirm()}
         className="w-full"
-        size="lg"
+        size="xxl"
         disabled={!backupConfirmed || !revealSensitiveInfo.dirty}
       >
         {t('create_wallet.next_button')}

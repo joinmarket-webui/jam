@@ -13,27 +13,25 @@ import {
   type RowPinningState,
   type RowSelectionState,
   type VisibilityState,
-  type Column,
   type FilterFn,
   type FilterFnOption,
   type Table as TableType,
+  type Row,
+  type OnChangeFn,
+  type HeaderContext,
+  type CellContext,
 } from '@tanstack/react-table'
-import {
-  ArrowUpDownIcon,
-  SortDescIcon,
-  SortAscIcon,
-  ArrowUp01Icon,
-  ArrowDown10Icon,
-  ArrowDownZAIcon,
-  ArrowUpAZIcon,
-} from 'lucide-react'
+import type { TFunction } from 'i18next'
+import { SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
+import { Checkbox } from '../ui/checkbox'
 import { Balance } from '../ui/jam/Balance'
+import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 
 const ITEMS_PER_PAGE = 25
@@ -54,44 +52,154 @@ type UtxoTableColumnMeta =
     }
   | undefined
 
-interface SortIconProps {
-  className?: string
-  sortKey: SortKey
-  column: Column<UtxoTableEntry, unknown>
-}
-const SortIcon = ({ column, className }: SortIconProps) => {
-  const dir = column.getIsSorted()
-  if (!dir) return <ArrowUpDownIcon className={className} />
-  const meta = column.columnDef.meta as UtxoTableColumnMeta
-  if (meta?.numeric === true) {
-    return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
-  }
-  if (meta?.alphabetic === true) {
-    return dir === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
-  }
-  return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
-}
-
 const fuzzyFilter: FilterFn<UtxoTableEntry> = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value)
   addMeta({ itemRank })
   return itemRank.passed
 }
 
+const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
+  return (
+    <TableRow
+      key={row.id}
+      className={cn({
+        'light:bg-blue-500/30! bg-blue-900/50!': row.original.frozen === true,
+        'light:bg-yellow-500/30! bg-yellow-950!': row.getIsSelected(),
+      })}
+    >
+      {row.getVisibleCells().map((cell) => {
+        const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
+        const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
+        return (
+          <TableCell
+            key={cell.id}
+            className={cn({
+              'text-center': alignCenter,
+              'text-right': alignRight,
+            })}
+          >
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        )
+      })}
+    </TableRow>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
+  return [
+    {
+      id: 'select-col',
+      header: ({ table }: HeaderContext<UtxoTableEntry, unknown>) => (
+        <Checkbox
+          checked={table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false}
+          onCheckedChange={(checked) => table.toggleAllRowsSelected(checked === true)}
+        />
+      ),
+      cell: ({ row }: CellContext<UtxoTableEntry, unknown>) => (
+        <Checkbox
+          className="light:bg-background/80"
+          checked={row.getIsSelected()}
+          disabled={!row.getCanSelect()}
+          onCheckedChange={row.getToggleSelectedHandler()}
+        />
+      ),
+    },
+    columnHelper.accessor('frozen', {
+      header: () => <div className="flex items-center"></div>,
+      sortingFn: (a, b) => {
+        const val = (a.original.frozen ? 1 : 0) - (b.original.frozen ? 1 : 0)
+        if (val !== 0) return val
+        // tie-break using confirmations
+        const aid = Number(a.original.confirmations)
+        const bid = Number(b.original.confirmations)
+        return aid - bid
+      },
+      cell: (info) => {
+        return (
+          <div className="flex justify-center">
+            {info.getValue() === true ? (
+              <div className="flex justify-center">
+                <SnowflakeIcon className="size-4" />
+              </div>
+            ) : undefined}
+          </div>
+        )
+      },
+      meta: {
+        align: 'center',
+      } as UtxoTableColumnMeta,
+    }),
+    columnHelper.accessor('value', {
+      header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
+      sortingFn: (a, b) => {
+        const val = a.original.value - b.original.value
+        if (val !== 0) return val
+        // tie-break using confirmations
+        const aid = Number(a.original.confirmations)
+        const bid = Number(b.original.confirmations)
+        return aid - bid
+      },
+      cell: (info) => <Balance colored={false} valueString={String(info.getValue())} />,
+      meta: {
+        align: 'right',
+        numeric: true,
+      } as UtxoTableColumnMeta,
+    }),
+    columnHelper.accessor('address', {
+      header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
+      sortingFn: (a, b) => {
+        const val = a.original.address.localeCompare(b.original.address)
+        if (val !== 0) return val
+        // tie-break using confirmations
+        const aid = Number(a.original.confirmations)
+        const bid = Number(b.original.confirmations)
+        return aid - bid
+      },
+      cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
+      meta: {
+        alphabetic: true,
+      } as UtxoTableColumnMeta,
+    }),
+    columnHelper.accessor('confirmations', {
+      header: () => t('jar_details.utxo_list.column_title_confirmations'),
+      cell: (info) => info.getValue(),
+      meta: {
+        numeric: true,
+        align: 'center',
+      } as UtxoTableColumnMeta,
+    }),
+    columnHelper.accessor('tags', {
+      header: () => t('jar_details.utxo_list.column_title_label_and_status'),
+      cell: (info) => (
+        <div className="flex items-center gap-2">
+          {info.row.original.tags.map((it, index) => (
+            <StatusBadge key={index} variant={it.variant}>
+              {it.displayValue}
+            </StatusBadge>
+          ))}
+        </div>
+      ),
+      enableSorting: false,
+    }),
+  ]
+}
+
 interface JarUtxosTableProps {
   globalFilter?: string
   tableEntries: UtxoTableEntry[]
-  selectedEntries: UtxoTableEntry[]
   pinnedEntries: UtxoTableEntry[]
   onChange?: (table: TableType<UtxoTableEntry>) => void
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>
 }
 
 export const JarUtxosTable = ({
   globalFilter,
   tableEntries,
-  selectedEntries: highlightedEntries,
   pinnedEntries,
   onChange,
+  onRowSelectionChange,
 }: JarUtxosTableProps) => {
   const { t } = useTranslation()
 
@@ -99,72 +207,17 @@ export const JarUtxosTable = ({
   const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE)
   const [sorting, setSorting] = useState<SortingState>([])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<UtxoTableEntry, any>[]>(
-    () => [
-      columnHelper.accessor('value', {
-        header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
-        sortingFn: (a, b) => {
-          const val = a.original.value - b.original.value
-          if (val !== 0) return val
-          // tie-break using confirmations
-          const aid = Number(a.original.confirmations)
-          const bid = Number(b.original.confirmations)
-          return aid - bid
-        },
-        cell: (info) => <Balance colored={false} valueString={String(info.getValue())} />,
-        meta: {
-          align: 'right',
-          numeric: true,
-        } as UtxoTableColumnMeta,
-      }),
-      columnHelper.accessor('address', {
-        header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
-        sortingFn: (a, b) => {
-          const val = a.original.address.localeCompare(b.original.address)
-          if (val !== 0) return val
-          // tie-break using confirmations
-          const aid = Number(a.original.confirmations)
-          const bid = Number(b.original.confirmations)
-          return aid - bid
-        },
-        cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
-        meta: {
-          alphabetic: true,
-        } as UtxoTableColumnMeta,
-      }),
-      columnHelper.accessor('confirmations', {
-        header: () => t('jar_details.utxo_list.column_title_confirmations'),
-        cell: (info) => info.getValue(),
-        meta: {
-          numeric: true,
-          align: 'center',
-        } as UtxoTableColumnMeta,
-      }),
-      columnHelper.accessor('tags', {
-        header: () => t('jar_details.utxo_list.column_title_label_and_status'),
-        cell: (info) => (
-          <div className="flex items-center gap-2">
-            {info.row.original.tags.map((it, index) => (
-              <StatusBadge key={index} variant={it.variant}>
-                {it.displayValue}
-              </StatusBadge>
-            ))}
-          </div>
-        ),
-        enableSorting: false,
-      }),
-    ],
-    [t],
-  )
+  const columns = useMemo(() => utxoTableColumns(t), [t])
+
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     minerFeeContribution: false,
   })
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [rowPinning, setRowPinning] = useState<RowPinningState>({
     top: [],
     bottom: [],
   })
+
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const table = useReactTable<UtxoTableEntry>({
     data: tableEntries,
@@ -186,29 +239,22 @@ export const JarUtxosTable = ({
     globalFilterFn: 'fuzzy' as FilterFnOption<UtxoTableEntry>,
     keepPinnedRows: true,
     enableRowSelection: true,
+    enableMultiRowSelection: true,
+    getRowId: (row) => row.utxo,
     onSortingChange: setSorting,
     onRowPinningChange: setRowPinning,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: (rowSelection) => {
+      setRowSelection(rowSelection)
+      if (onRowSelectionChange !== undefined) {
+        onRowSelectionChange(rowSelection)
+      }
+    },
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   })
-
-  useEffect(() => {
-    table.resetRowPinning(true)
-    table.getRowModel().rows.forEach((row) => {
-      row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
-    })
-  }, [table, pinnedEntries])
-
-  useEffect(() => {
-    table.resetRowSelection(true)
-    table.getRowModel().rows.forEach((row) => {
-      row.toggleSelected(highlightedEntries.includes(row.original))
-    })
-  }, [table, highlightedEntries])
 
   const totalPages = useMemo(() => {
     if (itemsPerPage === -1) {
@@ -218,23 +264,27 @@ export const JarUtxosTable = ({
   }, [itemsPerPage, tableEntries.length])
 
   useEffect(() => {
+    table.resetRowPinning(true)
+    table.getRowModel().rows.forEach((row) => {
+      row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
+    })
+  }, [table, pinnedEntries])
+
+  useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages)
       table.setPageIndex(Math.max(0, totalPages - 1))
     }
   }, [totalPages, currentPage, table])
 
-  const handleSort = (key: SortKey) => {
-    const col = table.getColumn(key)
-    if (col) {
-      col.toggleSorting()
+  useEffect(() => {
+    if (onChange) {
+      onChange(table)
     }
-  }
+  }, [table, onChange])
 
   const tableTopRows = () => {
     try {
-      // pinned offers might not be included in the table data,
-      // and the internal model of the table does not match anymore
       return table.getTopRows()
     } catch (e) {
       console.debug('Error while rendering top table rows', e)
@@ -242,11 +292,7 @@ export const JarUtxosTable = ({
     }
   }
 
-  useEffect(() => {
-    if (onChange) {
-      onChange(table)
-    }
-  }, [table, onChange])
+  const handleSort = (key: SortKey) => table.getColumn(key)?.toggleSorting()
 
   return (
     <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
@@ -280,7 +326,7 @@ export const JarUtxosTable = ({
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {canSort ? <SortIcon className="size-4" sortKey={key} column={header.column} /> : undefined}
+                        {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
                       </div>
                     </TableHead>
                   )
@@ -290,45 +336,11 @@ export const JarUtxosTable = ({
           </TableHeader>
           <TableBody className=":bg-foreground [&>tr:nth-child(odd)]:bg-foreground/10 [&>tr]:hover:bg-foreground/20!">
             {tableTopRows().map((row) => (
-              <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
-                {row.getVisibleCells().map((cell) => {
-                  const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                  const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
-                  return (
-                    <TableCell
-                      key={cell.id}
-                      className={cn({
-                        'text-center': alignCenter,
-                        'text-right': alignRight,
-                      })}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  )
-                })}
-              </TableRow>
+              <UtxoTableRow key={row.id} row={row} />
             ))}
-            {table.getCenterRows().map((row) => {
-              return (
-                <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
-                  {row.getVisibleCells().map((cell) => {
-                    const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                    const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
-                    return (
-                      <TableCell
-                        key={cell.id}
-                        className={cn({
-                          'text-center': alignCenter,
-                          'text-right': alignRight,
-                        })}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    )
-                  })}
-                </TableRow>
-              )
-            })}
+            {table.getCenterRows().map((row) => (
+              <UtxoTableRow key={row.id} row={row} />
+            ))}
           </TableBody>
         </Table>
       </div>

@@ -44,10 +44,9 @@ export const useFeatures = () => {
     retry: false,
   })
 
-  const isLogsEnabled = () => {
+  const isLogsSupported = () => {
     if (error) {
-      // show regardless of error in development mode
-      return isDevMode()
+      return false
     }
 
     if (features) {
@@ -64,11 +63,15 @@ export const useFeatures = () => {
     return false
   }
 
+  // Show logs UI in dev mode even when not supported, but with unsupported message
+  const isLogsEnabled = isLogsSupported() || (error && isDevMode())
+
   return {
     features,
     error,
     isLoading,
     isFetching,
-    isLogsEnabled: isLogsEnabled(),
+    isLogsEnabled,
+    isLogsSupported: isLogsSupported(),
   }
 }

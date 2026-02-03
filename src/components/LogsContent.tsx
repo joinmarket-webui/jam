@@ -73,13 +73,13 @@ function LogViewer({ value, refresh }: LogViewerProps) {
     document.body.removeChild(a)
     setTimeout(() => {
       URL.revokeObjectURL(url)
-    }, 0)
+    }, 4)
   }, [value])
 
   return (
     <Card className="flex flex-1 flex-col overflow-hidden pb-0">
       <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="font-mono break-all">{JMWALLETD_LOG_FILE_NAME}</CardTitle>
+        <CardTitle className="font-mono break-all select-all">{JMWALLETD_LOG_FILE_NAME}</CardTitle>
         <div className="flex items-center justify-end gap-2">
           <Button
             className="hover:[&>svg]:motion-safe:animate-bounce"

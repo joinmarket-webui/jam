@@ -1,12 +1,13 @@
 import { useState } from 'react'
+import { listwalletsOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { useQuery } from '@tanstack/react-query'
 import { CircleCheckBigIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
@@ -17,9 +18,6 @@ import { jmSessionStore } from '@/store/jmSessionStore'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
 import { CreateStepDetailsInput } from './CreateStepDetailsInput'
-
-const validateWalletName = (input: string) =>
-  input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
 type WalletFormValues = { walletName: string; password: string; confirmPassword: string }
 
@@ -35,36 +33,20 @@ const CreateWalletPage = () => {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
-  const [isCreating, setIsCreating] = useState(false)
   const [createWalletSuccessInfo, setCreateWalletSuccessInfo] = useState<CreateWalletSuccessInfo>()
   const [step, setStep] = useState<'create' | 'seed' | 'confirm'>('create')
 
-  // TODO: use react-hook-form and yup schema
+  const listWalletsQuery = useQuery({
+    ...listwalletsOptions({ client }),
+  })
+
   const handleCreateWallet = async ({ walletName, password, confirmPassword }: WalletFormValues) => {
-    const sanitizedWalletName = walletName.trim()
-    if (!validateWalletName(sanitizedWalletName)) {
-      toast.error(t('create_wallet.feedback_invalid_wallet_name'))
-      return
-    }
-
-    if (password.length < 1) {
-      toast.error(t('create_wallet.feedback_invalid_password'))
-      return
-    }
-
-    if (password !== confirmPassword) {
-      toast.error(t('create_wallet.feedback_invalid_password_confirm'))
-      return
-    }
-
     const durationHintToastId = toast.loading(t('create_wallet.hint_duration_text'), {
       id: 'alert-wallet-create-creating-duration-hint',
       duration: Infinity,
       position: 'top-center',
     })
     try {
-      setIsCreating(true)
-
       // Clear any existing local session
       clearAuthState()
 
@@ -73,6 +55,7 @@ const CreateWalletPage = () => {
         const { data: sessionInfo } = await session({ client })
         if (sessionInfo?.session === true) {
           console.warn('Active session detected:', sessionInfo)
+          // TODO: i18n
           toast.error(
             `Cannot create wallet as "${walletDisplayName(
               (sessionInfo?.wallet_name || 'Unknown') as WalletFileName,
@@ -125,10 +108,9 @@ const CreateWalletPage = () => {
       })
       setStep('seed')
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet'
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet' // TODO: i18n
       toast.error(errorMessage)
     } finally {
-      setIsCreating(false)
       toast.dismiss(durationHintToastId)
     }
   }
@@ -170,7 +152,11 @@ const CreateWalletPage = () => {
             </>
           )}
           {step === 'create' && (
-            <CreateStepDetailsInput onSubmit={handleCreateWallet} isSubmitting={isCreating} sessionInfo={jmSession} />
+            <CreateStepDetailsInput
+              wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
+              onSubmit={handleCreateWallet}
+              sessionInfo={jmSession}
+            />
           )}
         </CardContent>
       </Card>

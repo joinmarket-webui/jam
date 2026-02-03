@@ -1,5 +1,6 @@
 import { pbkdf2Async } from '@noble/hashes/pbkdf2.js'
 import { sha512 } from '@noble/hashes/sha2.js'
+import { bytesToHex } from '@noble/hashes/utils.js'
 
 // see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2 (last check: 2026-01)
 export const DEFAULT_PBKDF_ITERATIONS = 210_000
@@ -20,13 +21,8 @@ export async function hashPassword(
   try {
     const passwordBuffer = new TextEncoder().encode(password)
     const saltBuffer = new TextEncoder().encode(salt)
-
     const derivedKey = await pbkdf2Async(sha512, passwordBuffer, saltBuffer, { c: iterations, dkLen: 32 })
-
-    // Convert Uint8Array to hex string
-    return Array.from(derivedKey)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
+    return bytesToHex(derivedKey)
   } catch (error) {
     console.error('Password hashing failed:', error)
     throw new Error(

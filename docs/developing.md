@@ -120,3 +120,9 @@ git clone https://github.com/joinmarket-webui/jam.git
 cd jam/
 npm install && npm run dev
 ```
+
+## Resources
+
+- yup (GitHub): https://github.com/jquense/yup
+- react-hook-form (GitHub): https://github.com/react-hook-form/react-hook-form
+- react-query (GitHub): https://github.com/TanStack/query

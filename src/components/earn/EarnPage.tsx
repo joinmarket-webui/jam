@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangleIcon, Loader2Icon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import { AlertTriangleIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -200,7 +200,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
       {waitingForOfferUpdate && (
         <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
-          <Loader2Icon className="motion-safe:animate-pulse" />
+          <Spinner className="motion-reduce:hidden" />
           <AlertTitle>{/* TODO: i18n*/ t('Loading offer...')}</AlertTitle>
         </Alert>
       )}
@@ -244,6 +244,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               jmSession.coinjoin_in_process ||
               jmSession.rescanning
             }
+            debug={isDeveloperMode}
           />
         </CardContent>
       </Card>
