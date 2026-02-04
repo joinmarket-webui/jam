@@ -9,9 +9,11 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckCircle2Icon, CheckIcon, ChevronLeftIcon, CopyIcon, Loader2Icon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import { BitcoinQR } from '@/components/receive/BitcoinQR'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
@@ -21,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { CopyButton } from '@/components/ui/jam/CopyButton'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
@@ -30,6 +33,7 @@ import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { cn, formatSats } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { JarIndex, WithRequiredProperty } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 
@@ -42,15 +46,17 @@ type CreateFidelityBondDialogProps = WithRequiredProperty<
   walletFileName: WalletFileName
 }
 
-// Generate list of available months for the next 10 years
-const generateLockdateOptions = (): { value: fb.Lockdate; label: string }[] => {
+// Generate list of available months for the next 10 years (and past months in dev mode)
+const generateLockdateOptions = (isDeveloperMode: boolean): { value: fb.Lockdate; label: string }[] => {
   const options: { value: fb.Lockdate; label: string }[] = []
   const now = new Date()
   const startYear = now.getUTCFullYear()
   const startMonth = now.getUTCMonth()
 
-  // Start 3 months ahead (minimum lockdate)
-  for (let i = 3; i <= 120; i++) {
+  // In dev mode, include past 12 months for testing expired bonds
+  const startOffset = isDeveloperMode ? -12 : 3
+
+  for (let i = startOffset; i <= 120; i++) {
     const monthOffset = startMonth + i
     const year = startYear + Math.floor(monthOffset / 12)
     const month = (monthOffset % 12) + 1
@@ -67,19 +73,34 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
   const { t } = useTranslation()
   const client = useApiClient()
   const walletInfo = useJamWalletInfoContext()
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   // Wizard state
   const [step, setStep] = useState<Step>('select_date')
-  const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')
-  const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | null>(null)
+  const [selectedYear, setSelectedYear] = useState<number | undefined>()
+  const [selectedMonth, setSelectedMonth] = useState<number | undefined>()
+  const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | undefined>()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxo[]>([])
   const [frozenUtxos, setFrozenUtxos] = useState<Utxo[]>([])
   const [confirmationChecked, setConfirmationChecked] = useState(false)
-  const [txResult, setTxResult] = useState<DirectSendResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
+  const [error, setError] = useState<string | undefined>()
 
-  const lockdateOptions = useMemo(() => generateLockdateOptions(), [])
+  const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
+  const yearOptions = useMemo(
+    () => Array.from(new Set(lockdateOptions.map((o) => Number(o.value.split('-')[0])))),
+    [lockdateOptions],
+  )
+  const monthOptions = useMemo(() => {
+    if (!selectedYear) return []
+    return lockdateOptions
+      .filter((o) => o.value.startsWith(`${selectedYear}-`))
+      .map((o) => Number(o.value.split('-')[1]))
+  }, [lockdateOptions, selectedYear])
+  const selectedLockdate = useMemo(() => {
+    if (!selectedYear || !selectedMonth) return undefined
+    return `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}` as fb.Lockdate
+  }, [selectedYear, selectedMonth])
 
   // Get existing fidelity bonds to check for duplicates
   const existingFbLockdates = useMemo(() => {
@@ -92,7 +113,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
       .filter(Boolean) as fb.Lockdate[]
   }, [walletInfo.fidelityBondSummary.fbOutputs])
 
-  const hasDuplicateLockdate = selectedLockdate && existingFbLockdates.includes(selectedLockdate)
+  const hasDuplicateLockdate = selectedLockdate !== undefined && existingFbLockdates.includes(selectedLockdate)
 
   // Get jars with UTXOs
   const jarsWithUtxos = useMemo(() => {
@@ -104,7 +125,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
 
   // Get UTXOs for selected jar
   const availableUtxos = useMemo(() => {
-    if (selectedJarIndex === null) return []
+    if (selectedJarIndex === undefined) return []
     const jar = walletInfo.jars.find((j) => j.jarIndex === selectedJarIndex)
     if (!jar) return []
     return jar.utxos.filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
@@ -112,7 +133,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
 
   // UTXOs that need to be frozen (unselected ones in the jar)
   const utxosToFreeze = useMemo(() => {
-    if (selectedJarIndex === null) return []
+    if (selectedJarIndex === undefined) return []
     const jar = walletInfo.jars.find((j) => j.jarIndex === selectedJarIndex)
     if (!jar) return []
     return jar.utxos.filter(
@@ -137,7 +158,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
       client,
       path: {
         walletname: encodeURIComponent(walletFileName),
-        lockdate: selectedLockdate || '',
+        lockdate: selectedLockdate ?? '',
       },
     }),
     enabled: open && !!selectedLockdate && step !== 'select_date',
@@ -152,9 +173,8 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
     ...freezeMutation({ client }),
     onError: (err: ErrorMessage) => {
       console.error('Freeze error:', err)
-      const reason = err.message || err.error_description || ''
-      const baseMsg = t('earn.fidelity_bond.error_freezing_utxos')
-      setError(reason ? `${baseMsg} ${reason}` : baseMsg)
+      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+      setError(`${t('earn.fidelity_bond.error_freezing_utxos')} ${reason}`)
     },
   })
 
@@ -163,9 +183,8 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
     ...freezeMutation({ client }),
     onError: (err: ErrorMessage) => {
       console.error('Unfreeze error:', err)
-      const reason = err.message || err.error_description || ''
-      const baseMsg = t('earn.fidelity_bond.error_unfreezing_utxos')
-      setError(reason ? `${baseMsg} ${reason}` : baseMsg)
+      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+      setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
     },
   })
 
@@ -174,22 +193,21 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
     ...directsendMutation({ client }),
     onError: (err: ErrorMessage) => {
       console.error('DirectSend error:', err)
-      const reason = err.message || err.error_description || ''
-      const baseMsg = t('earn.fidelity_bond.error_creating_fidelity_bond')
-      setError(reason ? `${baseMsg} ${reason}` : baseMsg)
+      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+      setError(`${t('earn.fidelity_bond.error_creating_fidelity_bond')} ${reason}`)
     },
   })
 
   const handleReset = () => {
     setStep('select_date')
-    setSelectedLockdate('')
-    setSelectedJarIndex(null)
+    setSelectedYear(undefined)
+    setSelectedMonth(undefined)
+    setSelectedJarIndex(undefined)
     setSelectedUtxos([])
     setFrozenUtxos([])
     setConfirmationChecked(false)
-    setTxResult(null)
-    setError(null)
-    setCopied(false)
+    setTxResult(undefined)
+    setError(undefined)
   }
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -200,7 +218,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
   }
 
   const handleBack = () => {
-    setError(null)
+    setError(undefined)
     switch (step) {
       case 'select_jar':
         setStep('select_date')
@@ -223,7 +241,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
   }
 
   const handleNext = async () => {
-    setError(null)
+    setError(undefined)
     switch (step) {
       case 'select_date':
         setStep('select_jar')
@@ -263,7 +281,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
   }
 
   const handleCreateFidelityBond = async () => {
-    if (!address || selectedJarIndex === null) return
+    if (!address || selectedJarIndex === undefined) return
 
     setStep('creating')
 
@@ -315,17 +333,6 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
   const selectAllUtxos = () => setSelectedUtxos([...availableUtxos])
   const deselectAllUtxos = () => setSelectedUtxos([])
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      toast.success(t('receive.text_copy_address'))
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      toast.error(t('global.errors.reason_unknown'))
-    }
-  }
-
   const selectedDateLabel = selectedLockdate
     ? new Date(fb.lockdate.toTimestamp(selectedLockdate)).toLocaleDateString(undefined, {
         year: 'numeric',
@@ -339,7 +346,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
       case 'select_date':
         return !!selectedLockdate
       case 'select_jar':
-        return selectedJarIndex !== null
+        return selectedJarIndex !== undefined
       case 'select_utxos':
         return selectedUtxos.length > 0
       case 'freeze_utxos':
@@ -356,19 +363,48 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
       case 'select_date':
         return (
           <div className="space-y-4">
-            <Label htmlFor="lockdate-select">{t('earn.fidelity_bond.select_date.description')}</Label>
-            <Select value={selectedLockdate} onValueChange={(value) => setSelectedLockdate(value as fb.Lockdate)}>
-              <SelectTrigger id="lockdate-select" className="w-full">
-                <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_month')} />
-              </SelectTrigger>
-              <SelectContent>
-                {lockdateOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>{t('earn.fidelity_bond.select_date.description')}</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Select
+                value={selectedYear?.toString()}
+                onValueChange={(value) => {
+                  setSelectedYear(Number(value))
+                  setSelectedMonth(undefined)
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_year')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={selectedMonth?.toString()}
+                onValueChange={(value) => setSelectedMonth(Number(value))}
+                disabled={!selectedYear}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_month')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthOptions.map((month) => {
+                    const label = new Date(Date.UTC(selectedYear!, month - 1, 1)).toLocaleDateString(undefined, {
+                      month: 'long',
+                    })
+                    return (
+                      <SelectItem key={month} value={month.toString()}>
+                        {label}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
 
             {hasDuplicateLockdate && (
               <Alert variant="warning">
@@ -417,9 +453,7 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
             {jarsWithUtxos.length === 0 && (
               <Alert variant="warning">
                 <AlertTriangleIcon className="h-4 w-4" />
-                <AlertDescription>
-                  {t('earn.fidelity_bond.select_jar.alert_no_jars_available')}
-                </AlertDescription>
+                <AlertDescription>{t('earn.fidelity_bond.select_jar.alert_no_jars_available')}</AlertDescription>
               </Alert>
             )}
           </div>
@@ -566,9 +600,13 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
                     <Label>{t('earn.fidelity_bond.review_inputs.label_address')}</Label>
                     <div className="flex items-center gap-2">
                       <code className="bg-muted flex-1 rounded p-2 text-xs break-all">{address}</code>
-                      <Button variant="outline" size="icon" onClick={() => copyToClipboard(address)}>
-                        {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
-                      </Button>
+                      <CopyButton
+                        className={buttonVariants({ variant: 'outline', size: 'icon' })}
+                        value={address}
+                        text={<CopyIcon className="h-4 w-4" />}
+                        successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                        onSuccess={() => toast.success(t('receive.text_copy_address'))}
+                      />
                     </div>
                   </div>
                 </div>
@@ -577,8 +615,8 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
 
             <Alert variant="warning">
               <AlertTriangleIcon className="h-4 w-4" />
-              <AlertTitle>{t('earn.fidelity_bond.confirm_modal.title')}</AlertTitle>
               <AlertDescription>
+                <strong>{t('earn.fidelity_bond.confirm_modal.title')}</strong>{' '}
                 {t('earn.fidelity_bond.confirm_modal.body', {
                   humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
                   date: selectedDateLabel || '',
@@ -632,9 +670,13 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
                   <Label>{t('earn.fidelity_bond.create_fidelity_bond.label_address')}</Label>
                   <div className="flex items-center gap-2">
                     <code className="bg-muted flex-1 rounded p-2 text-xs break-all">{address}</code>
-                    <Button variant="outline" size="icon" onClick={() => copyToClipboard(address)}>
-                      {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
-                    </Button>
+                    <CopyButton
+                      className={buttonVariants({ variant: 'outline', size: 'icon' })}
+                      value={address}
+                      text={<CopyIcon className="h-4 w-4" />}
+                      successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                      onSuccess={() => toast.success(t('receive.text_copy_address'))}
+                    />
                   </div>
                 </div>
               )}
@@ -643,9 +685,13 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
                   <Label>{t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}</Label>
                   <div className="flex items-center gap-2">
                     <code className="bg-muted flex-1 rounded p-2 text-xs break-all">{txResult.txinfo.txid}</code>
-                    <Button variant="outline" size="icon" onClick={() => copyToClipboard(txResult.txinfo.txid!)}>
-                      {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
-                    </Button>
+                    <CopyButton
+                      className={buttonVariants({ variant: 'outline', size: 'icon' })}
+                      value={txResult.txinfo.txid}
+                      text={<CopyIcon className="h-4 w-4" />}
+                      successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                      onSuccess={() => toast.success(t('receive.text_copy_address'))}
+                    />
                   </div>
                 </div>
               )}
@@ -726,7 +772,6 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
         {error && (
           <Alert variant="destructive">
             <AlertTriangleIcon className="h-4 w-4" />
-            <AlertTitle>{t('global.error')}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
