@@ -298,6 +298,16 @@
     "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
     "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. Consider adding them to your config manually.",
     "direct_payment_error_message_bad_request": "Please verify your inputs carefully.",
+    "recovery": {
+      "hint_inputs_missing_or_spent": "This often means your wallet state is out of sync (e.g. due to a replaced/conflicting transaction). Refresh or resync the wallet state before trying again.",
+      "button_resync_wallet_state": "Resync wallet state",
+      "button_resync_loading": "Resyncing...",
+      "button_open_rescan": "Open rescan",
+      "text_resyncing_wallet_state": "Resyncing wallet state...",
+      "error_rescan_not_supported": "Rescanning the timechain is not supported by your backend.",
+      "hint_rescan_not_supported": "Try refreshing, locking/unlocking the wallet, or restarting the service.",
+      "error_resyncing_wallet_state_failed": "Resyncing wallet state failed. Reason: {{ reason }}"
+    },
     "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }} in transaction {{ txid }}.",
     "text_maker_running": "Earn is active. Stop the service in order to send collaborative transactions.",
@@ -667,6 +677,20 @@
     "progress_description": "This estimate is the minimum waiting time. Additional delays due to network communication or transaction confirmation are not considered.",
     "progress_current_state": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> to process...",
     "progress_done": "All transactions completed successfully. The scheduler will stop soon.",
+    "recovery": {
+      "alert_stalled_heading": "Detected a possibly replaced transaction",
+      "alert_stalled_body": "The scheduler has been waiting for a transaction to confirm for a long time. This can happen if the original transaction was replaced or evicted. Resync your wallet state to recover correct jar balances and UTXO information.",
+      "label_txid": "Txid",
+      "button_stop_and_resync": "Stop & resync wallet",
+      "button_stop_and_resync_loading": "Stopping & resyncing...",
+      "button_stop_scheduler": "Stop scheduler",
+      "button_refresh": "Refresh",
+      "hint_rescan_not_supported": "Your backend does not support rescanning the timechain. Try refreshing, locking/unlocking the wallet, or restarting the service.",
+      "text_stopping_scheduler": "Detected conflicting/replaced tx → stopping scheduler...",
+      "text_resyncing_wallet_state": "Detected conflicting/replaced tx → resyncing wallet state...",
+      "error_rescan_not_supported": "Cannot resync automatically: rescanning the timechain is not supported by your backend.",
+      "error_resyncing_wallet_state_failed": "Resyncing wallet state failed. Reason: {{ reason }}"
+    },
     "precondition": {
       "hint_missing_utxos": "To run the scheduler you need UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "The scheduler requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",

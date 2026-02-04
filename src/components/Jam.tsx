@@ -1,12 +1,18 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors, FormikValues, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
-import { useServiceInfo, useReloadServiceInfo, Schedule, StateFlag } from '../context/ServiceInfoContext'
+import {
+  useServiceInfo,
+  useReloadServiceInfo,
+  useDispatchServiceInfo,
+  Schedule,
+  StateFlag,
+} from '../context/ServiceInfoContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo, WalletInfo } from '../context/WalletContext'
-import { isDebugFeatureEnabled } from '../constants/debugFeatures'
+import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
 import PageTitle from './PageTitle'
@@ -18,9 +24,17 @@ import { ConfirmModal, ConfirmModalProps } from './Modal'
 import FeeConfigModal from './settings/FeeConfigModal'
 import { useFeeConfigValues } from '../hooks/Fees'
 import styles from './Jam.module.css'
+import { isFeatureEnabled } from '../constants/features'
+import { startQuickWalletResync } from '../utils/walletResync'
 
 const DEST_ADDRESS_COUNT_PROD = 3
 const DEST_ADDRESS_COUNT_TEST = 1
+
+const SCHEDULE_STALL_WARNING_TIMEOUT_MS: Milliseconds = isDevMode() ? 60_000 : 30 * 60_000
+const QUICK_WALLET_RESYNC_LOOKBACK_BLOCKS = 2_016 // 2 weeks on mainnet
+const SCHEDULE_ACTIVE_BROADCAST_TX_STORAGE_KEY = 'jam.scheduler.activeBroadcastTx'
+
+const getActiveScheduleEntryIndex = (schedule: Schedule): number => schedule.findIndex((it) => it[6] !== 1)
 
 const getNewAddressesForTesting = (
   walletInfo: WalletInfo,
@@ -163,6 +177,7 @@ export default function Jam({ wallet }: JamProps) {
   const settings = useSettings()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
+  const dispatchServiceInfo = useDispatchServiceInfo()
   const walletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
@@ -172,8 +187,13 @@ export default function Jam({ wallet }: JamProps) {
   const [isWaitingSchedulerStart, setIsWaitingSchedulerStart] = useState(false)
   const [isWaitingSchedulerStop, setIsWaitingSchedulerStop] = useState(false)
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | null>(null)
+  const currentScheduleRef = useRef<Schedule | null>(null)
   const [lastKnownSchedule, resetLastKnownSchedule] = useLatestTruthy(currentSchedule ?? undefined)
   const [isShowSuccessMessage, setIsShowSuccessMessage] = useState(false)
+  const [activeBroadcastTx, setActiveBroadcastTx] = useState<{ txid: Api.TxId; scheduleIndex: number } | null>(null)
+  const [activeBroadcastTxSeenAt, setActiveBroadcastTxSeenAt] = useState<number | null>(null)
+  const [showScheduleStallRecovery, setShowScheduleStallRecovery] = useState(false)
+  const [isResyncingWalletState, setIsResyncingWalletState] = useState(false)
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
   const [showScheduleConfirmModal, setShowScheduleConfirmModal] = useState(false)
   const maxFeesConfigMissing = useMemo(
@@ -183,6 +203,12 @@ export default function Jam({ wallet }: JamProps) {
   )
 
   const isRescanningInProgress = useMemo(() => serviceInfo?.rescanning === true, [serviceInfo])
+  const isRescanChainSupported = useMemo(() => {
+    if (!serviceInfo) return false
+    // If the server version is unknown (e.g. temporarily unavailable), still allow trying to rescan.
+    if (!serviceInfo.server) return true
+    return isFeatureEnabled('rescanChain', serviceInfo)
+  }, [serviceInfo])
 
   const collaborativeOperationRunning = useMemo(
     () => serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false,
@@ -258,6 +284,112 @@ export default function Jam({ wallet }: JamProps) {
       console.table(scheduleUpdate)
     }
   }, [serviceInfo])
+
+  useEffect(() => {
+    currentScheduleRef.current = currentSchedule
+  }, [currentSchedule])
+
+  useEffect(() => {
+    if (!currentSchedule) {
+      setActiveBroadcastTx(null)
+      return
+    }
+
+    const activeIndex = getActiveScheduleEntryIndex(currentSchedule)
+    if (activeIndex < 0) {
+      setActiveBroadcastTx(null)
+      return
+    }
+
+    const stateFlag = currentSchedule[activeIndex][6]
+    if (typeof stateFlag === 'string') {
+      setActiveBroadcastTx((prev) =>
+        prev && prev.txid === stateFlag && prev.scheduleIndex === activeIndex
+          ? prev
+          : { txid: stateFlag, scheduleIndex: activeIndex },
+      )
+      return
+    }
+
+    setActiveBroadcastTx(null)
+  }, [currentSchedule])
+
+  useEffect(() => {
+    if (!activeBroadcastTx) {
+      setActiveBroadcastTxSeenAt(null)
+      setShowScheduleStallRecovery(false)
+      try {
+        sessionStorage.removeItem(SCHEDULE_ACTIVE_BROADCAST_TX_STORAGE_KEY)
+      } catch (_) {
+        // ignore
+      }
+      return
+    }
+
+    setShowScheduleStallRecovery(false)
+
+    const now = Date.now()
+    let seenAt = now
+
+    try {
+      const stored = sessionStorage.getItem(SCHEDULE_ACTIVE_BROADCAST_TX_STORAGE_KEY)
+      const parsed = stored ? JSON.parse(stored) : null
+
+      const matchesActive =
+        parsed &&
+        typeof parsed === 'object' &&
+        parsed.walletFileName === wallet.walletFileName &&
+        parsed.txid === activeBroadcastTx.txid &&
+        parsed.scheduleIndex === activeBroadcastTx.scheduleIndex &&
+        typeof parsed.seenAt === 'number'
+
+      if (matchesActive) {
+        seenAt = parsed.seenAt
+      } else {
+        sessionStorage.setItem(
+          SCHEDULE_ACTIVE_BROADCAST_TX_STORAGE_KEY,
+          JSON.stringify({
+            walletFileName: wallet.walletFileName,
+            txid: activeBroadcastTx.txid,
+            scheduleIndex: activeBroadcastTx.scheduleIndex,
+            seenAt: now,
+          }),
+        )
+      }
+    } catch (_) {
+      // ignore
+    }
+
+    setActiveBroadcastTxSeenAt(seenAt)
+  }, [activeBroadcastTx, wallet.walletFileName])
+
+  useEffect(() => {
+    if (!activeBroadcastTx || activeBroadcastTxSeenAt === null) return
+
+    const elapsed = Date.now() - activeBroadcastTxSeenAt
+
+    const reportStall = () => {
+      const active = activeBroadcastTx
+      const scheduleEntry = currentScheduleRef.current?.[active.scheduleIndex]
+      console.warn('SWEEP_TX_STALLED', {
+        event: 'SWEEP_TX_STALLED',
+        txid: active.txid,
+        scheduleIndex: active.scheduleIndex,
+        scheduleEntry,
+      })
+      setShowScheduleStallRecovery(true)
+    }
+
+    if (elapsed >= SCHEDULE_STALL_WARNING_TIMEOUT_MS) {
+      reportStall()
+      return
+    }
+
+    const remaining = Math.max(0, SCHEDULE_STALL_WARNING_TIMEOUT_MS - elapsed)
+    const stallTimer = setTimeout(reportStall, remaining)
+
+    return () => clearTimeout(stallTimer)
+  }, [activeBroadcastTx, activeBroadcastTxSeenAt])
 
   useEffect(() => {
     const stillRunningOrManualAbort =
@@ -351,6 +483,57 @@ export default function Jam({ wallet }: JamProps) {
       })
   }
 
+  const stopScheduleAndResyncWalletState = async () => {
+    if (isRescanningInProgress || isResyncingWalletState) return
+
+    setAlert(undefined)
+    setIsResyncingWalletState(true)
+
+    const txid = activeBroadcastTx?.txid
+    const scheduleIndex = activeBroadcastTx?.scheduleIndex
+
+    try {
+      if (currentSchedule) {
+        setAlert({ variant: 'info', message: t('scheduler.recovery.text_stopping_scheduler') })
+        const stopped = await stopSchedule()
+        if (!stopped) return
+      }
+
+      if (!isRescanChainSupported) {
+        setAlert({ variant: 'warning', message: t('scheduler.recovery.error_rescan_not_supported') })
+        return
+      }
+
+      setAlert({ variant: 'info', message: t('scheduler.recovery.text_resyncing_wallet_state') })
+
+      const abortCtrl = new AbortController()
+      const { chainTipHeight, startHeight } = await startQuickWalletResync({
+        wallet,
+        signal: abortCtrl.signal,
+        lookbackBlocks: QUICK_WALLET_RESYNC_LOOKBACK_BLOCKS,
+      })
+
+      dispatchServiceInfo({ rescanning: true })
+      await reloadServiceInfo({ signal: abortCtrl.signal })
+
+      console.warn('SWEEP_TX_REPLACED', {
+        event: 'SWEEP_TX_REPLACED',
+        originalTxid: txid,
+        scheduleIndex,
+        scheduleEntry: scheduleIndex !== undefined ? currentScheduleRef.current?.[scheduleIndex] : undefined,
+        chainTipHeight,
+        startHeight,
+      })
+    } catch (e: any) {
+      const message = t('scheduler.recovery.error_resyncing_wallet_state_failed', {
+        reason: e.message || t('global.errors.reason_unknown'),
+      })
+      setAlert({ variant: 'danger', message })
+    } finally {
+      setIsResyncingWalletState(false)
+    }
+  }
+
   return (
     <>
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
@@ -368,6 +551,67 @@ export default function Jam({ wallet }: JamProps) {
               ) : (
                 <>
                   <div className="mb-4">
+                    {showScheduleStallRecovery && activeBroadcastTx && (
+                      <rb.Alert variant="warning" className="slashed-zeroes">
+                        <rb.Alert.Heading>{t('scheduler.recovery.alert_stalled_heading')}</rb.Alert.Heading>
+                        <div className="d-flex flex-column gap-2">
+                          <div>{t('scheduler.recovery.alert_stalled_body')}</div>
+                          <div className="small">
+                            <span className="text-secondary">{t('scheduler.recovery.label_txid')}: </span>
+                            <span className="font-monospace break-word">{activeBroadcastTx.txid}</span>
+                          </div>
+
+                          <div className="d-flex flex-wrap gap-2 mt-2">
+                            <rb.Button
+                              variant="dark"
+                              disabled={!isRescanChainSupported || isResyncingWalletState || isRescanningInProgress}
+                              onClick={() => stopScheduleAndResyncWalletState()}
+                            >
+                              {isResyncingWalletState ? (
+                                <>
+                                  <rb.Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                    className="me-2"
+                                  />
+                                  {t('scheduler.recovery.button_stop_and_resync_loading')}
+                                </>
+                              ) : (
+                                <>{t('scheduler.recovery.button_stop_and_resync')}</>
+                              )}
+                            </rb.Button>
+
+                            <rb.Button
+                              variant="outline-dark"
+                              disabled={isResyncingWalletState || isRescanningInProgress}
+                              onClick={() => stopSchedule()}
+                            >
+                              {t('scheduler.recovery.button_stop_scheduler')}
+                            </rb.Button>
+
+                            <rb.Button
+                              variant="outline-dark"
+                              disabled={isResyncingWalletState || isRescanningInProgress}
+                              onClick={async () => {
+                                const abortCtrl = new AbortController()
+                                await reloadData({ signal: abortCtrl.signal })
+                              }}
+                            >
+                              {t('scheduler.recovery.button_refresh')}
+                            </rb.Button>
+                          </div>
+
+                          {!isRescanChainSupported && (
+                            <div className="text-secondary small">
+                              {t('scheduler.recovery.hint_rescan_not_supported')}
+                            </div>
+                          )}
+                        </div>
+                      </rb.Alert>
+                    )}
                     <ScheduleProgress schedule={currentSchedule} />
                   </div>
 

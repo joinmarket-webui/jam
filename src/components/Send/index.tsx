@@ -14,12 +14,14 @@ import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
 import { FeeValues, TxFee, useFeeConfigValues } from '../../hooks/Fees'
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
-import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
+import { useServiceInfo, useReloadServiceInfo, useDispatchServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
+import { isFeatureEnabled } from '../../constants/features'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/jm'
 import { initialNumCollaborators } from './helpers'
+import { startQuickWalletResync } from '../../utils/walletResync'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
@@ -92,6 +94,7 @@ export default function Send({ wallet }: SendProps) {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
+  const dispatchServiceInfo = useDispatchServiceInfo()
   const loadConfigValue = useLoadConfigValue()
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo?.coinjoinInProgress === true, [serviceInfo])
@@ -100,6 +103,7 @@ export default function Send({ wallet }: SendProps) {
 
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
+  const [isResyncingWalletState, setIsResyncingWalletState] = useState(false)
   const [minNumCollaborators, setMinNumCollaborators] = useState(JM_MINIMUM_MAKERS_DEFAULT)
   const initNumCollaborators = useMemo(
     () => (isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : initialNumCollaborators(minNumCollaborators)),
@@ -122,14 +126,76 @@ export default function Send({ wallet }: SendProps) {
       isCoinjoinInProgress ||
       isMakerRunning ||
       isRescanningInProgress ||
+      isResyncingWalletState ||
       waitForUtxosToBeSpent.length > 0,
-    [maxFeesConfigMissing, isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent],
+    [
+      maxFeesConfigMissing,
+      isCoinjoinInProgress,
+      isMakerRunning,
+      isRescanningInProgress,
+      isResyncingWalletState,
+      waitForUtxosToBeSpent,
+    ],
   )
   const [isInitializing, setIsInitializing] = useState(!isOperationDisabled)
   const isLoading = useMemo(
     () => !walletInfo || isInitializing || waitForUtxosToBeSpent.length > 0,
     [walletInfo, isInitializing, waitForUtxosToBeSpent],
   )
+
+  const isRescanChainSupported = useMemo(() => {
+    if (!serviceInfo) return false
+    // If the server version is unknown (e.g. temporarily unavailable), still allow trying to rescan.
+    if (!serviceInfo.server) return true
+    return isFeatureEnabled('rescanChain', serviceInfo)
+  }, [serviceInfo])
+
+  const quickResyncWalletState = useCallback(async () => {
+    if (isRescanningInProgress || isResyncingWalletState) return
+    if (!isRescanChainSupported) {
+      setAlert({ variant: 'warning', message: t('send.recovery.error_rescan_not_supported') })
+      return
+    }
+
+    setAlert(undefined)
+    setIsResyncingWalletState(true)
+
+    try {
+      setAlert({ variant: 'info', message: t('send.recovery.text_resyncing_wallet_state') })
+      const abortCtrl = new AbortController()
+
+      const { chainTipHeight, startHeight } = await startQuickWalletResync({
+        wallet,
+        signal: abortCtrl.signal,
+        lookbackBlocks: 2_016,
+      })
+
+      dispatchServiceInfo({ rescanning: true })
+      await reloadServiceInfo({ signal: abortCtrl.signal })
+
+      console.warn('WALLET_STATE_RESYNC_STARTED', {
+        event: 'WALLET_STATE_RESYNC_STARTED',
+        chainTipHeight,
+        startHeight,
+        reason: 'user_triggered',
+      })
+    } catch (e: any) {
+      const message = t('send.recovery.error_resyncing_wallet_state_failed', {
+        reason: e.message || t('global.errors.reason_unknown'),
+      })
+      setAlert({ variant: 'danger', message })
+    } finally {
+      setIsResyncingWalletState(false)
+    }
+  }, [
+    dispatchServiceInfo,
+    isRescanChainSupported,
+    isRescanningInProgress,
+    isResyncingWalletState,
+    reloadServiceInfo,
+    t,
+    wallet,
+  ])
 
   const sortedAccountBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -274,10 +340,39 @@ export default function Send({ wallet }: SendProps) {
         success = true
       } else {
         const errorMessage = await Api.Helper.extractErrorMessage(res)
-        const message = `${errorMessage} ${
-          res.status === 400 ? t('send.direct_payment_error_message_bad_request') : ''
-        }`
-        setAlert({ variant: 'danger', message })
+        const baseMessage = `${errorMessage} ${res.status === 400 ? t('send.direct_payment_error_message_bad_request') : ''}`
+        const isInputsMissingOrSpent = errorMessage.toLowerCase().includes('missingorspent')
+
+        setAlert({
+          variant: 'danger',
+          message: isInputsMissingOrSpent ? (
+            <>
+              <div>{baseMessage}</div>
+              <div className="mt-2">{t('send.recovery.hint_inputs_missing_or_spent')}</div>
+              {isRescanChainSupported ? (
+                <div className="mt-3 d-flex flex-wrap gap-2">
+                  <rb.Button
+                    size="sm"
+                    variant="outline-light"
+                    disabled={isRescanningInProgress || isResyncingWalletState}
+                    onClick={() => quickResyncWalletState()}
+                  >
+                    {isResyncingWalletState
+                      ? t('send.recovery.button_resync_loading')
+                      : t('send.recovery.button_resync_wallet_state')}
+                  </rb.Button>
+                  <Link className="btn btn-outline-light btn-sm" to={routes.rescanChain}>
+                    {t('send.recovery.button_open_rescan')}
+                  </Link>
+                </div>
+              ) : (
+                <div className="mt-2 text-secondary">{t('send.recovery.hint_rescan_not_supported')}</div>
+              )}
+            </>
+          ) : (
+            baseMessage
+          ),
+        })
       }
 
       setIsSending(false)
