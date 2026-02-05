@@ -30,7 +30,7 @@ const types = [
 
 const generateChangelog = (newVersion) => {
   return new Promise((resolve, reject) => {
-    let oldContent = fs.readFileSync(file, 'utf-8')
+    let oldContent = fs.readFileSync(file, 'utf8')
     const oldContentStart = oldContent.search(START_OF_LAST_RELEASE_PATTERN)
 
     if (oldContentStart !== -1) {
