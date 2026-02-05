@@ -40,13 +40,13 @@ export const lockdate = (() => {
   const toTimestamp = (lockdate: Lockdate): Milliseconds => {
     const split = lockdate.split('-')
     if (split.length !== 2 || split[0].length !== 4 || split[1].length !== 2) {
-      throw new Error('Unsupported format')
+      throw new TypeError('Unsupported format')
     }
 
     const year = parseInt(split[0], 10)
     const month = parseInt(split[1], 10)
     if (Number.isNaN(year) || Number.isNaN(month)) {
-      throw new Error('Unsupported format')
+      throw new TypeError('Unsupported format')
     }
     return Date.UTC(year, month - 1, 1)
   }

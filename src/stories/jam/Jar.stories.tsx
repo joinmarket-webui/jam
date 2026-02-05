@@ -26,11 +26,11 @@ const formatAmount = (amount: number, currency: Currency): string => {
 export const Sats: Story = {
   args: {
     name: 'Savings Jar',
-    amount: 15000000,
+    amount: 15_000_000,
     color: '#e2b86a',
     currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="sats" />,
-    formatAmount: () => formatAmount(15000000, 'sats'),
-    totalBalance: 50000000,
+    formatAmount: () => formatAmount(15_000_000, 'sats'),
+    totalBalance: 50_000_000,
   },
 }
 
@@ -40,8 +40,8 @@ export const BTC: Story = {
     amount: 20000000,
     color: '#3b5ba9',
     currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="btc" />,
-    formatAmount: () => formatAmount(20000000, 'btc'),
-    totalBalance: 50000000,
+    formatAmount: () => formatAmount(20_000_000, 'btc'),
+    totalBalance: 50_000_000,
   },
 }
 
@@ -52,17 +52,17 @@ export const Empty: Story = {
     color: '#c94f7c',
     currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="sats" />,
     formatAmount: () => formatAmount(0, 'sats'),
-    totalBalance: 50000000,
+    totalBalance: 50_000_000,
   },
 }
 
 export const Full: Story = {
   args: {
     name: 'Full Jar',
-    amount: 50000000,
+    amount: 50_000_000,
     color: '#a67c52',
     currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="sats" />,
-    formatAmount: () => formatAmount(50000000, 'sats'),
-    totalBalance: 100000000,
+    formatAmount: () => formatAmount(50_000_000, 'sats'),
+    totalBalance: 100_000_000,
   },
 }

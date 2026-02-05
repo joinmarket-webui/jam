@@ -25,11 +25,11 @@ const meta = {
     },
     balance: {
       description: 'Current balance of the jar in sats',
-      control: { type: 'number', min: 0, step: 1000 },
+      control: { type: 'number', min: 0, step: 1_000 },
     },
     totalBalance: {
       description: 'Total wallet balance in sats, used to calculate fill percentage',
-      control: { type: 'number', min: 1, step: 1000 },
+      control: { type: 'number', min: 1, step: 1_000 },
     },
     isSelected: {
       description: 'Whether the jar is currently selected',
@@ -149,10 +149,10 @@ export const JarGrid: Story = {
   },
   render: () => {
     const jars = [
-      { name: 'Spending', color: '#3498db', balance: 150000, isSelected: true },
-      { name: 'Savings', color: '#27ae60', balance: 250000, isSelected: false },
-      { name: 'Emergency', color: '#e74c3c', balance: 50000, isSelected: false },
-      { name: 'Travel', color: '#f39c12', balance: 100000, isSelected: false },
+      { name: 'Spending', color: '#3498db', balance: 150_000, isSelected: true },
+      { name: 'Savings', color: '#27ae60', balance: 250_000, isSelected: false },
+      { name: 'Emergency', color: '#e74c3c', balance: 50_000, isSelected: false },
+      { name: 'Travel', color: '#f39c12', balance: 100_000, isSelected: false },
       { name: 'Gift', color: '#9b59b6', balance: 0, isSelected: false },
     ]
 
