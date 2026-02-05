@@ -52,7 +52,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }, [jars, sendFromValuesAwaitingConfirmation])
 
   const availableUtxosForPayment = useMemo(() => {
-    return (sourceJar?.utxos || []).filter((utxo) => !utxo.frozen).sort((a, b) => a.confirmations - b.confirmations)
+    return (sourceJar?.utxos || []).filter((utxo) => !utxo.frozen).toSorted((a, b) => a.confirmations - b.confirmations)
   }, [sourceJar])
 
   const destinationJar = useMemo(() => {

@@ -81,7 +81,7 @@ const BitcoinBalance = ({ value, colored = true, ...props }: BitcoinBalanceProps
   const numberString = formatBtc(value)
   const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
 
-  const fractionPartArray = fractionalPart.split('')
+  const fractionPartArray = [...fractionalPart]
   const integerPartIsZero = integerPart === '0'
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
@@ -160,16 +160,16 @@ export const Balance = ({ valueString, convertToUnit, showBalance = true, ...pro
       )
     }
 
-    const valueNumber = parseFloat(valueString)
+    const valueNumber = Number.parseFloat(valueString)
     if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
       return <BalanceComponent {...props}>{valueString}</BalanceComponent>
     }
 
     // Treat integers as sats.
-    const valueIsSats = valueString === parseInt(valueString, 10).toString()
+    const valueIsSats = valueString === Number.parseInt(valueString, 10).toString()
     // Treat decimal numbers as btc.
-    const valueIsBtc = !valueIsSats && valueString.indexOf('.') > -1
+    const valueIsBtc = !valueIsSats && valueString.includes('.')
 
     if (displayMode === DISPLAY_MODE_BTC) {
       if (valueIsBtc) {

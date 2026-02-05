@@ -62,10 +62,7 @@ async function deriveAccountXpubsFromSeed(
   const seed = await mnemonicToSeed(seedPhrase.join(' '))
 
   // Convert to native segwit format (zpub/vpub) and build account info
-  const accounts: AccountXpubInfo[] = []
-  for (let i = 0; i < jars.length; i++) {
-    const jar = jars[i]
-
+  return jars.map((jar) => {
     const path = `m/${HD_PATH_PURPOSE}'/${coinType}'/${jar.jarIndex}'`
     const xpub = deriveAccountXpub(seed, path)
 
@@ -88,16 +85,13 @@ async function deriveAccountXpubsFromSeed(
         xpub: convertExtendedPublicKey(xpub, targetFormat),
       })
     }
-
-    accounts.push({
+    return {
       accountIndex: jar.jarIndex,
       accountName: jar.name,
       path,
-      xpubs: xpubs,
-    })
-  }
-
-  return accounts
+      xpubs,
+    }
+  })
 }
 
 interface AccountXpubsAccordionProps {
@@ -217,8 +211,8 @@ export const AccountXpubsDialog = ({
 
   const seedQuery = useQuery({
     ...seedQueryOptions,
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
     select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
@@ -237,8 +231,8 @@ export const AccountXpubsDialog = ({
         delayAfter: 210,
       },
     ),
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
     enabled: !!seedQuery.data,
   })
 

@@ -43,8 +43,8 @@ export const lockdate = (() => {
       throw new TypeError('Unsupported format')
     }
 
-    const year = parseInt(split[0], 10)
-    const month = parseInt(split[1], 10)
+    const year = Number.parseInt(split[0], 10)
+    const month = Number.parseInt(split[1], 10)
     if (Number.isNaN(year) || Number.isNaN(month)) {
       throw new TypeError('Unsupported format')
     }
@@ -81,7 +81,7 @@ export const lockdate = (() => {
 export const utxo = (() => {
   const isEqual = (lhs: Utxo, rhs: Utxo) => lhs.utxo === rhs.utxo
 
-  const isInList = (utxo: Utxo, list: Array<Utxo>) => list.findIndex((it) => isEqual(it, utxo)) !== -1
+  const isInList = (utxo: Utxo, list: Array<Utxo>) => list.some((it) => isEqual(it, utxo))
 
   const utxosToFreeze = (allUtxos: Array<Utxo>, fbUtxos: Array<Utxo>) =>
     allUtxos.filter((utxo) => !isInList(utxo, fbUtxos))
@@ -96,7 +96,7 @@ export const utxo = (() => {
     const pathAndLocktime = utxo.path.split(':')
     if (pathAndLocktime.length !== 2) return null
 
-    const locktimeUnixTimestamp: Seconds = parseInt(pathAndLocktime[1], 10)
+    const locktimeUnixTimestamp: Seconds = Number.parseInt(pathAndLocktime[1], 10)
     if (Number.isNaN(locktimeUnixTimestamp)) return null
 
     return locktimeUnixTimestamp * 1_000

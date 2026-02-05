@@ -4,7 +4,7 @@ import App from '@/App.tsx'
 import '@/i18n/config'
 import './index.css'
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.querySelector('#root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,

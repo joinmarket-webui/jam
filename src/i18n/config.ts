@@ -15,4 +15,5 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
   fallbackLng: 'en',
 })
 
+// eslint-disable-next-line unicorn/prefer-export-from -- enables nicer syntax
 export default i18n

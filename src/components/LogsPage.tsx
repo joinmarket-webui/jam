@@ -72,9 +72,9 @@ function LogContent({ value, refresh }: LogContentProps) {
     const a = document.createElement('a')
     a.href = url
     a.download = JMWALLETD_LOG_FILE_NAME
-    document.body.appendChild(a)
+    document.body.append(a)
     a.click()
-    document.body.removeChild(a)
+    a.remove()
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
@@ -137,12 +137,12 @@ export const LogsPage = () => {
   const refresh = useCallback(
     async (signal: AbortSignal) => {
       if (!authState?.auth?.token) {
-        // TODO: i18n
         setAlert({
           variant: 'destructive',
+          // TODO: i18n
           message: 'No authentication token available. Please login again.',
         })
-        return Promise.reject(new Error('No authentication token'))
+        throw new Error('No authentication token')
       }
 
       return fetchLog({

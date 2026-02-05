@@ -64,8 +64,8 @@ export const SeedPhraseDialog = ({
 
   const seedQuery = useQuery({
     ...seedQueryOptions,
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
     select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,

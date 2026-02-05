@@ -1,5 +1,5 @@
 import conventionalChangelog from 'conventional-changelog'
-import fs from 'fs'
+import fs from 'node:fs'
 
 const START_OF_LAST_RELEASE_PATTERN = /(^#+ \[?[0-9]+\.[0-9]+\.[0-9]+|<a name=)/m
 
@@ -58,8 +58,8 @@ const generateChangelog = (newVersion) => {
     })
 
     changelogStream.on('end', () => {
-      changelog = changelog.replace(/###\s(\w+)/g, '#### $1').replace(/\n\n\n/g, '\n\n')
-      const finalChangelog = header + '\n' + (changelog + oldContent).replace(/\n+$/, '\n')
+      changelog = changelog.replaceAll(/###\s(\w+)/g, '#### $1').replaceAll('\n\n\n', '\n\n')
+      const finalChangelog = header + '\n' + (changelog + oldContent).replaceAll(/\n+$/, '\n')
       fs.writeFileSync(file, finalChangelog, 'utf8')
       return resolve()
     })

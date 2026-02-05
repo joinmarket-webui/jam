@@ -30,7 +30,7 @@ const toLastHdPathIndex = (hdPath: HdPath): number | null => {
   const indexOfFirstColon = stringValue.indexOf(':') // value can be `/76:1777593600`
 
   const sanitizedStringValue = indexOfFirstColon === -1 ? stringValue : stringValue.substring(0, indexOfFirstColon)
-  const numberValue = parseInt(sanitizedStringValue, 10)
+  const numberValue = Number.parseInt(sanitizedStringValue, 10)
   return !isValidNumber(numberValue) ? null : numberValue
 }
 

@@ -39,10 +39,10 @@ export const sortWallets = (
   wallets: WalletFileName[],
   activeWalletFileName: WalletFileName | null = null,
 ): WalletFileName[] => {
-  if (activeWalletFileName && wallets.indexOf(activeWalletFileName) >= 0) {
+  if (activeWalletFileName && wallets.includes(activeWalletFileName)) {
     return [activeWalletFileName, ...sortWallets(wallets.filter((a) => a !== activeWalletFileName))]
   } else {
-    return [...wallets].sort((a, b) => a.localeCompare(b))
+    return wallets.toSorted((a, b) => a.localeCompare(b))
   }
 }
 
@@ -87,9 +87,9 @@ export function setIntervalDebounced(
   })()
 }
 
-export const satsToBtc = (value: string) => parseInt(value, 10) / 100_000_000
+export const satsToBtc = (value: string) => Number.parseInt(value, 10) / 100_000_000
 
-export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100_000_000)
+export const btcToSats = (value: string) => Math.round(Number.parseFloat(value) * 100_000_000)
 
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
@@ -132,9 +132,9 @@ export const toSemVer = (raw?: string): SemVer => {
   }
 
   return {
-    major: parseInt(arr[1], 10),
-    minor: parseInt(arr[2], 10),
-    patch: parseInt(arr[3], 10),
+    major: Number.parseInt(arr[1], 10),
+    minor: Number.parseInt(arr[2], 10),
+    patch: Number.parseInt(arr[3], 10),
     raw,
   }
 }
@@ -196,8 +196,8 @@ export const time = (() => {
     const rtf = new Intl.RelativeTimeFormat(locale || 'en', { numeric: 'always', style: 'long' })
 
     const sortedUnits = (Object.keys(UNIT_MILLIS) as Unit[])
-      .sort((lhs, rhs) => UNIT_MILLIS[lhs] - UNIT_MILLIS[rhs])
-      .reverse()
+      .toSorted((lhs, rhs) => UNIT_MILLIS[lhs] - UNIT_MILLIS[rhs])
+      .toReversed()
 
     for (const unit of sortedUnits) {
       const limit = UNIT_MILLIS[unit]

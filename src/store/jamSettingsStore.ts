@@ -27,7 +27,7 @@ export const jamSettingsStore = createStore<JamSettingsStoreState>()(
   persist(
     (set) => ({
       state: initial,
-      update: (val) => set((state) => ({ state: { ...(state.state || {}), ...val } })),
+      update: (val) => set((state) => ({ state: { ...state.state, ...val } })),
       clear: () => set({ state: initial }),
     }),
     {

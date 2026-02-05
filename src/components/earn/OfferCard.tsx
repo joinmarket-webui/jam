@@ -74,11 +74,11 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             <Label className="font-semibold">{t('earn.current.text_cjfee')}</Label>
             <span className="text-sm">
               {isRelativeOffer(value?.ordertype || '') ? (
-                <span className="select-all">{factorToPercentage(parseFloat(value?.cjfee || '') || 0)}%</span>
+                <span className="select-all">{factorToPercentage(Number.parseFloat(value?.cjfee || '') || 0)}%</span>
               ) : (
                 <>
                   <span className="tabular-nums select-all">
-                    {formatAmount(parseInt(String(value?.cjfee || '0'), 10))}
+                    {formatAmount(Number.parseInt(String(value?.cjfee || '0'), 10))}
                   </span>
                   {currencySymbol('sm')}
                 </>
@@ -92,7 +92,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             <Label className="font-semibold">{t('earn.current.text_minsize')}</Label>
             <span className="text-sm">
               <span className="tabular-nums select-all">
-                {formatAmount(parseInt(String(value?.minsize || '0'), 10))}
+                {formatAmount(Number.parseInt(String(value?.minsize || '0'), 10))}
               </span>
               {currencySymbol('sm')}
             </span>
@@ -104,7 +104,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             <Label className="font-semibold">{t('earn.current.text_maxsize')}</Label>
             <span className="text-sm">
               <span className="tabular-nums select-all">
-                {formatAmount(parseInt(String(value?.maxsize || '0'), 10))}
+                {formatAmount(Number.parseInt(String(value?.maxsize || '0'), 10))}
               </span>
               {currencySymbol('sm')}
             </span>
@@ -116,7 +116,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
               <Label className="font-semibold">{t('earn.current.text_txfee')}</Label>
               <span className="text-muted-foreground text-sm">
                 <span className="tabular-nums select-all">
-                  {formatAmount(parseInt(String(value?.txfee || '0'), 10))}
+                  {formatAmount(Number.parseInt(String(value?.txfee || '0'), 10))}
                 </span>
                 {currencySymbol('sm')}
               </span>

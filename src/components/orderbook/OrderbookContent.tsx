@@ -64,7 +64,7 @@ const offerToTableEntry = (
             displayValue: String(offer.cjfee),
           }
         : (() => {
-            const value = parseFloat(offer.cjfee || '0')
+            const value = Number.parseFloat(offer.cjfee || '0')
             return {
               value,
               displayValue: factorToPercentage(value).toFixed(4) + '%',
@@ -119,7 +119,10 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       minsize: randomMinsize,
       maxsize: randomMinsize + pseudoRandomInteger(21_000, 21_000_000),
       txfee: 0,
-      cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomInteger(0, 10_000) : parseFloat(Math.random().toFixed(5)),
+      cjfee:
+        randomOrdertype === 'sw0absoffer'
+          ? pseudoRandomInteger(0, 10_000)
+          : Number.parseFloat(Math.random().toFixed(5)),
       fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomInteger(1_000, 21_000_000),
     }
 

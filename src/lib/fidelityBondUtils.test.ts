@@ -28,7 +28,7 @@ describe('utils', () => {
       expect(fb.lockdate.fromTimestamp(Date.UTC(2999, 11))).toBe('2999-12')
       expect(fb.lockdate.fromTimestamp(Date.UTC(10_000, 10))).toBe('10000-11')
 
-      expect(() => fb.lockdate.fromTimestamp(NaN)).toThrowError('Unsupported input: NaN')
+      expect(() => fb.lockdate.fromTimestamp(Number.NaN)).toThrowError('Unsupported input: NaN')
     })
 
     it('should convert lockdate to timestamp', () => {

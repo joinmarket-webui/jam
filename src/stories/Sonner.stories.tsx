@@ -31,20 +31,25 @@ const ToastDemo = ({
 }) => {
   const showToast = () => {
     switch (type) {
-      case 'success':
+      case 'success': {
         toast.success(message, { id: 'demo', description })
         break
-      case 'error':
+      }
+      case 'error': {
         toast.error(message, { id: 'demo', description })
         break
-      case 'warning':
+      }
+      case 'warning': {
         toast.warning(message, { id: 'demo', description })
         break
-      case 'info':
+      }
+      case 'info': {
         toast.info(message, { id: 'demo', description })
         break
-      default:
+      }
+      default: {
         toast(message, { id: 'demo', description })
+      }
     }
   }
 
@@ -92,16 +97,18 @@ export const WithDescription: Story = {
 
 export const Multiple: Story = {
   render: () => {
-    const showMultipleToasts = () => {
-      toast('First toast')
-      setTimeout(() => toast.success('Second toast'), 500)
-      setTimeout(() => toast.error('Third toast'), 1000)
-      setTimeout(() => toast.warning('Fourth toast'), 1500)
-    }
-
     return (
       <div>
-        <Button onClick={showMultipleToasts}>Show multiple toasts</Button>
+        <Button
+          onClick={() => {
+            toast('First toast')
+            setTimeout(() => toast.success('Second toast'), 500)
+            setTimeout(() => toast.error('Third toast'), 1000)
+            setTimeout(() => toast.warning('Fourth toast'), 1500)
+          }}
+        >
+          Show multiple toasts
+        </Button>
         <Toaster />
       </div>
     )
@@ -119,19 +126,21 @@ export const CustomPosition: Story = {
 
 export const WithAction: Story = {
   render: () => {
-    const showActionToast = () => {
-      toast('File uploaded', {
-        description: 'Your file has been uploaded successfully.',
-        action: {
-          label: 'View',
-          onClick: () => alert('View clicked'),
-        },
-      })
-    }
-
     return (
       <div>
-        <Button onClick={showActionToast}>Show toast with action</Button>
+        <Button
+          onClick={() => {
+            toast('File uploaded', {
+              description: 'Your file has been uploaded successfully.',
+              action: {
+                label: 'View',
+                onClick: () => alert('View clicked'),
+              },
+            })
+          }}
+        >
+          Show toast with action
+        </Button>
         <Toaster />
       </div>
     )

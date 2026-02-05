@@ -7,4 +7,5 @@ i18n.use(initReactI18next).init({
   resources: { en: { translations: {} } },
 })
 
+// eslint-disable-next-line unicorn/prefer-export-from -- enables nicer syntax
 export default i18n

@@ -20,6 +20,7 @@ async function loggingResponseInterceptor(response: Response) {
 }
 
 const createJamAuthenticationMiddleware = () => {
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- false positive
   return async (request: Request) => {
     const authState = authStore.getState().state
     if (authState?.auth?.token) {

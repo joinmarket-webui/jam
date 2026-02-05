@@ -52,7 +52,7 @@ export const useJmWebsocket = (): JmWebsocket => {
     heartbeat: false,
     retryOnError: true,
     shouldReconnect: () => true,
-    reconnectAttempts: Infinity,
+    reconnectAttempts: Number.POSITIVE_INFINITY,
     reconnectInterval: (attemptNumber) => {
       const randomFactor = pseudoRandomFloat(0.8, 1.2)
       const value = Math.round(calcReconnectInterval(attemptNumber) * randomFactor)
