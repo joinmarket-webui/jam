@@ -61,7 +61,7 @@ const TablePagination = ({
         <Label className="text-muted-foreground text-sm text-nowrap">
           {t('global.table.pagination.items_per_page.label')}
         </Label>
-        <Select value={String(itemsPerPage)} onValueChange={(it) => onItemsPerPageChange(parseInt(it, 10))}>
+        <Select value={String(itemsPerPage)} onValueChange={(it) => onItemsPerPageChange(Number.parseInt(it, 10))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('global.table.pagination.items_per_page.label')} />
           </SelectTrigger>
@@ -97,7 +97,7 @@ const TablePagination = ({
             </PaginationItem>
             {[currentPage, currentPage - 1, currentPage + 1, currentPage - 2, currentPage + 2]
               .filter((it) => it >= 1 && it <= totalPages)
-              .sort()
+              .toSorted()
               .slice(0, 3)
               .map((it, index) => (
                 <PaginationItem key={index}>

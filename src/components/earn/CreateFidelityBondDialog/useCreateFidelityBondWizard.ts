@@ -107,7 +107,7 @@ export function useCreateFidelityBondWizard(
       },
     }),
     enabled: open && !!selectedLockdate && step !== 'select_date',
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
     retry: false,
   })
 

@@ -35,7 +35,7 @@ const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
       })
 
     const meta: AccountMeta = {
-      jarIndex: parseInt(String(__raw.account), 10) as JarIndex,
+      jarIndex: Number.parseInt(String(__raw.account), 10) as JarIndex,
       branches,
       __raw,
     }
@@ -74,7 +74,7 @@ const toAddressSummary = (accountSummary: AccountSummary): AddressSummary => {
 const toFidelityBondSummary = (utxos: Utxo[]): FidelityBondSummary => {
   const fbOutputs = utxos
     .filter((utxo) => fb.utxo.isFidelityBond(utxo))
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const aLocked = fb.utxo.isLocked(a)
       const bLocked = fb.utxo.isLocked(b)
 
@@ -139,7 +139,7 @@ export const JamWalletInfoContextProvider = ({
 
   const jars: Jar[] = []
   Object.entries(utxosByJarIndex).forEach(([jarIndexString, utxos]) => {
-    const jarIndex = parseInt(jarIndexString, 10)
+    const jarIndex = Number.parseInt(jarIndexString, 10)
     const balanceSummary = toBalanceSummary(utxos)
 
     const jarTemplate: JarTemplate | undefined = jarTemplatesByJarIndex[jarIndex]

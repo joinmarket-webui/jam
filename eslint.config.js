@@ -15,7 +15,7 @@ export default defineConfig(
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2023,
       globals: globals.browser,
     },
     plugins: {
@@ -46,11 +46,16 @@ export default defineConfig(
       'unicorn/no-array-for-each': ['off'],
       'unicorn/prefer-optional-catch-binding': ['off'],
       'unicorn/prefer-string-slice': ['off'],
+      'unicorn/prefer-global-this': ['off'],
+      'unicorn/no-thenable': ['off'], // used by yup schema validation
+      'unicorn/prefer-ternary': ['off'], // can improve readability
+      'unicorn/no-nested-ternary': ['off'], // can improve readability
+      'unicorn/no-useless-undefined': ['off'], // can improve comprehensibility
       'unicorn/catch-error-name': [
         'error',
         {
           ignore: [
-            '^error\\d*$',
+            String.raw`^error\d*$`,
             '_ignoredOnPurpose',
             'e', // TODO: remove
           ],
@@ -69,36 +74,8 @@ export default defineConfig(
 
       'unicorn/switch-case-braces': ['off'], // TODO: enable
       'unicorn/prevent-abbreviations': ['off'], // TODO: enable
-      'unicorn/no-useless-undefined': ['off'], // TODO: enable
       'unicorn/no-null': ['off'], // TODO: enable
-      'unicorn/no-array-sort': ['off'], // TODO: enable
-      'unicorn/no-null': ['off'], // TODO: enable
-      'unicorn/no-null': ['off'], // TODO: enable
-      'unicorn/no-null': ['off'], // TODO: enable
-      'unicorn/prefer-number-properties': ['off'], // TODO: enable
-      'unicorn/no-array-reverse': ['off'], // TODO: enable
-      'unicorn/prefer-array-some': ['off'], // TODO: enable
-      'unicorn/prefer-at': ['off'], // TODO: enable
       'unicorn/no-negated-condition': ['off'], // TODO: enable
-      'unicorn/consistent-function-scoping': ['off'], // TODO: enable
-      'unicorn/no-array-callback-reference': ['off'], // TODO: enable
-      'unicorn/prefer-export-from': ['off'], // TODO: enable
-      'unicorn/no-useless-fallback-in-spread': ['off'], // TODO: enable
-      'unicorn/prefer-query-selector': ['off'], // TODO: enable
-
-      'unicorn/prefer-ternary': ['off'], // TODO: enable
-      'unicorn/prefer-includes': ['off'], // TODO: enable
-      'unicorn/prefer-global-this': ['off'], // TODO: enable
-      'unicorn/prefer-node-protocol': ['off'], // TODO: enable
-      'unicorn/no-thenable': ['off'], // TODO: enable
-      'unicorn/no-nested-ternary': ['off'], // TODO: enable
-      'unicorn/prefer-spread': ['off'], // TODO: enable
-      'unicorn/prefer-string-replace-all': ['off'], // TODO: enable
-      'unicorn/no-useless-promise-resolve-reject': ['off'], // TODO: enable
-      'unicorn/prefer-dom-node-append': ['off'], // TODO: enable
-      'unicorn/prefer-dom-node-remove': ['off'], // TODO: enable
-      'unicorn/no-for-loop': ['off'], // TODO: enable
-      'unicorn/prefer-string-raw': ['off'], // TODO: enable
     },
   },
   compat.configs['flat/recommended'],

@@ -8,5 +8,5 @@ interface JmSessionStoreState {
 
 export const jmSessionStore = createStore<JmSessionStoreState>()((set) => ({
   state: undefined,
-  update: (val) => set((state) => ({ state: { ...(state.state || {}), ...val } })),
+  update: (val) => set((state) => ({ state: { ...state.state, ...val } })),
 }))

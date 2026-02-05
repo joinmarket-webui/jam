@@ -14,8 +14,8 @@ export function useQueryJmInfo(): UseQueryJmInfoResult {
 
   const queryResult = useQuery({
     ...versionOptions({ client }),
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
   })
 
   return {

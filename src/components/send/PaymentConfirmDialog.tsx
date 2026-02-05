@@ -28,11 +28,11 @@ const estimateMaxCollaboraterFee = (
   if (feeConfigValues === undefined) {
     throw new Error('Invalid state: Missing fee config values.')
   }
-  const maxFeeAbs = parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
+  const maxFeeAbs = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
   if (!isValidNumber(maxFeeAbs)) {
     throw new Error('Invalid state: Missing "max_cj_fee_abs" fee config value.')
   }
-  const maxFeeRel = parseFloat(feeConfigValues?.max_cj_fee_rel || '')
+  const maxFeeRel = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
   if (!isValidNumber(maxFeeRel)) {
     throw new Error('Invalid state: Missing "max_cj_fee_rel" fee config value.')
   }

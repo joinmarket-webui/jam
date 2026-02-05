@@ -18,6 +18,12 @@ const randomNextCheatsheetOpenTime = (): Milliseconds => {
   return Math.round(Date.now() + MILLISECONDS_IN_A_DAY * randomAmountOfDays)
 }
 
+const updateLastDisplayTime = () => {
+  setTimeout(() => {
+    jamSettingsStore.getState().update({ cheatsheetForceOpenAt: randomNextCheatsheetOpenTime() })
+  }, 4)
+}
+
 type UseCheatsheetResult = Required<Pick<ComponentProps<typeof Dialog>, 'open' | 'onOpenChange'>>
 
 export function useCheatsheet(): UseCheatsheetResult {
@@ -27,12 +33,6 @@ export function useCheatsheet(): UseCheatsheetResult {
       return INIT_RENDER_TIME >= targetTime
     })(),
   )
-
-  const updateLastDisplayTime = () => {
-    setTimeout(() => {
-      jamSettingsStore.getState().update({ cheatsheetForceOpenAt: randomNextCheatsheetOpenTime() })
-    }, 4)
-  }
 
   const onOpenChange = (value: boolean) => {
     setOpen(value)

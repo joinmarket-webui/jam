@@ -68,9 +68,9 @@ function LogViewer({ value, refresh }: LogViewerProps) {
     const a = document.createElement('a')
     a.href = url
     a.download = JMWALLETD_LOG_FILE_NAME
-    document.body.appendChild(a)
+    document.body.append(a)
     a.click()
-    document.body.removeChild(a)
+    a.remove()
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 4)
@@ -144,9 +144,10 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
       if (!authState?.auth?.token) {
         setAlert({
           variant: 'destructive',
+          // TODO: i18n
           message: 'No authentication token available. Please login again.',
         })
-        return Promise.reject(new Error('No authentication token'))
+        throw new Error('No authentication token')
       }
 
       return fetchLog({

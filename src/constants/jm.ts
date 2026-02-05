@@ -8,7 +8,10 @@ export const JM_API_AUTH_TOKEN_EXPIRY_MAX: Milliseconds = Math.round(JM_API_AUTH
 
 export const JM_API_AUTH_TOKEN_EXPIRY: Milliseconds = Math.max(
   JM_API_AUTH_TOKEN_EXPIRY_MIN,
-  Math.min(parseInt(import.meta.env.VITE_JM_API_AUTH_TOKEN_EXPIRY_SECONDS, 10) * 1_000, JM_API_AUTH_TOKEN_EXPIRY_MAX),
+  Math.min(
+    Number.parseInt(import.meta.env.VITE_JM_API_AUTH_TOKEN_EXPIRY_SECONDS, 10) * 1_000,
+    JM_API_AUTH_TOKEN_EXPIRY_MAX,
+  ),
 )
 
 export const JM_MAX_SWEEP_FEE_CHANGE_DEFAULT = 0.8

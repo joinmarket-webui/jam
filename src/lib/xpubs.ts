@@ -13,7 +13,7 @@ const uint8ArrayfromHex = (hexString: string) => {
   if (match === null || match.length !== hex.length / 2) {
     throw new Error('Cannot convert hex to Uint8Array: Invalid hex string.')
   }
-  return Uint8Array.from(match.map((byte) => parseInt(byte, 16)) || [])
+  return Uint8Array.from(match.map((byte) => Number.parseInt(byte, 16)) || [])
 }
 
 // version bytes for extended serialization of public and private keys.

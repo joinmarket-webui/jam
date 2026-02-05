@@ -134,6 +134,7 @@ export function EarnForm({
 }: EarnFormProps) {
   const { t } = useTranslation()
 
+  // eslint-disable-next-line unicorn/prefer-spread -- false positive
   const schema = baseSchema.concat(
     yup.object({
       offerMinAmount: yup.number().integer().min(JAM.OFFER_MINSIZE_MIN).max(offerMinsizeMax).required(),

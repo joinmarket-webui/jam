@@ -22,7 +22,7 @@ export const authStore = createStore<AuthStoreState>()(
   persist(
     (set) => ({
       state: undefined,
-      update: (val) => set((state) => ({ state: { ...(state.state || {}), ...val } })),
+      update: (val) => set((state) => ({ state: { ...state.state, ...val } })),
       clear: () => set({ state: undefined }),
     }),
     {

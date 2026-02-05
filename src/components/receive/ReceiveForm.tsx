@@ -31,10 +31,8 @@ const receiveFormSchema = (jars: Jar[]) => {
           fromJar: yup
             .number()
             .integer()
-            .test(
-              'valid-source-jar-index-test',
-              'Invalid source jar index.',
-              (value) => jars.find((it) => it.jarIndex === value) !== undefined,
+            .test('valid-source-jar-index-test', 'Invalid source jar index.', (value) =>
+              jars.some((it) => it.jarIndex === value),
             )
             .required(),
         })

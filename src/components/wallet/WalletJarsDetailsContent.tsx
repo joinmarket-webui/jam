@@ -257,9 +257,9 @@ export const WalletJarsDetailsContent = ({
   const { addressSummary } = useAddressSummary()
   const { accountSummary } = useAccountSummary()
 
-  const [activeJarIndex, setActiveJarIndex] = useState<JarIndex>(() => {
+  const [activeJarIndex, setActiveJarIndex] = useState<JarIndex | undefined>(() => {
     const jar = jars.find((it) => it.jarIndex === selectedJarIndex)
-    return (jar ?? jars[0])?.jarIndex ?? undefined
+    return (jar ?? jars[0])?.jarIndex
   })
 
   const activeJar = useMemo<Jar | undefined>(() => {
@@ -280,8 +280,7 @@ export const WalletJarsDetailsContent = ({
   const previousJar = useCallback(
     () =>
       setActiveJarIndex(
-        (current) =>
-          (current ? (jars.find((it) => it.jarIndex === current - 1) ?? jars[jars.length - 1]) : jars[0])?.jarIndex,
+        (current) => (current ? (jars.find((it) => it.jarIndex === current - 1) ?? jars.at(-1)) : jars[0])?.jarIndex,
       ),
     [jars],
   )
@@ -313,7 +312,7 @@ export const WalletJarsDetailsContent = ({
     <div className={cn('mx-auto space-y-3', className)}>
       <Tabs
         value={activeJar?.jarIndex.toString()}
-        onValueChange={(value) => setActiveJarIndex(parseInt(value, 10))}
+        onValueChange={(value) => setActiveJarIndex(Number.parseInt(value, 10))}
         className="flex flex-col gap-4"
       >
         <TabsList className="mx-auto flex items-center gap-2">

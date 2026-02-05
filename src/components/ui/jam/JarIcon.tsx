@@ -14,14 +14,18 @@ type JarFillLevel = 0 | 1 | 2 | 3
 
 const fillLevelToPercent = (fillLevel: JarFillLevel): number => {
   switch (fillLevel) {
-    case 0:
+    case 0: {
       return 0
-    case 1:
+    }
+    case 1: {
       return 30
-    case 2:
+    }
+    case 2: {
       return 60
-    case 3:
+    }
+    case 3: {
       return 90
+    }
   }
 }
 
