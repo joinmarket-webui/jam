@@ -228,8 +228,8 @@ export const BranchEntryTable = ({
       // pinned offers might not be included in the table data,
       // and the internal model of the table does not match anymore
       return table.getTopRows()
-    } catch (e) {
-      console.debug('Error while rendering top table rows', e)
+    } catch (error: unknown) {
+      console.debug('Error while rendering top table rows', error)
       return []
     }
   }

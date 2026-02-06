@@ -126,8 +126,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     try {
       toast.info(t('earn.alert_stopping'), { id: 'earn.alert_stopping' })
       await stopMakerService()
-    } catch (e: unknown) {
-      const reason = e instanceof Error ? e.message : undefined
+    } catch (error: unknown) {
+      const reason = error instanceof Error ? error.message : undefined
       toast.error(reason ?? t('global.errors.reason_unknown'))
     }
   }
@@ -136,9 +136,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     setIsWaitingMakerStop(true)
     try {
       await stopMakerQuery.refetch()
-    } catch (e) {
+    } catch (error: unknown) {
       setIsWaitingMakerStop(false)
-      throw e
+      throw error
     }
   }
 

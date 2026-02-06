@@ -30,18 +30,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountDetailsTabContent } from './AccountDetailsTabContent'
 import { JarUtxosTable, type UtxoTableEntry } from './JarUtxosTable'
 
-const isKeyEventFromInputElement = (e: KeyboardEvent) => {
+const isKeyEventFromInputElement = (event: KeyboardEvent) => {
   return (
-    e.target &&
-    (('tagName' in e.target &&
-      (e.target['tagName'] === 'BUTTON' ||
-        e.target['tagName'] === 'AUDIO' ||
-        e.target['tagName'] === 'VIDEO' ||
-        e.target['tagName'] === 'SEARCH' ||
-        e.target['tagName'] === 'SELECT' ||
-        e.target['tagName'] === 'INPUT' ||
-        e.target['tagName'] === 'TEXTAREA')) ||
-      ('isContentEditable' in e.target && e.target.isContentEditable === true))
+    event.target &&
+    (('tagName' in event.target &&
+      (event.target['tagName'] === 'BUTTON' ||
+        event.target['tagName'] === 'AUDIO' ||
+        event.target['tagName'] === 'VIDEO' ||
+        event.target['tagName'] === 'SEARCH' ||
+        event.target['tagName'] === 'SELECT' ||
+        event.target['tagName'] === 'INPUT' ||
+        event.target['tagName'] === 'TEXTAREA')) ||
+      ('isContentEditable' in event.target && event.target.isContentEditable === true))
   )
 }
 
@@ -288,14 +288,14 @@ export const WalletJarsDetailsContent = ({
   useEffect(() => {
     if (!enabled) return
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (isKeyEventFromInputElement(e)) {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isKeyEventFromInputElement(event)) {
         return
       }
 
-      if (e.code === 'ArrowLeft') {
+      if (event.code === 'ArrowLeft') {
         previousJar()
-      } else if (e.code === 'ArrowRight') {
+      } else if (event.code === 'ArrowRight') {
         nextJar()
       }
     }

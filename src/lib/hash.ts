@@ -23,10 +23,9 @@ export async function hashPassword(
     const saltBuffer = new TextEncoder().encode(salt)
     const derivedKey = await pbkdf2Async(sha512, passwordBuffer, saltBuffer, { c: iterations, dkLen: 32 })
     return bytesToHex(derivedKey)
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Password hashing failed:', error)
-    throw new Error(
-      `Failed to hash password: ${(error instanceof Error ? (error.message ?? '') : '') || 'Unknown error'}`,
-    )
+    const reason = (error instanceof Error ? (error.message ?? '') : '') || 'Unknown error'
+    throw new Error(`Failed to hash password: ${reason}`)
   }
 }

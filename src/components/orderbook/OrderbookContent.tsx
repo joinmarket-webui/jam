@@ -34,28 +34,28 @@ const offerToTableEntry = (
   fidelityBond: OrderbookFidelityBond | undefined,
   i18n: i18n,
 ): OrderTableEntry => {
-  const isAbs = isAbsoluteOffer(offer.ordertype)
-  const isRel = isRelativeOffer(offer.ordertype)
+  const isAbsolute = isAbsoluteOffer(offer.ordertype)
+  const isRelative = isRelativeOffer(offer.ordertype)
 
   return {
     counterparty: offer.counterparty,
     orderId: String(offer.oid),
     type: {
       value: offer.ordertype,
-      displayValue: isAbs
+      displayValue: isAbsolute
         ? i18n.t('orderbook.text_offer_type_absolute')
-        : isRel
+        : isRelative
           ? i18n.t('orderbook.text_offer_type_relative')
           : offer.ordertype,
-      badgeColor: isAbs ? 'default' : isRel ? 'secondary' : 'outline',
+      badgeColor: isAbsolute ? 'default' : isRelative ? 'secondary' : 'outline',
       tooltip:
         offer.ordertype === 'sw0absoffer'
           ? 'Native SW Absolute Fee'
           : offer.ordertype === 'sw0reloffer'
             ? 'Native SW Relative Fee'
             : undefined,
-      isAbsolute: isAbs,
-      isRelative: isRel,
+      isAbsolute: isAbsolute,
+      isRelative: isRelative,
     },
     fee:
       typeof offer.cjfee === 'number'
@@ -114,7 +114,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
 
     const randomOffer: OrderbookOffer = {
       counterparty: randomCounterparty,
-      oid: demoOffers.filter((e) => e.counterparty === randomCounterparty).length,
+      oid: demoOffers.filter((it) => it.counterparty === randomCounterparty).length,
       ordertype: randomOrdertype,
       minsize: randomMinsize,
       maxsize: randomMinsize + pseudoRandomInteger(21_000, 21_000_000),
@@ -126,7 +126,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomInteger(1_000, 21_000_000),
     }
 
-    setDemoOffers((prev) => [...prev, randomOffer])
+    setDemoOffers((val) => [...val, randomOffer])
   }
 
   const { isFetching: isFetchingOrderbookRefresh, refetch: refetchOrderbookRefresh } = useQuery({
@@ -270,7 +270,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           <Input
             placeholder={t('orderbook.placeholder_search')}
             value={searchInputRaw}
-            onChange={(e) => setSearchInputRaw(e.target.value)}
+            onChange={(event) => setSearchInputRaw(event.target.value)}
             className="w-64"
             disabled={isFetching}
           />

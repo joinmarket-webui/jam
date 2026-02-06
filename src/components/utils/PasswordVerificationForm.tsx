@@ -32,7 +32,7 @@ const passwordVerificationFormSchema = (walletFileName: WalletFileName, hashedPa
               return new yup.ValidationError(errorMessage, undefined, 'password', undefined, true)
             }
             return true
-          } catch (error) {
+          } catch (error: unknown) {
             const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
             const errorMessage = t(/*TODO: i18n*/ 'Error while verifying given password. {{ reason }}', { reason })
             throw new yup.ValidationError(errorMessage, undefined, 'password', undefined, true)

@@ -23,22 +23,23 @@ type EstimateMaxCollaboraterFeeResult = {
 const estimateMaxCollaboraterFee = (
   feeConfigValues: FeeConfigValues,
   amount: AmountSats,
-  numCollaborators: number,
+  numberOfCollaborators: number,
 ): EstimateMaxCollaboraterFeeResult => {
   if (feeConfigValues === undefined) {
     throw new Error('Invalid state: Missing fee config values.')
   }
-  const maxFeeAbs = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
-  if (!isValidNumber(maxFeeAbs)) {
+  const maxAbsoluteFee = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
+  if (!isValidNumber(maxAbsoluteFee)) {
     throw new Error('Invalid state: Missing "max_cj_fee_abs" fee config value.')
   }
-  const maxFeeRel = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
-  if (!isValidNumber(maxFeeRel)) {
+  const maxRelativeFee = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
+  if (!isValidNumber(maxRelativeFee)) {
     throw new Error('Invalid state: Missing "max_cj_fee_rel" fee config value.')
   }
 
-  const maxFeePerCollaborator: AmountSats = Math.max(Math.ceil(amount * maxFeeRel), maxFeeAbs)
-  const maxFee: AmountSats = numCollaborators > 0 ? Math.min(maxFeePerCollaborator * numCollaborators, amount) : 0
+  const maxFeePerCollaborator: AmountSats = Math.max(Math.ceil(amount * maxRelativeFee), maxAbsoluteFee)
+  const maxFee: AmountSats =
+    numberOfCollaborators > 0 ? Math.min(maxFeePerCollaborator * numberOfCollaborators, amount) : 0
   const fractionOfAmount = amount > 0 ? maxFee / amount : 0
   return {
     maxFee,

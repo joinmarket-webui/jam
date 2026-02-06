@@ -286,8 +286,8 @@ export const JarUtxosTable = ({
   const tableTopRows = () => {
     try {
       return table.getTopRows()
-    } catch (e) {
-      console.debug('Error while rendering top table rows', e)
+    } catch (error: unknown) {
+      console.debug('Error while rendering top table rows', error)
       return []
     }
   }

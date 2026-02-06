@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
-import type { SemVer } from '@/lib/utils'
+import type { SemanticVersion } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { WithRequiredProperty } from '@/types/global'
 
@@ -15,8 +15,8 @@ type BetaWarningModalProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
   'open' | 'onOpenChange'
 > & {
-  jamVersion: SemVer
-  joinmarketVersion?: SemVer
+  jamVersion: SemanticVersion
+  joinmarketVersion?: SemanticVersion
 }
 
 const BetaWarningModal = ({ jamVersion, joinmarketVersion, ...dialogProps }: BetaWarningModalProps) => {

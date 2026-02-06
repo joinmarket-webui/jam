@@ -22,9 +22,9 @@ export const JM_DUST_THRESHOLD: AmountSats = 27_300
 export const JM_MINIMUM_MAKERS_DEFAULT = 4
 
 // only support starting the maker with native segwit offers
-type RelOfferType = 'sw0reloffer'
-type AbsOfferType = 'sw0absoffer'
-export type OfferType = RelOfferType | AbsOfferType | string
+type RelativeOfferType = 'sw0reloffer'
+type AbsoluteOfferType = 'sw0absoffer'
+export type OfferType = RelativeOfferType | AbsoluteOfferType | string
 
 export type SectionKey = string
 

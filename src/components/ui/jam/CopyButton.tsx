@@ -29,11 +29,11 @@ const copyToClipboard = async (
   try {
     await navigator.clipboard.writeText(text)
     return true
-  } catch (e: unknown) {
+  } catch (error: unknown) {
     if (fallbackInputField) {
       return copyToClipboardFallback(fallbackInputField, errorMessage)
     } else {
-      throw e
+      throw error
     }
   }
 }
@@ -41,7 +41,7 @@ const copyToClipboard = async (
 interface CopyableProps extends Omit<ComponentProps<'button'>, 'onClick' | 'type'> {
   value: string
   onSuccess?: () => void
-  onError?: (e: unknown) => void
+  onError?: (error: unknown) => void
 }
 
 function Copyable({

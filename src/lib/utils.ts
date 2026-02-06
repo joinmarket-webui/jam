@@ -79,8 +79,8 @@ export function setIntervalDebounced(
         try {
           await callback()
           loop()
-        } catch (e: unknown) {
-          onError(e, loop)
+        } catch (error: unknown) {
+          onError(error, loop)
         }
       }, delay),
     )
@@ -119,22 +119,22 @@ export const factorToPercentage = (val: number, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
-export type SemVer = { major: number; minor: number; patch: number; raw?: string }
+export type SemanticVersion = { major: number; minor: number; patch: number; raw?: string }
 
-export const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
+export const UNKNOWN_VERSION: SemanticVersion = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
 
 const versionRegex = new RegExp(/^v?(\d+)\.(\d+)\.(\d+).*$/)
 
-export const toSemVer = (raw?: string): SemVer => {
-  const arr = versionRegex.exec(raw || '')
-  if (!arr || arr.length < 4) {
+export const parseSemanticVersion = (raw?: string): SemanticVersion => {
+  const result = versionRegex.exec(raw || '')
+  if (!result || result.length < 4) {
     return UNKNOWN_VERSION
   }
 
   return {
-    major: Number.parseInt(arr[1], 10),
-    minor: Number.parseInt(arr[2], 10),
-    patch: Number.parseInt(arr[3], 10),
+    major: Number.parseInt(result[1], 10),
+    minor: Number.parseInt(result[2], 10),
+    patch: Number.parseInt(result[3], 10),
     raw,
   }
 }

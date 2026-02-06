@@ -49,8 +49,8 @@ const generateChangelog = (newVersion) => {
         tagPrefix: 'v',
       },
       { version: newVersion }
-    ).on('error', function (err) {
-      return reject(err)
+    ).on('error', function (error) {
+      return reject(error)
     })
 
     changelogStream.on('data', (buffer) => {
