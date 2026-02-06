@@ -44,7 +44,7 @@ const receiveFormSchema = (jars: Jar[]) => {
             .integer()
             .min(1)
             .max(21_000_000 * 100_000_000)
-            .transform((value) => (Number.isNaN(value) ? undefined : value))
+            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
             .nullable()
             .optional(),
         })
@@ -83,8 +83,10 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
 
   const values = useWatch({ control })
 
+  const doOnChange = handleSubmit(onSubmit)
+
   return (
-    <form onChange={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
+    <form onChange={(event) => void doOnChange(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
         <Field className="space-y-4" data-invalid={errors.source !== undefined}>
           <FieldLabel>{t('receive.label_source_jar')}</FieldLabel>

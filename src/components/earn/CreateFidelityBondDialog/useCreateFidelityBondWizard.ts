@@ -42,8 +42,8 @@ export function useCreateFidelityBondWizard(
   const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
   const monthOptions = useMemo(() => getMonthOptions(), [])
 
-  const minLockdate = lockdateOptions[0]?.value ?? ''
-  const maxLockdate = lockdateOptions[lockdateOptions.length - 1]?.value ?? ''
+  const minLockdate = lockdateOptions.at(0)?.value ?? ''
+  const maxLockdate = lockdateOptions.at(-1)?.value ?? ''
   const clampLockdate = (lockdate: string): fb.Lockdate | '' => {
     if (!lockdate || lockdate < minLockdate) return minLockdate || ''
     if (lockdate > maxLockdate) return maxLockdate || ''
@@ -51,8 +51,8 @@ export function useCreateFidelityBondWizard(
   }
   const selectedYear = selectedLockdate ? selectedLockdate.slice(0, 4) : ''
   const selectedMonth = selectedLockdate ? selectedLockdate.slice(5, 7) : ''
-  const minYear = minLockdate ? parseInt(minLockdate.slice(0, 4), 10) : 0
-  const minMonth = minLockdate ? parseInt(minLockdate.slice(5, 7), 10) : 1
+  const minYear = minLockdate ? Number.parseInt(minLockdate.slice(0, 4), 10) : 0
+  const minMonth = minLockdate ? Number.parseInt(minLockdate.slice(5, 7), 10) : 1
 
   const existingFbLockdates = useMemo(() => {
     return walletInfo.fidelityBondSummary.fbOutputs
@@ -75,17 +75,17 @@ export function useCreateFidelityBondWizard(
 
   const availableUtxos = useMemo(() => {
     if (selectedJarIndex === undefined) return []
-    const jar = walletInfo.jars.find((j) => j.jarIndex === selectedJarIndex)
+    const jar = walletInfo.jars.find((it) => it.jarIndex === selectedJarIndex)
     if (!jar) return []
     return jar.utxos.filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
   }, [walletInfo.jars, selectedJarIndex])
 
   const utxosToFreeze = useMemo(() => {
     if (selectedJarIndex === undefined) return []
-    const jar = walletInfo.jars.find((j) => j.jarIndex === selectedJarIndex)
+    const jar = walletInfo.jars.find((it) => it.jarIndex === selectedJarIndex)
     if (!jar) return []
     return jar.utxos.filter(
-      (utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && !selectedUtxos.some((s) => s.utxo === utxo.utxo),
+      (utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && !selectedUtxos.some((it) => it.utxo === utxo.utxo),
     )
   }, [walletInfo.jars, selectedJarIndex, selectedUtxos])
 
@@ -115,27 +115,24 @@ export function useCreateFidelityBondWizard(
 
   const freezeUtxo = useMutation({
     ...freezeMutation({ client }),
-    onError: (err: ErrorMessage) => {
-      console.error('Freeze error:', err)
-      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+    onError: (error: ErrorMessage) => {
+      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
       setError(`${t('earn.fidelity_bond.error_freezing_utxos')} ${reason}`)
     },
   })
 
   const unfreezeUtxo = useMutation({
     ...freezeMutation({ client }),
-    onError: (err: ErrorMessage) => {
-      console.error('Unfreeze error:', err)
-      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+    onError: (error: ErrorMessage) => {
+      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
       setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
     },
   })
 
   const directSend = useMutation({
     ...directsendMutation({ client }),
-    onError: (err: ErrorMessage) => {
-      console.error('DirectSend error:', err)
-      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+    onError: (error: ErrorMessage) => {
+      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
       setError(`${t('earn.fidelity_bond.error_creating_fidelity_bond')} ${reason}`)
     },
   })
@@ -243,7 +240,7 @@ export function useCreateFidelityBondWizard(
       setTxResult(result)
       setStep('success')
       toast.success(t('earn.fidelity_bond.create_fidelity_bond.success_text'))
-      walletInfo.refetch()
+      await walletInfo.refetch()
     } catch {
       setStep('review')
     }
@@ -259,19 +256,19 @@ export function useCreateFidelityBondWizard(
       }
       setFrozenUtxos([])
       toast.success(t('earn.fidelity_bond.unfreeze_utxos.done'))
-      walletInfo.refetch()
+      await walletInfo.refetch()
     } catch {
       // Error handled in onError
     }
   }
 
   const toggleUtxoSelection = (utxo: Utxo) => {
-    setSelectedUtxos((prev) => {
-      const isSelected = prev.some((u) => u.utxo === utxo.utxo)
+    setSelectedUtxos((current) => {
+      const isSelected = current.some((u) => u.utxo === utxo.utxo)
       if (isSelected) {
-        return prev.filter((u) => u.utxo !== utxo.utxo)
+        return current.filter((u) => u.utxo !== utxo.utxo)
       }
-      return [...prev, utxo]
+      return [...current, utxo]
     })
   }
 

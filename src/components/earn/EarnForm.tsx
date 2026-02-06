@@ -58,7 +58,7 @@ const baseSchema = yup
         then: (schema) => schema.min(JAM.OFFER_FEE_ABS_MIN).required(),
         otherwise: (schema) =>
           schema
-            .transform((value) => (Number.isNaN(value) ? null : value))
+            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
             .nullable()
             .optional(),
       }),
@@ -68,7 +68,7 @@ const baseSchema = yup
         schema.min(factorToPercentage(JAM.OFFER_FEE_REL_MIN)).max(factorToPercentage(JAM.OFFER_FEE_REL_MAX)).required(),
       otherwise: (schema) =>
         schema
-          .transform((value) => (Number.isNaN(value) ? null : value))
+          .transform((value) => (Number.isFinite(value) ? Number(value) : null))
           .nullable()
           .optional(),
     }),

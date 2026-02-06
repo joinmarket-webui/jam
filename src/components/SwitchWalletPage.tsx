@@ -186,7 +186,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
                               <Button
                                 variant="default"
                                 size="sm"
-                                onClick={handleLockCurrentWallet}
+                                onClick={() => void handleLockCurrentWallet()}
                                 disabled={lockCurrentWallet.isFetching || currentWalletLocked}
                                 className="flex-1"
                               >

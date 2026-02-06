@@ -30,9 +30,9 @@ const fillLevelToPercent = (fillLevel: JarFillLevel): number => {
 }
 
 interface JarIconProps {
-  color?: string
-  amount?: AmountSats
-  totalBalance?: number
+  color: string
+  amount: AmountSats
+  totalBalance: AmountSats
   width?: number
   height?: number
   isSelected?: boolean

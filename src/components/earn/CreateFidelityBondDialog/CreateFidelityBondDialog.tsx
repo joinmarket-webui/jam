@@ -45,7 +45,7 @@ export function CreateFidelityBondDialog({ open, onOpenChange, walletFileName }:
             <Button
               variant="outline"
               className="min-w-32"
-              onClick={handleUnfreezeUtxos}
+              onClick={() => void handleUnfreezeUtxos()}
               disabled={unfreezeUtxo.isPending}
             >
               {unfreezeUtxo.isPending ? (
@@ -78,7 +78,7 @@ export function CreateFidelityBondDialog({ open, onOpenChange, walletFileName }:
         <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)} disabled={isLoading}>
           {t('earn.fidelity_bond.select_date.text_secondary_button')}
         </Button>
-        <Button className="min-w-32" onClick={handleNext} disabled={!canProceed() || isLoading}>
+        <Button className="min-w-32" onClick={() => void handleNext()} disabled={!canProceed() || isLoading}>
           {isLoading && <Spinner className="mr-2 h-4 w-4" />}
           {step === 'freeze_utxos'
             ? utxosToFreeze.length > 0
