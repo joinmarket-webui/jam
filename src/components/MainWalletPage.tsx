@@ -76,11 +76,11 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             )}
           </div>
           <div className="mt-2 flex w-full justify-center gap-4">
-            <Button size="xxl" className="flex-1" variant="default" onClick={() => navigate(routes.receive)}>
+            <Button size="xxl" className="flex-1" variant="default" onClick={() => void navigate(routes.receive)}>
               <DownloadIcon />
               {t('current_wallet.button_deposit')}
             </Button>
-            <Button size="xxl" className="flex-1" variant="outline" onClick={() => navigate(routes.send)}>
+            <Button size="xxl" className="flex-1" variant="outline" onClick={() => void navigate(routes.send)}>
               <UploadIcon />
               {t('current_wallet.button_withdraw')}
             </Button>

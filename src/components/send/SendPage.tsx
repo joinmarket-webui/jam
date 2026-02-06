@@ -135,7 +135,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     }
   }
 
-  const onSubmit: SubmitHandler<SendFormValues> = async (data) => {
+  const onSubmit: SubmitHandler<SendFormValues> = (data) => {
     setSendFromValuesAwaitingConfirmation(data)
     setShowPaymentConfirmDialog(true)
   }

@@ -6,8 +6,8 @@ import languages from '@/i18n/languages'
 export const LanguageSelector = () => {
   const { i18n, t } = useTranslation()
 
-  const handleLanguageChange = (languageKey: string) => {
-    i18n.changeLanguage(languageKey)
+  const handleLanguageChange = async (languageKey: string) => {
+    await i18n.changeLanguage(languageKey)
   }
 
   const getCurrentLanguageDescription = () => {
@@ -26,7 +26,7 @@ export const LanguageSelector = () => {
         </div>
       </div>
 
-      <Select value={i18n.resolvedLanguage} onValueChange={handleLanguageChange}>
+      <Select value={i18n.resolvedLanguage} onValueChange={(value) => void handleLanguageChange(value)}>
         <SelectTrigger className="h-7 w-38 text-xs" aria-label="Select language">
           <SelectValue placeholder={getCurrentLanguageDescription()} />
         </SelectTrigger>

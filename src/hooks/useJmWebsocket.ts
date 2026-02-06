@@ -20,7 +20,7 @@ const calcReconnectInterval = (attemptNumber: number): Milliseconds => {
   )
 }
 
-const basePath: string = import.meta.env.VITE_JM_WEBSOCKET_ENDPOINT_PATH
+const basePath: string = String(import.meta.env.VITE_JM_WEBSOCKET_ENDPOINT_PATH)
 const basePathWithoutLeadingSlash = basePath.replace(/^\//, '') // remove leading slash
 
 const { protocol, host } = window.location

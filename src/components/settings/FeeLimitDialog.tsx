@@ -305,7 +305,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
               <DevBadge />
             </Button>
           )}
-          <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingConfig}>
+          <Button onClick={() => void handleSubmit()} disabled={isSubmitting || isLoadingConfig}>
             {isSubmitting ? t('settings.fees.text_button_submitting') : t('settings.fees.text_button_submit')}
           </Button>
         </DialogFooter>

@@ -30,14 +30,14 @@ export const fetchOrderbook = async (): Promise<OrderbookResponse> => {
     throw new Error(`Failed to fetch orderbook: ${response.status}`)
   }
 
-  const data = await response.json()
+  const data: unknown = await response.json()
 
-  if (!data || !Array.isArray(data.offers)) {
+  if (!data || typeof data !== 'object' || !('offers' in data) || !Array.isArray(data.offers)) {
     console.warn('Unexpected orderbook response structure:', data)
     return { offers: [], fidelitybonds: [] }
   }
 
-  return data
+  return data as OrderbookResponse
 }
 
 export const refreshOrderbook = async (): Promise<Response> => {

@@ -26,37 +26,8 @@ const calculateFrozenOrLockedBalance = (utxos: Utxo[], refTime: Milliseconds = D
 export const toBalanceSummary = (utxos: Utxo[], now?: Milliseconds): BalanceSummary => {
   const refTime = now !== undefined ? now : Date.now()
 
-  const utxosByAccount = (utxos ?? []).reduce(
-    (acc, utxo) => {
-      const key = `${utxo.mixdepth}`
-      acc[key] = acc[key] || []
-      acc[key].push(utxo as Utxo)
-      return acc
-    },
-    {} as { [key: string]: Utxo[] },
-  )
-
-  const totalCalculatedByAccount = Object.fromEntries(
-    Object.entries(utxosByAccount).map(([account, utxos]) => {
-      return [account, utxos.reduce((acc, utxo) => acc + utxo.value, 0)]
-    }),
-  )
-  const frozenOrLockedCalculatedByAccount = Object.fromEntries(
-    Object.entries(utxosByAccount).map(([account, utxos]) => {
-      return [account, calculateFrozenOrLockedBalance(utxos, refTime)]
-    }),
-  )
-
-  const walletTotalCalculated: AmountSats = Object.values(totalCalculatedByAccount).reduce(
-    (acc, totalSats) => acc + totalSats,
-    0,
-  )
-
-  const walletFrozenOrLockedCalculated: AmountSats = Object.values(frozenOrLockedCalculatedByAccount).reduce(
-    (acc, frozenOrLockedSats) => acc + frozenOrLockedSats,
-    0,
-  )
-
+  const walletTotalCalculated: AmountSats = utxos.reduce((acc, utxo) => acc + utxo.value, 0)
+  const walletFrozenOrLockedCalculated: AmountSats = calculateFrozenOrLockedBalance(utxos, refTime)
   const walletAvailableCalculated = walletTotalCalculated - walletFrozenOrLockedCalculated
 
   return {

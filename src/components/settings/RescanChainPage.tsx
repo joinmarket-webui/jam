@@ -51,9 +51,10 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
     resolver: yupResolver(schema),
   })
 
+  const doOnSubmit = handleSubmit(onSubmit)
+
   return (
-    /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={(event) => void doOnSubmit(event)} className="space-y-4">
       {/* include validation with required or other standard HTML validation rules */}
       <div className="space-y-2">
         <Label htmlFor="rescanHeight" className="text-sm font-medium">
@@ -157,7 +158,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate(routes.settings)} title={t('global.back')}>
+        <Button variant="ghost" onClick={() => void navigate(routes.settings)} title={t('global.back')}>
           <ArrowLeftIcon />
           <span className="sr-only">{t('global.back')}</span>
         </Button>

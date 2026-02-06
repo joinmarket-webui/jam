@@ -49,16 +49,23 @@ function ErrorView({ title, subtitle, reason, stacktrace }: ErrorViewProps) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function UnknownError({ error }: { error: any }) {
+function UnknownError({ error }: { error: unknown }) {
   const { t } = useTranslation()
 
+  const title = t('error_page.unknown_error.title')
+  const subtitle = t('error_page.unknown_error.subtitle')
+  if (!error || typeof error !== 'object') {
+    return <ErrorView title={title} subtitle={subtitle} reason={t('global.errors.reason_unknown')} />
+  }
+
+  const reason = 'message' in error && error.message ? String(error.message) : undefined
+  const stacktrace = 'stack' in error && error.stack ? String(error.stack) : undefined
   return (
     <ErrorView
-      title={t('error_page.unknown_error.title')}
-      subtitle={t('error_page.unknown_error.subtitle')}
-      reason={error.message || t('global.errors.reason_unknown')}
-      stacktrace={error.stack}
+      title={title}
+      subtitle={subtitle}
+      reason={reason || t('global.errors.reason_unknown')}
+      stacktrace={stacktrace}
     />
   )
 }

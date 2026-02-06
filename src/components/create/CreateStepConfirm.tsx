@@ -95,7 +95,7 @@ export const CreateStepConfirm = ({ walletFileName, password, seedphrase, onConf
       </div>
 
       <Button
-        onClick={async () => await onConfirm()}
+        onClick={() => void onConfirm()}
         className="w-full"
         size="xxl"
         disabled={!backupConfirmed || !revealSensitiveInfo.dirty}

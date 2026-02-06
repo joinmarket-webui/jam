@@ -12,7 +12,6 @@ import {
   type AccountMeta,
   type AccountSummary,
   type AddressMeta,
-  type AddressStatus,
   type AddressSummary,
   type FidelityBondSummary,
   type Jar,
@@ -35,7 +34,7 @@ const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
       })
 
     const meta: AccountMeta = {
-      jarIndex: Number.parseInt(String(__raw.account), 10) as JarIndex,
+      jarIndex: Number.parseInt(String(__raw.account), 10),
       branches,
       __raw,
     }
@@ -58,7 +57,7 @@ const toAddressSummary = (accountSummary: AccountSummary): AddressSummary => {
 
       const meta: AddressMeta = {
         address: __raw.address,
-        status: __raw.status as AddressStatus,
+        status: __raw.status,
         info: {
           bech32: info.bech32,
           network: info.network,
@@ -131,9 +130,9 @@ export const JamWalletInfoContextProvider = ({
   const walletBalanceSummary = toBalanceSummary(utxos)
 
   const utxosByJarIndex = utxos.reduce((acc, utxo) => {
-    const key = utxo.mixdepth as JarIndex
+    const key: JarIndex = utxo.mixdepth
     acc[key] = acc[key] || []
-    acc[key].push(utxo as Utxo)
+    acc[key].push(utxo)
     return acc
   }, {} as UtxosByJarIndex)
 

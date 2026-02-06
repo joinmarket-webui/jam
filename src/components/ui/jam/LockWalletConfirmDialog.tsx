@@ -52,7 +52,7 @@ export const LockWalletConfirmDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLocking}>
             {t('global.cancel')}
           </Button>
-          <Button variant="default" onClick={onConfirm} disabled={isLocking}>
+          <Button variant="default" onClick={() => void onConfirm()} disabled={isLocking}>
             {isLocking ? (
               <>
                 <Spinner className="motion-reduce:hidden" />

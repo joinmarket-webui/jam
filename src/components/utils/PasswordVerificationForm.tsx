@@ -76,8 +76,10 @@ export const PasswordVerificationForm = ({
     resolver: yupResolver(schema),
   })
 
+  const doOnSubmit = handleSubmit(onSubmit)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
+    <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
         <Field data-invalid={errors.password !== undefined}>
           <FieldLabel htmlFor="password-verification-input-password">{t(/* TODO: i18n */ 'Password')}</FieldLabel>
@@ -111,7 +113,7 @@ export const PasswordVerificationForm = ({
 
       <Field orientation="horizontal" className="justify-end">
         {onCancel !== undefined && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={() => void onCancel()}>
             {t('global.cancel')}
           </Button>
         )}

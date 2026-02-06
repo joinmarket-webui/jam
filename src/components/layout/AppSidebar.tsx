@@ -47,7 +47,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
 
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
-  const { isLogsEnabled } = useFeatures()
+  const { isFeatureEnabled } = useFeatures()
   const mainItems = useMemo(
     () => [
       {
@@ -96,7 +96,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         url: routes.rescan,
         icon: PackageSearchIcon,
       },
-      ...(!isLogsEnabled
+      ...(!isFeatureEnabled('logs')
         ? []
         : [
             {
@@ -106,7 +106,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
             },
           ]),
     ],
-    [t, isLogsEnabled],
+    [t, isFeatureEnabled],
   )
 
   const devItems = useMemo(

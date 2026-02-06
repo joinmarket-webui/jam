@@ -2,6 +2,7 @@ import { percentageToFactor, parseSemanticVersion } from '@/lib/utils'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
 import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD, JM_WALLET_FILE_EXTENSION } from './jm'
+import { parseAsIntOrDefault } from './meta-env-utils'
 
 export const APP_DISPLAY_VERSION = (() => {
   return parseSemanticVersion(packageInfoVersion)
@@ -41,7 +42,7 @@ export const OFFER_MINSIZE_DEFAULT: AmountSats = 100_000
 export const JAM_JM_SESSION_REFRESH_MIN_INTERVAL: Milliseconds = 5_000
 export const JAM_JM_SESSION_REFRESH_DEFAULT_INTERVAL: Milliseconds = 30_000
 export const JAM_JM_SESSION_REFRESH_INTERVAL: Milliseconds = Math.max(
-  import.meta.env.VITE_JAM_JM_SESSION_REFRESH_INTERVAL ?? JAM_JM_SESSION_REFRESH_DEFAULT_INTERVAL,
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_JM_SESSION_REFRESH_INTERVAL, JAM_JM_SESSION_REFRESH_DEFAULT_INTERVAL),
   JAM_JM_SESSION_REFRESH_MIN_INTERVAL,
 )
 export const JAM_API_AUTH_TOKEN_RENEW_INTERVAL: Milliseconds = Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75)
@@ -49,29 +50,31 @@ export const JAM_API_AUTH_TOKEN_RENEW_INTERVAL: Milliseconds = Math.round(JM_API
 export const JAM_RESCAN_PROGRESS_MIN_INTERVAL: Milliseconds = 5_000
 export const JAM_RESCAN_PROGRESS_DEFAULT_INTERVAL: Milliseconds = 21_000
 export const JAM_RESCAN_PROGRESS_INTERVAL: Milliseconds = Math.max(
-  import.meta.env.VITE_JAM_RESCAN_PROGRESS_INTERVAL ?? JAM_RESCAN_PROGRESS_DEFAULT_INTERVAL,
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RESCAN_PROGRESS_INTERVAL, JAM_RESCAN_PROGRESS_DEFAULT_INTERVAL),
   JAM_RESCAN_PROGRESS_MIN_INTERVAL,
 )
 
 const JAM_SEED_MODAL_MIN_TIMEOUT: Milliseconds = 5_000
 const JAM_SEED_MODAL_DEFAULT_TIMEOUT: Milliseconds = 30_000
 export const JAM_SEED_MODAL_TIMEOUT: Milliseconds = Math.max(
-  import.meta.env.VITE_JAM_SEED_MODAL_TIMEOUT ?? JAM_SEED_MODAL_DEFAULT_TIMEOUT,
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_SEED_MODAL_TIMEOUT, JAM_SEED_MODAL_DEFAULT_TIMEOUT),
   JAM_SEED_MODAL_MIN_TIMEOUT,
 )
 
 // minimum amount of time in milliseconds the connection must stay open to be considered "healthy"
 const JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_MIN_DURATION: Milliseconds = 1_000
 export const JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION: Milliseconds = Math.max(
-  import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION ?? 0,
+  parseAsIntOrDefault(import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION, 0),
   JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_MIN_DURATION,
 )
 
 const JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_MIN_DURATION: Milliseconds = 1_000
 const JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DEFAULT_DURATION: Milliseconds = 3_000
 export const JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION: Milliseconds = Math.max(
-  import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION ??
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION,
     JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DEFAULT_DURATION,
+  ),
   JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_MIN_DURATION,
 )
 
@@ -80,16 +83,19 @@ export const JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION: Milliseconds = 
 const JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_MIN_INTERVAL: Milliseconds = 5_000
 const JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_DEFAULT_INTERVAL: Milliseconds = 30_000
 export const JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL: Milliseconds = Math.max(
-  import.meta.env.VITE_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL ?? JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_DEFAULT_INTERVAL,
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL,
+    JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_DEFAULT_INTERVAL,
+  ),
   JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_MIN_INTERVAL,
 )
 
 export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN: Milliseconds = Math.max(
-  import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN ?? 0,
+  parseAsIntOrDefault(import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN, 0),
   5_000,
 )
 
 export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds = Math.max(
-  import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX ?? 0,
+  parseAsIntOrDefault(import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX, 0),
   60_000,
 )

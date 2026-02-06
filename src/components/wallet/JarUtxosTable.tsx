@@ -164,7 +164,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
     }),
     columnHelper.accessor('confirmations', {
       header: () => t('jar_details.utxo_list.column_title_confirmations'),
-      cell: (info) => info.getValue(),
+      cell: (info) => <>{info.getValue()}</>,
       meta: {
         numeric: true,
         align: 'center',

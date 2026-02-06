@@ -1,4 +1,5 @@
 import type { AmountSats, Milliseconds } from '@/types/global'
+import { parseAsIntOrDefault } from './meta-env-utils'
 
 export const JM_WALLET_FILE_EXTENSION = '.jmdat'
 
@@ -9,7 +10,10 @@ export const JM_API_AUTH_TOKEN_EXPIRY_MAX: Milliseconds = Math.round(JM_API_AUTH
 export const JM_API_AUTH_TOKEN_EXPIRY: Milliseconds = Math.max(
   JM_API_AUTH_TOKEN_EXPIRY_MIN,
   Math.min(
-    Number.parseInt(import.meta.env.VITE_JM_API_AUTH_TOKEN_EXPIRY_SECONDS, 10) * 1_000,
+    parseAsIntOrDefault(
+      import.meta.env.VITE_JM_API_AUTH_TOKEN_EXPIRY_SECONDS,
+      JM_API_AUTH_TOKEN_EXPIRY_DEFAULT / 1_000,
+    ) * 1_000,
     JM_API_AUTH_TOKEN_EXPIRY_MAX,
   ),
 )

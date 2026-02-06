@@ -1,19 +1,14 @@
 import { useMemo } from 'react'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { cn, satsToBtc, btcToSats, isValidNumber, formatBtc, formatSats, SATS, BTC } from '@/lib/utils'
+import { cn, satsToBtc, btcToSats, isValidNumber, formatBtc, formatSats, SATS, BTC, type Unit } from '@/lib/utils'
 import type { Currency } from '@/types/global'
 
-const DISPLAY_MODE_BTC = 'btc'
-const DISPLAY_MODE_SATS = 'sats'
+const DISPLAY_MODE_BTC: Currency = 'btc'
+const DISPLAY_MODE_SATS: Currency = 'sats'
 const DISPLAY_MODE_HIDDEN = 'private'
 
-const getDisplayMode = (
-  unit: typeof SATS | typeof BTC | undefined,
-  currency: Currency,
-  isPrivate: boolean,
-  showBalance: boolean,
-) => {
+const getDisplayMode = (unit: Unit | undefined, currency: Currency, isPrivate: boolean, showBalance: boolean) => {
   if (!showBalance || isPrivate) return DISPLAY_MODE_HIDDEN
 
   // If convertToUnit is specified, respect it, otherwise use context
@@ -129,7 +124,7 @@ const SatsBalance = ({ value, colored = true, ...props }: SatsBalanceProps) => {
 
 interface BalanceProps extends Omit<BalanceComponentProps, 'symbol' | 'children'> {
   valueString: string
-  convertToUnit?: typeof SATS | typeof BTC
+  convertToUnit?: Unit
   showBalance?: boolean
 }
 
