@@ -75,7 +75,7 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
             <code className="light:text-red-700 text-red-800">feeConfig.maxFeesConfigMissing:</code>
             <pre className="text-xs">{JSON.stringify(feeConfig.maxFeesConfigMissing, null, 2)}</pre>
           </div>
-          <Button onClick={() => feeConfig.refetchAll()}>feeConfig.refetchAll()</Button>
+          <Button onClick={() => void feeConfig.refetchAll()}>feeConfig.refetchAll()</Button>
 
           <FeeConfigTestComponent walletFileName={walletFileName} />
         </div>

@@ -95,7 +95,12 @@ function LogContent({ value, refresh }: LogContentProps) {
             <DownloadIcon className="group/download" />
             {t('global.download')}
           </Button>
-          <Button variant="outline" onClick={handleRefresh} disabled={isLoadingRefresh} title={t('global.refresh')}>
+          <Button
+            variant="outline"
+            onClick={() => void handleRefresh()}
+            disabled={isLoadingRefresh}
+            title={t('global.refresh')}
+          >
             <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
             {t('global.refresh')}
           </Button>
@@ -159,9 +164,10 @@ export const LogsPage = () => {
         .catch((error) => {
           if (signal.aborted) return
 
+          const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
           const errorMessage = t('logs.error_loading_logs_failed', {
             /* TODO: add reason to i18n string */
-            reason: error.message || t('global.errors.reason_unknown'),
+            reason,
           })
 
           if (isDevMode()) {
@@ -181,7 +187,7 @@ export const LogsPage = () => {
 
   if (!isInitialized) {
     const abortCtrl = new AbortController()
-    refresh(abortCtrl.signal).finally(() => {
+    void refresh(abortCtrl.signal).finally(() => {
       if (abortCtrl.signal.aborted) return
       setIsInitialized(true)
     })

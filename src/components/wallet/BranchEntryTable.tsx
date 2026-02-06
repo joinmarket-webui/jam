@@ -53,6 +53,7 @@ type BranchEntryTableColumnMeta =
   | undefined
 
 const fuzzyFilter: FilterFn<BranchEntryTableRow> = (row, columnId, value, addMeta) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
   const itemRank = rankItem(row.getValue(columnId), value)
   addMeta({ itemRank })
   return itemRank.passed

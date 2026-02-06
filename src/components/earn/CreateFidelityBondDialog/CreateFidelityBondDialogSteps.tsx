@@ -87,7 +87,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               <Select
                 value={selectedMonth}
                 onValueChange={(month) => {
-                  const year = selectedYear || String(parseInt(month, 10) >= minMonth ? minYear : minYear + 1)
+                  const year = selectedYear || String(Number.parseInt(month, 10) >= minMonth ? minYear : minYear + 1)
                   const newLockdate = clampLockdate(`${year}-${month}`)
                   setSelectedLockdate(newLockdate)
                 }}

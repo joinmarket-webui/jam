@@ -58,8 +58,8 @@ function UnknownError({ error }: { error: unknown }) {
     return <ErrorView title={title} subtitle={subtitle} reason={t('global.errors.reason_unknown')} />
   }
 
-  const reason = 'message' in error && error.message ? String(error.message) : undefined
-  const stacktrace = 'stack' in error && error.stack ? String(error.stack) : undefined
+  const reason = 'message' in error && typeof error.message === 'string' ? error.message : undefined
+  const stacktrace = 'stack' in error && typeof error.stack === 'string' ? error.stack : undefined
   return (
     <ErrorView
       title={title}

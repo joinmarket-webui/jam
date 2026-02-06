@@ -62,7 +62,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const getAddressQueryOptions = getaddressOptions({
     client,
     path: {
-      walletname: encodeURIComponent(walletFileName!),
+      walletname: encodeURIComponent(walletFileName),
       mixdepth: String(sourceJar?.jarIndex),
     },
   })
@@ -147,7 +147,12 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
           )}
 
           <div className="mt-4 flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={getNewAddress} disabled={getAddressQuery.isFetching}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void getNewAddress()}
+              disabled={getAddressQuery.isFetching}
+            >
               {getAddressQuery.isFetching ? (
                 <>
                   <RefreshCwIcon className="animate-spin motion-reduce:hidden" />

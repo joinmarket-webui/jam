@@ -211,7 +211,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           value={jmSession.offer_list[0]}
           nickname={jmSession.nickname}
         >
-          <Button type="button" onClick={() => onStop()} className="w-full" size="lg">
+          <Button type="button" onClick={() => void onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (
               <>
                 <Spinner className="motion-reduce:hidden" />

@@ -117,6 +117,7 @@ describe('setIntervalDebounced', () => {
     const callback = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce(undefined)
     const onTimerIdChanged = vi.fn()
     const onError = vi.fn((_, loop) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- okay when using vi mocks
       loop()
     })
 

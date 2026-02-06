@@ -98,9 +98,13 @@ export default function PaymentConfirmDialog({
     onOpenChange(false)
   }
 
-  const confirm = () => {
+  const confirm = async () => {
     setIsConfirming(true)
-    onConfirm(values).finally(() => setIsConfirming(false))
+    try {
+      await onConfirm(values)
+    } finally {
+      setIsConfirming(false)
+    }
   }
 
   return (
@@ -213,7 +217,7 @@ export default function PaymentConfirmDialog({
           <Button className="flex-1" variant="outline" onClick={handleClose}>
             {t('modal.confirm_button_reject')}
           </Button>
-          <Button className="flex-1" onClick={confirm} disabled={isConfirming}>
+          <Button className="flex-1" onClick={() => void confirm()} disabled={isConfirming}>
             {isConfirming ? (
               <>
                 <Spinner className="motion-reduce:hidden" />

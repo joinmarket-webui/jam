@@ -70,6 +70,7 @@ type OrderTableColumnMeta =
   | undefined
 
 const fuzzyFilter: FilterFn<OrderTableEntry> = (row, columnId, value, addMeta) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
   const itemRank = rankItem(row.getValue(columnId), value)
   addMeta({ itemRank })
   return itemRank.passed
@@ -121,7 +122,7 @@ export const OrderbookTable = ({
           numeric: true,
         } as OrderTableColumnMeta,
       }),
-      columnHelper.accessor('type', {
+      columnHelper.accessor<'type', OrderTableEntry['type']>('type', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
         sortingFn: (a, b) => a.original.type.displayValue.localeCompare(b.original.type.displayValue),
         cell: (info) => (
@@ -161,7 +162,7 @@ export const OrderbookTable = ({
           numeric: true,
         } as OrderTableColumnMeta,
       }),
-      columnHelper.accessor('minimumSize', {
+      columnHelper.accessor<'minimumSize', OrderTableEntry['minimumSize']>('minimumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
         sortingFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
@@ -170,7 +171,7 @@ export const OrderbookTable = ({
           numeric: true,
         } as OrderTableColumnMeta,
       }),
-      columnHelper.accessor('maximumSize', {
+      columnHelper.accessor<'maximumSize', OrderTableEntry['maximumSize']>('maximumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
         sortingFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
@@ -179,7 +180,7 @@ export const OrderbookTable = ({
           numeric: true,
         } as OrderTableColumnMeta,
       }),
-      columnHelper.accessor('minerFeeContribution', {
+      columnHelper.accessor<'minerFeeContribution', OrderTableEntry['minerFeeContribution']>('minerFeeContribution', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
         sortingFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,

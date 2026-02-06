@@ -210,7 +210,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
             </AlertDescription>
           </Alert>
 
-          <Button variant="ghost" onClick={() => refetchOrderbookData()} disabled={isFetching}>
+          <Button variant="ghost" onClick={() => void refetchOrderbookData()} disabled={isFetching}>
             <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
             {t('global.retry')}
           </Button>
@@ -246,7 +246,13 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           )}
 
           <ButtonGroup>
-            <Button variant="outline" className="rounded-r-none" size="sm" onClick={handleReload} disabled={isFetching}>
+            <Button
+              variant="outline"
+              className="rounded-r-none"
+              size="sm"
+              onClick={() => void handleReload()}
+              disabled={isFetching}
+            >
               <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
               {t('orderbook.button_reload_title')}
             </Button>
@@ -259,7 +265,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-52">
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={handleClearAndReload} disabled={isFetching}>
+                  <DropdownMenuItem onClick={() => void handleClearAndReload()} disabled={isFetching}>
                     {t('orderbook.button_refresh_text')}
                   </DropdownMenuItem>
                 </DropdownMenuGroup>

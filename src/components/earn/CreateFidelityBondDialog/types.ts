@@ -36,8 +36,8 @@ export function generateLockdateOptions(isDeveloperMode: boolean): { value: fb.L
 
 export function getYearOptions(lockdateOptions: { value: fb.Lockdate }[]) {
   if (lockdateOptions.length === 0) return []
-  const minYear = parseInt(lockdateOptions[0].value.slice(0, 4), 10)
-  const maxYear = parseInt(lockdateOptions[lockdateOptions.length - 1].value.slice(0, 4), 10)
+  const minYear = Number.parseInt(lockdateOptions[0].value.slice(0, 4), 10)
+  const maxYear = Number.parseInt(lockdateOptions.at(-1)!.value.slice(0, 4), 10)
   return Array.from({ length: maxYear - minYear + 1 }, (_, i) => ({
     value: String(minYear + i),
     label: String(minYear + i),

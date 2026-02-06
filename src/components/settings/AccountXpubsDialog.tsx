@@ -241,7 +241,7 @@ export const AccountXpubsDialog = ({
 
   useEffect(() => {
     if (open && isPasswordVerified && seedQuery.data === undefined) {
-      seedQuery.refetch()
+      void seedQuery.refetch()
     }
   }, [open, isPasswordVerified, seedQuery])
 

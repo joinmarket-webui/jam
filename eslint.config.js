@@ -1,7 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import js from '@eslint/js'
 import compat from 'eslint-plugin-compat'
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import storybook from 'eslint-plugin-storybook'
@@ -13,7 +12,7 @@ import tseslint from 'typescript-eslint'
 export default defineConfig(
   { ignores: ['dist', './.storybook/**', './storybook-static/**'] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended, eslintPluginPrettierRecommended],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2023,
@@ -39,10 +38,26 @@ export default defineConfig(
     },
   },
   {
+    ignores: [
+      './src/components/ui/*.tsx', // shadcn components
+      './src/**/*.stories.tsx',
+      './src/components/settings/CollaboratorFeesForm.tsx', // TODO: remove
+    ],
+    files: ['./src/**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
+    },
+    extends: [...tseslint.configs.recommendedTypeChecked],
+    rules: {
+      '@typescript-eslint/no-redundant-type-constituents': ['off'], // shows intent
+    },
+  },
+  {
     extends: [eslintPluginUnicorn.configs.recommended],
     ignores: [
       './src/components/ui/*.tsx', // shadcn components
-      './src/components/earn/CreateFidelityBondDialog.tsx', // TODO: remove
       './src/components/settings/CollaboratorFeesForm.tsx', // TODO: remove
     ],
     rules: {
@@ -60,11 +75,7 @@ export default defineConfig(
       'unicorn/catch-error-name': [
         'error',
         {
-          ignore: [
-            String.raw`^error\d*$`,
-            '_ignoredOnPurpose',
-            'e', // TODO: remove
-          ],
+          ignore: ['_ignoredOnPurpose'],
         },
       ],
       'unicorn/numeric-separators-style': [

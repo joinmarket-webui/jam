@@ -81,18 +81,15 @@ const CreateWalletPage = () => {
       }
 
       const walletFileName = walletDisplayNameToFileName(walletName)
-      const { data: createData, error: createError } = await createwallet({
+      const { data: createData } = await createwallet({
         client,
         body: {
           walletname: walletFileName,
           password,
           wallettype: 'sw-fb',
         },
+        throwOnError: true,
       })
-
-      if (createError) {
-        throw createError
-      }
 
       let hashedPassword: string | undefined = undefined
       try {

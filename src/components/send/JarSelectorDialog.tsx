@@ -41,13 +41,16 @@ export default function JarSelectorDialog({
     onOpenChange(false)
   }
 
-  const confirm = () => {
+  const confirm = async () => {
     if (selectedJar === undefined) return
 
     setIsConfirming(true)
-    onConfirm(selectedJar.jarIndex)
-      .then(() => setSelectedJar(undefined))
-      .finally(() => setIsConfirming(false))
+    try {
+      await onConfirm(selectedJar.jarIndex)
+      setSelectedJar(undefined)
+    } finally {
+      setIsConfirming(false)
+    }
   }
 
   return (
@@ -79,7 +82,7 @@ export default function JarSelectorDialog({
           <Button className="flex-1" variant="outline" onClick={handleClose}>
             {t('modal.confirm_button_reject')}
           </Button>
-          <Button className="flex-1" onClick={confirm} disabled={!selectedJar || isConfirming}>
+          <Button className="flex-1" onClick={() => void confirm()} disabled={!selectedJar || isConfirming}>
             {isConfirming ? (
               <>
                 <Spinner className="motion-reduce:hidden" />
