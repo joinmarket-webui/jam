@@ -18,7 +18,11 @@ interface UseFeeConfigValidationProps {
 }
 
 export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
-  const jmConfig = useJmConfig({ walletFileName })
+  const {
+    get: getConfig,
+    refetch: refetchConfig,
+    fetchIfMissing: fetchConfigIfMissing,
+  } = useJmConfig({ walletFileName })
   const [isLoading, setIsLoading] = useState(false)
 
   // Debug flag to force fee config missing error for testing
@@ -26,31 +30,31 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
 
   const feeConfigValues = useMemo<FeeConfigValues | undefined>(() => {
     return {
-      max_cj_fee_abs: jmConfig.get(FEE_CONFIG_KEYS['max_cj_fee_abs'])?.value ?? undefined,
-      max_cj_fee_rel: jmConfig.get(FEE_CONFIG_KEYS['max_cj_fee_rel'])?.value ?? undefined,
-      tx_fees: jmConfig.get(FEE_CONFIG_KEYS['tx_fees'])?.value ?? undefined,
-      tx_fees_factor: jmConfig.get(FEE_CONFIG_KEYS['tx_fees_factor'])?.value ?? undefined,
-      max_sweep_fee_change: jmConfig.get(FEE_CONFIG_KEYS['max_sweep_fee_change'])?.value ?? undefined,
+      max_cj_fee_abs: getConfig(FEE_CONFIG_KEYS['max_cj_fee_abs'])?.value ?? undefined,
+      max_cj_fee_rel: getConfig(FEE_CONFIG_KEYS['max_cj_fee_rel'])?.value ?? undefined,
+      tx_fees: getConfig(FEE_CONFIG_KEYS['tx_fees'])?.value ?? undefined,
+      tx_fees_factor: getConfig(FEE_CONFIG_KEYS['tx_fees_factor'])?.value ?? undefined,
+      max_sweep_fee_change: getConfig(FEE_CONFIG_KEYS['max_sweep_fee_change'])?.value ?? undefined,
     }
-  }, [jmConfig])
+  }, [getConfig])
 
   const refetchAll = useCallback(async () => {
     setIsLoading(true)
     try {
-      return await Promise.all(Object.values(FEE_CONFIG_KEYS).map((it) => jmConfig.refetch(it)))
+      return await Promise.all(Object.values(FEE_CONFIG_KEYS).map((it) => refetchConfig(it)))
     } finally {
       setIsLoading(false)
     }
-  }, [jmConfig])
+  }, [refetchConfig])
 
   const fetchMissing = useCallback(async () => {
     setIsLoading(true)
     try {
-      return await Promise.all(Object.values(FEE_CONFIG_KEYS).map((it) => jmConfig.fetchIfMissing(it)))
+      return await Promise.all(Object.values(FEE_CONFIG_KEYS).map((it) => fetchConfigIfMissing(it)))
     } finally {
       setIsLoading(false)
     }
-  }, [jmConfig])
+  }, [fetchConfigIfMissing])
 
   const maxFeesConfigMissing = useMemo(() => {
     // Debug: Force the error for testing
