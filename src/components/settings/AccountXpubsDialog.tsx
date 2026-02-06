@@ -151,10 +151,11 @@ const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
                           }),
                         )
                       }
-                      onError={(e) =>
+                      onError={(error) =>
                         toast.error(
                           t('global.errors.error_copy_to_clipboard_failed', {
-                            reason: (e instanceof Error ? e.message : undefined) || t('global.errors.reason_unknown'),
+                            reason:
+                              (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown'),
                           }),
                         )
                       }

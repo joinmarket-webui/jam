@@ -74,7 +74,7 @@ const AddressFromJarSelectorDialog = ({
   )
 }
 
-const initialNumCollaborators = (minValue: number): number => {
+const initialNumberOfCollaborators = (minValue: number): number => {
   if (minValue > 8) {
     return minValue + pseudoRandomInteger(0, 2)
   }
@@ -99,7 +99,7 @@ const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
   numCollaborators: undefined,
 }
 
-const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
+const sendFormSchema = (jars: Jar[], minNumberOfCollaborators: number) => {
   return yup
     .object({
       source: yup
@@ -167,8 +167,8 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
         then: (schema) =>
           schema
             .integer()
-            .default(initialNumCollaborators(minNumCollaborators))
-            .min(minNumCollaborators)
+            .default(initialNumberOfCollaborators(minNumberOfCollaborators))
+            .min(minNumberOfCollaborators)
             .max(MAX_NUM_COLLABORATORS)
             .required(),
         otherwise: (schema) =>
@@ -194,7 +194,7 @@ const FieldPrefixSatSymbol = (
 interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
-  minNumCollaborators?: number
+  minNumberOfCollaborators?: number
   walletFileName: WalletFileName
   jars: Jar[]
   walletBalanceSummary: BalanceSummary
@@ -207,7 +207,7 @@ export function SendForm({
   onSubmit,
   disabled,
   walletFileName,
-  minNumCollaborators = MIN_NUM_COLLABORATORS,
+  minNumberOfCollaborators = MIN_NUM_COLLABORATORS,
   jars,
   walletBalanceSummary,
   debug,
@@ -216,7 +216,7 @@ export function SendForm({
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
 
-  const schema = useMemo(() => sendFormSchema(jars, minNumCollaborators), [jars, minNumCollaborators])
+  const schema = useMemo(() => sendFormSchema(jars, minNumberOfCollaborators), [jars, minNumberOfCollaborators])
 
   const {
     control,

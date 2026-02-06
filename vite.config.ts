@@ -94,9 +94,9 @@ const serverConfigNative = (): ServerOptions => {
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
-          proxy.on('proxyReq', (_proxyReq, req, _res) => {
-            if (req.headers['x-jm-authorization']) {
-              _proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
+          proxy.on('proxyReq', (proxyRequest, request, _response) => {
+            if (request.headers['x-jm-authorization']) {
+              proxyRequest.setHeader('Authorization', request.headers['x-jm-authorization'])
             }
           })
         },

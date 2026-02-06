@@ -248,7 +248,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <SendForm
               onSubmit={onSubmit}
               walletFileName={walletFileName}
-              minNumCollaborators={undefined}
+              minNumberOfCollaborators={undefined}
               jars={jars}
               walletBalanceSummary={walletBalanceSummary}
               disabled={jmSession?.maker_running || jmSession?.coinjoin_in_process || jmSession?.rescanning}

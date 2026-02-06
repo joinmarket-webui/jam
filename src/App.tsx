@@ -336,9 +336,9 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
           })
         }
       })
-      .catch((e) => {
+      .catch((error) => {
         const consoleError = 'Error while loading fee values.'
-        console.error(consoleError, e)
+        console.error(consoleError, error)
         if (isDevMode) {
           toast.error(`[DEV] ${consoleError}`)
         }

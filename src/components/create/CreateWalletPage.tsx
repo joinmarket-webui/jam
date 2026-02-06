@@ -107,8 +107,8 @@ const CreateWalletPage = () => {
         hashedPassword,
       })
       setStep('seed')
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet' // TODO: i18n
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create wallet' // TODO: i18n
       toast.error(errorMessage)
     } finally {
       toast.dismiss(durationHintToastId)

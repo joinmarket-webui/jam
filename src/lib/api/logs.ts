@@ -33,7 +33,7 @@ export const fetchFeatures = async ({ token, signal }: AuthApiRequestContext) =>
   return await fetch(`/features`, {
     headers: { ...buildAuthHeader(token) },
     signal,
-  }).then((res) => withExpectedContentTypeOrThrow(res, 'application/json'))
+  }).then((response) => withExpectedContentTypeOrThrow(response, 'application/json'))
 }
 
 /**
@@ -53,5 +53,5 @@ export const fetchLog = async ({
   return await fetch(`/jam/api/v0/log/${fileName}`, {
     headers: { ...buildAuthHeader(token) },
     signal,
-  }).then((res) => withExpectedContentTypeOrThrow(res, 'text/plain'))
+  }).then((response) => withExpectedContentTypeOrThrow(response, 'text/plain'))
 }

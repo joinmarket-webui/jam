@@ -41,11 +41,11 @@ const BitcoinAmountInputWrapper = ({
   const [amount, setAmount] = useState(initialAmount)
 
   const toggleCurrencyUnit = () => {
-    setCurrencyDisplayMode((prev) => (prev === 'sats' ? 'btc' : 'sats'))
+    setCurrencyDisplayMode((it) => (it === 'sats' ? 'btc' : 'sats'))
   }
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(e.target.value)
+  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAmount(event.target.value)
   }
 
   return (

@@ -16,20 +16,20 @@ interface SortIconProps {
 }
 
 export const SortIcon = ({ column, className }: SortIconProps) => {
-  const dir = column.getIsSorted()
-  if (!dir) {
+  const direction = column.getIsSorted()
+  if (!direction) {
     return <ArrowUpDownIcon className={className} />
   }
 
   const meta = column.columnDef.meta
   if (meta) {
     if ('numeric' in meta && meta.numeric === true) {
-      return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
+      return direction === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
     }
     if ('alphabetic' in meta && meta.alphabetic === true) {
-      return dir === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
+      return direction === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
     }
   }
 
-  return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
+  return direction === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
 }

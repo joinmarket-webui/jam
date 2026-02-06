@@ -58,7 +58,7 @@ export const SelectableJar = ({
           ref={radioRef}
           type="radio"
           checked={isSelected}
-          onChange={(e) => !disabled && onClick(e)}
+          onChange={(event) => !disabled && onClick(event)}
           className={cn(
             'light:border-black/50 inline-block h-[1.5rem] w-[1.5rem] appearance-none rounded-full border-1 border-white/50',
             {

@@ -34,15 +34,15 @@ export const TxFeeInputField = ({
 
   const handleUnitChange = (newUnit: TxFeeUnit) => {
     if (newUnit !== unit && value) {
-      const numValue = Number(value)
-      if (!Number.isNaN(numValue)) {
+      const numberValue = Number(value)
+      if (!Number.isNaN(numberValue)) {
         if (newUnit === txFeeUnit.SATS_PER_KILO_VBYTE && unit === txFeeUnit.BLOCKS) {
           // Convert blocks to sats/vbyte
-          const converted = Math.round(numValue * 1_000)
+          const converted = Math.round(numberValue * 1_000)
           onValueChange(String(converted / 1_000))
         } else if (newUnit === txFeeUnit.BLOCKS && unit === txFeeUnit.SATS_PER_KILO_VBYTE) {
           // Convert sats/vbyte to blocks
-          const converted = Math.round(numValue * 1_000)
+          const converted = Math.round(numberValue * 1_000)
           onValueChange(String(Math.round(converted / 1_000)))
         }
       }
@@ -87,7 +87,7 @@ export const TxFeeInputField = ({
         <Input
           type="text"
           value={value}
-          onChange={(e) => onValueChange(e.target.value)}
+          onChange={(event) => onValueChange(event.target.value)}
           placeholder={unit === txFeeUnit.BLOCKS ? '3' : '1.0'}
           className="h-full rounded-l-none"
           disabled={disabled}

@@ -39,7 +39,11 @@ export default defineConfig(
   },
   {
     extends: [eslintPluginUnicorn.configs.recommended],
-    ignores: ['./src/components/ui/*.tsx'],
+    ignores: [
+      './src/components/ui/*.tsx', // shadcn components
+      './src/components/earn/CreateFidelityBondDialog.tsx', // TODO: remove
+      './src/components/settings/CollaboratorFeesForm.tsx', // TODO: remove
+    ],
     rules: {
       'unicorn/filename-case': ['off'],
       'unicorn/no-array-reduce': ['off'],
@@ -51,6 +55,7 @@ export default defineConfig(
       'unicorn/prefer-ternary': ['off'], // can improve readability
       'unicorn/no-nested-ternary': ['off'], // can improve readability
       'unicorn/no-useless-undefined': ['off'], // can improve comprehensibility
+      'unicorn/no-negated-condition': ['off'], // allows handling errors first
       'unicorn/catch-error-name': [
         'error',
         {
@@ -71,11 +76,28 @@ export default defineConfig(
           },
         },
       ],
+      'unicorn/prevent-abbreviations': [
+        'error',
+        {
+          checkFilenames: false,
+          allowList: {
+            acc: true,
+            args: true,
+            i: true,
+            val: true,
+            Fn: true,
+            props: true,
+            Props: true,
+            dev: true,
+            Dev: true,
+            ref: true,
+            Ref: true,
+          },
+        },
+      ],
 
       'unicorn/switch-case-braces': ['off'], // TODO: enable
-      'unicorn/prevent-abbreviations': ['off'], // TODO: enable
       'unicorn/no-null': ['off'], // TODO: enable
-      'unicorn/no-negated-condition': ['off'], // TODO: enable
     },
   },
   compat.configs['flat/recommended'],

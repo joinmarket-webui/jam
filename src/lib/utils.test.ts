@@ -9,7 +9,7 @@ import {
   percentageToFactor,
   isValidNumber,
   factorToPercentage,
-  toSemVer,
+  parseSemanticVersion,
   UNKNOWN_VERSION,
   formatBtc,
   formatSats,
@@ -156,16 +156,16 @@ describe('btcToSats', () => {
   })
 })
 
-describe('toSemVer', () => {
+describe('parseSemanticVersion', () => {
   it('should parse valid semantic version strings', () => {
-    expect(toSemVer('1.2.3')).toEqual({
+    expect(parseSemanticVersion('1.2.3')).toEqual({
       major: 1,
       minor: 2,
       patch: 3,
       raw: '1.2.3',
     })
 
-    expect(toSemVer('v1.2.3')).toEqual({
+    expect(parseSemanticVersion('v1.2.3')).toEqual({
       major: 1,
       minor: 2,
       patch: 3,
@@ -174,21 +174,21 @@ describe('toSemVer', () => {
   })
 
   it('should parse version strings with additional metadata', () => {
-    expect(toSemVer('1.2.3-alpha')).toEqual({
+    expect(parseSemanticVersion('1.2.3-alpha')).toEqual({
       major: 1,
       minor: 2,
       patch: 3,
       raw: '1.2.3-alpha',
     })
 
-    expect(toSemVer('v2.5.8-beta.1')).toEqual({
+    expect(parseSemanticVersion('v2.5.8-beta.1')).toEqual({
       major: 2,
       minor: 5,
       patch: 8,
       raw: 'v2.5.8-beta.1',
     })
 
-    expect(toSemVer('1.0.0+build.123')).toEqual({
+    expect(parseSemanticVersion('1.0.0+build.123')).toEqual({
       major: 1,
       minor: 0,
       patch: 0,
@@ -197,16 +197,16 @@ describe('toSemVer', () => {
   })
 
   it('should return UNKNOWN_VERSION for invalid version strings', () => {
-    expect(toSemVer('invalid')).toEqual(UNKNOWN_VERSION)
-    expect(toSemVer('1.2')).toEqual(UNKNOWN_VERSION)
-    expect(toSemVer('1')).toEqual(UNKNOWN_VERSION)
-    expect(toSemVer('a.b.c')).toEqual(UNKNOWN_VERSION)
-    expect(toSemVer('')).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion('invalid')).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion('1.2')).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion('1')).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion('a.b.c')).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion('')).toEqual(UNKNOWN_VERSION)
   })
 
   it('should handle undefined or null input', () => {
-    expect(toSemVer(undefined)).toEqual(UNKNOWN_VERSION)
-    expect(toSemVer(null as unknown as string | undefined)).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion(undefined)).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion(null as unknown as string | undefined)).toEqual(UNKNOWN_VERSION)
   })
 })
 

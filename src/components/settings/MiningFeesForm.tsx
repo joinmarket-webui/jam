@@ -92,8 +92,12 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
           max: factorToPercentage(TX_FEES_FACTOR_MAX),
         })
       } else {
-        const factorVal = percentageToFactor(Number(txFeesFactor))
-        if (!isValidNumber(Number(txFeesFactor)) || factorVal < TX_FEES_FACTOR_MIN || factorVal > TX_FEES_FACTOR_MAX) {
+        const factorValue = percentageToFactor(Number(txFeesFactor))
+        if (
+          !isValidNumber(Number(txFeesFactor)) ||
+          factorValue < TX_FEES_FACTOR_MIN ||
+          factorValue > TX_FEES_FACTOR_MAX
+        ) {
           newErrors.txFeesFactor = t('settings.fees.feedback_invalid_tx_fees_factor', {
             min: factorToPercentage(TX_FEES_FACTOR_MIN),
             max: factorToPercentage(TX_FEES_FACTOR_MAX),
@@ -107,11 +111,11 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
           max: factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX),
         })
       } else {
-        const sweepVal = percentageToFactor(Number(maxSweepFeeChange))
+        const sweepValue = percentageToFactor(Number(maxSweepFeeChange))
         if (
           !isValidNumber(Number(maxSweepFeeChange)) ||
-          sweepVal < MAX_SWEEP_FEE_CHANGE_MIN ||
-          sweepVal > MAX_SWEEP_FEE_CHANGE_MAX
+          sweepValue < MAX_SWEEP_FEE_CHANGE_MIN ||
+          sweepValue > MAX_SWEEP_FEE_CHANGE_MAX
         ) {
           newErrors.maxSweepFeeChange = t('settings.fees.feedback_invalid_max_sweep_fee_change', {
             min: factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN),
@@ -153,10 +157,10 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
           setTxFeesBlocks(data.txFees)
           setTxFeesSatsPerVbyte('')
         }
-        const factorVal = data.txFeesFactor ? factorToPercentage(Number(data.txFeesFactor)) : ''
-        const sweepVal = data.maxSweepFeeChange ? factorToPercentage(Number(data.maxSweepFeeChange)) : ''
-        setTxFeesFactor(String(factorVal))
-        setMaxSweepFeeChange(String(sweepVal))
+        const factorValue = data.txFeesFactor ? factorToPercentage(Number(data.txFeesFactor)) : ''
+        const sweepValue = data.maxSweepFeeChange ? factorToPercentage(Number(data.maxSweepFeeChange)) : ''
+        setTxFeesFactor(String(factorValue))
+        setMaxSweepFeeChange(String(sweepValue))
         setErrors({})
       },
       resetForm: () => {
@@ -202,7 +206,7 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
             <Input
               type="text"
               value={txFeesFactor}
-              onChange={(e) => setTxFeesFactor(e.target.value)}
+              onChange={(event) => setTxFeesFactor(event.target.value)}
               placeholder="20"
               className="h-full rounded-l-none"
             />
@@ -224,7 +228,7 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
             <Input
               type="text"
               value={maxSweepFeeChange}
-              onChange={(e) => setMaxSweepFeeChange(e.target.value)}
+              onChange={(event) => setMaxSweepFeeChange(event.target.value)}
               placeholder="80"
               className="h-full rounded-l-none"
             />

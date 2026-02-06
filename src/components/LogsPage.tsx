@@ -150,18 +150,18 @@ export const LogsPage = () => {
         fileName: JMWALLETD_LOG_FILE_NAME,
         signal,
       })
-        .then((res) => (res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`))))
+        .then((response) => (response.ok ? response.text() : Promise.reject(new Error(`HTTP ${response.status}`))))
         .then((data) => {
           if (signal.aborted) return
           setAlert(undefined)
           setLogFileContent(data)
         })
-        .catch((e) => {
+        .catch((error) => {
           if (signal.aborted) return
 
           const errorMessage = t('logs.error_loading_logs_failed', {
             /* TODO: add reason to i18n string */
-            reason: e.message || t('global.errors.reason_unknown'),
+            reason: error.message || t('global.errors.reason_unknown'),
           })
 
           if (isDevMode()) {

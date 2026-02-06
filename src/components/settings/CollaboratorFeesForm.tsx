@@ -37,8 +37,8 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
         setErrors({})
         return true
       }
-      const absVal = Number(maxCjFeeAbs)
-      const relVal = Number(maxCjFeeRel)
+      const absoluteFeeValue = Number(maxCjFeeAbs)
+      const relativeFeeValue = Number(maxCjFeeRel)
       const newErrors: { maxCjFeeAbs?: string; maxCjFeeRel?: string } = {}
 
       if (!maxCjFeeAbs) {
@@ -46,7 +46,11 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
           min: CJ_FEE_ABS_MIN,
           max: CJ_FEE_ABS_MAX,
         })
-      } else if (!isValidNumber(absVal) || absVal < CJ_FEE_ABS_MIN || absVal > CJ_FEE_ABS_MAX) {
+      } else if (
+        !isValidNumber(absoluteFeeValue) ||
+        absoluteFeeValue < CJ_FEE_ABS_MIN ||
+        absoluteFeeValue > CJ_FEE_ABS_MAX
+      ) {
         newErrors.maxCjFeeAbs = t('settings.fees.feedback_invalid_max_cj_fee_abs', {
           min: CJ_FEE_ABS_MIN,
           max: CJ_FEE_ABS_MAX,
@@ -59,8 +63,8 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
           max: factorToPercentage(CJ_FEE_REL_MAX),
         })
       } else {
-        const relFactorVal = percentageToFactor(relVal)
-        if (!isValidNumber(relVal) || relFactorVal < CJ_FEE_REL_MIN || relFactorVal > CJ_FEE_REL_MAX) {
+        const relFactorVal = percentageToFactor(relativeFeeValue)
+        if (!isValidNumber(relativeFeeValue) || relFactorVal < CJ_FEE_REL_MIN || relFactorVal > CJ_FEE_REL_MAX) {
           newErrors.maxCjFeeRel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {
             min: factorToPercentage(CJ_FEE_REL_MIN),
             max: factorToPercentage(CJ_FEE_REL_MAX),
@@ -119,7 +123,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
               id="max-cj-fee-abs"
               type="text"
               value={maxCjFeeAbs}
-              onChange={(e) => setMaxCjFeeAbs(e.target.value)}
+              onChange={(event) => setMaxCjFeeAbs(event.target.value)}
               placeholder="0.00 007 517"
               className="h-full rounded-l-none"
             />
@@ -139,7 +143,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
               id="max-cj-fee-rel"
               type="text"
               value={maxCjFeeRel}
-              onChange={(e) => setMaxCjFeeRel(e.target.value)}
+              onChange={(event) => setMaxCjFeeRel(event.target.value)}
               placeholder="0.03"
               className="h-full rounded-l-none"
             />

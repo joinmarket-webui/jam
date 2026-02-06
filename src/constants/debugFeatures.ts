@@ -12,25 +12,25 @@ interface DebugFeatures {
   enableDemoOrderbook: boolean
 }
 
-const devMode = import.meta.env.DEV && import.meta.env.VITE_JAM_DEV_MODE === 'true'
+const developmentMode = import.meta.env.DEV && import.meta.env.VITE_JAM_DEV_MODE === 'true'
 
 const debugFeatures: DebugFeatures = {
-  developerMode: devMode,
-  allowCreatingExpiredFidelityBond: devMode,
-  insecureScheduleTesting: devMode,
-  skipWalletBackupConfirmation: devMode,
-  devErrorExamplePage: devMode,
-  devPage: devMode,
-  devSetupPage: devMode,
-  importDummyMnemonicPhrase: devMode,
-  allowFeeValuesReset: devMode,
-  enableDemoEarnReport: devMode,
-  enableDemoOrderbook: devMode,
+  developerMode: developmentMode,
+  allowCreatingExpiredFidelityBond: developmentMode,
+  insecureScheduleTesting: developmentMode,
+  skipWalletBackupConfirmation: developmentMode,
+  devErrorExamplePage: developmentMode,
+  devPage: developmentMode,
+  devSetupPage: developmentMode,
+  importDummyMnemonicPhrase: developmentMode,
+  allowFeeValuesReset: developmentMode,
+  enableDemoEarnReport: developmentMode,
+  enableDemoOrderbook: developmentMode,
 }
 
 type DebugFeature = keyof DebugFeatures
 
-export const isDevMode = (): boolean => devMode
+export const isDevMode = (): boolean => developmentMode
 
 export const isDebugFeatureEnabled = (name: DebugFeature): boolean => {
   return debugFeatures[name] || false

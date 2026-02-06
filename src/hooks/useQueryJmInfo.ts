@@ -2,10 +2,10 @@ import { versionOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/re
 import type { ErrorMessage, VersionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useApiClient } from '@/hooks/useApiClient'
-import { toSemVer, type SemVer } from '@/lib/utils'
+import { parseSemanticVersion, type SemanticVersion } from '@/lib/utils'
 
 type UseQueryJmInfoResult = {
-  version: SemVer | undefined
+  version: SemanticVersion | undefined
   queryResult: UseQueryResult<VersionResponse, ErrorMessage>
 }
 
@@ -19,7 +19,7 @@ export function useQueryJmInfo(): UseQueryJmInfoResult {
   })
 
   return {
-    version: queryResult.data ? toSemVer(queryResult.data.version) : undefined,
+    version: queryResult.data ? parseSemanticVersion(queryResult.data.version) : undefined,
     queryResult,
   }
 }
