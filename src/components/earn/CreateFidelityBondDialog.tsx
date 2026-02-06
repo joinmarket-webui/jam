@@ -224,8 +224,8 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
         setStep('select_date')
         break
       case 'select_utxos':
-        setStep('select_jar')
         setSelectedUtxos([])
+        setStep('select_jar')
         break
       case 'freeze_utxos':
         setStep('select_utxos')
@@ -244,7 +244,12 @@ export const CreateFidelityBondDialog = ({ open, onOpenChange, walletFileName }:
     setError(undefined)
     switch (step) {
       case 'select_date':
-        setStep('select_jar')
+        if (jarsWithUtxos.length === 1) {
+          setSelectedJarIndex(jarsWithUtxos[0].jarIndex)
+          setStep('select_utxos')
+        } else {
+          setStep('select_jar')
+        }
         break
       case 'select_jar':
         setStep('select_utxos')
