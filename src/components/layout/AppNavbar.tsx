@@ -201,7 +201,7 @@ export function AppNavbar({
             className="light:text-green-600 text-green-300"
             variant="ghost-navbar"
             size="icon"
-            onClick={() => navigate(rescanningRoute)}
+            onClick={() => void navigate(rescanningRoute)}
             aria-label={t('navbar.text_rescan_in_progress')}
             title={t('navbar.text_rescan_in_progress')}
           >
@@ -213,7 +213,7 @@ export function AppNavbar({
             className="light:text-green-600 text-green-300"
             variant="ghost-navbar"
             size="icon"
-            onClick={() => navigate(joiningRoute)}
+            onClick={() => void navigate(joiningRoute)}
             aria-label={t('navbar.joining_in_progress')}
             title={t('navbar.joining_in_progress')}
           >
@@ -224,7 +224,7 @@ export function AppNavbar({
         <Button
           variant="ghost-navbar"
           size="icon"
-          onClick={() => navigate(routes.settings)}
+          onClick={() => void navigate(routes.settings)}
           aria-label={t('navbar.menu_mobile_settings')}
           title={t('navbar.menu_mobile_settings')}
         >
@@ -234,7 +234,7 @@ export function AppNavbar({
           className="hidden sm:flex"
           variant="ghost-navbar"
           size="icon"
-          onClick={doOnLockWallet}
+          onClick={() => void doOnLockWallet()}
           aria-label={t('settings.button_lock_wallet')}
           title={t('settings.button_lock_wallet')}
           disabled={isLockingWallet}
@@ -245,7 +245,7 @@ export function AppNavbar({
           className="hidden sm:flex"
           variant="ghost-navbar"
           size="icon"
-          onClick={async () => await onLogout(navigate)}
+          onClick={() => void onLogout(navigate)}
           aria-label={/* TODO: i18n */ 'Logout'}
           title={/* TODO: i18n */ 'Logout'}
         >

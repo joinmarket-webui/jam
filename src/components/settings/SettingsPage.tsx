@@ -54,7 +54,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   const [showXpubsDialog, setShowXpubsDialog] = useState(false)
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
-  const { isLogsEnabled } = useFeatures()
+  const { isFeatureEnabled } = useFeatures()
 
   const [isLockingWallet, setIsLockingWallet] = useState(false)
   const doOnLockWallet = async () => {
@@ -115,9 +115,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <SettingItem
             icon={DollarSignIcon}
             title={t('settings.show_fee_config')}
-            action={async () => {
-              setShowFeeLimitDialog(true)
-            }}
+            action={() => setShowFeeLimitDialog(true)}
           />
         </CardContent>
       </Card>
@@ -131,14 +129,14 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <SettingItem
             icon={KeyRoundIcon}
             title={t('settings.show_seed')}
-            action={async () => setShowSeedDialog(true)}
+            action={() => setShowSeedDialog(true)}
             disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={BookKeyIcon}
             title={t('settings.show_xpubs')}
-            action={async () => setShowXpubsDialog(true)}
+            action={() => setShowXpubsDialog(true)}
             disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
@@ -157,7 +155,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             icon={FileTextIcon}
             title={t('settings.show_logs')}
             to={routes.logs}
-            disabled={!isLogsEnabled}
+            disabled={!isFeatureEnabled('logs')}
           />
         </CardContent>
       </Card>

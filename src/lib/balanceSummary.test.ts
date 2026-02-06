@@ -28,7 +28,7 @@ describe('BalanceSummary', () => {
           frozen: true,
         } as Utxo,
         {
-          value: 4,
+          value: 5,
           mixdepth: 0,
           // unfrozen and expired
           frozen: false,
@@ -39,10 +39,9 @@ describe('BalanceSummary', () => {
       now,
     )
 
-    expect(balanceSummary).not.toBeNull()
-    expect(balanceSummary!.calculatedTotalBalanceInSats).toBe(10)
-    expect(balanceSummary!.calculatedAvailableBalanceInSats).toBe(5)
-    expect(balanceSummary!.calculatedFrozenOrLockedBalanceInSats).toBe(5)
+    expect(balanceSummary.calculatedTotalBalanceInSats).toBe(11)
+    expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(6)
+    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(5)
   })
 
   it('should populate account balance data', () => {
@@ -71,9 +70,8 @@ describe('BalanceSummary', () => {
       now,
     )
 
-    expect(balanceSummary).not.toBeNull()
-    expect(balanceSummary!.calculatedTotalBalanceInSats).toBe(677777777)
-    expect(balanceSummary!.calculatedAvailableBalanceInSats).toBe(333333333)
-    expect(balanceSummary!.calculatedFrozenOrLockedBalanceInSats).toBe(344444444)
+    expect(balanceSummary.calculatedTotalBalanceInSats).toBe(677777777)
+    expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(333333333)
+    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(344444444)
   })
 })

@@ -116,7 +116,9 @@ describe('setIntervalDebounced', () => {
     const error = new Error('Test error')
     const callback = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce(undefined)
     const onTimerIdChanged = vi.fn()
-    const onError = vi.fn((_, loop) => loop())
+    const onError = vi.fn((_, loop) => {
+      loop()
+    })
 
     setIntervalDebounced(callback, 1000, onTimerIdChanged, onError)
 
@@ -406,7 +408,7 @@ describe('delayedPromise', () => {
 
     // Initially the promise should not be resolved
     let resolved = false
-    delayPromise.then(() => {
+    void delayPromise.then(() => {
       resolved = true
     })
 
@@ -417,13 +419,14 @@ describe('delayedPromise', () => {
 
     // Now the promise should be resolved
     await expect(delayPromise).resolves.toBeUndefined()
+    expect(resolved).toBe(true)
   })
 
   it('should not resolve before 500ms', async () => {
     const delayPromise = delayedPromise(500)
 
     let resolved = false
-    delayPromise.then(() => {
+    void delayPromise.then(() => {
       resolved = true
     })
 

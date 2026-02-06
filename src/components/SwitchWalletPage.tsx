@@ -105,7 +105,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
             {listWalletsFetching ? (
               <Spinner className="size-6" />
             ) : (
-              <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listWalletsRefetch()} />
+              <WalletIcon className="text-primary h-6 w-6" onClick={() => void listWalletsRefetch()} />
             )}
           </div>
           <CardTitle className="text-2xl font-bold">{t('settings.button_switch_wallet')}</CardTitle>
@@ -132,7 +132,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
                   <AlertTitle>{listWalletsErrorAlert.message}</AlertTitle>
                   <AlertDescription>{listWalletsErrorAlert.error_description}</AlertDescription>
                 </Alert>
-                <Button variant="ghost" size="sm" onClick={async () => await listWalletsRefetch()}>
+                <Button variant="ghost" size="sm" onClick={() => void listWalletsRefetch()}>
                   <RefreshCwIcon className="h-4 w-4" /> {t('global.retry')}
                 </Button>
               </CardContent>
@@ -177,7 +177,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(routes.home)}
+                                onClick={() => void navigate(routes.home)}
                                 className="flex-1"
                               >
                                 <WalletIcon className="mr-2 h-4 w-4" />

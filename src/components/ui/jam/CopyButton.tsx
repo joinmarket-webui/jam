@@ -62,7 +62,7 @@ function Copyable({
         type="button"
         className={className}
         disabled={disabled}
-        onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
+        onClick={() => void copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
       >
         {children}
       </button>

@@ -10,7 +10,7 @@ const resources = languages.reduce((acc, lng) => {
   }
 }, {})
 
-i18n.use(LanguageDetector).use(initReactI18next).init({
+void i18n.use(LanguageDetector).use(initReactI18next).init({
   resources,
   fallbackLng: 'en',
 })

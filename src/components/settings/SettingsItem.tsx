@@ -10,7 +10,7 @@ type SettingsItemProps = PropsWithChildren<{
   renderIcon?: ({ className }: { className: string }) => ReactNode
   title: string
   disabled?: boolean
-  action?: () => Promise<void>
+  action?: () => void | Promise<void>
 }>
 
 export const SettingItem = ({
@@ -27,7 +27,7 @@ export const SettingItem = ({
         'hover:bg-muted/50 -mx-2 cursor-pointer rounded-md px-2': !disabled,
         'cursor-not-allowed opacity-60': disabled,
       })}
-      onClick={!disabled ? action : undefined}
+      onClick={!disabled && action ? () => void action() : undefined}
     >
       <div className="flex items-center gap-2">
         <div className="bg-muted/50 flex h-7 w-7 items-center justify-center rounded-lg border">
@@ -76,7 +76,7 @@ type SettingsSwitchProps = Omit<SettingsItemProps, 'children' | 'action'> & {
 }
 export const SettingSwitch = ({ checked, onCheckedChange, displayToggle = true, ...props }: SettingsSwitchProps) => {
   return (
-    <SettingItem {...props} action={async () => onCheckedChange && onCheckedChange(!checked)}>
+    <SettingItem {...props} action={() => onCheckedChange && onCheckedChange(!checked)}>
       {displayToggle && <Switch checked={checked} onCheckedChange={onCheckedChange} disabled={props.disabled} />}
     </SettingItem>
   )

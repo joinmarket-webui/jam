@@ -10,18 +10,18 @@ const buildAuthHeader = (token: ApiToken): [string, string] => {
   return ['x-jm-authorization', `Bearer ${token}`]
 }
 
-async function loggingRequestInterceptor(request: Request) {
+function loggingRequestInterceptor(request: Request) {
   console.debug('[onRequest]', request)
   return request
 }
-async function loggingResponseInterceptor(response: Response) {
+function loggingResponseInterceptor(response: Response) {
   console.debug('[onResponse]', response)
   return response
 }
 
 const createJamAuthenticationMiddleware = () => {
   // eslint-disable-next-line unicorn/consistent-function-scoping -- false positive
-  return async (request: Request) => {
+  return (request: Request) => {
     const authState = authStore.getState().state
     if (authState?.auth?.token) {
       const authHeader = buildAuthHeader(authState.auth.token)
@@ -32,7 +32,7 @@ const createJamAuthenticationMiddleware = () => {
 }
 
 export const createApiClient = (): Client => {
-  const baseUrl: string = import.meta.env.VITE_JM_API_BASE_URL
+  const baseUrl = String(import.meta.env.VITE_JM_API_BASE_URL)
   const clientOptions: ClientOptions = { baseUrl }
 
   console.debug('Setting up JM API client…', clientOptions)

@@ -188,7 +188,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={async () => await shareAddress(getAddressQuery.data!.address)}
+                onClick={() => void shareAddress(getAddressQuery.data!.address)}
                 disabled={getAddressQuery.isFetching || !getAddressQuery.data?.address}
               >
                 <ShareIcon />

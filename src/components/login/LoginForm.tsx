@@ -92,8 +92,10 @@ export const LoginFormComponent = ({
 
   const values = useWatch({ control })
 
+  const doOnSubmit = handleSubmit(onSubmit)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
+    <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
         <Field data-invalid={errors.walletFileName !== undefined}>
           <FieldLabel>{/* TODO: i18n */}Wallet</FieldLabel>

@@ -113,7 +113,7 @@ const LoginPage = () => {
             {listWalletsFetching ? (
               <Spinner className="size-6" />
             ) : (
-              <WalletIcon className="text-primary" onClick={async () => await listWalletsRefetch()} />
+              <WalletIcon className="text-primary" onClick={() => void listWalletsRefetch()} />
             )}
           </div>
           <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
@@ -137,7 +137,7 @@ const LoginPage = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={async () => await listWalletsRefetch()}
+                onClick={() => void listWalletsRefetch()}
                 disabled={listWalletsFetching}
               >
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
@@ -172,10 +172,10 @@ const LoginPage = () => {
                   )}
 
                   <div className="flex flex-col gap-2">
-                    <Button variant="link" size="sm" onClick={async () => await navigate(routes.createWallet)}>
+                    <Button variant="link" size="sm" onClick={() => void navigate(routes.createWallet)}>
                       {t('wallets.button_new_wallet')}
                     </Button>
-                    <Button variant="link" size="sm" onClick={async () => await navigate('/import-wallet')} disabled>
+                    <Button variant="link" size="sm" onClick={() => void navigate('/import-wallet')} disabled>
                       {/* TODO: implement "import wallet" */}
                       {t('wallets.button_import_wallet')}
                       <Badge variant="destructive">Not yet implemented.</Badge>

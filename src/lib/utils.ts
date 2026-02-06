@@ -75,10 +75,11 @@ export function setIntervalDebounced(
 ) {
   ;(function loop() {
     onTimerIdChanged(
-      setTimeout(async () => {
+      setTimeout(() => {
         try {
-          await callback()
-          loop()
+          Promise.resolve(callback())
+            .then(() => loop())
+            .catch((error) => onError(error, loop))
         } catch (error: unknown) {
           onError(error, loop)
         }
@@ -100,7 +101,7 @@ export const percentageToFactor = (val: number, precision = 6) => {
   return Number((val / 100).toFixed(precision))
 }
 
-export const isValidNumber = (val: number | undefined | null): val is number => {
+export const isValidNumber = (val: unknown): val is number => {
   return val !== undefined && typeof val === 'number' && !Number.isNaN(val)
 }
 

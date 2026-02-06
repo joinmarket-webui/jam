@@ -83,8 +83,10 @@ export const CreateWalletForm = ({
     resolver: yupResolver(schema),
   })
 
+  const doOnSubmit = handleSubmit(onSubmit)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
+    <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
         <Field data-invalid={errors.walletName !== undefined}>
           <FieldLabel htmlFor="create-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>

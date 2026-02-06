@@ -52,7 +52,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
   const [isLogsOverlayOpen, setIsLogsOverlayOpen] = useState(false)
-  const { isLogsEnabled } = useFeatures()
+  const { isFeatureEnabled } = useFeatures()
 
   // Adds a keyboard shortcut to toggle the logs overlay.
   useEffect(() => {
@@ -91,7 +91,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         joinmarketVersion={joinmarketVersion}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
-        onClickLogs={isLogsEnabled ? () => setIsLogsOverlayOpen(true) : undefined}
+        onClickLogs={isFeatureEnabled('logs') ? () => setIsLogsOverlayOpen(true) : undefined}
       />
 
       <Cheatsheet open={cheatsheet.open} onOpenChange={cheatsheet.onOpenChange} />

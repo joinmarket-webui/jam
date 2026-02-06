@@ -21,7 +21,7 @@ const {
 // https://vite.dev/config/
 export default defineConfig((): UserConfig => {
   if (!SUPPORTED_BACKENDS.includes(JAM_BACKEND)) {
-    throw new Error(`Unsupported backend: Use one of ${SUPPORTED_BACKENDS}`)
+    throw new Error(`Unsupported backend: Use one of [${SUPPORTED_BACKENDS.join(', ')}]`)
   }
 
   if (JAM_BACKEND === BACKEND_STANDALONE && JAM_API_PORT === undefined) {

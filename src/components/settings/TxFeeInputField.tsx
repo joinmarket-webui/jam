@@ -57,7 +57,7 @@ export const TxFeeInputField = ({
           <button
             key={tab.value}
             type="button"
-            onClick={() => handleUnitChange(tab.value as TxFeeUnit)}
+            onClick={() => handleUnitChange(tab.value)}
             className={cx('rounded-md px-4 py-2 text-sm font-medium transition-colors', {
               'bg-primary text-primary-foreground': unit === tab.value,
               'bg-muted text-muted-foreground hover:bg-muted/80': unit !== tab.value,

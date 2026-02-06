@@ -192,7 +192,11 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         </div>
       </div>
       <div className={cn('flex items-center gap-2', {})}>
-        <Button size="sm" disabled={!operationsEnabled || walletInfo.isFetching} onClick={() => walletInfo.refetch()}>
+        <Button
+          size="sm"
+          disabled={!operationsEnabled || walletInfo.isFetching}
+          onClick={() => void walletInfo.refetch()}
+        >
           <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': walletInfo.isFetching })} />
           {t('global.refresh')}
         </Button>
@@ -201,7 +205,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
             size="sm"
             variant={selectedUtxos.length === 0 ? 'outline' : undefined}
             disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosFrozen}
-            onClick={onFreezeClick}
+            onClick={() => void onFreezeClick()}
           >
             {freezeUtxos.isPending ? <Spinner /> : <ThermometerSnowflakeIcon />}
             {t('jar_details.utxo_list.button_freeze')}
@@ -210,7 +214,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
             size="sm"
             variant={selectedUtxos.length === 0 ? 'outline' : undefined}
             disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosUnfrozen}
-            onClick={onUnfreezeClick}
+            onClick={() => void onUnfreezeClick()}
           >
             {unfreezeUtxos.isPending ? <Spinner /> : <ThermometerSunIcon />}
             {t('jar_details.utxo_list.button_unfreeze')}

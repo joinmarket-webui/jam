@@ -4,13 +4,15 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { fetchFeatures } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
 
-export interface Features {
-  logs?: boolean
-}
+type SupportedFeature = 'logs' // add on demand
 
-export interface FeatureItem {
+type FeatureItem = {
   name: string
   enabled: boolean
+}
+
+type FeaturesApiResponse = {
+  features: Record<string, boolean> | FeatureItem[]
 }
 
 export const useFeatures = () => {
@@ -37,41 +39,41 @@ export const useFeatures = () => {
         throw new Error(`Features request failed with status ${response.status}`)
       }
 
-      const data = await response.json()
-      return data.features as Features
+      return (await response.json()) as FeaturesApiResponse
     },
     enabled: !!authState?.auth?.token,
     retry: false,
+    select: (data: FeaturesApiResponse): FeatureItem[] => {
+      if (!data.features) {
+        return []
+      }
+      // New format: { features: [{ name: 'logs', enabled: true }] }
+      else if (Array.isArray(data.features)) {
+        return data.features
+      }
+      // Old format: { features: { logs: true } }
+      else if (typeof data.features === 'object') {
+        return Object.entries(data.features).map(([name, enabled]) => ({ name, enabled }))
+      } else {
+        console.warn('Could not parse feature response. Disabling all optional features.')
+        return []
+      }
+    },
   })
 
-  const isLogsSupported = () => {
-    if (error) {
-      return false
-    }
-
-    if (features) {
-      // Old format: { features: { logs: true } }
-      if (typeof features.logs === 'boolean') {
-        return features.logs
-      }
-
-      // New format: { features: [{ name: 'logs', enabled: true }] }
-      if (Array.isArray(features)) {
-        return features.some((feature: FeatureItem) => feature.name === 'logs' && feature.enabled === true)
-      }
-    }
-    return false
+  const isFeatureSupported = (featureName: SupportedFeature) => {
+    return features?.some((feature) => feature.name === featureName && feature.enabled === true)
   }
-
-  // Show logs UI in dev mode even when not supported, but with unsupported message
-  const isLogsEnabled = isLogsSupported() || (error && isDevMode())
+  const isFeatureEnabled = (featureName: SupportedFeature) => {
+    return isFeatureSupported(featureName) || isDevMode()
+  }
 
   return {
     features,
     error,
     isLoading,
     isFetching,
-    isLogsEnabled,
-    isLogsSupported: isLogsSupported(),
+    isFeatureSupported: isFeatureSupported,
+    isFeatureEnabled: isFeatureEnabled,
   }
 }

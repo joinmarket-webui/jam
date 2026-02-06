@@ -10,7 +10,7 @@ const buildAuthHeader = (token: string) => {
 /**
  * Validate response content type
  */
-const withExpectedContentTypeOrThrow = async (response: Response, expectedContentType: string) => {
+const withExpectedContentTypeOrThrow = (response: Response, expectedContentType: string) => {
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`)
   }

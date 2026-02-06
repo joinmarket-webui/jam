@@ -1,7 +1,7 @@
 import { useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { getAddressInfo, validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
+import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import { BrushCleaningIcon, MilkIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
@@ -36,8 +36,8 @@ import type { SendFormValues } from './types'
 
 type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog>, 'onConfirm'> & {
   walletFileName: WalletFileName
-  onError: (error: ErrorMessage) => Promise<void>
-  onConfirm: (jar: JarIndex, address: AddressInfo) => Promise<void>
+  onError: (error: ErrorMessage) => void
+  onConfirm: (jar: JarIndex, address: AddressInfo) => void
 }
 
 const AddressFromJarSelectorDialog = ({
@@ -62,12 +62,12 @@ const AddressFromJarSelectorDialog = ({
           }),
         )
         if (result.error) {
-          await onError(result.error)
+          onError(result.error)
         } else if (result.data?.address === undefined) {
-          await onError(new Error('Missing bitcoin address.'))
+          onError(new Error('Missing bitcoin address.'))
         } else {
           const addressInfo = getAddressInfo(result.data.address)
-          await onConfirm(selectedJarIndex, addressInfo)
+          onConfirm(selectedJarIndex, addressInfo)
         }
       }}
     />
@@ -255,6 +255,8 @@ export function SendForm({
     return jars.find((it) => it.jarIndex === destinationJarIndex)
   }, [jars, destinationJarIndex])
 
+  const doOnSubmit = handleSubmit(onSubmit)
+
   return (
     <>
       <AddressFromJarSelectorDialog
@@ -265,20 +267,20 @@ export function SendForm({
         jars={jars}
         disabledJars={sourceJar === undefined ? [] : [sourceJar]}
         walletBalanceSummary={walletBalanceSummary}
-        onError={async (_ignoredOnPurpose) => {
+        onError={(_ignoredOnPurpose) => {
           // TODO: i18n own key `send.error_loading_address_failed`
           toast.error(t('receive.error_loading_address_failed'))
           setValue('destination.address', undefined, { shouldValidate: true })
           setValue('destination.fromJar', undefined, { shouldValidate: true })
         }}
-        onConfirm={async (jarIndex, addressInfo) => {
+        onConfirm={(jarIndex, addressInfo) => {
           setValue('destination.address', addressInfo.address, { shouldValidate: true })
           setValue('destination.fromJar', jarIndex, { shouldValidate: true })
 
           setShowAddressFromJarSelectorDialog(false)
         }}
       />
-      <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)} noValidate>
+      <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
           <Field className="space-y-4" data-invalid={errors.source !== undefined}>
             <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
@@ -317,7 +319,7 @@ export function SendForm({
           <Field data-invalid={errors.destination !== undefined}>
             <FieldLabel htmlFor="send-destination">
               {t('send.label_recipient')}
-              {destinationAddressInfo?.network && destinationAddressInfo.network !== 'mainnet' && (
+              {destinationAddressInfo?.network && destinationAddressInfo.network !== Network.mainnet && (
                 <Badge variant="outline">{destinationAddressInfo.network}</Badge>
               )}
             </FieldLabel>

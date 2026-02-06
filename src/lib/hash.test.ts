@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { DEFAULT_PBKDF_ITERATIONS, hashPassword } from './hash'
 
 describe('hash', () => {
-  it('DEFAULT_PBKDF_ITERATIONS', async () => {
+  it('DEFAULT_PBKDF_ITERATIONS', () => {
     expect(DEFAULT_PBKDF_ITERATIONS).toBe(210_000)
   })
 
