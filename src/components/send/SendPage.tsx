@@ -12,7 +12,7 @@ import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
+import { useAddressSummary, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
@@ -42,6 +42,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
 
+  const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
 
@@ -250,6 +251,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               walletFileName={walletFileName}
               minNumberOfCollaborators={undefined}
               jars={jars}
+              addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={jmSession?.maker_running || jmSession?.coinjoin_in_process || jmSession?.rescanning}
               debug={isDeveloperMode}
