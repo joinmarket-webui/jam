@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -88,59 +88,55 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
-  const stopMakerQueryOptions = useMemo(
-    () =>
-      stopmakerOptions({
-        client,
-        path: { walletname: encodeURIComponent(walletFileName) },
-      }),
-    [client, walletFileName],
-  )
+  const stopMakerQueryOptions = stopmakerOptions({
+    client,
+    path: { walletname: encodeURIComponent(walletFileName) },
+  })
 
   const stopMakerQuery = useQuery({
     ...stopMakerQueryOptions,
     queryFn: withQueryDelay(stopMakerQueryOptions.queryFn, {
       delayAfter: MAKER_STOP_RESPONSE_DELAY,
     }),
-    staleTime: 1,
-    gcTime: 1,
     enabled: false,
     retry: false,
+  })
+
+  // wrap as mutation manually, as `stopMakerQuery` is a `GET` request
+  const stopMaker = useMutation({
+    mutationFn: async () => {
+      return await stopMakerQuery.refetch({ throwOnError: true })
+    },
+    retry: false,
+    onMutate: () => {
+      setIsWaitingMakerStop(true)
+      toast.info(t('earn.alert_stopping'), { id: 'earn.alert_stopping' })
+    },
+    onError: (error: ErrorMessage) => {
+      setIsWaitingMakerStop(false)
+      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      // TODO: i18n
+      toast.error(`Error while stopping the earn process. Reason: ${reason}`)
+    },
   })
 
   const startMaker = useMutation({
     ...startmakerMutation({ client }),
     retry: false,
-    onSuccess: () => {
+    onMutate: () => {
       setIsWaitingMakerStart(true)
       toast.info(t('earn.alert_starting'), { id: 'earn.alert_starting' })
     },
     onError: (error: ErrorMessage) => {
       setIsWaitingMakerStart(false)
       console.error('StartMaker error:', error)
-      const reason = error.message ?? error.error_description ?? t('global.errors.reason_unknown')
+      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
       toast.error(t('earn.alert_start_failed', { reason }))
     },
   })
 
   const onStop = async () => {
-    try {
-      toast.info(t('earn.alert_stopping'), { id: 'earn.alert_stopping' })
-      await stopMakerService()
-    } catch (error: unknown) {
-      const reason = error instanceof Error ? error.message : undefined
-      toast.error(reason ?? t('global.errors.reason_unknown'))
-    }
-  }
-
-  const stopMakerService = async () => {
-    setIsWaitingMakerStop(true)
-    try {
-      await stopMakerQuery.refetch()
-    } catch (error: unknown) {
-      setIsWaitingMakerStop(false)
-      throw error
-    }
+    await stopMaker.mutateAsync()
   }
 
   const onSubmit: SubmitHandler<EarnFormValues> = async (data) => {
@@ -174,7 +170,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       scrollToTop()
     }
   } else {
-    if (isWaitingMakerStop && !stopMakerQuery.isFetching) {
+    if (isWaitingMakerStop && !stopMaker.isPending) {
       setIsWaitingMakerStop(false)
       toast.dismiss('earn.alert_stopping')
       toast.dismiss('earn.alert_starting')
