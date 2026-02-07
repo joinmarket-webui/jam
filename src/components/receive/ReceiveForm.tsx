@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import type { TFunction } from 'i18next'
 import { useForm, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
@@ -23,28 +24,33 @@ const FieldPrefixSatSymbol = (
   />
 )
 
-const receiveFormSchema = (jars: Jar[]) => {
+const receiveFormSchema = (jars: Jar[], t: TFunction) => {
+  const invalidSourceJarFeedbackMessage = t('receive.feedback_invalid_source_jar', {
+    /* TODO: i18n: remove defaultValue and add key to language files */
+    defaultValue: 'Please select a source jar.',
+  })
+
   return yup
     .object({
       source: yup
         .object({
           fromJar: yup
             .number()
-            .integer()
-            .test('valid-source-jar-index-test', 'Invalid source jar index.', (value) =>
+            .integer(invalidSourceJarFeedbackMessage)
+            .required(invalidSourceJarFeedbackMessage)
+            .test('valid-source-jar-index-test', invalidSourceJarFeedbackMessage, (value) =>
               jars.some((it) => it.jarIndex === value),
-            )
-            .required(),
+            ),
         })
         .required(),
       amount: yup
         .object({
           amount: yup
             .number()
-            .integer()
-            .min(1)
-            .max(21_000_000 * 100_000_000)
-            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+            .integer(t('receive.feedback_invalid_amount'))
+            .min(1, t('receive.feedback_invalid_amount'))
+            .max(21_000_000 * 100_000_000, t('receive.feedback_invalid_amount'))
+            .transform((value) => (Number.isNaN(value) ? null : Number(value)))
             .nullable()
             .optional(),
         })
@@ -66,7 +72,7 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
   const { t } = useTranslation()
   const { walletBalanceSummary } = useWalletBalanceSummary()
 
-  const schema = useMemo(() => receiveFormSchema(jars), [jars])
+  const schema = useMemo(() => receiveFormSchema(jars, t), [jars, t])
 
   const {
     control,
@@ -107,10 +113,13 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
             ))}
           </div>
         </Field>
+        {errors.source?.fromJar?.message && (
+          <div className="text-destructive text-xs">{errors.source.fromJar.message}</div>
+        )}
       </div>
 
       <div className="space-y-2">
-        <Field data-invalid={errors.amount?.amount !== undefined}>
+        <Field data-invalid={errors.amount !== undefined}>
           <FieldLabel htmlFor="receive-amount">{t('receive.label_amount_input')}</FieldLabel>
           <InputGroup>
             <InputGroupInput
@@ -127,8 +136,8 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
             <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
           </InputGroup>
         </Field>
-        {errors.amount?.amount && (
-          <div className="text-destructive text-xs">{t('receive.feedback_invalid_amount')}</div>
+        {errors.amount?.amount?.message && (
+          <div className="text-destructive text-xs">{errors.amount.amount.message}</div>
         )}
       </div>
 

@@ -166,7 +166,7 @@ const sendFormSchema = (
               schema
                 .integer(t('send.feedback_invalid_amount'))
                 .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
-                .nonNullable()
+                .nonNullable(t('send.feedback_invalid_amount'))
                 .min(1, t('send.feedback_invalid_amount'))
                 .max(21_000_000 * 100_000_000, t('send.feedback_invalid_amount'))
                 .required(t('send.feedback_invalid_amount')),
