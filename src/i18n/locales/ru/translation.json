@@ -378,6 +378,7 @@
   "receive": {
     "title": "Получить",
     "subtitle": "Отправьте sats на указанный ниже адрес, чтобы пополнить свой кошелек.",
+    "text_copy_address": "Адрес скопирован",
     "error_loading_address_failed": "Невозможно получить новый адрес.",
     "error_copy_address_failed": "Не удалось скопировать адрес.",
     "button_copy_address": "Скопировать",

@@ -343,6 +343,7 @@
   "receive": {
     "title": "接收",
     "subtitle": "將聰發送到以下的地址來充值你的錢包。",
+    "text_copy_address": "已複製地址",
     "error_loading_address_failed": "無法獲取新地址。",
     "error_copy_address_failed": "無法複製地址。",
     "button_copy_address": "複製",

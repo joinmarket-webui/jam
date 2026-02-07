@@ -295,6 +295,7 @@
   "receive": {
     "title": "Receber",
     "subtitle": "Envie sats para o endereço abaixo para financiar sua carteira.",
+    "text_copy_address": "Endereço copiado",
     "error_loading_address_failed": "Não foi possível obter novo endereço.",
     "error_copy_address_failed": "Não foi possível copiar o endereço.",
     "button_copy_address": "Copiar",
