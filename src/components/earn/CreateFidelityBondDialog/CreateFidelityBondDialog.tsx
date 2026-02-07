@@ -1,5 +1,5 @@
 import { AlertTriangleIcon, ChevronLeftIcon } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -105,7 +105,6 @@ export function CreateFidelityBondDialog({ open, onOpenChange, walletFileName }:
         {error && (
           <Alert variant="destructive" className="animate-in fade-in-50">
             <AlertTriangleIcon className="h-4 w-4" />
-            <AlertTitle>{t('global.error')}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}

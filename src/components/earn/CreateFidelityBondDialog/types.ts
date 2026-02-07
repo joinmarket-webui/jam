@@ -13,14 +13,15 @@ export type CreateFidelityBondDialogProps = WithRequiredProperty<
   walletFileName: WalletFileName
 }
 
-// Lockdate options for the next ~10 years (for validation)
-export function generateLockdateOptions(): { value: fb.Lockdate; label: string }[] {
+// Lockdate options for the next ~10 years (and past months in dev mode for testing expired bonds)
+export function generateLockdateOptions(isDeveloperMode: boolean): { value: fb.Lockdate; label: string }[] {
   const options: { value: fb.Lockdate; label: string }[] = []
   const now = new Date()
   const startYear = now.getUTCFullYear()
   const startMonth = now.getUTCMonth()
 
-  for (let i = 3; i <= 120; i++) {
+  const startOffset = isDeveloperMode ? -12 : 3
+  for (let i = startOffset; i <= 120; i++) {
     const monthOffset = startMonth + i
     const year = startYear + Math.floor(monthOffset / 12)
     const month = (monthOffset % 12) + 1

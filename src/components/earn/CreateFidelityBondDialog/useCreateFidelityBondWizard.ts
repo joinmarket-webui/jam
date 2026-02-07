@@ -8,11 +8,13 @@ import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmar
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import type { WalletFileName } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
 import type { Step } from './types'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './types'
@@ -25,17 +27,18 @@ export function useCreateFidelityBondWizard(
   const { t } = useTranslation()
   const client = useApiClient()
   const walletInfo = useJamWalletInfoContext()
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const [step, setStep] = useState<Step>('select_date')
   const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')
-  const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | null>(null)
+  const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | undefined>()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxo[]>([])
   const [frozenUtxos, setFrozenUtxos] = useState<Utxo[]>([])
   const [confirmationChecked, setConfirmationChecked] = useState(false)
-  const [txResult, setTxResult] = useState<DirectSendResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
+  const [error, setError] = useState<string | undefined>()
 
-  const lockdateOptions = useMemo(() => generateLockdateOptions(), [])
+  const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
   const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
   const monthOptions = useMemo(() => getMonthOptions(), [])
 
@@ -71,14 +74,14 @@ export function useCreateFidelityBondWizard(
   }, [walletInfo.jars])
 
   const availableUtxos = useMemo(() => {
-    if (selectedJarIndex === null) return []
+    if (selectedJarIndex === undefined) return []
     const jar = walletInfo.jars.find((j) => j.jarIndex === selectedJarIndex)
     if (!jar) return []
     return jar.utxos.filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
   }, [walletInfo.jars, selectedJarIndex])
 
   const utxosToFreeze = useMemo(() => {
-    if (selectedJarIndex === null) return []
+    if (selectedJarIndex === undefined) return []
     const jar = walletInfo.jars.find((j) => j.jarIndex === selectedJarIndex)
     if (!jar) return []
     return jar.utxos.filter(
@@ -114,9 +117,8 @@ export function useCreateFidelityBondWizard(
     ...freezeMutation({ client }),
     onError: (err: ErrorMessage) => {
       console.error('Freeze error:', err)
-      const reason = err.message || err.error_description || ''
-      const baseMsg = t('earn.fidelity_bond.error_freezing_utxos')
-      setError(reason ? `${baseMsg} ${reason}` : baseMsg)
+      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+      setError(`${t('earn.fidelity_bond.error_freezing_utxos')} ${reason}`)
     },
   })
 
@@ -124,9 +126,8 @@ export function useCreateFidelityBondWizard(
     ...freezeMutation({ client }),
     onError: (err: ErrorMessage) => {
       console.error('Unfreeze error:', err)
-      const reason = err.message || err.error_description || ''
-      const baseMsg = t('earn.fidelity_bond.error_unfreezing_utxos')
-      setError(reason ? `${baseMsg} ${reason}` : baseMsg)
+      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+      setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
     },
   })
 
@@ -134,21 +135,20 @@ export function useCreateFidelityBondWizard(
     ...directsendMutation({ client }),
     onError: (err: ErrorMessage) => {
       console.error('DirectSend error:', err)
-      const reason = err.message || err.error_description || ''
-      const baseMsg = t('earn.fidelity_bond.error_creating_fidelity_bond')
-      setError(reason ? `${baseMsg} ${reason}` : baseMsg)
+      const reason = err.message || err.error_description || t('global.errors.reason_unknown')
+      setError(`${t('earn.fidelity_bond.error_creating_fidelity_bond')} ${reason}`)
     },
   })
 
   const handleReset = () => {
     setStep('select_date')
     setSelectedLockdate('')
-    setSelectedJarIndex(null)
+    setSelectedJarIndex(undefined)
     setSelectedUtxos([])
     setFrozenUtxos([])
     setConfirmationChecked(false)
-    setTxResult(null)
-    setError(null)
+    setTxResult(undefined)
+    setError(undefined)
   }
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -159,7 +159,7 @@ export function useCreateFidelityBondWizard(
   }
 
   const handleBack = () => {
-    setError(null)
+    setError(undefined)
     switch (step) {
       case 'select_jar':
         setStep('select_date')
@@ -182,10 +182,15 @@ export function useCreateFidelityBondWizard(
   }
 
   const handleNext = async () => {
-    setError(null)
+    setError(undefined)
     switch (step) {
       case 'select_date':
-        setStep('select_jar')
+        if (jarsWithUtxos.length === 1) {
+          setSelectedJarIndex(jarsWithUtxos[0].jarIndex)
+          setStep('select_utxos')
+        } else {
+          setStep('select_jar')
+        }
         break
       case 'select_jar':
         setStep('select_utxos')
@@ -222,7 +227,7 @@ export function useCreateFidelityBondWizard(
   }
 
   const handleCreateFidelityBond = async () => {
-    if (!address || selectedJarIndex === null) return
+    if (!address || selectedJarIndex === undefined) return
 
     setStep('creating')
 
@@ -286,7 +291,7 @@ export function useCreateFidelityBondWizard(
       case 'select_date':
         return !!selectedLockdate
       case 'select_jar':
-        return selectedJarIndex !== null
+        return selectedJarIndex !== undefined
       case 'select_utxos':
         return selectedUtxos.length > 0
       case 'freeze_utxos':
