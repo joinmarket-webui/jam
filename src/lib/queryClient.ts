@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import type { QueryFunction, QueryKey } from '@tanstack/react-query'
+import type { MutationFunction, QueryFunction, QueryKey } from '@tanstack/react-query'
 import { delayedPromise } from './utils'
 
 export const queryClient = new QueryClient({
@@ -35,4 +35,21 @@ export function withQueryDelay<TQueryFnData, TQueryKey extends QueryKey>(
     }
     return result
   }) as QueryFunction<TQueryFnData, TQueryKey>
+}
+
+export function withMutationDelay<TMutateFnData, TVariables = void>(
+  queryFn: MutationFunction<TMutateFnData, TVariables> | undefined,
+  { delayBefore, delayAfter }: WithQueryDelayOptions,
+): MutationFunction<TMutateFnData, TVariables> | undefined {
+  if (!queryFn) return undefined
+  return (async (variables, options) => {
+    if (delayBefore !== undefined && delayBefore > 0) {
+      await delayedPromise(delayBefore)
+    }
+    const result = queryFn(variables, options)
+    if (delayAfter !== undefined && delayAfter > 0) {
+      await delayedPromise(delayAfter)
+    }
+    return result
+  }) as MutationFunction<TMutateFnData, TVariables>
 }
