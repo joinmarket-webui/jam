@@ -57,6 +57,7 @@ const toAddressSummary = (accountSummary: AccountSummary): AddressSummary => {
 
       const meta: AddressMeta = {
         address: __raw.address,
+        used: __raw.status !== 'new',
         status: __raw.status,
         info: {
           bech32: info.bech32,

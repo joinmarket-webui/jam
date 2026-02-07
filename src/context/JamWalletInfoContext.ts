@@ -41,6 +41,7 @@ export type AddressStatus = AddressStaticStatus | AddressStatusDynamic
 
 export type AddressMeta = {
   address: BitcoinAddress
+  used: boolean
   status: AddressStatus
   info?: Omit<AddressInfo, 'address'>
   __raw: NonNullable<
