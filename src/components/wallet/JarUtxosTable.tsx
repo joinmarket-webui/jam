@@ -24,6 +24,7 @@ import {
 import type { TFunction } from 'i18next'
 import { SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
@@ -87,6 +88,8 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
   )
 }
 
+const AUTO_CHANGE_SELECTION_TOAST_ID = 'utxo.selection_changed_automatically'
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
   return [
@@ -95,15 +98,42 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
       header: ({ table }: HeaderContext<UtxoTableEntry, unknown>) => (
         <Checkbox
           checked={table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false}
-          onCheckedChange={(checked) => table.toggleAllRowsSelected(checked === true)}
+          onCheckedChange={(checked) => {
+            table.toggleAllRowsSelected(checked === true)
+            toast.dismiss(AUTO_CHANGE_SELECTION_TOAST_ID)
+          }}
         />
       ),
-      cell: ({ row }: CellContext<UtxoTableEntry, unknown>) => (
+      cell: ({ row, table }: CellContext<UtxoTableEntry, unknown>) => (
         <Checkbox
           className="light:bg-background/80"
           checked={row.getIsSelected()}
           disabled={!row.getCanSelect()}
-          onCheckedChange={row.getToggleSelectedHandler()}
+          onCheckedChange={(checked) => {
+            const address = row.original.address
+            const eligibleRows = table.getRowModel().rows.filter((it) => it.original.address === address)
+            eligibleRows.forEach((it) => it.getToggleSelectedHandler()(checked))
+
+            if (eligibleRows.length > 1) {
+              if (checked) {
+                /* TODO: i18n */
+                toast.warning(`Security measure: Selection changed`, {
+                  description: `Automatically selected ${eligibleRows.length - 1} more UTXOs with address ${address}!`,
+                  id: AUTO_CHANGE_SELECTION_TOAST_ID,
+                  duration: 10_000,
+                })
+              } else {
+                /* TODO: i18n */
+                toast.warning(`Security measure: Deselection changed`, {
+                  description: `Automatically deselected ${eligibleRows.length - 1} more UTXOs with address ${address}!`,
+                  id: AUTO_CHANGE_SELECTION_TOAST_ID,
+                  duration: 10_000,
+                })
+              }
+            } else {
+              toast.dismiss(AUTO_CHANGE_SELECTION_TOAST_ID)
+            }
+          }}
         />
       ),
     },

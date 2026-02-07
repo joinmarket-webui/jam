@@ -130,8 +130,18 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
   const operationsEnabled = enabled && !(walletInfo.isFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
 
   const onFreezeClick = async () => {
+    const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
+    const eligibleUtxos = jar.utxos.filter((it) => selectedAddresses.has(it.address))
+
+    if (eligibleUtxos.length > selectedUtxos.length) {
+      // TODO: i18n
+      toast.warning('Security measure: Freeze additional UTXOs', {
+        description: `Automatically freezing ${eligibleUtxos.length - selectedUtxos.length} additional UTXOs. They should be spent together.`,
+      })
+    }
+
     try {
-      const result = await freezeUtxos.mutateAsync(selectedUtxos)
+      const result = await freezeUtxos.mutateAsync(eligibleUtxos)
       const fulfilled = result.filter((it) => it.status === 'fulfilled')
       const rejected = result.filter((it) => it.status === 'rejected')
       if (rejected.length === 0) {
@@ -145,8 +155,18 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
   }
 
   const onUnfreezeClick = async () => {
+    const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
+    const eligibleUtxos = jar.utxos.filter((it) => selectedAddresses.has(it.address))
+
+    if (eligibleUtxos.length > selectedUtxos.length) {
+      // TODO: i18n
+      toast.warning('Security measure: Unfreeze additional UTXOs', {
+        description: `Automatically unfreezing ${eligibleUtxos.length - selectedUtxos.length} additional UTXOs. They should be spent together.`,
+      })
+    }
+
     try {
-      const result = await unfreezeUtxos.mutateAsync(selectedUtxos)
+      const result = await unfreezeUtxos.mutateAsync(eligibleUtxos)
       const fulfilled = result.filter((it) => it.status === 'fulfilled')
       const rejected = result.filter((it) => it.status === 'rejected')
       if (rejected.length === 0) {
@@ -295,7 +315,7 @@ export const WalletJarsDetailsContent = ({
   return (
     <div className={cn('mx-auto space-y-3', className)}>
       <Tabs
-        value={activeJar?.jarIndex.toString()}
+        value={activeJar.jarIndex.toString()}
         onValueChange={(value) => setActiveJarIndex(Number.parseInt(value, 10))}
         className="flex flex-col gap-4"
       >
