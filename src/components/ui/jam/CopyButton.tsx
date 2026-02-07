@@ -110,9 +110,7 @@ export function CopyButton({ text, successText = text, successTextTimeout = 1_50
       {...buttonProps}
       onSuccess={() => {
         setValueCopiedFlag((current) => current + 1)
-        if (buttonProps.onSuccess !== undefined) {
-          buttonProps.onSuccess()
-        }
+        buttonProps.onSuccess?.()
       }}
     >
       {showValueCopiedConfirmation ? successText : text}

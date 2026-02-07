@@ -432,7 +432,7 @@
   "receive": {
     "title": "Receive",
     "subtitle": "Send sats to the address below to fund your wallet.",
-    "text_copy_address": "Address copied",
+    "text_copy_address": "Address copied.",
     "error_loading_address_failed": "Unable to get new address.",
     "error_copy_address_failed": "Could not copy address.",
     "error_share_address_failed": "Could not share address",

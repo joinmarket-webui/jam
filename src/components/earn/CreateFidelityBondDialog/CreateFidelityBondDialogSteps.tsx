@@ -440,7 +440,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                       successText={<CheckIcon className="h-4 w-4 text-green-500" />}
                       className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
                       onSuccess={() => toast.success(t('receive.text_copy_address'))}
-                      onError={() => toast.error(t('global.errors.reason_unknown'))}
+                      onError={() => toast.error(t('receive.error_copy_address_failed'))}
                     />
                   </div>
                 </div>
@@ -524,7 +524,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                     successText={<CheckIcon className="h-4 w-4 text-green-500" />}
                     className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
                     onSuccess={() => toast.success(t('receive.text_copy_address'))}
-                    onError={() => toast.error(t('global.errors.reason_unknown'))}
+                    onError={() => toast.error(t('receive.error_copy_address_failed'))}
                   />
                 </div>
               </div>
@@ -548,7 +548,10 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                     onSuccess={() =>
                       toast.success(t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id'))
                     }
-                    onError={() => toast.error(t('global.errors.reason_unknown'))}
+                    onError={(error) => {
+                      const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
+                      toast.error(t('global.errors.error_copy_to_clipboard_failed', { reason }))
+                    }}
                   />
                 </div>
               </div>
