@@ -22,7 +22,7 @@ import {
   type CellContext,
 } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
-import { SnowflakeIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon, SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
@@ -30,8 +30,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
+import { buttonVariants } from '../ui/button-variants'
 import { Checkbox } from '../ui/checkbox'
 import { Balance } from '../ui/jam/Balance'
+import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 
@@ -178,7 +180,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
         numeric: true,
       } as UtxoTableColumnMeta,
     }),
-    columnHelper.accessor('address', {
+    columnHelper.accessor<'address', UtxoTableEntry['address']>('address', {
       header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
       sortingFn: (a, b) => {
         const val = a.original.address.localeCompare(b.original.address)
@@ -188,7 +190,19 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
         const bid = Number(b.original.confirmations)
         return aid - bid
       },
-      cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
+      cell: (info) => (
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-sm select-all">{info.getValue()}</span>
+          <CopyButton
+            value={info.getValue()}
+            text={<CopyIcon />}
+            successText={<CheckIcon className="text-green-500" />}
+            className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
+            onSuccess={() => toast.success(t('receive.text_copy_address'))}
+            onError={() => toast.error(t('receive.error_copy_address_failed'))}
+          />
+        </div>
+      ),
       meta: {
         alphabetic: true,
       } as UtxoTableColumnMeta,
