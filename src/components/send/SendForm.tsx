@@ -65,6 +65,7 @@ const AddressFromJarSelectorDialog = ({
         if (result.error) {
           onError(result.error)
         } else if (result.data?.address === undefined) {
+          // TODO: i18n? does this ever happen?
           onError(new Error('Missing bitcoin address.'))
         } else {
           const addressInfo = getAddressInfo(result.data.address)
@@ -190,6 +191,17 @@ const sendFormSchema = (
       }),
     })
     .required()
+    .test('address-not-from-source-jar-test', function (root) {
+      const addressIsFromSourceJar = addressSummary[root.destination.address]?.jarIndex === root.source.fromJar
+      if (!addressIsFromSourceJar) return true
+
+      const errorMessage = t('send.feedback_address_from_source_jar', {
+        /* TODO: i18n: remove defaultValue and add key to language files */
+        defaultValue: 'This address is from the source jar. To preserve your privacy please choose a different one.',
+      })
+
+      return new yup.ValidationError(errorMessage, root.destination.address, 'destination.address', undefined, true)
+    })
 }
 
 const FieldPrefixSatSymbol = (
@@ -240,6 +252,7 @@ export function SendForm({
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
     setValue,
+    trigger,
   } = useForm<SendFormValues, unknown, SendFormValues>({
     mode: 'onSubmit',
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
@@ -320,6 +333,8 @@ export function SendForm({
                     if (destinationJarIndex === jar.jarIndex) {
                       setValue('destination.address', undefined, { shouldValidate: true })
                       setValue('destination.fromJar', undefined, { shouldValidate: true })
+                    } else if (destinationAddress !== undefined) {
+                      void trigger('destination.address')
                     }
                   }}
                   disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
