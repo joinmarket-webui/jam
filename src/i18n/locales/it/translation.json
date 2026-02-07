@@ -295,6 +295,7 @@
   "receive": {
     "title": "Ricevi",
     "subtitle": "Invia sats all'indirizzo sottostante per depositare nel tuo wallet.",
+    "text_copy_address": "Indirizzo copiato",
     "error_loading_address_failed": "Impossibile ottenere un nuovo indirizzo.",
     "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
     "button_copy_address": "Copia",

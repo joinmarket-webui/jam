@@ -208,6 +208,7 @@
   "receive": {
     "title": "Recevoir",
     "subtitle": "Envoyez du bitcoin à l'adresse ci-dessous.",
+    "text_copy_address": "Adresse copiée",
     "error_loading_address_failed": "Le chargement de la nouvelle adresse a échoué.",
     "error_copy_address_failed": "L'adresse n'a pu être copiée.",
     "button_copy_address": "Copier",

@@ -12,13 +12,9 @@ To function, the web UI needs to connect to an instance of JoinMarket with [the 
 You don't need to worry about that, though.
 To ease development and testing, we provide a Docker setup that runs JoinMarket and its API service in a regtest setup.
 
-## Submitting a Pull Request
+## Local setup (regtest and UI)
 
-[Fork](https://github.com/joinmarket-webui/jam/fork), then clone this repo:
-
-```sh
-git clone git@github.com:<your-username>/jam.git
-```
+After cloning the repo (see the section below for _how_ you clone—fork vs upstream), do the following once:
 
 Install dependencies:
 
@@ -47,6 +43,16 @@ Start the UI on port 3000:
 ```sh
 npm run dev
 ```
+
+## Submitting a Pull Request
+
+[Fork](https://github.com/joinmarket-webui/jam/fork), then clone your fork:
+
+```sh
+git clone git@github.com:<your-username>/jam.git
+```
+
+Follow the [Local setup (regtest and UI)](#local-setup-regtest-and-ui) above.
 
 Make your changes and be sure to manually test them before submitting them to us.
 
@@ -77,33 +83,7 @@ Checkout the version you want to test. If you want to test the cutting edge deve
 git fetch --tags git checkout <version>
 ```
 
-Install dependencies:
-
-```sh
-npm install
-```
-
-Start the JoinMarket HTTP API service in regtest.
-It isn't needed to dig deeper into how it works to use it.
-However, if you want to find out more about it, see [docker/regtest/readme.md](docker/regtest/readme.md).
-
-```sh
-npm run regtest:up
-```
-
-Initialize the regtest setup:
-
-```sh
-npm run regtest:init
-```
-
-This creates and funds a wallet `Satoshi` with password `test`.
-
-Start the UI on port 3000:
-
-```sh
-npm run dev
-```
+Follow the [Local setup (regtest and UI)](#local-setup-regtest-and-ui) above.
 
 Enjoy the test drive!
 
@@ -112,6 +92,18 @@ Enjoy the test drive!
 When running Jam in dev mode, additional Jam instances are provided by default. These instances can be used to set up different wallets and simulate collaborative transactions. A block explorer and RPC terminal are also available for directly interacting with the regtest node.
 
 Information on how to access these development features can be found at [http://localhost:3000/dev-setup](http://localhost:3000/dev-setup).
+
+### Resetting regtest (clean slate)
+
+To wipe all regtest state (wallets, fidelity bonds, etc.) and get a fresh wallet so you can test flows like Create Fidelity Bond again from scratch:
+
+```sh
+npm run regtest:clear
+npm run regtest:up
+npm run regtest:init
+```
+
+Then restart the UI (`npm run dev` if it was stopped). You will have a new `Satoshi` wallet with no fidelity bonds.
 
 ## Reporting Issues
 

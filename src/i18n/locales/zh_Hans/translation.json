@@ -343,6 +343,7 @@
   "receive": {
     "title": "接收",
     "subtitle": "将聪发送到以下的地址来充值你的钱包。",
+    "text_copy_address": "已复制地址",
     "error_loading_address_failed": "无法获取新地址。",
     "error_copy_address_failed": "无法复制地址。",
     "button_copy_address": "复制",
