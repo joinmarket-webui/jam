@@ -47,7 +47,9 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
 
   const sidebarContext = useSidebar()
 
-  const websocket = useJmWebsocket()
+  const websocket = useJmWebsocket({
+    enableHeartbeat: true,
+  })
 
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)

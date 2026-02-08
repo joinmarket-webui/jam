@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { sessionOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
@@ -28,13 +28,9 @@ export function useRefreshSession({
 }: UseRefreshSessionProps): UseRefreshSessionResult {
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
-  const sessionOptionsQueryOptions = useMemo(
-    () =>
-      sessionOptions({
-        client,
-      }),
-    [client],
-  )
+  const sessionOptionsQueryOptions = sessionOptions({
+    client,
+  })
 
   const { data: sessionData, refetch: refetchSessionData } = useQuery({
     ...sessionOptionsQueryOptions,
