@@ -32,7 +32,7 @@ export const SettingItem = ({
       <div className="flex items-center gap-2">
         <div className="bg-muted/50 flex h-7 w-7 items-center justify-center rounded-lg border">
           {Icon && <Icon className="text-muted-foreground h-4 w-4" />}
-          {renderIcon && renderIcon({ className: 'text-muted-foreground h-4 w-4' })}
+          {renderIcon?.({ className: 'text-muted-foreground h-4 w-4' })}
         </div>
         <div>
           <p className="text-sm font-medium">{title}</p>
@@ -64,7 +64,7 @@ export const SettingsLink = ({ to, external = false, ...props }: SettingsLinkPro
         }
       }}
     >
-      {external && <ExternalLinkIcon className="text-muted-foreground h-3 w-3" />}
+      {external && <ExternalLinkIcon className="text-muted-foreground size-3.5" />}
     </SettingItem>
   )
 }
@@ -76,7 +76,7 @@ type SettingsSwitchProps = Omit<SettingsItemProps, 'children' | 'action'> & {
 }
 export const SettingSwitch = ({ checked, onCheckedChange, displayToggle = true, ...props }: SettingsSwitchProps) => {
   return (
-    <SettingItem {...props} action={() => onCheckedChange && onCheckedChange(!checked)}>
+    <SettingItem {...props} action={() => onCheckedChange?.(!checked)}>
       {displayToggle && <Switch checked={checked} onCheckedChange={onCheckedChange} disabled={props.disabled} />}
     </SettingItem>
   )
