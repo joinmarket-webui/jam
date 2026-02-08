@@ -18,6 +18,13 @@ import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
 import { CopyButton } from '@/components/ui/jam/CopyButton'
 import { Label } from '@/components/ui/label'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
@@ -50,6 +57,8 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     jarsWithUtxos,
     selectedUtxos,
     availableUtxos,
+    utxoPage,
+    setUtxoPage,
     toggleUtxoSelection,
     selectAllUtxos,
     deselectAllUtxos,
@@ -233,40 +242,80 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </Button>
           </div>
 
-          <div className="max-h-72 space-y-2 overflow-x-hidden overflow-y-auto pr-1">
-            {availableUtxos.map((utxo) => {
-              const isSelected = selectedUtxos.some((u) => u.utxo === utxo.utxo)
+          <div className="space-y-2">
+            {(() => {
+              const perPage = 5
+              const totalPages = Math.ceil(availableUtxos.length / perPage)
+              const page = Math.max(0, Math.min(utxoPage, totalPages - 1))
+              const paged = availableUtxos.slice(page * perPage, (page + 1) * perPage)
+
               return (
-                <Card
-                  key={utxo.utxo}
-                  className={cn(
-                    'cursor-pointer transition-all duration-200',
-                    isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'hover:bg-muted/30 hover:shadow-sm',
+                <>
+                  {paged.map((utxo) => {
+                    const isSelected = selectedUtxos.some((u) => u.utxo === utxo.utxo)
+                    return (
+                      <Card
+                        key={utxo.utxo}
+                        className={cn(
+                          'cursor-pointer transition-all duration-200',
+                          isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'hover:bg-muted/30 hover:shadow-sm',
+                        )}
+                        onClick={() => toggleUtxoSelection(utxo)}
+                      >
+                        <CardContent className="flex items-center gap-3 p-3">
+                          <div
+                            className={cn(
+                              'flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-all',
+                              isSelected
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-muted-foreground/40',
+                            )}
+                          >
+                            {isSelected && <CheckIcon className="h-3.5 w-3.5" />}
+                          </div>
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <p className="truncate font-mono text-xs break-all">{utxo.utxo}</p>
+                            <p className="text-muted-foreground mt-0.5 text-xs">
+                              {t('earn.fidelity_bond.select_utxos.utxo_card.confirmations', {
+                                confs: utxo.confirmations,
+                              })}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p className="font-mono text-sm font-semibold whitespace-nowrap">
+                              {formatSats(utxo.value)}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                  {totalPages > 1 && (
+                    <Pagination className="pt-2">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => setUtxoPage(Math.max(0, page - 1))}
+                            disabled={page === 0}
+                          />
+                        </PaginationItem>
+                        <PaginationItem>
+                          <span className="text-muted-foreground px-2 text-sm">
+                            {page + 1} / {totalPages}
+                          </span>
+                        </PaginationItem>
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => setUtxoPage(Math.min(totalPages - 1, page + 1))}
+                            disabled={page >= totalPages - 1}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   )}
-                  onClick={() => toggleUtxoSelection(utxo)}
-                >
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div
-                      className={cn(
-                        'flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-all',
-                        isSelected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40',
-                      )}
-                    >
-                      {isSelected && <CheckIcon className="h-3.5 w-3.5" />}
-                    </div>
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                      <p className="truncate font-mono text-xs break-all">{utxo.utxo}</p>
-                      <p className="text-muted-foreground mt-0.5 text-xs">
-                        {t('earn.fidelity_bond.select_utxos.utxo_card.confirmations', { confs: utxo.confirmations })}
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="font-mono text-sm font-semibold whitespace-nowrap">{formatSats(utxo.value)}</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                </>
               )
-            })}
+            })()}
           </div>
 
           {selectedUtxos.length > 0 && (
