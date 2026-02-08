@@ -26,7 +26,7 @@ export const authStore = createStore<AuthStoreState>()(
       clear: () => set({ state: undefined }),
     }),
     {
-      name: 'jam-auth',
+      name: 'jam-auth-store',
       storage: createJSONStorage(() => sessionStorage),
     },
   ),

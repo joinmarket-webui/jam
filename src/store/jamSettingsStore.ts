@@ -31,7 +31,7 @@ export const jamSettingsStore = createStore<JamSettingsStoreState>()(
       clear: () => set({ state: initial }),
     }),
     {
-      name: 'jam-settings',
+      name: 'jam-settings-store',
       storage: createJSONStorage(() => localStorage),
     },
   ),
