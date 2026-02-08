@@ -34,6 +34,7 @@ export function useCreateFidelityBondWizard(
   const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | undefined>()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxo[]>([])
   const [frozenUtxos, setFrozenUtxos] = useState<Utxo[]>([])
+  const [utxoPage, setUtxoPage] = useState(0)
   const [confirmationChecked, setConfirmationChecked] = useState(false)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
   const [error, setError] = useState<string | undefined>()
@@ -77,7 +78,9 @@ export function useCreateFidelityBondWizard(
     if (selectedJarIndex === undefined) return []
     const jar = walletInfo.jars.find((it) => it.jarIndex === selectedJarIndex)
     if (!jar) return []
-    return jar.utxos.filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
+    return jar.utxos
+      .filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
+      .toSorted((a, b) => b.value - a.value)
   }, [walletInfo.jars, selectedJarIndex])
 
   const utxosToFreeze = useMemo(() => {
@@ -143,6 +146,7 @@ export function useCreateFidelityBondWizard(
     setSelectedJarIndex(undefined)
     setSelectedUtxos([])
     setFrozenUtxos([])
+    setUtxoPage(0)
     setConfirmationChecked(false)
     setTxResult(undefined)
     setError(undefined)
@@ -162,16 +166,24 @@ export function useCreateFidelityBondWizard(
         setStep('select_date')
         break
       case 'select_utxos':
-        setStep('select_jar')
-        setSelectedUtxos([])
+        if (jarsWithUtxos.length === 1) {
+          setSelectedJarIndex(undefined)
+          setSelectedUtxos([])
+          setStep('select_date')
+        } else {
+          setSelectedUtxos([])
+          setStep('select_jar')
+        }
         break
       case 'freeze_utxos':
+        setUtxoPage(0)
         setStep('select_utxos')
         break
       case 'review':
         if (utxosToFreeze.length > 0) {
           setStep('freeze_utxos')
         } else {
+          setUtxoPage(0)
           setStep('select_utxos')
         }
         break
@@ -184,12 +196,14 @@ export function useCreateFidelityBondWizard(
       case 'select_date':
         if (jarsWithUtxos.length === 1) {
           setSelectedJarIndex(jarsWithUtxos[0].jarIndex)
+          setUtxoPage(0)
           setStep('select_utxos')
         } else {
           setStep('select_jar')
         }
         break
       case 'select_jar':
+        setUtxoPage(0)
         setStep('select_utxos')
         break
       case 'select_utxos':
@@ -324,6 +338,8 @@ export function useCreateFidelityBondWizard(
     jarsWithUtxos,
     selectedUtxos,
     availableUtxos,
+    utxoPage,
+    setUtxoPage,
     toggleUtxoSelection,
     selectAllUtxos,
     deselectAllUtxos,
