@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangleIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import { RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
@@ -17,7 +17,7 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
-import type { UtxoId } from '@/hooks/useQueryUtxos'
+import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
@@ -30,7 +30,9 @@ import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
 import { EarnForm, type EarnFormValues } from './EarnForm'
 import { FidelityBondCard } from './FidelityBondCard'
+import { MoveToJarDialog } from './MoveToJarDialog'
 import { OfferCard } from './OfferCard'
+import { RenewBondDialog } from './RenewBondDialog'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -70,8 +72,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
 
-  const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<UtxoId>()
-  const [renewFidelityBondId, setRenewFidelityBondId] = useState<UtxoId>()
+  const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
+  const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
   const [showCreateFidelityBondDialog, setShowCreateFidelityBondDialog] = useState(false)
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
@@ -280,7 +282,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           </h2>
           <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
           <div className="flex flex-col gap-2">
-            {walletInfo.fidelityBondSummary.fbOutputs.map((it, index) => {
+            {walletInfo.fidelityBondSummary.fbOutputs.map((it) => {
               const isExpired = !fb.utxo.isLocked(it)
               const actionsEnabled =
                 isExpired &&
@@ -290,35 +292,18 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
                 !waitingForOfferUpdate &&
                 !walletInfo.isFetching
               return (
-                <FidelityBondCard value={it} key={index}>
+                <FidelityBondCard value={it} key={it.utxo}>
                   {actionsEnabled && (
-                    <>
-                      <Alert variant="warning" className="mb-2">
-                        <AlertTriangleIcon />
-                        <AlertTitle>Under construction</AlertTitle>
-                        <AlertDescription>Not yet completely implemented.</AlertDescription>
-                      </Alert>
-                      <div className="flex w-full flex-row gap-2">
-                        <Button
-                          variant="secondary"
-                          className="flex-1"
-                          disabled={moveToJarFidelityBondId !== undefined}
-                          onClick={() => setMoveToJarFidelityBondId(it.utxo)}
-                        >
-                          <UnlockIcon />
-                          {t('earn.fidelity_bond.existing.button_spend')}
-                        </Button>
-                        <Button
-                          variant="default"
-                          className="flex-1"
-                          disabled={renewFidelityBondId !== undefined}
-                          onClick={() => setRenewFidelityBondId(it.utxo)}
-                        >
-                          <RefreshCwIcon />
-                          {t('earn.fidelity_bond.existing.button_renew')}
-                        </Button>
-                      </div>
-                    </>
+                    <div className="flex w-full flex-row gap-2">
+                      <Button variant="secondary" className="flex-1" onClick={() => setMoveToJarUtxo(it)}>
+                        <UnlockIcon />
+                        {t('earn.fidelity_bond.existing.button_spend')}
+                      </Button>
+                      <Button variant="default" className="flex-1" onClick={() => setRenewBondUtxo(it)}>
+                        <RefreshCwIcon />
+                        {t('earn.fidelity_bond.existing.button_renew')}
+                      </Button>
+                    </div>
                   )}
                 </FidelityBondCard>
               )
@@ -340,6 +325,26 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         onOpenChange={setShowCreateFidelityBondDialog}
         walletFileName={walletFileName}
       />
+
+      {/* Move Expired Bond to Jar Dialog */}
+      {moveToJarUtxo && (
+        <MoveToJarDialog
+          open={!!moveToJarUtxo}
+          onOpenChange={(open) => !open && setMoveToJarUtxo(undefined)}
+          walletFileName={walletFileName}
+          utxo={moveToJarUtxo}
+        />
+      )}
+
+      {/* Renew Expired Bond Dialog */}
+      {renewBondUtxo && (
+        <RenewBondDialog
+          open={!!renewBondUtxo}
+          onOpenChange={(open) => !open && setRenewBondUtxo(undefined)}
+          walletFileName={walletFileName}
+          utxo={renewBondUtxo}
+        />
+      )}
 
       {isDeveloperMode && (
         <Card className="mt-8">

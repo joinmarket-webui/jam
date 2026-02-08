@@ -631,6 +631,7 @@
         "text_button_cancel": "Cancel",
         "text_button_submit": "Unlock Funds",
         "text_button_done": "Done",
+        "label_destination": "Destination",
         "error_fidelity_bond_still_locked": "The given fidelity bond is still locked.",
         "error_loading_address": "Unable to get new address.",
         "error_freezing_utxos": "Could not freeze UTXOs.",
