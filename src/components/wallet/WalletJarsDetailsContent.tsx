@@ -187,7 +187,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         </div>
         <div className="flex items-center gap-1">
           <Trans i18nKey="jar_details.utxo_list.text_balance_sum_total">
-            <Balance colored={false} valueString={String(jar.balanceSummary.calculatedTotalBalanceInSats)} />
+            <Balance valueString={String(jar.balanceSummary.calculatedTotalBalanceInSats)} />
           </Trans>
         </div>
       </div>

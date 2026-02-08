@@ -147,11 +147,17 @@ export const isValidNumber = (val: unknown): val is number => {
 }
 
 export const formatBtc = (value: number) => {
-  return value.toFixed(8)
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 8,
+    maximumFractionDigits: 8,
+  })
 }
 
 export const formatSats = (value: number) => {
-  return value.toLocaleString()
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
 }
 
 export const factorToPercentage = (val: number, precision = 6) => {

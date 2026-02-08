@@ -1,24 +1,19 @@
-import { useRef } from 'react'
+import { useRef, type ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
-import type { AmountSats } from '@/types/global'
-import { CurrencySymbol } from './CurrencySymbol'
+import { Balance } from './Balance'
+import type { Jar } from './Jar'
 import { JarIcon } from './JarIcon'
 
-interface SelectableJarProps {
-  name: string
-  color: string
-  balance: AmountSats
-  totalBalance: AmountSats
+interface SelectableJarProps extends Omit<ComponentProps<typeof Jar>, 'formatAmount' | 'currencySymbol'> {
   isSelected: NonNullable<React.ComponentProps<'input'>['checked']>
   onClick: NonNullable<React.ComponentProps<'input'>['onChange']>
-  disabled?: NonNullable<React.ComponentProps<'input'>['disabled']>
 }
 
 export const SelectableJar = ({
   name,
   color,
-  balance,
   totalBalance,
+  totalWalletBalance,
   isSelected,
   disabled = false,
   onClick,
@@ -41,16 +36,14 @@ export const SelectableJar = ({
       <div className="flex flex-col items-center">
         <JarIcon
           color={color}
-          amount={balance || 0}
-          isSelected={isSelected}
           totalBalance={totalBalance}
+          isSelected={isSelected}
+          totalWalletBalance={totalWalletBalance}
           className={`${disabled ? 'grayscale' : ''}`}
         />
-
         <span className="text-xs">{name}</span>
-        <div className="flex items-center font-mono text-[10px] text-gray-500">
-          <CurrencySymbol currency="sats" size="sm" />
-          <span>{balance.toLocaleString()}</span>
+        <div className="flex items-center text-sm">
+          <Balance valueString={String(totalBalance)} />
         </div>
       </div>
       <div className="flex items-center">

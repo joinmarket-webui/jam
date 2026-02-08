@@ -17,7 +17,7 @@ type MainJarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 // "text-[#808080]", "group-hover/jar:text-[#808080]"
 type UnknownJarColor = '#808080'
 
-export type JarColor = MainJarColor | UnknownJarColor
+export type JarColor = MainJarColor | UnknownJarColor | `#${string}`
 
 export type Jar = {
   jarIndex: JarIndex
