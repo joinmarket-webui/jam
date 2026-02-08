@@ -27,6 +27,12 @@ import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import type { SendFormValues } from './types'
 
+interface SimpleAlert {
+  variant: React.ComponentProps<typeof Alert>['variant']
+  title: string
+  description: string
+}
+
 type DirectSendResult = {
   request: DirectSendRequest
   response: DirectSendResponse
@@ -44,6 +50,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
@@ -146,12 +153,27 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
     try {
+      setPaymentSuccessfulInfoAlert(undefined)
       const result = await triggerNonCollarborativeTransaction.mutateAsync(data)
-      jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
+      const tx = result.response.txinfo as Required<JmTxInfo>
+
+      const output = tx.outputs.find((output) => output.address === data.destination.address)
+      setPaymentSuccessfulInfoAlert({
+        variant: 'success',
+        title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
+        description: t('send.alert_payment_successful', {
+          amount: output?.value_sats,
+          address: output?.address,
+          txid: tx.txid,
+        }),
+      })
+
       const inputUtxoIds = (result.response.txinfo.inputs || []).flatMap((it) =>
         it?.outpoint !== undefined ? [it.outpoint as UtxoId] : [],
       )
       setWaitForUtxosToBeSpent(inputUtxoIds)
+
+      jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
     } catch (error: unknown) {
       console.error('Error while sending non-collaborative transaction', error)
     }
@@ -257,20 +279,23 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         ) : (
           <>
-            {triggerNonCollarborativeTransaction.data && (
-              <Alert variant="success">
-                <AlertTriangleIcon />
-                <AlertTitle>{/* TODO: i18n */}Successfully sent non-collaborative transaction</AlertTitle>
-                <AlertDescription>
-                  <span className="text-wrap slashed-zero">
-                    {t('send.alert_payment_successful', {
-                      amount: triggerNonCollarborativeTransaction.data.request.amount_sats,
-                      address: triggerNonCollarborativeTransaction.data.request.destination,
-                      txid: triggerNonCollarborativeTransaction.data.response.txinfo.txid,
-                    })}
-                  </span>
-                </AlertDescription>
-              </Alert>
+            {paymentSuccessfulInfoAlert && (
+              <>
+                <Alert variant={paymentSuccessfulInfoAlert.variant}>
+                  <AlertTriangleIcon />
+                  <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
+                  <AlertDescription className="ext-wrap slashed-zero">
+                    {paymentSuccessfulInfoAlert.description}
+                  </AlertDescription>
+                </Alert>
+
+                {waitForUtxosToBeSpent.length > 0 && (
+                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                    <Spinner className="motion-reduce:hidden" />
+                    <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
+                  </Alert>
+                )}
+              </>
             )}
           </>
         )}

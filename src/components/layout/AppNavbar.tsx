@@ -33,6 +33,7 @@ const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active:
 
 type WalletPreviewProps = {
   isLoading?: boolean
+  isReloading?: boolean
   walletName: string | null
   formatAmount: (AmountSats: number) => string
   currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
@@ -46,6 +47,7 @@ const WalletPreview = ({
   currencySymbol,
   totalBalance,
   isLoading = false,
+  isReloading = false,
   rescanInfo,
 }: WalletPreviewProps) => {
   const { t } = useTranslation()
@@ -55,7 +57,7 @@ const WalletPreview = ({
     <div className="flex flex-1 items-center">
       <Link to={routes.home} className="flex items-center gap-2">
         <div className="flex h-8 w-8 items-center">
-          {isLoading ? (
+          {isLoading || isReloading ? (
             <Spinner className="text-muted-foreground size-6 motion-reduce:hidden" strokeWidth={3} />
           ) : (
             <WalletIcon strokeWidth={1} />
@@ -115,6 +117,7 @@ type AppNavbarProps = WalletPreviewProps & {
 
 export function AppNavbar({
   isLoading = false,
+  isReloading = false,
   walletName,
   totalBalance,
   theme,
@@ -162,6 +165,7 @@ export function AppNavbar({
     <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
       <WalletPreview
         isLoading={isLoading}
+        isReloading={isReloading}
         walletName={walletName}
         totalBalance={totalBalance}
         formatAmount={formatAmount}
