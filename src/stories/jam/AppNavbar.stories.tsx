@@ -42,6 +42,14 @@ export const Loading: Story = {
   },
 }
 
+export const Reloading: Story = {
+  args: {
+    ...defaults,
+    isLoading: false,
+    isReloading: true,
+  },
+}
+
 export const RescanInProgress: Story = {
   args: {
     ...defaults,

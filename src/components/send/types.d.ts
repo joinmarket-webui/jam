@@ -33,9 +33,9 @@ export type AmountValue =
     }
 
 export interface SendFormValues {
-  source?: SourceValue
-  destination?: DestinationValue
-  amount?: AmountValue
+  source: SourceValue
+  destination: DestinationValue
+  amount: AmountValue
   txFee?: TxFee
   isCoinJoin: boolean
   numCollaborators?: number
