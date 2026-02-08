@@ -8,7 +8,6 @@ import {
   DollarSignIcon,
   FileTextIcon,
   BookIcon,
-  ExternalLinkIcon,
   TerminalIcon,
   KeyRoundIcon,
   PackageSearchIcon,
@@ -29,7 +28,7 @@ import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useFeatures } from '@/hooks/useFeatures'
-import type { WalletFileName } from '@/lib/utils'
+import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
@@ -166,39 +165,20 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <CardTitle>{t('settings.section_title_community')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
-          <a
-            href="https://matrix.to/#/%23jam:bitcoin.kyoto"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2 text-inherit no-underline"
-          >
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg">
-                <img src="/matrix-logo.png" alt="Matrix" className="light:invert-0 h-4 w-4 invert" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t('settings.matrix')}</p>
-              </div>
-            </div>
-            <ExternalLinkIcon className="text-muted-foreground h-3 w-3" />
-          </a>
-          <Separator className="opacity-50" />
-          <a
-            href="https://t.me/JoinMarketWebUI"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2 text-inherit no-underline"
-          >
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg">
-                <img src="/telegram-logo.png" alt="Telegram" className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t('settings.telegram')}</p>
-              </div>
-            </div>
-            <ExternalLinkIcon className="text-muted-foreground h-3 w-3" />
-          </a>
+          <SettingsLink
+            renderIcon={({ className }) => (
+              <img src="/matrix-logo.png" alt="Matrix" className={cn(className, 'light:invert-0 invert')} />
+            )}
+            title={t('settings.matrix')}
+            to="https://matrix.to/#/%23jam:bitcoin.kyoto"
+            external={true}
+          />
+          <SettingsLink
+            renderIcon={({ className }) => <img src="/telegram-logo.png" alt="Telegram" className={className} />}
+            title={t('settings.telegram')}
+            to="https://t.me/JoinMarketWebUI"
+            external={true}
+          />
         </CardContent>
       </Card>
 

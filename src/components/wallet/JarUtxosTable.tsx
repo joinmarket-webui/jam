@@ -290,9 +290,7 @@ export const JarUtxosTable = ({
     onRowPinningChange: setRowPinning,
     onRowSelectionChange: (rowSelection) => {
       setRowSelection(rowSelection)
-      if (onRowSelectionChange !== undefined) {
-        onRowSelectionChange(rowSelection)
-      }
+      onRowSelectionChange?.(rowSelection)
     },
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
