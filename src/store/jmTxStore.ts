@@ -7,12 +7,18 @@ export type JmTxInfo = Omit<DirectSendResponse['txinfo'], 'txid'> & {
   txid: TxId
 }
 
-type JmTxInfoMap = Map<TxId, JmTxInfo>
+export type JmTxInfos = {
+  [key: TxId]: {
+    data: JmTxInfo
+    insertedAt: number
+    updatedAt: number
+  }
+}
 
 interface JmTxStoreState {
-  state: JmTxInfoMap
+  state: JmTxInfos
   get: (txid: TxId) => JmTxInfo | undefined
-  getAll: () => JmTxInfoMap
+  getAll: () => JmTxInfos
   add: (val: JmTxInfo) => void
   clear: () => void
 }
@@ -20,14 +26,21 @@ interface JmTxStoreState {
 export const jmTxStore = createStore<JmTxStoreState>()(
   persist(
     (set, get) => ({
-      state: new Map([] as [TxId, JmTxInfo][]),
-      get: (txid) => get().state.get(txid),
+      state: {} as JmTxInfos,
+      get: (txid) => get().state[txid]?.data,
       getAll: () => get().state,
-      add: (val) =>
-        set((state) => ({
-          state: new Map(state.state).set(val.txid, val),
-        })),
-      clear: () => set({ state: new Map() }),
+      add: (data) =>
+        set((state) => {
+          const now = Date.now()
+          const copy = { ...state.state }
+          copy[data.txid] = {
+            data,
+            insertedAt: copy[data.txid]?.insertedAt || now,
+            updatedAt: now,
+          }
+          return { state: copy }
+        }),
+      clear: () => set({ state: {} as JmTxInfos }),
     }),
     {
       name: 'jm-tx-store',
