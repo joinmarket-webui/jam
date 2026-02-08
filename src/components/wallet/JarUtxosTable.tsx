@@ -174,7 +174,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
         const bid = Number(b.original.confirmations)
         return aid - bid
       },
-      cell: (info) => <Balance colored={false} valueString={String(info.getValue())} />,
+      cell: (info) => <Balance valueString={String(info.getValue())} />,
       meta: {
         align: 'right',
         numeric: true,

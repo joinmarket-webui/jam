@@ -31,8 +31,8 @@ const fillLevelToPercent = (fillLevel: JarFillLevel): number => {
 
 interface JarIconProps {
   color: string
-  amount: AmountSats
   totalBalance: AmountSats
+  totalWalletBalance: AmountSats
   width?: number
   height?: number
   isSelected?: boolean
@@ -41,13 +41,13 @@ interface JarIconProps {
 
 export function JarIcon({
   color = '#e2b86a',
-  amount = 0,
   totalBalance = 0,
+  totalWalletBalance = 0,
   isSelected = false,
   className,
 }: JarIconProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const fillLevel = calculateJarFillLevel(amount, totalBalance)
+  const fillLevel = calculateJarFillLevel(totalBalance, totalWalletBalance)
   const fillPercent = fillLevelToPercent(fillLevel)
 
   const isLidOpen = isHovered || isSelected

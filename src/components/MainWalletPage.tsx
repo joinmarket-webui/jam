@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Jar } from '@/components/ui/jam/Jar'
+import { ClickableJar } from '@/components/ui/jam/ClickableJar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
@@ -125,14 +125,16 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                   <Tooltip key={index}>
                     <TooltipTrigger asChild>
                       <div className="flex flex-col items-center transition-all duration-300 hover:scale-105">
-                        <Jar
+                        <ClickableJar
                           className="cursor-zoom-in"
                           name={jar.name}
-                          amount={jar.balanceSummary.calculatedTotalBalanceInSats}
+                          totalBalance={jar.balanceSummary.calculatedTotalBalanceInSats}
+                          availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
+                          frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
                           color={jar.color}
                           currencySymbol={currencySymbol}
                           formatAmount={formatAmount}
-                          totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+                          totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                           onClick={() => onJarClicked(jar)}
                         />
                       </div>

@@ -5,8 +5,20 @@ import { ThemeProvider } from 'next-themes'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter } from 'react-router-dom'
 import { CoreTypes, GlobalTypes } from 'storybook/internal/csf'
+import { JamDisplayContextProvider } from '../src/context/JamDisplayContextProvider'
 import i18n from '../src/i18n/config'
 import '../src/index.css'
+
+const locales = [
+  { value: 'en', title: 'en' },
+  { value: 'fr', title: 'fr' },
+  { value: 'it', title: 'it' },
+  { value: 'de', title: 'de' },
+  { value: 'pt-BR', title: 'pt-BR' },
+  { value: 'ru', title: 'ru' },
+  { value: 'zh-Hans', title: 'zh-Hans' },
+  { value: 'zh-Hant', title: 'zh-Hant' },
+]
 
 // Create a global variable called locale in storybook
 // and add a menu in the toolbar to change your locale
@@ -17,24 +29,14 @@ export const globalTypes: GlobalTypes = {
     defaultValue: 'en',
     toolbar: {
       icon: 'globe',
-      items: [
-        { value: 'en', title: 'en' },
-        { value: 'fr', title: 'fr' },
-        { value: 'it', title: 'it' },
-        { value: 'de', title: 'de' },
-        { value: 'pt-BR', title: 'pt-BR' },
-        { value: 'ru', title: 'ru' },
-        { value: 'zh-Hans', title: 'zh-Hans' },
-        { value: 'zh-Hant', title: 'zh-Hant' },
-      ],
-      showName: true,
+      items: locales,
     },
   },
 }
 
 type GlobalContext = {
   globals: {
-    locale: (typeof globalTypes)['locale']['toolbar']['items'][number]['value']
+    locale: (typeof locales)[number]['value']
     backgrounds: NonNullable<NonNullable<CoreTypes['parameters']['backgrounds']>['options']>[string]
   }
 }
@@ -98,6 +100,15 @@ const withI18next = (Story: React.ComponentType, context: GlobalContext) => {
   )
 }
 
+export const withJamDisplayContent = (Story: React.ComponentType) => {
+  const queryClient = new QueryClient()
+  return (
+    <JamDisplayContextProvider>
+      <Story />
+    </JamDisplayContextProvider>
+  )
+}
+
 // Use only when necessary! Try to pass data from queries to
 // components so they can be tested independently from an API.
 export const withQueryClient = (Story: React.ComponentType) => {
@@ -110,6 +121,6 @@ export const withQueryClient = (Story: React.ComponentType) => {
 }
 
 // export decorators for storybook to wrap your stories in
-export const decorators = [withTheme, withMemoryRouter, withI18next]
+export const decorators = [withTheme, withMemoryRouter, withI18next, withJamDisplayContent]
 
 export default preview

@@ -144,7 +144,7 @@ export const BranchEntryTable = ({
           // tie-break using derivationIndex
           return a.original.derivationIndex - b.original.derivationIndex
         },
-        cell: (info) => <Balance colored={false} valueString={String(info.getValue())} />,
+        cell: (info) => <Balance valueString={String(info.getValue())} />,
         meta: {
           align: 'right',
           numeric: true,

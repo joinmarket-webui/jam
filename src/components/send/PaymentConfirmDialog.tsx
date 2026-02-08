@@ -5,7 +5,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { Utxo } from '@/hooks/useQueryUtxos'
-import { factorToPercentage, isValidNumber, SATS } from '@/lib/utils'
+import { factorToPercentage, isValidNumber } from '@/lib/utils'
 import type { AmountSats, WithRequiredProperty } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Button } from '../ui/button'
@@ -144,7 +144,7 @@ export default function PaymentConfirmDialog({
               <>
                 <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
                   Sweep
-                  <Balance valueString={String(values.amount?.sweepAmount)} convertToUnit={SATS} showBalance={true} />
+                  <Balance valueString={String(values.amount?.sweepAmount)} />
                 </Trans>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -154,7 +154,7 @@ export default function PaymentConfirmDialog({
                 </Tooltip>
               </>
             ) : (
-              <Balance valueString={String(values.amount?.amount)} convertToUnit={SATS} showBalance={true} />
+              <Balance valueString={String(values.amount?.amount)} />
             )}
           </div>
           {values.numCollaborators !== undefined && (
@@ -174,11 +174,7 @@ export default function PaymentConfirmDialog({
 
               <div className="col-span-4 flex items-center gap-1">
                 &le;
-                <Balance
-                  valueString={String(estimatedMaxCollaboratorFee.maxFee)}
-                  convertToUnit={SATS}
-                  showBalance={true}
-                />
+                <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} showBalance={true} />
                 <span className="text-muted-foreground text-xs">
                   ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
                 </span>

@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { SelectableJar } from '@/components/ui/jam/SelectableJar'
+import type { JarColor } from '@/context/JamWalletInfoContext'
 
 const meta = {
   title: 'Jam/SelectableJar',
@@ -23,11 +24,19 @@ const meta = {
       description: 'The color of the jar, affects fill color',
       control: 'color',
     },
-    balance: {
-      description: 'Current balance of the jar in sats',
+    totalBalance: {
+      description: 'Current total balance of the jar in sats',
       control: { type: 'number', min: 0, step: 1_000 },
     },
-    totalBalance: {
+    availableBalance: {
+      description: 'Current available balance of the jar in sats',
+      control: { type: 'number', min: 0, step: 1_000 },
+    },
+    frozenOrLockedBalance: {
+      description: 'Current unavailable balance of the jar in sats (frozen or locked)',
+      control: { type: 'number', min: 0, step: 1_000 },
+    },
+    totalWalletBalance: {
       description: 'Total wallet balance in sats, used to calculate fill percentage',
       control: { type: 'number', min: 1, step: 1_000 },
     },
@@ -57,9 +66,11 @@ export const Selected: Story = {
   decorators: [withPadding],
   args: {
     name: 'Spending',
-    color: '#3498db', // Blue
-    balance: 150_000,
-    totalBalance: 500_000,
+    color: '#3498db' as JarColor, // Blue
+    totalBalance: 150_000,
+    availableBalance: 150_000,
+    frozenOrLockedBalance: 0,
+    totalWalletBalance: 500_000,
     isSelected: true,
     onClick: () => alert('Selected jar clicked'),
   },
@@ -76,9 +87,11 @@ export const Unselected: Story = {
   decorators: [withPadding],
   args: {
     name: 'Savings',
-    color: '#27ae60', // Green
-    balance: 250_000,
-    totalBalance: 500_000,
+    color: '#27ae60' as JarColor, // Green
+    totalBalance: 250_000,
+    availableBalance: 250_000,
+    frozenOrLockedBalance: 0,
+    totalWalletBalance: 500_000,
     isSelected: false,
     onClick: () => alert('Unselected jar clicked'),
   },
@@ -96,8 +109,10 @@ export const EmptyJar: Story = {
   args: {
     name: 'Empty',
     color: '#e74c3c', // Red
-    balance: 0,
-    totalBalance: 500_000,
+    totalBalance: 0,
+    availableBalance: 0,
+    frozenOrLockedBalance: 0,
+    totalWalletBalance: 500_000,
     isSelected: false,
     onClick: () => alert('Empty jar clicked'),
   },
@@ -115,8 +130,10 @@ export const FullJar: Story = {
   args: {
     name: 'Full',
     color: '#f39c12', // Orange
-    balance: 500_000,
     totalBalance: 500_000,
+    availableBalance: 500_000,
+    frozenOrLockedBalance: 0,
+    totalWalletBalance: 500_000,
     isSelected: false,
     onClick: () => alert('Full jar clicked'),
   },
@@ -134,8 +151,10 @@ export const JarGrid: Story = {
   args: {
     name: 'Spending',
     color: '#3498db',
-    balance: 150_000,
-    totalBalance: 500_000,
+    totalBalance: 150_000,
+    availableBalance: 150_000,
+    frozenOrLockedBalance: 0,
+    totalWalletBalance: 500_000,
     isSelected: true,
     onClick: () => alert('Jar clicked'),
   },
@@ -149,14 +168,14 @@ export const JarGrid: Story = {
   },
   render: () => {
     const jars = [
-      { name: 'Spending', color: '#3498db', balance: 150_000, isSelected: true },
-      { name: 'Savings', color: '#27ae60', balance: 250_000, isSelected: false },
-      { name: 'Emergency', color: '#e74c3c', balance: 50_000, isSelected: false },
-      { name: 'Travel', color: '#f39c12', balance: 100_000, isSelected: false },
-      { name: 'Gift', color: '#9b59b6', balance: 0, isSelected: false },
+      { name: 'Spending', color: '#3498db' as JarColor, totalBalance: 150_000, isSelected: true },
+      { name: 'Savings', color: '#27ae60' as JarColor, totalBalance: 250_000, isSelected: false },
+      { name: 'Emergency', color: '#e74c3c' as JarColor, totalBalance: 50_000, isSelected: false },
+      { name: 'Travel', color: '#f39c12' as JarColor, totalBalance: 100_000, isSelected: false },
+      { name: 'Gift', color: '#9b59b6' as JarColor, totalBalance: 0, isSelected: false },
     ]
 
-    const totalBalance = jars.reduce((total, jar) => total + jar.balance, 0)
+    const totalWalletBalance = jars.reduce((total, jar) => total + jar.totalBalance, 0)
 
     return (
       <div className="grid grid-cols-5 gap-4 rounded-lg border p-4">
@@ -165,8 +184,10 @@ export const JarGrid: Story = {
             key={jar.name}
             name={jar.name}
             color={jar.color}
-            balance={jar.balance}
-            totalBalance={totalBalance}
+            totalBalance={jar.totalBalance}
+            availableBalance={jar.totalBalance}
+            frozenOrLockedBalance={0}
+            totalWalletBalance={totalWalletBalance}
             isSelected={jar.isSelected}
             onClick={() => alert(`Clicked on ${jar.name}`)}
           />
@@ -182,8 +203,10 @@ export const Interactive: Story = {
   args: {
     name: 'Customize Me',
     color: '#2ecc71',
-    balance: 100_000,
-    totalBalance: 500_000,
+    totalBalance: 200_000,
+    availableBalance: 100_000,
+    frozenOrLockedBalance: 100_000,
+    totalWalletBalance: 500_000,
     isSelected: false,
     onClick: () => alert('Interactive jar clicked'),
   },

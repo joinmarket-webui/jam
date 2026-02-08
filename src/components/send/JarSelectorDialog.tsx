@@ -68,8 +68,10 @@ export default function JarSelectorDialog({
                 key={index}
                 name={jar.name}
                 color={jar.color}
-                balance={jar.balanceSummary.calculatedTotalBalanceInSats}
-                totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+                totalBalance={jar.balanceSummary.calculatedTotalBalanceInSats}
+                availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
+                frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
+                totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                 isSelected={selectedJar === jar}
                 onClick={() => setSelectedJar(jar)}
                 disabled={disabledJars.includes(jar)}
