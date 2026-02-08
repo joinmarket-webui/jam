@@ -18,6 +18,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import { Card, CardContent } from '../ui/card'
 import { Spinner } from '../ui/spinner'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
@@ -119,7 +120,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
     try {
-      await triggerNonCollarborativeTransaction.mutateAsync(data)
+      const result = await triggerNonCollarborativeTransaction.mutateAsync(data)
+      jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
     } catch (error: unknown) {
       console.error('Error while sending non-collaborative transaction', error)
     }

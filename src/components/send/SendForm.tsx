@@ -486,7 +486,9 @@ export function SendForm({
                 )}
                 aria-disabled
               >
-                <Balance valueString={String(values.amount?.sweepAmount)} convertToUnit={SATS} showBalance={true} />
+                {values.amount?.sweepAmount !== undefined && (
+                  <Balance valueString={values.amount.sweepAmount.toFixed(0)} convertToUnit={SATS} showBalance={true} />
+                )}
 
                 <Badge className="text-sm" variant="default">
                   {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
