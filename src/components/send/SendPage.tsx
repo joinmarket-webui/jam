@@ -15,6 +15,8 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { useAddressSummary, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import type { UtxoId } from '@/hooks/useQueryUtxos'
+import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -74,6 +76,30 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     retry: false,
   })
 
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
+
+  const waitForUtxosToBeSpentContext = useMemo(
+    () => ({
+      walletFileName,
+      waitForUtxosToBeSpent,
+      setWaitForUtxosToBeSpent,
+      onError: (error: unknown) => {
+        const reason =
+          typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+            ? error.message
+            : undefined
+
+        const message = t('global.errors.error_reloading_wallet_failed', {
+          reason: reason || t('global.errors.reason_unknown'),
+        })
+        toast.error(message)
+      },
+    }),
+    [walletFileName, waitForUtxosToBeSpent, t],
+  )
+
+  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
+
   const triggerNonCollarborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
     mutationFn: async (data: SendFormValues) => {
       if (data.amount === undefined) {
@@ -122,6 +148,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     try {
       const result = await triggerNonCollarborativeTransaction.mutateAsync(data)
       jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
+      const inputUtxoIds = (result.response.txinfo.inputs || []).flatMap((it) =>
+        it?.outpoint !== undefined ? [it.outpoint as UtxoId] : [],
+      )
+      setWaitForUtxosToBeSpent(inputUtxoIds)
     } catch (error: unknown) {
       console.error('Error while sending non-collaborative transaction', error)
     }
@@ -255,7 +285,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
-              disabled={jmSession?.maker_running || jmSession?.coinjoin_in_process || jmSession?.rescanning}
+              disabled={
+                jmSession?.maker_running ||
+                jmSession?.coinjoin_in_process ||
+                jmSession?.rescanning ||
+                waitForUtxosToBeSpent.length > 0
+              }
               debug={isDeveloperMode}
             />
           </CardContent>
