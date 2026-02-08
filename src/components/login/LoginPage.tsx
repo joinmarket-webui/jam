@@ -47,7 +47,7 @@ const LoginPage = () => {
   } = useQuery({
     ...listwalletsQueryOptions,
     queryFn: withQueryDelay(listwalletsQueryOptions.queryFn, {
-      delayAfter: 210,
+      throttle: 210,
     }),
   })
 
