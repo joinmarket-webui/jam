@@ -92,7 +92,7 @@ const MAX_NUM_COLLABORATORS = 99
 // TODO: this value should be dynamic via jm backend settings
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
 
-const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
+const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   source: undefined,
   destination: undefined,
   amount: undefined,
@@ -299,7 +299,7 @@ export function SendForm({
         onError={(_ignoredOnPurpose) => {
           // TODO: i18n own key `send.error_loading_address_failed`
           toast.error(t('receive.error_loading_address_failed'))
-          setValue('destination.address', undefined, { shouldValidate: true })
+          setValue('destination.address', '', { shouldValidate: true })
           setValue('destination.fromJar', undefined, { shouldValidate: true })
         }}
         onConfirm={(jarIndex, addressInfo) => {
@@ -331,7 +331,7 @@ export function SendForm({
                       setValue('amount.amount', undefined, { shouldValidate: true })
                     }
                     if (destinationJarIndex === jar.jarIndex) {
-                      setValue('destination.address', undefined, { shouldValidate: true })
+                      setValue('destination.address', '', { shouldValidate: true })
                       setValue('destination.fromJar', undefined, { shouldValidate: true })
                     } else if (destinationAddress !== undefined) {
                       void trigger('destination.address')
@@ -410,7 +410,7 @@ export function SendForm({
                 className="h-auto"
                 disabled={disabled}
                 onClick={() => {
-                  setValue('destination.address', undefined, { shouldValidate: true })
+                  setValue('destination.address', '', { shouldValidate: true })
                   setValue('destination.fromJar', undefined, { shouldValidate: true })
                 }}
               >

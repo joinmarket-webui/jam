@@ -549,7 +549,8 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                       toast.success(t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id'))
                     }
                     onError={(error) => {
-                      const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
+                      const reason =
+                        (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
                       toast.error(t('global.errors.error_copy_to_clipboard_failed', { reason }))
                     }}
                   />
