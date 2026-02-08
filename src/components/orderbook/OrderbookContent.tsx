@@ -132,7 +132,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   const { isFetching: isFetchingOrderbookRefresh, refetch: refetchOrderbookRefresh } = useQuery({
     queryKey: ['orderbook-refresh'],
     queryFn: withQueryDelay(OrderbookApi.refreshOrderbook, {
-      delayAfter: 210,
+      throttle: 210,
     }),
     enabled: false, // invoke manually only!
   })
@@ -146,7 +146,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   } = useQuery({
     queryKey: ['orderbook'],
     queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
-      delayAfter: 210,
+      throttle: 210,
     }),
     enabled,
   })

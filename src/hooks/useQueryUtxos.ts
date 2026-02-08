@@ -2,6 +2,7 @@ import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/
 import type { ErrorMessage, ListUtxosResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useStore } from 'zustand'
+import { isDevMode } from '@/constants/debugFeatures'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
@@ -51,8 +52,8 @@ export function useQueryUtxos({ walletFileName }: UseQueryUtxosProps): UseQueryU
   const queryResult = useQuery({
     ...listutxosQueryOptions,
     queryFn: withQueryDelay(listutxosQueryOptions.queryFn, {
-      delayBefore: 0,
-      delayAfter: 0,
+      // simulate slow mainnet responses in dev mode
+      throttle: isDevMode() ? 210 : 0,
     }),
     enabled: !!walletFileName && !!jmSession,
   })

@@ -7,10 +7,6 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import type { Milliseconds } from '@/types/global'
-
-// simulate slow mainnet responses in dev mode
-const QUERY_DELAY_AFTER: Milliseconds = isDevMode() ? 2_100 : 0
 
 export type WalletInfoApiObject = NonNullable<WalletDisplayResponse['walletinfo']>
 
@@ -35,8 +31,8 @@ export function useQueryDisplayWallet({ walletFileName }: UseQueryDisplayWalletP
   const queryResult = useQuery({
     ...displaywalletQueryOptions,
     queryFn: withQueryDelay(displaywalletQueryOptions.queryFn, {
-      delayBefore: 0,
-      delayAfter: QUERY_DELAY_AFTER,
+      // simulate slow mainnet responses in dev mode
+      throttle: isDevMode() ? 2_100 : 0,
     }),
     enabled: !!walletFileName && !!jmSession,
   })

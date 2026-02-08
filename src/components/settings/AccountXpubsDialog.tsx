@@ -229,7 +229,7 @@ export const AccountXpubsDialog = ({
         return await deriveAccountXpubsFromSeed(seedQuery.data, network, jars)
       },
       {
-        delayAfter: 210,
+        throttle: 210,
       },
     ),
     staleTime: Number.POSITIVE_INFINITY,
