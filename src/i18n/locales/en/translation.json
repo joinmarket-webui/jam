@@ -455,6 +455,9 @@
     "error_loading_report_failed": "Failed to load earnings report.",
     "alert_starting": "Service is starting.",
     "alert_stopping": "Service is stopping.",
+    "alert_stopped": "Service successfully stopped.",
+    "alert_start_failed": "Error while starting the earn process. Reason: {{ reason }}",
+    "alert_loading_offer": "Loading offer...",
     "alert_running": "Offering sats to earn more sats...",
     "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
     "button_settings": "Offer options",
@@ -483,6 +486,7 @@
       "text_minsize": "Minimum Size",
       "text_maxsize": "Maximum Size",
       "text_txfee": "Transaction Fee",
+      "text_offer_id": "Offer Id",
       "text_offer_type_absolute": "absolute",
       "text_offer_type_relative": "relative"
     },
