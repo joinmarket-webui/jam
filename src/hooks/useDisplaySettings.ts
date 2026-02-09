@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useStore } from 'zustand'
-import { satsToBtc } from '@/lib/utils'
+import { formatBtc, formatSats, satsToBtc } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { AmountSats } from '@/types/global'
 
@@ -41,13 +41,10 @@ export function useDisplaySettings() {
       }
 
       if (currencyUnit === 'btc') {
-        return satsToBtc(String(amount)).toLocaleString(undefined, {
-          minimumFractionDigits: 8,
-          maximumFractionDigits: 8,
-        })
+        return formatBtc(satsToBtc(String(amount)))
       }
 
-      return amount.toLocaleString()
+      return formatSats(amount)
     },
     [currencyUnit, privateMode],
   )

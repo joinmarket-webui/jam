@@ -1,43 +1,22 @@
 import type { SVGAttributes } from 'react'
 import { EyeOffIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { Currency } from '@/types/global'
 
 type CurrencySymbolProps = {
   currency: Currency
   isPrivate?: boolean
-  size?: 'sm' | 'lg'
 }
 
-export function CurrencySymbol({ currency, isPrivate, size = 'lg' }: CurrencySymbolProps) {
-  if (isPrivate) {
-    return (
-      <EyeOffIcon size={size === 'sm' ? 14 : 24} className="text-muted-foreground mx-1 inline-block align-middle" />
-    )
+export function CurrencySymbol({ currency, isPrivate }: CurrencySymbolProps) {
+  if (isPrivate === true) {
+    return <EyeOffIcon className="text-muted-foreground mx-0.75 size-[1em]" />
   }
 
   if (currency === 'btc') {
-    return (
-      <span
-        className={cn('mx-1', {
-          'text-md': size === 'sm',
-          'text-4xl': size === 'lg',
-        })}
-      >
-        ₿
-      </span>
-    )
+    return <span className="mx-0.75 inline-block align-middle">₿</span>
   }
 
-  return (
-    <SatSymbol
-      width={size === 'sm' ? '18px' : '48px'}
-      height={size === 'sm' ? '18px' : '48px'}
-      style={{
-        margin: size === 'sm' ? '0 -1px' : '0 -8px',
-      }}
-    />
-  )
+  return <SatSymbol className="mx-[-0.1em] inline-block size-[1.2em] align-middle" />
 }
 
 export const SatSymbol = (props: SVGAttributes<Element>) => {

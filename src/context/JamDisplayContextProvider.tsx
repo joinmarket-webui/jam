@@ -14,9 +14,7 @@ export const JamDisplayContextProvider = ({ children }: PropsWithChildren<unknow
     togglePrivacyMode,
     toggleDisplayMode,
     formatAmount,
-    currencySymbol: (size: 'sm' | 'lg' = 'lg') => (
-      <CurrencySymbol currency={currency} isPrivate={isPrivate} size={size} />
-    ),
+    currencySymbol: () => <CurrencySymbol currency={currency} isPrivate={isPrivate} />,
   }
 
   return <JamDisplayContext.Provider value={displayContextValue}>{children}</JamDisplayContext.Provider>

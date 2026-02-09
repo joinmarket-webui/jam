@@ -329,7 +329,7 @@ describe('formatBtc', () => {
   })
 
   it('should handle large BTC values', () => {
-    expect(formatBtc(21000000)).toBe('21000000.00000000')
+    expect(formatBtc(21000000)).toBe('21,000,000.00000000')
     expect(formatBtc(100.99999999)).toBe('100.99999999')
   })
 
