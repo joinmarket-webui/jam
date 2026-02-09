@@ -84,7 +84,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </div>
             <div className="flex-1">
               <p className="font-medium">{t('earn.fidelity_bond.select_date.description')}</p>
-              <p className="text-muted-foreground mt-1 text-sm">Choose when your funds will be unlocked</p>
+              <p className="text-muted-foreground mt-1 text-sm">{t('earn.fidelity_bond.select_date.subtitle')}</p>
             </div>
           </div>
 
@@ -141,7 +141,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
 
           {selectedLockdate && (
             <div className="bg-primary/5 border-primary/20 rounded-lg border p-4">
-              <p className="text-muted-foreground text-sm">Selected lock date</p>
+              <p className="text-muted-foreground text-sm">
+                {t('earn.fidelity_bond.select_date.label_selected_lock_date')}
+              </p>
               <p className="mt-1 text-lg font-semibold">{selectedDateLabel}</p>
             </div>
           )}
@@ -167,7 +169,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               <WalletIcon className="text-primary h-5 w-5" />
             </div>
             <div className="flex-1">
-              <p className="font-medium">Select Source Jar</p>
+              <p className="font-medium">{t('earn.fidelity_bond.select_jar.title')}</p>
               <p className="text-muted-foreground mt-1 text-sm">{t('earn.fidelity_bond.select_jar.description')}</p>
             </div>
           </div>
@@ -193,7 +195,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                       <div>
                         <p className="font-semibold">{jar.name}</p>
                         <p className="text-muted-foreground text-sm">
-                          {jar.utxos.filter((u) => !u.frozen && !fb.utxo.isFidelityBond(u)).length} available UTXOs
+                          {t('earn.fidelity_bond.select_jar.text_available_utxos', {
+                            count: jar.utxos.filter((u) => !u.frozen && !fb.utxo.isFidelityBond(u)).length,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -225,7 +229,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               <CoinsIcon className="text-primary h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-medium">Select UTXOs</p>
+              <p className="font-medium">{t('earn.fidelity_bond.select_utxos.title')}</p>
               <p className="text-muted-foreground mt-1 text-sm">
                 {t('earn.fidelity_bond.select_utxos.description', { jar: selectedJarIndex })}
               </p>
@@ -321,7 +325,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
           {selectedUtxos.length > 0 && (
             <div className="border-t pt-4">
               <div className="bg-muted/50 flex items-center justify-between rounded-lg p-3">
-                <span className="font-medium">Total Selected</span>
+                <span className="font-medium">{t('earn.fidelity_bond.select_utxos.label_total_selected')}</span>
                 <span className="font-mono text-lg font-bold">{formatSats(totalAmount)}</span>
               </div>
             </div>
@@ -351,14 +355,16 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               <LockIcon className="text-primary h-5 w-5" />
             </div>
             <div className="flex-1">
-              <p className="font-medium">Freeze Remaining UTXOs</p>
-              <p className="text-muted-foreground mt-1 text-sm">Protect your privacy by freezing unselected UTXOs</p>
+              <p className="font-medium">{t('earn.fidelity_bond.freeze_utxos.title')}</p>
+              <p className="text-muted-foreground mt-1 text-sm">{t('earn.fidelity_bond.freeze_utxos.subtitle')}</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-4">
-              <p className="mb-3 text-sm font-medium">Selected UTXOs ({selectedUtxos.length})</p>
+              <p className="mb-3 text-sm font-medium">
+                {t('earn.fidelity_bond.freeze_utxos.label_selected_utxos', { count: selectedUtxos.length })}
+              </p>
               <div className="max-h-40 space-y-2 overflow-y-auto">
                 {selectedUtxos.map((utxo) => (
                   <div key={utxo.utxo} className="flex items-center justify-between py-1 text-sm">
@@ -371,7 +377,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
 
             {utxosToFreeze.length > 0 && (
               <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 p-4">
-                <p className="mb-1 text-sm font-medium">UTXOs to Freeze ({utxosToFreeze.length})</p>
+                <p className="mb-1 text-sm font-medium">
+                  {t('earn.fidelity_bond.freeze_utxos.label_utxos_to_freeze', { count: utxosToFreeze.length })}
+                </p>
                 <p className="text-muted-foreground mb-3 text-xs">
                   {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', {
                     jar: selectedJarIndex,
@@ -487,7 +495,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </div>
           </div>
           <p className="mt-6 text-lg font-semibold">{t('earn.fidelity_bond.text_creating')}</p>
-          <p className="text-muted-foreground mt-2 text-sm">This may take a moment...</p>
+          <p className="text-muted-foreground mt-2 text-sm">{t('earn.fidelity_bond.text_creating_subtitle')}</p>
         </div>
       )
 
@@ -499,7 +507,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               <CheckCircle2Icon className="h-16 w-16 text-green-500" />
             </div>
             <p className="mt-4 text-xl font-bold">{t('earn.fidelity_bond.create_fidelity_bond.success_text')}</p>
-            <p className="text-muted-foreground mt-2 text-sm">Your fidelity bond has been created successfully</p>
+            <p className="text-muted-foreground mt-2 text-sm">
+              {t('earn.fidelity_bond.create_fidelity_bond.text_success_subtitle')}
+            </p>
           </div>
 
           <div className="space-y-3">
