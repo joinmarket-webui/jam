@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEventHandler } from 'react'
+import { useEffect, useMemo, useState, type MouseEventHandler } from 'react'
 import { SnowflakeIcon } from 'lucide-react'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
@@ -7,13 +7,13 @@ import type { Currency } from '@/types/global'
 
 type DisplayMode = 'default' | Currency | 'hidden'
 
-const BTC_SYMBOL = <CurrencySymbol currency="btc" size="sm" />
+const BTC_SYMBOL = <CurrencySymbol currency="btc" />
 
-const SAT_SYMBOL = <CurrencySymbol currency="sats" size="sm" />
+const SAT_SYMBOL = <CurrencySymbol currency="sats" />
 
-const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className="h-[1rem] w-[1rem]" />
+const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} />
 
-const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} size="sm" />
+const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className="size-[1em]" />
 
 interface ElementWithSymbolsProps {
   symbol?: React.ReactNode
@@ -138,6 +138,10 @@ export const BalanceComponent = ({
 }: BalanceComponentProps) => {
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
   const displayMode: DisplayMode = isBalanceVisible ? (convertToUnit ?? 'default') : 'hidden'
+
+  useEffect(() => {
+    setIsBalanceVisible(showBalance)
+  }, [showBalance])
 
   const toggleVisibility: MouseEventHandler = (event) => {
     event.preventDefault()

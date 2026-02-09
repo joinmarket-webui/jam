@@ -13,7 +13,7 @@ export default meta
 type Story = StoryObj<typeof AppNavbar>
 
 const mockFormatAmount = (amount: number) => `${amount.toLocaleString()}`
-const mockCurrencySymbol = (size: 'sm' | 'lg') => <CurrencySymbol currency="btc" isPrivate={false} size={size} />
+const mockCurrencySymbol = () => <CurrencySymbol currency="btc" isPrivate={false} />
 const mockToggleTheme = () => alert('Toggled theme!')
 const mockOnLogout = async () => alert('Logged out!')
 const mockOnLockWallet = async () => alert('Locked wallet!')

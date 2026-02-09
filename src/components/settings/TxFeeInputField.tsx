@@ -79,7 +79,7 @@ export const TxFeeInputField = ({
             <BlocksIcon className="h4 w-4" />
           ) : (
             <>
-              <CurrencySymbol currency="sats" size="sm" />
+              <CurrencySymbol currency="sats" />
               <span className="text-xs text-nowrap">/&nbsp;vB</span>
             </>
           )}

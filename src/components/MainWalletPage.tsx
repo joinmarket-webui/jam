@@ -16,6 +16,7 @@ import {
 } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
+import { Balance } from './ui/jam/Balance'
 import { Spinner } from './ui/spinner'
 import { WalletJarsDetailsOverlay } from './wallet/WalletJarsDetailsOverlay'
 
@@ -70,8 +71,10 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                 onClick={() => toggleDisplayMode()}
                 className="flex cursor-pointer items-center text-4xl font-light tracking-wider"
               >
-                <span className="tabular-nums">{formatAmount(walletBalanceSummary.calculatedTotalBalanceInSats)} </span>
-                <span className="flex items-center">{currencySymbol('lg')}</span>
+                <Balance
+                  valueString={String(walletBalanceSummary.calculatedTotalBalanceInSats)}
+                  enableVisibilityToggle={false}
+                />
               </div>
             )}
           </div>
