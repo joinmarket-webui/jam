@@ -153,9 +153,9 @@ describe('btcToSats', () => {
   })
 
   it('should handle rounding', () => {
-    expect(btcToSats('0.123456789')).toBe(12345679) // Rounds to nearest integer
-    expect(btcToSats('0.000000004')).toBe(0) // Less than 0.5 sats rounds down
-    expect(btcToSats('0.000000005')).toBe(1) // TODO fix this 0.5 sats should rounds down to 0
+    expect(btcToSats('0.123456789')).toBe(12345678) // Truncates beyond 8 decimals
+    expect(btcToSats('0.000000004')).toBe(0) // Less than 0.5 sats truncates down
+    expect(btcToSats('0.000000005')).toBe(0) // 0.5 sats truncates down to 0
   })
 })
 

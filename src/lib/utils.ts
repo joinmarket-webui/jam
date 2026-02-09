@@ -90,7 +90,27 @@ export function setIntervalDebounced(
 
 export const satsToBtc = (value: string) => Number.parseInt(value, 10) / 100_000_000
 
-export const btcToSats = (value: string) => Math.round(Number.parseFloat(value) * 100_000_000)
+export const btcToSats = (value: string) => {
+  const trimmed = value.trim()
+
+  const decimalMatch = /^([+-]?)(\d+)(?:\.(\d+))?$/.exec(trimmed)
+  if (decimalMatch) {
+    const sign = decimalMatch[1] === '-' ? -1 : 1
+    const wholePart = BigInt(decimalMatch[2])
+    const fractionalPartRaw = decimalMatch[3] ?? ''
+    // Truncate beyond 8 decimals (no rounding up of fractional sats).
+    const fractionalPartPadded = (fractionalPartRaw + '00000000').slice(0, 8)
+
+    const sats = wholePart * 100000000n + BigInt(fractionalPartPadded)
+    return sign * Number(sats)
+  }
+
+  const parsed = Number.parseFloat(trimmed)
+  if (!Number.isFinite(parsed)) return Number.NaN
+
+  // Fallback for non-decimal inputs (e.g. scientific notation). Truncate towards 0.
+  return Math.trunc(parsed * 100_000_000)
+}
 
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
