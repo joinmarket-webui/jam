@@ -43,12 +43,12 @@ export const SeedPhraseDialog = ({
   const { t } = useTranslation()
 
   const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
-  const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
   const [timeLeft, setTimeLeft] = useState(autoCloseTimeout)
 
-  if (timeLeft <= 0 && passwordVerifiedAt !== undefined) {
-    setPasswordVerifiedAt(undefined)
-  }
+  const isPasswordVerified = useMemo(
+    () => passwordVerifiedAt !== undefined && timeLeft > 0,
+    [passwordVerifiedAt, timeLeft],
+  )
 
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
 
@@ -78,7 +78,7 @@ export const SeedPhraseDialog = ({
   }, [open, isPasswordVerified, seedQuery])
 
   useEffect(() => {
-    if (passwordVerifiedAt === undefined) return
+    if (!isPasswordVerified || passwordVerifiedAt === undefined) return
 
     const seedDisplayedAt = Math.max(seedQuery.dataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
@@ -88,7 +88,7 @@ export const SeedPhraseDialog = ({
     return () => {
       clearInterval(interval)
     }
-  }, [seedQuery.dataUpdatedAt, passwordVerifiedAt, autoCloseTimeout])
+  }, [seedQuery.dataUpdatedAt, isPasswordVerified, passwordVerifiedAt, autoCloseTimeout])
 
   const handleClose = () => {
     onOpenChange(false)
