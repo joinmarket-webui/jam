@@ -250,9 +250,11 @@ const Loading = () => {
 
 function RefreshApiToken() {
   const client = useApiClient()
+  const hasRefreshToken = useStore(authStore, (state) => state.state?.auth?.refresh_token !== undefined)
 
-  // TODO: stop this interval if no wallet is active
   useEffect(() => {
+    if (!hasRefreshToken) return
+
     const isDevMode = jamSettingsStore.getState().state.developerMode
     if (isDevMode) {
       toast.info(`[DEV] setup refresh interval`)
@@ -302,7 +304,7 @@ function RefreshApiToken() {
     return () => {
       clearInterval(intervalId)
     }
-  }, [client])
+  }, [client, hasRefreshToken])
 
   return <></>
 }
