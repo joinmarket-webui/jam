@@ -522,6 +522,7 @@
         "text_secondary_button": "Завершить",
         "label_lock_date": "Заблокировано до",
         "label_address": "Адрес с ограничением по времени",
+        "text_copy_transaction_id": "ID транзакции скопирован",
         "label_utxos_to_unfreeze": "Хотите ли вы разморозить UTXO, которые были заморожены ранее?"
       },
       "unfreeze_utxos": {
