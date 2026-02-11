@@ -1,5 +1,6 @@
 # Dist folder
 dist/
+build/
 
 # Other common ignores
 node_modules/
