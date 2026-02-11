@@ -473,6 +473,7 @@
         "text_secondary_button": "完成",
         "label_lock_date": "鎖定至",
         "label_address": "時間鎖地址",
+        "text_copy_transaction_id": "交易 ID 已複製",
         "label_utxos_to_unfreeze": "你是否想要解凍之前凍結的 UTXOs？"
       },
       "unfreeze_utxos": {

@@ -582,6 +582,7 @@
         "label_lock_date": "Locked until",
         "label_address": "Time-locked address",
         "label_transaction_id": "Transaction ID",
+        "text_copy_transaction_id": "Transaction ID copied",
         "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?"
       },
       "unfreeze_utxos": {
