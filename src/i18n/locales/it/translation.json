@@ -424,6 +424,7 @@
         "text_secondary_button": "Fatto",
         "label_lock_date": "Bloccato fino al",
         "label_address": "Indirizzo bloccato temporalmente",
+        "text_copy_transaction_id": "ID transazione copiato",
         "label_utxos_to_unfreeze": "Vuoi scongelare gli UTXO che erano stati congelati precedentemente?"
       },
       "unfreeze_utxos": {
