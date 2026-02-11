@@ -788,7 +788,19 @@
       "utxo_detail_label_status": "Address status",
       "text_actions_disabled": "Some operations are disabled.",
       "text_actions_disabled_maker_running": "Earn is active. Some operations are disabled.",
-      "text_actions_disabled_taker_running": "A collaborative transaction is currently in progress. Some operations are disabled."
+      "text_actions_disabled_taker_running": "A collaborative transaction is currently in progress. Some operations are disabled.",
+      "toast_freeze_success_one": "Selected UTXO has been frozen.",
+      "toast_freeze_success_other": "Selected UTXOs have been frozen.",
+      "toast_freeze_error_one": "Selected UTXO could not be frozen. Please try again.",
+      "toast_freeze_error_other": "Some selected UTXOs could not be frozen. Please try again.",
+      "toast_unfreeze_success_one": "Selected UTXO has been unfrozen.",
+      "toast_unfreeze_success_other": "Selected UTXOs have been unfrozen.",
+      "toast_unfreeze_error_one": "Selected UTXO could not be unfrozen. Please try again.",
+      "toast_unfreeze_error_other": "Some selected UTXOs could not be unfrozen. Please try again.",
+      "alert_under_construction_title": "Under construction",
+      "alert_under_construction_description": "Not yet implemented.",
+      "alert_no_account_info_title": "No account information present",
+      "alert_no_account_info_description": "Account information is not yet loaded or not present."
     }
   },
   "show_utxos": {
