@@ -119,8 +119,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       setIsWaitingMakerStart(false)
       console.error('StartMaker error:', error)
       const reason = error.message ?? error.error_description ?? t('global.errors.reason_unknown')
-      // TODO: i18n
-      toast.error(`Error while starting the earn process. Reason: ${reason}`)
+      toast.error(t('earn.alert_start_failed', { reason }))
     },
   })
 
@@ -180,8 +179,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       toast.dismiss('earn.alert_stopping')
       toast.dismiss('earn.alert_starting')
       toast.dismiss('earn.alert_running')
-      // TODO: i18n!
-      toast.success('Service successfully stopped.', { id: 'earn.alert_stopped' })
+      toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
     }
   }
 
@@ -203,7 +201,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {waitingForOfferUpdate && (
         <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
           <Spinner className="motion-reduce:hidden" />
-          <AlertTitle>{/* TODO: i18n*/ t('Loading offer...')}</AlertTitle>
+          <AlertTitle>{t('earn.alert_loading_offer')}</AlertTitle>
         </Alert>
       )}
 

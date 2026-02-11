@@ -56,12 +56,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
         <div className="flex items-center gap-4">
           <FingerprintIcon />
           <div className="flex flex-col">
-            <Label className="font-semibold">
-              {
-                /*TODO: i18n*/
-                t('Offer Id')
-              }
-            </Label>
+            <Label className="font-semibold">{t('earn.current.text_offer_id')}</Label>
             <span className="text-md font-mono select-all">
               {nickname}:{value?.oid}
             </span>
