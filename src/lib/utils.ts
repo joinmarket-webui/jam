@@ -90,19 +90,43 @@ export function setIntervalDebounced(
 
 export const satsToBtc = (value: string) => Number.parseInt(value, 10) / 100_000_000
 
+const isAsciiDigits = (value: string) => {
+  for (const char of value) {
+    const codePoint = char.codePointAt(0)
+    if (codePoint === undefined || codePoint < 48 || codePoint > 57) return false
+  }
+  return true
+}
+
 export const btcToSats = (value: string) => {
   const trimmed = value.trim()
 
-  const decimalMatch = /^([+-]?)(\d+)(?:\.(\d+))?$/.exec(trimmed)
-  if (decimalMatch) {
-    const sign = decimalMatch[1] === '-' ? -1 : 1
-    const wholePart = BigInt(decimalMatch[2])
-    const fractionalPartRaw = decimalMatch[3] ?? ''
-    // Truncate beyond 8 decimals (no rounding up of fractional sats).
-    const fractionalPartPadded = (fractionalPartRaw + '00000000').slice(0, 8)
+  let sign = 1
+  let numericPart = trimmed
+  if (numericPart.startsWith('-')) {
+    sign = -1
+    numericPart = numericPart.slice(1)
+  } else if (numericPart.startsWith('+')) {
+    numericPart = numericPart.slice(1)
+  }
 
-    const sats = wholePart * 100000000n + BigInt(fractionalPartPadded)
-    return sign * Number(sats)
+  // Fast path for plain decimal notation: do a string-based conversion to avoid floating point issues.
+  if (!numericPart.includes('e') && !numericPart.includes('E')) {
+    const dotIndex = numericPart.indexOf('.')
+    const hasOnlyOneDot = dotIndex === -1 || !numericPart.includes('.', dotIndex + 1)
+    if (hasOnlyOneDot) {
+      const wholePartRaw = dotIndex === -1 ? numericPart : numericPart.slice(0, dotIndex)
+      const fractionalPartRaw = dotIndex === -1 ? '' : numericPart.slice(dotIndex + 1)
+      const wholePartDigits = wholePartRaw === '' ? '0' : wholePartRaw
+
+      if (isAsciiDigits(wholePartDigits) && isAsciiDigits(fractionalPartRaw)) {
+        // Truncate beyond 8 decimals (no rounding up of fractional sats).
+        const fractionalPartPadded = (fractionalPartRaw + '00000000').slice(0, 8)
+        const sats = BigInt(wholePartDigits) * 100000000n + BigInt(fractionalPartPadded || '0')
+        const result = sign * Number(sats)
+        return result === 0 ? 0 : result
+      }
+    }
   }
 
   const parsed = Number.parseFloat(trimmed)

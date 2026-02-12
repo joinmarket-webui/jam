@@ -152,10 +152,11 @@ describe('btcToSats', () => {
     expect(btcToSats('0')).toBe(0)
   })
 
-  it('should handle rounding', () => {
+  it('should truncate beyond 8 decimals', () => {
     expect(btcToSats('0.123456789')).toBe(12345678) // Truncates beyond 8 decimals
     expect(btcToSats('0.000000004')).toBe(0) // Less than 0.5 sats truncates down
     expect(btcToSats('0.000000005')).toBe(0) // 0.5 sats truncates down to 0
+    expect(btcToSats('0.00000003')).toBe(3) // Avoids floating point errors for exact-sat values
   })
 })
 
