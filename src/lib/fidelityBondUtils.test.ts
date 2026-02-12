@@ -43,6 +43,11 @@ describe('utils', () => {
       expect(() => fb.lockdate.toTimestamp('any' as fb.Lockdate)).toThrowError('Unsupported format')
     })
 
+    it('should silently roll over out-of-range months', () => {
+      // Date.UTC(2009, 12) rolls over to Jan 2010
+      expect(fb.lockdate.toTimestamp('2009-13' as fb.Lockdate)).toBe(Date.UTC(2010, 0, 1))
+    })
+
     it('should create an initial lockdate', () => {
       const rangeZero = fb.toYearsRange(0, 10)
       const rangeMinusOneYear = fb.toYearsRange(-1, 10)
@@ -192,6 +197,51 @@ describe('utils', () => {
           path: `m/84'/1'/0'/0/1`,
         } as Utxo
         expect(fb.utxo.isLocked(utxo, now)).toBe(false)
+      })
+    })
+
+    describe('isFidelityBond', () => {
+      it('should return true when locktime is present', () => {
+        const utxo = { locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/0/1:1748736000` } as Utxo
+        expect(fb.utxo.isFidelityBond(utxo)).toBe(true)
+      })
+
+      it('should return false when locktime is missing', () => {
+        expect(fb.utxo.isFidelityBond(makeUtxo('abc:0'))).toBe(false)
+      })
+
+      it('should return false when locktime is empty string', () => {
+        const utxo = { locktime: '', path: `m/84'/1'/0'/0/1` } as unknown as Utxo
+        expect(fb.utxo.isFidelityBond(utxo)).toBe(false)
+      })
+    })
+
+    describe('getLocktime', () => {
+      it('should extract locktime from a fidelity bond utxo', () => {
+        const utxo = {
+          locktime: '2025-06-01 00:00:00',
+          path: `m/84'/1'/0'/0/1:1748736000`,
+        } as Utxo
+        expect(fb.utxo.getLocktime(utxo)).toBe(1748736000 * 1_000)
+      })
+
+      it('should return null for a regular utxo', () => {
+        expect(fb.utxo.getLocktime(makeUtxo('abc:0'))).toBeNull()
+      })
+
+      it('should return null when path has no colon separator', () => {
+        const utxo = { locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/0/1` } as Utxo
+        expect(fb.utxo.getLocktime(utxo)).toBeNull()
+      })
+
+      it('should return null when path has multiple colon separators', () => {
+        const utxo = { locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/0/1:123:456` } as Utxo
+        expect(fb.utxo.getLocktime(utxo)).toBeNull()
+      })
+
+      it('should return null when locktime in path is not a number', () => {
+        const utxo = { locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/0/1:notanumber` } as Utxo
+        expect(fb.utxo.getLocktime(utxo)).toBeNull()
       })
     })
   })
