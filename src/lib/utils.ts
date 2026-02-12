@@ -90,7 +90,48 @@ export function setIntervalDebounced(
 
 export const satsToBtc = (value: string) => Number.parseInt(value, 10) / 100_000_000
 
-export const btcToSats = (value: string) => Math.round(Number.parseFloat(value) * 100_000_000)
+const isAsciiDigits = (value: string) => {
+  if (value.length === 0) return false
+  for (const char of value) {
+    const codePoint = char.codePointAt(0)
+    if (codePoint === undefined || codePoint < 48 || codePoint > 57) return false
+  }
+  return true
+}
+
+export const tryBtcToSat = (value: string): number | undefined => {
+  const trimmed = value.trim()
+  if (trimmed === '') return undefined
+
+  let sign = 1
+  let numericPart = trimmed
+  if (numericPart.startsWith('-')) {
+    sign = -1
+    numericPart = numericPart.slice(1)
+  } else if (numericPart.startsWith('+')) {
+    numericPart = numericPart.slice(1)
+  }
+
+  // Keep this strict and simple: only plain decimal strings (no scientific notation).
+  if (numericPart.includes('e') || numericPart.includes('E')) return undefined
+
+  const dotIndex = numericPart.indexOf('.')
+  const hasAtMostOneDot = dotIndex === -1 || !numericPart.includes('.', dotIndex + 1)
+  if (!hasAtMostOneDot) return undefined
+
+  const wholePartRaw = dotIndex === -1 ? numericPart : numericPart.slice(0, dotIndex)
+  const fractionalPartRaw = dotIndex === -1 ? '' : numericPart.slice(dotIndex + 1)
+
+  // Expect: [+-]?\\d+\\.?\\d*
+  if (!isAsciiDigits(wholePartRaw)) return undefined
+  if (fractionalPartRaw !== '' && !isAsciiDigits(fractionalPartRaw)) return undefined
+
+  const wholePart = Number.parseInt(wholePartRaw, 10)
+  const fractionalPart =
+    fractionalPartRaw === '' ? 0 : Number.parseInt((fractionalPartRaw + '00000000').slice(0, 8), 10)
+  const sats = wholePart * 100_000_000 + fractionalPart
+  return sats === 0 ? 0 : sign * sats
+}
 
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 

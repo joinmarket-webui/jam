@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { cn, satsToBtc, btcToSats, isValidNumber, formatBtc, formatSats, SATS, BTC, type Unit } from '@/lib/utils'
+import { cn, satsToBtc, tryBtcToSat, isValidNumber, formatBtc, formatSats, SATS, BTC, type Unit } from '@/lib/utils'
 import type { Currency } from '@/types/global'
 
 const DISPLAY_MODE_BTC: Currency = 'btc'
@@ -178,7 +178,12 @@ export const Balance = ({ valueString, convertToUnit, showBalance = true, ...pro
       if (valueIsSats) {
         return <SatsBalance value={valueNumber} {...props} />
       } else {
-        return <SatsBalance value={btcToSats(valueString)} {...props} />
+        const valueInSats = tryBtcToSat(valueString)
+        if (!isValidNumber(valueInSats)) {
+          console.warn('<Balance /> component expects decimal BTC input in plain notation')
+          return <BalanceComponent {...props}>{valueString}</BalanceComponent>
+        }
+        return <SatsBalance value={valueInSats} {...props} />
       }
     }
 

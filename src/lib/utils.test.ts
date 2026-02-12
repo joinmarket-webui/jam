@@ -5,7 +5,7 @@ import {
   walletDisplayName,
   setIntervalDebounced,
   satsToBtc,
-  btcToSats,
+  tryBtcToSat,
   percentageToFactor,
   isValidNumber,
   factorToPercentage,
@@ -144,18 +144,43 @@ describe('satsToBtc', () => {
   })
 })
 
-describe('btcToSats', () => {
+describe('tryBtcToSat', () => {
   it('should correctly convert BTC to satoshis', () => {
-    expect(btcToSats('1')).toBe(100000000)
-    expect(btcToSats('0.5')).toBe(50000000)
-    expect(btcToSats('0.00001')).toBe(1000)
-    expect(btcToSats('0')).toBe(0)
+    expect(tryBtcToSat('1')).toBe(100000000)
+    expect(tryBtcToSat('0.5')).toBe(50000000)
+    expect(tryBtcToSat('0.00001')).toBe(1000)
+    expect(tryBtcToSat('0')).toBe(0)
   })
 
-  it('should handle rounding', () => {
-    expect(btcToSats('0.123456789')).toBe(12345679) // Rounds to nearest integer
-    expect(btcToSats('0.000000004')).toBe(0) // Less than 0.5 sats rounds down
-    expect(btcToSats('0.000000005')).toBe(1) // TODO fix this 0.5 sats should rounds down to 0
+  it('should truncate beyond 8 decimals', () => {
+    expect(tryBtcToSat('0.123456789')).toBe(12345678) // Truncates beyond 8 decimals
+    expect(tryBtcToSat('0.000000004')).toBe(0) // Less than 0.5 sats truncates down
+    expect(tryBtcToSat('0.000000005')).toBe(0) // 0.5 sats truncates down to 0
+    expect(tryBtcToSat('0.00000003')).toBe(3) // Avoids floating point errors for exact-sat values
+  })
+
+  it('should handle signs and whitespace', () => {
+    expect(tryBtcToSat('+1')).toBe(100000000)
+    expect(tryBtcToSat(' -1 ')).toBe(-100000000)
+    expect(tryBtcToSat('-0.00000001')).toBe(-1)
+    expect(tryBtcToSat('-0.000000005')).toBe(0) // Truncates towards 0 (no -0)
+  })
+
+  it('should return undefined for exponent notation', () => {
+    expect(tryBtcToSat('3e-8')).toBeUndefined()
+    expect(tryBtcToSat('3E-8')).toBeUndefined()
+    expect(tryBtcToSat('1e2')).toBeUndefined()
+  })
+
+  it('should return undefined for invalid values', () => {
+    expect(tryBtcToSat('')).toBeUndefined()
+    expect(tryBtcToSat('   ')).toBeUndefined()
+    expect(tryBtcToSat('.')).toBeUndefined()
+    expect(tryBtcToSat('+')).toBeUndefined()
+    expect(tryBtcToSat('-')).toBeUndefined()
+    expect(tryBtcToSat('abc')).toBeUndefined()
+    expect(tryBtcToSat('1.2.3')).toBeUndefined()
+    expect(tryBtcToSat('+.1')).toBeUndefined()
   })
 })
 
