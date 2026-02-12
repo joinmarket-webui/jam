@@ -91,6 +91,7 @@ export function setIntervalDebounced(
 export const satsToBtc = (value: string) => Number.parseInt(value, 10) / 100_000_000
 
 const isAsciiDigits = (value: string) => {
+  if (value.length === 0) return false
   for (const char of value) {
     const codePoint = char.codePointAt(0)
     if (codePoint === undefined || codePoint < 48 || codePoint > 57) return false
@@ -98,8 +99,25 @@ const isAsciiDigits = (value: string) => {
   return true
 }
 
+const parseIntStrict = (value: string) => {
+  if (value.length === 0) return undefined
+
+  let sign = 1
+  let digits = value
+  if (digits.startsWith('-')) {
+    sign = -1
+    digits = digits.slice(1)
+  } else if (digits.startsWith('+')) {
+    digits = digits.slice(1)
+  }
+
+  if (!isAsciiDigits(digits)) return undefined
+  return sign * Number.parseInt(digits, 10)
+}
+
 export const btcToSats = (value: string) => {
   const trimmed = value.trim()
+  if (trimmed === '') return Number.NaN
 
   let sign = 1
   let numericPart = trimmed
@@ -110,21 +128,42 @@ export const btcToSats = (value: string) => {
     numericPart = numericPart.slice(1)
   }
 
-  // Fast path for plain decimal notation: do a string-based conversion to avoid floating point issues.
-  if (!numericPart.includes('e') && !numericPart.includes('E')) {
-    const dotIndex = numericPart.indexOf('.')
-    const hasOnlyOneDot = dotIndex === -1 || !numericPart.includes('.', dotIndex + 1)
-    if (hasOnlyOneDot) {
-      const wholePartRaw = dotIndex === -1 ? numericPart : numericPart.slice(0, dotIndex)
-      const fractionalPartRaw = dotIndex === -1 ? '' : numericPart.slice(dotIndex + 1)
-      const wholePartDigits = wholePartRaw === '' ? '0' : wholePartRaw
+  // String parsing (supports decimals and `e` notation) to avoid floating point precision issues.
+  const exponentMarkerIndexLower = numericPart.indexOf('e')
+  const exponentMarkerIndexUpper = numericPart.indexOf('E')
+  const exponentMarkerIndex =
+    exponentMarkerIndexLower === -1
+      ? exponentMarkerIndexUpper
+      : exponentMarkerIndexUpper === -1
+        ? exponentMarkerIndexLower
+        : Math.min(exponentMarkerIndexLower, exponentMarkerIndexUpper)
+  const mantissaPart = exponentMarkerIndex === -1 ? numericPart : numericPart.slice(0, exponentMarkerIndex)
+  const exponentPart = exponentMarkerIndex === -1 ? undefined : numericPart.slice(exponentMarkerIndex + 1)
 
-      if (isAsciiDigits(wholePartDigits) && isAsciiDigits(fractionalPartRaw)) {
-        // Truncate beyond 8 decimals (no rounding up of fractional sats).
-        const fractionalPartPadded = (fractionalPartRaw + '00000000').slice(0, 8)
-        const sats = BigInt(wholePartDigits) * 100000000n + BigInt(fractionalPartPadded || '0')
-        const result = sign * Number(sats)
-        return result === 0 ? 0 : result
+  const dotIndex = mantissaPart.indexOf('.')
+  const hasAtMostOneDot = dotIndex === -1 || !mantissaPart.includes('.', dotIndex + 1)
+  if (hasAtMostOneDot) {
+    const wholePartRaw = dotIndex === -1 ? mantissaPart : mantissaPart.slice(0, dotIndex)
+    const fractionalPartRaw = dotIndex === -1 ? '' : mantissaPart.slice(dotIndex + 1)
+
+    // Must contain at least one digit somewhere.
+    if (wholePartRaw !== '' || fractionalPartRaw !== '') {
+      const wholePartDigits = wholePartRaw === '' ? '0' : wholePartRaw
+      const fractionalIsValid = fractionalPartRaw === '' || isAsciiDigits(fractionalPartRaw)
+
+      if (isAsciiDigits(wholePartDigits) && fractionalIsValid) {
+        const parsedExponent = exponentPart ? parseIntStrict(exponentPart) : 0
+        if (parsedExponent !== undefined) {
+          const digits = wholePartDigits + fractionalPartRaw
+          const scale = fractionalPartRaw.length
+          const satExponent = parsedExponent + 8 - scale
+
+          const mantissa = BigInt(digits)
+          const sats =
+            satExponent >= 0 ? mantissa * 10n ** BigInt(satExponent) : mantissa / 10n ** BigInt(Math.abs(satExponent))
+
+          return sats === 0n ? 0 : sign * Number(sats)
+        }
       }
     }
   }
@@ -132,7 +171,7 @@ export const btcToSats = (value: string) => {
   const parsed = Number.parseFloat(trimmed)
   if (!Number.isFinite(parsed)) return Number.NaN
 
-  // Fallback for non-decimal inputs (e.g. scientific notation). Truncate towards 0.
+  // Fallback for unrecognized inputs. Truncate towards 0.
   return Math.trunc(parsed * 100_000_000)
 }
 

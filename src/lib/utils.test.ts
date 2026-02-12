@@ -158,6 +158,30 @@ describe('btcToSats', () => {
     expect(btcToSats('0.000000005')).toBe(0) // 0.5 sats truncates down to 0
     expect(btcToSats('0.00000003')).toBe(3) // Avoids floating point errors for exact-sat values
   })
+
+  it('should handle signs and whitespace', () => {
+    expect(btcToSats('+1')).toBe(100000000)
+    expect(btcToSats(' -1 ')).toBe(-100000000)
+    expect(btcToSats('-0.00000001')).toBe(-1)
+    expect(btcToSats('-0.000000005')).toBe(0) // Truncates towards 0 (no -0)
+  })
+
+  it('should handle exponent notation', () => {
+    expect(btcToSats('3e-8')).toBe(3)
+    expect(btcToSats('3E-8')).toBe(3)
+    expect(btcToSats('1e-8')).toBe(1)
+    expect(btcToSats('-3e-8')).toBe(-3)
+    expect(btcToSats('1e2')).toBe(10000000000) // 100 BTC
+  })
+
+  it('should return NaN for invalid values', () => {
+    expect(btcToSats('')).toBeNaN()
+    expect(btcToSats('   ')).toBeNaN()
+    expect(btcToSats('.')).toBeNaN()
+    expect(btcToSats('+')).toBeNaN()
+    expect(btcToSats('-')).toBeNaN()
+    expect(btcToSats('abc')).toBeNaN()
+  })
 })
 
 describe('parseSemanticVersion', () => {
