@@ -27,17 +27,17 @@ const createFormSchema = (wallets: WalletFileName[], t: TFunction) => {
         .string()
         .trim()
         .max(MAX_WALLET_NAME_LENGTH)
-        .required()
+        .required(t('create_wallet.feedback_invalid_wallet_name'))
         .test('valid-wallet-name-test', t('create_wallet.feedback_invalid_wallet_name'), (value) => {
           return /^[\w-]+$/.test(value)
         })
         .test('valid-wallet-name-exists-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
           return !wallets.includes((value + JM_WALLET_FILE_EXTENSION) as WalletFileName)
         }),
-      password: yup.string().min(1).required(),
+      password: yup.string().min(1).required(t('create_wallet.feedback_invalid_password')),
       confirmPassword: yup
         .string()
-        .required()
+        .required(t('create_wallet.feedback_invalid_password_confirm'))
         .test(
           'valid-confirm-password-test',
           t('create_wallet.feedback_invalid_password_confirm'),
@@ -133,9 +133,7 @@ export const CreateWalletForm = ({
             </InputGroupAddon>
           </InputGroup>
         </Field>
-        {errors.password && (
-          <div className="text-destructive text-xs">{t('create_wallet.feedback_invalid_password')}</div>
-        )}
+        {errors.password?.message && <div className="text-destructive text-xs">{errors.password.message}</div>}
       </div>
 
       <div className="space-y-2">
@@ -168,8 +166,8 @@ export const CreateWalletForm = ({
             </InputGroupAddon>
           </InputGroup>
         </Field>
-        {errors.confirmPassword && (
-          <div className="text-destructive text-xs">{t('create_wallet.feedback_invalid_password_confirm')}</div>
+        {errors.confirmPassword?.message && (
+          <div className="text-destructive text-xs">{errors.confirmPassword?.message}</div>
         )}
       </div>
 

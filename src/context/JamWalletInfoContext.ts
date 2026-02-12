@@ -40,7 +40,9 @@ type AddressStatusDynamic = string
 export type AddressStatus = AddressStaticStatus | AddressStatusDynamic
 
 export type AddressMeta = {
+  jarIndex: JarIndex
   address: BitcoinAddress
+  used: boolean
   status: AddressStatus
   info?: Omit<AddressInfo, 'address'>
   __raw: NonNullable<

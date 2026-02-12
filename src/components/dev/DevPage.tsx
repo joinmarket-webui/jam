@@ -14,6 +14,7 @@ import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmConfigStore } from '@/store/jmConfigStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { jmTxStore } from '@/store/jmTxStore'
 import { DevBadge } from './DevBadge'
 
 interface DevConfigTabContentProps {
@@ -25,6 +26,7 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const jamSettingsState = useStore(jamSettingsStore, (state) => state.state)
   const jmConfigStoreState = useStore(jmConfigStore, (state) => state.state)
+  const jmTxStoreState = useStore(jmTxStore, (state) => state.state)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
   const feeConfig = useFeeConfigValidation({ walletFileName: walletFileName ?? 'None.jmdat' })
@@ -51,6 +53,10 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
       <div className="overflow-scroll">
         <code className="light:text-red-700 text-red-800">useStore(jamSettingsStore):</code>
         <pre className="text-xs">{JSON.stringify(jamSettingsState, null, 2)}</pre>
+      </div>
+      <div className="overflow-scroll">
+        <code className="light:text-red-700 text-red-800">useStore(jmTxStore):</code>
+        <pre className="text-xs">{JSON.stringify(jmTxStoreState, null, 2)}</pre>
       </div>
 
       {feeConfig && walletFileName && (

@@ -3,6 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
+import type { TFunction } from 'i18next'
 import { BrushCleaningIcon, MilkIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
@@ -11,7 +12,7 @@ import { toast } from 'sonner'
 import * as yup from 'yup'
 import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
-import type { Jar } from '@/context/JamWalletInfoContext'
+import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { cn, delayedPromise, pseudoRandomInteger, SATS, type WalletFileName } from '@/lib/utils'
@@ -64,6 +65,7 @@ const AddressFromJarSelectorDialog = ({
         if (result.error) {
           onError(result.error)
         } else if (result.data?.address === undefined) {
+          // TODO: i18n? does this ever happen?
           onError(new Error('Missing bitcoin address.'))
         } else {
           const addressInfo = getAddressInfo(result.data.address)
@@ -90,7 +92,7 @@ const MAX_NUM_COLLABORATORS = 99
 // TODO: this value should be dynamic via jm backend settings
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
 
-const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
+const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   source: undefined,
   destination: undefined,
   amount: undefined,
@@ -99,21 +101,26 @@ const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
   numCollaborators: undefined,
 }
 
-const sendFormSchema = (jars: Jar[], minNumberOfCollaborators: number) => {
+const sendFormSchema = (
+  jars: Jar[],
+  addressSummary: AddressSummary,
+  minNumberOfCollaborators: number,
+  t: TFunction,
+) => {
   return yup
     .object({
       source: yup
         .object({
           fromJar: yup
             .number()
-            .integer()
+            .integer(t('send.feedback_invalid_source_jar'))
+            .required(t('send.feedback_invalid_source_jar'))
             .test(
               'valid-source-jar-index-test',
-              'Invalid source jar index.',
+              t('send.feedback_invalid_source_jar'),
               (value) =>
                 (jars.find((it) => it.jarIndex === value)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
-            )
-            .required(),
+            ),
         })
         .required(),
       destination: yup
@@ -121,10 +128,13 @@ const sendFormSchema = (jars: Jar[], minNumberOfCollaborators: number) => {
           fromJar: yup.number().optional(),
           address: yup
             .string()
-            .test('valid-address-test', 'Invalid bitcoin address.', (value) => {
-              return isValidBitcoinAddress(value || '')
+            .required(t('send.feedback_invalid_destination_address'))
+            .test('valid-address-test', t('send.feedback_invalid_destination_address'), (value) => {
+              return isValidBitcoinAddress(value)
             })
-            .required(),
+            .test('reused-address-test', t('send.feedback_reused_address'), (value) => {
+              return addressSummary[value]?.used !== true
+            }),
         })
         .required(),
       amount: yup
@@ -154,10 +164,12 @@ const sendFormSchema = (jars: Jar[], minNumberOfCollaborators: number) => {
                 .optional(),
             otherwise: (schema) =>
               schema
-                .integer()
-                .min(1)
-                .max(21_000_000 * 100_000_000)
-                .required(),
+                .integer(t('send.feedback_invalid_amount'))
+                .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+                .nonNullable(t('send.feedback_invalid_amount'))
+                .min(1, t('send.feedback_invalid_amount'))
+                .max(21_000_000 * 100_000_000, t('send.feedback_invalid_amount'))
+                .required(t('send.feedback_invalid_amount')),
           }),
         })
         .required(),
@@ -179,6 +191,17 @@ const sendFormSchema = (jars: Jar[], minNumberOfCollaborators: number) => {
       }),
     })
     .required()
+    .test('address-not-from-source-jar-test', function (root) {
+      const addressIsFromSourceJar = addressSummary[root.destination.address]?.jarIndex === root.source.fromJar
+      if (!addressIsFromSourceJar) return true
+
+      const errorMessage = t('send.feedback_address_from_source_jar', {
+        /* TODO: i18n: remove defaultValue and add key to language files */
+        defaultValue: 'This address is from the source jar. To preserve your privacy please choose a different one.',
+      })
+
+      return new yup.ValidationError(errorMessage, root.destination.address, 'destination.address', undefined, true)
+    })
 }
 
 const FieldPrefixSatSymbol = (
@@ -198,6 +221,7 @@ interface SendFormProps {
   walletFileName: WalletFileName
   jars: Jar[]
   walletBalanceSummary: BalanceSummary
+  addressSummary: AddressSummary
   disabled?: boolean
   debug?: boolean
 }
@@ -210,13 +234,17 @@ export function SendForm({
   minNumberOfCollaborators = MIN_NUM_COLLABORATORS,
   jars,
   walletBalanceSummary,
+  addressSummary,
   debug,
 }: SendFormProps) {
   const { t } = useTranslation()
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
 
-  const schema = useMemo(() => sendFormSchema(jars, minNumberOfCollaborators), [jars, minNumberOfCollaborators])
+  const schema = useMemo(
+    () => sendFormSchema(jars, addressSummary, minNumberOfCollaborators, t),
+    [jars, addressSummary, minNumberOfCollaborators, t],
+  )
 
   const {
     control,
@@ -224,6 +252,7 @@ export function SendForm({
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
     setValue,
+    trigger,
   } = useForm<SendFormValues, unknown, SendFormValues>({
     mode: 'onSubmit',
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
@@ -270,7 +299,7 @@ export function SendForm({
         onError={(_ignoredOnPurpose) => {
           // TODO: i18n own key `send.error_loading_address_failed`
           toast.error(t('receive.error_loading_address_failed'))
-          setValue('destination.address', undefined, { shouldValidate: true })
+          setValue('destination.address', '', { shouldValidate: true })
           setValue('destination.fromJar', undefined, { shouldValidate: true })
         }}
         onConfirm={(jarIndex, addressInfo) => {
@@ -302,8 +331,10 @@ export function SendForm({
                       setValue('amount.amount', undefined, { shouldValidate: true })
                     }
                     if (destinationJarIndex === jar.jarIndex) {
-                      setValue('destination.address', undefined, { shouldValidate: true })
+                      setValue('destination.address', '', { shouldValidate: true })
                       setValue('destination.fromJar', undefined, { shouldValidate: true })
+                    } else if (destinationAddress !== undefined) {
+                      void trigger('destination.address')
                     }
                   }}
                   disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
@@ -311,8 +342,9 @@ export function SendForm({
               ))}
             </div>
           </Field>
-
-          {errors.source && <div className="text-destructive text-xs">{t('send.feedback_invalid_source_jar')}</div>}
+          {errors.source?.fromJar?.message && (
+            <div className="text-destructive text-xs">{errors.source?.fromJar.message}</div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -378,7 +410,7 @@ export function SendForm({
                 className="h-auto"
                 disabled={disabled}
                 onClick={() => {
-                  setValue('destination.address', undefined, { shouldValidate: true })
+                  setValue('destination.address', '', { shouldValidate: true })
                   setValue('destination.fromJar', undefined, { shouldValidate: true })
                 }}
               >
@@ -387,12 +419,14 @@ export function SendForm({
             </ButtonGroup>
           </Field>
 
-          {errors.destination && (
+          {errors.destination?.address?.message && (
             <>
-              <div className="text-destructive text-xs">{t('send.feedback_invalid_destination_address')}</div>
+              <div className="text-destructive text-xs">{errors.destination.address.message}</div>
               {/* TODO: feedback_invalid_source_jar */}
-              {/* TODO: feedback_reused_address */}
             </>
+          )}
+          {errors.destination?.fromJar?.message && (
+            <div className="text-destructive text-xs">{errors.destination.fromJar.message}</div>
           )}
         </div>
 
@@ -452,7 +486,9 @@ export function SendForm({
                 )}
                 aria-disabled
               >
-                <Balance valueString={String(values.amount?.sweepAmount)} convertToUnit={SATS} showBalance={true} />
+                {values.amount?.sweepAmount !== undefined && (
+                  <Balance valueString={values.amount.sweepAmount.toFixed(0)} convertToUnit={SATS} showBalance={true} />
+                )}
 
                 <Badge className="text-sm" variant="default">
                   {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
@@ -476,7 +512,15 @@ export function SendForm({
               </Button>
             </ButtonGroup>
           </Field>
-          {errors.amount?.amount && <div className="text-destructive text-xs">{t('send.feedback_invalid_amount')}</div>}
+          {errors.amount?.amount?.message && (
+            <div className="text-destructive text-xs">{errors.amount.amount.message}</div>
+          )}
+          {errors.amount?.sweepAmount?.message && (
+            <div className="text-destructive text-xs">{errors.amount.sweepAmount.message}</div>
+          )}
+          {errors.amount?.isSweep?.message && (
+            <div className="text-destructive text-xs">{errors.amount.isSweep.message}</div>
+          )}
         </div>
 
         <Accordion type="single" collapsible>

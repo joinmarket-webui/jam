@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
-import type { WebSocketHook } from 'react-use-websocket/dist/lib/types'
+import type { Options, WebSocketHook } from 'react-use-websocket/dist/lib/types'
 import { useStore } from 'zustand'
 import {
   JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION,
@@ -32,7 +32,12 @@ export type JmWebsocket = Omit<WebSocketHook, 'sendMessage' | 'sendJsonMessage'>
   isAuthenticated: boolean
 }
 
-export const useJmWebsocket = (): JmWebsocket => {
+interface UseJmWebsocketProps {
+  options?: Pick<Options, 'onOpen' | 'onClose' | 'onMessage' | 'onError' | 'onReconnectStop'>
+  enableHeartbeat: boolean
+}
+
+export const useJmWebsocket = ({ enableHeartbeat, options }: UseJmWebsocketProps): JmWebsocket => {
   const authToken = useStore(authStore, (state) => state.state?.auth?.token)
 
   const [socketUrl] = useState(url)
@@ -59,13 +64,21 @@ export const useJmWebsocket = (): JmWebsocket => {
       console.debug(`Websocket reconnect attempt #${attemptNumber} in ${value}ms`)
       return value
     },
-    onClose: () => {
+    onOpen: (event) => {
+      console.debug('Websocket opened.')
+      options?.onOpen?.(event)
+    },
+    onClose: (event) => {
       console.debug('Websocket closed.')
       setAuthenticated(false)
+      options?.onClose?.(event)
     },
-    onOpen: () => {
-      console.debug('Websocket opened.')
+    onError: (event) => {
+      console.debug('Websocket error.')
+      options?.onError?.(event)
     },
+    onMessage: options?.onMessage,
+    onReconnectStop: options?.onReconnectStop,
   })
 
   const isOpen = useMemo(() => websocket.readyState === ReadyState.OPEN, [websocket.readyState])
@@ -103,7 +116,7 @@ export const useJmWebsocket = (): JmWebsocket => {
 
   useEffect(
     function setupHeartbeat() {
-      if (!isOpen || !authenticated || authToken === undefined) {
+      if (!enableHeartbeat || !isOpen || !authenticated || authToken === undefined) {
         return
       }
 
@@ -130,7 +143,7 @@ export const useJmWebsocket = (): JmWebsocket => {
         clearTimeout(timerId)
       }
     },
-    [sendMessage, isOpen, authenticated, authToken],
+    [enableHeartbeat, sendMessage, isOpen, authenticated, authToken],
   )
 
   return {

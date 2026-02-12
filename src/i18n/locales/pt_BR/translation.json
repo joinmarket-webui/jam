@@ -424,6 +424,7 @@
         "text_secondary_button": "Pronto",
         "label_lock_date": "Trancado até",
         "label_address": "Endereços trancados no tempo",
+        "text_copy_transaction_id": "ID da transação copiado",
         "label_utxos_to_unfreeze": "Deseja descongelar os UTXOs que foram congelados anteriormente?"
       },
       "unfreeze_utxos": {

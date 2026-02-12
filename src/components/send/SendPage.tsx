@@ -12,17 +12,26 @@ import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
+import { useAddressSummary, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import type { UtxoId } from '@/hooks/useQueryUtxos'
+import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import { Card, CardContent } from '../ui/card'
 import { Spinner } from '../ui/spinner'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import type { SendFormValues } from './types'
+
+interface SimpleAlert {
+  variant: React.ComponentProps<typeof Alert>['variant']
+  title: string
+  description: string
+}
 
 type DirectSendResult = {
   request: DirectSendRequest
@@ -41,7 +50,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
+  const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
 
@@ -71,6 +82,30 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     ...directsendMutation({ client }),
     retry: false,
   })
+
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
+
+  const waitForUtxosToBeSpentContext = useMemo(
+    () => ({
+      walletFileName,
+      waitForUtxosToBeSpent,
+      setWaitForUtxosToBeSpent,
+      onError: (error: unknown) => {
+        const reason =
+          typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+            ? error.message
+            : undefined
+
+        const message = t('global.errors.error_reloading_wallet_failed', {
+          reason: reason || t('global.errors.reason_unknown'),
+        })
+        toast.error(message)
+      },
+    }),
+    [walletFileName, waitForUtxosToBeSpent, t],
+  )
+
+  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
   const triggerNonCollarborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
     mutationFn: async (data: SendFormValues) => {
@@ -118,7 +153,27 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
     try {
-      await triggerNonCollarborativeTransaction.mutateAsync(data)
+      setPaymentSuccessfulInfoAlert(undefined)
+      const result = await triggerNonCollarborativeTransaction.mutateAsync(data)
+      const tx = result.response.txinfo as Required<JmTxInfo>
+
+      const output = tx.outputs.find((output) => output.address === data.destination.address)
+      setPaymentSuccessfulInfoAlert({
+        variant: 'success',
+        title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
+        description: t('send.alert_payment_successful', {
+          amount: output?.value_sats,
+          address: output?.address,
+          txid: tx.txid,
+        }),
+      })
+
+      const inputUtxoIds = (result.response.txinfo.inputs || []).flatMap((it) =>
+        it?.outpoint !== undefined ? [it.outpoint as UtxoId] : [],
+      )
+      setWaitForUtxosToBeSpent(inputUtxoIds)
+
+      jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
     } catch (error: unknown) {
       console.error('Error while sending non-collaborative transaction', error)
     }
@@ -224,20 +279,23 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         ) : (
           <>
-            {triggerNonCollarborativeTransaction.data && (
-              <Alert variant="success">
-                <AlertTriangleIcon />
-                <AlertTitle>{/* TODO: i18n */}Successfully sent non-collaborative transaction</AlertTitle>
-                <AlertDescription>
-                  <span className="text-wrap slashed-zero">
-                    {t('send.alert_payment_successful', {
-                      amount: triggerNonCollarborativeTransaction.data.request.amount_sats,
-                      address: triggerNonCollarborativeTransaction.data.request.destination,
-                      txid: triggerNonCollarborativeTransaction.data.response.txinfo.txid,
-                    })}
-                  </span>
-                </AlertDescription>
-              </Alert>
+            {paymentSuccessfulInfoAlert && (
+              <>
+                <Alert variant={paymentSuccessfulInfoAlert.variant}>
+                  <AlertTriangleIcon />
+                  <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
+                  <AlertDescription className="ext-wrap slashed-zero">
+                    {paymentSuccessfulInfoAlert.description}
+                  </AlertDescription>
+                </Alert>
+
+                {waitForUtxosToBeSpent.length > 0 && (
+                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                    <Spinner className="motion-reduce:hidden" />
+                    <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
+                  </Alert>
+                )}
+              </>
             )}
           </>
         )}
@@ -250,8 +308,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               walletFileName={walletFileName}
               minNumberOfCollaborators={undefined}
               jars={jars}
+              addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
-              disabled={jmSession?.maker_running || jmSession?.coinjoin_in_process || jmSession?.rescanning}
+              disabled={
+                jmSession?.maker_running ||
+                jmSession?.coinjoin_in_process ||
+                jmSession?.rescanning ||
+                waitForUtxosToBeSpent.length > 0
+              }
               debug={isDeveloperMode}
             />
           </CardContent>

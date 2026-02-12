@@ -357,7 +357,9 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
                       text={<CopyIcon className="h-4 w-4" />}
                       successText={<CheckIcon className="h-4 w-4 text-green-500" />}
                       className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
-                      onSuccess={() => toast.success(t('receive.text_copy_address'))}
+                      onSuccess={() =>
+                        toast.success(t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id'))
+                      }
                       onError={() => toast.error(t('global.errors.reason_unknown'))}
                     />
                   </div>
