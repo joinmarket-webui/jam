@@ -1,5 +1,7 @@
 # Dist folder
 dist/
+# TODO(v2-cleanup): remove after v2 branch is merged; legacy `devel` (CRA) outputs `build/`
+build/
 
 # Other common ignores
 node_modules/
