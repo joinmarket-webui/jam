@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import type { AccountBranch, AccountMeta } from '@/context/JamWalletInfoContext'
 import { statusTags } from '@/lib/tags'
-import { btcToSats, isValidNumber } from '@/lib/utils'
+import { tryBtcToSat, isValidNumber } from '@/lib/utils'
 import type { HdPath } from '@/types/global'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { BranchEntryTable, type BranchEntryApiObject, type BranchEntryTableRow } from './BranchEntryTable'
@@ -40,7 +40,7 @@ const branchToTableEntry = (value: BranchEntryApiObject): BranchEntryTableRow =>
     derivationIndex: toLastHdPathIndex(value.hd_path as HdPath) ?? -1,
     derivationPath: (value.hd_path !== undefined ? value.hd_path : 'm/-1') as HdPath,
     address: value.address || '',
-    balance: btcToSats(value.amount || '0'),
+    balance: tryBtcToSat(value.amount || '0') ?? 0,
     tags: statusTags(value.status || ''),
   }
 }
