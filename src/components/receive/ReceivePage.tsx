@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getaddressOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { useQuery } from '@tanstack/react-query'
-import { CopyCheckIcon, CopyIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { getaddressQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { useMutation } from '@tanstack/react-query'
+import { CopyCheckIcon, CopyIcon, HatGlassesIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -12,10 +13,10 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useJars } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import { withQueryDelay } from '@/lib/queryClient'
+import { withMutationDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import type { AmountSats, BitcoinAddress, Milliseconds } from '@/types/global'
+import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
@@ -23,12 +24,6 @@ import { BitcoinQR } from './BitcoinQR'
 import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320 // "h-[320px] w-[320px]" <- Comment for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
-
-// new-address query stale time considerations:
-// - high enough to prevent increasing address gap on accidental page switch
-// - low enough to provide new address on purpose
-// - "too low" is better than "too high"
-const GET_ADDRESS_QUERY_TALE_TIME: Milliseconds = 10_000
 
 interface ReceivePageProps {
   walletFileName: WalletFileName
@@ -38,17 +33,17 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const { t } = useTranslation()
   const { jars } = useJars()
 
-  const [sourceJarIndex, setSourceJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
+  const [selectedSourceJarIndex, setSelectedSourceJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
   const [amount, setAmount] = useState<AmountSats>()
 
-  const sourceJar = useMemo(() => {
-    if (sourceJarIndex === undefined) return
-    return jars[sourceJarIndex]
-  }, [jars, sourceJarIndex])
+  const selectedSourceJar = useMemo(() => {
+    if (selectedSourceJarIndex === undefined) return
+    return jars[selectedSourceJarIndex]
+  }, [jars, selectedSourceJarIndex])
 
   const [receiveFormDefaultValues] = useState({
     source: {
-      fromJar: sourceJar?.jarIndex,
+      fromJar: selectedSourceJar?.jarIndex,
     },
     amount: {
       amount: undefined,
@@ -59,33 +54,45 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
   const client = useApiClient()
 
-  const getAddressQueryOptions = getaddressOptions({
+  const getAddressOptions = {
     client,
     path: {
       walletname: encodeURIComponent(walletFileName),
-      mixdepth: String(sourceJar?.jarIndex),
+      mixdepth: String(selectedSourceJar?.jarIndex),
+    },
+  }
+
+  // wrap as mutation manually, as `getAddressQuery` is a `GET` request
+  const getAddressMutation = useMutation({
+    mutationKey: ['receive', ...getaddressQueryKey(getAddressOptions)],
+    mutationFn: withMutationDelay(
+      async () => {
+        const { data } = await getaddress({
+          ...getAddressOptions,
+          throwOnError: true,
+        })
+        return {
+          address: data.address,
+          sourceJarIndex: Number.parseInt(getAddressOptions.path.mixdepth, 10),
+        }
+      },
+      {
+        delayAfter: 21,
+      },
+    ),
+    retry: false,
+    gcTime: Number.POSITIVE_INFINITY,
+    onError: (error: ErrorMessage) => {
+      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      // TODO: add reason to i18n
+      toast.error(t('receive.error_loading_address_failed', { reason }))
     },
   })
 
-  const getAddressQuery = useQuery({
-    ...getAddressQueryOptions,
-    queryFn: withQueryDelay(getAddressQueryOptions.queryFn, {
-      delayAfter: 21,
-    }),
-    enabled: walletFileName !== undefined && sourceJarIndex !== undefined,
-    staleTime: GET_ADDRESS_QUERY_TALE_TIME,
-    retry: false,
-    retryOnMount: false,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
-
-  useEffect(() => {
-    if (getAddressQuery.error) {
-      toast.error(t('receive.error_loading_address_failed'))
-    }
-  }, [getAddressQuery.error, t])
+  const sourceJar = useMemo(() => {
+    if (getAddressMutation.data?.sourceJarIndex === undefined) return
+    return jars[getAddressMutation.data.sourceJarIndex]
+  }, [jars, getAddressMutation.data])
 
   const shareAddress = async (bitcoinAddress: BitcoinAddress) => {
     if ('share' in navigator) {
@@ -102,9 +109,9 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     }
   }
 
-  const getNewAddress = useCallback(async () => {
-    await getAddressQuery.refetch()
-  }, [getAddressQuery])
+  const fetchNewAddress = async () => {
+    await getAddressMutation.mutateAsync()
+  }
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -112,19 +119,35 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
       <Card>
         <CardContent className="flex w-full flex-col items-center justify-center gap-2">
-          {getAddressQuery.isFetching ? (
+          {getAddressMutation.isPending ? (
             <Skeleton className={`h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`} />
-          ) : getAddressQuery.data?.address ? (
+          ) : getAddressMutation.data?.address ? (
             <BitcoinQR
               className="animate-in fade-in duration-1000"
-              address={getAddressQuery.data.address}
+              address={getAddressMutation.data.address}
               amount={amount}
               width={QRCODE_WIDTH}
             />
+          ) : getAddressMutation.isIdle ? (
+            <div
+              className={cn('flex items-center justify-center border', `h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`)}
+            >
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => void fetchNewAddress()}
+                disabled={getAddressMutation.isPending}
+              >
+                <HatGlassesIcon />
+                {t('receive.button_reveal_address', {
+                  defaultValue: 'Reveal address',
+                })}
+              </Button>
+            </div>
           ) : (
             <div
               className={cn(
-                'flex animate-pulse items-center justify-center border text-gray-500',
+                'text-destructive flex items-center justify-center border text-sm',
                 `h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`,
               )}
             >
@@ -132,16 +155,24 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           )}
 
-          {getAddressQuery.isFetching ? (
-            <>
+          {getAddressMutation.isPending ? (
+            <div className="flex flex-col items-center space-y-2">
               <Skeleton className="mt-0.5 h-5 w-[24rem]" />
               <Skeleton className="h-6 w-[84px]" />
-            </>
+            </div>
           ) : (
             <div className="animate-in fade-in space-y-2 text-center duration-1000">
-              <p className="font-mono text-sm break-all select-all">{getAddressQuery.data?.address}</p>
-              <Badge className="text-sm" variant="default">
-                {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
+              <div className="min-h-5 font-mono text-sm break-all select-all">{getAddressMutation.data?.address}</div>
+              <Badge className="min-h-6 text-sm" variant={sourceJar ? 'default' : 'secondary'}>
+                {sourceJar ? (
+                  <>
+                    {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
+                  </>
+                ) : (
+                  <>
+                    {selectedSourceJar?.name} <span className="text-xs">#{selectedSourceJar?.jarIndex}</span>
+                  </>
+                )}
               </Badge>
             </div>
           )}
@@ -150,10 +181,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => void getNewAddress()}
-              disabled={getAddressQuery.isFetching}
+              onClick={() => void fetchNewAddress()}
+              disabled={getAddressMutation.isPending}
             >
-              {getAddressQuery.isFetching ? (
+              {getAddressMutation.isPending ? (
                 <>
                   <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
                   {t('receive.text_getting_address')}
@@ -171,8 +202,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 size: 'sm',
                 variant: 'outline',
               })}
-              disabled={getAddressQuery.isFetching || !getAddressQuery.data?.address}
-              value={getAddressQuery.data?.address ?? ''}
+              disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
+              value={getAddressMutation.data?.address ?? ''}
               text={
                 <>
                   <CopyIcon />
@@ -193,8 +224,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => void shareAddress(getAddressQuery.data!.address)}
-                disabled={getAddressQuery.isFetching || !getAddressQuery.data?.address}
+                onClick={() => void shareAddress(getAddressMutation.data!.address)}
+                disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
               >
                 <ShareIcon />
                 {t('receive.button_share_address')}
@@ -212,10 +243,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               className={'mx-1' /* add x-spacing for input component focus state*/}
               defaultValues={receiveFormDefaultValues}
               jars={jars}
-              disabled={getAddressQuery.isFetching}
+              disabled={getAddressMutation.isPending}
               debug={isDeveloperMode}
               onSubmit={(values) => {
-                setSourceJarIndex(values.source?.fromJar)
+                setSelectedSourceJarIndex(values.source?.fromJar)
                 setAmount(values.amount.amount)
               }}
             />

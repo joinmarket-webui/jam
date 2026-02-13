@@ -43,11 +43,13 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
   const { formatAmount, currencySymbol } = useJamDisplayContext()
-  const { walletBalanceSummary, walletName, isFetching } = useJamWalletInfoContext()
+  const { walletBalanceSummary, walletName, isLoading, isFetching } = useJamWalletInfoContext()
 
   const sidebarContext = useSidebar()
 
-  const websocket = useJmWebsocket()
+  const websocket = useJmWebsocket({
+    enableHeartbeat: true,
+  })
 
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
@@ -71,7 +73,8 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
     <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
       <AppNavbar
         theme={resolvedTheme}
-        isLoading={isFetching}
+        isLoading={isLoading}
+        isReloading={isFetching}
         rescanInfo={rescanStatus.rescanInfo}
         walletName={walletName}
         totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}

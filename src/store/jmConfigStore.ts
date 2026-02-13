@@ -9,7 +9,6 @@ export type JmConfigs = {
 interface JmConfigStoreState {
   state: JmConfigs
   get: (val: ConfigKey) => ConfigValue | null
-  getAll: () => ConfigValue[]
   set: (val: ConfigValue) => void
   clear: () => void
 }
@@ -21,27 +20,8 @@ export const jmConfigStore = createStore<JmConfigStoreState>()(
     (set, get) => ({
       state: initial,
       get: (key) => {
-        const fields = get().state[key.section]
-        if (fields === undefined) return null
-
-        const value = fields[key.field]
-        if (value === undefined) return null
-
-        return {
-          key,
-          value: value || null,
-        }
-      },
-      getAll: () => {
-        return Object.entries(get().state).flatMap(([section, entries]) => {
-          return Object.entries(entries).map(([field, value]) => ({
-            key: {
-              section,
-              field,
-            },
-            value,
-          }))
-        })
+        const value = get().state[key.section]?.[key.field]
+        return value !== undefined ? { key, value } : null
       },
       set: (val) =>
         set((state) => {
@@ -59,7 +39,7 @@ export const jmConfigStore = createStore<JmConfigStoreState>()(
       clear: () => set({ state: initial }),
     }),
     {
-      name: 'jm-config',
+      name: 'jm-config-store',
       storage: createJSONStorage(() => sessionStorage),
     },
   ),

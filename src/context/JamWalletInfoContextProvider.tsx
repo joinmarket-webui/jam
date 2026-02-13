@@ -45,25 +45,33 @@ const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
 
 const toAddressSummary = (accountSummary: AccountSummary): AddressSummary => {
   return Object.values(accountSummary)
-    .flatMap((it) => it.__raw)
-    .flatMap((it) => it.branches || [])
-    .flatMap((it) => it.entries || [])
-    .reduce((acc, __raw) => {
-      if (!__raw.address || !__raw.status) {
+    .flatMap(
+      (it) =>
+        it.__raw.branches
+          ?.flatMap((branch) => branch.entries || [])
+          .flatMap((entry) => ({
+            account: it,
+            entry,
+          })) || [],
+    )
+    .reduce((acc, { account, entry }) => {
+      if (!entry.address || !entry.status) {
         return acc
       }
 
-      const info = getAddressInfo(__raw.address)
+      const info = getAddressInfo(entry.address)
 
       const meta: AddressMeta = {
-        address: __raw.address,
-        status: __raw.status,
+        jarIndex: account.jarIndex,
+        address: entry.address,
+        used: entry.status !== 'new',
+        status: entry.status,
         info: {
           bech32: info.bech32,
           network: info.network,
           type: info.type,
         },
-        __raw,
+        __raw: entry,
       }
       acc[meta.address] = meta
       return acc

@@ -473,6 +473,7 @@
         "text_secondary_button": "Erledigt",
         "label_lock_date": "Gesperrt bis",
         "label_address": "Zeitlich gesperrte Adresse",
+        "text_copy_transaction_id": "Transaktions-ID kopiert",
         "label_utxos_to_unfreeze": "Willst du die vorher eingefrorenen UTXOs wieder auftauen? "
       },
       "unfreeze_utxos": {

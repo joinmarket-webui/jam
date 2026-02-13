@@ -130,52 +130,52 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
   const operationsEnabled = enabled && !(walletInfo.isFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
 
   const onFreezeClick = async () => {
+    const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
+    const eligibleUtxos = jar.utxos.filter((it) => selectedAddresses.has(it.address))
+
+    if (eligibleUtxos.length > selectedUtxos.length) {
+      // TODO: i18n
+      toast.warning('Security measure: Freeze additional UTXOs', {
+        description: `Automatically freezing ${eligibleUtxos.length - selectedUtxos.length} additional UTXOs. They should be spent together.`,
+      })
+    }
+
     try {
-      const result = await freezeUtxos.mutateAsync(selectedUtxos)
-      const allFulfilled = result.filter((it) => it.status === 'fulfilled')
-      if (allFulfilled) {
-        // TODO: i18n
-        if (result.length === 1) {
-          toast.success('Selected UTXO has been frozen')
-        } else {
-          toast.success('Selected UTXOs have been frozed.')
-        }
+      const result = await freezeUtxos.mutateAsync(eligibleUtxos)
+      const fulfilled = result.filter((it) => it.status === 'fulfilled')
+      const rejected = result.filter((it) => it.status === 'rejected')
+      if (rejected.length === 0) {
+        toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: fulfilled.length }))
       } else {
-        // TODO: i18n
-        if (result.length === 1) {
-          toast.warning('Selected UTXO could not been frozen. Please try again.')
-        } else {
-          toast.warning('Some selected UTXO could not been frozen. Please try again.')
-        }
+        toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length }))
       }
     } catch (_ignoredOnPurpose) {
-      // TODO: i18n
-      toast.warning('Some selected UTXO could not been frozen. Please try again.')
+      toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: selectedUtxos.length }))
     }
   }
 
   const onUnfreezeClick = async () => {
+    const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
+    const eligibleUtxos = jar.utxos.filter((it) => selectedAddresses.has(it.address))
+
+    if (eligibleUtxos.length > selectedUtxos.length) {
+      // TODO: i18n
+      toast.warning('Security measure: Unfreeze additional UTXOs', {
+        description: `Automatically unfreezing ${eligibleUtxos.length - selectedUtxos.length} additional UTXOs. They should be spent together.`,
+      })
+    }
+
     try {
-      const result = await unfreezeUtxos.mutateAsync(selectedUtxos)
-      const allFulfilled = result.filter((it) => it.status === 'fulfilled')
-      if (allFulfilled) {
-        // TODO: i18n
-        if (result.length === 1) {
-          toast.success('Selected UTXO has been unfrozen')
-        } else {
-          toast.success('Selected UTXOs have been unfrozed.')
-        }
+      const result = await unfreezeUtxos.mutateAsync(eligibleUtxos)
+      const fulfilled = result.filter((it) => it.status === 'fulfilled')
+      const rejected = result.filter((it) => it.status === 'rejected')
+      if (rejected.length === 0) {
+        toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: fulfilled.length }))
       } else {
-        // TODO: i18n
-        if (result.length === 1) {
-          toast.warning('Selected UTXO could not been unfrozen. Please try again.')
-        } else {
-          toast.warning('Some selected UTXO could not been unfrozen. Please try again.')
-        }
+        toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length }))
       }
     } catch (_ignoredOnPurpose) {
-      // TODO: i18n
-      toast.warning('Some selected UTXO could not been unfrozen. Please try again.')
+      toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: selectedUtxos.length }))
     }
   }
 
@@ -315,7 +315,7 @@ export const WalletJarsDetailsContent = ({
   return (
     <div className={cn('mx-auto space-y-3', className)}>
       <Tabs
-        value={activeJar?.jarIndex.toString()}
+        value={activeJar.jarIndex.toString()}
         onValueChange={(value) => setActiveJarIndex(Number.parseInt(value, 10))}
         className="flex flex-col gap-4"
       >
@@ -332,8 +332,8 @@ export const WalletJarsDetailsContent = ({
 
       <Alert variant="warning">
         <AlertTriangleIcon />
-        <AlertTitle>Under construction</AlertTitle>
-        <AlertDescription>Not yet implemented.</AlertDescription>
+        <AlertTitle>{t('jar_details.utxo_list.alert_under_construction_title')}</AlertTitle>
+        <AlertDescription>{t('jar_details.utxo_list.alert_under_construction_description')}</AlertDescription>
       </Alert>
       <Tabs defaultValue="utxos" className="flex flex-col gap-4">
         <TabsList className="mx-auto flex items-center gap-2">
@@ -365,8 +365,8 @@ export const WalletJarsDetailsContent = ({
           ) : (
             <Alert variant="warning">
               <AlertTriangleIcon />
-              <AlertTitle>{/* TODO: i18n */}No account information present</AlertTitle>
-              <AlertDescription>Account information is not yet loaded or not present.</AlertDescription>
+              <AlertTitle>{t('jar_details.utxo_list.alert_no_account_info_title')}</AlertTitle>
+              <AlertDescription>{t('jar_details.utxo_list.alert_no_account_info_description')}</AlertDescription>
             </Alert>
           )}
         </TabsContent>
