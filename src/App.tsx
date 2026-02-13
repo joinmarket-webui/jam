@@ -117,7 +117,7 @@ function App() {
   const doOnLockWalletConfirm = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
     if (!walletFileName) return
     try {
-      await lockWalletQuery.refetch()
+      await lockWalletQuery.refetch({ throwOnError: true })
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
