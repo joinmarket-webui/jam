@@ -48,7 +48,9 @@ import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDi
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
+import { useJmWebsocket } from './hooks/useJmWebsocket'
 import { jmSessionStore } from './store/jmSessionStore'
+import { jmTxStore, type JmTxInfo } from './store/jmTxStore'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -67,6 +69,7 @@ type LockWalletDialogContext = {
 function App() {
   const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
   const { clear: clearAuth } = useStore(authStore, (state) => state)
 
@@ -114,7 +117,7 @@ function App() {
   const doOnLockWalletConfirm = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
     if (!walletFileName) return
     try {
-      await lockWalletQuery.refetch()
+      await lockWalletQuery.refetch({ throwOnError: true })
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
@@ -135,7 +138,7 @@ function App() {
           path={routes.createWallet}
           element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWalletPage />}
         />
-        {isDebugFeatureEnabled('devSetupPage') && (
+        {isDeveloperMode && isDebugFeatureEnabled('devSetupPage') && (
           <Route
             id="dev-setup"
             path={routes.__devSetup}
@@ -146,7 +149,7 @@ function App() {
             }
           />
         )}
-        {isDebugFeatureEnabled('devErrorExamplePage') && (
+        {isDeveloperMode && isDebugFeatureEnabled('devErrorExamplePage') && (
           <Route
             id="error-example"
             path={routes.__devErrorExample}
@@ -196,7 +199,7 @@ function App() {
               path={routes.walletJarsDetails}
               element={<WalletJarsDetailsPage walletFileName={walletFileName!} />}
             />
-            {isDebugFeatureEnabled('devPage') && (
+            {isDeveloperMode && isDebugFeatureEnabled('devPage') && (
               <Route
                 id="dev-page"
                 path={routes.__dev}
@@ -219,6 +222,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <RefreshApiToken />
           <RefreshJmSession />
+          <HandleJmWebsocketMessages />
           {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
           {lockWalletDialogContext && (
             <LockWalletConfirmDialog
@@ -313,6 +317,54 @@ function RefreshJmSession() {
   useRefreshSession({
     enabled: true,
     refetchInterval: JAM_JM_SESSION_REFRESH_INTERVAL,
+  })
+
+  return <></>
+}
+
+type JmTxWebsocketMessage = { txid: string; txdetails: JmTxInfo }
+function isJmTxWebsocketMessage(val: unknown): val is JmTxWebsocketMessage {
+  return (
+    !!val &&
+    typeof val === 'object' &&
+    'txid' in val &&
+    typeof val['txid'] === 'string' &&
+    val['txid']?.length === 64 &&
+    'txdetails' in val &&
+    typeof val['txdetails'] === 'object' &&
+    !!val['txdetails'] &&
+    'txid' in val['txdetails'] &&
+    typeof val['txdetails']['txid'] === 'string' &&
+    val['txdetails']?.['txid'] === val['txid'] &&
+    true
+  )
+}
+
+const onWebsocketMessage = (message: unknown) => {
+  if (isJmTxWebsocketMessage(message)) {
+    jmTxStore.getState().add(message.txdetails)
+  }
+}
+
+function HandleJmWebsocketMessages() {
+  useJmWebsocket({
+    enableHeartbeat: false,
+    options: {
+      onMessage(messageEvent) {
+        const message: unknown = (() => {
+          try {
+            return messageEvent?.data ? (JSON.parse(String(messageEvent.data)) as unknown) : undefined
+          } catch (_ignoredOnPurpose) {
+            console.warn('Error parsing websocket message', messageEvent.data)
+            return undefined
+          }
+        })()
+
+        if (message !== undefined && message !== null) {
+          onWebsocketMessage(message)
+        }
+      },
+    },
   })
 
   return <></>

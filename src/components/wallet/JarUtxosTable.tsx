@@ -22,15 +22,18 @@ import {
   type CellContext,
 } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
-import { SnowflakeIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon, SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
+import { buttonVariants } from '../ui/button-variants'
 import { Checkbox } from '../ui/checkbox'
 import { Balance } from '../ui/jam/Balance'
+import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 
@@ -87,6 +90,8 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
   )
 }
 
+const AUTO_CHANGE_SELECTION_TOAST_ID = 'utxo.selection_changed_automatically'
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
   return [
@@ -95,15 +100,42 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
       header: ({ table }: HeaderContext<UtxoTableEntry, unknown>) => (
         <Checkbox
           checked={table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false}
-          onCheckedChange={(checked) => table.toggleAllRowsSelected(checked === true)}
+          onCheckedChange={(checked) => {
+            table.toggleAllRowsSelected(checked === true)
+            toast.dismiss(AUTO_CHANGE_SELECTION_TOAST_ID)
+          }}
         />
       ),
-      cell: ({ row }: CellContext<UtxoTableEntry, unknown>) => (
+      cell: ({ row, table }: CellContext<UtxoTableEntry, unknown>) => (
         <Checkbox
           className="light:bg-background/80"
           checked={row.getIsSelected()}
           disabled={!row.getCanSelect()}
-          onCheckedChange={row.getToggleSelectedHandler()}
+          onCheckedChange={(checked) => {
+            const address = row.original.address
+            const eligibleRows = table.getRowModel().rows.filter((it) => it.original.address === address)
+            eligibleRows.forEach((it) => it.getToggleSelectedHandler()(checked))
+
+            if (eligibleRows.length > 1) {
+              if (checked) {
+                /* TODO: i18n */
+                toast.warning(`Security measure: Selection changed`, {
+                  description: `Automatically selected ${eligibleRows.length - 1} more UTXOs with address ${address}!`,
+                  id: AUTO_CHANGE_SELECTION_TOAST_ID,
+                  duration: 10_000,
+                })
+              } else {
+                /* TODO: i18n */
+                toast.warning(`Security measure: Deselection changed`, {
+                  description: `Automatically deselected ${eligibleRows.length - 1} more UTXOs with address ${address}!`,
+                  id: AUTO_CHANGE_SELECTION_TOAST_ID,
+                  duration: 10_000,
+                })
+              }
+            } else {
+              toast.dismiss(AUTO_CHANGE_SELECTION_TOAST_ID)
+            }
+          }}
         />
       ),
     },
@@ -148,7 +180,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
         numeric: true,
       } as UtxoTableColumnMeta,
     }),
-    columnHelper.accessor('address', {
+    columnHelper.accessor<'address', UtxoTableEntry['address']>('address', {
       header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
       sortingFn: (a, b) => {
         const val = a.original.address.localeCompare(b.original.address)
@@ -158,7 +190,19 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
         const bid = Number(b.original.confirmations)
         return aid - bid
       },
-      cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
+      cell: (info) => (
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-sm select-all">{info.getValue()}</span>
+          <CopyButton
+            value={info.getValue()}
+            text={<CopyIcon />}
+            successText={<CheckIcon className="text-green-500" />}
+            className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
+            onSuccess={() => toast.success(t('receive.text_copy_address'))}
+            onError={() => toast.error(t('receive.error_copy_address_failed'))}
+          />
+        </div>
+      ),
       meta: {
         alphabetic: true,
       } as UtxoTableColumnMeta,
@@ -246,9 +290,7 @@ export const JarUtxosTable = ({
     onRowPinningChange: setRowPinning,
     onRowSelectionChange: (rowSelection) => {
       setRowSelection(rowSelection)
-      if (onRowSelectionChange !== undefined) {
-        onRowSelectionChange(rowSelection)
-      }
+      onRowSelectionChange?.(rowSelection)
     },
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),

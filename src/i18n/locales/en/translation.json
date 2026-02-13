@@ -432,7 +432,7 @@
   "receive": {
     "title": "Receive",
     "subtitle": "Send sats to the address below to fund your wallet.",
-    "text_copy_address": "Address copied",
+    "text_copy_address": "Address copied.",
     "error_loading_address_failed": "Unable to get new address.",
     "error_copy_address_failed": "Could not copy address.",
     "error_share_address_failed": "Could not share address",
@@ -455,6 +455,9 @@
     "error_loading_report_failed": "Failed to load earnings report.",
     "alert_starting": "Service is starting.",
     "alert_stopping": "Service is stopping.",
+    "alert_stopped": "Service successfully stopped.",
+    "alert_start_failed": "Error while starting the earn process. Reason: {{ reason }}",
+    "alert_loading_offer": "Loading offer...",
     "alert_running": "Offering sats to earn more sats...",
     "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
     "button_settings": "Offer options",
@@ -483,6 +486,7 @@
       "text_minsize": "Minimum Size",
       "text_maxsize": "Maximum Size",
       "text_txfee": "Transaction Fee",
+      "text_offer_id": "Offer Id",
       "text_offer_type_absolute": "absolute",
       "text_offer_type_relative": "relative"
     },
@@ -520,6 +524,7 @@
       "alert_all_funds_in_use": "<strong>Keep in mind</strong>: As you are using all available funds for the creation of this fidelity bond, you will not have any UTXOs left. <br /><br />A fidelity bond <strong>will not participate in collaborative transactions</strong> and you <strong>have to fund your wallet again</strong> to start sending or earning.",
       "text_loading": "Loading...",
       "text_creating": "Creating...",
+      "text_creating_subtitle": "This may take a moment...",
       "text_unfreezing": "Unfreezing...",
       "select_date": {
         "text_primary_button": "Next",
@@ -527,22 +532,29 @@
         "form_label_year": "Year",
         "form_label_month": "Month",
         "description": "Fidelity bond expiration date:",
+        "subtitle": "Choose when your funds will be unlocked",
+        "label_selected_lock_date": "Selected lock date",
         "warning_fb_with_same_expiry": "<strong>Warning</strong>: A fidelity bond with the same expiry date already exists."
       },
       "select_jar": {
         "text_primary_button": "Next",
         "text_secondary_button": "Cancel",
+        "title": "Select Source Jar",
         "description": "Select a jar to fund the fidelity bond from.",
+        "text_available_utxos_one": "{{ count }} available UTXO",
+        "text_available_utxos_other": "{{ count }} available UTXOs",
         "alert_no_jars_available": "No jars with available UTXOs found."
       },
       "select_utxos": {
         "text_primary_button": "Next",
         "text_primary_button_unsafe": "Select potentially less private UTXOs",
         "text_secondary_button": "Cancel",
+        "title": "Select UTXOs",
         "description": "Select one or more UTXOs from Jar {{ jar }} to use for the fidelity bond.",
         "button_select_all": "Select All",
         "button_deselect_all": "Deselect All",
         "label_total": "Total:",
+        "label_total_selected": "Total Selected",
         "utxo_card": {
           "confirmations": "{{ confs }} Confirmations",
           "label_frozen": "frozen",
@@ -555,6 +567,12 @@
         "text_primary_button_all_frozen": "Review bond configuration",
         "text_primary_button_error": "Try again",
         "text_secondary_button": "Cancel",
+        "title": "Freeze Remaining UTXOs",
+        "subtitle": "Protect your privacy by freezing unselected UTXOs",
+        "label_selected_utxos_one": "Selected UTXO ({{ count }})",
+        "label_selected_utxos_other": "Selected UTXOs ({{ count }})",
+        "label_utxos_to_freeze_one": "UTXO to Freeze ({{ count }})",
+        "label_utxos_to_freeze_other": "UTXOs to Freeze ({{ count }})",
         "description_selected_utxos": "Selected UTXOs:",
         "description_unselected_utxos": "The following UTXOs will not be used for the fidelity bond:",
         "description_selected_utxos_to_freeze": "They will be frozen to remain in Jar {{ jar }}. You can unfreeze them anytime after creating the bond."
@@ -582,7 +600,9 @@
         "label_lock_date": "Locked until",
         "label_address": "Time-locked address",
         "label_transaction_id": "Transaction ID",
-        "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?"
+        "text_copy_transaction_id": "Transaction ID copied",
+        "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?",
+        "text_success_subtitle": "Your fidelity bond has been created successfully"
       },
       "unfreeze_utxos": {
         "text_primary_button": "Done",

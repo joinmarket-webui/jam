@@ -218,6 +218,7 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
           <Label>{t('settings.fees.label_max_sweep_fee_change')}</Label>
           <p className="text-muted-foreground text-xs">
             {t('settings.fees.description_max_sweep_fee_change', {
+              // TODO: i18n - change variable name.. `defaultValue` is used by the library!
               defaultValue: `${factorToPercentage(JM_MAX_SWEEP_FEE_CHANGE_DEFAULT)}%`,
             })}
           </p>

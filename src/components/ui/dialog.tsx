@@ -33,6 +33,18 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
   )
 }
 
+// workaround for "Cannot interact with Sonner toasts with open Dialogs"
+// see https://github.com/shadcn-ui/ui/issues/3461#issuecomment-2053682487 (last checked 2026-02-07)
+const __workaround_preventEventOfOrigin = (selectors: string) => {
+  return (e: CustomEvent<{ originalEvent: PointerEvent | FocusEvent }>) => {
+    if (e.target && document.querySelector(selectors)?.contains(e.target as HTMLElement)) {
+      e.preventDefault()
+    }
+  }
+}
+
+const __workaround_preventEventOfToasterOrigin = __workaround_preventEventOfOrigin('.toaster')
+
 function DialogContent({
   className,
   children,
@@ -42,6 +54,7 @@ function DialogContent({
   showCloseButton?: boolean
 }) {
   const { t } = useTranslation()
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -51,6 +64,14 @@ function DialogContent({
           'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-2xl',
           className,
         )}
+        onPointerDownOutside={(event) => {
+          __workaround_preventEventOfToasterOrigin(event)
+          props.onPointerDownOutside?.(event)
+        }}
+        onInteractOutside={(event) => {
+          __workaround_preventEventOfToasterOrigin(event)
+          props.onInteractOutside?.(event)
+        }}
         {...props}
       >
         {children}
