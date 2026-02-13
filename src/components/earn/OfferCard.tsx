@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
+import { Balance } from '../ui/jam/Balance'
 import { Label } from '../ui/label'
 
 type Offer = NonNullable<SessionResponse['offer_list']>[number]
@@ -36,7 +36,6 @@ interface OfferCardProps {
 
 export function OfferCard({ className, value, nickname, children }: PropsWithChildren<OfferCardProps>) {
   const { t } = useTranslation()
-  const { formatAmount, currencySymbol } = useJamDisplayContext()
 
   return (
     <Card className={cn('w-full', className)}>
@@ -71,12 +70,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
               {isRelativeOffer(value?.ordertype || '') ? (
                 <span className="select-all">{factorToPercentage(Number.parseFloat(value?.cjfee || '') || 0)}%</span>
               ) : (
-                <>
-                  <span className="tabular-nums select-all">
-                    {formatAmount(Number.parseInt(String(value?.cjfee || '0'), 10))}
-                  </span>
-                  {currencySymbol('sm')}
-                </>
+                <Balance valueString={String(value?.cjfee || '0')} />
               )}
             </span>
           </div>
@@ -86,10 +80,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
           <div className="flex flex-col">
             <Label className="font-semibold">{t('earn.current.text_minsize')}</Label>
             <span className="text-sm">
-              <span className="tabular-nums select-all">
-                {formatAmount(Number.parseInt(String(value?.minsize || '0'), 10))}
-              </span>
-              {currencySymbol('sm')}
+              <Balance valueString={String(value?.minsize || '0')} />
             </span>
           </div>
         </div>
@@ -98,10 +89,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
           <div className="flex flex-col">
             <Label className="font-semibold">{t('earn.current.text_maxsize')}</Label>
             <span className="text-sm">
-              <span className="tabular-nums select-all">
-                {formatAmount(Number.parseInt(String(value?.maxsize || '0'), 10))}
-              </span>
-              {currencySymbol('sm')}
+              <Balance valueString={String(value?.maxsize || '0')} />
             </span>
           </div>
         </div>
@@ -110,10 +98,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             <div className="flex flex-col">
               <Label className="font-semibold">{t('earn.current.text_txfee')}</Label>
               <span className="text-muted-foreground text-sm">
-                <span className="tabular-nums select-all">
-                  {formatAmount(Number.parseInt(String(value?.txfee || '0'), 10))}
-                </span>
-                {currencySymbol('sm')}
+                <Balance valueString={String(value?.txfee || '0')} />
               </span>
             </div>
           </div>

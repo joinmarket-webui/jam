@@ -30,7 +30,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const [selectedJar, setSelectedJar] = useState<JarObject>()
   const [isWalletJarsDetailsOpen, setIsWalletJarsDetailsOpen] = useState(false)
 
-  const { toggleDisplayMode, formatAmount, currencySymbol } = useJamDisplayContext()
+  const { toggleDisplayMode } = useJamDisplayContext()
   const { isLoading, isFetching, error, refetch: refetchWalletData } = useJamWalletInfoContext()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
@@ -135,8 +135,6 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                           availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
                           frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
                           color={jar.color}
-                          currencySymbol={currencySymbol}
-                          formatAmount={formatAmount}
                           totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                           onClick={() => onJarClicked(jar)}
                         />

@@ -1,7 +1,6 @@
 import type { ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { AppNavbar } from '@/components/layout/AppNavbar'
-import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 
 const meta: Meta<typeof AppNavbar> = {
   title: 'Layout/AppNavbar',
@@ -12,8 +11,6 @@ export default meta
 
 type Story = StoryObj<typeof AppNavbar>
 
-const mockFormatAmount = (amount: number) => `${amount.toLocaleString()}`
-const mockCurrencySymbol = () => <CurrencySymbol currency="btc" isPrivate={false} />
 const mockToggleTheme = () => alert('Toggled theme!')
 const mockOnLogout = async () => alert('Logged out!')
 const mockOnLockWallet = async () => alert('Locked wallet!')
@@ -22,8 +19,6 @@ const defaults: ComponentProps<typeof AppNavbar> = {
   theme: 'dark',
   totalBalance: 21_000_000,
   walletName: 'Satoshi',
-  formatAmount: mockFormatAmount,
-  currencySymbol: mockCurrencySymbol,
   toggleTheme: mockToggleTheme,
   onLogout: mockOnLogout,
   onLockWallet: mockOnLockWallet,

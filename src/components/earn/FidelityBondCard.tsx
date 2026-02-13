@@ -3,10 +3,10 @@ import { ClockIcon, CoinsIcon, CopyIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { time } from '@/lib/utils'
+import { Balance } from '../ui/jam/Balance'
 
 interface FidelityBondCardProps {
   value: FidelityBondUtxo
@@ -14,7 +14,6 @@ interface FidelityBondCardProps {
 
 export function FidelityBondCard({ value, children }: PropsWithChildren<FidelityBondCardProps>) {
   const { t, i18n } = useTranslation()
-  const { formatAmount, currencySymbol } = useJamDisplayContext()
 
   const isExpired = !fb.utxo.isLocked(value)
   const humanReadableLockDuration = useMemo(() => {
@@ -57,8 +56,7 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
           <div className="flex items-center gap-2">
             <CoinsIcon />
             <div>
-              <span className="tabular-nums">{formatAmount(value.value)}</span>
-              {currencySymbol('sm')}
+              <Balance valueString={String(value.value)} />
             </div>
           </div>
         </CardAction>

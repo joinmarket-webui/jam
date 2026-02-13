@@ -1,7 +1,7 @@
-import { SnowflakeIcon } from 'lucide-react'
 import type { JarColor } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { Balance } from './Balance'
 import { JarIcon } from './JarIcon'
 
 interface JarProps {
@@ -12,8 +12,6 @@ interface JarProps {
   availableBalance: AmountSats
   frozenOrLockedBalance: AmountSats
   totalWalletBalance: AmountSats
-  formatAmount: (amount: number) => string
-  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
   disabled?: boolean
 }
 
@@ -25,8 +23,6 @@ export function Jar({
   availableBalance,
   frozenOrLockedBalance,
   totalWalletBalance,
-  currencySymbol,
-  formatAmount,
   disabled = false,
 }: JarProps) {
   return (
@@ -44,19 +40,14 @@ export function Jar({
           {name}
         </p>
         <div className="flex min-w-[110px] items-center justify-center">
-          <span className="slashed-zero tabular-nums">{formatAmount(availableBalance)}</span>
-          {currencySymbol('sm')}
+          <Balance valueString={String(availableBalance)} />
         </div>
         <div
-          className={cn(
-            'light:text-blue-500/80 flex min-w-[110px] items-center justify-center gap-1 text-xs text-blue-500/80',
-            {
-              hidden: frozenOrLockedBalance <= 0,
-            },
-          )}
+          className={cn('light:text-blue-500/80 flex min-w-[110px] items-center justify-center gap-1 text-xs', {
+            hidden: frozenOrLockedBalance <= 0,
+          })}
         >
-          <span className="slashed-zero tabular-nums">{formatAmount(frozenOrLockedBalance)}</span>
-          <SnowflakeIcon className="size-3" />
+          <Balance valueString={String(frozenOrLockedBalance)} frozen={true} />
         </div>
       </div>
     </div>
