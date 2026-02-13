@@ -138,9 +138,9 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
     setStep('sending')
     setError(undefined)
 
+    const frozen: Utxo[] = []
     try {
       // Freeze other UTXOs in the source jar so only the FB gets swept
-      const frozen: Utxo[] = []
       for (const u of utxosToFreeze) {
         await freezeUtxo.mutateAsync({
           path: { walletname: encodeURIComponent(walletFileName) },
@@ -183,6 +183,17 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
       await walletInfo.refetch()
     } catch {
+      // Best-effort rollback — unfreeze UTXOs that were frozen before the error
+      for (const u of frozen) {
+        try {
+          await unfreezeUtxo.mutateAsync({
+            path: { walletname: encodeURIComponent(walletFileName) },
+            body: { 'utxo-string': u.utxo, freeze: false },
+          })
+        } catch {
+          // logged via onError
+        }
+      }
       setStep('confirm')
     }
   }
