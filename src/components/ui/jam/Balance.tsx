@@ -4,6 +4,7 @@ import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { cn, satsToBtc, tryBtcToSat, isValidNumber, formatBtc, formatSats } from '@/lib/utils'
 import type { AmountSats, Currency } from '@/types/global'
+import styles from './Balance.module.css'
 
 type DisplayMode = 'default' | Currency | 'hidden'
 
@@ -53,29 +54,39 @@ const DECIMAL_POINT_CHAR = '.'
 
 interface BitcoinBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'children'> {
   value: AmountSats
+  fractionalPartSpacing?: boolean
+  highlightSignificantDigits?: boolean
 }
 
-const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
+const BitcoinBalance = ({
+  value,
+  fractionalPartSpacing = true,
+  highlightSignificantDigits = true,
+  ...props
+}: BitcoinBalanceProps) => {
   const numberString = formatBtc(satsToBtc(String(value)))
   const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
 
   const fractionPartArray = [...fractionalPart]
-  const integerPartIsZero = integerPart === '0'
+  const integerPartIsZero = Number.parseInt(integerPart, 10) === 0
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
   return (
     <ElementWithSymbols symbol={BTC_SYMBOL} {...props}>
       <span
-        className={cn('slashed-zero tabular-nums select-all')}
+        className={cn('slashed-zero tabular-nums select-all', styles.bitcoinAmount, {
+          [styles.bitcoinAmountSpacing]: fractionalPartSpacing,
+          [styles.bitcoinAmountColor]: highlightSignificantDigits,
+        })}
         data-testid="bitcoin-amount"
         data-integer-part-is-zero={integerPartIsZero}
         data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
         data-raw-value={value}
         data-formatted-value={numberString}
       >
-        <span>{integerPart}</span>
-        <span>{DECIMAL_POINT_CHAR}</span>
-        <span>
+        <span className={styles.integerPart}>{integerPart}</span>
+        <span className={styles.decimalPoint}>{DECIMAL_POINT_CHAR}</span>
+        <span className={styles.fractionalPart}>
           {fractionPartArray.map((digit, index) => (
             <span key={index} data-digit={digit}>
               {digit}
