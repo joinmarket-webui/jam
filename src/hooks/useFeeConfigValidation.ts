@@ -19,6 +19,7 @@ interface UseFeeConfigValidationProps {
 
 export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
   const {
+    state: configState,
     get: getConfig,
     refetch: refetchConfig,
     fetchIfMissing: fetchConfigIfMissing,
@@ -28,7 +29,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
   // Debug flag to force fee config missing error for testing
   const forceFeeConfigMissing = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
 
-  const feeConfigValues = useMemo<FeeConfigValues | undefined>(() => {
+  const feeConfigValues = useMemo<FeeConfigValues>(() => {
     return {
       max_cj_fee_abs: getConfig(FEE_CONFIG_KEYS['max_cj_fee_abs'])?.value ?? undefined,
       max_cj_fee_rel: getConfig(FEE_CONFIG_KEYS['max_cj_fee_rel'])?.value ?? undefined,
@@ -36,7 +37,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
       tx_fees_factor: getConfig(FEE_CONFIG_KEYS['tx_fees_factor'])?.value ?? undefined,
       max_sweep_fee_change: getConfig(FEE_CONFIG_KEYS['max_sweep_fee_change'])?.value ?? undefined,
     }
-  }, [getConfig])
+  }, [configState, getConfig])
 
   const refetchAll = useCallback(async () => {
     setIsLoading(true)
@@ -62,9 +63,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
       return true
     }
 
-    return (
-      feeConfigValues && (feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined)
-    )
+    return feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined
   }, [feeConfigValues, forceFeeConfigMissing])
 
   return {
