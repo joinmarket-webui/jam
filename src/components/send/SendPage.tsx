@@ -180,7 +180,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data) => {
-    console.table(data)
     if (data.isCoinJoin !== true) {
       await onSubmitDirectSend(data)
     } else {
