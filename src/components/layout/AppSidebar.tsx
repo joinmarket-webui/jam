@@ -111,10 +111,10 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
 
   const devItems = useMemo(
     () =>
-      !isDevMode
+      !isDevMode() || !isDeveloperMode
         ? []
         : [
-            ...(!(isDeveloperMode && isDebugFeatureEnabled('devPage'))
+            ...(!isDebugFeatureEnabled('devPage')
               ? []
               : [
                   {
