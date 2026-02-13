@@ -4,7 +4,7 @@ import { Balance } from './Balance'
 import type { Jar } from './Jar'
 import { JarIcon } from './JarIcon'
 
-interface SelectableJarProps extends Omit<ComponentProps<typeof Jar>, 'formatAmount' | 'currencySymbol'> {
+interface SelectableJarProps extends ComponentProps<typeof Jar> {
   isSelected: NonNullable<React.ComponentProps<'input'>['checked']>
   onClick: NonNullable<React.ComponentProps<'input'>['onChange']>
 }

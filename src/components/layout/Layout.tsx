@@ -9,7 +9,6 @@ import { AppNavbar } from '@/components/layout/AppNavbar'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { APP_DISPLAY_VERSION, JAM_DEFAULT_THEME } from '@/constants/jam'
-import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
@@ -42,7 +41,6 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const { resolvedTheme = JAM_DEFAULT_THEME, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
-  const { formatAmount, currencySymbol } = useJamDisplayContext()
   const { walletBalanceSummary, walletName, isLoading, isFetching } = useJamWalletInfoContext()
 
   const sidebarContext = useSidebar()
@@ -79,8 +77,6 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         walletName={walletName}
         totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
         toggleTheme={toggleTheme}
-        formatAmount={formatAmount}
-        currencySymbol={currencySymbol}
         onLogout={async () => await onLogout(navigate)}
         onLockWallet={async () => await onLockWallet(navigate, t)}
         sidebarTrigger={<SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />}
