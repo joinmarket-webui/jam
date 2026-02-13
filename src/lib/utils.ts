@@ -150,6 +150,7 @@ export const formatBtc = (value: number) => {
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 8,
     maximumFractionDigits: 8,
+    roundingMode: 'trunc',
   })
 }
 
@@ -157,6 +158,7 @@ export const formatSats = (value: number) => {
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
+    roundingMode: 'trunc',
   })
 }
 
