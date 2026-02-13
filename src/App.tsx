@@ -69,6 +69,7 @@ type LockWalletDialogContext = {
 function App() {
   const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
   const { clear: clearAuth } = useStore(authStore, (state) => state)
 
@@ -137,7 +138,7 @@ function App() {
           path={routes.createWallet}
           element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWalletPage />}
         />
-        {isDebugFeatureEnabled('devSetupPage') && (
+        {isDeveloperMode && isDebugFeatureEnabled('devSetupPage') && (
           <Route
             id="dev-setup"
             path={routes.__devSetup}
@@ -148,7 +149,7 @@ function App() {
             }
           />
         )}
-        {isDebugFeatureEnabled('devErrorExamplePage') && (
+        {isDeveloperMode && isDebugFeatureEnabled('devErrorExamplePage') && (
           <Route
             id="error-example"
             path={routes.__devErrorExample}
@@ -198,7 +199,7 @@ function App() {
               path={routes.walletJarsDetails}
               element={<WalletJarsDetailsPage walletFileName={walletFileName!} />}
             />
-            {isDebugFeatureEnabled('devPage') && (
+            {isDeveloperMode && isDebugFeatureEnabled('devPage') && (
               <Route
                 id="dev-page"
                 path={routes.__dev}
