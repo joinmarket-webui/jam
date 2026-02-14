@@ -13,6 +13,7 @@ import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -149,14 +150,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   }
 
   if (!jmSession) {
-    return (
-      <div className="mx-auto max-w-4xl space-y-3 p-4">
-        <div className="m-2 flex items-center justify-center gap-2">
-          <Spinner className="motion-reduce:hidden" />
-          {t('global.loading')}
-        </div>
-      </div>
-    )
+    return <PageLoading />
   }
 
   const makerRunning = jmSession.maker_running === true
