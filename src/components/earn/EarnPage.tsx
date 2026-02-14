@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -148,6 +148,28 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     })
   }
 
+  const makerRunning = jmSession?.maker_running === true
+  useEffect(() => {
+    if (!jmSession || !makerRunning || !isWaitingMakerStart || startMaker.isPending) return
+
+    setIsWaitingMakerStart(false)
+    toast.dismiss('earn.alert_starting')
+    toast.dismiss('earn.alert_stopping')
+    toast.dismiss('earn.alert_stopped')
+    toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
+    scrollToTop()
+  }, [jmSession, makerRunning, isWaitingMakerStart, startMaker.isPending, t])
+
+  useEffect(() => {
+    if (!jmSession || makerRunning || !isWaitingMakerStop || stopMaker.isPending) return
+
+    setIsWaitingMakerStop(false)
+    toast.dismiss('earn.alert_stopping')
+    toast.dismiss('earn.alert_starting')
+    toast.dismiss('earn.alert_running')
+    toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
+  }, [jmSession, makerRunning, isWaitingMakerStop, stopMaker.isPending, t])
+
   if (!jmSession) {
     return (
       <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -157,26 +179,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </div>
       </div>
     )
-  }
-
-  const makerRunning = jmSession.maker_running === true
-  if (makerRunning) {
-    if (isWaitingMakerStart && !startMaker.isPending) {
-      setIsWaitingMakerStart(false)
-      toast.dismiss('earn.alert_starting')
-      toast.dismiss('earn.alert_stopping')
-      toast.dismiss('earn.alert_stopped')
-      toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
-      scrollToTop()
-    }
-  } else {
-    if (isWaitingMakerStop && !stopMaker.isPending) {
-      setIsWaitingMakerStop(false)
-      toast.dismiss('earn.alert_stopping')
-      toast.dismiss('earn.alert_starting')
-      toast.dismiss('earn.alert_running')
-      toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
-    }
   }
 
   return (
