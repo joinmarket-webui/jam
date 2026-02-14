@@ -126,7 +126,7 @@ const ImportWalletPage = () => {
     refetch: walletsRefetch,
   } = useQuery({
     ...listWalletsQueryOptions,
-    queryFn: withQueryDelay(listWalletsQueryOptions.queryFn, { throttle: 210 }),
+    queryFn: withQueryDelay(listWalletsQueryOptions.queryFn, { delayAfter: 210 }),
     retry: false,
   })
 
