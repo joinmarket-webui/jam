@@ -23,7 +23,7 @@ import { CopyButton } from '../ui/jam/CopyButton'
 import { BitcoinQR } from './BitcoinQR'
 import { ReceiveForm } from './ReceiveForm'
 
-const QRCODE_WIDTH = 320 // "h-[320px] w-[320px]" <- Comment for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
+const QRCODE_WIDTH = 320
 
 interface ReceivePageProps {
   walletFileName: WalletFileName
@@ -120,7 +120,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       <Card>
         <CardContent className="flex w-full flex-col items-center justify-center gap-2">
           {getAddressMutation.isPending ? (
-            <Skeleton className={`h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`} />
+            <Skeleton style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }} />
           ) : getAddressMutation.data?.address ? (
             <BitcoinQR
               className="animate-in fade-in duration-1000"
@@ -130,7 +130,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             />
           ) : getAddressMutation.isIdle ? (
             <div
-              className={cn('flex items-center justify-center border', `h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`)}
+              className={cn('flex items-center justify-center border')}
+              style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
             >
               <Button
                 variant="outline"
@@ -146,10 +147,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           ) : (
             <div
-              className={cn(
-                'text-destructive flex items-center justify-center border text-sm',
-                `h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`,
-              )}
+              className={cn('text-destructive flex items-center justify-center border text-sm')}
+              style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
             >
               {t('receive.error_loading_address_failed')}
             </div>
