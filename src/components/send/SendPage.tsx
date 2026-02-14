@@ -11,6 +11,7 @@ import { useStore } from 'zustand'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { useAddressSummary, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -195,14 +196,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   if (isLoadingFeeConfig) {
-    return (
-      <div className="mx-auto max-w-4xl space-y-3 p-4">
-        <div className="m-2 flex items-center justify-center gap-2">
-          <Spinner className="motion-reduce:hidden" />
-          {t('global.loading')}
-        </div>
-      </div>
-    )
+    return <PageLoading />
   }
 
   return (
