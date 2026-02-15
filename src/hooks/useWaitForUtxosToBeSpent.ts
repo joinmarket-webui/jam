@@ -32,6 +32,7 @@ export const useWaitForUtxosToBeSpent = ({
   const {
     queryResult: { refetch },
   } = useQueryUtxos({ walletFileName })
+
   return useEffect(() => {
     if (waitForUtxosToBeSpent.length === 0) return
 

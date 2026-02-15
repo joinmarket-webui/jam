@@ -8,7 +8,8 @@ interface JamDisplayContextType {
   toggleCurrencyUnit: () => void
   togglePrivacyMode: () => void
   toggleDisplayMode: () => void
-  formatAmount: (amount: number) => string
+  hiddenAmountPlaceholder: string
+  formatAmount: (props: { amount: number; convertToUnit?: Currency | undefined; hidden?: boolean }) => string
   currencySymbol: (size?: 'sm' | 'lg') => ReactNode
 }
 

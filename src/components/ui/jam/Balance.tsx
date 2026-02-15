@@ -1,98 +1,92 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState, type MouseEventHandler } from 'react'
+import { SnowflakeIcon } from 'lucide-react'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { cn, satsToBtc, tryBtcToSat, isValidNumber, formatBtc, formatSats, SATS, BTC, type Unit } from '@/lib/utils'
-import type { Currency } from '@/types/global'
+import { cn, satsToBtc, tryBtcToSat, isValidNumber, formatBtc, formatSats } from '@/lib/utils'
+import type { AmountSats, Currency } from '@/types/global'
+import styles from './Balance.module.css'
 
-const DISPLAY_MODE_BTC: Currency = 'btc'
-const DISPLAY_MODE_SATS: Currency = 'sats'
-const DISPLAY_MODE_HIDDEN = 'private'
+type DisplayMode = 'default' | Currency | 'hidden'
 
-const getDisplayMode = (unit: Unit | undefined, currency: Currency, isPrivate: boolean, showBalance: boolean) => {
-  if (!showBalance || isPrivate) return DISPLAY_MODE_HIDDEN
+const BTC_SYMBOL = <CurrencySymbol currency="btc" />
 
-  // If convertToUnit is specified, respect it, otherwise use context
-  if (unit === BTC) return DISPLAY_MODE_BTC
-  if (unit === SATS) return DISPLAY_MODE_SATS
+const SAT_SYMBOL = <CurrencySymbol currency="sats" />
 
-  // Use context display mode when no specific unit is requested
-  return currency
-}
+const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} />
 
-const BTC_SYMBOL = <CurrencySymbol currency="btc" size="sm" />
+const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className="size-[1em]" />
 
-const SAT_SYMBOL = <CurrencySymbol currency="sats" size="sm" />
-
-const FROZEN_SYMBOL = (
-  <span data-testid="frozen-symbol" className="ml-1 text-blue-400">
-    ❄️
-  </span>
-)
-
-const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} size="sm" />
-
-interface BalanceComponentProps {
+interface ElementWithSymbolsProps {
   symbol?: React.ReactNode
   showSymbol?: boolean
   frozen?: boolean
-  colored?: boolean
   frozenSymbol?: boolean
   className?: string
   children: React.ReactNode
 }
 
-const BalanceComponent = ({
+const ElementWithSymbols = ({
   symbol,
   showSymbol = true,
   frozen = false,
-  colored = true,
   frozenSymbol = true,
   className,
   children,
-}: BalanceComponentProps) => {
+}: ElementWithSymbolsProps) => {
   return (
     <span
       className={cn(
-        'balance-hook inline-flex items-center font-mono',
-        frozen && 'opacity-60',
-        colored && 'text-green-600',
+        'balance-hook inline-flex items-center',
+        {
+          'light:text-blue-500/80 text-blue-500/80': frozen,
+        },
         className,
       )}
     >
-      {showSymbol && symbol}
-      {children}
       {frozen && frozenSymbol && FROZEN_SYMBOL}
+      {children}
+      {showSymbol && symbol}
     </span>
   )
 }
 
 const DECIMAL_POINT_CHAR = '.'
 
-interface BitcoinBalanceProps extends Omit<BalanceComponentProps, 'symbol' | 'children'> {
-  value: number
+interface BitcoinBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'children'> {
+  value: AmountSats
+  fractionalPartSpacing?: boolean
+  highlightSignificantDigits?: boolean
 }
 
-const BitcoinBalance = ({ value, colored = true, ...props }: BitcoinBalanceProps) => {
-  const numberString = formatBtc(value)
+const BitcoinBalance = ({
+  value,
+  fractionalPartSpacing = true,
+  highlightSignificantDigits = true,
+  ...props
+}: BitcoinBalanceProps) => {
+  const numberString = formatBtc(satsToBtc(String(value)))
   const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
 
   const fractionPartArray = [...fractionalPart]
-  const integerPartIsZero = integerPart === '0'
+  const integerPartIsZero = Number.parseInt(integerPart, 10) === 0
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
   return (
-    <BalanceComponent symbol={BTC_SYMBOL} colored={colored} {...props}>
+    <ElementWithSymbols symbol={BTC_SYMBOL} {...props}>
       <span
-        className={cn('slashed-zeroes select-all', colored && 'text-green-600')}
+        className={cn('slashed-zero tabular-nums select-all', styles.bitcoinAmount, {
+          [styles.bitcoinAmountSpacing]: fractionalPartSpacing,
+          [styles.bitcoinAmountColor]: highlightSignificantDigits,
+        })}
         data-testid="bitcoin-amount"
         data-integer-part-is-zero={integerPartIsZero}
         data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
         data-raw-value={value}
         data-formatted-value={numberString}
       >
-        <span>{integerPart}</span>
-        <span>{DECIMAL_POINT_CHAR}</span>
-        <span>
+        <span className={styles.integerPart}>{integerPart}</span>
+        <span className={styles.decimalPoint}>{DECIMAL_POINT_CHAR}</span>
+        <span className={styles.fractionalPart}>
           {fractionPartArray.map((digit, index) => (
             <span key={index} data-digit={digit}>
               {digit}
@@ -100,32 +94,42 @@ const BitcoinBalance = ({ value, colored = true, ...props }: BitcoinBalanceProps
           ))}
         </span>
       </span>
-    </BalanceComponent>
+    </ElementWithSymbols>
   )
 }
 
-interface SatsBalanceProps extends Omit<BalanceComponentProps, 'symbol' | 'children'> {
-  value: number
+interface SatsBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'children'> {
+  value: AmountSats
 }
 
-const SatsBalance = ({ value, colored = true, ...props }: SatsBalanceProps) => {
+const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
   return (
-    <BalanceComponent symbol={SAT_SYMBOL} colored={colored} {...props}>
-      <span
-        className={cn('slashed-zeroes select-all', colored && 'text-green-600')}
-        data-testid="sats-amount"
-        data-raw-value={value}
-      >
+    <ElementWithSymbols symbol={SAT_SYMBOL} {...props}>
+      <span className={cn('slashed-zero tabular-nums select-all')} data-testid="sats-amount" data-raw-value={value}>
         {formatSats(value)}
       </span>
-    </BalanceComponent>
+    </ElementWithSymbols>
   )
 }
 
-interface BalanceProps extends Omit<BalanceComponentProps, 'symbol' | 'children'> {
+type HiddenBalanceProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'> & {
+  hiddenAmountPlaceholder: string
+}
+
+const HiddenBalance = (props: HiddenBalanceProps) => {
+  return (
+    <ElementWithSymbols symbol={HIDE_SYMBOL} frozenSymbol={false} {...props}>
+      <span className="slashed-zero tabular-nums select-none">{props.hiddenAmountPlaceholder}</span>
+    </ElementWithSymbols>
+  )
+}
+
+type BalanceComponentProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'> & {
   valueString: string
-  convertToUnit?: Unit
+  convertToUnit?: Currency
   showBalance?: boolean
+  enableVisibilityToggle?: boolean
+  hiddenAmountPlaceholder: HiddenBalanceProps['hiddenAmountPlaceholder']
 }
 
 /**
@@ -139,26 +143,36 @@ interface BalanceProps extends Omit<BalanceComponentProps, 'symbol' | 'children'
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
  * Hidden balances are masked with `*****`.
  */
-export const Balance = ({ valueString, convertToUnit, showBalance = true, ...props }: BalanceProps) => {
-  const { currency, isPrivate } = useJamDisplayContext()
-  const displayMode = useMemo(
-    () => getDisplayMode(convertToUnit, currency, isPrivate, showBalance),
-    [convertToUnit, currency, isPrivate, showBalance],
-  )
+export const BalanceComponent = ({
+  valueString,
+  convertToUnit,
+  showBalance = false,
+  enableVisibilityToggle,
+  ...props
+}: BalanceComponentProps) => {
+  const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
+  const displayMode: DisplayMode = isBalanceVisible ? (convertToUnit ?? 'default') : 'hidden'
+
+  useEffect(() => {
+    setIsBalanceVisible(showBalance)
+  }, [showBalance])
+
+  const toggleVisibility: MouseEventHandler = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    setIsBalanceVisible((current) => !current)
+  }
 
   const balanceComponent = useMemo(() => {
-    if (displayMode === DISPLAY_MODE_HIDDEN) {
-      return (
-        <BalanceComponent symbol={HIDE_SYMBOL} {...props}>
-          <span className="slashed-zeroes">{'*****'}</span>
-        </BalanceComponent>
-      )
+    if (displayMode === 'hidden') {
+      return <HiddenBalance {...props} />
     }
 
     const valueNumber = Number.parseFloat(valueString)
     if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
-      return <BalanceComponent {...props}>{valueString}</BalanceComponent>
+      return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
     }
 
     // Treat integers as sats.
@@ -166,30 +180,66 @@ export const Balance = ({ valueString, convertToUnit, showBalance = true, ...pro
     // Treat decimal numbers as btc.
     const valueIsBtc = !valueIsSats && valueString.includes('.')
 
-    if (displayMode === DISPLAY_MODE_BTC) {
-      if (valueIsBtc) {
+    if (valueIsSats) {
+      if (displayMode === 'default' || displayMode === 'sats') {
+        return <SatsBalance value={valueNumber} {...props} />
+      }
+      if (displayMode === 'btc') {
         return <BitcoinBalance value={valueNumber} {...props} />
-      } else {
-        return <BitcoinBalance value={satsToBtc(valueString)} {...props} />
       }
     }
-
-    if (displayMode === DISPLAY_MODE_SATS) {
-      if (valueIsSats) {
-        return <SatsBalance value={valueNumber} {...props} />
-      } else {
-        const valueInSats = tryBtcToSat(valueString)
-        if (!isValidNumber(valueInSats)) {
-          console.warn('<Balance /> component expects decimal BTC input in plain notation')
-          return <BalanceComponent {...props}>{valueString}</BalanceComponent>
-        }
+    if (valueIsBtc) {
+      const valueInSats = tryBtcToSat(valueString)
+      if (!isValidNumber(valueInSats)) {
+        console.warn('<Balance /> component expects decimal BTC input in plain notation')
+        return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
+      }
+      if (displayMode === 'default' || displayMode === 'btc') {
+        return <BitcoinBalance value={valueInSats} {...props} />
+      }
+      if (displayMode === 'sats') {
         return <SatsBalance value={valueInSats} {...props} />
       }
     }
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <BalanceComponent {...props}>{valueString}</BalanceComponent>
+    return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
   }, [valueString, displayMode, props])
 
-  return balanceComponent
+  if (enableVisibilityToggle === false) {
+    return <>{balanceComponent}</>
+  } else {
+    return (
+      <span onClick={toggleVisibility} className="cursor-pointer">
+        {balanceComponent}
+      </span>
+    )
+  }
+}
+
+type BalanceProps = Omit<BalanceComponentProps, 'hiddenAmountPlaceholder'> & {
+  hiddenAmountPlaceholder?: HiddenBalanceProps['hiddenAmountPlaceholder']
+}
+
+export const Balance = ({
+  valueString,
+  convertToUnit,
+  showBalance, // TODO: rename: forceShowBalance
+  enableVisibilityToggle,
+  hiddenAmountPlaceholder,
+  ...props
+}: BalanceProps) => {
+  const displayContext = useJamDisplayContext()
+  const isBalanceVisible = showBalance ?? displayContext.isPrivate === false
+
+  return (
+    <BalanceComponent
+      valueString={valueString}
+      convertToUnit={convertToUnit ?? displayContext.currency}
+      showBalance={isBalanceVisible}
+      enableVisibilityToggle={enableVisibilityToggle ?? !isBalanceVisible}
+      hiddenAmountPlaceholder={hiddenAmountPlaceholder ?? displayContext.hiddenAmountPlaceholder}
+      {...props}
+    />
+  )
 }

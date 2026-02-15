@@ -184,8 +184,6 @@ type LoginFormLoadingProps = {
 }
 
 type LoginFormProps =
-  | LoginFormLoadingProps
-  | LoginFormComponentProps
   | (LoginFormLoadingProps & Partial<LoginFormComponentProps>)
   | ({ loading?: false } & LoginFormComponentProps)
 

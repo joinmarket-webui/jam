@@ -23,7 +23,7 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn, BTC } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { SortIcon } from '../ui/jam/SortIcon'
 
@@ -154,7 +154,7 @@ export const OrderbookTable = ({
           return entry.fee.displayValue.includes('%') ? (
             <span className="font-mono">{entry.fee.displayValue}</span>
           ) : (
-            <Balance colored={false} valueString={entry.fee.displayValue} />
+            <Balance valueString={entry.fee.displayValue} />
           )
         },
         meta: {
@@ -165,7 +165,7 @@ export const OrderbookTable = ({
       columnHelper.accessor<'minimumSize', OrderTableEntry['minimumSize']>('minimumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
         sortingFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
-        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+        cell: (info) => <Balance valueString={info.getValue()} />,
         meta: {
           align: 'right',
           numeric: true,
@@ -174,7 +174,7 @@ export const OrderbookTable = ({
       columnHelper.accessor<'maximumSize', OrderTableEntry['maximumSize']>('maximumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
         sortingFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
-        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+        cell: (info) => <Balance valueString={info.getValue()} />,
         meta: {
           align: 'right',
           numeric: true,
@@ -183,7 +183,7 @@ export const OrderbookTable = ({
       columnHelper.accessor<'minerFeeContribution', OrderTableEntry['minerFeeContribution']>('minerFeeContribution', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
         sortingFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
-        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+        cell: (info) => <Balance valueString={info.getValue()} />,
         enableHiding: true,
         meta: {
           align: 'right',
@@ -202,7 +202,7 @@ export const OrderbookTable = ({
               </TooltipTrigger>
               <TooltipContent>
                 <div>
-                  <Balance valueString={String(entry.bondValue.amount || 0)} colored={false} convertToUnit={BTC} />
+                  <Balance valueString={String(entry.bondValue.amount || 0)} convertToUnit="btc" />
                   {entry.bondValue.displayLocktime && (
                     <div className="mt-1 text-xs">
                       {entry.bondValue.displayLocktime} ({entry.bondValue.displayExpiresIn})

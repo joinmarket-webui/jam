@@ -14,6 +14,7 @@ import { routes } from '@/constants/routes'
 import type { RescanInfo } from '@/context/JamSessionInfoContext'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
@@ -35,16 +36,12 @@ type WalletPreviewProps = {
   isLoading?: boolean
   isReloading?: boolean
   walletName: string | null
-  formatAmount: (AmountSats: number) => string
-  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
   totalBalance: AmountSats
   rescanInfo?: RescanInfo
 }
 
 const WalletPreview = ({
   walletName,
-  formatAmount,
-  currencySymbol,
   totalBalance,
   isLoading = false,
   isReloading = false,
@@ -87,10 +84,7 @@ const WalletPreview = ({
                 {isLoading ? (
                   <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
                 ) : (
-                  <>
-                    <span className="tabular-nums">{formatAmount(totalBalance)}</span>
-                    {currencySymbol('sm')}
-                  </>
+                  <Balance valueString={String(totalBalance)} />
                 )}
               </>
             )}
@@ -121,8 +115,6 @@ export function AppNavbar({
   walletName,
   totalBalance,
   theme,
-  formatAmount,
-  currencySymbol,
   toggleTheme,
   onLogout,
   onLockWallet,
@@ -168,8 +160,6 @@ export function AppNavbar({
         isReloading={isReloading}
         walletName={walletName}
         totalBalance={totalBalance}
-        formatAmount={formatAmount}
-        currencySymbol={currencySymbol}
         rescanInfo={rescanInfo}
       />
       <div
