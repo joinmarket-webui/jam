@@ -224,7 +224,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           <EarnForm
             onSubmit={onSubmit}
             isWaitingMakerStart={isWaitingMakerStart}
+            offerMinsizeMax={walletInfo.maxJarAvailableBalance}
             disabled={
+              walletInfo.isFetching ||
               isWaitingMakerStart ||
               isWaitingMakerStop ||
               jmSession.maker_running ||
