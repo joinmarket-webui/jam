@@ -223,17 +223,29 @@ export function useCreateFidelityBondWizard(
   }
 
   const handleFreezeUtxos = async () => {
+    const frozen: Utxo[] = []
     try {
       for (const utxo of utxosToFreeze) {
         await freezeUtxo.mutateAsync({
           path: { walletname: encodeURIComponent(walletFileName) },
           body: { 'utxo-string': utxo.utxo, freeze: true },
         })
+        frozen.push(utxo)
       }
-      setFrozenUtxos([...utxosToFreeze])
+      setFrozenUtxos(frozen)
       setStep('review')
     } catch {
-      // Error handled in onError
+      // Best-effort rollback — unfreeze UTXOs that were frozen before the error
+      for (const utxo of frozen) {
+        try {
+          await unfreezeUtxo.mutateAsync({
+            path: { walletname: encodeURIComponent(walletFileName) },
+            body: { 'utxo-string': utxo.utxo, freeze: false },
+          })
+        } catch {
+          // logged via onError
+        }
+      }
     }
   }
 
@@ -254,9 +266,34 @@ export function useCreateFidelityBondWizard(
       setTxResult(result)
       setStep('success')
       toast.success(t('earn.fidelity_bond.create_fidelity_bond.success_text'))
+
+      // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
+      for (const utxo of frozenUtxos) {
+        try {
+          await unfreezeUtxo.mutateAsync({
+            path: { walletname: encodeURIComponent(walletFileName) },
+            body: { 'utxo-string': utxo.utxo, freeze: false },
+          })
+        } catch {
+          // logged via onError
+        }
+      }
+
       await walletInfo.refetch()
     } catch {
-      setStep('review')
+      // Best-effort rollback — unfreeze UTXOs that were frozen for this operation
+      for (const utxo of frozenUtxos) {
+        try {
+          await unfreezeUtxo.mutateAsync({
+            path: { walletname: encodeURIComponent(walletFileName) },
+            body: { 'utxo-string': utxo.utxo, freeze: false },
+          })
+        } catch {
+          // logged via onError
+        }
+      }
+      setFrozenUtxos([])
+      setStep('freeze_utxos')
     }
   }
 
