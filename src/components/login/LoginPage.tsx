@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
 import { sortWallets } from '@/lib/utils'
@@ -84,7 +85,8 @@ const LoginPage = () => {
     },
     onError: (error) => {
       /* TODO: i18n */
-      toast.error(`Failed to unlock wallet: ${error.message || t('global.errors.reason_unknown')}`)
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(`Failed to unlock wallet: ${reason}`)
     },
   })
 

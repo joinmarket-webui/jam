@@ -10,6 +10,7 @@ import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
@@ -105,8 +106,9 @@ const CreateWalletPage = () => {
       })
       setStep('seed')
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create wallet' // TODO: i18n
-      toast.error(errorMessage)
+      /* TODO: i18n */
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(`Failed to create wallet: ${reason}`)
     } finally {
       toast.dismiss(durationHintToastId)
     }

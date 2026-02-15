@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { routes } from '@/constants/routes'
 import { useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 
@@ -73,8 +74,7 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
             type="number"
             step={1}
             className="bg-background pl-10"
-            /* TODO: i18n */
-            placeholder="Enter block height"
+            placeholder={t('rescan_chain.placeholder_blockheight')}
           />
         </div>
         {errors.blockHeight && (
@@ -120,8 +120,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
       return data
     },
     onSuccess: () => {
-      // TODO: i18n
-      toast.success('Rescan started successfully')
+      toast.success(t('rescan_chain.success_rescan_started'))
       setRescanInfo({
         updatedAt: Date.now(),
         rescanning: true,
@@ -137,7 +136,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
         progress: undefined,
       })
 
-      const reason = error instanceof Error ? error.message : String(error)
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('rescan_chain.error_rescanning_failed', { reason }))
     },
   })
