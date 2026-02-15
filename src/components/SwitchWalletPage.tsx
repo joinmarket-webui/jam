@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import { shortenStringMiddle, sortWallets, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -91,8 +92,8 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
     } catch (error: unknown) {
-      const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
-      toast.error(/* TODO: i18n*/ `Failed to lock current wallet: ${reason}`)
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(t('settings.error_lock_wallet_failed', { reason }))
       console.error('Failed to lock wallet:', error)
     }
   }
@@ -110,9 +111,8 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
           </div>
           <CardTitle className="text-2xl font-bold">{t('settings.button_switch_wallet')}</CardTitle>
           <CardDescription>
-            {/*TODO: i18n */}
             {currentWalletLocked
-              ? 'Current wallet is locked. Select a different wallet to continue.'
+              ? t('settings.switch_wallet_current_wallet_locked_select_other')
               : t('wallets.alert_wallet_open', {
                   currentWalletName: walletDisplayName(walletFileName),
                 })}
