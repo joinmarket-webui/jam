@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentProps } from 'react'
+import { useState, type ComponentProps } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { AlertCircleIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -26,6 +26,19 @@ type LoginCardProps = Omit<LoginFormProps, 'loading' | 'onSubmit'> &
 
 const ONBOARDING_DISMISSED_STORAGE_KEY = 'jam:v2:onboarding:dismissed'
 
+const getInitialOnboardingDialogState = () => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  try {
+    return window.localStorage.getItem(ONBOARDING_DISMISSED_STORAGE_KEY) !== '1'
+  } catch (error) {
+    console.warn('Failed to access onboarding preference:', error)
+    return false
+  }
+}
+
 export const LoginCard = ({
   wallets,
   activeWallet,
@@ -40,18 +53,7 @@ export const LoginCard = ({
 }: LoginCardProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [showOnboarding, setShowOnboarding] = useState(false)
-
-  useEffect(() => {
-    try {
-      const isDismissed = window.localStorage.getItem(ONBOARDING_DISMISSED_STORAGE_KEY) === '1'
-      if (!isDismissed) {
-        setShowOnboarding(true)
-      }
-    } catch (error) {
-      console.warn('Failed to access onboarding preference:', error)
-    }
-  }, [])
+  const [showOnboarding, setShowOnboarding] = useState(getInitialOnboardingDialogState)
 
   const onOnboardingOpenChange = (open: boolean) => {
     setShowOnboarding(open)
