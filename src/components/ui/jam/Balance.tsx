@@ -141,7 +141,6 @@ type BalanceComponentProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'
  *  - 0.00000000, 150.00000001, 21000000.00000000 are treated as a value in BTC.
  * @param {convertToUnit}: The unit to convert the `valueString` to. If not specified, uses the global display mode.
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
- * Hidden balances are masked with `*****`.
  */
 export const BalanceComponent = ({
   valueString,

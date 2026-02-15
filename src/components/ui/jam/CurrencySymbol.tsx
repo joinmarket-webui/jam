@@ -13,7 +13,11 @@ export function CurrencySymbol({ currency, isPrivate }: CurrencySymbolProps) {
   }
 
   if (currency === 'btc') {
-    return <span className="mx-0.75 inline-block align-middle">₿</span>
+    return (
+      <span className="mx-0.75 inline-block align-middle" data-testid="bitcoin-symbol">
+        ₿
+      </span>
+    )
   }
 
   return <SatSymbol className="mx-[-0.1em] inline-block size-[1.2em] align-middle" />
@@ -31,6 +35,7 @@ export const SatSymbol = (props: SVGAttributes<Element>) => {
         verticalAlign: 'middle',
         ...props.style,
       }}
+      data-testid="sats-symbol"
     >
       <path stroke="currentColor" strokeWidth="2" d="M8 10H22" />
       <path stroke="currentColor" strokeWidth="2" d="M15 7V4" />
