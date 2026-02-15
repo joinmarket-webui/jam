@@ -140,7 +140,7 @@ export const useJmWebsocket = ({ enableHeartbeat, options }: UseJmWebsocketProps
       return () => {
         console.debug(`Cancelling scheduled heartbeat messages.`)
         abortCtrl.abort()
-        clearTimeout(timerId)
+        clearInterval(timerId)
       }
     },
     [enableHeartbeat, sendMessage, isOpen, authenticated, authToken],
