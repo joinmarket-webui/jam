@@ -56,6 +56,11 @@ const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
 const DevErrorThrowingComponent = lazy(() => import('@/components/dev/DevErrorThrowingComponent'))
 
+const clearAuthAndQueryCache = () => {
+  authStore.getState().clear()
+  queryClient.clear()
+}
+
 const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authenticated: boolean }>) => {
   return authenticated ? <>{children}</> : <Navigate to={routes.login} replace />
 }
@@ -71,7 +76,6 @@ function App() {
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
-  const { clear: clearAuth } = useStore(authStore, (state) => state)
 
   const jmSession = useStore(jmSessionStore, (state) => state.state)
 
@@ -95,8 +99,7 @@ function App() {
   const [lockWalletDialogContext, setLockWalletDialogContext] = useState<LockWalletDialogContext>()
 
   const doOnLogout = async (navigate: NavigateFunction) => {
-    clearAuth()
-    queryClient.clear()
+    clearAuthAndQueryCache()
     await navigate(routes.login)
   }
 
@@ -280,7 +283,7 @@ function RefreshApiToken() {
         })
 
         if (!response.data) {
-          authStore.getState().clear()
+          clearAuthAndQueryCache()
 
           if (isDevMode) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'

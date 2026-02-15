@@ -87,6 +87,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
     try {
       await lockCurrentWallet.refetch({ throwOnError: true })
       authStore.getState().clear()
+      queryClient.clear()
       setCurrentWalletLocked(true)
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
