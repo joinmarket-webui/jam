@@ -57,6 +57,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const [isLogsOverlayOpen, setIsLogsOverlayOpen] = useState(false)
   const { isFeatureEnabled } = useFeatures()
   const isHomeRoute = location.pathname === routes.home
+  const hasBlockingOverlayOpen = cheatsheet.open || isOrderbookOverlayOpen || isLogsOverlayOpen
 
   // Adds a keyboard shortcut to toggle the logs overlay.
   useEffect(() => {
@@ -100,7 +101,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
       <Cheatsheet open={cheatsheet.open} onOpenChange={cheatsheet.onOpenChange} />
       <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
       <LogsOverlay open={isLogsOverlayOpen} onOpenChange={setIsLogsOverlayOpen} />
-      <PostLoginOnboardingTour enabled={isHomeRoute} />
+      <PostLoginOnboardingTour enabled={isHomeRoute && !hasBlockingOverlayOpen} />
     </div>
   )
 }
