@@ -331,7 +331,9 @@
     "subtitle": "Rescan the local timechain for wallet related transactions.",
     "label_blockheight": "Rescan height",
     "description_blockheight": "The height of the chain at which the rescan process is started.",
+    "placeholder_blockheight": "Enter block height",
     "error_rescanning_failed": "Error while starting the rescan process. Reason: {{ reason }}",
+    "success_rescan_started": "Rescan started successfully.",
     "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
     "text_button_submit": "Rescan timechain",
     "text_button_submitting": "Rescanning timechain..."
