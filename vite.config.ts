@@ -64,7 +64,8 @@ export default defineConfig((): UserConfig => {
           test: {
             name: 'unit',
             globals: true,
-            environment: 'node',
+            environment: 'jsdom',
+            setupFiles: './vitest.setup.ts',
             include: ['**/*.test.{ts,tsx}'],
             exclude: ['node_modules', '.storybook'],
           },

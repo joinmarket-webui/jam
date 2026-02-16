@@ -1,22 +1,24 @@
 import type { SVGAttributes } from 'react'
 import { EyeOffIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { Currency } from '@/types/global'
 
 type CurrencySymbolProps = {
   currency: Currency
   isPrivate?: boolean
+  className?: string
 }
 
-export function CurrencySymbol({ currency, isPrivate }: CurrencySymbolProps) {
+export function CurrencySymbol({ currency, isPrivate, className }: CurrencySymbolProps) {
   if (isPrivate === true) {
-    return <EyeOffIcon className="text-muted-foreground mx-0.75 size-[1em]" />
+    return <EyeOffIcon className={cn('size-[1em]', className)} />
   }
 
   if (currency === 'btc') {
-    return <span className="mx-0.75 inline-block align-middle">₿</span>
+    return <BtcSymbol className={cn('inline-block size-[1.2em]', className)} />
   }
 
-  return <SatSymbol className="mx-[-0.1em] inline-block size-[1.2em] align-middle" />
+  return <SatSymbol className={cn('inline-block size-[1.2em]', className)} />
 }
 
 export const SatSymbol = (props: SVGAttributes<Element>) => {
@@ -31,6 +33,7 @@ export const SatSymbol = (props: SVGAttributes<Element>) => {
         verticalAlign: 'middle',
         ...props.style,
       }}
+      data-testid="sats-symbol"
     >
       <path stroke="currentColor" strokeWidth="2" d="M8 10H22" />
       <path stroke="currentColor" strokeWidth="2" d="M15 7V4" />
@@ -53,6 +56,7 @@ export const BtcSymbol = (props: SVGAttributes<Element>) => {
         verticalAlign: 'middle',
         ...props.style,
       }}
+      data-testid="bitcoin-symbol"
     >
       <path
         fillRule="evenodd"
