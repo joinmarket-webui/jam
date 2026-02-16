@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { FEE_CONFIG_KEYS } from '@/constants/jm'
-import type { FeeConfigValues } from '@/lib/feeConfig'
+import { isMaxFeesConfigMissing, type FeeConfigValues } from '@/lib/feeConfig'
 import type { WalletFileName } from '@/lib/utils'
 import { useJmConfig } from './useJmConfig'
 
@@ -61,7 +61,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
       return true
     }
 
-    return feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined
+    return isMaxFeesConfigMissing(feeConfigValues)
   }, [feeConfigValues, forceFeeConfigMissing])
 
   return {
