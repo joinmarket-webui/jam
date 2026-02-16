@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { FEE_CONFIG_KEYS } from '@/constants/jm'
-import { isMaxFeesConfigMissing, type FeeConfigValues } from '@/lib/feeConfig'
+import type { FeeConfigValues } from '@/lib/feeConfig'
 import type { WalletFileName } from '@/lib/utils'
 import { useJmConfig } from './useJmConfig'
 
@@ -14,7 +14,6 @@ interface UseFeeConfigValidationProps {
 export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
   const {
     state: configState,
-    get: getConfig,
     refetch: refetchConfig,
     fetchIfMissing: fetchConfigIfMissing,
   } = useJmConfig({ walletFileName })
@@ -24,14 +23,19 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
   const forceFeeConfigMissing = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
 
   const feeConfigValues = useMemo<FeeConfigValues>(() => {
-    return {
-      max_cj_fee_abs: getConfig(FEE_CONFIG_KEYS['max_cj_fee_abs'])?.value ?? undefined,
-      max_cj_fee_rel: getConfig(FEE_CONFIG_KEYS['max_cj_fee_rel'])?.value ?? undefined,
-      tx_fees: getConfig(FEE_CONFIG_KEYS['tx_fees'])?.value ?? undefined,
-      tx_fees_factor: getConfig(FEE_CONFIG_KEYS['tx_fees_factor'])?.value ?? undefined,
-      max_sweep_fee_change: getConfig(FEE_CONFIG_KEYS['max_sweep_fee_change'])?.value ?? undefined,
+    const getConfigValue = (key: keyof typeof FEE_CONFIG_KEYS) => {
+      const configKey = FEE_CONFIG_KEYS[key]
+      return configState[configKey.section]?.[configKey.field] ?? undefined
     }
-  }, [configState, getConfig])
+
+    return {
+      max_cj_fee_abs: getConfigValue('max_cj_fee_abs'),
+      max_cj_fee_rel: getConfigValue('max_cj_fee_rel'),
+      tx_fees: getConfigValue('tx_fees'),
+      tx_fees_factor: getConfigValue('tx_fees_factor'),
+      max_sweep_fee_change: getConfigValue('max_sweep_fee_change'),
+    }
+  }, [configState])
 
   const refetchAll = useCallback(async () => {
     setIsLoading(true)
