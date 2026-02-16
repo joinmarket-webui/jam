@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -67,9 +67,11 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
-  const makerRunning = jmSession?.maker_running === true
 
   const walletInfo = useJamWalletInfoContext()
+
+  const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
+  const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
 
   const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
   const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
@@ -79,6 +81,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
 
   const isCurrentOfferAvailable = jmSession?.offer_list && jmSession.offer_list.length > 0
+  const waitingForMakerUpdate = isWaitingMakerStart || isWaitingMakerStop
+  const waitingForOfferUpdate = jmSession?.maker_running === true && !isCurrentOfferAvailable
+  useRefreshSession({
+    enabled: waitingForMakerUpdate || waitingForOfferUpdate,
+    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
+  })
 
   const stopMakerQueryOptions = stopmakerOptions({
     client,
@@ -101,9 +110,11 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     },
     retry: false,
     onMutate: () => {
+      setIsWaitingMakerStop(true)
       toast.info(t('earn.alert_stopping'), { id: 'earn.alert_stopping' })
     },
     onError: (error: ErrorMessage) => {
+      setIsWaitingMakerStop(false)
       const reason = error.message || error.error_description || t('global.errors.reason_unknown')
       // TODO: i18n
       toast.error(`Error while stopping the earn process. Reason: ${reason}`)
@@ -114,24 +125,15 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     ...startmakerMutation({ client }),
     retry: false,
     onMutate: () => {
+      setIsWaitingMakerStart(true)
       toast.info(t('earn.alert_starting'), { id: 'earn.alert_starting' })
     },
     onError: (error: ErrorMessage) => {
+      setIsWaitingMakerStart(false)
       console.error('StartMaker error:', error)
       const reason = error.message || error.error_description || t('global.errors.reason_unknown')
       toast.error(t('earn.alert_start_failed', { reason }))
     },
-  })
-
-  const isWaitingMakerStart = startMaker.isPending || (startMaker.isSuccess && !makerRunning)
-  const isWaitingMakerStop = stopMaker.isPending || (stopMaker.isSuccess && makerRunning)
-
-  const waitingForMakerUpdate = isWaitingMakerStart || isWaitingMakerStop
-  const waitingForOfferUpdate = makerRunning && !isCurrentOfferAvailable
-  useRefreshSession({
-    enabled: waitingForMakerUpdate || waitingForOfferUpdate,
-    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
-    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   const onStop = async () => {
@@ -147,27 +149,28 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     })
   }
 
-  useEffect(() => {
-    if (!jmSession || !startMaker.isSuccess || !makerRunning) return
-    toast.dismiss('earn.alert_starting')
-    toast.dismiss('earn.alert_stopping')
-    toast.dismiss('earn.alert_stopped')
-    toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
-    scrollToTop()
-    startMaker.reset()
-  }, [jmSession, makerRunning, startMaker.isSuccess, startMaker, t])
-
-  useEffect(() => {
-    if (!jmSession || !stopMaker.isSuccess || makerRunning) return
-    toast.dismiss('earn.alert_stopping')
-    toast.dismiss('earn.alert_starting')
-    toast.dismiss('earn.alert_running')
-    toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
-    stopMaker.reset()
-  }, [jmSession, makerRunning, stopMaker.isSuccess, stopMaker, t])
-
   if (!jmSession) {
     return <PageLoading />
+  }
+
+  const makerRunning = jmSession.maker_running === true
+  if (makerRunning) {
+    if (isWaitingMakerStart && !startMaker.isPending) {
+      setIsWaitingMakerStart(false)
+      toast.dismiss('earn.alert_starting')
+      toast.dismiss('earn.alert_stopping')
+      toast.dismiss('earn.alert_stopped')
+      toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
+      scrollToTop()
+    }
+  } else {
+    if (isWaitingMakerStop && !stopMaker.isPending) {
+      setIsWaitingMakerStop(false)
+      toast.dismiss('earn.alert_stopping')
+      toast.dismiss('earn.alert_starting')
+      toast.dismiss('earn.alert_running')
+      toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
+    }
   }
 
   return (
