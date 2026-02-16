@@ -240,6 +240,8 @@
     "button_lock_wallet": "Lock wallet",
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
+    "switch_wallet_current_wallet_locked_select_other": "Current wallet is locked. Select a different wallet to continue.",
+    "error_lock_wallet_failed": "Failed to lock current wallet: {{ reason }}",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal": {
       "verification": {
