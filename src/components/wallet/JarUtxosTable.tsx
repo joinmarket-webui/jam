@@ -127,7 +127,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
                 })
               } else {
                 /* TODO: i18n */
-                toast.warning(`Security measure: Deselection changed`, {
+                toast.warning(`Security measure: Selection changed`, {
                   description: `Automatically deselected ${eligibleRows.length - 1} more UTXOs with address ${address}!`,
                   id: AUTO_CHANGE_SELECTION_TOAST_ID,
                   duration: 10_000,
@@ -338,6 +338,12 @@ export const JarUtxosTable = ({
       onChange(table)
     }
   }, [table, onChange])
+
+  useEffect(() => {
+    return () => {
+      toast.dismiss(AUTO_CHANGE_SELECTION_TOAST_ID)
+    }
+  }, [])
 
   const tableTopRows = () => {
     try {
