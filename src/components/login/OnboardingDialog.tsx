@@ -140,7 +140,7 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
           </>
         ) : (
           <>
-            <DialogHeader className="space-y-4 text-left">
+            <DialogHeader className="space-y-4 pr-10 text-left">
               <div className="flex items-center gap-1.5">
                 {ONBOARDING_STEPS.map((_, index) => (
                   <span
