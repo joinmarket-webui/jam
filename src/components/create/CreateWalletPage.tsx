@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { JM_DEFAULT_WALLET_TYPE } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
@@ -87,7 +88,7 @@ const CreateWalletPage = () => {
         body: {
           walletname: walletFileName,
           password,
-          wallettype: 'sw-fb',
+          wallettype: JM_DEFAULT_WALLET_TYPE,
         },
         throwOnError: true,
       })

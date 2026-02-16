@@ -18,7 +18,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
-import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
+import { JM_DEFAULT_WALLET_TYPE, JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
@@ -27,7 +27,6 @@ import { walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 
-const DEFAULT_WALLET_TYPE = 'sw-fb'
 const MIN_SEED_WORDS = 12
 const MAX_SEED_WORDS = 24
 const SEED_WORD_PATTERN = /^[a-z]+$/
@@ -154,7 +153,7 @@ const ImportWalletPage = () => {
         body: {
           walletname: walletFileName,
           password: values.password,
-          wallettype: DEFAULT_WALLET_TYPE,
+          wallettype: JM_DEFAULT_WALLET_TYPE,
           seedphrase: normalizeSeedPhrase(values.seedPhrase),
         },
       })
