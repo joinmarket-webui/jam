@@ -78,7 +78,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
               </div>
             )}
           </div>
-          <div className="mt-2 flex w-full justify-center gap-4">
+          <div className="mt-2 flex w-full justify-center gap-4" data-tour-id="wallet-actions">
             <Button size="xxl" className="flex-1" variant="default" onClick={() => void navigate(routes.receive)}>
               <DownloadIcon />
               {t('current_wallet.button_deposit')}
@@ -104,7 +104,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
           </Alert>
         )}
 
-        <div className="light:text-black mt-8 mb-4 flex w-full flex-col gap-8 text-white">
+        <div className="light:text-black mt-8 mb-4 flex w-full flex-col gap-8 text-white" data-tour-id="wallet-jars">
           <div className="text-muted-foreground hover:text-foreground">
             <Tooltip>
               <TooltipTrigger asChild>
