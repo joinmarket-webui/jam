@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -38,6 +38,10 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
   const progress = toScheduleProgressSummary(schedule)
   const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
   const totalSeconds = Math.ceil(progress.totalWaitSeconds)
+  const highlightedComponents = {
+    '1': <span className="font-semibold" />,
+    '3': <span className="font-semibold" />,
+  }
 
   return (
     <Card>
@@ -45,11 +49,19 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
         <div className="space-y-1">
           {totalHours <= 1 ? (
             <p className="text-sm">
-              {t('scheduler.progress_tldr_seconds', { length: progress.totalTransactions, seconds: totalSeconds })}
+              <Trans
+                i18nKey="scheduler.progress_tldr_seconds"
+                values={{ length: progress.totalTransactions, seconds: totalSeconds }}
+                components={highlightedComponents}
+              />
             </p>
           ) : (
             <p className="text-sm">
-              {t('scheduler.progress_tldr_hours', { length: progress.totalTransactions, hours: totalHours })}
+              <Trans
+                i18nKey="scheduler.progress_tldr_hours"
+                values={{ length: progress.totalTransactions, hours: totalHours }}
+                components={highlightedComponents}
+              />
             </p>
           )}
           <p className="text-muted-foreground text-xs">{t('scheduler.progress_description')}</p>
@@ -66,10 +78,14 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
           <Alert>
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
-              {t('scheduler.progress_current_state', {
-                current: progress.currentTransaction,
-                total: progress.totalTransactions,
-              })}
+              <Trans
+                i18nKey="scheduler.progress_current_state"
+                values={{
+                  current: progress.currentTransaction,
+                  total: progress.totalTransactions,
+                }}
+                components={highlightedComponents}
+              />
             </AlertTitle>
             <AlertDescription />
           </Alert>
