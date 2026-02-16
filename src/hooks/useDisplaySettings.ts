@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 import { useStore } from 'zustand'
-import { satsToBtc } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import type { AmountSats } from '@/types/global'
 
 export function useDisplaySettings() {
   const {
@@ -34,30 +32,11 @@ export function useDisplaySettings() {
     }
   }, [privateMode, currencyUnit, update])
 
-  const formatAmount = useCallback(
-    (amount: AmountSats): string => {
-      if (privateMode) {
-        return '■■■■'
-      }
-
-      if (currencyUnit === 'btc') {
-        return satsToBtc(String(amount)).toLocaleString(undefined, {
-          minimumFractionDigits: 8,
-          maximumFractionDigits: 8,
-        })
-      }
-
-      return amount.toLocaleString()
-    },
-    [currencyUnit, privateMode],
-  )
-
   return {
     currency: currencyUnit,
     isPrivate: privateMode,
     toggleCurrencyUnit,
     togglePrivacyMode,
     toggleDisplayMode,
-    formatAmount,
   }
 }

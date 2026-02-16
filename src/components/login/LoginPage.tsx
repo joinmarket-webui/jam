@@ -1,25 +1,19 @@
 import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Spinner } from '@/components/ui/spinner'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
-import { cn, sortWallets } from '@/lib/utils'
+import { sortWallets } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { LoginForm } from './LoginForm'
+import { LoginCard } from './LoginCard'
 
 interface LoginFormData {
   walletFileName: WalletFileName
@@ -47,7 +41,7 @@ const LoginPage = () => {
   } = useQuery({
     ...listwalletsQueryOptions,
     queryFn: withQueryDelay(listwalletsQueryOptions.queryFn, {
-      delayAfter: 210,
+      throttle: 210,
     }),
   })
 
@@ -91,7 +85,8 @@ const LoginPage = () => {
     },
     onError: (error) => {
       /* TODO: i18n */
-      toast.error(`Failed to unlock wallet: ${error.message || t('global.errors.reason_unknown')}`)
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(`Failed to unlock wallet: ${reason}`)
     },
   })
 
@@ -107,86 +102,19 @@ const LoginPage = () => {
 
   return (
     <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center space-y-2">
-          <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            {listWalletsFetching ? (
-              <Spinner className="size-6" />
-            ) : (
-              <WalletIcon className="text-primary" onClick={() => void listWalletsRefetch()} />
-            )}
-          </div>
-          <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
-          {listWalletsLoading ? (
-            <>
-              <Skeleton className="h-4 w-full" />
-            </>
-          ) : wallets.length > 0 ? (
-            <CardDescription>{/*TODO: i18n */}Select a wallet and enter your password to continue.</CardDescription>
-          ) : undefined}
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {listWalletsError ? (
-            <>
-              <Alert variant="destructive">
-                <AlertCircleIcon />
-                <AlertTitle>{t('wallets.error_loading_failed')}</AlertTitle>
-                <AlertDescription>{listWalletsError.message || t('global.errors.reason_unknown')}</AlertDescription>
-              </Alert>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => void listWalletsRefetch()}
-                disabled={listWalletsFetching}
-              >
-                <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
-                {t('global.retry')}
-              </Button>
-            </>
-          ) : (
-            <>
-              {listWalletsLoading ? (
-                <>
-                  <LoginForm loading />
-                  <div className="flex flex-col gap-2">
-                    <div>&nbsp;</div>
-                    <div>&nbsp;</div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {wallets.length === 0 ? (
-                    <div className="text-center">
-                      <p className="text-muted-foreground text-sm">{t('wallets.subtitle_no_wallets')}</p>
-                    </div>
-                  ) : (
-                    <LoginForm
-                      wallets={wallets}
-                      activeWallet={activeWalletOrNull ?? undefined}
-                      makerRunning={makerRunning}
-                      coinjoinInProgress={coinjoinInProgress}
-                      disabled={login.isPending || listWalletsFetching}
-                      onSubmit={handleSubmit}
-                    />
-                  )}
-
-                  <div className="flex flex-col gap-2">
-                    <Button variant="link" size="sm" onClick={() => void navigate(routes.createWallet)}>
-                      {t('wallets.button_new_wallet')}
-                    </Button>
-                    <Button variant="link" size="sm" onClick={() => void navigate('/import-wallet')} disabled>
-                      {/* TODO: implement "import wallet" */}
-                      {t('wallets.button_import_wallet')}
-                      <Badge variant="destructive">Not yet implemented.</Badge>
-                    </Button>
-                  </div>
-                </>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <LoginCard
+        wallets={wallets}
+        activeWallet={activeWalletOrNull ?? undefined}
+        makerRunning={makerRunning}
+        coinjoinInProgress={coinjoinInProgress}
+        disabled={login.isPending || listWalletsFetching}
+        onSubmit={handleSubmit}
+        isSubmitting={login.isPending}
+        listWalletsFetching={listWalletsFetching}
+        listWalletsLoading={listWalletsLoading}
+        listWalletsError={listWalletsError ?? undefined}
+        onReloadClick={async () => void (await listWalletsRefetch())}
+      />
     </div>
   )
 }

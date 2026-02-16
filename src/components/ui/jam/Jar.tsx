@@ -1,47 +1,55 @@
 import type { JarColor } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { Balance } from './Balance'
 import { JarIcon } from './JarIcon'
 
 interface JarProps {
-  name: string
-  amount: AmountSats
-  color: JarColor
-  formatAmount: (amount: number) => string
-  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
-  totalBalance?: AmountSats
-  onClick?: () => void
   className?: string
+  name: string
+  color: JarColor
+  totalBalance: AmountSats
+  availableBalance: AmountSats
+  frozenOrLockedBalance: AmountSats
+  totalWalletBalance: AmountSats
+  disabled?: boolean
 }
 
 export function Jar({
-  name,
-  amount,
-  color,
-  currencySymbol,
-  formatAmount,
-  totalBalance = 0,
-  onClick,
   className,
+  name,
+  color,
+  totalBalance,
+  availableBalance,
+  frozenOrLockedBalance,
+  totalWalletBalance,
+  disabled = false,
 }: JarProps) {
   return (
-    <button
-      className={cn(
-        'group/jar flex flex-row items-center gap-2 transition-all duration-300 hover:scale-105 sm:flex-col',
-        className,
-      )}
-      onClick={onClick}
+    <div
+      className={cn('group/jar flex flex-row items-center gap-2 transition-all duration-300 sm:flex-col', className)}
     >
-      <JarIcon amount={amount} totalBalance={totalBalance} color={color} />
+      <JarIcon
+        className={`${disabled ? 'grayscale' : ''}`}
+        color={color}
+        totalBalance={totalBalance}
+        totalWalletBalance={totalWalletBalance}
+      />
       <div className="flex flex-col items-center text-sm">
         <p className={cn('text-muted-foreground group-hover/jar:font-bold', `group-hover/jar:text-[${color}]`)}>
           {name}
         </p>
         <div className="flex min-w-[110px] items-center justify-center">
-          <span className="tabular-nums">{formatAmount(amount)}</span>
-          {currencySymbol('sm')}
+          <Balance valueString={String(availableBalance)} />
+        </div>
+        <div
+          className={cn('light:text-blue-500/80 flex min-w-[110px] items-center justify-center gap-1 text-xs', {
+            hidden: frozenOrLockedBalance <= 0,
+          })}
+        >
+          <Balance valueString={String(frozenOrLockedBalance)} frozen={true} />
         </div>
       </div>
-    </button>
+    </div>
   )
 }

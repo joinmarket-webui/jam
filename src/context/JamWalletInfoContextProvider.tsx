@@ -130,10 +130,11 @@ export const JamWalletInfoContextProvider = ({
   walletFileName,
   children,
 }: PropsWithChildren<JamWalletInfoContextProviderProps>) => {
+  const { utxos, queryResult: utxosQueryResult } = useQueryUtxos({ walletFileName })
   const { queryResult: displayWalletQueryResult, ...displayWalletQuery } = useQueryDisplayWallet({
     walletFileName,
+    utxos,
   })
-  const { utxos, queryResult: utxosQueryResult } = useQueryUtxos({ walletFileName })
 
   const walletBalanceSummary = toBalanceSummary(utxos)
 
@@ -223,7 +224,6 @@ export const JamWalletInfoContextProvider = ({
         .refetch()
         .then(() => displayWalletQueryResult.refetch())
         .then(() => undefined),
-
     utxosQueryResult: utxosQueryResult,
     displayWalletQueryResult: displayWalletQueryResult,
   }

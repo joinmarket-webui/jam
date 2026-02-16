@@ -15,7 +15,7 @@ import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
-import { cn, delayedPromise, pseudoRandomInteger, SATS, type WalletFileName } from '@/lib/utils'
+import { cn, delayedPromise, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -319,8 +319,10 @@ export function SendForm({
                   key={index}
                   name={jar.name}
                   color={jar.color}
-                  balance={jar.balanceSummary.calculatedTotalBalanceInSats}
-                  totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+                  totalBalance={jar.balanceSummary.calculatedTotalBalanceInSats}
+                  availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
+                  frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
+                  totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                   isSelected={sourceJarIndex === jar.jarIndex}
                   onClick={() => {
                     setValue('source.fromJar', jar.jarIndex, { shouldValidate: true })
@@ -487,7 +489,7 @@ export function SendForm({
                 aria-disabled
               >
                 {values.amount?.sweepAmount !== undefined && (
-                  <Balance valueString={values.amount.sweepAmount.toFixed(0)} convertToUnit={SATS} showBalance={true} />
+                  <Balance valueString={values.amount.sweepAmount.toFixed(0)} />
                 )}
 
                 <Badge className="text-sm" variant="default">

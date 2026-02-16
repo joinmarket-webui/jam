@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { queryClient } from '@/lib/queryClient'
 import { shortenStringMiddle, sortWallets, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -86,6 +87,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
     try {
       await lockCurrentWallet.refetch({ throwOnError: true })
       authStore.getState().clear()
+      queryClient.clear()
       setCurrentWalletLocked(true)
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
