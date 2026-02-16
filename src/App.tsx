@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -38,6 +38,7 @@ import { routes } from '@/constants/routes'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
 import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProvider'
 import { useApiClient } from '@/hooks/useApiClient'
+import { broadcastAuthCleared, useAuthCrossTabSync } from '@/hooks/useAuthCrossTabSync'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient } from '@/lib/queryClient'
@@ -56,9 +57,13 @@ const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
 const DevErrorThrowingComponent = lazy(() => import('@/components/dev/DevErrorThrowingComponent'))
 
-const clearAuthAndQueryCache = () => {
+const clearAuthAndQueryCache = ({ broadcast }: { broadcast: boolean }) => {
   authStore.getState().clear()
   queryClient.clear()
+
+  if (broadcast) {
+    broadcastAuthCleared()
+  }
 }
 
 const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authenticated: boolean }>) => {
@@ -76,6 +81,7 @@ function App() {
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
+  const clearAuthStateFromRemoteTab = useCallback(() => clearAuthAndQueryCache({ broadcast: false }), [])
 
   const jmSession = useStore(jmSessionStore, (state) => state.state)
 
@@ -98,8 +104,10 @@ function App() {
   )
   const [lockWalletDialogContext, setLockWalletDialogContext] = useState<LockWalletDialogContext>()
 
+  useAuthCrossTabSync({ onRemoteAuthCleared: clearAuthStateFromRemoteTab })
+
   const doOnLogout = async (navigate: NavigateFunction) => {
-    clearAuthAndQueryCache()
+    clearAuthAndQueryCache({ broadcast: true })
     await navigate(routes.login)
   }
 
@@ -283,7 +291,7 @@ function RefreshApiToken() {
         })
 
         if (!response.data) {
-          clearAuthAndQueryCache()
+          clearAuthAndQueryCache({ broadcast: false })
 
           if (isDevMode) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'
