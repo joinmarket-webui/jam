@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  getscheduleOptions,
-  runscheduleMutation,
-  stopcoinjoinOptions,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -89,21 +85,29 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const hasDestinationErrors = destinationErrors.some((error) => error !== undefined)
   const allDestinationAddressesPresent = normalizedDestinationAddresses.every((address) => address !== '')
 
-  const getScheduleQueryOptions = useMemo(
-    () =>
-      getscheduleOptions({
-        client,
-        path: { walletname: encodeURIComponent(walletFileName) },
-      }),
-    [client, walletFileName],
-  )
-
   const getScheduleQuery = useQuery({
-    ...getScheduleQueryOptions,
+    queryKey: ['sweep-get-schedule', walletFileName],
     retry: false,
     enabled: jmSession?.coinjoin_in_process === true,
     refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
     refetchIntervalInBackground: true,
+    queryFn: async ({ signal }) => {
+      const result = await getschedule({
+        client,
+        signal,
+        path: { walletname: encodeURIComponent(walletFileName) },
+        throwOnError: false,
+      })
+
+      if (result.error !== undefined) {
+        if (result.response.status === 404) {
+          return undefined
+        }
+        throw new Error(toErrorReason(result.error, 'Failed to load schedule'))
+      }
+
+      return result.data
+    },
   })
 
   const stopScheduleQueryOptions = stopcoinjoinOptions({
