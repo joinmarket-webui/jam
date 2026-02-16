@@ -13,6 +13,7 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useJars } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import { withMutationDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -83,7 +84,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     retry: false,
     gcTime: Number.POSITIVE_INFINITY,
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       // TODO: add reason to i18n
       toast.error(t('receive.error_loading_address_failed', { reason }))
     },

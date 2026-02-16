@@ -36,6 +36,7 @@ import { Switch } from '@/components/ui/switch'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
+import { getErrorReason } from '@/lib/errorReason'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 
@@ -96,7 +97,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const freezeUtxo = useMutation({
     ...freezeMutation({ client }),
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.move.error_freezing_utxos')} ${reason}`)
     },
   })
@@ -104,7 +105,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const unfreezeUtxo = useMutation({
     ...freezeMutation({ client }),
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.move.error_unfreezing_fidelity_bond')} ${reason}`)
     },
   })
@@ -112,7 +113,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const directSend = useMutation({
     ...directsendMutation({ client }),
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.move.error_spending_fidelity_bond')} ${reason}`)
     },
   })

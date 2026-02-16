@@ -20,6 +20,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop } from '@/lib/utils'
@@ -104,7 +105,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       toast.info(t('earn.alert_stopping'), { id: 'earn.alert_stopping' })
     },
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       // TODO: i18n
       toast.error(`Error while stopping the earn process. Reason: ${reason}`)
     },
@@ -118,7 +119,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     },
     onError: (error: ErrorMessage) => {
       console.error('StartMaker error:', error)
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('earn.alert_start_failed', { reason }))
     },
   })

@@ -12,6 +12,7 @@ import { useStore } from 'zustand'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -119,7 +120,7 @@ export function useCreateFidelityBondWizard(
   const freezeUtxo = useMutation({
     ...freezeMutation({ client }),
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.error_freezing_utxos')} ${reason}`)
     },
   })
@@ -127,7 +128,7 @@ export function useCreateFidelityBondWizard(
   const unfreezeUtxo = useMutation({
     ...freezeMutation({ client }),
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
     },
   })
@@ -135,7 +136,7 @@ export function useCreateFidelityBondWizard(
   const directSend = useMutation({
     ...directsendMutation({ client }),
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.error_creating_fidelity_bond')} ${reason}`)
     },
   })
