@@ -1,20 +1,22 @@
-import { useMemo, useState, type ComponentProps } from 'react'
+import { useCallback, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
-import { BrushCleaningIcon, MilkIcon, XIcon } from 'lucide-react'
+import { BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import * as yup from 'yup'
+import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
+import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import { cn, delayedPromise, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
@@ -240,6 +242,8 @@ export function SendForm({
   const { t } = useTranslation()
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
+  const [showQrScannerDialog, setShowQrScannerDialog] = useState(false)
+  const [bip21Message, setBip21Message] = useState<string>()
 
   const schema = useMemo(
     () => sendFormSchema(jars, addressSummary, minNumberOfCollaborators, t),
@@ -286,6 +290,34 @@ export function SendForm({
 
   const doOnSubmit = handleSubmit(onSubmit)
 
+  const applyBip21Result = useCallback(
+    (result: Bip21ParseResult) => {
+      setValue('destination.address', result.address, { shouldValidate: true })
+      setValue('destination.fromJar', undefined, { shouldValidate: true })
+      if (result.amount !== undefined) {
+        setValue('amount.amount', result.amount, { shouldValidate: true })
+        setValue('amount.isSweep', false, { shouldValidate: true })
+      }
+      setBip21Message(result.message)
+    },
+    [setValue],
+  )
+
+  const handleAddressPaste = useCallback(
+    (event: React.ClipboardEvent<HTMLInputElement>) => {
+      const pasted = event.clipboardData.getData('text')
+      if (!pasted.toLowerCase().startsWith('bitcoin:')) return
+
+      const parsed = parseBip21Uri(pasted)
+      if (!parsed) return
+
+      event.preventDefault()
+      applyBip21Result(parsed)
+      toast.success(t('send.qr_scan_bip21_applied'))
+    },
+    [applyBip21Result, t],
+  )
+
   return (
     <>
       <AddressFromJarSelectorDialog
@@ -309,6 +341,7 @@ export function SendForm({
           setShowAddressFromJarSelectorDialog(false)
         }}
       />
+      <QrScannerDialog open={showQrScannerDialog} onOpenChange={setShowQrScannerDialog} onScan={applyBip21Result} />
       <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
           <Field className="space-y-4" data-invalid={errors.source !== undefined}>
@@ -371,8 +404,20 @@ export function SendForm({
                 className="h-auto"
                 type="text"
                 placeholder={t('send.placeholder_recipient')}
+                onPaste={handleAddressPaste}
               />
 
+              <Button
+                id="show-qr-scanner-trigger"
+                type="button"
+                variant="outline"
+                size="lg"
+                disabled={disabled}
+                onClick={() => setShowQrScannerDialog(true)}
+              >
+                <ScanQrCodeIcon />
+                <span className="sr-only">{t('send.qr_scan_title')}</span>
+              </Button>
               <Button
                 id="show-address-from-jar-selector-trigger"
                 type="button"
@@ -430,6 +475,7 @@ export function SendForm({
           {errors.destination?.fromJar?.message && (
             <div className="text-destructive text-xs">{errors.destination.fromJar.message}</div>
           )}
+          {bip21Message && <div className="text-muted-foreground text-xs">{bip21Message}</div>}
         </div>
 
         <div className="space-y-2">
