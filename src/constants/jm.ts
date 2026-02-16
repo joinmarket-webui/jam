@@ -2,6 +2,7 @@ import type { AmountSats, Milliseconds } from '@/types/global'
 import { parseAsIntOrDefault } from './meta-env-utils'
 
 export const JM_WALLET_FILE_EXTENSION = '.jmdat'
+export const JM_DEFAULT_WALLET_TYPE = 'sw-fb'
 
 export const JM_API_AUTH_TOKEN_EXPIRY_DEFAULT: Milliseconds = Math.round(0.5 * 60 * 60 * 1_000)
 export const JM_API_AUTH_TOKEN_EXPIRY_MIN: Milliseconds = 10 * 1_000

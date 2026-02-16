@@ -23,6 +23,7 @@ import SwitchWalletPage from '@/components/SwitchWalletPage'
 import CreateWalletPage from '@/components/create/CreateWalletPage'
 import { EarnPage } from '@/components/earn/EarnPage'
 import ErrorPage from '@/components/error/ErrorPage'
+import ImportWalletPage from '@/components/import/ImportWalletPage'
 import { Layout } from '@/components/layout/Layout'
 import LoginPage from '@/components/login/LoginPage'
 import { OrderbookPage } from '@/components/orderbook/OrderbookPage'
@@ -140,6 +141,10 @@ function App() {
         <Route
           path={routes.createWallet}
           element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWalletPage />}
+        />
+        <Route
+          path={routes.importWallet}
+          element={authenticated ? <Navigate to={routes.home} replace /> : <ImportWalletPage />}
         />
         {isDeveloperMode && isDebugFeatureEnabled('devSetupPage') && (
           <Route

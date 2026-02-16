@@ -2,6 +2,7 @@ export const routes = {
   home: '/',
   login: '/login',
   createWallet: '/create-wallet',
+  importWallet: '/import-wallet',
   switchWallet: '/switch-wallet',
   receive: '/receive',
   send: '/send',
@@ -12,10 +13,7 @@ export const routes = {
   orderbook: '/orderbook',
   logs: '/logs',
   walletJarsDetails: '/wallet/jars',
-  /* walletList: '/',
-  wallet: '/wallet',
-  importWallet: '/import-wallet',
-  */
+  /* walletList: '/', wallet: '/wallet' */
   __dev: '/dev',
   __devErrorExample: '/dev/error-example',
   __devSetup: '/dev/setup',
