@@ -52,7 +52,7 @@ const WalletPreview = ({
 
   return (
     <div className="flex flex-1 items-center">
-      <Link to={routes.home} className="flex items-center gap-2">
+      <Link to={routes.home} className="flex items-center gap-2" data-tour-id="wallet-preview">
         <div className="flex h-8 w-8 items-center">
           {isLoading || isReloading ? (
             <Spinner className="text-muted-foreground size-6 motion-reduce:hidden" strokeWidth={3} />
@@ -216,6 +216,7 @@ export function AppNavbar({
         )}
         <ThemeToggleButton className="hidden sm:flex" variant="ghost-navbar" theme={theme} onClick={toggleTheme} />
         <Button
+          data-tour-id="settings-button"
           variant="ghost-navbar"
           size="icon"
           onClick={() => void navigate(routes.settings)}
