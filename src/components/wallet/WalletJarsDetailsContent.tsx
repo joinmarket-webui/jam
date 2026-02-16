@@ -48,7 +48,7 @@ const isKeyEventFromInputElement = (event: KeyboardEvent) => {
 
 const utxoToTableEntry = (utxo: Utxo, addressSummary: AddressSummary, t: TFunction): UtxoTableEntry => {
   return {
-    ...utxo,
+    utxo: utxo,
     tags: utxoTags(utxo, addressSummary, t),
   }
 }
@@ -183,7 +183,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
 
   return (
     <>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col text-sm sm:flex-row sm:gap-2">
         <div className="flex flex-1 gap-2">
           {t('jar_details.utxo_list.title', { count: jar.utxos.length, jar: jar.name })}
         </div>
@@ -222,7 +222,6 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
             {t('jar_details.utxo_list.button_unfreeze')}
           </Button>
         </ButtonGroup>
-        {}
       </div>
       <div className="flex items-center gap-2">
         <Input
@@ -340,11 +339,6 @@ export const WalletJarsDetailsContent = ({
         </TabsList>
       </Tabs>
 
-      <Alert variant="warning">
-        <AlertTriangleIcon />
-        <AlertTitle>{t('jar_details.utxo_list.alert_under_construction_title')}</AlertTitle>
-        <AlertDescription>{t('jar_details.utxo_list.alert_under_construction_description')}</AlertDescription>
-      </Alert>
       <Tabs defaultValue="utxos" className="flex flex-col gap-4">
         <TabsList className="mx-auto flex items-center gap-2">
           <TabsTrigger value="utxos" className="cursor-pointer" disabled={!enabled}>
