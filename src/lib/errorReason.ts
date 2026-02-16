@@ -20,6 +20,8 @@ const extractReason = (error: unknown, depth = 0): string | undefined => {
     message?: unknown
     error_description?: unknown
     detail?: unknown
+    statusText?: unknown
+    title?: unknown
     error?: unknown
     response?: { data?: unknown } | unknown
     data?: unknown
@@ -27,7 +29,13 @@ const extractReason = (error: unknown, depth = 0): string | undefined => {
     cause?: unknown
   }
 
-  const prioritizedReason = [maybeError.error_description, maybeError.detail, maybeError.message]
+  const prioritizedReason = [
+    maybeError.error_description,
+    maybeError.detail,
+    maybeError.message,
+    maybeError.statusText,
+    maybeError.title,
+  ]
     .map((value) => toNonEmptyString(value))
     .find(Boolean)
 
