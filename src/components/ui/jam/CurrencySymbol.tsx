@@ -15,11 +15,7 @@ export function CurrencySymbol({ currency, isPrivate, className }: CurrencySymbo
   }
 
   if (currency === 'btc') {
-    return (
-      <span data-testid="bitcoin-symbol" className={cn('inline-block', className)}>
-        ₿
-      </span>
-    )
+    return <BtcSymbol className={cn('inline-block size-[1.2em]', className)} />
   }
 
   return <SatSymbol className={cn('inline-block size-[1.2em]', className)} />
@@ -60,6 +56,7 @@ export const BtcSymbol = (props: SVGAttributes<Element>) => {
         verticalAlign: 'middle',
         ...props.style,
       }}
+      data-testid="bitcoin-symbol"
     >
       <path
         fillRule="evenodd"

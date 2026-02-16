@@ -19,11 +19,12 @@
 
 .bitcoinSymbol {
   order: -1;
-  margin-right: 0.1em;
+  margin-right: -0.1em;
 }
 
 .satsSymbol {
   order: 5;
+  margin-left: -0.1em;
 }
 
 .satsSymbol + .frozenSymbol {
