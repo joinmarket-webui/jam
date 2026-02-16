@@ -8,13 +8,13 @@ import styles from './Balance.module.css'
 
 type DisplayMode = 'default' | Currency | 'hidden'
 
-const BTC_SYMBOL = <CurrencySymbol currency="btc" />
+const BTC_SYMBOL = <CurrencySymbol currency="btc" className={styles.bitcoinSymbol} />
 
-const SAT_SYMBOL = <CurrencySymbol currency="sats" />
+const SAT_SYMBOL = <CurrencySymbol currency="sats" className={styles.satsSymbol} />
 
-const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} />
+const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} className={styles.hideSymbol} />
 
-const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className="size-[1em]" />
+const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className={cn('size-[1em]', styles.frozenSymbol)} />
 
 interface ElementWithSymbolsProps {
   symbol?: React.ReactNode
@@ -43,9 +43,9 @@ const ElementWithSymbols = ({
         className,
       )}
     >
-      {frozen && frozenSymbol && FROZEN_SYMBOL}
       {children}
       {showSymbol && symbol}
+      {frozen && frozenSymbol && FROZEN_SYMBOL}
     </span>
   )
 }
@@ -65,10 +65,12 @@ const BitcoinBalance = ({
   ...props
 }: BitcoinBalanceProps) => {
   const numberString = formatBtc(satsToBtc(String(value)))
-  const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
+  const [rawIntegerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
 
   const fractionPartArray = [...fractionalPart]
-  const integerPartIsZero = Number.parseInt(integerPart, 10) === 0
+  const sign = ['-', '+'].includes(rawIntegerPart[0]) ? rawIntegerPart[0] : undefined
+  const integerPart = sign !== undefined ? rawIntegerPart.slice(1) : rawIntegerPart
+  const integerPartIsZero = integerPart === '0'
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
   return (
@@ -84,6 +86,7 @@ const BitcoinBalance = ({
         data-raw-value={value}
         data-formatted-value={numberString}
       >
+        {sign && <span>{sign}</span>}
         <span className={styles.integerPart}>{integerPart}</span>
         <span className={styles.decimalPoint}>{DECIMAL_POINT_CHAR}</span>
         <span className={styles.fractionalPart}>
@@ -105,7 +108,11 @@ interface SatsBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'chi
 const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
   return (
     <ElementWithSymbols symbol={SAT_SYMBOL} {...props}>
-      <span className={cn('slashed-zero tabular-nums select-all')} data-testid="sats-amount" data-raw-value={value}>
+      <span
+        className={cn('slashed-zero tabular-nums select-all', styles.satsAmountColor)}
+        data-testid="sats-amount"
+        data-raw-value={value}
+      >
         {formatSats(value)}
       </span>
     </ElementWithSymbols>
