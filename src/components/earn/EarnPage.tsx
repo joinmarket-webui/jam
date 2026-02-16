@@ -155,7 +155,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
     scrollToTop()
     startMaker.reset()
-  }, [jmSession, makerRunning, startMaker.isSuccess, startMaker, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jmSession, makerRunning, startMaker.isSuccess, startMaker.reset, t])
 
   useEffect(() => {
     if (!jmSession || !stopMaker.isSuccess || makerRunning) return
@@ -164,7 +165,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     toast.dismiss('earn.alert_running')
     toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
     stopMaker.reset()
-  }, [jmSession, makerRunning, stopMaker.isSuccess, stopMaker, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jmSession, makerRunning, stopMaker.isSuccess, stopMaker.reset, t])
 
   if (!jmSession) {
     return <PageLoading />
