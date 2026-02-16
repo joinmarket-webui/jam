@@ -25,10 +25,16 @@ export const jmConfigStore = createStore<JmConfigStoreState>()(
       },
       set: (val) =>
         set((state) => {
-          const copy = { ...state.state }
-          copy[val.key.section] = copy[val.key.section] || {}
-          copy[val.key.section][val.key.field] = val.value
-          return { state: copy }
+          const currentSection = state.state[val.key.section] || {}
+          return {
+            state: {
+              ...state.state,
+              [val.key.section]: {
+                ...currentSection,
+                [val.key.field]: val.value,
+              },
+            },
+          }
         }),
       clear: () => set({ state: initial }),
     }),
