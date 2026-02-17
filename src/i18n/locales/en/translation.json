@@ -193,14 +193,15 @@
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
       "text_button_submit": "Import",
-      "text_button_submitting": "Importing..."
+      "text_button_submitting": "Recovering wallet..."
     },
     "success": {
       "title": "Wallet imported successfully!",
       "subtitle": "The rescanning process started searching for your funds. Please be patient, this may take some time.",
       "text_button_submit": "Continue"
     },
-    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}"
+    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}",
+    "text_recovery_time_warning": "Wallet recovery scans the blockchain for your transactions. This may take several minutes depending on wallet history."
   },
   "current_wallet": {
     "text_loading": "Loading",
@@ -805,6 +806,7 @@
       "column_title_address": "Address",
       "column_title_confirmations": "Confs.",
       "column_title_label_and_status": "Tags",
+      "placeholder_search": "Search UTXOs",
       "row_button_details": "Details",
       "utxo_detail_label_id": "UTXO Id",
       "utxo_detail_label_address": "Address",
