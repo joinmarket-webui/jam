@@ -18,13 +18,14 @@ import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { JM_DEFAULT_WALLET_TYPE, JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
-import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
+import { DUMMY_SEED_PHRASE, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 
@@ -148,11 +149,13 @@ const ImportWalletPage = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ImportWalletFormValues>({
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   })
+  const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
   const recoverWallet = useMutation({
     ...recoverwalletMutation({ client }),
@@ -275,6 +278,22 @@ const ImportWalletPage = () => {
                     autoComplete="off"
                   />
                 </Field>
+                {showDummyMnemonicHelper && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={disabled}
+                    onClick={() => {
+                      setValue('seedPhrase', DUMMY_SEED_PHRASE.join(' '), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }}
+                  >
+                    Use dummy mnemonic
+                  </Button>
+                )}
                 {errors.seedPhrase?.message && (
                   <div className="text-destructive text-xs">{errors.seedPhrase.message}</div>
                 )}
