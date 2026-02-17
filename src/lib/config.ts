@@ -2,8 +2,10 @@ import { createClient } from '@joinmarket-webui/joinmarket-api-ts'
 import type { Client } from '@joinmarket-webui/joinmarket-api-ts/client'
 import type { ClientOptions, UnlockWalletResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { isDevMode } from '@/constants/debugFeatures'
+import { isConnectivityError } from '@/lib/connectivity'
 import { normalizeAppError } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
+import { connectivityStore } from '@/store/connectivityStore'
 
 type ApiToken = UnlockWalletResponse['token']
 
@@ -21,7 +23,18 @@ function loggingResponseInterceptor(response: Response) {
 }
 
 function normalizeErrorInterceptor(error: unknown) {
-  return normalizeAppError(error)
+  const normalized = normalizeAppError(error)
+  if (isConnectivityError(normalized)) {
+    connectivityStore.getState().markApiUnreachable()
+  } else {
+    connectivityStore.getState().markApiReachable()
+  }
+  return normalized
+}
+
+function markApiReachableInterceptor(response: Response) {
+  connectivityStore.getState().markApiReachable()
+  return response
 }
 
 const createJamAuthenticationMiddleware = () => {
@@ -45,6 +58,7 @@ export const createApiClient = (): Client => {
 
   const jamAuthMiddleware = createJamAuthenticationMiddleware()
   client.interceptors.request.use(jamAuthMiddleware)
+  client.interceptors.response.use(markApiReachableInterceptor)
   client.interceptors.error.use(normalizeErrorInterceptor)
 
   if (isDevMode()) {
