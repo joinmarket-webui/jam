@@ -108,8 +108,8 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             icon={ExternalLinkIcon}
             title={t('settings.show_block_explorer')}
             checked={jamSettings.state.showBlockExplorer}
-            onCheckedChange={() =>
-              jamSettings.update({ showBlockExplorer: !jamSettings.state.showBlockExplorer })
+            onCheckedChange={(checked) =>
+              jamSettings.update({ showBlockExplorer: checked })
             }
           />
         </CardContent>
