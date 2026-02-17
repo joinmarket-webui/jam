@@ -21,6 +21,7 @@ import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { JM_DEFAULT_WALLET_TYPE, JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useExecuteOrQueueAction } from '@/hooks/useExecuteOrQueueAction'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
@@ -91,6 +92,7 @@ const ImportWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
+  const executeOrQueueAction = useExecuteOrQueueAction()
   const updateAuthState = useStore(authStore, (state) => state.update)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -128,14 +130,34 @@ const ImportWalletPage = () => {
   const onSubmit: SubmitHandler<ImportWalletFormValues> = async (values) => {
     try {
       const walletFileName = walletDisplayNameToFileName(values.walletName)
-      const response = await recoverWallet.mutateAsync({
-        body: {
-          walletname: walletFileName,
-          password: values.password,
-          wallettype: JM_DEFAULT_WALLET_TYPE,
-          seedphrase: normalizeSeedPhrase(values.seedPhrase),
+      const request = {
+        walletname: walletFileName,
+        password: values.password,
+        wallettype: JM_DEFAULT_WALLET_TYPE,
+        seedphrase: normalizeSeedPhrase(values.seedPhrase),
+      }
+
+      const outcome = await executeOrQueueAction({
+        execute: async () =>
+          await recoverWallet.mutateAsync({
+            body: request,
+          }),
+        queueAction: {
+          type: 'import_wallet',
+          payload: { request },
+          meta: {
+            label: 'Import wallet',
+            summary: values.walletName,
+          },
         },
       })
+
+      if (outcome.status === 'queued') {
+        toast.info('Wallet import queued. It will retry automatically when your connection is restored.')
+        return
+      }
+
+      const response = outcome.data
 
       let hashedPassword: string | undefined
       try {

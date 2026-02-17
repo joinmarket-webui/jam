@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { routes } from '@/constants/routes'
 import { useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useExecuteOrQueueAction, type ExecuteOrQueueResult } from '@/hooks/useExecuteOrQueueAction'
 import { getErrorReason } from '@/lib/errorReason'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
@@ -105,21 +106,48 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
+  const executeOrQueueAction = useExecuteOrQueueAction()
   const { rescanInfo, setRescanInfo } = useRescanStatus()
 
-  const rescanMutation = useMutation({
+  const rescanMutation = useMutation<ExecuteOrQueueResult<unknown>, unknown, number>({
     mutationFn: async (blockHeight: number) => {
-      const { data } = await rescanblockchain({
-        client,
-        path: {
-          walletname: encodeURIComponent(walletFileName),
-          blockheight: blockHeight,
+      return await executeOrQueueAction({
+        execute: async () => {
+          const { data } = await rescanblockchain({
+            client,
+            path: {
+              walletname: encodeURIComponent(walletFileName),
+              blockheight: blockHeight,
+            },
+            throwOnError: true,
+          })
+
+          return data
         },
-        throwOnError: true,
+        queueAction: {
+          type: 'rescan_chain',
+          payload: {
+            walletFileName,
+            blockHeight,
+          },
+          meta: {
+            label: 'Rescan blockchain',
+            summary: `from block ${blockHeight}`,
+          },
+        },
       })
-      return data
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.status === 'queued') {
+        toast.info('Rescan action queued. It will retry automatically when your connection is restored.')
+        setRescanInfo({
+          updatedAt: Date.now(),
+          rescanning: false,
+          progress: undefined,
+        })
+        return
+      }
+
       toast.success(t('rescan_chain.success_rescan_started'))
       setRescanInfo({
         updatedAt: Date.now(),

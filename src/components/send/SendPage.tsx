@@ -15,6 +15,7 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { useAddressSummary, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useExecuteOrQueueAction, type ExecuteOrQueueResult } from '@/hooks/useExecuteOrQueueAction'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
@@ -46,6 +47,7 @@ interface SendPageProps {
 export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
+  const executeOrQueueAction = useExecuteOrQueueAction()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
@@ -108,7 +110,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
-  const triggerNonCollarborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
+  const triggerNonCollarborativeTransaction = useMutation<
+    ExecuteOrQueueResult<DirectSendResult>,
+    ErrorMessage,
+    SendFormValues,
+    unknown
+  >({
     mutationFn: async (data: SendFormValues) => {
       if (data.amount === undefined) {
         throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
@@ -128,19 +135,40 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         destination: data.destination.address,
         mixdepth: data.source.fromJar,
       }
-      const response = await directSendMutation.mutateAsync({
-        path: {
-          walletname: encodeURIComponent(walletFileName),
-        },
-        body,
-      })
 
-      return {
-        request: body,
-        response,
-      }
+      return await executeOrQueueAction({
+        execute: async () => {
+          const response = await directSendMutation.mutateAsync({
+            path: {
+              walletname: encodeURIComponent(walletFileName),
+            },
+            body,
+          })
+
+          return {
+            request: body,
+            response,
+          }
+        },
+        queueAction: {
+          type: 'send',
+          payload: {
+            walletFileName,
+            request: body,
+          },
+          meta: {
+            label: 'Send transaction',
+            summary: `to ${data.destination.address}`,
+          },
+        },
+      })
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.status === 'queued') {
+        toast.info('Send action queued. It will retry automatically when your connection is restored.')
+        return
+      }
+
       /* TODO: i18n */
       toast.success('Successfully sent non-collaborative transaction.')
     },
@@ -156,7 +184,17 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     try {
       setPaymentSuccessfulInfoAlert(undefined)
       const result = await triggerNonCollarborativeTransaction.mutateAsync(data)
-      const tx = result.response.txinfo as Required<JmTxInfo>
+
+      if (result.status === 'queued') {
+        setPaymentSuccessfulInfoAlert({
+          variant: 'warning',
+          title: 'Payment queued',
+          description: 'The action was queued and will be sent automatically when your connection is restored.',
+        })
+        return
+      }
+
+      const tx = result.data.response.txinfo as Required<JmTxInfo>
 
       const output = tx.outputs.find((output) => output.address === data.destination.address)
       setPaymentSuccessfulInfoAlert({
@@ -169,12 +207,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         }),
       })
 
-      const inputUtxoIds = (result.response.txinfo.inputs || []).flatMap((it) =>
+      const inputUtxoIds = (result.data.response.txinfo.inputs || []).flatMap((it) =>
         it?.outpoint !== undefined ? [it.outpoint as UtxoId] : [],
       )
       setWaitForUtxosToBeSpent(inputUtxoIds)
 
-      jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
+      jmTxStore.getState().add(result.data.response.txinfo as JmTxInfo)
     } catch (error: unknown) {
       console.error('Error while sending non-collaborative transaction', error)
     }

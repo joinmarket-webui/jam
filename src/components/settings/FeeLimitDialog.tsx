@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useExecuteOrQueueAction } from '@/hooks/useExecuteOrQueueAction'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { factorToPercentage } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
@@ -61,6 +62,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
   }, [open])
 
   const client = useApiClient()
+  const executeOrQueueAction = useExecuteOrQueueAction()
   const collaboratorFormRef = useRef<CollaboratorFeesFormRef>(null)
   const miningFormRef = useRef<MiningFeesFormRef>(null)
 
@@ -104,14 +106,36 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
         { key: 'max_sweep_fee_change', value: miningData.maxSweepFeeChange },
       ]
 
-      for (const { key, value } of configUpdates) {
-        await setconfigMutation.mutateAsync({
-          path: { walletname: encodeURIComponent(walletFileName) },
-          body: {
-            ...FEE_CONFIG_KEYS[key],
-            value,
+      const outcome = await executeOrQueueAction({
+        execute: async () => {
+          for (const { key, value } of configUpdates) {
+            await setconfigMutation.mutateAsync({
+              path: { walletname: encodeURIComponent(walletFileName) },
+              body: {
+                ...FEE_CONFIG_KEYS[key],
+                value,
+              },
+            })
+          }
+          return true
+        },
+        queueAction: {
+          type: 'update_fee_settings',
+          payload: {
+            walletFileName,
+            updates: configUpdates,
           },
-        })
+          meta: {
+            label: 'Update fee settings',
+            summary: `${configUpdates.length} value(s)`,
+          },
+        },
+      })
+
+      if (outcome.status === 'queued') {
+        toast.info('Fee settings update queued. It will retry automatically when your connection is restored.')
+        onOpenChange(false)
+        return
       }
 
       await refetchFeeConfigValues()
