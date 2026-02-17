@@ -111,15 +111,11 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
   )
 }
 
-/* TODO: make offerMinsizeMax mandatory and remove this placehodler */
-const OFFER_MINSIZE_MAX_PLACEHODLER = JAM.OFFER_MINSIZE_MIN * 1_000
-
 interface EarnFormProps {
   className?: string
   isWaitingMakerStart: boolean
   onSubmit: SubmitHandler<EarnFormValues>
-  /* TODO: make offerMinsizeMax mandatory */
-  offerMinsizeMax?: AmountSats
+  offerMinsizeMax: AmountSats
   disabled?: boolean
   debug?: boolean
 }
@@ -129,7 +125,7 @@ export function EarnForm({
   isWaitingMakerStart,
   onSubmit,
   disabled,
-  offerMinsizeMax = OFFER_MINSIZE_MAX_PLACEHODLER,
+  offerMinsizeMax,
   debug = false,
 }: EarnFormProps) {
   const { t } = useTranslation()
@@ -254,7 +250,9 @@ export function EarnForm({
 
         {errors.offerMinAmount && (
           <div className="text-destructive text-xs">
-            {errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max' ? (
+            {offerMinsizeMax < JAM.OFFER_MINSIZE_MIN ? (
+              <>{t('earn.feedback_invalid_min_amount_insufficient_funds')}</>
+            ) : errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max' ? (
               <>
                 {t('earn.feedback_invalid_min_amount_range', {
                   minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
