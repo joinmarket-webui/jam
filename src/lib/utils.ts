@@ -265,3 +265,13 @@ export const time = (() => {
     humanReadableDuration,
   }
 })()
+
+export const getExplorerUrl = (type: 'tx' | 'address', value: string, network: string): string | null => {
+  const bases: Record<string, string> = {
+    mainnet: 'https://mempool.space',
+    testnet: 'https://mempool.space/testnet',
+    signet: 'https://mempool.space/signet',
+  }
+  const base = bases[network]
+  return base ? `${base}/${type}/${value}` : null
+}

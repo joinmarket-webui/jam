@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next'
 import {
   EyeIcon,
   EyeOffIcon,
+  ExternalLinkIcon,
   SunIcon,
   MoonIcon,
   DollarSignIcon,
@@ -102,6 +103,15 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
           <Separator className="opacity-50" />
           <LanguageSelector />
+          <Separator className="opacity-50" />
+          <SettingSwitch
+            icon={ExternalLinkIcon}
+            title={t('settings.show_block_explorer')}
+            checked={jamSettings.state.showBlockExplorer}
+            onCheckedChange={() =>
+              jamSettings.update({ showBlockExplorer: !jamSettings.state.showBlockExplorer })
+            }
+          />
         </CardContent>
       </Card>
 
