@@ -11,6 +11,7 @@ import {
   PackageSearchIcon,
   ServerIcon,
   SettingsIcon,
+  SparklesIcon,
   TerminalIcon,
   UploadIcon,
   WalletIcon,
@@ -36,6 +37,7 @@ import {
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
+import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -92,6 +94,15 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const settingsItems = useMemo(
     () => [
       {
+        title: /*TODO: i18n t('sidebar.item_tour.label')*/ 'Tour',
+        url: routes.home,
+        icon: SparklesIcon,
+        onClick: () => {
+          window.dispatchEvent(new CustomEvent(POST_LOGIN_TOUR_EVENT))
+          toggleSidebar()
+        },
+      },
+      {
         title: /*TODO: i18n t('sidebar.item_rescan.label')*/ t('settings.rescan_chain'),
         url: routes.rescan,
         icon: PackageSearchIcon,
@@ -106,7 +117,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
             },
           ]),
     ],
-    [t, isFeatureEnabled],
+    [t, isFeatureEnabled, toggleSidebar],
   )
 
   const devItems = useMemo(
@@ -188,7 +199,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                   {settingsItems.map((item) => (
                     <SidebarMenuSubItem key={item.title}>
                       <SidebarMenuSubButton asChild title={item.title}>
-                        <Link to={item.url}>
+                        <Link to={item.url} onClick={item.onClick}>
                           <item.icon />
                           <span>{item.title}</span>
                         </Link>

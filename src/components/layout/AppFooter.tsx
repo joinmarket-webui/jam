@@ -1,19 +1,11 @@
 import { useState, type ComponentProps } from 'react'
-import {
-  AlertTriangleIcon,
-  BlocksIcon,
-  BookOpenIcon,
-  FileQuestionMarkIcon,
-  ScrollTextIcon,
-  SparklesIcon,
-} from 'lucide-react'
+import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, FileQuestionMarkIcon, ScrollTextIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
-import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import type { SemanticVersion } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -92,15 +84,6 @@ export function AppFooter({
           </Trans>
         </div>
         <div className="flex flex-1 items-center justify-start gap-2 sm:justify-center" data-tour-id="footer-tools">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.dispatchEvent(new CustomEvent(POST_LOGIN_TOUR_EVENT))}
-            title="Tour"
-          >
-            <SparklesIcon />
-            <span className="hidden sm:inline-block">Tour</span>
-          </Button>
           <Button variant="outline" size="sm" onClick={onClickCheatsheet} title={t('footer.cheatsheet')}>
             <FileQuestionMarkIcon />
             <span className="hidden sm:inline-block">{t('footer.cheatsheet')}</span>
