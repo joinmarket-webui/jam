@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, EyeIcon, EyeOffIcon, WalletIcon } from 'lucide-react'
+import { AlertCircleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -202,6 +202,10 @@ const ImportWalletPage = () => {
           )}
 
           <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="flex flex-col gap-4" noValidate>
+            <Alert>
+              <InfoIcon />
+              <AlertDescription>{t('import_wallet.text_recovery_time_warning')}</AlertDescription>
+            </Alert>
             <div className="space-y-2">
               <Field data-invalid={errors.walletName !== undefined}>
                 <FieldLabel htmlFor="import-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>
