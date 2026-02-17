@@ -26,6 +26,7 @@ import ErrorPage from '@/components/error/ErrorPage'
 import ImportWalletPage from '@/components/import/ImportWalletPage'
 import { Layout } from '@/components/layout/Layout'
 import LoginPage from '@/components/login/LoginPage'
+import { OfflineActionQueueWidget } from '@/components/offline/OfflineActionQueueWidget'
 import { OrderbookPage } from '@/components/orderbook/OrderbookPage'
 import { ReceivePage } from '@/components/receive/ReceivePage'
 import { SendPage } from '@/components/send/SendPage'
@@ -39,7 +40,9 @@ import { routes } from '@/constants/routes'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
 import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProvider'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useConnectivitySync } from '@/hooks/useConnectivitySync'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { useOfflineActionQueueProcessor } from '@/hooks/useOfflineActionQueueProcessor'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
@@ -228,8 +231,10 @@ function App() {
     <ThemeProvider defaultTheme="dark" enableSystem>
       <JamDisplayContextProvider>
         <QueryClientProvider client={queryClient}>
+          <SyncConnectivityState />
           <RefreshApiToken />
           <RefreshJmSession />
+          <ProcessOfflineActionQueue />
           <HandleJmWebsocketMessages />
           {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
           {lockWalletDialogContext && (
@@ -243,6 +248,7 @@ function App() {
             />
           )}
           <RouterProvider router={router} />
+          <OfflineActionQueueWidget />
           <Toaster closeButton />
         </QueryClientProvider>
       </JamDisplayContextProvider>
@@ -326,6 +332,18 @@ function RefreshJmSession() {
     enabled: true,
     refetchInterval: JAM_JM_SESSION_REFRESH_INTERVAL,
   })
+
+  return <></>
+}
+
+function SyncConnectivityState() {
+  useConnectivitySync()
+
+  return <></>
+}
+
+function ProcessOfflineActionQueue() {
+  useOfflineActionQueueProcessor()
 
   return <></>
 }
