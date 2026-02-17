@@ -36,6 +36,7 @@ import { Balance } from '../ui/jam/Balance'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 const ITEMS_PER_PAGE = 25
 
@@ -219,11 +220,23 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
       header: () => t('jar_details.utxo_list.column_title_label_and_status'),
       cell: (info) => (
         <div className="flex items-center gap-2">
-          {info.row.original.tags.map((it, index) => (
-            <StatusBadge key={index} variant={it.variant}>
-              {it.displayValue}
-            </StatusBadge>
-          ))}
+          {info.row.original.tags.map((it, index) => {
+            const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value}`
+            const tooltip = t(tooltipKey)
+            const hasTooltip = tooltip !== tooltipKey
+            return hasTooltip ? (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <StatusBadge variant={it.variant}>{it.displayValue}</StatusBadge>
+                </TooltipTrigger>
+                <TooltipContent>{tooltip}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <StatusBadge key={index} variant={it.variant}>
+                {it.displayValue}
+              </StatusBadge>
+            )
+          })}
         </div>
       ),
       enableSorting: false,
