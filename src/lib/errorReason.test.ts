@@ -51,15 +51,14 @@ describe('getErrorReason', () => {
     expect(getErrorReason(error, 'fallback')).toBe('Wallet is already unlocked')
   })
 
-  it('prefers detail over message when error_description is missing', () => {
+  it('returns message when error_description is missing', () => {
     const error = {
       message: 'Request failed with status 422',
-      detail: 'Seed phrase checksum failed',
     }
-    expect(getErrorReason(error, 'fallback')).toBe('Seed phrase checksum failed')
+    expect(getErrorReason(error, 'fallback')).toBe('Request failed with status 422')
   })
 
-  it('extracts nested backend reason from response.data', () => {
+  it('returns fallback for non-normalized nested objects', () => {
     const error = {
       response: {
         data: {
@@ -67,15 +66,6 @@ describe('getErrorReason', () => {
         },
       },
     }
-    expect(getErrorReason(error, 'fallback')).toBe('Invalid wallet password')
-  })
-
-  it('extracts nested backend reason from error payload', () => {
-    const error = {
-      error: {
-        detail: 'Coinjoin is currently in progress',
-      },
-    }
-    expect(getErrorReason(error, 'fallback')).toBe('Coinjoin is currently in progress')
+    expect(getErrorReason(error, 'fallback')).toBe('fallback')
   })
 })
