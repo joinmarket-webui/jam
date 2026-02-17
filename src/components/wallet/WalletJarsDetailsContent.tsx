@@ -126,6 +126,10 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
   const allSelectedUtxosFrozen = selectedUtxos.every((it) => it?.frozen === true)
   const allSelectedUtxosUnfrozen = selectedUtxos.every((it) => it?.frozen === false)
 
+  const reusedCount = useMemo(() => {
+    return tableEntries.filter((entry) => entry.tags.some((tag) => tag.value === 'reused')).length
+  }, [tableEntries])
+
   // TODO: makerRunning, takerRunner, rescanRunning, etc.
   const operationsEnabled = enabled && !(walletInfo.isFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
 
@@ -228,6 +232,14 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         globalFilter={''}
         onRowSelectionChange={setRowSelection}
       />
+      {reusedCount > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangleIcon />
+          <AlertDescription>
+            {t('jar_details.utxo_list.alert_reused_address', { count: reusedCount })}
+          </AlertDescription>
+        </Alert>
+      )}
     </>
   )
 }
