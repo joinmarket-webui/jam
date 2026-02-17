@@ -113,8 +113,8 @@ export const LoginFormComponent = ({
               />
             </SelectTrigger>
             <SelectContent>
-              {wallets?.map((wallet, index) => (
-                <SelectItem key={index} value={wallet} className="text-base">
+              {wallets?.map((wallet) => (
+                <SelectItem key={wallet} value={wallet} className="text-base">
                   {shortenStringMiddle(walletDisplayName(wallet), 32)}
                   {activeWallet === wallet ? (
                     <span className="text-muted-foreground/50 inline-flex items-center gap-1.5 py-1 text-xs">

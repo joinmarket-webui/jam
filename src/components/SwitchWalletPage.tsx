@@ -151,9 +151,9 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {wallets.map((wallet, index) => (
+                      {wallets.map((wallet) => (
                         <div
-                          key={index}
+                          key={wallet}
                           className={`rounded-lg border p-4 ${
                             wallet === walletFileName ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
                           }`}
