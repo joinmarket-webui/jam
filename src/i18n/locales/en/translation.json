@@ -728,6 +728,12 @@
     "text_highlight_own_orders_subtitle": "It might take some time for your offer and your bond to appear in your local orderbook.",
     "label_pin_to_top_own_orders": "Pin my offers",
     "text_pin_to_top_own_orders_subtitle": "Displays your offers at the top of the table",
+    "market_summary_title": "Market Summary",
+    "market_summary_median_abs_fee": "Median absolute fee: {{ value }} sats",
+    "market_summary_median_rel_fee": "Median relative fee: {{ value }}%",
+    "market_summary_total_liquidity": "Total liquidity: {{ value }} sats",
+    "market_summary_offer_size_range": "Offer size range: {{ min }} – {{ max }} sats",
+    "market_summary_bonded_makers": "{{ bonded }} bonded / {{ unbonded }} unbonded makers",
     "table": {
       "heading_type": "Type",
       "heading_counterparty": "Counterparty",
