@@ -806,6 +806,7 @@
       "column_title_address": "Address",
       "column_title_confirmations": "Confs.",
       "column_title_label_and_status": "Tags",
+      "placeholder_search": "Search UTXOs",
       "row_button_details": "Details",
       "utxo_detail_label_id": "UTXO Id",
       "utxo_detail_label_address": "Address",
