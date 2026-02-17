@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, EyeIcon, EyeOffIcon, WalletIcon } from 'lucide-react'
+import { AlertCircleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +21,7 @@ import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { JM_DEFAULT_WALLET_TYPE, JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
 import { walletDisplayNameToFileName } from '@/lib/utils'
@@ -36,28 +37,6 @@ interface ImportWalletFormValues {
   password: string
   confirmPassword: string
   seedPhrase: string
-}
-
-const getImportErrorReason = (error: unknown, fallback: string) => {
-  if (error instanceof Error && error.message) return error.message
-  if (typeof error === 'string' && error.trim()) return error
-  if (error && typeof error === 'object') {
-    const maybeError = error as {
-      message?: unknown
-      error_description?: unknown
-      detail?: unknown
-    }
-    if (typeof maybeError.error_description === 'string' && maybeError.error_description.trim()) {
-      return maybeError.error_description
-    }
-    if (typeof maybeError.message === 'string' && maybeError.message.trim()) {
-      return maybeError.message
-    }
-    if (typeof maybeError.detail === 'string' && maybeError.detail.trim()) {
-      return maybeError.detail
-    }
-  }
-  return fallback
 }
 
 const normalizeSeedPhrase = (value?: string) =>
@@ -174,7 +153,7 @@ const ImportWalletPage = () => {
       toast.success(t('import_wallet.success.title'))
       await navigate(routes.home)
     } catch (error: unknown) {
-      const reason = getImportErrorReason(error, t('global.errors.reason_unknown'))
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('import_wallet.error_importing_failed', { reason }))
     }
   }
@@ -202,6 +181,10 @@ const ImportWalletPage = () => {
           )}
 
           <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="flex flex-col gap-4" noValidate>
+            <Alert>
+              <InfoIcon />
+              <AlertDescription>{t('import_wallet.text_recovery_time_warning')}</AlertDescription>
+            </Alert>
             <div className="space-y-2">
               <Field data-invalid={errors.walletName !== undefined}>
                 <FieldLabel htmlFor="import-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>

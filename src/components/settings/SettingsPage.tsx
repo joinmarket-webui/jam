@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BtcSymbol, SatSymbol } from '@/components/ui/jam/CurrencySymbol'
+import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
@@ -84,9 +84,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
           <Separator className="opacity-50" />
           <SettingSwitch
-            renderIcon={({ className }) =>
-              currency === 'btc' ? <BtcSymbol className={className} /> : <SatSymbol className={className} />
-            }
+            renderIcon={({ className }) => <CurrencySymbol currency={currency} className={className} />}
             title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
             checked={currency === 'btc'}
             onCheckedChange={toggleCurrencyUnit}

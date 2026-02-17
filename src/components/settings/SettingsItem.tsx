@@ -31,8 +31,8 @@ export const SettingItem = ({
     >
       <div className="flex items-center gap-2">
         <div className="bg-muted/50 flex h-7 w-7 items-center justify-center rounded-lg border">
-          {Icon && <Icon className="text-muted-foreground h-4 w-4" />}
-          {renderIcon?.({ className: 'text-muted-foreground h-4 w-4' })}
+          {Icon && <Icon className="text-muted-foreground h-4 w-4 align-middle" />}
+          {renderIcon?.({ className: 'text-muted-foreground h-4 w-4 align-middle' })}
         </div>
         <div>
           <p className="text-sm font-medium">{title}</p>

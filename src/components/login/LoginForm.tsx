@@ -113,22 +113,14 @@ export const LoginFormComponent = ({
               />
             </SelectTrigger>
             <SelectContent>
-              {wallets?.map((wallet, index) => (
-                <SelectItem key={index} value={wallet} className="text-base">
+              {wallets?.map((wallet) => (
+                <SelectItem key={wallet} value={wallet} className="text-base">
                   {shortenStringMiddle(walletDisplayName(wallet), 32)}
                   {activeWallet === wallet ? (
-                    <span
-                      className={cn('inline-flex items-center gap-1.5 py-1 text-xs', {
-                        'text-muted-foreground/50': !(makerRunning || coinjoinInProgress),
-                        'light:text-green-600 animate-pulse text-green-300/90': makerRunning || coinjoinInProgress,
-                      })}
-                    >
-                      <span
-                        className={cn('h-2 w-2 rounded-full motion-safe:animate-pulse', {
-                          'bg-green-500/70': !(makerRunning || coinjoinInProgress),
-                          'light:bg-green-600 bg-green-300/90': makerRunning || coinjoinInProgress,
-                        })}
-                      />
+                    <span className="text-muted-foreground/50 inline-flex items-center gap-1.5 py-1 text-xs">
+                      {(makerRunning || coinjoinInProgress) && (
+                        <span className="light:bg-green-600 h-2 w-2 rounded-full bg-green-300/90 motion-safe:animate-pulse" />
+                      )}
                       {t('wallets.wallet_preview.wallet_active')}
                     </span>
                   ) : undefined}
