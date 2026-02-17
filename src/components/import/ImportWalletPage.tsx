@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircleIcon, EyeIcon, EyeOffIcon, WalletIcon } from 'lucide-react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import * as yup from 'yup'
 import { useStore } from 'zustand'
@@ -23,7 +24,7 @@ import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
-import { walletDisplayNameToFileName } from '@/lib/utils'
+import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 
@@ -129,6 +130,18 @@ const ImportWalletPage = () => {
     retry: false,
   })
 
+  const { data: sessionInfo, isLoading: sessionLoading } = useQuery({
+    queryKey: ['import-wallet-session'],
+    queryFn: async () => {
+      const { data } = await session({ client })
+      return data
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
+
+  const hasActiveWalletSession = sessionInfo?.session === true
+
   const wallets = useMemo(() => (walletsData?.wallets ?? []) as WalletFileName[], [walletsData?.wallets])
   const schema = useMemo(() => importWalletSchema(wallets, t), [wallets, t])
 
@@ -147,6 +160,8 @@ const ImportWalletPage = () => {
   })
 
   const onSubmit: SubmitHandler<ImportWalletFormValues> = async (values) => {
+    if (hasActiveWalletSession) return
+
     try {
       const walletFileName = walletDisplayNameToFileName(values.walletName)
       const response = await recoverWallet.mutateAsync({
@@ -179,7 +194,13 @@ const ImportWalletPage = () => {
     }
   }
 
-  const disabled = isSubmitting || recoverWallet.isPending || walletsFetching || walletsLoading
+  const disabled =
+    isSubmitting ||
+    recoverWallet.isPending ||
+    walletsFetching ||
+    walletsLoading ||
+    sessionLoading ||
+    hasActiveWalletSession
 
   return (
     <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
@@ -201,119 +222,140 @@ const ImportWalletPage = () => {
             </Alert>
           )}
 
-          <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="flex flex-col gap-4" noValidate>
-            <div className="space-y-2">
-              <Field data-invalid={errors.walletName !== undefined}>
-                <FieldLabel htmlFor="import-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>
-                <Input
-                  id="import-wallet-name"
-                  {...register('walletName', {
-                    required: true,
-                  })}
-                  disabled={disabled}
-                  placeholder={t('create_wallet.placeholder_wallet_name')}
-                  autoComplete="off"
-                />
-              </Field>
-              {errors.walletName?.message && (
-                <div className="text-destructive text-xs">{errors.walletName.message}</div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Field data-invalid={errors.seedPhrase !== undefined}>
-                <FieldLabel htmlFor="import-wallet-seed">{t('import_wallet.import_details.title')}</FieldLabel>
-                <Textarea
-                  id="import-wallet-seed"
-                  rows={4}
-                  {...register('seedPhrase', {
-                    required: true,
-                  })}
-                  disabled={disabled}
-                  placeholder={t('import_wallet.import_details.feedback_invalid_menmonic_phrase')}
-                  autoComplete="off"
-                />
-              </Field>
-              {errors.seedPhrase?.message && (
-                <div className="text-destructive text-xs">{errors.seedPhrase.message}</div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Field data-invalid={errors.password !== undefined}>
-                <FieldLabel htmlFor="import-wallet-password">{t('create_wallet.label_password')}</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="import-wallet-password"
-                    {...register('password', {
+          {hasActiveWalletSession ? (
+            <Alert variant="warning">
+              <AlertCircleIcon />
+              <AlertDescription>
+                <p>
+                  <Trans
+                    i18nKey="import_wallet.alert_other_wallet_unlocked"
+                    values={{
+                      walletName: walletDisplayName((sessionInfo?.wallet_name || 'Unknown') as WalletFileName),
+                    }}
+                  >
+                    Currently <strong>walletName</strong> is active. You need to lock it first.
+                    <Link to={routes.login} className="font-semibold underline">
+                      Go back
+                    </Link>
+                  </Trans>
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="flex flex-col gap-4" noValidate>
+              <div className="space-y-2">
+                <Field data-invalid={errors.walletName !== undefined}>
+                  <FieldLabel htmlFor="import-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>
+                  <Input
+                    id="import-wallet-name"
+                    {...register('walletName', {
                       required: true,
                     })}
                     disabled={disabled}
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={t('create_wallet.placeholder_password')}
+                    placeholder={t('create_wallet.placeholder_wallet_name')}
                     autoComplete="off"
                   />
-                  <InputGroupAddon align="inline-end">
-                    <Button
-                      tabIndex={-1}
-                      type="button"
-                      variant="link"
-                      size="icon"
-                      onClick={() => setShowPassword((val) => !val)}
-                    >
-                      {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-                    </Button>
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
-              {errors.password?.message && <div className="text-destructive text-xs">{errors.password.message}</div>}
-            </div>
+                </Field>
+                {errors.walletName?.message && (
+                  <div className="text-destructive text-xs">{errors.walletName.message}</div>
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <Field data-invalid={errors.confirmPassword !== undefined}>
-                <FieldLabel htmlFor="import-wallet-password-confirm">
-                  {t('create_wallet.label_password_confirm')}
-                </FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="import-wallet-password-confirm"
-                    {...register('confirmPassword', {
+              <div className="space-y-2">
+                <Field data-invalid={errors.seedPhrase !== undefined}>
+                  <FieldLabel htmlFor="import-wallet-seed">{t('import_wallet.import_details.title')}</FieldLabel>
+                  <Textarea
+                    id="import-wallet-seed"
+                    rows={4}
+                    {...register('seedPhrase', {
                       required: true,
                     })}
                     disabled={disabled}
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder={t('create_wallet.placeholder_password_confirm')}
+                    placeholder={t('import_wallet.import_details.feedback_invalid_menmonic_phrase')}
                     autoComplete="off"
                   />
-                  <InputGroupAddon align="inline-end">
-                    <Button
-                      tabIndex={-1}
-                      type="button"
-                      variant="link"
-                      size="icon"
-                      onClick={() => setShowConfirmPassword((val) => !val)}
-                    >
-                      {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
-                    </Button>
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
-              {errors.confirmPassword?.message && (
-                <div className="text-destructive text-xs">{errors.confirmPassword.message}</div>
-              )}
-            </div>
+                </Field>
+                {errors.seedPhrase?.message && (
+                  <div className="text-destructive text-xs">{errors.seedPhrase.message}</div>
+                )}
+              </div>
 
-            <Button type="submit" className="w-full" disabled={disabled} size="xxl">
-              {recoverWallet.isPending ? (
-                <>
-                  <Spinner className="motion-reduce:hidden" />
-                  {t('import_wallet.confirmation.text_button_submitting')}
-                </>
-              ) : (
-                <>{t('import_wallet.confirmation.text_button_submit')}</>
-              )}
-            </Button>
-          </form>
+              <div className="space-y-2">
+                <Field data-invalid={errors.password !== undefined}>
+                  <FieldLabel htmlFor="import-wallet-password">{t('create_wallet.label_password')}</FieldLabel>
+                  <InputGroup>
+                    <InputGroupInput
+                      id="import-wallet-password"
+                      {...register('password', {
+                        required: true,
+                      })}
+                      disabled={disabled}
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder={t('create_wallet.placeholder_password')}
+                      autoComplete="off"
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Button
+                        tabIndex={-1}
+                        type="button"
+                        variant="link"
+                        size="icon"
+                        onClick={() => setShowPassword((val) => !val)}
+                      >
+                        {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+                      </Button>
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+                {errors.password?.message && <div className="text-destructive text-xs">{errors.password.message}</div>}
+              </div>
+
+              <div className="space-y-2">
+                <Field data-invalid={errors.confirmPassword !== undefined}>
+                  <FieldLabel htmlFor="import-wallet-password-confirm">
+                    {t('create_wallet.label_password_confirm')}
+                  </FieldLabel>
+                  <InputGroup>
+                    <InputGroupInput
+                      id="import-wallet-password-confirm"
+                      {...register('confirmPassword', {
+                        required: true,
+                      })}
+                      disabled={disabled}
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder={t('create_wallet.placeholder_password_confirm')}
+                      autoComplete="off"
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Button
+                        tabIndex={-1}
+                        type="button"
+                        variant="link"
+                        size="icon"
+                        onClick={() => setShowConfirmPassword((val) => !val)}
+                      >
+                        {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
+                      </Button>
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+                {errors.confirmPassword?.message && (
+                  <div className="text-destructive text-xs">{errors.confirmPassword.message}</div>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" disabled={disabled} size="xxl">
+                {recoverWallet.isPending ? (
+                  <>
+                    <Spinner className="motion-reduce:hidden" />
+                    {t('import_wallet.confirmation.text_button_submitting')}
+                  </>
+                ) : (
+                  <>{t('import_wallet.confirmation.text_button_submit')}</>
+                )}
+              </Button>
+            </form>
+          )}
 
           <div className="flex justify-center">
             <Button variant="link" onClick={() => void navigate(routes.login)}>
