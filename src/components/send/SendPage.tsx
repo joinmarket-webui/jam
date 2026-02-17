@@ -59,9 +59,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
-  const { network } = useDetectNetwork()
+  const { detectedNetwork } = useDetectNetwork()
 
-  const explorerUrl = showBlockExplorer && lastTxid ? getExplorerUrl('tx', lastTxid, network) : null
+  const explorerUrl =
+    showBlockExplorer && lastTxid && detectedNetwork
+      ? getExplorerUrl('tx', lastTxid, detectedNetwork)
+      : null
 
   const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
