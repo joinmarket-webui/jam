@@ -73,7 +73,17 @@ export const LoginCard = ({
             {listWalletsFetching ? (
               <Spinner className="size-6" />
             ) : (
-              <WalletIcon className="text-primary" onClick={() => void onReloadClick()} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-primary h-10 w-10 rounded-full"
+                title={t('global.retry')}
+                aria-label={t('global.retry')}
+                onClick={() => void onReloadClick()}
+              >
+                <WalletIcon />
+              </Button>
             )}
           </div>
           <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
