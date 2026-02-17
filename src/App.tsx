@@ -44,6 +44,7 @@ import { useConnectivitySync } from '@/hooks/useConnectivitySync'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useOfflineActionQueueProcessor } from '@/hooks/useOfflineActionQueueProcessor'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import { isConnectivityError } from '@/lib/connectivity'
 import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -294,11 +295,18 @@ function RefreshApiToken() {
         })
 
         if (!response.data) {
+          const reason = response.error?.message || response.error?.error_description || 'Unknown error.'
+          if (isConnectivityError(reason)) {
+            if (isDevMode) {
+              toast.warning(`[DEV] Token refresh skipped due to connectivity issue: ${reason}`)
+            }
+            return
+          }
+
           clearAuthAndQueryCache()
 
           if (isDevMode) {
-            const message = response.error?.message || response.error?.error_description || 'Unknown error.'
-            toast.error(`[DEV] Error while renewing auth token: ${message}`)
+            toast.error(`[DEV] Error while renewing auth token: ${reason}`)
           }
         } else {
           authStore.getState().update({
