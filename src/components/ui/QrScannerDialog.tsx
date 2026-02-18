@@ -123,12 +123,15 @@ export default function QrScannerDialog({ open, onOpenChange, onScan }: QrScanne
   const handleFileUpload = useCallback(
     async (file: File) => {
       try {
-        const scanner = scannerRef.current
-        if (!scanner) return
+        await stopScanner()
+        let scanner = scannerRef.current
+        if (!scanner) {
+          scanner = new Html5Qrcode(QR_READER_ELEMENT_ID)
+          scannerRef.current = scanner
+        }
         const decodedText = await scanner.scanFile(file, false)
         const parsed = parseBip21Uri(decodedText)
         if (parsed) {
-          await stopScanner()
           handleResult(parsed)
         } else {
           toast.error(t('send.qr_scan_invalid_address'))
