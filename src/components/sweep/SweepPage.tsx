@@ -34,6 +34,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
+import type { Schedule } from './scheduleUtils'
 
 interface SweepPageProps {
   walletFileName: WalletFileName
@@ -87,6 +88,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   )
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
+  const [lastKnownSchedule, setLastKnownSchedule] = useState<Schedule>()
   const [dismissedSuccessScheduleSignature, setDismissedSuccessScheduleSignature] = useState<string>()
   const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
   const previousSchedulerStateRef = useRef<{ blockHeight?: number; scheduleSignature: string }>({
@@ -164,7 +166,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const sessionSchedule = isScheduleValue(jmSession?.schedule) ? jmSession.schedule : undefined
   const sessionScheduleSignature = useMemo(() => JSON.stringify(sessionSchedule ?? []), [sessionSchedule])
   const currentSchedule = sessionSchedule
-  const currentScheduleSignature = useMemo(() => JSON.stringify(currentSchedule ?? []), [currentSchedule])
+  const lastKnownScheduleSignature = useMemo(() => JSON.stringify(lastKnownSchedule ?? []), [lastKnownSchedule])
 
   const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
   const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true && !schedulerRunning
@@ -220,6 +222,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       stopScheduleMutation.reset()
     }
   }, [schedulerRunning, stopScheduleMutation])
+
+  useEffect(() => {
+    if (currentSchedule !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- we intentionally keep the last live schedule snapshot for success state after session clears it.
+      setLastKnownSchedule(currentSchedule)
+    }
+  }, [currentSchedule])
 
   const isOperationDisabled =
     maxFeesConfigMissing || collaborativeOperationRunning || jmSession?.rescanning || !preconditionSummary.isFulfilled
@@ -295,14 +304,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     !schedulerRunning &&
     !isWaitingSchedulerStart &&
     !isWaitingSchedulerStop &&
-    currentSchedule !== undefined &&
-    isScheduleLikelyCompletedSuccessfully(currentSchedule, allUtxosFrozen) &&
-    dismissedSuccessScheduleSignature !== currentScheduleSignature
-      ? currentSchedule
+    lastKnownSchedule !== undefined &&
+    isScheduleLikelyCompletedSuccessfully(lastKnownSchedule, allUtxosFrozen) &&
+    dismissedSuccessScheduleSignature !== lastKnownScheduleSignature
+      ? lastKnownSchedule
       : undefined
 
   const dismissSuccessMessage = () => {
-    setDismissedSuccessScheduleSignature(currentScheduleSignature)
+    setDismissedSuccessScheduleSignature(lastKnownScheduleSignature)
   }
 
   if (isLoading || walletInfo.isLoading || jmSession === undefined) {
