@@ -12,9 +12,10 @@ import { SweepDestinationInputs } from '@/components/sweep/SweepDestinationInput
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
+import { SweepSuccessMessage } from '@/components/sweep/SweepSuccessMessage'
 import { buildDestinationErrors, normalizeDestinationAddresses } from '@/components/sweep/destinationValidation'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
-import { isScheduleValue, type Schedule } from '@/components/sweep/scheduleUtils'
+import { isScheduleLikelyCompletedSuccessfully, isScheduleValue } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -86,7 +87,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   )
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
-  const [localSchedule, setLocalSchedule] = useState<Schedule>()
+  const [dismissedSuccessScheduleSignature, setDismissedSuccessScheduleSignature] = useState<string>()
   const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
   const previousSchedulerStateRef = useRef<{ blockHeight?: number; scheduleSignature: string }>({
     scheduleSignature: '[]',
@@ -96,6 +97,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const allUtxos = useMemo(() => {
     return walletInfo.jars.flatMap((jar) => jar.utxos)
   }, [walletInfo.jars])
+  const allUtxosFrozen = useMemo(() => allUtxos.every((utxo) => utxo.frozen), [allUtxos])
   const refetchUtxos = walletInfo.utxosQueryResult.refetch
 
   const preconditionSummary = useMemo(() => {
@@ -132,10 +134,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     onMutate: () => {
       setAlertMessage(undefined)
     },
-    onSuccess: (result) => {
-      if (isScheduleValue(result.schedule)) {
-        setLocalSchedule(result.schedule)
-      }
+    onSuccess: () => {
       setShowScheduleConfirmDialog(false)
     },
     onError: (error: ErrorMessage) => {
@@ -154,9 +153,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     onMutate: () => {
       setAlertMessage(undefined)
     },
-    onSuccess: () => {
-      setLocalSchedule(undefined)
-    },
     onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
@@ -167,16 +163,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const sessionSchedule = isScheduleValue(jmSession?.schedule) ? jmSession.schedule : undefined
   const sessionScheduleSignature = useMemo(() => JSON.stringify(sessionSchedule ?? []), [sessionSchedule])
-  const currentSchedule = sessionSchedule ?? localSchedule
+  const currentSchedule = sessionSchedule
+  const currentScheduleSignature = useMemo(() => JSON.stringify(currentSchedule ?? []), [currentSchedule])
 
   const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
   const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true && !schedulerRunning
   const makerRunning = jmSession?.maker_running === true
   const collaborativeOperationRunning = makerRunning || jmSession?.coinjoin_in_process === true
 
-  const isWaitingSchedulerStart =
-    startScheduleMutation.isPending || (startScheduleMutation.isSuccess && !schedulerRunning)
-  const isWaitingSchedulerStop = stopScheduleMutation.isPending || (stopScheduleMutation.isSuccess && schedulerRunning)
+  const isWaitingSchedulerStart = startScheduleMutation.isPending
+  const isWaitingSchedulerStop = stopScheduleMutation.isPending
 
   const sessionPollingInterval = showInsecureScheduleTestingToggle
     ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_DEV
@@ -295,6 +291,20 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     await stopScheduleMutation.mutateAsync()
   }
 
+  const completedScheduleToShow =
+    !schedulerRunning &&
+    !isWaitingSchedulerStart &&
+    !isWaitingSchedulerStop &&
+    currentSchedule !== undefined &&
+    isScheduleLikelyCompletedSuccessfully(currentSchedule, allUtxosFrozen) &&
+    dismissedSuccessScheduleSignature !== currentScheduleSignature
+      ? currentSchedule
+      : undefined
+
+  const dismissSuccessMessage = () => {
+    setDismissedSuccessScheduleSignature(currentScheduleSignature)
+  }
+
   if (isLoading || walletInfo.isLoading || jmSession === undefined) {
     return <PageLoading />
   }
@@ -355,77 +365,87 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         </Alert>
       )}
 
-      {schedulerRunning && currentSchedule && (
-        <SweepScheduleProgress schedule={currentSchedule} isStopping={isWaitingSchedulerStop} onStop={stopSchedule} />
-      )}
-
-      {!schedulerRunning && (
+      {completedScheduleToShow !== undefined ? (
+        <SweepSuccessMessage schedule={completedScheduleToShow} onContinue={dismissSuccessMessage} />
+      ) : (
         <>
-          <SweepPreconditionAlert summary={preconditionSummary} />
+          {schedulerRunning && currentSchedule && (
+            <SweepScheduleProgress
+              schedule={currentSchedule}
+              isStopping={isWaitingSchedulerStop}
+              onStop={stopSchedule}
+            />
+          )}
 
-          <Card>
-            <CardContent className="space-y-5">
-              <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
-                <div>
-                  <div className="font-medium">{t('scheduler.complete_wallet_title')}</div>
-                  <div className="text-muted-foreground text-sm">{t('scheduler.complete_wallet_subtitle')}</div>
-                </div>
-                <div className="font-semibold">
-                  <Balance valueString={String(walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats)} />
-                </div>
-              </div>
+          {!schedulerRunning && (
+            <>
+              <SweepPreconditionAlert summary={preconditionSummary} />
 
-              <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
+              <Card>
+                <CardContent className="space-y-5">
+                  <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
+                    <div>
+                      <div className="font-medium">{t('scheduler.complete_wallet_title')}</div>
+                      <div className="text-muted-foreground text-sm">{t('scheduler.complete_wallet_subtitle')}</div>
+                    </div>
+                    <div className="font-semibold">
+                      <Balance valueString={String(walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats)} />
+                    </div>
+                  </div>
 
-              {showInsecureScheduleTestingToggle && (
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="switch-use-insecure-schedule-testing"
-                    checked={useInsecureTestingSettings}
-                    onCheckedChange={onInsecureTestingToggleChange}
+                  <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
+
+                  {showInsecureScheduleTestingToggle && (
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="switch-use-insecure-schedule-testing"
+                        checked={useInsecureTestingSettings}
+                        onCheckedChange={onInsecureTestingToggleChange}
+                        disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
+                      />
+                      <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
+                        <div className="flex items-center gap-2 font-medium">
+                          Use insecure testing settings
+                          <DevBadge />
+                        </div>
+                        <div className="text-muted-foreground text-sm">
+                          This is completely insecure but makes testing the schedule much faster.
+                        </div>
+                      </Label>
+                    </div>
+                  )}
+
+                  <SweepDestinationInputs
+                    addresses={destinationAddresses}
+                    errors={destinationErrors}
+                    touched={destinationTouched}
                     disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
+                    onChange={updateDestinationAddress}
+                    onBlur={markDestinationTouched}
                   />
-                  <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-                    <div className="flex items-center gap-2 font-medium">
-                      Use insecure testing settings
-                      <DevBadge />
-                    </div>
-                    <div className="text-muted-foreground text-sm">
-                      This is completely insecure but makes testing the schedule much faster.
-                    </div>
-                  </Label>
-                </div>
-              )}
 
-              <SweepDestinationInputs
-                addresses={destinationAddresses}
-                errors={destinationErrors}
-                touched={destinationTouched}
-                disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                onChange={updateDestinationAddress}
-                onBlur={markDestinationTouched}
-              />
+                  <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
 
-              <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
-
-              <Button
-                type="button"
-                onClick={onOpenScheduleConfirm}
-                disabled={isStartDisabled}
-                size="xxl"
-                className="w-full"
-              >
-                {isWaitingSchedulerStart ? (
-                  <>
-                    <Spinner className="motion-reduce:hidden" />
-                    {t('scheduler.button_start')}
-                  </>
-                ) : (
-                  t('scheduler.button_start')
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+                  <Button
+                    type="button"
+                    onClick={onOpenScheduleConfirm}
+                    disabled={isStartDisabled}
+                    size="xxl"
+                    className="w-full"
+                  >
+                    {isWaitingSchedulerStart ? (
+                      <>
+                        <Spinner className="motion-reduce:hidden" />
+                        {t('scheduler.button_start')}
+                      </>
+                    ) : (
+                      t('scheduler.button_start')
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </>
       )}
     </div>
