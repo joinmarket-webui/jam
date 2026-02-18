@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -40,7 +40,8 @@ interface SweepPageProps {
 
 const DESTINATION_ADDRESS_COUNT_PROD = 3
 const DESTINATION_ADDRESS_COUNT_TEST = 1
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_DEV = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_PROD = 60_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
   addrcount: DESTINATION_ADDRESS_COUNT_TEST,
@@ -87,11 +88,15 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [alertMessage, setAlertMessage] = useState<string>()
   const [localSchedule, setLocalSchedule] = useState<Schedule>()
   const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
+  const previousSchedulerStateRef = useRef<{ blockHeight?: number; scheduleSignature: string }>({
+    scheduleSignature: '[]',
+  })
 
   const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
   const allUtxos = useMemo(() => {
     return walletInfo.jars.flatMap((jar) => jar.utxos)
   }, [walletInfo.jars])
+  const refetchUtxos = walletInfo.utxosQueryResult.refetch
 
   const preconditionSummary = useMemo(() => {
     return buildSweepPreconditionSummary(allUtxos)
@@ -107,31 +112,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const hasDestinationErrors = destinationErrors.some((error) => error !== undefined)
   const allDestinationAddressesPresent = normalizedDestinationAddresses.every((address) => address !== '')
-
-  const getScheduleQuery = useQuery({
-    queryKey: ['sweep-get-schedule', walletFileName],
-    retry: false,
-    enabled: jmSession?.coinjoin_in_process === true,
-    refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
-    refetchIntervalInBackground: true,
-    queryFn: async ({ signal }) => {
-      const result = await getschedule({
-        client,
-        signal,
-        path: { walletname: encodeURIComponent(walletFileName) },
-        throwOnError: false,
-      })
-
-      if (result.error !== undefined) {
-        if (result.response.status === 404) {
-          return null
-        }
-        throw new Error(getErrorReason(result.error, 'Failed to load schedule'))
-      }
-
-      return result.data
-    },
-  })
 
   const stopScheduleQueryOptions = stopcoinjoinOptions({
     client,
@@ -186,8 +166,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   })
 
   const sessionSchedule = isScheduleValue(jmSession?.schedule) ? jmSession.schedule : undefined
-  const queriedSchedule = isScheduleValue(getScheduleQuery.data?.schedule) ? getScheduleQuery.data.schedule : undefined
-  const currentSchedule = sessionSchedule ?? queriedSchedule ?? localSchedule
+  const sessionScheduleSignature = useMemo(() => JSON.stringify(sessionSchedule ?? []), [sessionSchedule])
+  const currentSchedule = sessionSchedule ?? localSchedule
 
   const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
   const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true && !schedulerRunning
@@ -198,11 +178,40 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     startScheduleMutation.isPending || (startScheduleMutation.isSuccess && !schedulerRunning)
   const isWaitingSchedulerStop = stopScheduleMutation.isPending || (stopScheduleMutation.isSuccess && schedulerRunning)
 
+  const sessionPollingInterval = showInsecureScheduleTestingToggle
+    ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_DEV
+    : WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_PROD
+
   useRefreshSession({
-    enabled: isWaitingSchedulerStart || isWaitingSchedulerStop,
-    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    enabled: schedulerRunning || isWaitingSchedulerStart || isWaitingSchedulerStop,
+    refetchInterval: sessionPollingInterval,
     refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
+
+  useEffect(() => {
+    if (!schedulerRunning) {
+      previousSchedulerStateRef.current = {
+        blockHeight: jmSession?.block_height,
+        scheduleSignature: sessionScheduleSignature,
+      }
+      return
+    }
+
+    const previous = previousSchedulerStateRef.current
+    const blockHeightChanged = previous.blockHeight !== undefined && previous.blockHeight !== jmSession?.block_height
+    const scheduleChanged = previous.scheduleSignature !== sessionScheduleSignature
+
+    previousSchedulerStateRef.current = {
+      blockHeight: jmSession?.block_height,
+      scheduleSignature: sessionScheduleSignature,
+    }
+
+    if (!blockHeightChanged && !scheduleChanged) {
+      return
+    }
+
+    void refetchUtxos()
+  }, [schedulerRunning, jmSession?.block_height, refetchUtxos, sessionScheduleSignature])
 
   useEffect(() => {
     if (schedulerRunning && startScheduleMutation.isSuccess) {
