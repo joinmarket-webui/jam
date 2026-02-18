@@ -193,14 +193,15 @@
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
       "text_button_submit": "Import",
-      "text_button_submitting": "Importing..."
+      "text_button_submitting": "Recovering wallet..."
     },
     "success": {
       "title": "Wallet imported successfully!",
       "subtitle": "The rescanning process started searching for your funds. Please be patient, this may take some time.",
       "text_button_submit": "Continue"
     },
-    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}"
+    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}",
+    "text_recovery_time_warning": "Wallet recovery scans the blockchain for your transactions. This may take several minutes depending on wallet history."
   },
   "current_wallet": {
     "text_loading": "Loading",
@@ -807,10 +808,24 @@
       "utxo_tooltip_locktime": "locked until {{ locktime }}",
       "utxo_tag_frozen": "frozen",
       "utxo_tag_fb": "bond",
+      "utxo_tag_tooltip_cj-out": "CoinJoin output — good privacy",
+      "utxo_tag_tooltip_non-cj-change": "Change from a non-CoinJoin tx — may be linkable to inputs",
+      "utxo_tag_tooltip_change-out": "Change from a CoinJoin tx",
+      "utxo_tag_tooltip_reused": "Address used more than once — bad for privacy",
+      "utxo_tag_tooltip_deposit": "Received from an external source",
+      "utxo_tag_tooltip_frozen": "Excluded from spending",
+      "utxo_tag_tooltip_locked": "Excluded from spending — may be reserved for a CoinJoin",
+      "utxo_tag_tooltip_pending": "Part of a pending transaction",
+      "utxo_tag_tooltip_bond": "Locked as a fidelity bond",
+      "utxo_tag_tooltip_new": "Fresh output that has not yet been used in a transaction",
+      "utxo_tag_tooltip_used": "Output associated with prior usage or address reuse",
       "column_title_balance": "Value",
       "column_title_address": "Address",
       "column_title_confirmations": "Confs.",
       "column_title_label_and_status": "Tags",
+      "alert_reused_address_one": "{{ count }} UTXO at a reused address. Reusing addresses links your transactions and degrades privacy.",
+      "alert_reused_address_other": "{{ count }} UTXOs at reused addresses. Reusing addresses links your transactions and degrades privacy.",
+      "placeholder_search": "Search UTXOs",
       "row_button_details": "Details",
       "utxo_detail_label_id": "UTXO Id",
       "utxo_detail_label_address": "Address",

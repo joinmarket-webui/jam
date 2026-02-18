@@ -206,9 +206,12 @@ export const JamWalletInfoContextProvider = ({
     return null
   }, [utxos, addressSummary])
 
+  const maxJarAvailableBalance = Math.max(0, ...jars.map((jar) => jar.balanceSummary.calculatedAvailableBalanceInSats))
+
   const value = {
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     walletBalanceSummary: walletBalanceSummary,
+    maxJarAvailableBalance,
     fidelityBondSummary,
     addressSummary,
     accountSummary,
