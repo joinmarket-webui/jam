@@ -25,7 +25,7 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
-import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJamWalletInfoContext, type AddressSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
@@ -38,14 +38,15 @@ interface SweepPageProps {
   walletFileName: WalletFileName
 }
 
-const DESTINATION_ADDRESS_COUNT = 3
+const DESTINATION_ADDRESS_COUNT_PROD = 3
+const DESTINATION_ADDRESS_COUNT_TEST = 1
 const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
-  addrcount: DESTINATION_ADDRESS_COUNT,
+  addrcount: DESTINATION_ADDRESS_COUNT_TEST,
   minmakercount: 1,
   makercountrange: [1, 0],
-  mixdepthcount: DESTINATION_ADDRESS_COUNT,
+  mixdepthcount: DESTINATION_ADDRESS_COUNT_TEST,
   mintxcount: 1,
   txcountparams: [1, 0],
   timelambda: 0.025,
@@ -54,8 +55,19 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
   waittime: 0,
 }
 
-const initialDestinationAddresses = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => '')
-const initialTouchedValues = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => false)
+const initialDestinationAddresses = (count: number) => Array.from({ length: count }, () => '')
+const initialTouchedValues = (count: number) => Array.from({ length: count }, () => false)
+
+const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
+  const newAddressFromDefaultJar =
+    Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new' && addressMeta.jarIndex === 0)
+      ?.address ?? ''
+  if (newAddressFromDefaultJar !== '') {
+    return newAddressFromDefaultJar
+  }
+
+  return Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new')?.address ?? ''
+}
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
@@ -65,8 +77,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState(false)
-  const [destinationAddresses, setDestinationAddresses] = useState(initialDestinationAddresses)
-  const [destinationTouched, setDestinationTouched] = useState(initialTouchedValues)
+  const [destinationAddresses, setDestinationAddresses] = useState(() =>
+    initialDestinationAddresses(DESTINATION_ADDRESS_COUNT_PROD),
+  )
+  const [destinationTouched, setDestinationTouched] = useState(() =>
+    initialTouchedValues(DESTINATION_ADDRESS_COUNT_PROD),
+  )
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
   const [localSchedule, setLocalSchedule] = useState<Schedule>()
@@ -214,6 +230,19 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     setDestinationTouched((current) => current.map(() => true))
   }
 
+  const onInsecureTestingToggleChange = (checked: boolean) => {
+    setUseInsecureTestingSettings(checked)
+
+    if (checked) {
+      setDestinationAddresses([getNewTestingDestinationAddress(walletInfo.addressSummary)])
+      setDestinationTouched(initialTouchedValues(DESTINATION_ADDRESS_COUNT_TEST))
+      return
+    }
+
+    setDestinationAddresses(initialDestinationAddresses(DESTINATION_ADDRESS_COUNT_PROD))
+    setDestinationTouched(initialTouchedValues(DESTINATION_ADDRESS_COUNT_PROD))
+  }
+
   const updateDestinationAddress = (index: number, value: string) => {
     setDestinationAddresses((current) =>
       current.map((address, currentIndex) => (currentIndex === index ? value : address)),
@@ -344,7 +373,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   <Switch
                     id="switch-use-insecure-schedule-testing"
                     checked={useInsecureTestingSettings}
-                    onCheckedChange={(checked) => setUseInsecureTestingSettings(checked)}
+                    onCheckedChange={onInsecureTestingToggleChange}
                     disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
                   />
                   <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
