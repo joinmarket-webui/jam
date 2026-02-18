@@ -9,6 +9,7 @@ import { DevBadge } from '@/components/dev/DevBadge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -189,6 +190,43 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
     }
   }, [tableRowModel])
 
+  const marketSummary = useMemo(() => {
+    const entries = (tableRowModel?.rows ?? []).map((r) => r.original)
+    if (entries.length === 0) return null
+
+    const absoluteOffers = entries.filter((offer) => offer.type.isAbsolute)
+    const relativeOffers = entries.filter((offer) => offer.type.isRelative)
+
+    const counterpartyBonds = new Map<string, number>()
+    for (const offer of entries) {
+      const previous = counterpartyBonds.get(offer.counterparty) ?? 0
+      if (offer.bondValue.value > previous) counterpartyBonds.set(offer.counterparty, offer.bondValue.value)
+    }
+    const bondedMakers = [...counterpartyBonds.values()].filter((v) => v > 0).length
+
+    const median = (values: number[]) => {
+      if (values.length === 0) return 0
+      // eslint-disable-next-line unicorn/no-array-sort -- toSorted() not supported in target browsers
+      const sorted = [...values].sort((a, b) => a - b)
+      const mid = Math.floor(sorted.length / 2)
+      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+    }
+
+    const maxSizes = entries.map((offer) => Number(offer.maximumSize))
+    const minSizes = entries.map((offer) => Number(offer.minimumSize))
+
+    return {
+      medianAbsFee:
+        absoluteOffers.length > 0 ? Math.round(median(absoluteOffers.map((offer) => offer.fee.value))) : null,
+      medianRelFee: relativeOffers.length > 0 ? median(relativeOffers.map((offer) => offer.fee.value)) : null,
+      totalLiquidity: maxSizes.reduce((sum, v) => sum + v, 0),
+      minOfferSize: Math.min(...minSizes),
+      maxOfferSize: Math.max(...maxSizes),
+      bondedMakers,
+      unbondedMakers: counterpartyBonds.size - bondedMakers,
+    }
+  }, [tableRowModel])
+
   const handleClearAndReload = async () => {
     await refetchOrderbookRefresh().then(() => refetchOrderbookData())
   }
@@ -323,6 +361,43 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
             </div>
           )}
         </div>
+      )}
+
+      {marketSummary && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">{t('orderbook.market_summary_title')}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-muted-foreground grid gap-1 text-sm sm:grid-cols-2">
+            {marketSummary.medianAbsFee !== null && (
+              <p>{t('orderbook.market_summary_median_abs_fee', { value: marketSummary.medianAbsFee.toLocaleString() })}</p>
+            )}
+            {marketSummary.medianRelFee !== null && (
+              <p>
+                {t('orderbook.market_summary_median_rel_fee', {
+                  value: factorToPercentage(marketSummary.medianRelFee).toFixed(4),
+                })}
+              </p>
+            )}
+            <p>
+              {t('orderbook.market_summary_total_liquidity', {
+                value: marketSummary.totalLiquidity.toLocaleString(),
+              })}
+            </p>
+            <p>
+              {t('orderbook.market_summary_offer_size_range', {
+                min: marketSummary.minOfferSize.toLocaleString(),
+                max: marketSummary.maxOfferSize.toLocaleString(),
+              })}
+            </p>
+            <p>
+              {t('orderbook.market_summary_bonded_makers', {
+                bonded: marketSummary.bondedMakers,
+                unbonded: marketSummary.unbondedMakers,
+              })}
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {isLoadingInitially ? (
