@@ -194,6 +194,8 @@ const sendFormSchema = (
     })
     .required()
     .test('address-not-from-source-jar-test', function (root) {
+      // Note: `fromJar` might still be `undefined` at this point
+      if (root.source.fromJar === undefined) return true
       const addressIsFromSourceJar = addressSummary[root.destination.address]?.jarIndex === root.source.fromJar
       if (!addressIsFromSourceJar) return true
 
