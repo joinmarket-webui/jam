@@ -29,6 +29,7 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
@@ -55,18 +56,6 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
 
 const initialDestinationAddresses = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => '')
 const initialTouchedValues = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => false)
-
-const toErrorReason = (error: unknown, fallback: string): string => {
-  if (typeof error === 'object' && error !== null) {
-    if ('message' in error && typeof error.message === 'string' && error.message.trim() !== '') {
-      return error.message
-    }
-    if ('error_description' in error && typeof error.error_description === 'string' && error.error_description !== '') {
-      return error.error_description
-    }
-  }
-  return fallback
-}
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
@@ -119,9 +108,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
       if (result.error !== undefined) {
         if (result.response.status === 404) {
-          return undefined
+          return null
         }
-        throw new Error(toErrorReason(result.error, 'Failed to load schedule'))
+        throw new Error(getErrorReason(result.error, 'Failed to load schedule'))
       }
 
       return result.data
@@ -154,8 +143,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setShowScheduleConfirmDialog(false)
     },
     onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
-     // TODO: i18n add reason to message
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
       setAlertMessage(message)
       toast.error(message)
@@ -174,7 +162,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setLocalSchedule(undefined)
     },
     onError: (error: unknown) => {
-      const message = `${t('scheduler.error_stopping_schedule_failed')} ${toErrorReason(error, t('global.errors.reason_unknown'))}`
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
       setAlertMessage(message)
       toast.error(message)
     },

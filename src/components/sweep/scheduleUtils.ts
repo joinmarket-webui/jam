@@ -13,7 +13,7 @@ export interface ScheduleProgressSummary {
   totalWaitSeconds: number
   totalTransactions: number
   completedTransactions: number
-  currentTransaction: number
+  currentTransactionIndex: number
   isDone: boolean
   steps: ScheduleProgressStep[]
 }
@@ -51,7 +51,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
       totalWaitSeconds: 0,
       totalTransactions: 0,
       completedTransactions: 0,
-      currentTransaction: 0,
+      currentTransactionIndex: 0,
       isDone: true,
       steps: [],
     }
@@ -92,7 +92,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
     totalWaitSeconds,
     totalTransactions: schedule.length,
     completedTransactions: Math.min(completedTransactions, schedule.length),
-    currentTransaction: Math.min(completedTransactions + 1, schedule.length),
+    currentTransactionIndex: Math.min(completedTransactions, schedule.length - 1),
     isDone,
     steps,
   }
