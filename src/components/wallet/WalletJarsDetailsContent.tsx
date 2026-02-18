@@ -187,6 +187,12 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
 
   return (
     <>
+      {reusedCount > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangleIcon />
+          <AlertDescription>{t('jar_details.utxo_list.alert_reused_address', { count: reusedCount })}</AlertDescription>
+        </Alert>
+      )}
       <div className="flex flex-col text-sm sm:flex-row sm:gap-2">
         <div className="flex flex-1 gap-2">
           {t('jar_details.utxo_list.title', { count: jar.utxos.length, jar: jar.name })}
@@ -197,37 +203,37 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
           </Trans>
         </div>
       </div>
-      <div className={cn('flex items-center gap-2', {})}>
-        <Button
-          size="sm"
-          disabled={!operationsEnabled || walletInfo.isFetching}
-          onClick={() => void walletInfo.refetch()}
-        >
-          <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': walletInfo.isFetching })} />
-          {t('global.refresh')}
-        </Button>
-        <ButtonGroup>
+      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2">
           <Button
             size="sm"
-            variant={selectedUtxos.length === 0 ? 'outline' : undefined}
-            disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosFrozen}
-            onClick={() => void onFreezeClick()}
+            disabled={!operationsEnabled || walletInfo.isFetching}
+            onClick={() => void walletInfo.refetch()}
           >
-            {freezeUtxos.isPending ? <Spinner /> : <ThermometerSnowflakeIcon />}
-            {t('jar_details.utxo_list.button_freeze')}
+            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': walletInfo.isFetching })} />
+            {t('global.refresh')}
           </Button>
-          <Button
-            size="sm"
-            variant={selectedUtxos.length === 0 ? 'outline' : undefined}
-            disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosUnfrozen}
-            onClick={() => void onUnfreezeClick()}
-          >
-            {unfreezeUtxos.isPending ? <Spinner /> : <ThermometerSunIcon />}
-            {t('jar_details.utxo_list.button_unfreeze')}
-          </Button>
-        </ButtonGroup>
-      </div>
-      <div className="flex items-center gap-2">
+          <ButtonGroup>
+            <Button
+              size="sm"
+              variant={selectedUtxos.length === 0 ? 'outline' : undefined}
+              disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosFrozen}
+              onClick={() => void onFreezeClick()}
+            >
+              {freezeUtxos.isPending ? <Spinner /> : <ThermometerSnowflakeIcon />}
+              {t('jar_details.utxo_list.button_freeze')}
+            </Button>
+            <Button
+              size="sm"
+              variant={selectedUtxos.length === 0 ? 'outline' : undefined}
+              disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosUnfrozen}
+              onClick={() => void onUnfreezeClick()}
+            >
+              {unfreezeUtxos.isPending ? <Spinner /> : <ThermometerSunIcon />}
+              {t('jar_details.utxo_list.button_unfreeze')}
+            </Button>
+          </ButtonGroup>
+        </div>
         <Input
           placeholder={t('jar_details.utxo_list.placeholder_search')}
           value={searchFilter}
@@ -241,14 +247,6 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         globalFilter={searchFilter}
         onRowSelectionChange={setRowSelection}
       />
-      {reusedCount > 0 && (
-        <Alert variant="destructive">
-          <AlertTriangleIcon />
-          <AlertDescription>
-            {t('jar_details.utxo_list.alert_reused_address', { count: reusedCount })}
-          </AlertDescription>
-        </Alert>
-      )}
     </>
   )
 }
