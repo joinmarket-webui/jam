@@ -39,7 +39,6 @@ import { Balance } from '../ui/jam/Balance'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 const ITEMS_PER_PAGE = 25
 
@@ -241,15 +240,8 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
             const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value}`
             const tooltip = t(tooltipKey)
             const hasTooltip = tooltip !== tooltipKey
-            return hasTooltip ? (
-              <Tooltip key={index}>
-                <TooltipTrigger asChild>
-                  <StatusBadge variant={it.variant}>{it.displayValue}</StatusBadge>
-                </TooltipTrigger>
-                <TooltipContent>{tooltip}</TooltipContent>
-              </Tooltip>
-            ) : (
-              <StatusBadge key={index} variant={it.variant}>
+            return (
+              <StatusBadge key={index} variant={it.variant} tooltip={hasTooltip ? tooltip : undefined}>
                 {it.displayValue}
               </StatusBadge>
             )

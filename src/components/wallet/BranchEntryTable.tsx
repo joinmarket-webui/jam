@@ -154,11 +154,16 @@ export const BranchEntryTable = ({
         header: () => t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_label_and_status'),
         cell: (info) => (
           <div className="flex items-center gap-2">
-            {info.row.original.tags.map((it, index) => (
-              <StatusBadge key={index} variant={it.variant}>
-                {it.displayValue}
-              </StatusBadge>
-            ))}
+            {info.row.original.tags.map((it, index) => {
+              const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value}`
+              const tooltip = t(tooltipKey)
+              const hasTooltip = tooltip !== tooltipKey
+              return (
+                <StatusBadge key={index} variant={it.variant} tooltip={hasTooltip ? tooltip : undefined}>
+                  {it.displayValue}
+                </StatusBadge>
+              )
+            })}
           </div>
         ),
         enableSorting: false,

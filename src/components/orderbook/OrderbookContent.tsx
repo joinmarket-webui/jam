@@ -370,7 +370,9 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           </CardHeader>
           <CardContent className="text-muted-foreground grid gap-1 text-sm sm:grid-cols-2">
             {marketSummary.medianAbsFee !== null && (
-              <p>{t('orderbook.market_summary_median_abs_fee', { value: marketSummary.medianAbsFee.toLocaleString() })}</p>
+              <p>
+                {t('orderbook.market_summary_median_abs_fee', { value: marketSummary.medianAbsFee.toLocaleString() })}
+              </p>
             )}
             {marketSummary.medianRelFee !== null && (
               <p>
