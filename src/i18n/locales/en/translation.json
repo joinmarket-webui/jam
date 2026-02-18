@@ -759,8 +759,6 @@
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
     "description_fees": "The scheduler will pay all occurring fees automatically.",
-    "toggle_insecure_testing": "Use insecure testing settings",
-    "toggle_insecure_testing_subtitle": "This is completely insecure but makes testing the schedule much faster. This option is only available in development mode.",
     "button_start": "Start Scheduler",
     "button_stop": "Stop Scheduler",
     "progress_tldr_seconds": "Scheduled <1>{{ length }}</1> transactions over <3>{{ seconds }}</3> seconds.",

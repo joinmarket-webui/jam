@@ -20,10 +20,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
-import { Label } from '@/components/ui/label'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
-import { Switch } from '@/components/ui/switch'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -349,10 +349,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   />
                   <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
                     <div className="flex items-center gap-2 font-medium">
-                      {t('scheduler.toggle_insecure_testing')}
+                      Use insecure testing settings
                       <DevBadge />
                     </div>
-                    <div className="text-muted-foreground text-sm">{t('scheduler.toggle_insecure_testing_subtitle')}</div>
+                    <div className="text-muted-foreground text-sm">
+                      This is completely insecure but makes testing the schedule much faster.
+                    </div>
                   </Label>
                 </div>
               )}

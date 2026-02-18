@@ -591,8 +591,6 @@
     "label_destination_input": "目的地 {{ destination }}",
     "placeholder_destination_input": "輸入目的地地址...",
     "description_fees": "調度程序將自動支付所有產生的費用。",
-    "toggle_insecure_testing": "使用不安全測試設定",
-    "toggle_insecure_testing_subtitle": "這完全不安全，但會讓調度器測試快得多。此選項僅在開發模式下可用。",
     "button_start": "開始調度程序",
     "button_stop": "停止調度程序",
     "progress_tldr_seconds": "在<3>{{ seconds }}</3>的範圍內預定了<1>{{ length }}</1>個交易。",

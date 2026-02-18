@@ -542,8 +542,6 @@
     "label_destination_input": "Destinazione {{ destination }}",
     "placeholder_destination_input": "Inserisci l'indirizzo di destinazione...",
     "description_fees": "Lo scheduler pagherà automaticamente tutte le commissioni necessarie.",
-    "toggle_insecure_testing": "Usa impostazioni di test non sicure",
-    "toggle_insecure_testing_subtitle": "Questa opzione è completamente non sicura ma rende molto più veloce il test dello scheduler. Questa opzione è disponibile solo in modalità sviluppo.",
     "button_start": "Avvia Scheduler",
     "button_stop": "Ferma Scheduler",
     "progress_tldr_seconds": "Programmate <1>{{ length }}</1> transazioni su <3>{{ seconds }}</3> secondi.",
