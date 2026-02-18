@@ -591,6 +591,8 @@
     "label_destination_input": "Empfangsadresse {{ destination }}",
     "placeholder_destination_input": "Empfängeradresse eingeben...",
     "description_fees": "Alle anfallenden Gebühren werden automatisch abgezogen.",
+    "toggle_insecure_testing": "Use insecure testing settings",
+    "toggle_insecure_testing_subtitle": "This is completely insecure but makes testing the schedule much faster. This option is only available in development mode.",
     "button_start": "Scheduler starten",
     "button_stop": "Scheduler stoppen",
     "progress_tldr_seconds": "<1>{{ length }}</1> Transaktionen in <3>{{ seconds }}</3> Sekunden geplant.",
