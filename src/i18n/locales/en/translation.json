@@ -817,6 +817,8 @@
       "column_title_address": "Address",
       "column_title_confirmations": "Confs.",
       "column_title_label_and_status": "Tags",
+      "alert_reused_address_one": "{{ count }} UTXO at a reused address. Reusing addresses links your transactions and degrades privacy.",
+      "alert_reused_address_other": "{{ count }} UTXOs at reused addresses. Reusing addresses links your transactions and degrades privacy.",
       "placeholder_search": "Search UTXOs",
       "row_button_details": "Details",
       "utxo_detail_label_id": "UTXO Id",
