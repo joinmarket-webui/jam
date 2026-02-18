@@ -18,7 +18,7 @@
     "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format": "npm run lint -- --fix && npm run prettier",
     "preview": "vite preview",
-    "storybook:up": "storybook dev -p 6006 --initial-path=/story/core-button--default",
+    "storybook:up": "storybook dev -p 6006",
     "storybook:build": "storybook build",
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
