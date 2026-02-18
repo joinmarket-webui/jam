@@ -81,7 +81,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
               <Trans
                 i18nKey="scheduler.progress_current_state"
                 values={{
-                  current: progress.currentTransaction,
+                  current: progress.currentTransactionIndex + 1,
                   total: progress.totalTransactions,
                 }}
                 components={highlightedComponents}

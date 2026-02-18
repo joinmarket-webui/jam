@@ -24,7 +24,7 @@ describe('scheduleUtils', () => {
 
     expect(summary.totalTransactions).toBe(3)
     expect(summary.completedTransactions).toBe(1)
-    expect(summary.currentTransaction).toBe(2)
+    expect(summary.currentTransactionIndex).toBe(1)
     expect(summary.isDone).toBe(false)
     expect(summary.steps).toHaveLength(3)
     expect(summary.steps[1].isActive).toBe(true)
