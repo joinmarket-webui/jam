@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getschedule } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -25,6 +25,7 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
@@ -39,18 +40,6 @@ const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 
 const initialDestinationAddresses = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => '')
 const initialTouchedValues = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => false)
-
-const toErrorReason = (error: unknown, fallback: string): string => {
-  if (typeof error === 'object' && error !== null) {
-    if ('message' in error && typeof error.message === 'string' && error.message.trim() !== '') {
-      return error.message
-    }
-    if ('error_description' in error && typeof error.error_description === 'string' && error.error_description !== '') {
-      return error.error_description
-    }
-  }
-  return fallback
-}
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
@@ -103,7 +92,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         if (result.response.status === 404) {
           return undefined
         }
-        throw new Error(toErrorReason(result.error, 'Failed to load schedule'))
+        throw new Error(getErrorReason(result.error, 'Failed to load schedule'))
       }
 
       return result.data
@@ -135,9 +124,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       }
       setShowScheduleConfirmDialog(false)
     },
-    onError: (error: ErrorMessage) => {
-      const reason = error.message || error.error_description || t('global.errors.reason_unknown')
-     // TODO: i18n add reason to message
+    onError: (error: unknown) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
       setAlertMessage(message)
       toast.error(message)
@@ -156,7 +144,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setLocalSchedule(undefined)
     },
     onError: (error: unknown) => {
-      const message = `${t('scheduler.error_stopping_schedule_failed')} ${toErrorReason(error, t('global.errors.reason_unknown'))}`
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
       setAlertMessage(message)
       toast.error(message)
     },
