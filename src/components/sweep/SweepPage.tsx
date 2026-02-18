@@ -137,6 +137,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
     onError: (error: ErrorMessage) => {
       const reason = error.message || error.error_description || t('global.errors.reason_unknown')
+     // TODO: i18n add reason to message
       const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
       setAlertMessage(message)
       toast.error(message)
