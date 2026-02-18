@@ -6,6 +6,13 @@ const meta: Meta<typeof LoginCard> = {
   title: 'Page/Login/LoginCard',
   component: LoginCard,
   tags: ['autodocs'],
+  args: {
+    isSubmitting: false,
+    listWalletsFetching: false,
+    listWalletsLoading: false,
+    enableOnboardingDialog: false,
+    onReloadClick: async () => alert('Reload clicked!'),
+  },
 }
 export default meta
 
@@ -24,7 +31,6 @@ export const Default: Story = {
     activeWallet: undefined,
     makerRunning: false,
     coinjoinInProgress: false,
-    disabled: false,
     onSubmit: async () => alert('Submit clicked!'),
   },
   argTypes: {
@@ -41,7 +47,6 @@ export const Empty: Story = {
     activeWallet: undefined,
     makerRunning: false,
     coinjoinInProgress: false,
-    disabled: false,
     onSubmit: async () => alert('Submit clicked!'),
   },
 }
@@ -64,6 +69,5 @@ export const Error: Story = {
       message: 'Wallet loading failed.',
       error_description: '500 Server Error',
     },
-    onReloadClick: async () => alert('Reload clicked!'),
   },
 }
