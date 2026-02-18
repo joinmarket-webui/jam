@@ -21,6 +21,7 @@ type LoginCardProps = Omit<LoginFormProps, 'loading' | 'onSubmit'> &
     listWalletsLoading: boolean
     listWalletsError?: ErrorMessage
     onReloadClick: () => Promise<void>
+    enableOnboardingDialog?: boolean
   }
 
 const ONBOARDING_DISMISSED_STORAGE_KEY = 'jam:v2:onboarding:dismissed'
@@ -49,6 +50,7 @@ export const LoginCard = ({
   listWalletsFetching,
   listWalletsError,
   onReloadClick,
+  enableOnboardingDialog = true,
 }: LoginCardProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -94,9 +96,11 @@ export const LoginCard = ({
           ) : wallets && wallets.length > 0 ? (
             <CardDescription>{/*TODO: i18n */}Select a wallet and enter your password to continue.</CardDescription>
           ) : undefined}
-          <Button variant="link" size="sm" className="h-auto px-0" onClick={() => setShowOnboarding(true)}>
-            {t('onboarding.splashscreen_button_get_started')}
-          </Button>
+          {enableOnboardingDialog ? (
+            <Button variant="link" size="sm" className="h-auto px-0" onClick={() => setShowOnboarding(true)}>
+              {t('onboarding.splashscreen_button_get_started')}
+            </Button>
+          ) : null}
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -162,7 +166,7 @@ export const LoginCard = ({
         </CardContent>
       </Card>
 
-      <OnboardingDialog open={showOnboarding} onOpenChange={onOnboardingOpenChange} />
+      {enableOnboardingDialog ? <OnboardingDialog open={showOnboarding} onOpenChange={onOnboardingOpenChange} /> : null}
     </>
   )
 }

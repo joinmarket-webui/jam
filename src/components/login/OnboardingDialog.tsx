@@ -106,27 +106,27 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
               <div className="space-y-2 rounded-lg border p-4">
                 <Badge variant="destructive">{t('onboarding.splashscreen_warning_title')}</Badge>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  <Trans i18nKey="onboarding.splashscreen_warning_text">
-                    While JoinMarket is tried and tested, Jam is not. It is beta software, so please{' '}
-                    <a
-                      href="https://github.com/joinmarket-webui/jam/issues"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline underline-offset-4"
-                    >
-                      help to improve the project on GitHub
-                    </a>{' '}
-                    and{' '}
-                    <a
-                      href="https://jamdocs.org"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline underline-offset-4"
-                    >
-                      read the documentation
-                    </a>
-                    .
-                  </Trans>
+                  <Trans
+                    i18nKey="onboarding.splashscreen_warning_text"
+                    components={{
+                      '1': (
+                        <a
+                          href="https://github.com/joinmarket-webui/jam/issues"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline underline-offset-4"
+                        />
+                      ),
+                      '2': (
+                        <a
+                          href="https://jamdocs.org"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline underline-offset-4"
+                        />
+                      ),
+                    }}
+                  />
                 </p>
               </div>
             </div>
