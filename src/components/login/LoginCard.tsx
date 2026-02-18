@@ -4,7 +4,6 @@ import { AlertCircleIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -74,7 +73,17 @@ export const LoginCard = ({
             {listWalletsFetching ? (
               <Spinner className="size-6" />
             ) : (
-              <WalletIcon className="text-primary" onClick={() => void onReloadClick()} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-primary h-10 w-10 rounded-full"
+                title={t('global.retry')}
+                aria-label={t('global.retry')}
+                onClick={() => void onReloadClick()}
+              >
+                <WalletIcon />
+              </Button>
             )}
           </div>
           <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
@@ -141,12 +150,9 @@ export const LoginCard = ({
                     <Button
                       variant={wallets.length === 0 ? 'secondary' : 'link'}
                       size={wallets.length === 0 ? 'xxl' : 'default'}
-                      onClick={() => void navigate('/import-wallet')}
-                      disabled
+                      onClick={() => void navigate(routes.importWallet)}
                     >
-                      {/* TODO: implement "import wallet" */}
                       {t('wallets.button_import_wallet')}
-                      <Badge variant="destructive">Not yet implemented.</Badge>
                     </Button>
                   </div>
                 </>
