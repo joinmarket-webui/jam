@@ -90,7 +90,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
       if (result.error !== undefined) {
         if (result.response.status === 404) {
-          return undefined
+          return null
         }
         throw new Error(getErrorReason(result.error, 'Failed to load schedule'))
       }
