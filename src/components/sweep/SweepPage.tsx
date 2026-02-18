@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { getschedule } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -124,7 +124,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       }
       setShowScheduleConfirmDialog(false)
     },
-    onError: (error: unknown) => {
+    onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
       setAlertMessage(message)
