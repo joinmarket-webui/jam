@@ -6,6 +6,7 @@ import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
+import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { SweepDestinationInputs } from '@/components/sweep/SweepDestinationInputs'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
@@ -19,8 +20,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { Label } from '@/components/ui/label'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
+import { Switch } from '@/components/ui/switch'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -36,6 +40,18 @@ interface SweepPageProps {
 const DESTINATION_ADDRESS_COUNT = 3
 const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
+const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
+  addrcount: DESTINATION_ADDRESS_COUNT,
+  minmakercount: 1,
+  makercountrange: [1, 0],
+  mixdepthcount: DESTINATION_ADDRESS_COUNT,
+  mintxcount: 1,
+  txcountparams: [1, 0],
+  timelambda: 0.025,
+  stage1_timelambda_increase: 1,
+  liquiditywait: 13,
+  waittime: 0,
+}
 
 const initialDestinationAddresses = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => '')
 const initialTouchedValues = () => Array.from({ length: DESTINATION_ADDRESS_COUNT }, () => false)
@@ -62,8 +78,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState(false)
   const [destinationAddresses, setDestinationAddresses] = useState(initialDestinationAddresses)
   const [destinationTouched, setDestinationTouched] = useState(initialTouchedValues)
+  const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
   const [localSchedule, setLocalSchedule] = useState<Schedule>()
+  const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
 
   const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
   const allUtxos = useMemo(() => {
@@ -225,11 +243,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       return
     }
 
+    const body = {
+      destination_addresses: normalizeDestinationAddresses(destinationAddresses),
+      ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
+        ? { tumbler_options: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
+        : {}),
+    }
+
     await startScheduleMutation.mutateAsync({
       path: { walletname: encodeURIComponent(walletFileName) },
-      body: {
-        destination_addresses: normalizeDestinationAddresses(destinationAddresses),
-      },
+      body,
     })
   }
 
@@ -326,6 +349,24 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
               </div>
 
               <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
+
+              {showInsecureScheduleTestingToggle && (
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="switch-use-insecure-schedule-testing"
+                    checked={useInsecureTestingSettings}
+                    onCheckedChange={(checked) => setUseInsecureTestingSettings(checked)}
+                    disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
+                  />
+                  <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
+                    <div className="flex items-center gap-2 font-medium">
+                      {t('scheduler.toggle_insecure_testing')}
+                      <DevBadge />
+                    </div>
+                    <div className="text-muted-foreground text-sm">{t('scheduler.toggle_insecure_testing_subtitle')}</div>
+                  </Label>
+                </div>
+              )}
 
               <SweepDestinationInputs
                 addresses={destinationAddresses}
