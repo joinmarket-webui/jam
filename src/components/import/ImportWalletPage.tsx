@@ -29,6 +29,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { DUMMY_SEED_PHRASE, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { AuthPageShell } from '../layout/AuthPageShell'
 
 const MIN_SEED_WORDS = 12
 const MAX_SEED_WORDS = 24
@@ -185,7 +186,7 @@ const ImportWalletPage = () => {
     hasActiveWalletSession
 
   return (
-    <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+    <AuthPageShell>
       <Card className="w-full max-w-xl">
         <CardHeader className="flex flex-col items-center space-y-2">
           <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
@@ -372,7 +373,7 @@ const ImportWalletPage = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </AuthPageShell>
   )
 }
 

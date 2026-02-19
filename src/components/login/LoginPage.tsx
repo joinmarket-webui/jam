@@ -13,6 +13,7 @@ import { sortWallets } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { AuthPageShell } from '../layout/AuthPageShell'
 import { LoginCard } from './LoginCard'
 
 interface LoginFormData {
@@ -101,7 +102,7 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+    <AuthPageShell>
       <LoginCard
         wallets={wallets}
         activeWallet={activeWalletOrNull ?? undefined}
@@ -115,7 +116,7 @@ const LoginPage = () => {
         listWalletsError={listWalletsError ?? undefined}
         onReloadClick={async () => void (await listWalletsRefetch())}
       />
-    </div>
+    </AuthPageShell>
   )
 }
 

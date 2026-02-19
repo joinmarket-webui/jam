@@ -17,6 +17,7 @@ import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
 import { CreateStepDetailsInput } from './CreateStepDetailsInput'
@@ -126,7 +127,7 @@ const CreateWalletPage = () => {
   }
 
   return (
-    <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+    <AuthPageShell>
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2">
           <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
@@ -160,7 +161,7 @@ const CreateWalletPage = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AuthPageShell>
   )
 }
 

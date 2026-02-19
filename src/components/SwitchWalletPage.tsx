@@ -17,6 +17,7 @@ import { queryClient } from '@/lib/queryClient'
 import { shortenStringMiddle, sortWallets, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { AuthPageShell } from './layout/AuthPageShell'
 import { Spinner } from './ui/spinner'
 
 const SwitchWalletFormSkeleton = () => {
@@ -101,7 +102,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
   }
 
   return (
-    <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+    <AuthPageShell>
       <Card className="w-full max-w-xl shadow-lg">
         <CardHeader className="space-y-2 text-center">
           <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
@@ -221,7 +222,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
           </>
         )}
       </Card>
-    </div>
+    </AuthPageShell>
   )
 }
 
