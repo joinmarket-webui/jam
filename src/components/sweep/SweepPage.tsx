@@ -94,6 +94,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const previousSchedulerStateRef = useRef<{ blockHeight?: number; scheduleSignature: string }>({
     scheduleSignature: '[]',
   })
+  const previousCoinjoinInProcessRef = useRef(false)
 
   const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
   const allUtxos = useMemo(() => {
@@ -165,13 +166,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const sessionSchedule = isScheduleValue(jmSession?.schedule) ? jmSession.schedule : undefined
   const sessionScheduleSignature = useMemo(() => JSON.stringify(sessionSchedule ?? []), [sessionSchedule])
-  const currentSchedule = sessionSchedule
+  const coinjoinInProcess = jmSession?.coinjoin_in_process === true
+  const currentSchedule = sessionSchedule ?? (coinjoinInProcess ? lastKnownSchedule : undefined)
   const lastKnownScheduleSignature = useMemo(() => JSON.stringify(lastKnownSchedule ?? []), [lastKnownSchedule])
 
-  const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
-  const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true && !schedulerRunning
+  const schedulerRunning = coinjoinInProcess
+  const singleCoinJoinRunning = coinjoinInProcess && currentSchedule === undefined
   const makerRunning = jmSession?.maker_running === true
-  const collaborativeOperationRunning = makerRunning || jmSession?.coinjoin_in_process === true
+  const collaborativeOperationRunning = makerRunning || coinjoinInProcess
 
   const isWaitingSchedulerStart = startScheduleMutation.isPending
   const isWaitingSchedulerStop = stopScheduleMutation.isPending
@@ -181,13 +183,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     : WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_PROD
 
   useRefreshSession({
-    enabled: schedulerRunning || isWaitingSchedulerStart || isWaitingSchedulerStop,
+    enabled: coinjoinInProcess || isWaitingSchedulerStart || isWaitingSchedulerStop,
     refetchInterval: sessionPollingInterval,
     refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   useEffect(() => {
-    if (!schedulerRunning) {
+    if (!coinjoinInProcess) {
       previousSchedulerStateRef.current = {
         blockHeight: jmSession?.block_height,
         scheduleSignature: sessionScheduleSignature,
@@ -197,19 +199,34 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
     const previous = previousSchedulerStateRef.current
     const blockHeightChanged = previous.blockHeight !== undefined && previous.blockHeight !== jmSession?.block_height
-    const scheduleChanged = previous.scheduleSignature !== sessionScheduleSignature
+    const scheduleChanged = previous.scheduleSignature !== sessionScheduleSignature && sessionSchedule !== undefined
 
     previousSchedulerStateRef.current = {
       blockHeight: jmSession?.block_height,
       scheduleSignature: sessionScheduleSignature,
     }
 
-    if (!blockHeightChanged && !scheduleChanged) {
+    const shouldRefetchUtxos = blockHeightChanged || (showInsecureScheduleTestingToggle && scheduleChanged)
+    if (!shouldRefetchUtxos) {
       return
     }
 
     void refetchUtxos()
-  }, [schedulerRunning, jmSession?.block_height, refetchUtxos, sessionScheduleSignature])
+  }, [
+    coinjoinInProcess,
+    jmSession?.block_height,
+    refetchUtxos,
+    sessionSchedule,
+    sessionScheduleSignature,
+    showInsecureScheduleTestingToggle,
+  ])
+
+  useEffect(() => {
+    if (previousCoinjoinInProcessRef.current && !coinjoinInProcess) {
+      void refetchUtxos()
+    }
+    previousCoinjoinInProcessRef.current = coinjoinInProcess
+  }, [coinjoinInProcess, refetchUtxos])
 
   useEffect(() => {
     if (schedulerRunning && startScheduleMutation.isSuccess) {
@@ -275,6 +292,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       return
     }
 
+    // Allow the success state to be shown again for a new run,
+    // even when the resulting schedule signature is identical.
+    setDismissedSuccessScheduleSignature(undefined)
+
     const body = {
       destination_addresses: normalizeDestinationAddresses(destinationAddresses),
       ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
@@ -314,7 +335,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     setDismissedSuccessScheduleSignature(lastKnownScheduleSignature)
   }
 
-  if (isLoading || walletInfo.isLoading || jmSession === undefined) {
+  const showInitialLoading = isLoading || jmSession === undefined || (walletInfo.isLoading && allUtxos.length === 0)
+  if (showInitialLoading) {
     return <PageLoading />
   }
 
@@ -371,6 +393,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         <Alert>
           <Spinner className="motion-reduce:hidden" />
           <AlertTitle>{t('scheduler.button_stop')}</AlertTitle>
+        </Alert>
+      )}
+
+      {schedulerRunning && showInsecureScheduleTestingToggle && (
+        <Alert>
+          <AlertTitle>dev tip</AlertTitle>
+          <AlertDescription>
+            run <code className="font-mono">npm run regtest:mine</code> to mine new blocks. also make sure other makers
+            are running and have offers in the orderbook.
+          </AlertDescription>
         </Alert>
       )}
 
