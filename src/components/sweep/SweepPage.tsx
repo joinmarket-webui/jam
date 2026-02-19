@@ -42,7 +42,8 @@ interface SweepPageProps {
 
 const DESTINATION_ADDRESS_COUNT_PROD = 3
 const DESTINATION_ADDRESS_COUNT_TEST = 1
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_DEV = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL_PROD = 60_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
   addrcount: DESTINATION_ADDRESS_COUNT_TEST,
@@ -377,34 +378,27 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         <SweepSuccessMessage schedule={completedScheduleToShow} onContinue={dismissSuccessMessage} />
       ) : (
         <>
-          <SweepPreconditionAlert summary={preconditionSummary} />
+          {schedulerRunning && currentSchedule && (
+            <SweepScheduleProgress
+              schedule={currentSchedule}
+              isStopping={isWaitingSchedulerStop}
+              onStop={stopSchedule}
+            />
+          )}
 
-          <Card>
-            <CardContent className="space-y-5">
-              <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
-                <div>
-                  <div className="font-medium">{t('scheduler.complete_wallet_title')}</div>
-                  <div className="text-muted-foreground text-sm">{t('scheduler.complete_wallet_subtitle')}</div>
-                </div>
-                <div className="font-semibold">
-                  <Balance valueString={String(walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats)} />
-                </div>
-              </div>
+          {!schedulerRunning && (
+            <>
+              <SweepPreconditionAlert summary={preconditionSummary} />
 
-              <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
-
-              {showInsecureScheduleTestingToggle && (
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="switch-use-insecure-schedule-testing"
-                    checked={useInsecureTestingSettings}
-                    onCheckedChange={onInsecureTestingToggleChange}
-                    disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                  />
-                  <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-                    <div className="flex items-center gap-2 font-medium">
-                      Use insecure testing settings
-                      <DevBadge />
+              <Card>
+                <CardContent className="space-y-5">
+                  <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
+                    <div>
+                      <div className="font-medium">{t('scheduler.complete_wallet_title')}</div>
+                      <div className="text-muted-foreground text-sm">{t('scheduler.complete_wallet_subtitle')}</div>
+                    </div>
+                    <div className="font-semibold">
+                      <Balance valueString={String(walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats)} />
                     </div>
                   </div>
 
