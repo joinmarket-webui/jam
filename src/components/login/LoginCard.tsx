@@ -88,13 +88,13 @@ export const LoginCard = ({
               </Button>
             )}
           </div>
-          <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t('login.title')}</CardTitle>
           {listWalletsLoading ? (
             <>
               <Skeleton className="h-4 w-full" />
             </>
           ) : wallets && wallets.length > 0 ? (
-            <CardDescription>{/*TODO: i18n */}Select a wallet and enter your password to continue.</CardDescription>
+            <CardDescription>{t('login.subtitle')}</CardDescription>
           ) : undefined}
           {enableOnboardingDialog ? (
             <Button variant="link" size="sm" className="h-auto px-0" onClick={() => setShowOnboarding(true)}>
