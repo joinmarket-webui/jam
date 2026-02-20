@@ -10,12 +10,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import * as yup from 'yup'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
@@ -197,13 +198,7 @@ const ImportWalletPage = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {walletsError && (
-            <Alert variant="destructive">
-              <AlertCircleIcon />
-              <AlertTitle>{t('wallets.error_loading_failed')}</AlertTitle>
-              <AlertDescription>{walletsError.message || t('global.errors.reason_unknown')}</AlertDescription>
-            </Alert>
-          )}
+          {walletsError && <WalletLoadErrorAlert reason={walletsError.message} />}
 
           {hasActiveWalletSession ? (
             <Alert variant="warning">
