@@ -4,7 +4,14 @@ import { HandshakeIcon, KeyRoundIcon, ShieldCheckIcon, UsersIcon, WalletIcon } f
 import { Trans, useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 type OnboardingStep = {
@@ -91,7 +98,9 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
           <>
             <DialogHeader className="space-y-3 text-left">
               <DialogTitle className="text-2xl">{t('onboarding.splashscreen_title')}</DialogTitle>
-              <p className="text-muted-foreground text-sm">{t('onboarding.splashscreen_subtitle')}</p>
+              <DialogDescription className="text-muted-foreground text-sm">
+                {t('onboarding.splashscreen_subtitle')}
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
@@ -141,6 +150,12 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
         ) : (
           <>
             <DialogHeader className="space-y-4 pr-10 text-left">
+              <DialogTitle className="sr-only">
+                {activeStep?.titleKey ? t(activeStep.titleKey) : t('onboarding.splashscreen_title')}
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                {activeStep?.descriptionKey ? t(activeStep.descriptionKey) : t('onboarding.splashscreen_subtitle')}
+              </DialogDescription>
               <div className="flex items-center gap-1.5">
                 {ONBOARDING_STEPS.map((_, index) => (
                   <span
