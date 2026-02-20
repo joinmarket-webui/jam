@@ -98,7 +98,7 @@ export const LoginFormComponent = ({
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
         <Field data-invalid={errors.walletFileName !== undefined}>
-          <FieldLabel>{/* TODO: i18n */}Wallet</FieldLabel>
+          <FieldLabel>{t('login.label_wallet')}</FieldLabel>
           <Select
             onValueChange={(val: WalletFileName) => setValue('walletFileName', val, { shouldValidate: true })}
             value={values.walletFileName ?? ''}
@@ -109,7 +109,9 @@ export const LoginFormComponent = ({
           >
             <SelectTrigger className="w-full">
               <SelectValue
-                placeholder={/* TODO: i18n */ wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'}
+                placeholder={
+                  wallets.length > 0 ? t('login.placeholder_select_wallet') : t('login.placeholder_no_wallets')
+                }
               />
             </SelectTrigger>
             <SelectContent>
@@ -133,7 +135,7 @@ export const LoginFormComponent = ({
 
       <div className="space-y-2">
         <Field data-invalid={errors.password !== undefined}>
-          <FieldLabel htmlFor="login-password">{t(/* TODO: i18n */ 'Password')}</FieldLabel>
+          <FieldLabel htmlFor="login-password">{t('login.label_password')}</FieldLabel>
           <InputGroup>
             <InputGroupInput
               id="login-password"

@@ -89,6 +89,14 @@
     "button_next": "Next",
     "button_complete": "Let's go!"
   },
+  "login": {
+    "title": "Welcome to Jam",
+    "subtitle": "Select a wallet and enter your password to continue.",
+    "label_wallet": "Wallet",
+    "placeholder_select_wallet": "Select a wallet",
+    "placeholder_no_wallets": "No wallets found.",
+    "label_password": "Password"
+  },
   "error_page": {
     "unknown_error": {
       "title": "An unknown error has been encountered",
