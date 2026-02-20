@@ -640,9 +640,9 @@ export function SendForm({
                             : ''
                         }
                         disabled={disabled}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value, 10)
-                          if (!isNaN(val)) {
+                        onChange={(event) => {
+                          const val = Number.parseInt(event.target.value, 10)
+                          if (!Number.isNaN(val)) {
                             setValue('numCollaborators', val, {
                               shouldValidate: true,
                               shouldDirty: true,

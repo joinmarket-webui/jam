@@ -164,7 +164,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         coinjoinMutation.reset()
       }
       // Refetch wallet info after coinjoin has been stopped/completed
-      refetchWalletInfo()
+      void refetchWalletInfo()
     }
   }, [singleCoinJoinRunning, stopCoinjoinMutation, coinjoinMutation, refetchWalletInfo])
 
