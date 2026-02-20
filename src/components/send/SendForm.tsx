@@ -91,6 +91,10 @@ const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
 
 const MAX_NUM_COLLABORATORS = 99
 
+// In dev mode (regtest), only 2 maker bots are available,
+// so quick-select buttons show lower values
+const QUICK_SELECT_NUM_COLLABORATORS = isDevMode() ? [1, 2, 3] : [8, 9, 10]
+
 // TODO: this value should be dynamic via jm backend settings
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
 
@@ -573,7 +577,7 @@ export function SendForm({
           )}
         </div>
 
-        <Accordion type="single" collapsible>
+        <Accordion type="single" collapsible defaultValue={values.isCoinJoin ? 'options' : undefined}>
           <AccordionItem value="options">
             <AccordionTrigger>{t('send.sending_options')}</AccordionTrigger>
             <AccordionContent className="flex flex-col gap-4">
@@ -582,13 +586,18 @@ export function SendForm({
                   <Switch
                     id="switch-is-collaborative-transaction"
                     checked={values.isCoinJoin}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked) => {
                       setValue('isCoinJoin', checked, {
                         shouldValidate: true,
                         shouldDirty: true,
                         shouldTouch: true,
                       })
-                    }
+                      if (checked && !values.numCollaborators) {
+                        setValue('numCollaborators', initialNumberOfCollaborators(minNumberOfCollaborators), {
+                          shouldValidate: true,
+                        })
+                      }
+                    }}
                     disabled={disabled}
                   />
                   <Label htmlFor="switch-is-collaborative-transaction" className="flex flex-col items-start gap-0">
@@ -596,6 +605,62 @@ export function SendForm({
                     <div className="text-muted-foreground text-sm">{t('send.toggle_coinjoin_subtitle')}</div>
                   </Label>
                 </div>
+
+                {values.isCoinJoin && (
+                  <div className="space-y-2 pl-12">
+                    <FieldLabel>{t('send.label_num_collaborators', { numCollaborators: values.numCollaborators ?? '' })}</FieldLabel>
+                    <div className="text-muted-foreground text-sm">{t('send.description_num_collaborators')}</div>
+                    <div className="flex items-center gap-2">
+                      {QUICK_SELECT_NUM_COLLABORATORS.map((n) => (
+                        <Button
+                          key={n}
+                          type="button"
+                          variant={values.numCollaborators === n ? 'default' : 'outline'}
+                          size="sm"
+                          disabled={disabled}
+                          onClick={() =>
+                            setValue('numCollaborators', n, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            })
+                          }
+                        >
+                          {n}
+                        </Button>
+                      ))}
+                      <Input
+                        type="number"
+                        className="w-24"
+                        placeholder={t('send.input_num_collaborators_placeholder')}
+                        min={minNumberOfCollaborators}
+                        max={MAX_NUM_COLLABORATORS}
+                        value={
+                          values.numCollaborators !== undefined && !QUICK_SELECT_NUM_COLLABORATORS.includes(values.numCollaborators)
+                            ? values.numCollaborators
+                            : ''
+                        }
+                        disabled={disabled}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10)
+                          if (!isNaN(val)) {
+                            setValue('numCollaborators', val, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            })
+                          }
+                        }}
+                      />
+                    </div>
+                    {errors.numCollaborators?.message && (
+                      <div className="text-destructive text-xs">
+                        {t('send.error_invalid_num_collaborators', {
+                          minNumCollaborators: minNumberOfCollaborators,
+                          maxNumCollaborators: MAX_NUM_COLLABORATORS,
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>

@@ -1,23 +1,26 @@
-import { useMemo, useState } from 'react'
-import { directsendMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
+import { directsendMutation, docoinjoinMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
-import { AlertTriangleIcon } from 'lucide-react'
+import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { useAddressSummary, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
+import { useAddressSummary, useJamWalletInfoContext, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
+import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -39,6 +42,9 @@ type DirectSendResult = {
   response: DirectSendResponse
 }
 
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
+
 interface SendPageProps {
   walletFileName: WalletFileName
 }
@@ -56,6 +62,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
+  const { refetch: refetchWalletInfo } = useJamWalletInfoContext()
 
   const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
@@ -83,6 +90,96 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     ...directsendMutation({ client }),
     retry: false,
   })
+
+  const coinjoinMutation = useMutation({
+    ...docoinjoinMutation({ client }),
+    retry: false,
+    onMutate: () => {
+      setPaymentSuccessfulInfoAlert(undefined)
+    },
+    onSuccess: () => {
+      setShowPaymentConfirmDialog(false)
+      toast.success(t('send.alert_payment_successful', {
+        amount: sendFromValuesAwaitingConfirmation?.amount?.isSweep
+          ? 'sweep'
+          : sendFromValuesAwaitingConfirmation?.amount?.amount,
+        address: sendFromValuesAwaitingConfirmation?.destination?.address,
+        txid: '',
+      }))
+    },
+    onError: (error: ErrorMessage) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(`${t('send.direct_payment_error_message_bad_request')} ${reason}`)
+    },
+  })
+
+  const stopCoinjoinQueryOptions = stopcoinjoinOptions({
+    client,
+    path: { walletname: encodeURIComponent(walletFileName) },
+  })
+
+  const stopCoinjoinQuery = useQuery({
+    ...stopCoinjoinQueryOptions,
+    enabled: false,
+    retry: false,
+    staleTime: 1,
+    gcTime: 1,
+  })
+
+  const stopCoinjoinMutation = useMutation({
+    mutationFn: async () => {
+      return await stopCoinjoinQuery.refetch({ throwOnError: true })
+    },
+    retry: false,
+    onError: (error: unknown) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(reason)
+    },
+  })
+
+  const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true
+  const makerRunning = jmSession?.maker_running === true
+  const isWaitingCoinjoinStart =
+    coinjoinMutation.isPending || (coinjoinMutation.isSuccess && !singleCoinJoinRunning)
+  const isWaitingCoinjoinStop =
+    stopCoinjoinMutation.isPending || (stopCoinjoinMutation.isSuccess && singleCoinJoinRunning)
+
+  useRefreshSession({
+    enabled: isWaitingCoinjoinStart || isWaitingCoinjoinStop || singleCoinJoinRunning,
+    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
+  })
+
+  useEffect(() => {
+    if (singleCoinJoinRunning && coinjoinMutation.isSuccess) {
+      coinjoinMutation.reset()
+    }
+  }, [singleCoinJoinRunning, coinjoinMutation])
+
+  useEffect(() => {
+    if (!singleCoinJoinRunning && stopCoinjoinMutation.isSuccess) {
+      stopCoinjoinMutation.reset()
+      // Also reset coinjoin mutation to avoid stuck "waiting" state
+      if (coinjoinMutation.isSuccess) {
+        coinjoinMutation.reset()
+      }
+      // Refetch wallet info after coinjoin has been stopped/completed
+      refetchWalletInfo()
+    }
+  }, [singleCoinJoinRunning, stopCoinjoinMutation, coinjoinMutation, refetchWalletInfo])
+
+  // Reset coinjoin mutation if it's stuck in success state but coinjoin is no longer running
+  // This handles edge cases where the session never reflected coinjoin_in_process: true
+  useEffect(() => {
+    if (!singleCoinJoinRunning && coinjoinMutation.isSuccess) {
+      const timeout = setTimeout(() => {
+        if (!singleCoinJoinRunning && coinjoinMutation.isSuccess) {
+          coinjoinMutation.reset()
+        }
+      }, WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL * 10)
+      return () => clearTimeout(timeout)
+    }
+  }, [singleCoinJoinRunning, coinjoinMutation])
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
 
@@ -140,15 +237,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         response,
       }
     },
-    onSuccess: () => {
-      /* TODO: i18n */
-      toast.success('Successfully sent non-collaborative transaction.')
-    },
     onError: (error) => {
-      /* TODO: i18n */
-      toast.error(
-        `Error while sending non-collaborative transaction: ${error.message || t('global.errors.reason_unknown')}`,
-      )
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(`${t('send.direct_payment_error_message_bad_request')} ${reason}`)
     },
   })
 
@@ -161,7 +252,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       const output = tx.outputs.find((output) => output.address === data.destination.address)
       setPaymentSuccessfulInfoAlert({
         variant: 'success',
-        title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
+        title: t('send.title'),
         description: t('send.alert_payment_successful', {
           amount: output?.value_sats,
           address: output?.address,
@@ -175,8 +266,42 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       setWaitForUtxosToBeSpent(inputUtxoIds)
 
       jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
+
+      // Refetch wallet info to update jar balances
+      await refetchWalletInfo()
     } catch (error: unknown) {
       console.error('Error while sending non-collaborative transaction', error)
+    }
+  }
+
+  const onSubmitCollaborativeSend = async (data: SendFormValues) => {
+    if (data.source?.fromJar === undefined) {
+      throw new Error('Cannot trigger collaborative transaction: Invalid source jar given.')
+    }
+    if (data.destination === undefined || !isValidBitcoinAddress(data.destination.address)) {
+      throw new Error('Cannot trigger collaborative transaction: Invalid bitcoin address given.')
+    }
+    if (data.amount === undefined) {
+      throw new Error('Cannot trigger collaborative transaction: Invalid amount given.')
+    }
+    if (data.numCollaborators === undefined || data.numCollaborators < 1) {
+      throw new Error('Cannot trigger collaborative transaction: Invalid number of collaborators.')
+    }
+
+    try {
+      await coinjoinMutation.mutateAsync({
+        path: {
+          walletname: encodeURIComponent(walletFileName),
+        },
+        body: {
+          mixdepth: data.source.fromJar,
+          amount_sats: data.amount.isSweep === true ? 0 : (data.amount.amount ?? 0),
+          counterparties: data.numCollaborators,
+          destination: data.destination.address,
+        },
+      })
+    } catch (error: unknown) {
+      console.error('Error while sending collaborative transaction', error)
     }
   }
 
@@ -184,9 +309,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     if (data.isCoinJoin !== true) {
       await onSubmitDirectSend(data)
     } else {
-      // TODO: implement sending collaborative transactions
-      console.warn('Sending collaborative transactions is not implemented yet.')
-      toast.error(`Sending collaborative transactions is not implemented yet.`)
+      await onSubmitCollaborativeSend(data)
     }
   }
 
@@ -241,33 +364,53 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
 
-        {/* Send Form Placeholder */}
-        <Alert variant="warning">
-          <AlertTriangleIcon />
-          <AlertTitle>Under construction</AlertTitle>
-          <AlertDescription>
-            Not yet fully implemented.
-            {maxFeesConfigMissing && (
-              <span className="mt-2 block">
-                <strong>Note:</strong> Fee configuration is required before earning with collaborative transactions.
-              </span>
-            )}
-          </AlertDescription>
-        </Alert>
+        {singleCoinJoinRunning && (
+          <Alert variant="warning">
+            <HourglassIcon />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{t('send.text_coinjoin_already_running')}</span>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={isWaitingCoinjoinStop}
+                onClick={() => stopCoinjoinMutation.mutate()}
+              >
+                {isWaitingCoinjoinStop ? (
+                  <>
+                    <Spinner className="motion-reduce:hidden" />
+                    {t('send.confirm_abort_modal.title')}
+                  </>
+                ) : (
+                  t('send.confirm_abort_modal.title')
+                )}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {makerRunning && !singleCoinJoinRunning && (
+          <Alert variant="warning">
+            <HourglassIcon />
+            <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
+          </Alert>
+        )}
+
+        {isWaitingCoinjoinStart && (
+          <Alert>
+            <Spinner className="motion-reduce:hidden" />
+            <AlertTitle>{t('send.text_sending')}</AlertTitle>
+          </Alert>
+        )}
 
         {triggerNonCollarborativeTransaction.error ? (
           <Alert variant="destructive">
             <AlertTriangleIcon />
-            <AlertTitle>{/* TODO: i18n */}Error while sending non-collaborative transaction</AlertTitle>
-            <AlertDescription className="">
-              <p>
-                The exact reason is not entirely clear, only the following is known:{' '}
-                <span className="inline font-mono font-semibold">
-                  "{triggerNonCollarborativeTransaction.error.message}"
-                </span>
-                <br />
+            <AlertTitle>{t('global.error')}</AlertTitle>
+            <AlertDescription>
+              <p>{t('send.direct_payment_error_message_bad_request')}</p>
+              <p className="mt-1 font-mono text-sm">
+                {triggerNonCollarborativeTransaction.error.message}
               </p>
-              <p>Please validate your inputs and try again.</p>
             </AlertDescription>
           </Alert>
         ) : (
@@ -285,7 +428,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 {waitForUtxosToBeSpent.length > 0 && (
                   <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
                     <Spinner className="motion-reduce:hidden" />
-                    <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
+                    <AlertTitle>{t('send.text_sending')}</AlertTitle>
                   </Alert>
                 )}
               </>
@@ -293,7 +436,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </>
         )}
 
-        {/* Earn Form */}
         <Card>
           <CardContent>
             <SendForm
@@ -304,10 +446,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
-                jmSession?.maker_running ||
-                jmSession?.coinjoin_in_process ||
+                makerRunning ||
+                singleCoinJoinRunning ||
                 jmSession?.rescanning ||
-                waitForUtxosToBeSpent.length > 0
+                waitForUtxosToBeSpent.length > 0 ||
+                isWaitingCoinjoinStart ||
+                isWaitingCoinjoinStop
               }
               debug={isDeveloperMode}
             />
