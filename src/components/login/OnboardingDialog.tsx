@@ -4,7 +4,14 @@ import { HandshakeIcon, KeyRoundIcon, ShieldCheckIcon, UsersIcon, WalletIcon } f
 import { Trans, useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 type OnboardingStep = {
@@ -91,7 +98,9 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
           <>
             <DialogHeader className="space-y-3 text-left">
               <DialogTitle className="text-2xl">{t('onboarding.splashscreen_title')}</DialogTitle>
-              <p className="text-muted-foreground text-sm">{t('onboarding.splashscreen_subtitle')}</p>
+              <DialogDescription className="text-muted-foreground text-sm">
+                {t('onboarding.splashscreen_subtitle')}
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
