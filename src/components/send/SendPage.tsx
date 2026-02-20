@@ -148,6 +148,13 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
+  const directSendErrorReason = useMemo(() => {
+    if (!triggerNonCollarborativeTransaction.error) {
+      return undefined
+    }
+    return getErrorReason(triggerNonCollarborativeTransaction.error, t('global.errors.reason_unknown'))
+  }, [triggerNonCollarborativeTransaction.error, t])
+
   const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
     try {
       setPaymentSuccessfulInfoAlert(undefined)
@@ -258,9 +265,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertDescription className="">
               <p>
                 The exact reason is not entirely clear, only the following is known:{' '}
-                <span className="inline font-mono font-semibold">
-                  "{triggerNonCollarborativeTransaction.error.message}"
-                </span>
+                <span className="inline font-mono font-semibold">"{directSendErrorReason}"</span>
                 <br />
               </p>
               <p>Please validate your inputs and try again.</p>
