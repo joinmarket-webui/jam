@@ -142,10 +142,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       toast.success('Successfully sent non-collaborative transaction.')
     },
     onError: (error) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       /* TODO: i18n */
-      toast.error(
-        `Error while sending non-collaborative transaction: ${error.message || t('global.errors.reason_unknown')}`,
-      )
+      toast.error(`Error while sending non-collaborative transaction: ${reason}`)
     },
   })
 
