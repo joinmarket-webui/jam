@@ -18,6 +18,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -92,13 +93,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       waitForUtxosToBeSpent,
       setWaitForUtxosToBeSpent,
       onError: (error: unknown) => {
-        const reason =
-          typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
-            ? error.message
-            : undefined
-
+        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
         const message = t('global.errors.error_reloading_wallet_failed', {
-          reason: reason || t('global.errors.reason_unknown'),
+          reason,
         })
         toast.error(message)
       },
