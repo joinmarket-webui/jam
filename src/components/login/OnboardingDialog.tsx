@@ -150,6 +150,12 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
         ) : (
           <>
             <DialogHeader className="space-y-4 pr-10 text-left">
+              <DialogTitle className="sr-only">
+                {activeStep?.titleKey ? t(activeStep.titleKey) : t('onboarding.splashscreen_title')}
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                {activeStep?.descriptionKey ? t(activeStep.descriptionKey) : t('onboarding.splashscreen_subtitle')}
+              </DialogDescription>
               <div className="flex items-center gap-1.5">
                 {ONBOARDING_STEPS.map((_, index) => (
                   <span
