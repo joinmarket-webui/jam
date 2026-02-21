@@ -78,6 +78,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     utxoSnapshotAtStart: '',
   })
   const refetchWalletInfoRef = useRef(refetchWalletInfo)
+  const currentUtxoSnapshotRef = useRef('')
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
@@ -88,6 +89,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       .toSorted()
       .join('|')
   }, [jars])
+
+  useEffect(() => {
+    currentUtxoSnapshotRef.current = currentUtxoSnapshot
+  }, [currentUtxoSnapshot])
 
   useEffect(() => {
     refetchWalletInfoRef.current = refetchWalletInfo
@@ -236,26 +241,49 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
     state.awaitingCompletion = false
     state.wasRunning = false
-    const hasNewTransaction = currentUtxoSnapshot !== state.utxoSnapshotAtStart
+    const utxoSnapshotAtStart = state.utxoSnapshotAtStart
+    let isCancelled = false
 
-    queueMicrotask(() => {
-      setPaymentSuccessfulInfoAlert({
-        variant: hasNewTransaction ? 'success' : 'warning',
-        title: hasNewTransaction
-          ? t('send.alert_collaborative_completed_title')
-          : t('send.alert_collaborative_ended_title'),
-        description: hasNewTransaction
-          ? t('send.alert_collaborative_completed_description')
-          : t('send.alert_collaborative_ended_description'),
-      })
-      if (hasNewTransaction) {
-        toast.success(t('send.alert_collaborative_completed_title'))
-      } else {
-        toast.warning(t('send.alert_collaborative_ended_title'))
+    const verifyCollaborativeCompletion = async () => {
+      const deadline = Date.now() + 9_000
+      let hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
+
+      while (!hasNewTransaction && Date.now() < deadline) {
+        await refetchWalletInfoRef.current()
+        if (isCancelled) return
+
+        hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
+        if (hasNewTransaction || Date.now() >= deadline) break
+
+        await new Promise((resolve) => window.setTimeout(resolve, 1_000))
       }
-    })
-    void refetchWalletInfoRef.current()
-  }, [coinjoinRunning, currentUtxoSnapshot, t])
+
+      if (isCancelled) return
+
+      queueMicrotask(() => {
+        setPaymentSuccessfulInfoAlert({
+          variant: hasNewTransaction ? 'success' : 'warning',
+          title: hasNewTransaction
+            ? t('send.alert_collaborative_completed_title')
+            : t('send.alert_collaborative_ended_title'),
+          description: hasNewTransaction
+            ? t('send.alert_collaborative_completed_description')
+            : t('send.alert_collaborative_ended_description'),
+        })
+        if (hasNewTransaction) {
+          toast.success(t('send.alert_collaborative_completed_title'))
+        } else {
+          toast.warning(t('send.alert_collaborative_ended_title'))
+        }
+      })
+    }
+
+    void verifyCollaborativeCompletion()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [coinjoinRunning, t])
 
   useEffect(() => {
     if (!coinjoinRunning && stopCoinjoinMutation.isSuccess) {
