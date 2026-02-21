@@ -69,6 +69,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const collaborativeLifecycleRef = useRef({
     awaitingCompletion: false,
     wasRunning: false,
+    txCountAtStart: 0,
   })
 
   const { addressSummary } = useAddressSummary()
@@ -203,14 +204,24 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
     state.awaitingCompletion = false
     state.wasRunning = false
+    const txCountAfter = Object.keys(jmTxStore.getState().getAll()).length
+    const hasNewTransaction = txCountAfter > state.txCountAtStart
 
     queueMicrotask(() => {
       setPaymentSuccessfulInfoAlert({
-        variant: 'success',
-        title: t('send.alert_collaborative_completed_title'),
-        description: t('send.alert_collaborative_completed_description'),
+        variant: hasNewTransaction ? 'success' : 'warning',
+        title: hasNewTransaction
+          ? t('send.alert_collaborative_completed_title')
+          : t('send.alert_collaborative_ended_title'),
+        description: hasNewTransaction
+          ? t('send.alert_collaborative_completed_description')
+          : t('send.alert_collaborative_ended_description'),
       })
-      toast.success(t('send.alert_collaborative_completed_title'))
+      if (hasNewTransaction) {
+        toast.success(t('send.alert_collaborative_completed_title'))
+      } else {
+        toast.warning(t('send.alert_collaborative_ended_title'))
+      }
     })
   }, [coinjoinRunning, t])
 
@@ -328,6 +339,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       try {
         const body = buildCollaborativeSendRequest(data)
         setPaymentSuccessfulInfoAlert(undefined)
+        collaborativeLifecycleRef.current.txCountAtStart = Object.keys(jmTxStore.getState().getAll()).length
         await startCoinjoinMutation.mutateAsync({
           path: { walletname: encodeURIComponent(walletFileName) },
           body,
@@ -356,6 +368,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const onAbortCoinjoin = async () => {
     collaborativeLifecycleRef.current.awaitingCompletion = false
     collaborativeLifecycleRef.current.wasRunning = false
+    collaborativeLifecycleRef.current.txCountAtStart = 0
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutation.mutateAsync()
   }

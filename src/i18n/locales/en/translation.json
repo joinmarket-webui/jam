@@ -369,6 +369,8 @@
     "alert_collaborative_started_description": "JoinMarket accepted your request and is now coordinating the transaction.",
     "alert_collaborative_completed_title": "Collaborative transaction completed",
     "alert_collaborative_completed_description": "JoinMarket finished the collaborative transaction successfully.",
+    "alert_collaborative_ended_title": "Collaborative flow ended",
+    "alert_collaborative_ended_description": "The collaborative flow stopped, but no new completed transaction was confirmed yet. Please verify the recipient and transaction history.",
     "error_starting_collaborative_transaction": "Error while starting collaborative transaction: {{ reason }}",
     "error_stopping_collaborative_transaction": "Error while stopping collaborative transaction: {{ reason }}",
     "error_preparing_collaborative_transaction": "Error while preparing collaborative transaction: {{ reason }}",
