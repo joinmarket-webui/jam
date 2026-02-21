@@ -481,6 +481,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
               feeConfigValues={feeConfigValues}
+              forceCoinJoinEnabled={collaborativeFlowActive}
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}

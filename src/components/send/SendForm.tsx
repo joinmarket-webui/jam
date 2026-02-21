@@ -233,6 +233,7 @@ interface SendFormProps {
   onSubmit: SubmitHandler<SendFormValues>
   minNumberOfCollaborators?: number
   feeConfigValues?: FeeConfigValues
+  forceCoinJoinEnabled?: boolean
   walletFileName: WalletFileName
   jars: Jar[]
   walletBalanceSummary: BalanceSummary
@@ -246,6 +247,7 @@ export function SendForm({
   onSubmit,
   disabled,
   feeConfigValues,
+  forceCoinJoinEnabled = false,
   walletFileName,
   minNumberOfCollaborators = MIN_NUM_COLLABORATORS,
   jars,
@@ -292,6 +294,7 @@ export function SendForm({
   const isSweep = useWatch({ control, name: 'amount.isSweep' })
   const isCoinJoin = useWatch({ control, name: 'isCoinJoin' })
   const collaboratorCount = useWatch({ control, name: 'numCollaborators' })
+  const isCoinJoinEnabled = forceCoinJoinEnabled || isCoinJoin === true
 
   const destinationAddressInfo = useMemo(() => {
     try {
@@ -314,7 +317,7 @@ export function SendForm({
     if (!sourceJar) return undefined
     return buildSweepPreconditionSummary(sourceJar.utxos)
   }, [sourceJar])
-  const hasCoinjoinPreconditionWarning = isCoinJoin === true && coinjoinPreconditionSummary?.isFulfilled === false
+  const hasCoinjoinPreconditionWarning = isCoinJoinEnabled && coinjoinPreconditionSummary?.isFulfilled === false
   const amountForFeeEstimate = useMemo(() => {
     if (values.amount?.isSweep === true) {
       return sourceJar?.balanceSummary.calculatedAvailableBalanceInSats
@@ -323,7 +326,7 @@ export function SendForm({
   }, [sourceJar, values.amount?.amount, values.amount?.isSweep])
   const estimatedMaxCollaboratorFee = useMemo(() => {
     if (
-      values.isCoinJoin !== true ||
+      !isCoinJoinEnabled ||
       values.numCollaborators === undefined ||
       amountForFeeEstimate === undefined ||
       feeConfigValues === undefined
@@ -336,7 +339,7 @@ export function SendForm({
     } catch (_ignoredOnPurpose) {
       return undefined
     }
-  }, [amountForFeeEstimate, feeConfigValues, values.isCoinJoin, values.numCollaborators])
+  }, [amountForFeeEstimate, feeConfigValues, isCoinJoinEnabled, values.numCollaborators])
 
   const doOnSubmit = handleSubmit(onSubmit)
 
@@ -632,8 +635,11 @@ export function SendForm({
                 <div className="flex items-center gap-2">
                   <Switch
                     id="switch-is-collaborative-transaction"
-                    checked={values.isCoinJoin}
+                    checked={isCoinJoinEnabled}
                     onCheckedChange={(checked) => {
+                      if (forceCoinJoinEnabled) {
+                        return
+                      }
                       setValue('isCoinJoin', checked, {
                         shouldValidate: true,
                         shouldDirty: true,
@@ -659,7 +665,7 @@ export function SendForm({
                   </Label>
                 </div>
 
-                {values.isCoinJoin === true && (
+                {isCoinJoinEnabled && (
                   <div className="space-y-2">
                     <Field data-invalid={errors.numCollaborators !== undefined}>
                       <FieldLabel htmlFor="send-num-collaborators">
@@ -707,7 +713,7 @@ export function SendForm({
           variant={
             disabled
               ? 'outline'
-              : values.isCoinJoin !== true
+              : !isCoinJoinEnabled
                 ? 'destructive'
                 : hasCoinjoinPreconditionWarning
                   ? 'secondary'
@@ -724,7 +730,7 @@ export function SendForm({
             </>
           ) : (
             <>
-              {values.isCoinJoin !== true ? (
+              {!isCoinJoinEnabled ? (
                 <>{t('send.button_send_without_improved_privacy')}</>
               ) : hasCoinjoinPreconditionWarning ? (
                 <>{t('send.button_send_despite_warning')}</>
