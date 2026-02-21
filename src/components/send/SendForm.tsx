@@ -20,6 +20,7 @@ import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import { cn, delayedPromise, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
+import { buildSweepPreconditionSummary } from '../sweep/preconditions'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -35,6 +36,7 @@ import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 import JarSelectorDialog from './JarSelectorDialog'
+import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
 import type { SendFormValues } from './types'
 
 type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog>, 'onConfirm'> & {
@@ -100,7 +102,7 @@ const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   amount: undefined,
   txFee: undefined,
   isCoinJoin: true,
-  numCollaborators: undefined,
+  numCollaborators: MIN_NUM_COLLABORATORS,
 }
 
 const sendFormSchema = (
@@ -182,9 +184,15 @@ const sendFormSchema = (
           schema
             .integer()
             .default(initialNumberOfCollaborators(minNumberOfCollaborators))
-            .min(minNumberOfCollaborators)
-            .max(MAX_NUM_COLLABORATORS)
-            .required(),
+            .min(
+              minNumberOfCollaborators,
+              t('send.error_invalid_num_collaborators', { minNumCollaborators: minNumberOfCollaborators }),
+            )
+            .max(
+              MAX_NUM_COLLABORATORS,
+              t('send.error_invalid_num_collaborators', { minNumCollaborators: minNumberOfCollaborators }),
+            )
+            .required(t('send.error_invalid_num_collaborators', { minNumCollaborators: minNumberOfCollaborators })),
         otherwise: (schema) =>
           schema
             .transform(() => null)
@@ -251,6 +259,13 @@ export function SendForm({
     () => sendFormSchema(jars, addressSummary, minNumberOfCollaborators, t),
     [jars, addressSummary, minNumberOfCollaborators, t],
   )
+  const defaultValues = useMemo<Partial<SendFormValues>>(
+    () => ({
+      ...FORM_INPUT_DEFAULT_VALUES,
+      numCollaborators: initialNumberOfCollaborators(minNumberOfCollaborators),
+    }),
+    [minNumberOfCollaborators],
+  )
 
   const {
     control,
@@ -261,7 +276,7 @@ export function SendForm({
     trigger,
   } = useForm<SendFormValues, unknown, SendFormValues>({
     mode: 'onSubmit',
-    defaultValues: FORM_INPUT_DEFAULT_VALUES,
+    defaultValues,
     // force type (see https://github.com/react-hook-form/resolvers/issues/807)
     resolver: yupResolver(schema) as Resolver<SendFormValues, unknown, SendFormValues>,
   })
@@ -271,6 +286,8 @@ export function SendForm({
   const destinationAddress = useWatch({ control, name: 'destination.address' })
   const destinationJarIndex = useWatch({ control, name: 'destination.fromJar' })
   const isSweep = useWatch({ control, name: 'amount.isSweep' })
+  const isCoinJoin = useWatch({ control, name: 'isCoinJoin' })
+  const collaboratorCount = useWatch({ control, name: 'numCollaborators' })
 
   const destinationAddressInfo = useMemo(() => {
     try {
@@ -289,6 +306,11 @@ export function SendForm({
     if (destinationJarIndex === undefined) return
     return jars.find((it) => it.jarIndex === destinationJarIndex)
   }, [jars, destinationJarIndex])
+  const coinjoinPreconditionSummary = useMemo(() => {
+    if (!sourceJar) return undefined
+    return buildSweepPreconditionSummary(sourceJar.utxos)
+  }, [sourceJar])
+  const hasCoinjoinPreconditionWarning = isCoinJoin === true && coinjoinPreconditionSummary?.isFulfilled === false
 
   const doOnSubmit = handleSubmit(onSubmit)
 
@@ -381,6 +403,9 @@ export function SendForm({
           </Field>
           {errors.source?.fromJar?.message && (
             <div className="text-destructive text-xs">{errors.source?.fromJar.message}</div>
+          )}
+          {hasCoinjoinPreconditionWarning && coinjoinPreconditionSummary && (
+            <SendCoinjoinPreconditionAlert summary={coinjoinPreconditionSummary} />
           )}
         </div>
 
@@ -582,13 +607,24 @@ export function SendForm({
                   <Switch
                     id="switch-is-collaborative-transaction"
                     checked={values.isCoinJoin}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked) => {
                       setValue('isCoinJoin', checked, {
                         shouldValidate: true,
                         shouldDirty: true,
                         shouldTouch: true,
                       })
-                    }
+                      setValue(
+                        'numCollaborators',
+                        checked
+                          ? (collaboratorCount ?? initialNumberOfCollaborators(minNumberOfCollaborators))
+                          : undefined,
+                        {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        },
+                      )
+                    }}
                     disabled={disabled}
                   />
                   <Label htmlFor="switch-is-collaborative-transaction" className="flex flex-col items-start gap-0">
@@ -596,6 +632,34 @@ export function SendForm({
                     <div className="text-muted-foreground text-sm">{t('send.toggle_coinjoin_subtitle')}</div>
                   </Label>
                 </div>
+
+                {values.isCoinJoin === true && (
+                  <div className="space-y-2">
+                    <Field data-invalid={errors.numCollaborators !== undefined}>
+                      <FieldLabel htmlFor="send-num-collaborators">
+                        {t('send.label_num_collaborators', {
+                          numCollaborators: values.numCollaborators ?? '-',
+                        })}
+                      </FieldLabel>
+                      <Input
+                        id="send-num-collaborators"
+                        {...register('numCollaborators', {
+                          required: values.isCoinJoin,
+                          disabled,
+                          valueAsNumber: true,
+                        })}
+                        type="number"
+                        min={minNumberOfCollaborators}
+                        max={MAX_NUM_COLLABORATORS}
+                        placeholder={t('send.input_num_collaborators_placeholder')}
+                      />
+                    </Field>
+                    <p className="text-muted-foreground text-xs">{t('send.description_num_collaborators')}</p>
+                    {errors.numCollaborators?.message && (
+                      <div className="text-destructive text-xs">{errors.numCollaborators.message}</div>
+                    )}
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -603,7 +667,15 @@ export function SendForm({
 
         <Button
           type="submit"
-          variant={disabled ? 'outline' : values.isCoinJoin !== true ? 'destructive' : undefined}
+          variant={
+            disabled
+              ? 'outline'
+              : values.isCoinJoin !== true
+                ? 'destructive'
+                : hasCoinjoinPreconditionWarning
+                  ? 'warning'
+                  : undefined
+          }
           disabled={disabled || isSubmitting}
           className="w-full"
           size="xxl"
@@ -617,6 +689,8 @@ export function SendForm({
             <>
               {values.isCoinJoin !== true ? (
                 <>{t('send.button_send_without_improved_privacy')}</>
+              ) : hasCoinjoinPreconditionWarning ? (
+                <>{t('send.button_send_despite_warning')}</>
               ) : (
                 <>{t('send.button_send')}</>
               )}
