@@ -75,13 +75,19 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const collaborativeLifecycleRef = useRef({
     awaitingCompletion: false,
     wasRunning: false,
-    txCountAtStart: 0,
+    utxoSnapshotAtStart: '',
   })
   const refetchWalletInfoRef = useRef(refetchWalletInfo)
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
+  const currentUtxoSnapshot = useMemo(() => {
+    return jars
+      .flatMap((jar) => jar.utxos.map((utxo) => utxo.utxo))
+      .toSorted()
+      .join('|')
+  }, [jars])
 
   useEffect(() => {
     refetchWalletInfoRef.current = refetchWalletInfo
@@ -230,8 +236,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
     state.awaitingCompletion = false
     state.wasRunning = false
-    const txCountAfter = Object.keys(jmTxStore.getState().getAll()).length
-    const hasNewTransaction = txCountAfter > state.txCountAtStart
+    const hasNewTransaction = currentUtxoSnapshot !== state.utxoSnapshotAtStart
 
     queueMicrotask(() => {
       setPaymentSuccessfulInfoAlert({
@@ -250,7 +255,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       }
     })
     void refetchWalletInfoRef.current()
-  }, [coinjoinRunning, t])
+  }, [coinjoinRunning, currentUtxoSnapshot, t])
 
   useEffect(() => {
     if (!coinjoinRunning && stopCoinjoinMutation.isSuccess) {
@@ -366,7 +371,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       try {
         const body = buildCollaborativeSendRequest(data)
         setPaymentSuccessfulInfoAlert(undefined)
-        collaborativeLifecycleRef.current.txCountAtStart = Object.keys(jmTxStore.getState().getAll()).length
+        collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
         await startCoinjoinMutation.mutateAsync({
           path: { walletname: encodeURIComponent(walletFileName) },
           body,
@@ -379,6 +384,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           description: t('send.alert_collaborative_started_description'),
         })
       } catch (error: unknown) {
+        collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
         const message = t('send.error_preparing_collaborative_transaction', { reason })
         setCollaborativeFlowError(message)
@@ -395,7 +401,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const onAbortCoinjoin = async () => {
     collaborativeLifecycleRef.current.awaitingCompletion = false
     collaborativeLifecycleRef.current.wasRunning = false
-    collaborativeLifecycleRef.current.txCountAtStart = 0
+    collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
     setPaymentSuccessfulInfoAlert(undefined)
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutation.mutateAsync()
