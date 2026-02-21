@@ -17,7 +17,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { useAddressSummary, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
+import {
+  useAddressSummary,
+  useJamWalletInfoContext,
+  useJars,
+  useWalletBalanceSummary,
+} from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useJmConfig } from '@/hooks/useJmConfig'
@@ -57,6 +62,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const { fetchIfMissing } = useJmConfig({ walletFileName })
+  const { refetch: refetchWalletInfo } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
@@ -71,10 +77,15 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     wasRunning: false,
     txCountAtStart: 0,
   })
+  const refetchWalletInfoRef = useRef(refetchWalletInfo)
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
+
+  useEffect(() => {
+    refetchWalletInfoRef.current = refetchWalletInfo
+  }, [refetchWalletInfo])
 
   const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
@@ -181,6 +192,21 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   })
 
   useEffect(() => {
+    if (!collaborativeFlowActive) {
+      return
+    }
+
+    void refetchWalletInfoRef.current()
+    const intervalId = window.setInterval(() => {
+      void refetchWalletInfoRef.current()
+    }, 3_000)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [collaborativeFlowActive])
+
+  useEffect(() => {
     if (coinjoinRunning && startCoinjoinMutation.isSuccess) {
       startCoinjoinMutation.reset()
     }
@@ -223,6 +249,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         toast.warning(t('send.alert_collaborative_ended_title'))
       }
     })
+    void refetchWalletInfoRef.current()
   }, [coinjoinRunning, t])
 
   useEffect(() => {
@@ -372,6 +399,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     setPaymentSuccessfulInfoAlert(undefined)
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutation.mutateAsync()
+    void refetchWalletInfoRef.current()
   }
 
   if (isLoadingFeeConfig) {
