@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   directsendMutation,
   docoinjoinMutation,
@@ -66,6 +66,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
+  const collaborativeLifecycleRef = useRef({
+    awaitingCompletion: false,
+    wasRunning: false,
+  })
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
@@ -180,6 +184,35 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       startCoinjoinMutation.reset()
     }
   }, [coinjoinRunning, startCoinjoinMutation])
+
+  useEffect(() => {
+    const state = collaborativeLifecycleRef.current
+
+    if (!state.awaitingCompletion) {
+      return
+    }
+
+    if (coinjoinRunning) {
+      state.wasRunning = true
+      return
+    }
+
+    if (!state.wasRunning) {
+      return
+    }
+
+    state.awaitingCompletion = false
+    state.wasRunning = false
+
+    queueMicrotask(() => {
+      setPaymentSuccessfulInfoAlert({
+        variant: 'success',
+        title: t('send.alert_collaborative_completed_title'),
+        description: t('send.alert_collaborative_completed_description'),
+      })
+      toast.success(t('send.alert_collaborative_completed_title'))
+    })
+  }, [coinjoinRunning, t])
 
   useEffect(() => {
     if (!coinjoinRunning && stopCoinjoinMutation.isSuccess) {
@@ -299,6 +332,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           path: { walletname: encodeURIComponent(walletFileName) },
           body,
         })
+        collaborativeLifecycleRef.current.awaitingCompletion = true
+        collaborativeLifecycleRef.current.wasRunning = coinjoinRunning
         setPaymentSuccessfulInfoAlert({
           variant: 'success',
           title: t('send.alert_collaborative_started_title'),
@@ -319,6 +354,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   const onAbortCoinjoin = async () => {
+    collaborativeLifecycleRef.current.awaitingCompletion = false
+    collaborativeLifecycleRef.current.wasRunning = false
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutation.mutateAsync()
   }
