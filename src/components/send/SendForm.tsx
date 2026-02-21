@@ -673,7 +673,7 @@ export function SendForm({
               : values.isCoinJoin !== true
                 ? 'destructive'
                 : hasCoinjoinPreconditionWarning
-                  ? 'warning'
+                  ? 'secondary'
                   : undefined
           }
           disabled={disabled || isSubmitting}
