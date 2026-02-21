@@ -369,6 +369,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     collaborativeLifecycleRef.current.awaitingCompletion = false
     collaborativeLifecycleRef.current.wasRunning = false
     collaborativeLifecycleRef.current.txCountAtStart = 0
+    setPaymentSuccessfulInfoAlert(undefined)
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutation.mutateAsync()
   }
