@@ -452,7 +452,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         ) : (
           <>
-            {paymentSuccessfulInfoAlert && (
+            {paymentSuccessfulInfoAlert && !coinjoinRunning && (
               <>
                 <Alert variant={paymentSuccessfulInfoAlert.variant}>
                   <AlertTriangleIcon />
