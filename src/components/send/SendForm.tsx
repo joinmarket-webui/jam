@@ -15,9 +15,10 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
-import { cn, delayedPromise, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
+import { cn, delayedPromise, factorToPercentage, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
@@ -37,6 +38,7 @@ import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 import JarSelectorDialog from './JarSelectorDialog'
 import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
+import { estimateMaxCollaboratorFee } from './feeEstimate'
 import type { SendFormValues } from './types'
 
 type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog>, 'onConfirm'> & {
@@ -230,6 +232,7 @@ interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
   minNumberOfCollaborators?: number
+  feeConfigValues?: FeeConfigValues
   walletFileName: WalletFileName
   jars: Jar[]
   walletBalanceSummary: BalanceSummary
@@ -242,6 +245,7 @@ export function SendForm({
   className,
   onSubmit,
   disabled,
+  feeConfigValues,
   walletFileName,
   minNumberOfCollaborators = MIN_NUM_COLLABORATORS,
   jars,
@@ -311,6 +315,28 @@ export function SendForm({
     return buildSweepPreconditionSummary(sourceJar.utxos)
   }, [sourceJar])
   const hasCoinjoinPreconditionWarning = isCoinJoin === true && coinjoinPreconditionSummary?.isFulfilled === false
+  const amountForFeeEstimate = useMemo(() => {
+    if (values.amount?.isSweep === true) {
+      return sourceJar?.balanceSummary.calculatedAvailableBalanceInSats
+    }
+    return values.amount?.amount
+  }, [sourceJar, values.amount?.amount, values.amount?.isSweep])
+  const estimatedMaxCollaboratorFee = useMemo(() => {
+    if (
+      values.isCoinJoin !== true ||
+      values.numCollaborators === undefined ||
+      amountForFeeEstimate === undefined ||
+      feeConfigValues === undefined
+    ) {
+      return undefined
+    }
+
+    try {
+      return estimateMaxCollaboratorFee(feeConfigValues, amountForFeeEstimate, values.numCollaborators)
+    } catch (_ignoredOnPurpose) {
+      return undefined
+    }
+  }, [amountForFeeEstimate, feeConfigValues, values.isCoinJoin, values.numCollaborators])
 
   const doOnSubmit = handleSubmit(onSubmit)
 
@@ -655,6 +681,17 @@ export function SendForm({
                       />
                     </Field>
                     <p className="text-muted-foreground text-xs">{t('send.description_num_collaborators')}</p>
+                    {estimatedMaxCollaboratorFee && (
+                      <div className="text-muted-foreground text-xs">
+                        <span className="mr-1">{t('send.fee_breakdown.title', { maxCollaboratorFee: '≤' })}</span>
+                        <span className="text-foreground inline-flex items-center gap-1">
+                          <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} />
+                        </span>
+                        <span className="ml-1">
+                          ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
+                        </span>
+                      </div>
+                    )}
                     {errors.numCollaborators?.message && (
                       <div className="text-destructive text-xs">{errors.numCollaborators.message}</div>
                     )}

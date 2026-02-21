@@ -480,6 +480,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               onSubmit={onSubmit}
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
+              feeConfigValues={feeConfigValues}
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
