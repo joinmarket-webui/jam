@@ -100,11 +100,11 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     ...docoinjoinMutation({ client }),
     retry: false,
     onSuccess: () => {
-      toast.success('Collaborative transaction request accepted.')
+      toast.success(t('send.alert_collaborative_started_title'))
     },
     onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      toast.error(`Error while starting collaborative transaction: ${reason}`)
+      toast.error(t('send.error_starting_collaborative_transaction', { reason }))
     },
   })
   const stopCoinjoinQueryOptions = stopcoinjoinOptions({
@@ -125,7 +125,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     retry: false,
     onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      toast.error(`Error while stopping collaborative transaction: ${reason}`)
+      toast.error(t('send.error_stopping_collaborative_transaction', { reason }))
     },
   })
 
@@ -290,12 +290,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         })
         setPaymentSuccessfulInfoAlert({
           variant: 'success',
-          title: 'Collaborative transaction started',
-          description: 'JoinMarket accepted your request and is now coordinating the transaction.',
+          title: t('send.alert_collaborative_started_title'),
+          description: t('send.alert_collaborative_started_description'),
         })
       } catch (error: unknown) {
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        toast.error(`Error while preparing collaborative transaction: ${reason}`)
+        toast.error(t('send.error_preparing_collaborative_transaction', { reason }))
       }
     }
   }
@@ -386,7 +386,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         {isWaitingCoinjoinStart && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>Starting collaborative transaction...</AlertTitle>
+            <AlertTitle>{t('send.alert_collaborative_starting')}</AlertTitle>
           </Alert>
         )}
 
