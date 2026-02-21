@@ -65,6 +65,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
+  const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
@@ -99,12 +100,17 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const startCoinjoinMutation = useMutation({
     ...docoinjoinMutation({ client }),
     retry: false,
+    onMutate: () => {
+      setCollaborativeFlowError(undefined)
+    },
     onSuccess: () => {
       toast.success(t('send.alert_collaborative_started_title'))
     },
     onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      toast.error(t('send.error_starting_collaborative_transaction', { reason }))
+      const message = t('send.error_starting_collaborative_transaction', { reason })
+      setCollaborativeFlowError(message)
+      toast.error(message)
     },
   })
   const stopCoinjoinQueryOptions = stopcoinjoinOptions({
@@ -123,9 +129,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       return await stopCoinjoinQuery.refetch({ throwOnError: true })
     },
     retry: false,
+    onMutate: () => {
+      setCollaborativeFlowError(undefined)
+    },
     onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      toast.error(t('send.error_stopping_collaborative_transaction', { reason }))
+      const message = t('send.error_stopping_collaborative_transaction', { reason })
+      setCollaborativeFlowError(message)
+      toast.error(message)
     },
   })
 
@@ -295,7 +306,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         })
       } catch (error: unknown) {
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        toast.error(t('send.error_preparing_collaborative_transaction', { reason }))
+        const message = t('send.error_preparing_collaborative_transaction', { reason })
+        setCollaborativeFlowError(message)
+        toast.error(message)
       }
     }
   }
@@ -381,6 +394,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
         {maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
+        )}
+
+        {collaborativeFlowError && (
+          <Alert variant="destructive">
+            <AlertTriangleIcon />
+            <AlertTitle>{t('global.error')}</AlertTitle>
+            <AlertDescription>{collaborativeFlowError}</AlertDescription>
+          </Alert>
         )}
 
         {isWaitingCoinjoinStart && (
