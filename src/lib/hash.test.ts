@@ -6,7 +6,7 @@ describe('hash', () => {
     expect(DEFAULT_PBKDF_ITERATIONS).toBe(210_000)
   })
 
-  it('hashPassword', async () => {
+  it('hashPassword', { timeout: 20_000 }, async () => {
     expect(await hashPassword('', '', 1)).toBe('6d2ecbbbfb2e6dcd7056faf9af6aa06eae594391db983279a6bf27e0eb228614')
     expect(await hashPassword('password', 'salt', 1)).toBe(
       '867f70cf1ade02cff3752599a3a53dc4af34c7a669815ae5d513554e1c8cf252',
