@@ -48,13 +48,6 @@ export function useRefreshSession({
   useEffect(() => {
     if (sessionData) {
       jmSessionStore.getState().update(sessionData)
-
-      const isDevMode = jamSettingsStore.getState().state.developerMode
-      if (isDevMode) {
-        toast.info(`[DEV] Successfully refreshed session data.`, {
-          id: 'jm-session-refresh-success',
-        })
-      }
     }
   }, [sessionData])
 
@@ -63,7 +56,9 @@ export function useRefreshSession({
       refetchSessionData().catch(() => {
         const isDevMode = jamSettingsStore.getState().state.developerMode
         if (isDevMode) {
-          toast.error(`[DEV] Error while refreshing session data.`)
+          toast.error(`[DEV] Error while refreshing session data.`, {
+            id: 'jm-session-refresh-error',
+          })
         }
       })
     },
