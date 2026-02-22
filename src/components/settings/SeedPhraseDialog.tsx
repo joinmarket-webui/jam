@@ -114,6 +114,7 @@ export const SeedPhraseDialog = ({
             <PasswordVerificationForm
               walletFileName={walletFileName}
               hashedPassword={hashedPassword}
+              i18nKeyPrefix="settings.seed_modal.verification"
               onSubmit={() => {
                 setTimeLeft(autoCloseTimeout)
                 setPasswordVerifiedAt(Date.now())
