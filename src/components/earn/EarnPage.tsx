@@ -136,16 +136,19 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   })
 
   const onStop = async () => {
+    startMaker.reset()
     await stopMaker.mutateAsync()
   }
 
   const onSubmit: SubmitHandler<EarnFormValues> = async (data) => {
-    return await startMaker.mutateAsync({
+    stopMaker.reset()
+    await startMaker.mutateAsync({
       path: {
         walletname: encodeURIComponent(walletFileName),
       },
       body: toStartMakerRequest(data),
     })
+    scrollToTop()
   }
 
   useEffect(() => {
@@ -154,9 +157,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     toast.dismiss('earn.alert_stopping')
     toast.dismiss('earn.alert_stopped')
     toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
-    scrollToTop()
-    startMaker.reset()
-  }, [jmSession, makerRunning, startMaker.isSuccess, startMaker, t])
+  }, [jmSession, makerRunning, startMaker.isSuccess, t])
 
   useEffect(() => {
     if (!jmSession || !stopMaker.isSuccess || makerRunning) return
@@ -164,8 +165,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     toast.dismiss('earn.alert_starting')
     toast.dismiss('earn.alert_running')
     toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
-    stopMaker.reset()
-  }, [jmSession, makerRunning, stopMaker.isSuccess, stopMaker, t])
+  }, [jmSession, makerRunning, stopMaker.isSuccess, t])
 
   if (!jmSession) {
     return <PageLoading />
