@@ -18,7 +18,14 @@ type PasswordVerificationFormValues = {
 
 const debouncedHashPassword = debounce(hashPassword, 210)
 
-const passwordVerificationFormSchema = (walletFileName: WalletFileName, hashedPassword: string, t: TFunction) => {
+type PasswordVerificationI18nKeyPrefix = 'settings.seed_modal.verification' | 'settings.xpubs_modal.verification'
+
+const passwordVerificationFormSchema = (
+  walletFileName: WalletFileName,
+  hashedPassword: string,
+  t: TFunction,
+  i18nKeyPrefix: PasswordVerificationI18nKeyPrefix,
+) => {
   return yup
     .object({
       password: yup
@@ -28,13 +35,13 @@ const passwordVerificationFormSchema = (walletFileName: WalletFileName, hashedPa
           try {
             const hashed = await debouncedHashPassword(value, walletFileName)
             if (hashedPassword !== hashed) {
-              const errorMessage = t(/*TODO: i18n*/ 'Incorrect password. Please try again.')
+              const errorMessage = t(`${i18nKeyPrefix}.text_error_password_incorrect`)
               return new yup.ValidationError(errorMessage, undefined, 'password', undefined, true)
             }
             return true
           } catch (error: unknown) {
             const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
-            const errorMessage = t(/*TODO: i18n*/ 'Error while verifying given password. {{ reason }}', { reason })
+            const errorMessage = t(`${i18nKeyPrefix}.text_error`, { reason })
             throw new yup.ValidationError(errorMessage, undefined, 'password', undefined, true)
           }
         }),
@@ -49,6 +56,7 @@ type PasswordVerificationFormProps = {
   onCancel?: () => void | Promise<void>
   className?: string
   disabled?: boolean
+  i18nKeyPrefix: PasswordVerificationI18nKeyPrefix
 }
 
 export const PasswordVerificationForm = ({
@@ -58,13 +66,14 @@ export const PasswordVerificationForm = ({
   disabled,
   className,
   onCancel,
+  i18nKeyPrefix,
 }: PasswordVerificationFormProps) => {
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
 
   const schema = useMemo(() => {
-    return passwordVerificationFormSchema(walletFileName, hashedPassword, t)
-  }, [walletFileName, hashedPassword, t])
+    return passwordVerificationFormSchema(walletFileName, hashedPassword, t, i18nKeyPrefix)
+  }, [walletFileName, hashedPassword, t, i18nKeyPrefix])
 
   const {
     register,
@@ -82,7 +91,7 @@ export const PasswordVerificationForm = ({
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
         <Field data-invalid={errors.password !== undefined}>
-          <FieldLabel htmlFor="password-verification-input-password">{t(/* TODO: i18n */ 'Password')}</FieldLabel>
+          <FieldLabel htmlFor="password-verification-input-password">{t(`${i18nKeyPrefix}.label_password`)}</FieldLabel>
           <InputGroup>
             <InputGroupInput
               id="password-verification-input-password"
@@ -92,7 +101,7 @@ export const PasswordVerificationForm = ({
               })}
               type={showPassword ? 'text' : 'password'}
               autoComplete="off"
-              placeholder={t(/* TODO: i18n */ 'Enter your password')}
+              placeholder={t(`${i18nKeyPrefix}.placeholder_password`)}
             />
             <InputGroupAddon align="inline-end">
               <Button
@@ -121,10 +130,10 @@ export const PasswordVerificationForm = ({
           {isSubmitting ? (
             <>
               <Spinner className="motion-reduce:hidden" />
-              {t(/* TODO: i18n */ 'Verifying...')}
+              {t(`${i18nKeyPrefix}.text_button_submitting`)}
             </>
           ) : (
-            t(/* TODO: i18n */ 'Verify')
+            t(`${i18nKeyPrefix}.text_button_submit`)
           )}
         </Button>
       </Field>

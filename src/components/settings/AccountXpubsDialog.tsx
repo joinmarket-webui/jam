@@ -285,6 +285,7 @@ export const AccountXpubsDialog = ({
             <PasswordVerificationForm
               walletFileName={walletFileName}
               hashedPassword={hashedPassword}
+              i18nKeyPrefix="settings.xpubs_modal.verification"
               onSubmit={() => {
                 setTimeLeft(autoCloseTimeout)
                 setPasswordVerifiedAt(Date.now())
