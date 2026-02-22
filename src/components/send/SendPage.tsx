@@ -180,13 +180,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       waitForUtxosToBeSpent,
       setWaitForUtxosToBeSpent,
       onError: (error: unknown) => {
-        const reason =
-          typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
-            ? error.message
-            : undefined
-
+        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
         const message = t('global.errors.error_reloading_wallet_failed', {
-          reason: reason || t('global.errors.reason_unknown'),
+          reason,
         })
         toast.error(message)
       },
@@ -352,11 +348,19 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       toast.success('Successfully sent non-collaborative transaction.')
     },
     onError: (error) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       /* TODO: i18n */
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(`Error while sending non-collaborative transaction: ${reason}`)
     },
   })
+
+  const directSendErrorReason = useMemo(() => {
+    if (!triggerNonCollarborativeTransaction.error) {
+      return undefined
+    }
+    return getErrorReason(triggerNonCollarborativeTransaction.error, t('global.errors.reason_unknown'))
+  }, [triggerNonCollarborativeTransaction.error, t])
 
   const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
     try {

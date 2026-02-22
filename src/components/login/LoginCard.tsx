@@ -1,11 +1,11 @@
 import { useState, type ComponentProps } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { AlertCircleIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
+import { RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { routes } from '@/constants/routes'
@@ -106,11 +106,7 @@ export const LoginCard = ({
         <CardContent className="space-y-6">
           {listWalletsError ? (
             <>
-              <Alert variant="destructive">
-                <AlertCircleIcon />
-                <AlertTitle>{t('wallets.error_loading_failed')}</AlertTitle>
-                <AlertDescription>{listWalletsError.message || t('global.errors.reason_unknown')}</AlertDescription>
-              </Alert>
+              <WalletLoadErrorAlert reason={listWalletsError.message} />
               <Button variant="ghost" size="sm" onClick={() => void onReloadClick()} disabled={listWalletsFetching}>
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
                 {t('global.retry')}

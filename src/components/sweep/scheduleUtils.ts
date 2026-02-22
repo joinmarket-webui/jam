@@ -1,4 +1,27 @@
-export type ScheduleEntry = Array<string | number>
+import type { TxId } from '@/store/jmTxStore'
+import type { BitcoinAddress, JarIndex, Minutes } from '@/types/global'
+
+type AmountFraction = number
+type AmountCounterparties = number
+type SchedulerDestinationAddress = 'INTERNAL' | BitcoinAddress
+type WaitTimeInMinutes = Minutes
+type Rounding = number
+type StateFlag = 0 | 1 | TxId
+
+// [mixdepth, amount-fraction, N-counterparties (requested), destination address, wait time in minutes, rounding, flag indicating incomplete/broadcast/completed (0/txid/1)]
+// e.g.
+// - [ 2, 0.2456498211214867, 4, "INTERNAL", 0.01, 16, 1 ]
+// - [ 3, 0, 8, "bcrt1qpnv3nze7u6ecw63mn06ksxh497a3lryagh233q", 0.04, 16, 0 ]
+export type ScheduleEntry = [
+  JarIndex,
+  AmountFraction,
+  AmountCounterparties,
+  SchedulerDestinationAddress,
+  WaitTimeInMinutes,
+  Rounding,
+  StateFlag,
+]
+
 export type Schedule = ScheduleEntry[]
 
 export interface ScheduleProgressStep {
@@ -42,7 +65,21 @@ export const isScheduleEntrySuccessful = (entry: ScheduleEntry): boolean => {
 }
 
 export const isScheduleValue = (value: unknown): value is Schedule => {
-  return Array.isArray(value) && value.every((entry) => Array.isArray(entry))
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (entry) =>
+        Array.isArray(entry) &&
+        entry.length >= 7 &&
+        typeof entry[0] === 'number' /* JarIndex */ &&
+        typeof entry[1] === 'number' /* AmountFraction */ &&
+        typeof entry[2] === 'number' /* AmountCounterparties */ &&
+        typeof entry[3] === 'string' /* SchedulerDestinationAddress */ &&
+        typeof entry[4] === 'number' /* WaitTimeInMinutes */ &&
+        typeof entry[5] === 'number' /* Rounding */ &&
+        (typeof entry[6] === 'number' || typeof entry[6] === 'string') /* StateFlag */,
+    )
+  )
 }
 
 export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressSummary => {

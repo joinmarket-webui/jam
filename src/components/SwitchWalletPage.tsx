@@ -1,14 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { listwalletsOptions, lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, LockIcon, RefreshCwIcon, UnlockIcon, WalletIcon } from 'lucide-react'
+import { LockIcon, RefreshCwIcon, UnlockIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -75,14 +74,6 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
     retry: false,
   })
 
-  const listWalletsErrorAlert: ErrorMessage | undefined = useMemo(() => {
-    if (!listWalletsError) return undefined
-    return {
-      message: t('wallets.error_loading_failed'),
-      error_description: listWalletsError.message || t('global.errors.reason_unknown'),
-    }
-  }, [listWalletsError, t])
-
   const wallets = sortWallets((listWalletsData?.wallets || []) as WalletFileName[], walletFileName)
 
   const handleLockCurrentWallet = async () => {
@@ -128,13 +119,9 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
           </CardContent>
         ) : (
           <>
-            {listWalletsErrorAlert ? (
+            {listWalletsError ? (
               <CardContent className="space-y-6">
-                <Alert variant="destructive">
-                  <AlertCircleIcon className="h-4 w-4" />
-                  <AlertTitle>{listWalletsErrorAlert.message}</AlertTitle>
-                  <AlertDescription>{listWalletsErrorAlert.error_description}</AlertDescription>
-                </Alert>
+                <WalletLoadErrorAlert reason={listWalletsError.message} iconClassName="h-4 w-4" />
                 <Button variant="ghost" size="sm" onClick={() => void listWalletsRefetch()}>
                   <RefreshCwIcon className="h-4 w-4" /> {t('global.retry')}
                 </Button>

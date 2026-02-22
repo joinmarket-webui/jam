@@ -1,8 +1,10 @@
 /* Sonner toast styling */
-[data-sonner-toaster] [data-sonner-toast] {
-  background-color: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  color: hsl(var(--foreground));
+[data-sonner-toaster][dir='ltr'],
+html[dir='ltr'] {
+  --toast-icon-margin-start: -4px /* original: -3px*/;
+  --toast-icon-margin-end: 12px /* original: 4px*/;
+  --toast-svg-margin-start: -1px;
+  --toast-svg-margin-end: 0px;
 }
 
 [data-sonner-toaster] [data-sonner-toast][data-type='success'] {

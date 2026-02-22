@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { CloudDownloadIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { type ToastT } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
+import '@/styles/sonner.css'
 
 const meta: Meta<typeof Toaster> = {
   title: 'Core/Sonner',
@@ -23,32 +26,38 @@ type Story = StoryObj<typeof Toaster>
 const ToastDemo = ({
   type,
   message,
-  description,
+  ...props
 }: {
-  type: 'default' | 'success' | 'error' | 'warning' | 'info'
+  type: ToastT['type']
   message: string
-  description?: string
+  description?: ToastT['description']
+  icon?: ToastT['icon']
+  duration?: ToastT['duration']
 }) => {
   const showToast = () => {
     switch (type) {
       case 'success': {
-        toast.success(message, { id: 'demo', description })
+        toast.success(message, props)
         break
       }
       case 'error': {
-        toast.error(message, { id: 'demo', description })
+        toast.error(message, props)
         break
       }
       case 'warning': {
-        toast.warning(message, { id: 'demo', description })
+        toast.warning(message, props)
         break
       }
       case 'info': {
-        toast.info(message, { id: 'demo', description })
+        toast.info(message, props)
+        break
+      }
+      case 'loading': {
+        toast.loading(message, props)
         break
       }
       default: {
-        toast(message, { id: 'demo', description })
+        toast(message, props)
       }
     }
   }
@@ -63,6 +72,10 @@ const ToastDemo = ({
 
 export const Default: Story = {
   render: () => <ToastDemo type="default" message="This is a default toast" />,
+}
+
+export const Info: Story = {
+  render: () => <ToastDemo type="info" message="Information" description="Here's some helpful information for you." />,
 }
 
 export const Success: Story = {
@@ -81,8 +94,10 @@ export const Warning: Story = {
   ),
 }
 
-export const Info: Story = {
-  render: () => <ToastDemo type="info" message="Information" description="Here's some helpful information for you." />,
+export const Loading: Story = {
+  render: () => (
+    <ToastDemo type="loading" message="Loading" description="Please be patient. This might take a minute..." />
+  ),
 }
 
 export const WithDescription: Story = {
@@ -91,6 +106,18 @@ export const WithDescription: Story = {
       type="default"
       message="Update available"
       description="A new version of the application is ready to install."
+    />
+  ),
+}
+
+export const WithIcon: Story = {
+  render: () => (
+    <ToastDemo
+      type="default"
+      icon={<CloudDownloadIcon />}
+      message="Update available"
+      description="A new version of the application is ready to install."
+      duration={Number.POSITIVE_INFINITY}
     />
   ),
 }
