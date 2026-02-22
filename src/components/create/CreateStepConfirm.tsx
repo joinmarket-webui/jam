@@ -1,107 +1,162 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
+import type { TFunction } from 'i18next'
 import { AlertCircleIcon } from 'lucide-react'
+import { useForm, useWatch, type Mode, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import type { WalletFileName } from '@/lib/utils'
+import { Field, FieldLabel } from '../ui/field'
 import { MaskedText } from '../ui/jam/MaskedText'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Switch } from '../ui/switch'
+
+export interface CreateWalletConfirmFormValues {
+  revealSensitiveInfo: boolean
+  backupConfirmed: boolean
+}
+
+const FORM_INPUT_DEFAULT_VALUES: Required<CreateWalletConfirmFormValues> = {
+  revealSensitiveInfo: false,
+  backupConfirmed: false,
+}
+
+const createFormSchema = (t: TFunction) => {
+  return yup
+    .object({
+      revealSensitiveInfo: yup.boolean().required(),
+      backupConfirmed: yup
+        .boolean()
+        .isTrue(
+          /* TODO: i18n */ t(
+            'Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!',
+          ),
+        ),
+    })
+    .required()
+}
 
 interface CreateStepConfirmProps {
   walletFileName: WalletFileName
   password: string
   seedphrase: string[]
   onConfirm: () => Promise<void>
+  mode?: Mode
 }
 
-export const CreateStepConfirm = ({ walletFileName, password, seedphrase, onConfirm }: CreateStepConfirmProps) => {
-  const [revealSensitiveInfo, setRevealSensitiveInfo] = useState({ checked: false, dirty: false })
-  const [backupConfirmed, setBackupConfirmed] = useState(false)
+export const CreateStepConfirm = ({
+  walletFileName,
+  password,
+  seedphrase,
+  onConfirm,
+  mode = 'onSubmit',
+}: CreateStepConfirmProps) => {
   const { t } = useTranslation()
+
+  const schema = createFormSchema(t)
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors, touchedFields },
+  } = useForm({
+    mode,
+    defaultValues: FORM_INPUT_DEFAULT_VALUES,
+    // force type (see https://github.com/react-hook-form/resolvers/issues/807)
+    resolver: yupResolver(schema) as Resolver<CreateWalletConfirmFormValues, unknown, CreateWalletConfirmFormValues>,
+  })
+
+  const backupConfirmed = useWatch({ control, name: 'backupConfirmed' })
+  const revealSensitiveInfo = useWatch({ control, name: 'revealSensitiveInfo' })
 
   useEffect(() => {
     if (backupConfirmed) return
 
-    const toastId = toast.message(
-      <Alert>
-        <AlertCircleIcon />
-        <AlertTitle>
-          {/* TODO: i18n */}
-          Save Your Seed Phrase
-        </AlertTitle>
-        <AlertDescription>
-          {/* TODO: change i18n key ("alert_description") */}
-          {t('create_wallet.subtitle_wallet_created')}
-        </AlertDescription>
-      </Alert>,
-      {
-        duration: Infinity,
-        unstyled: true,
-      },
-    )
+    const toastId = toast.info(/* TODO: i18n */ 'Save Your Seed Phrase', {
+      icon: <AlertCircleIcon />,
+      description: /* TODO: change i18n key ("alert_description") */ t('create_wallet.subtitle_wallet_created'),
+      duration: Number.POSITIVE_INFINITY,
+    })
 
     return () => {
       toast.dismiss(toastId)
     }
   }, [backupConfirmed, t])
 
+  const doOnSubmit = handleSubmit(onConfirm)
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <div>
-          <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
-          <span className="text-sm font-semibold break-all select-all">{walletFileName}</span>
-        </div>
-        <div>
-          <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_password')}</Label>
-          <MaskedText
-            className="font-mono text-sm font-semibold break-all slashed-zero select-none"
-            masked={!revealSensitiveInfo.checked}
-            maskedText="maskedmaskedmaskedmasked"
-          >
-            {password}
-          </MaskedText>
-        </div>
-        <div>
-          <Label className="text-muted-foreground text-xs">{/* i18n confirmation_label_seedphrase */}Seed Phrase</Label>
-          <div className="bg-muted rounded-lg p-2">
-            <SeedPhraseGrid value={seedphrase} masked={!revealSensitiveInfo.checked} />
+    <form onSubmit={(event) => void doOnSubmit(event)} noValidate>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div>
+            <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
+            <span className="text-sm font-semibold break-all select-all">{walletFileName}</span>
+          </div>
+          <div>
+            <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_password')}</Label>
+            <MaskedText
+              className="font-mono text-sm font-semibold break-all slashed-zero select-none"
+              masked={!revealSensitiveInfo}
+              maskedText="maskedmaskedmaskedmasked"
+            >
+              {password}
+            </MaskedText>
+          </div>
+          <div>
+            <Label className="text-muted-foreground text-xs">
+              {/* i18n confirmation_label_seedphrase */}Seed Phrase
+            </Label>
+            <div className="bg-muted rounded-lg p-2">
+              <SeedPhraseGrid value={seedphrase} masked={!revealSensitiveInfo} />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        <div className="flex justify-start gap-2">
-          <Switch
-            id="switch-reveal-seed"
-            checked={revealSensitiveInfo.checked}
-            onCheckedChange={(checked) => setRevealSensitiveInfo((it) => ({ ...it, checked, dirty: true }))}
-          />
-          <Label htmlFor="switch-reveal-seed">{t('create_wallet.confirmation_toggle_reveal_info')}</Label>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Field data-invalid={errors.revealSensitiveInfo !== undefined} orientation="horizontal">
+              <Switch
+                id="switch-reveal-seed"
+                checked={revealSensitiveInfo}
+                onCheckedChange={(checked) =>
+                  setValue('revealSensitiveInfo', checked, { shouldValidate: true, shouldTouch: true })
+                }
+              />
+              <FieldLabel htmlFor="switch-reveal-seed">{t('create_wallet.confirmation_toggle_reveal_info')}</FieldLabel>
+            </Field>
+            {errors.revealSensitiveInfo?.message && (
+              <div className="text-destructive text-xs">{errors.revealSensitiveInfo.message}</div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Field data-invalid={errors.backupConfirmed !== undefined} orientation="horizontal">
+              <Switch
+                id="switch-confirm-backup"
+                required={true}
+                disabled={!touchedFields.revealSensitiveInfo}
+                checked={backupConfirmed}
+                onCheckedChange={(checked) => setValue('backupConfirmed', checked, { shouldValidate: true })}
+              />
+              <FieldLabel htmlFor="switch-confirm-backup">
+                {t('create_wallet.confirmation_toggle_info_written_down')}
+              </FieldLabel>
+            </Field>
+            {errors.backupConfirmed?.message && (
+              <div className="text-destructive text-xs">{errors.backupConfirmed.message}</div>
+            )}
+          </div>
         </div>
 
-        <div className="flex justify-start gap-2">
-          <Switch
-            id="switch-confirm-backup"
-            checked={backupConfirmed}
-            onCheckedChange={(checked) => setBackupConfirmed(checked)}
-            disabled={!revealSensitiveInfo.dirty}
-          />
-          <Label htmlFor="switch-confirm-backup">{t('create_wallet.confirmation_toggle_info_written_down')}</Label>
-        </div>
+        <Button type="submit" className="w-full" size="xxl">
+          {t('create_wallet.next_button')}
+        </Button>
       </div>
-
-      <Button
-        onClick={() => void onConfirm()}
-        className="w-full"
-        size="xxl"
-        disabled={!backupConfirmed || !revealSensitiveInfo.dirty}
-      >
-        {t('create_wallet.next_button')}
-      </Button>
-    </div>
+    </form>
   )
 }
