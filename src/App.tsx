@@ -267,11 +267,6 @@ function RefreshApiToken() {
   useEffect(() => {
     if (!hasRefreshToken) return
 
-    const isDevMode = jamSettingsStore.getState().state.developerMode
-    if (isDevMode) {
-      toast.info(`[DEV] setup refresh interval`)
-    }
-
     let intervalId: NodeJS.Timeout
     setIntervalDebounced(
       async () => {
@@ -292,7 +287,9 @@ function RefreshApiToken() {
 
           if (isDevMode) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'
-            toast.error(`[DEV] Error while renewing auth token: ${message}`)
+            toast.error(`[DEV] Error while renewing auth token: ${message}`, {
+              id: 'token-renew-error',
+            })
           }
         } else {
           authStore.getState().update({
@@ -301,12 +298,6 @@ function RefreshApiToken() {
               refresh_token: response.data.refresh_token,
             },
           })
-
-          if (isDevMode) {
-            toast.info(`[DEV] Successfully renewed auth token.`, {
-              id: 'token-renew-success',
-            })
-          }
         }
       },
       JAM_API_AUTH_TOKEN_RENEW_INTERVAL,
