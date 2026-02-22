@@ -18,6 +18,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -92,13 +93,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       waitForUtxosToBeSpent,
       setWaitForUtxosToBeSpent,
       onError: (error: unknown) => {
-        const reason =
-          typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
-            ? error.message
-            : undefined
-
+        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
         const message = t('global.errors.error_reloading_wallet_failed', {
-          reason: reason || t('global.errors.reason_unknown'),
+          reason,
         })
         toast.error(message)
       },
@@ -145,12 +142,18 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       toast.success('Successfully sent non-collaborative transaction.')
     },
     onError: (error) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       /* TODO: i18n */
-      toast.error(
-        `Error while sending non-collaborative transaction: ${error.message || t('global.errors.reason_unknown')}`,
-      )
+      toast.error(`Error while sending non-collaborative transaction: ${reason}`)
     },
   })
+
+  const directSendErrorReason = useMemo(() => {
+    if (!triggerNonCollarborativeTransaction.error) {
+      return undefined
+    }
+    return getErrorReason(triggerNonCollarborativeTransaction.error, t('global.errors.reason_unknown'))
+  }, [triggerNonCollarborativeTransaction.error, t])
 
   const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
     try {
@@ -262,9 +265,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertDescription className="">
               <p>
                 The exact reason is not entirely clear, only the following is known:{' '}
-                <span className="inline font-mono font-semibold">
-                  "{triggerNonCollarborativeTransaction.error.message}"
-                </span>
+                <span className="inline font-mono font-semibold">"{directSendErrorReason}"</span>
                 <br />
               </p>
               <p>Please validate your inputs and try again.</p>
