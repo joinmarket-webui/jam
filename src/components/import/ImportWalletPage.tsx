@@ -153,6 +153,7 @@ const ImportWalletPage = () => {
   })
   const seedWordCount = useMemo(() => getSeedPhraseWords(watchedSeedPhrase).length, [watchedSeedPhrase])
   const hasSupportedSeedWordCount = VALID_SEED_WORD_COUNTS.has(seedWordCount)
+  const isSeedPhraseBip39Valid = useMemo(() => isValidSeedPhrase(watchedSeedPhrase), [watchedSeedPhrase])
   const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
   const recoverWallet = useMutation({
@@ -282,6 +283,9 @@ const ImportWalletPage = () => {
                   <span>{seedWordCount} words</span>
                   <span>Expected {SEED_WORD_COUNT_HINT} words</span>
                 </div>
+                {seedWordCount > 0 && isSeedPhraseBip39Valid && (
+                  <div className="light:text-green-600 text-xs text-green-400">BIP39 mnemonic phrase is valid.</div>
+                )}
                 {seedWordCount > 0 && !hasSupportedSeedWordCount && (
                   <div className="text-warning text-xs">Mnemonic phrase must contain {SEED_WORD_COUNT_HINT} words.</div>
                 )}
