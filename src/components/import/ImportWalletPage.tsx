@@ -138,9 +138,9 @@ const ImportWalletPage = () => {
     handleSubmit,
     setValue,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<ImportWalletFormValues>({
-    mode: 'onSubmit',
+    mode: 'onChange',
     resolver: yupResolver(schema),
   })
   const seedPhraseField = register('seedPhrase', {
@@ -195,13 +195,8 @@ const ImportWalletPage = () => {
     }
   }
 
-  const disabled =
-    isSubmitting ||
-    recoverWallet.isPending ||
-    walletsFetching ||
-    walletsLoading ||
-    sessionLoading ||
-    hasActiveWalletSession
+  const formDisabled = isSubmitting || recoverWallet.isPending || hasActiveWalletSession
+  const submitDisabled = formDisabled || walletsFetching || walletsLoading || sessionLoading || !isValid
 
   return (
     <AuthPageShell>
@@ -251,7 +246,7 @@ const ImportWalletPage = () => {
                     {...register('walletName', {
                       required: true,
                     })}
-                    disabled={disabled}
+                    disabled={formDisabled}
                     placeholder={t('create_wallet.placeholder_wallet_name')}
                     autoComplete="off"
                   />
@@ -268,7 +263,7 @@ const ImportWalletPage = () => {
                     id="import-wallet-seed"
                     rows={4}
                     {...seedPhraseField}
-                    disabled={disabled}
+                    disabled={formDisabled}
                     placeholder={t('import_wallet.import_details.feedback_invalid_menmonic_phrase')}
                     autoComplete="off"
                     onBlur={(event) => {
@@ -295,7 +290,7 @@ const ImportWalletPage = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={disabled}
+                    disabled={formDisabled}
                     onClick={() => {
                       setValue('seedPhrase', DUMMY_SEED_PHRASE.join(' '), {
                         shouldDirty: true,
@@ -320,7 +315,7 @@ const ImportWalletPage = () => {
                       {...register('password', {
                         required: true,
                       })}
-                      disabled={disabled}
+                      disabled={formDisabled}
                       type={showPassword ? 'text' : 'password'}
                       placeholder={t('create_wallet.placeholder_password')}
                       autoComplete="off"
@@ -352,7 +347,7 @@ const ImportWalletPage = () => {
                       {...register('confirmPassword', {
                         required: true,
                       })}
-                      disabled={disabled}
+                      disabled={formDisabled}
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder={t('create_wallet.placeholder_password_confirm')}
                       autoComplete="off"
@@ -375,7 +370,7 @@ const ImportWalletPage = () => {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={disabled} size="xxl">
+              <Button type="submit" className="w-full" disabled={submitDisabled} size="xxl">
                 {recoverWallet.isPending ? (
                   <>
                     <Spinner className="motion-reduce:hidden" />
