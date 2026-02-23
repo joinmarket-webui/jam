@@ -6,7 +6,7 @@ import { validateMnemonic } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
-import { useForm, type SubmitHandler } from 'react-hook-form'
+import { useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -35,6 +35,7 @@ import { authStore } from '@/store/authStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 
 const VALID_SEED_WORD_COUNTS = new Set([12, 15, 18, 21, 24])
+const SEED_WORD_COUNT_HINT = '12 / 15 / 18 / 21 / 24'
 const SEED_WORD_PATTERN = /^[a-z]+$/
 
 interface ImportWalletFormValues {
@@ -136,11 +137,22 @@ const ImportWalletPage = () => {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ImportWalletFormValues>({
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   })
+  const seedPhraseField = register('seedPhrase', {
+    required: true,
+  })
+  const watchedSeedPhrase = useWatch({
+    control,
+    name: 'seedPhrase',
+    defaultValue: '',
+  })
+  const seedWordCount = useMemo(() => getSeedPhraseWords(watchedSeedPhrase).length, [watchedSeedPhrase])
+  const hasSupportedSeedWordCount = VALID_SEED_WORD_COUNTS.has(seedWordCount)
   const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
   const recoverWallet = useMutation({
@@ -255,14 +267,29 @@ const ImportWalletPage = () => {
                   <Textarea
                     id="import-wallet-seed"
                     rows={4}
-                    {...register('seedPhrase', {
-                      required: true,
-                    })}
+                    {...seedPhraseField}
                     disabled={disabled}
                     placeholder={t('import_wallet.import_details.feedback_invalid_menmonic_phrase')}
                     autoComplete="off"
+                    onBlur={(event) => {
+                      void seedPhraseField.onBlur(event)
+                      const normalized = normalizeSeedPhrase(event.target.value)
+                      if (normalized !== event.target.value) {
+                        setValue('seedPhrase', normalized, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                    }}
                   />
                 </Field>
+                <div className="text-muted-foreground flex justify-between text-xs">
+                  <span>{seedWordCount} words</span>
+                  <span>Expected {SEED_WORD_COUNT_HINT} words</span>
+                </div>
+                {seedWordCount > 0 && !hasSupportedSeedWordCount && (
+                  <div className="text-warning text-xs">Mnemonic phrase must contain {SEED_WORD_COUNT_HINT} words.</div>
+                )}
                 {showDummyMnemonicHelper && (
                   <Button
                     type="button"
