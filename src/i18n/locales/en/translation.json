@@ -342,7 +342,7 @@
   "logs": {
     "title": "Logs",
     "error_loading_logs_failed": "Could not retrieve log file.",
-    "error_not_supported": "Log viewing is not available in this setup. This feature requires Jam standalone mode."
+    "error_not_supported": "Log viewing is not available in this setup.\nRun Jam in standalone mode:\nnpm run dev:secondary"
   },
   "send": {
     "loading": "Loading",

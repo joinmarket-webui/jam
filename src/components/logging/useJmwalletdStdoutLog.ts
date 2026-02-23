@@ -4,8 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
-import { isDevMode } from '@/constants/debugFeatures'
-import { fetchLog } from '@/lib/api/logs'
+import { fetchLog, LogsApiError } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
@@ -34,7 +33,7 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
         token,
         fileName: JMWALLETD_LOG_FILE_NAME,
         signal,
-      }).then((response) => (response.ok ? response.text() : Promise.reject(new Error(`HTTP ${response.status}`))))
+      }).then((response) => response.text())
     },
   })
 
@@ -50,6 +49,13 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     }
 
     if (!logQuery.error) return undefined
+
+    if (logQuery.error instanceof LogsApiError && logQuery.error.code === 'not_supported') {
+      return {
+        variant: 'warning',
+        message: t('logs.error_not_supported'),
+      }
+    }
 
     const reason =
       (logQuery.error instanceof Error ? logQuery.error.message : undefined) || t('global.errors.reason_unknown')
@@ -72,9 +78,8 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
 
   const logFileContent = useMemo(() => {
     if (logQuery.data) return logQuery.data
-    if (!isDevMode() || alert?.variant !== 'warning') return undefined
-    return `${alert.message}\n`.repeat(1_000)
-  }, [alert, logQuery.data])
+    return undefined
+  }, [logQuery.data])
 
   const refresh = useCallback(async () => {
     if (token === undefined) return
