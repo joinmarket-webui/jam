@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { session } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { validateMnemonic } from '@scure/bip39'
+import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
 import { useForm, type SubmitHandler } from 'react-hook-form'
@@ -32,8 +34,7 @@ import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 
-const MIN_SEED_WORDS = 12
-const MAX_SEED_WORDS = 24
+const VALID_SEED_WORD_COUNTS = new Set([12, 15, 18, 21, 24])
 const SEED_WORD_PATTERN = /^[a-z]+$/
 
 interface ImportWalletFormValues {
@@ -53,13 +54,17 @@ const normalizeSeedPhrase = (value?: string) =>
     .filter(Boolean)
     .join(' ')
 
-const isLikelySeedPhrase = (value: string) => {
-  const words = normalizeSeedPhrase(value).split(' ').filter(Boolean)
-  return (
-    words.length >= MIN_SEED_WORDS &&
-    words.length <= MAX_SEED_WORDS &&
-    words.every((word) => SEED_WORD_PATTERN.test(word))
-  )
+const getSeedPhraseWords = (value: string) => normalizeSeedPhrase(value).split(' ').filter(Boolean)
+
+const isValidSeedPhrase = (value: string) => {
+  const normalized = normalizeSeedPhrase(value)
+  const words = getSeedPhraseWords(normalized)
+  if (words.length === 0) return false
+
+  if (!VALID_SEED_WORD_COUNTS.has(words.length)) return false
+  if (!words.every((word) => SEED_WORD_PATTERN.test(word))) return false
+
+  return validateMnemonic(normalized, wordlist)
 }
 
 const importWalletSchema = (wallets: WalletFileName[], t: (key: string) => string) =>
@@ -86,7 +91,7 @@ const importWalletSchema = (wallets: WalletFileName[], t: (key: string) => strin
         .string()
         .required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase'))
         .test('seed-phrase-format', t('import_wallet.import_details.feedback_invalid_menmonic_phrase'), (value) =>
-          isLikelySeedPhrase(value || ''),
+          isValidSeedPhrase(value || ''),
         ),
     })
     .required()
