@@ -350,17 +350,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       /* TODO: i18n */
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(`Error while sending non-collaborative transaction: ${reason}`)
     },
   })
-
-  const directSendErrorReason = useMemo(() => {
-    if (!triggerNonCollarborativeTransaction.error) {
-      return undefined
-    }
-    return getErrorReason(triggerNonCollarborativeTransaction.error, t('global.errors.reason_unknown'))
-  }, [triggerNonCollarborativeTransaction.error, t])
 
   const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
     try {
