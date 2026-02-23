@@ -129,6 +129,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const waitingForMakerUpdate = isWaitingMakerStart || isWaitingMakerStop
   const waitingForOfferUpdate = makerRunning && !isCurrentOfferAvailable
+
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
     refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
