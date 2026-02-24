@@ -3,6 +3,7 @@ import type { Client } from '@joinmarket-webui/joinmarket-api-ts/client'
 import type { ClientOptions, UnlockWalletResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { isDevMode } from '@/constants/debugFeatures'
 import { authStore } from '@/store/authStore'
+import { queryClient } from './queryClient'
 
 type ApiToken = UnlockWalletResponse['token']
 
@@ -31,6 +32,14 @@ const createJamAuthenticationMiddleware = () => {
   }
 }
 
+function unauthorizedResponseInterceptor(response: Response) {
+  if (response.status === 401) {
+    authStore.getState().clear()
+    queryClient.clear()
+  }
+  return response
+}
+
 export const createApiClient = (): Client => {
   const baseUrl = String(import.meta.env.VITE_JM_API_BASE_URL)
   const clientOptions: ClientOptions = { baseUrl }
@@ -40,6 +49,7 @@ export const createApiClient = (): Client => {
 
   const jamAuthMiddleware = createJamAuthenticationMiddleware()
   client.interceptors.request.use(jamAuthMiddleware)
+  client.interceptors.response.use(unauthorizedResponseInterceptor)
 
   if (isDevMode()) {
     client.interceptors.request.use(loggingRequestInterceptor)
