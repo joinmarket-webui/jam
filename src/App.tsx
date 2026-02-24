@@ -49,6 +49,7 @@ import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDi
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
+import { useIdleAutoLock } from './hooks/useIdleAutoLock'
 import { useJmWebsocket } from './hooks/useJmWebsocket'
 import { jmSessionStore } from './store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from './store/jmTxStore'
@@ -231,6 +232,7 @@ function App() {
           <RefreshApiToken />
           <RefreshJmSession />
           <HandleJmWebsocketMessages />
+          <IdleAutoLock />
           {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
           {lockWalletDialogContext && (
             <LockWalletConfirmDialog
@@ -406,6 +408,23 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
         }
       })
   }, [fetchMissing])
+
+  return <></>
+}
+
+function IdleAutoLock() {
+  const autoLockTimeout = useStore(jamSettingsStore, (state) => state.state.autoLockTimeout ?? 0)
+  const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
+  const makerRunning = useStore(jmSessionStore, (state) => state.state?.maker_running === true)
+  const coinjoinInProgress = useStore(jmSessionStore, (state) => {
+    return state.state?.coinjoin_in_process === true || (state.state?.schedule?.length || 0) > 0
+  })
+
+  const shouldTrackIdle = hasAuthToken && autoLockTimeout > 0 && !makerRunning && !coinjoinInProgress
+
+  useIdleAutoLock(() => {
+    clearAuthAndQueryCache()
+  }, shouldTrackIdle ? autoLockTimeout : 0)
 
   return <></>
 }

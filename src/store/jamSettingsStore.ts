@@ -8,6 +8,7 @@ export type JamSettings = {
   privateMode: boolean
   currencyUnit: Currency
   cheatsheetForceOpenAt?: number
+  autoLockTimeout?: number
 }
 
 interface JamSettingsStoreState {

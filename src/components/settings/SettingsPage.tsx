@@ -14,6 +14,7 @@ import {
   ArrowLeftRightIcon,
   LockKeyholeIcon,
   BookKeyIcon,
+  TimerIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -22,6 +23,7 @@ import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BtcSymbol, SatSymbol } from '@/components/ui/jam/CurrencySymbol'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
@@ -139,6 +141,8 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
+          <AutoLockTimeoutSelector />
+          <Separator className="opacity-50" />
           <SettingItem
             icon={LockKeyholeIcon}
             title={t('settings.button_lock_wallet')}
@@ -253,6 +257,49 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
         </>
       )}
+    </div>
+  )
+}
+
+const AUTO_LOCK_OPTIONS = [
+  { value: '0', label: 'settings.auto_lock_disabled' },
+  { value: '5', label: 'settings.auto_lock_minutes' },
+  { value: '15', label: 'settings.auto_lock_minutes' },
+  { value: '30', label: 'settings.auto_lock_minutes' },
+  { value: '60', label: 'settings.auto_lock_minutes' },
+]
+
+const AutoLockTimeoutSelector = () => {
+  const { t } = useTranslation()
+  const jamSettings = useStore(jamSettingsStore)
+  const currentValue = String(jamSettings.state.autoLockTimeout ?? 0)
+
+  return (
+    <div className="flex items-center justify-between py-2">
+      <div className="flex items-center gap-2">
+        <div className="bg-muted/50 flex h-7 w-7 items-center justify-center rounded-lg border">
+          <TimerIcon className="text-muted-foreground h-4 w-4" />
+        </div>
+        <div>
+          <p className="text-sm font-medium">{t('settings.auto_lock_timeout')}</p>
+        </div>
+      </div>
+
+      <Select
+        value={currentValue}
+        onValueChange={(value) => jamSettings.update({ autoLockTimeout: Number(value) })}
+      >
+        <SelectTrigger className="h-7 w-32 text-xs" aria-label={t('settings.auto_lock_timeout')}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {AUTO_LOCK_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {t(option.label, { count: Number(option.value) })}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }
