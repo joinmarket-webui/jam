@@ -1,6 +1,7 @@
 import { AlertTriangleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { LogViewer } from '@/components/logging/LogViewer'
+import type { LogViewerVariant } from '@/components/logging/LogViewer'
 import { useJmwalletdStdoutLog } from '@/components/logging/useJmwalletdStdoutLog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
@@ -8,9 +9,10 @@ import { cn } from '@/lib/utils'
 interface LogsContentProps {
   className?: string
   enabled: boolean
+  viewerVariant?: LogViewerVariant
 }
 
-export const LogsContent = ({ enabled, className }: LogsContentProps) => {
+export const LogsContent = ({ enabled, className, viewerVariant = 'fill' }: LogsContentProps) => {
   const { t } = useTranslation()
   const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({ enabled })
 
@@ -24,7 +26,15 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
+    <div
+      className={cn(
+        'flex flex-col gap-3',
+        {
+          'min-h-0 flex-1': viewerVariant === 'fill',
+        },
+        className,
+      )}
+    >
       {alert && (
         <Alert variant={alert.variant}>
           <AlertTriangleIcon />
@@ -32,7 +42,9 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
         </Alert>
       )}
 
-      {logFileContent && <LogViewer variant="fill" fileName={fileName} value={logFileContent} refresh={refresh} />}
+      {logFileContent && (
+        <LogViewer variant={viewerVariant} fileName={fileName} value={logFileContent} refresh={refresh} />
+      )}
     </div>
   )
 }
