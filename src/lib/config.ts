@@ -32,7 +32,7 @@ const createJamAuthenticationMiddleware = () => {
   }
 }
 
-function unauthorizedResponseInterceptor(response: Response) {
+export function unauthorizedResponseInterceptor(response: Response) {
   if (response.status === 401) {
     authStore.getState().clear()
     queryClient.clear()
