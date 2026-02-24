@@ -376,6 +376,7 @@
     "label_amount_input": "Amount",
     "placeholder_amount_input": "Enter amount in sats or BTC...",
     "feedback_invalid_amount": "Please provide a valid amount.",
+    "feedback_amount_exceeds_balance": "Amount exceeds the available balance in the selected jar.",
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
     "toggle_coinjoin_subtitle": "Collaborative transactions improve the privacy of yourself and others.",
