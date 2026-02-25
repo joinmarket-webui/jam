@@ -13,7 +13,7 @@ import * as yup from 'yup'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
-import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
+import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
@@ -107,6 +107,7 @@ const sendFormSchema = (
   jars: Jar[],
   addressSummary: AddressSummary,
   minNumberOfCollaborators: number,
+  network: Network,
   t: TFunction,
 ) => {
   return yup
@@ -133,6 +134,13 @@ const sendFormSchema = (
             .required(t('send.feedback_invalid_destination_address'))
             .test('valid-address-test', t('send.feedback_invalid_destination_address'), (value) => {
               return isValidBitcoinAddress(value)
+            })
+            .test('network-mismatch-test', t('send.feedback_destination_network_mismatch'), (value) => {
+              try {
+                return getAddressInfo(value).network === network
+              } catch (_ignoredOnPurpose) {
+                return false
+              }
             })
             .test('reused-address-test', t('send.feedback_reused_address'), (value) => {
               return addressSummary[value]?.used !== true
@@ -265,9 +273,11 @@ export function SendForm({
   const [showQrScannerDialog, setShowQrScannerDialog] = useState(false)
   const [bip21Message, setBip21Message] = useState<string>()
 
+  const { network } = useDetectNetwork()
+
   const schema = useMemo(
-    () => sendFormSchema(jars, addressSummary, minNumberOfCollaborators, t),
-    [jars, addressSummary, minNumberOfCollaborators, t],
+    () => sendFormSchema(jars, addressSummary, minNumberOfCollaborators, network, t),
+    [jars, addressSummary, minNumberOfCollaborators, network, t],
   )
 
   const {
