@@ -206,6 +206,24 @@ const sendFormSchema = (
 
       return new yup.ValidationError(errorMessage, root.destination.address, 'destination.address', undefined, true)
     })
+    .test('amount-exceeds-balance-test', function (root) {
+      if (root.amount.isSweep) return true
+      if (root.amount.amount === undefined || root.amount.amount === null) return true
+
+      const sourceJar = jars.find((it) => it.jarIndex === root.source.fromJar)
+      if (!sourceJar) return true
+
+      const available = sourceJar.balanceSummary.calculatedAvailableBalanceInSats
+      if (root.amount.amount <= available) return true
+
+      return new yup.ValidationError(
+        t('send.feedback_amount_exceeds_balance'),
+        root.amount.amount,
+        'amount.amount',
+        undefined,
+        true,
+      )
+    })
 }
 
 const FieldPrefixSatSymbol = (
