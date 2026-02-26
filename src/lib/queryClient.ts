@@ -23,51 +23,41 @@ type WithQueryDelayOptions = {
 }
 
 export function withQueryDelay<TQueryFnData, TQueryKey extends QueryKey>(
-  queryFn: QueryFunction<TQueryFnData, TQueryKey> | undefined,
-  { delayBefore, delayAfter, throttle }: WithQueryDelayOptions,
-): QueryFunction<TQueryFnData, TQueryKey> | undefined {
-  if (!queryFn) return undefined
+  queryFn: QueryFunction<TQueryFnData, TQueryKey>,
+  delayOptions: WithQueryDelayOptions,
+): QueryFunction<TQueryFnData, TQueryKey> {
   return (async (context) => {
-    const now = globalThis.performance.now()
-    if (delayBefore !== undefined && delayBefore > 0 && !context.signal.aborted) {
-      await delayedPromise(delayBefore)
-    }
-    const result = await queryFn(context)
-    if (delayAfter !== undefined && delayAfter > 0 && !context.signal.aborted) {
-      await delayedPromise(delayAfter)
-    }
-    if (throttle != undefined && throttle > 0 && !context.signal.aborted) {
-      const requestDuration = globalThis.performance.now() - now
-      const throttleDelay = Math.max(0, throttle - requestDuration)
-      if (throttleDelay > 0) {
-        await delayedPromise(throttleDelay)
-      }
-    }
-    return result
+    return await applyDelay(async () => await queryFn(context), delayOptions)
   }) as QueryFunction<TQueryFnData, TQueryKey>
 }
 
 export function withMutationDelay<TMutateFnData, TVariables = void>(
-  queryFn: MutationFunction<TMutateFnData, TVariables> | undefined,
-  { delayBefore, delayAfter, throttle }: WithQueryDelayOptions,
-): MutationFunction<TMutateFnData, TVariables> | undefined {
-  if (!queryFn) return undefined
+  queryFn: MutationFunction<TMutateFnData, TVariables>,
+  delayOptions: WithQueryDelayOptions,
+): MutationFunction<TMutateFnData, TVariables> {
   return (async (variables, options) => {
-    const now = globalThis.performance.now()
-    if (delayBefore !== undefined && delayBefore > 0) {
-      await delayedPromise(delayBefore)
-    }
-    const result = await queryFn(variables, options)
-    if (delayAfter !== undefined && delayAfter > 0) {
-      await delayedPromise(delayAfter)
-    }
-    if (throttle != undefined && throttle > 0) {
-      const requestDuration = globalThis.performance.now() - now
-      const throttleDelay = Math.max(0, throttle - requestDuration)
-      if (throttleDelay > 0) {
-        await delayedPromise(throttleDelay)
-      }
-    }
-    return result
+    return await applyDelay(async () => await queryFn(variables, options), delayOptions)
   }) as MutationFunction<TMutateFnData, TVariables>
+}
+
+async function applyDelay<T>(
+  queryFn: () => Promise<T>,
+  { delayBefore, delayAfter, throttle }: WithQueryDelayOptions,
+): Promise<T> {
+  const now = globalThis.performance.now()
+  if (delayBefore !== undefined && delayBefore > 0) {
+    await delayedPromise(delayBefore)
+  }
+  const result = await queryFn()
+  if (delayAfter !== undefined && delayAfter > 0) {
+    await delayedPromise(delayAfter)
+  }
+  if (throttle != undefined && throttle > 0) {
+    const requestDuration = globalThis.performance.now() - now
+    const throttleDelay = Math.max(0, throttle - requestDuration)
+    if (throttleDelay > 0) {
+      await delayedPromise(throttleDelay)
+    }
+  }
+  return result
 }
