@@ -57,14 +57,15 @@ const normalizeSeedPhrase = (value?: string) =>
 
 const getSeedPhraseWords = (value: string) => normalizeSeedPhrase(value).split(' ').filter(Boolean)
 
-const isValidSeedPhrase = (value: string) => {
-  const normalized = normalizeSeedPhrase(value)
-  const words = getSeedPhraseWords(normalized)
+const isLikelySeedPhrase = (value: string) => {
+  const words = getSeedPhraseWords(value)
   if (words.length === 0) return false
-
   if (!VALID_SEED_WORD_COUNTS.has(words.length)) return false
-  if (!words.every((word) => SEED_WORD_PATTERN.test(word))) return false
+  return words.every((word) => SEED_WORD_PATTERN.test(word))
+}
 
+const isBip39Mnemonic = (value: string) => {
+  const normalized = normalizeSeedPhrase(value)
   return validateMnemonic(normalized, wordlist)
 }
 
@@ -92,7 +93,7 @@ const importWalletSchema = (wallets: WalletFileName[], t: (key: string) => strin
         .string()
         .required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase'))
         .test('seed-phrase-format', t('import_wallet.import_details.feedback_invalid_menmonic_phrase'), (value) =>
-          isValidSeedPhrase(value || ''),
+          isLikelySeedPhrase(value || ''),
         ),
     })
     .required()
@@ -153,7 +154,7 @@ const ImportWalletPage = () => {
   })
   const seedWordCount = useMemo(() => getSeedPhraseWords(watchedSeedPhrase).length, [watchedSeedPhrase])
   const hasSupportedSeedWordCount = VALID_SEED_WORD_COUNTS.has(seedWordCount)
-  const isSeedPhraseBip39Valid = useMemo(() => isValidSeedPhrase(watchedSeedPhrase), [watchedSeedPhrase])
+  const isSeedPhraseBip39Valid = useMemo(() => isBip39Mnemonic(watchedSeedPhrase), [watchedSeedPhrase])
   const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
   const recoverWallet = useMutation({
