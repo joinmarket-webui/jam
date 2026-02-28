@@ -1,9 +1,10 @@
 import type { DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
+import { isValidNumber } from '@/lib/utils'
 import type { SendFormValues } from './types'
 
 const ensureInteger = (value: unknown, message: string): number => {
-  if (typeof value !== 'number' || !Number.isInteger(value)) {
+  if (!isValidNumber(value) || !Number.isInteger(value)) {
     throw new TypeError(message)
   }
   return value
@@ -25,22 +26,19 @@ export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinR
     throw new Error('Invalid number of collaborators.')
   }
 
-  const amountSats = data.amount?.isSweep ? 0 : data.amount?.amount
-  if (!data.amount?.isSweep) {
-    const amount = ensureInteger(amountSats, 'Invalid amount.')
-    if (amount <= 0) {
-      throw new Error('Invalid amount.')
-    }
+  const amountSats = data.amount?.isSweep ? 0 : ensureInteger(data.amount?.amount, 'Invalid amount.')
+  if (!data.amount?.isSweep && amountSats <= 0) {
+    throw new Error('Invalid amount.')
   }
 
   const txfee = data.txFee?.value
-  if (txfee !== undefined && (typeof txfee !== 'number' || Number.isNaN(txfee) || txfee <= 0)) {
+  if (txfee !== undefined && (!isValidNumber(txfee) || txfee <= 0)) {
     throw new Error('Invalid transaction fee.')
   }
 
   return {
     mixdepth: sourceJarIndex,
-    amount_sats: amountSats ?? 0,
+    amount_sats: amountSats,
     counterparties,
     destination: address,
     ...(txfee !== undefined ? { txfee } : {}),
