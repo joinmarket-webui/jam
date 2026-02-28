@@ -18,7 +18,14 @@ import { useApiClient } from '@/hooks/useApiClient'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
-import { cn, delayedPromise, factorToPercentage, pseudoRandomInteger, type WalletFileName } from '@/lib/utils'
+import {
+  cn,
+  delayedPromise,
+  factorToPercentage,
+  isValidNumber,
+  pseudoRandomInteger,
+  type WalletFileName,
+} from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
@@ -188,13 +195,24 @@ const sendFormSchema = (
             .default(initialNumberOfCollaborators(minNumberOfCollaborators))
             .min(
               minNumberOfCollaborators,
-              t('send.error_invalid_num_collaborators', { minNumCollaborators: minNumberOfCollaborators }),
+              t('send.error_invalid_num_collaborators', {
+                minNumCollaborators: minNumberOfCollaborators,
+                maxNumCollaborators: MAX_NUM_COLLABORATORS,
+              }),
             )
             .max(
               MAX_NUM_COLLABORATORS,
-              t('send.error_invalid_num_collaborators', { minNumCollaborators: minNumberOfCollaborators }),
+              t('send.error_invalid_num_collaborators', {
+                minNumCollaborators: minNumberOfCollaborators,
+                maxNumCollaborators: MAX_NUM_COLLABORATORS,
+              }),
             )
-            .required(t('send.error_invalid_num_collaborators', { minNumCollaborators: minNumberOfCollaborators })),
+            .required(
+              t('send.error_invalid_num_collaborators', {
+                minNumCollaborators: minNumberOfCollaborators,
+                maxNumCollaborators: MAX_NUM_COLLABORATORS,
+              }),
+            ),
         otherwise: (schema) =>
           schema
             .transform(() => null)
@@ -670,7 +688,7 @@ export function SendForm({
                     <Field data-invalid={errors.numCollaborators !== undefined}>
                       <FieldLabel htmlFor="send-num-collaborators">
                         {t('send.label_num_collaborators', {
-                          numCollaborators: values.numCollaborators ?? '-',
+                          numCollaborators: isValidNumber(values.numCollaborators) ? values.numCollaborators : '-',
                         })}
                       </FieldLabel>
                       <Input
