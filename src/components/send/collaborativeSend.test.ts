@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
 
-const validAddress = 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
+const validAddress = 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx' // regtest eater address
 
 const baseValues = (): SendFormValues => ({
   source: { fromJar: 0 },
