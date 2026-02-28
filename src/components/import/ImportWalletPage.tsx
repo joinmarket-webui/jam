@@ -5,7 +5,7 @@ import { session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { validateMnemonic } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
+import { AlertCircleIcon, AlertTriangleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
 import { useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -21,6 +21,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { JM_DEFAULT_WALLET_TYPE, JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
@@ -139,7 +140,7 @@ const ImportWalletPage = () => {
     handleSubmit,
     setValue,
     control,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting },
   } = useForm<ImportWalletFormValues>({
     mode: 'onChange',
     resolver: yupResolver(schema),
@@ -153,7 +154,6 @@ const ImportWalletPage = () => {
     defaultValue: '',
   })
   const seedWordCount = useMemo(() => getSeedPhraseWords(watchedSeedPhrase).length, [watchedSeedPhrase])
-  const hasSupportedSeedWordCount = VALID_SEED_WORD_COUNTS.has(seedWordCount)
   const isSeedPhraseBip39Valid = useMemo(() => isBip39Mnemonic(watchedSeedPhrase), [watchedSeedPhrase])
   const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
@@ -198,7 +198,7 @@ const ImportWalletPage = () => {
   }
 
   const formDisabled = isSubmitting || recoverWallet.isPending || hasActiveWalletSession
-  const submitDisabled = formDisabled || walletsFetching || walletsLoading || sessionLoading || !isValid
+  const submitDisabled = formDisabled || walletsFetching || walletsLoading || sessionLoading
 
   return (
     <AuthPageShell>
@@ -260,7 +260,19 @@ const ImportWalletPage = () => {
 
               <div className="space-y-2">
                 <Field data-invalid={errors.seedPhrase !== undefined}>
-                  <FieldLabel htmlFor="import-wallet-seed">{t('import_wallet.import_details.title')}</FieldLabel>
+                  <FieldLabel htmlFor="import-wallet-seed">
+                    {t('import_wallet.import_details.title')}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InfoIcon className="text-muted-foreground ml-1 inline size-3.5 align-text-bottom" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {/* TODO: i18n */}
+                        <p>{seedWordCount} words entered.</p>
+                        <p>Expected {SEED_WORD_COUNT_HINT} words.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </FieldLabel>
                   <Textarea
                     id="import-wallet-seed"
                     rows={4}
@@ -280,15 +292,14 @@ const ImportWalletPage = () => {
                     }}
                   />
                 </Field>
-                <div className="text-muted-foreground flex justify-between text-xs">
-                  <span>{seedWordCount} words</span>
-                  <span>Expected {SEED_WORD_COUNT_HINT} words</span>
-                </div>
-                {seedWordCount > 0 && isSeedPhraseBip39Valid && (
-                  <div className="light:text-green-600 text-xs text-green-400">BIP39 mnemonic phrase is valid.</div>
-                )}
-                {seedWordCount > 0 && !hasSupportedSeedWordCount && (
-                  <div className="text-warning text-xs">Mnemonic phrase must contain {SEED_WORD_COUNT_HINT} words.</div>
+                {seedWordCount > 0 && !isSeedPhraseBip39Valid && isLikelySeedPhrase(watchedSeedPhrase) && (
+                  <Alert variant="warning" className="py-2">
+                    <AlertTriangleIcon className="size-4" />
+                    <AlertDescription className="text-xs">
+                      {/* TODO: i18n */}
+                      Mnemonic phrase is not BIP39-compliant. The backend may reject it.
+                    </AlertDescription>
+                  </Alert>
                 )}
                 {showDummyMnemonicHelper && (
                   <Button
