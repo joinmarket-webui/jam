@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEventHandler } from 'react'
+import { useEffect, useMemo, useState, type MouseEvent, type MouseEventHandler, type PropsWithChildren } from 'react'
 import { SnowflakeIcon } from 'lucide-react'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
@@ -16,14 +16,14 @@ const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} className={
 
 const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className={cn('size-[1em]', styles.frozenSymbol)} />
 
-interface ElementWithSymbolsProps {
+type ElementWithSymbolsProps = PropsWithChildren<{
   symbol?: React.ReactNode
   showSymbol?: boolean
   frozen?: boolean
   frozenSymbol?: boolean
   className?: string
-  children: React.ReactNode
-}
+  onClick?: MouseEventHandler
+}>
 
 const ElementWithSymbols = ({
   symbol,
@@ -32,6 +32,7 @@ const ElementWithSymbols = ({
   frozenSymbol = true,
   className,
   children,
+  ...props
 }: ElementWithSymbolsProps) => {
   return (
     <span
@@ -42,6 +43,7 @@ const ElementWithSymbols = ({
         },
         className,
       )}
+      {...props}
     >
       {children}
       {showSymbol && symbol}
@@ -163,22 +165,36 @@ export const BalanceComponent = ({
     setIsBalanceVisible(showBalance)
   }, [showBalance])
 
-  const toggleVisibility: MouseEventHandler = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
+  const elementProps = useMemo(() => {
+    const toggleVisibility: MouseEventHandler = () => {
+      setIsBalanceVisible((current) => !current)
+    }
+    const onClickHandler = enableVisibilityToggle === false ? undefined : toggleVisibility
 
-    setIsBalanceVisible((current) => !current)
-  }
+    return {
+      ...props,
+      className: cn(props.className, {
+        'cursor-pointer': enableVisibilityToggle,
+      }),
+      onClick: (event: MouseEvent<HTMLSpanElement>) => {
+        event.preventDefault()
+        event.stopPropagation()
 
-  const balanceComponent = useMemo(() => {
+        onClickHandler?.(event)
+        props.onClick?.(event)
+      },
+    }
+  }, [props, enableVisibilityToggle])
+
+  const element = useMemo(() => {
     if (displayMode === 'hidden') {
-      return <HiddenBalance {...props} />
+      return <HiddenBalance {...elementProps} />
     }
 
     const valueNumber = Number.parseFloat(valueString)
     if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
-      return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
+      return <ElementWithSymbols {...elementProps}>{valueString}</ElementWithSymbols>
     }
 
     // Treat integers as sats.
@@ -188,39 +204,31 @@ export const BalanceComponent = ({
 
     if (valueIsSats) {
       if (displayMode === 'default' || displayMode === 'sats') {
-        return <SatsBalance value={valueNumber} {...props} />
+        return <SatsBalance {...elementProps} value={valueNumber} />
       }
       if (displayMode === 'btc') {
-        return <BitcoinBalance value={valueNumber} {...props} />
+        return <BitcoinBalance {...elementProps} value={valueNumber} />
       }
     }
     if (valueIsBtc) {
       const valueInSats = tryBtcToSat(valueString)
       if (!isValidNumber(valueInSats)) {
         console.warn('<Balance /> component expects decimal BTC input in plain notation')
-        return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
+        return <ElementWithSymbols {...elementProps}>{valueString}</ElementWithSymbols>
       }
       if (displayMode === 'default' || displayMode === 'btc') {
-        return <BitcoinBalance value={valueInSats} {...props} />
+        return <BitcoinBalance {...elementProps} value={valueInSats} />
       }
       if (displayMode === 'sats') {
-        return <SatsBalance value={valueInSats} {...props} />
+        return <SatsBalance {...elementProps} value={valueInSats} />
       }
     }
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
-  }, [valueString, displayMode, props])
+    return <ElementWithSymbols {...elementProps}>{valueString}</ElementWithSymbols>
+  }, [valueString, displayMode, elementProps])
 
-  if (enableVisibilityToggle === false) {
-    return <>{balanceComponent}</>
-  } else {
-    return (
-      <span onClick={toggleVisibility} className="cursor-pointer">
-        {balanceComponent}
-      </span>
-    )
-  }
+  return element
 }
 
 type BalanceProps = Omit<BalanceComponentProps, 'hiddenAmountPlaceholder'> & {
