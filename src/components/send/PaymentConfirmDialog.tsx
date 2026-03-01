@@ -5,8 +5,8 @@ import { Trans, useTranslation } from 'react-i18next'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { Utxo } from '@/hooks/useQueryUtxos'
-import { factorToPercentage, isValidNumber } from '@/lib/utils'
-import type { AmountSats, WithRequiredProperty } from '@/types/global'
+import { factorToPercentage } from '@/lib/utils'
+import type { WithRequiredProperty } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader } from '../ui/card'
@@ -14,48 +14,18 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } 
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { estimateMaxCollaboratorFee, type EstimateMaxCollaboratorFeeResult } from './feeEstimate'
 import type { SendFormValues } from './types'
-
-type EstimateMaxCollaboraterFeeResult = {
-  maxFee: AmountSats
-  fractionOfAmount: number
-}
-const estimateMaxCollaboraterFee = (
-  feeConfigValues: FeeConfigValues,
-  amount: AmountSats,
-  numberOfCollaborators: number,
-): EstimateMaxCollaboraterFeeResult => {
-  if (feeConfigValues === undefined) {
-    throw new Error('Invalid state: Missing fee config values.')
-  }
-  const maxAbsoluteFee = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
-  if (!isValidNumber(maxAbsoluteFee)) {
-    throw new Error('Invalid state: Missing "max_cj_fee_abs" fee config value.')
-  }
-  const maxRelativeFee = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
-  if (!isValidNumber(maxRelativeFee)) {
-    throw new Error('Invalid state: Missing "max_cj_fee_rel" fee config value.')
-  }
-
-  const maxFeePerCollaborator: AmountSats = Math.max(Math.ceil(amount * maxRelativeFee), maxAbsoluteFee)
-  const maxFee: AmountSats =
-    numberOfCollaborators > 0 ? Math.min(maxFeePerCollaborator * numberOfCollaborators, amount) : 0
-  const fractionOfAmount = amount > 0 ? maxFee / amount : 0
-  return {
-    maxFee,
-    fractionOfAmount,
-  }
-}
 
 const maxCollaboraterFee = (
   feeConfigValues: FeeConfigValues,
   values: SendFormValues,
-): EstimateMaxCollaboraterFeeResult | undefined => {
+): EstimateMaxCollaboratorFeeResult | undefined => {
   if (!values.isCoinJoin || values.numCollaborators === undefined) {
     return undefined
   }
   const amount = values.amount?.isSweep === true ? values.amount.sweepAmount : values.amount?.amount
-  return !amount ? undefined : estimateMaxCollaboraterFee(feeConfigValues, amount, values.numCollaborators)
+  return !amount ? undefined : estimateMaxCollaboratorFee(feeConfigValues, amount, values.numCollaborators)
 }
 
 type PaymentConfirmDialogProps = WithRequiredProperty<
