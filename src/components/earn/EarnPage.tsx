@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import { FileTextIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -31,6 +31,7 @@ import type { Milliseconds } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
 import { EarnForm, type EarnFormValues } from './EarnForm'
+import { EarnReportSheet } from './EarnReportSheet'
 import { FidelityBondCard } from './FidelityBondCard'
 import { MoveToJarDialog } from './MoveToJarDialog'
 import { OfferCard } from './OfferCard'
@@ -75,6 +76,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
   const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
   const [showCreateFidelityBondDialog, setShowCreateFidelityBondDialog] = useState(false)
+  const [showEarnReport, setShowEarnReport] = useState(false)
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
@@ -175,6 +177,14 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
+
+      {/* Earn Report Button */}
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setShowEarnReport(true)}>
+          <FileTextIcon />
+          {t('earn.button_show_report')}
+        </Button>
+      </div>
 
       {/* Fee Config Error Alert */}
       {maxFeesConfigMissing && (
@@ -364,6 +374,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Earn Report Sheet */}
+      <EarnReportSheet open={showEarnReport} onOpenChange={setShowEarnReport} />
     </div>
   )
 }
