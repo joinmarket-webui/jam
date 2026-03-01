@@ -72,6 +72,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
+  // TODO: "Lifecycle" or state management should be handled outside of this component
   const collaborativeLifecycleRef = useRef({
     awaitingCompletion: false,
     wasRunning: false,
