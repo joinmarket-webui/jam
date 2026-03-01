@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
-import { isDevMode } from '@/constants/debugFeatures'
 import { fetchLog } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
 
@@ -41,7 +40,7 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
         token,
         fileName: JMWALLETD_LOG_FILE_NAME,
         signal,
-      }).then((response) => (response.ok ? response.text() : Promise.reject(new Error(`HTTP ${response.status}`))))
+      }).then((response) => response.text())
     },
   })
 
@@ -77,11 +76,12 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     return logQuery.isFetched
   }, [enabled, logQuery.isFetched, token])
 
+  // No synthetic fallback — the previous repeat(1_000) generated fake log lines
+  // that resembled real output, making the dev experience misleading.
   const logFileContent = useMemo(() => {
     if (logQuery.data) return logQuery.data
-    if (!isDevMode() || alert?.variant !== 'warning') return undefined
-    return `${alert.message}\nRun Jam in standalone mode: npm run dev:secondary.`
-  }, [alert, logQuery.data])
+    return undefined
+  }, [logQuery.data])
 
   const refresh = useCallback(async () => {
     if (token === undefined) return

@@ -6,16 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { cn, delayedPromise } from '@/lib/utils'
 
-export type LogViewerVariant = 'page' | 'fill'
-
 interface LogViewerProps {
   fileName: string
   value: string
   refresh: () => Promise<void>
-  variant?: LogViewerVariant
+  /** When false, hides search, download and refresh actions (e.g. when showing fallback text) */
+  showActions?: boolean
 }
 
-export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogViewerProps) {
+export function LogViewer({ fileName, value, refresh, showActions = true }: LogViewerProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
@@ -33,8 +32,6 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
     if (normalizedSearchValue.length === 0) return 0
     return filteredLines.length
   }, [filteredLines.length, normalizedSearchValue])
-
-  const isFill = variant === 'fill'
 
   const scrollToLogBottom = () => {
     logContentRef.current?.scrollTo({
@@ -136,88 +133,76 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
   )
 
   return (
-    <Card
-      className={cn('pb-0', {
-        'flex flex-1 flex-col overflow-hidden': isFill,
-      })}
-    >
+    <Card className="flex flex-1 flex-col overflow-hidden pb-0">
       <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="font-mono break-all select-all">{fileName}</CardTitle>
-        <div className="flex items-center justify-end gap-2">
-          <div className="relative max-w-[360px] min-w-[220px] flex-1">
-            <SearchIcon className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
-            <Input
-              value={searchValue}
-              onChange={(event) => setSearchValue(event.target.value)}
-              className="h-9 pr-8 pl-8 text-xs"
-              placeholder="Search logs..."
-              aria-label="Search logs"
-            />
-            {searchValue.length > 0 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2"
-                onClick={() => setSearchValue('')}
-                title={t('global.clear')}
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            )}
+        {showActions && (
+          <div className="flex items-center justify-end gap-2">
+            <div className="relative max-w-[360px] min-w-[220px] flex-1">
+              <SearchIcon className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
+              <Input
+                value={searchValue}
+                onChange={(event) => setSearchValue(event.target.value)}
+                className="h-9 pr-8 pl-8 text-xs"
+                placeholder="Search logs..."
+                aria-label="Search logs"
+              />
+              {searchValue.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2"
+                  onClick={() => setSearchValue('')}
+                  title={t('global.clear')}
+                >
+                  <XIcon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSearchValue('')}
+              disabled={searchValue.length === 0}
+              title={t('global.clear')}
+            >
+              {t('global.clear')}
+            </Button>
+            <Button
+              className="hover:[&>svg]:motion-safe:animate-bounce"
+              variant="outline"
+              onClick={handleDownload}
+              disabled={!value || isLoadingRefresh}
+              title={t('global.download')}
+            >
+              <DownloadIcon className="group/download" />
+              {t('global.download')}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => void handleRefresh()}
+              disabled={isLoadingRefresh}
+              title={t('global.refresh')}
+            >
+              <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
+              {t('global.refresh')}
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setSearchValue('')}
-            disabled={searchValue.length === 0}
-            title={t('global.clear')}
-          >
-            {t('global.clear')}
-          </Button>
-          <Button
-            className="hover:[&>svg]:motion-safe:animate-bounce"
-            variant="outline"
-            onClick={handleDownload}
-            disabled={!value || isLoadingRefresh}
-            title={t('global.download')}
-          >
-            <DownloadIcon className="group/download" />
-            {t('global.download')}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => void handleRefresh()}
-            disabled={isLoadingRefresh}
-            title={t('global.refresh')}
-          >
-            <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
-            {t('global.refresh')}
-          </Button>
-        </div>
+        )}
       </CardHeader>
-      {normalizedSearchValue.length > 0 && (
+      {showActions && normalizedSearchValue.length > 0 && (
         <div className="text-muted-foreground px-6 pb-2 text-xs">
           {matchingLineCount === 0
             ? `No matches for "${searchValue}".`
             : `${matchingLineCount} matching line${matchingLineCount > 1 ? 's' : ''}.`}
         </div>
       )}
-      <CardContent
-        className={cn('relative rounded-b-xl p-0', {
-          'flex-1 overflow-hidden': isFill,
-        })}
-      >
+      <CardContent className="relative flex-1 overflow-hidden rounded-b-xl p-0">
         <pre
           onScroll={logScrollHandler}
           ref={logContentRef}
-          className={cn(
-            'bg-muted/90 overflow-auto rounded-b-xl px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap',
-            {
-              'max-h-[600px] min-h-[300px]': !isFill,
-              'absolute inset-0': isFill,
-            },
-          )}
+          className="bg-muted/90 absolute inset-0 overflow-auto rounded-b-xl px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap"
         >
           {filteredLines.length === 0 && normalizedSearchValue.length > 0
             ? ''

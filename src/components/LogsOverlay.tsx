@@ -19,7 +19,7 @@ export function LogsOverlay({ open, onOpenChange }: LogsOverlayProps) {
         </DialogHeader>
 
         <div className="flex min-h-0 flex-1 overflow-hidden">
-          <LogsContent enabled={open} className="flex h-full flex-1 flex-col" viewerVariant="fill" />
+          <LogsContent enabled={open} className="flex h-full flex-1 flex-col" />
         </div>
       </DialogContent>
     </Dialog>
