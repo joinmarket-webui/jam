@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { PlusIcon, RefreshCwIcon, SearchIcon } from 'lucide-react'
+import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -94,6 +94,30 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
     return sortDirection === 'desc' ? sorted.toReversed() : sorted
   }, [filteredEntries, sortKey, sortDirection])
 
+  // Export visible entries as CSV
+  const downloadCsv = useCallback(() => {
+    const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
+    const rows = sortedEntries.map((entry) =>
+      [
+        entry.timestamp.toISOString(),
+        entry.cjTotalAmount ?? '',
+        entry.inputCount ?? '',
+        entry.inputAmount ?? '',
+        entry.fee ?? '',
+        entry.earnedAmount ?? '',
+        entry.confirmationDuration ?? '',
+        entry.notes ?? '',
+      ].join(','),
+    )
+    const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `earn-report-${new Date().toISOString().slice(0, 10)}.csv`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }, [sortedEntries])
+
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))
@@ -168,6 +192,10 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
               </div>
               <Button variant="outline" size="icon" onClick={() => void refetch()} disabled={isRefetching}>
                 <RefreshCwIcon className={isRefetching ? 'animate-spin' : ''} />
+              </Button>
+              <Button variant="outline" size="sm" onClick={downloadCsv} disabled={allEntries.length === 0}>
+                <DownloadIcon />
+                {t('earn.report.text_button_download_csv')}
               </Button>
               <Button variant="outline" size="sm" onClick={addDemoEntry}>
                 <PlusIcon />

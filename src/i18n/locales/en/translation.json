@@ -529,6 +529,7 @@
       "heading_earned": "Earned",
       "heading_notes": "Notes",
       "text_button_generate_demo_report": "Generate demo entry",
+      "text_button_download_csv": "Download",
       "stats": {
         "earned_total": "Earned (total)",
         "earned_90days": "Earned (90 days)",
