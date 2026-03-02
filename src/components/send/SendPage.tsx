@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import {
   directsendMutation,
   docoinjoinMutation,
@@ -72,32 +72,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
-  // TODO: "Lifecycle" or state management should be handled outside of this component
-  const collaborativeLifecycleRef = useRef({
-    awaitingCompletion: false,
-    wasRunning: false,
-    utxoSnapshotAtStart: '',
-  })
-  const refetchWalletInfoRef = useRef(refetchWalletInfo)
-  const currentUtxoSnapshotRef = useRef('')
+  // Track previous coinjoinRunning to detect completion transitions
+  const previousCoinjoinRunningRef = useRef(false)
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
-  const currentUtxoSnapshot = useMemo(() => {
-    return jars
-      .flatMap((jar) => jar.utxos.map((utxo) => utxo.utxo))
-      .toSorted()
-      .join('|')
-  }, [jars])
-
-  useEffect(() => {
-    currentUtxoSnapshotRef.current = currentUtxoSnapshot
-  }, [currentUtxoSnapshot])
-
-  useEffect(() => {
-    refetchWalletInfoRef.current = refetchWalletInfo
-  }, [refetchWalletInfo])
 
   const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
@@ -200,87 +180,28 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   })
 
   useEffect(() => {
-    if (!collaborativeFlowActive) {
-      return
-    }
-
-    void refetchWalletInfoRef.current()
-    const intervalId = window.setInterval(() => {
-      void refetchWalletInfoRef.current()
-    }, 3_000)
-
-    return () => {
-      window.clearInterval(intervalId)
-    }
-  }, [collaborativeFlowActive])
-
-  useEffect(() => {
     if (coinjoinRunning && startCoinjoinMutation.isSuccess) {
       startCoinjoinMutation.reset()
     }
   }, [coinjoinRunning, startCoinjoinMutation])
 
+  // Detect when a collaborative transaction completes (running → not running)
   useEffect(() => {
-    const state = collaborativeLifecycleRef.current
+    const wasRunning = previousCoinjoinRunningRef.current
+    previousCoinjoinRunningRef.current = coinjoinRunning
 
-    if (!state.awaitingCompletion) {
-      return
-    }
-
-    if (coinjoinRunning) {
-      state.wasRunning = true
-      return
-    }
-
-    if (!state.wasRunning) {
-      return
-    }
-
-    state.awaitingCompletion = false
-    state.wasRunning = false
-    const utxoSnapshotAtStart = state.utxoSnapshotAtStart
-    let isCancelled = false
-
-    const verifyCollaborativeCompletion = async () => {
-      const deadline = Date.now() + 9_000
-      let hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
-
-      while (!hasNewTransaction && Date.now() < deadline) {
-        await refetchWalletInfoRef.current()
-        if (isCancelled) return
-
-        hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
-        if (hasNewTransaction || Date.now() >= deadline) break
-
-        await new Promise((resolve) => window.setTimeout(resolve, 1_000))
-      }
-
-      if (isCancelled) return
-
+    if (wasRunning && !coinjoinRunning) {
       queueMicrotask(() => {
         setPaymentSuccessfulInfoAlert({
-          variant: hasNewTransaction ? 'success' : 'warning',
-          title: hasNewTransaction
-            ? t('send.alert_collaborative_completed_title')
-            : t('send.alert_collaborative_ended_title'),
-          description: hasNewTransaction
-            ? t('send.alert_collaborative_completed_description')
-            : t('send.alert_collaborative_ended_description'),
+          variant: 'success',
+          title: t('send.alert_collaborative_completed_title'),
+          description: t('send.alert_collaborative_completed_description'),
         })
-        if (hasNewTransaction) {
-          toast.success(t('send.alert_collaborative_completed_title'))
-        } else {
-          toast.warning(t('send.alert_collaborative_ended_title'))
-        }
+        toast.success(t('send.alert_collaborative_completed_title'))
       })
+      void refetchWalletInfo()
     }
-
-    void verifyCollaborativeCompletion()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [coinjoinRunning, t])
+  }, [coinjoinRunning, refetchWalletInfo, t])
 
   useEffect(() => {
     if (!coinjoinRunning && stopCoinjoinMutation.isSuccess) {
@@ -396,20 +317,16 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       try {
         const body = buildCollaborativeSendRequest(data)
         setPaymentSuccessfulInfoAlert(undefined)
-        collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
         await startCoinjoinMutation.mutateAsync({
           path: { walletname: encodeURIComponent(walletFileName) },
           body,
         })
-        collaborativeLifecycleRef.current.awaitingCompletion = true
-        collaborativeLifecycleRef.current.wasRunning = coinjoinRunning
         setPaymentSuccessfulInfoAlert({
           variant: 'success',
           title: t('send.alert_collaborative_started_title'),
           description: t('send.alert_collaborative_started_description'),
         })
       } catch (error: unknown) {
-        collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
         const message = t('send.error_preparing_collaborative_transaction', { reason })
         setCollaborativeFlowError(message)
@@ -424,13 +341,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   const onAbortCoinjoin = async () => {
-    collaborativeLifecycleRef.current.awaitingCompletion = false
-    collaborativeLifecycleRef.current.wasRunning = false
-    collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
     setPaymentSuccessfulInfoAlert(undefined)
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutation.mutateAsync()
-    void refetchWalletInfoRef.current()
+    void refetchWalletInfo()
   }
 
   if (isLoadingFeeConfig) {
