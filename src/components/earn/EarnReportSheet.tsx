@@ -13,16 +13,19 @@ import { useQueryYieldgenReport, type EarnReportEntry } from '@/hooks/useQueryYi
 import type { AmountSats } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
 
-// Compute sum of earned amounts over entries matching a time filter
+// Bitcoin genesis block date — used as the default 'since' for all-time sums
+const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
+
+// Compute sum of earned amounts since a given date.
+// Accepts an optional ms offset from now; defaults to genesis day (all-time).
 const sumEarned = (entries: EarnReportEntry[], sinceMs?: number): AmountSats => {
-  const filtered =
-    sinceMs != null ? entries.filter((entry) => entry.timestamp.getTime() > Date.now() - sinceMs) : entries
-  return filtered.reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
+  const since = sinceMs != null ? new Date(Date.now() - sinceMs) : BITCOIN_GENESIS_DATE
+  return entries.filter((entry) => entry.timestamp >= since).reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
 }
 
 const MS_90_DAYS = 90 * 24 * 60 * 60 * 1_000
 const MS_30_DAYS = 30 * 24 * 60 * 60 * 1_000
-const MS_24_HOURS = 1 * 24 * 60 * 60 * 1_000
+const MS_24_HOURS = 24 * 60 * 60 * 1_000
 
 type SortKey = 'timestamp' | 'earnedAmount' | 'cjTotalAmount' | 'inputCount' | 'inputAmount'
 type SortDirection = 'asc' | 'desc'
@@ -65,7 +68,7 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
     ])
   }, [])
 
-  const allEntries = [...(entries ?? []), ...demoEntries]
+  const allEntries = useMemo(() => [...(entries ?? []), ...demoEntries], [entries, demoEntries])
 
   const filteredEntries = useMemo(() => {
     if (search === '') return allEntries
