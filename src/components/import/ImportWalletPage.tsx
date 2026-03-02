@@ -142,7 +142,7 @@ const ImportWalletPage = () => {
     control,
     formState: { errors, isSubmitting },
   } = useForm<ImportWalletFormValues>({
-    mode: 'onChange',
+    mode: 'onSubmit',
     resolver: yupResolver(schema),
   })
   const seedPhraseField = register('seedPhrase', {
