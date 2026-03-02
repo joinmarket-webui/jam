@@ -17,7 +17,6 @@ export function useQueryYieldgenReport({ enabled = true }: { enabled?: boolean }
       try {
         const response = await yieldgenreport({ client, signal })
         // API returns string[] (CSV lines with header)
-
         return yieldgenReportToEarnReportEntries((response.data ?? []) as string[])
       } catch (error: unknown) {
         // 404 is returned until the maker is started at least once

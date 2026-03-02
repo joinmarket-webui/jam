@@ -32,7 +32,7 @@ const ElementWithSymbols = ({
   frozenSymbol = true,
   className,
   children,
-  ...props
+  onClick,
 }: ElementWithSymbolsProps) => {
   return (
     <span
@@ -43,7 +43,7 @@ const ElementWithSymbols = ({
         },
         className,
       )}
-      {...props}
+      onClick={onClick}
     >
       {children}
       {showSymbol && symbol}
@@ -125,10 +125,10 @@ type HiddenBalanceProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'> &
   hiddenAmountPlaceholder: string
 }
 
-const HiddenBalance = (props: HiddenBalanceProps) => {
+const HiddenBalance = ({ hiddenAmountPlaceholder, ...props }: HiddenBalanceProps) => {
   return (
     <ElementWithSymbols symbol={HIDE_SYMBOL} frozenSymbol={false} {...props}>
-      <span className="slashed-zero tabular-nums select-none">{props.hiddenAmountPlaceholder}</span>
+      <span className="slashed-zero tabular-nums select-none">{hiddenAmountPlaceholder}</span>
     </ElementWithSymbols>
   )
 }
@@ -166,7 +166,9 @@ export const BalanceComponent = ({
   }, [showBalance])
 
   const elementProps = useMemo(() => {
-    const toggleVisibility: MouseEventHandler = () => {
+    const toggleVisibility: MouseEventHandler = (event) => {
+      event.preventDefault()
+      event.stopPropagation()
       setIsBalanceVisible((current) => !current)
     }
     const onClickHandler = enableVisibilityToggle === false ? undefined : toggleVisibility
@@ -174,12 +176,9 @@ export const BalanceComponent = ({
     return {
       ...props,
       className: cn(props.className, {
-        'cursor-pointer': enableVisibilityToggle,
+        'cursor-pointer': onClickHandler || props.onClick,
       }),
       onClick: (event: MouseEvent<HTMLSpanElement>) => {
-        event.preventDefault()
-        event.stopPropagation()
-
         onClickHandler?.(event)
         props.onClick?.(event)
       },

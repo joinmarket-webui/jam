@@ -87,12 +87,12 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
   const handleDownload = useCallback(() => {
     const blob = new Blob([value], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = fileName
-    document.body.append(a)
-    a.click()
-    a.remove()
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = fileName
+    document.body.append(anchor)
+    anchor.click()
+    anchor.remove()
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
@@ -198,6 +198,7 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
       </CardHeader>
       {normalizedSearchValue.length > 0 && (
         <div className="text-muted-foreground px-6 pb-2 text-xs">
+          {/* TODO: i18n */}
           {matchingLineCount === 0
             ? `No matches for "${searchValue}".`
             : `${matchingLineCount} matching line${matchingLineCount > 1 ? 's' : ''}.`}
