@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,22 +11,37 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useQueryYieldgenReport, type EarnReportEntry } from '@/hooks/useQueryYieldgenReport'
-import type { AmountSats } from '@/types/global'
+import { pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
+import type { AmountSats, Milliseconds } from '@/types/global'
+import { DevBadge } from '../dev/DevBadge'
 import { EarnReportChart } from './EarnReportChart'
 
-// Bitcoin genesis block date — used as the default 'since' for all-time sums
+// Bitcoin genesis block date - used as the default 'since' for all-time sums
 const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
 
-// Compute sum of earned amounts since a given date.
-// Accepts an optional ms offset from now; defaults to genesis day (all-time).
-const sumEarned = (entries: EarnReportEntry[], sinceMs?: number): AmountSats => {
-  const since = sinceMs != null ? new Date(Date.now() - sinceMs) : BITCOIN_GENESIS_DATE
+const sumEarned = (entries: EarnReportEntry[], since: Date): AmountSats => {
   return entries.filter((entry) => entry.timestamp >= since).reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
 }
 
-const MS_90_DAYS = 90 * 24 * 60 * 60 * 1_000
-const MS_30_DAYS = 30 * 24 * 60 * 60 * 1_000
-const MS_24_HOURS = 24 * 60 * 60 * 1_000
+const generateDemoEntry = () => {
+  const daysAgo = pseudoRandomInteger(0, 180)
+  const cjTotalAmount = pseudoRandomInteger(50_000, 1_000_000_000)
+  return {
+    timestamp: new Date(Date.now() - pseudoRandomInteger(0, daysAgo * MILLISECONDS_IN_A_DAY)),
+    cjTotalAmount: pseudoRandomInteger(50_000, 1_000_000_000),
+    inputCount: pseudoRandomInteger(1, 8),
+    earnedAmount: pseudoRandomInteger(100, 5_000),
+    inputAmount: Math.floor(cjTotalAmount * pseudoRandomFloat(0.1, 0.9)),
+    confirmationDuration: pseudoRandomInteger(1, 180),
+    fee: 0,
+    notes: null,
+  }
+}
+
+const MILLISECONDS_IN_A_DAY: Milliseconds = 24 * 60 * 60 * 1_000
+const MILLISECONDS_IN_30_DAYS: Milliseconds = 30 * MILLISECONDS_IN_A_DAY
+const MILLISECONDS_IN_90_DAYS: Milliseconds = 90 * MILLISECONDS_IN_A_DAY
 
 type SortKey = 'timestamp' | 'earnedAmount' | 'cjTotalAmount' | 'inputCount' | 'inputAmount'
 type SortDirection = 'asc' | 'desc'
@@ -38,34 +54,16 @@ interface EarnReportSheetProps {
 export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) => {
   const { t } = useTranslation()
   const { data: entries, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled: open })
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const [now] = useState(() => Date.now())
 
   const [search, setSearch] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('timestamp')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [demoEntries, setDemoEntries] = useState<EarnReportEntry[]>([])
 
-  // Generate a random demo entry spread over the past 30 days
   const addDemoEntry = useCallback(() => {
-    const daysAgo = Math.floor(Math.random() * 30)
-    const hoursOffset = Math.floor(Math.random() * 24)
-    const timestamp = new Date(Date.now() - daysAgo * 86_400_000 - hoursOffset * 3_600_000)
-    const cjAmount = Math.floor(Math.random() * 50_000_000) + 1_000_000
-    const inputCount = Math.floor(Math.random() * 4) + 1
-    const earned = Math.floor(Math.random() * 5000) + 100
-
-    setDemoEntries((previous) => [
-      ...previous,
-      {
-        timestamp,
-        cjTotalAmount: cjAmount,
-        inputCount,
-        inputAmount: Math.floor(cjAmount * 0.4),
-        fee: earned,
-        earnedAmount: earned,
-        confirmationDuration: Math.round(Math.random() * 60 * 100) / 100,
-        notes: null,
-      },
-    ])
+    setDemoEntries((previous) => [...previous, generateDemoEntry()])
   }, [])
 
   const allEntries = useMemo(() => [...(entries ?? []), ...demoEntries], [entries, demoEntries])
@@ -112,13 +110,16 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
         entry.notes ?? '',
       ].join(','),
     )
-    const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv' })
+    const value = header + '\n' + rows.join('\n')
+    const blob = new Blob([value], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
     anchor.href = url
     anchor.download = `earn-report-${new Date().toISOString().slice(0, 10)}.csv`
     anchor.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => {
+      URL.revokeObjectURL(url)
+    }, 0)
   }, [sortedEntries])
 
   const handleSort = (key: SortKey) => {
@@ -135,10 +136,12 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
     return sortDirection === 'asc' ? ' ↑' : ' ↓'
   }
 
-  const earnedTotal = useMemo(() => sumEarned(allEntries), [allEntries])
-  const earned90Days = useMemo(() => sumEarned(allEntries, MS_90_DAYS), [allEntries])
-  const earned30Days = useMemo(() => sumEarned(allEntries, MS_30_DAYS), [allEntries])
-  const earned24Hours = useMemo(() => sumEarned(allEntries, MS_24_HOURS), [allEntries])
+  const earnedTotal = useMemo(() => sumEarned(allEntries, BITCOIN_GENESIS_DATE), [allEntries])
+
+  // TODO: `since` date should be on start of day
+  const earned90Days = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_90_DAYS)), [allEntries, now])
+  const earned30Days = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_30_DAYS)), [allEntries, now])
+  const earned24Hours = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_A_DAY)), [allEntries, now])
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -200,10 +203,13 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
                 <DownloadIcon />
                 {t('earn.report.text_button_download_csv')}
               </Button>
-              <Button variant="outline" size="sm" onClick={addDemoEntry}>
-                <PlusIcon />
-                {t('earn.report.text_button_generate_demo_report')}
-              </Button>
+              {isDeveloperMode ? (
+                <Button variant="outline" size="sm" onClick={addDemoEntry}>
+                  <PlusIcon />
+                  {t('earn.report.text_button_generate_demo_report')}
+                  <DevBadge />
+                </Button>
+              ) : undefined}
             </div>
 
             {/* Table or empty state */}
@@ -212,10 +218,6 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
                 <Alert variant="default">
                   <AlertTitle>{t('earn.alert_empty_report')}</AlertTitle>
                 </Alert>
-                <Button variant="outline" size="sm" onClick={addDemoEntry}>
-                  <PlusIcon />
-                  {t('earn.report.text_button_generate_demo_report')}
-                </Button>
               </div>
             ) : (
               <div className="min-h-0 flex-1 overflow-auto rounded-md border">
