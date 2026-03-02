@@ -23,9 +23,10 @@ type WithQueryDelayOptions = {
 }
 
 export function withQueryDelay<TQueryFnData, TQueryKey extends QueryKey>(
-  queryFn: QueryFunction<TQueryFnData, TQueryKey>,
+  queryFn: QueryFunction<TQueryFnData, TQueryKey> | undefined,
   delayOptions: WithQueryDelayOptions,
-): QueryFunction<TQueryFnData, TQueryKey> {
+): QueryFunction<TQueryFnData, TQueryKey> | undefined {
+  if (queryFn === undefined) return undefined
   return (async (context) => {
     return await applyDelay(async () => await queryFn(context), delayOptions)
   }) as QueryFunction<TQueryFnData, TQueryKey>
