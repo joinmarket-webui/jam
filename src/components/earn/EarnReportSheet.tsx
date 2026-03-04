@@ -1,13 +1,26 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type SortingState,
+  useReactTable,
+} from '@tanstack/react-table'
 import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Balance } from '@/components/ui/jam/Balance'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { SortIcon } from '@/components/ui/jam/SortIcon'
+import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useQueryYieldgenReport, type EarnReportEntry } from '@/hooks/useQueryYieldgenReport'
@@ -43,8 +56,11 @@ const MILLISECONDS_IN_A_DAY: Milliseconds = 24 * 60 * 60 * 1_000
 const MILLISECONDS_IN_30_DAYS: Milliseconds = 30 * MILLISECONDS_IN_A_DAY
 const MILLISECONDS_IN_90_DAYS: Milliseconds = 90 * MILLISECONDS_IN_A_DAY
 
-type SortKey = 'timestamp' | 'earnedAmount' | 'cjTotalAmount' | 'inputCount' | 'inputAmount'
-type SortDirection = 'asc' | 'desc'
+const ITEMS_PER_PAGE = 25
+
+const columnHelper = createColumnHelper<EarnReportEntry>()
+
+type EarnReportColumnMeta = { align?: string; numeric?: boolean } | undefined
 
 interface EarnReportSheetProps {
   open: boolean
@@ -57,10 +73,11 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [now] = useState(() => Date.now())
 
-  const [search, setSearch] = useState('')
-  const [sortKey, setSortKey] = useState<SortKey>('timestamp')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [demoEntries, setDemoEntries] = useState<EarnReportEntry[]>([])
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'timestamp', desc: true }])
+  const [globalFilter, setGlobalFilter] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE)
 
   const addDemoEntry = useCallback(() => {
     setDemoEntries((previous) => [...previous, generateDemoEntry()])
@@ -68,46 +85,94 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
 
   const allEntries = useMemo(() => [...(entries ?? []), ...demoEntries], [entries, demoEntries])
 
-  const filteredEntries = useMemo(() => {
-    if (search === '') return allEntries
-    const q = search.replace('.', '').toLowerCase()
-    return allEntries.filter(
-      (entry) =>
-        entry.timestamp.toLocaleString().toLowerCase().includes(q) ||
-        entry.cjTotalAmount?.toString().includes(q) ||
-        entry.inputCount?.toString().includes(q) ||
-        entry.inputAmount?.toString().includes(q) ||
-        entry.earnedAmount?.toString().includes(q) ||
-        entry.notes?.toLowerCase().includes(q),
-    )
-  }, [allEntries, search])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const columns = useMemo<ColumnDef<EarnReportEntry, any>[]>(
+    () => [
+      columnHelper.accessor('timestamp', {
+        header: () => t('earn.report.heading_timestamp'),
+        sortingFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
+        cell: (info) => {
+          const ts = info.getValue() as Date
+          return <span title={ts.toISOString()}>{ts.toLocaleString()}</span>
+        },
+      }),
+      columnHelper.accessor('earnedAmount', {
+        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_earned')}</div>,
+        cell: (info) =>
+          info.getValue() != null ? <Balance valueString={String(info.getValue())} showBalance={true} /> : undefined,
+        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+      }),
+      columnHelper.accessor('cjTotalAmount', {
+        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_cj_amount')}</div>,
+        cell: (info) =>
+          info.getValue() != null ? <Balance valueString={String(info.getValue())} showBalance={true} /> : undefined,
+        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+      }),
+      columnHelper.accessor('inputCount', {
+        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_count')}</div>,
+        cell: (info) => <span>{info.getValue() as number}</span>,
+        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+      }),
+      columnHelper.accessor('inputAmount', {
+        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_value')}</div>,
+        cell: (info) =>
+          info.getValue() != null ? <Balance valueString={String(info.getValue())} showBalance={true} /> : undefined,
+        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+      }),
+      columnHelper.accessor('notes', {
+        header: () => t('earn.report.heading_notes'),
+        enableSorting: false,
+        cell: (info) => <span className="text-muted-foreground max-w-[200px] truncate text-xs">{info.getValue()}</span>,
+      }),
+    ],
+    [t],
+  )
 
-  const sortedEntries = useMemo(() => {
-    const sorted = filteredEntries.toSorted((a, b) => {
-      const valA = a[sortKey]
-      const valB = b[sortKey]
-      if (valA == null && valB == null) return 0
-      if (valA == null) return 1
-      if (valB == null) return -1
-      if (sortKey === 'timestamp') return (valA as Date).getTime() - (valB as Date).getTime()
-      return (valA as number) - (valB as number)
-    })
-    return sortDirection === 'desc' ? sorted.toReversed() : sorted
-  }, [filteredEntries, sortKey, sortDirection])
+  const table = useReactTable<EarnReportEntry>({
+    data: allEntries,
+    columns,
+    state: {
+      globalFilter,
+      sorting,
+      pagination: {
+        pageIndex: Math.max(0, currentPage - 1),
+        pageSize: itemsPerPage === -1 ? allEntries.length || 1 : itemsPerPage,
+      },
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  })
+
+  const totalPages = useMemo(() => {
+    if (itemsPerPage === -1) return 1
+    return Math.max(1, Math.ceil(allEntries.length / itemsPerPage))
+  }, [itemsPerPage, allEntries.length])
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+      table.setPageIndex(Math.max(0, totalPages - 1))
+    }
+  }, [totalPages, currentPage, table])
+
+  const visibleRows = table.getRowModel().rows
 
   // Export visible entries as CSV
   const downloadCsv = useCallback(() => {
     const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
-    const rows = sortedEntries.map((entry) =>
+    const rows = visibleRows.map((row) =>
       [
-        entry.timestamp.toISOString(),
-        entry.cjTotalAmount ?? '',
-        entry.inputCount ?? '',
-        entry.inputAmount ?? '',
-        entry.fee ?? '',
-        entry.earnedAmount ?? '',
-        entry.confirmationDuration ?? '',
-        entry.notes ?? '',
+        row.original.timestamp.toISOString(),
+        row.original.cjTotalAmount ?? '',
+        row.original.inputCount ?? '',
+        row.original.inputAmount ?? '',
+        row.original.fee ?? '',
+        row.original.earnedAmount ?? '',
+        row.original.confirmationDuration ?? '',
+        row.original.notes ?? '',
       ].join(','),
     )
     const value = header + '\n' + rows.join('\n')
@@ -120,21 +185,7 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
-  }, [sortedEntries])
-
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortKey(key)
-      setSortDirection('desc')
-    }
-  }
-
-  const sortIndicator = (key: SortKey) => {
-    if (sortKey !== key) return ''
-    return sortDirection === 'asc' ? ' ↑' : ' ↓'
-  }
+  }, [visibleRows])
 
   const earnedTotal = useMemo(() => sumEarned(allEntries, BITCOIN_GENESIS_DATE), [allEntries])
 
@@ -144,16 +195,18 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
   const earned24Hours = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_A_DAY)), [allEntries, now])
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="flex h-[90vh] flex-col">
-        <SheetHeader>
-          <SheetTitle>{t('earn.report.title')}</SheetTitle>
-          <SheetDescription>
-            {search === ''
-              ? t('earn.report.text_report_summary', { count: allEntries.length })
-              : t('earn.report.text_report_summary_filtered', { count: filteredEntries.length })}
-          </SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
+        <DialogHeader>
+          <DialogTitle>
+            {t('earn.report.title')}
+            <span className="text-muted-foreground ml-2 text-sm font-normal">
+              {globalFilter === ''
+                ? t('earn.report.text_report_summary', { count: allEntries.length })
+                : t('earn.report.text_report_summary_filtered', { count: table.getFilteredRowModel().rows.length })}
+            </span>
+          </DialogTitle>
+        </DialogHeader>
 
         {isLoading ? (
           <div className="flex flex-1 items-center justify-center">
@@ -191,8 +244,8 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
                 <SearchIcon className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
                 <Input
                   placeholder={t('earn.report.placeholder_search')}
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
+                  value={globalFilter}
+                  onChange={(event) => setGlobalFilter(event.target.value)}
                   className="pl-8"
                 />
               </div>
@@ -220,77 +273,73 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
                 </Alert>
               </div>
             ) : (
-              <div className="min-h-0 flex-1 overflow-auto rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('timestamp')}>
-                        {t('earn.report.heading_timestamp')}
-                        {sortIndicator('timestamp')}
-                      </TableHead>
-                      <TableHead
-                        className="cursor-pointer text-right select-none"
-                        onClick={() => handleSort('earnedAmount')}
-                      >
-                        {t('earn.report.heading_earned')}
-                        {sortIndicator('earnedAmount')}
-                      </TableHead>
-                      <TableHead
-                        className="cursor-pointer text-right select-none"
-                        onClick={() => handleSort('cjTotalAmount')}
-                      >
-                        {t('earn.report.heading_cj_amount')}
-                        {sortIndicator('cjTotalAmount')}
-                      </TableHead>
-                      <TableHead
-                        className="cursor-pointer text-right select-none"
-                        onClick={() => handleSort('inputCount')}
-                      >
-                        {t('earn.report.heading_input_count')}
-                        {sortIndicator('inputCount')}
-                      </TableHead>
-                      <TableHead
-                        className="cursor-pointer text-right select-none"
-                        onClick={() => handleSort('inputAmount')}
-                      >
-                        {t('earn.report.heading_input_value')}
-                        {sortIndicator('inputAmount')}
-                      </TableHead>
-                      <TableHead>{t('earn.report.heading_notes')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedEntries.map((entry, i) => (
-                      <TableRow key={i}>
-                        <TableCell title={entry.timestamp.toISOString()}>{entry.timestamp.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">
-                          {entry.earnedAmount != null && (
-                            <Balance valueString={String(entry.earnedAmount)} showBalance={true} />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {entry.cjTotalAmount != null && (
-                            <Balance valueString={String(entry.cjTotalAmount)} showBalance={true} />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">{entry.inputCount}</TableCell>
-                        <TableCell className="text-right">
-                          {entry.inputAmount != null && (
-                            <Balance valueString={String(entry.inputAmount)} showBalance={true} />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground max-w-[200px] truncate text-xs">
-                          {entry.notes}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
+                <div className="flex-1 overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                          {headerGroup.headers.map((header) => {
+                            const canSort = header.column.getCanSort()
+                            const alignRight = (header.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
+                            return (
+                              <TableHead
+                                key={header.id}
+                                className={canSort ? 'cursor-pointer select-none' : ''}
+                                onClick={canSort ? () => header.column.toggleSorting() : undefined}
+                              >
+                                <div
+                                  className={`flex items-center gap-2 ${alignRight ? 'justify-end' : ''} ${canSort ? 'cursor-pointer select-none' : ''} ${header.column.getIsSorted() ? 'font-bold' : ''} ${table.getState().sorting.length > 0 && !header.column.getIsSorted() ? 'text-muted-foreground' : ''}`}
+                                >
+                                  {flexRender(header.column.columnDef.header, header.getContext())}
+                                  {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
+                                </div>
+                              </TableHead>
+                            )
+                          })}
+                        </TableRow>
+                      ))}
+                    </TableHeader>
+                    <TableBody>
+                      {visibleRows.map((row) => (
+                        <TableRow key={row.id}>
+                          {row.getVisibleCells().map((cell) => {
+                            const alignRight = (cell.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
+                            return (
+                              <TableCell key={cell.id} className={alignRight ? 'text-right' : ''}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </TableCell>
+                            )
+                          })}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <TablePagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={allEntries.length}
+                  onPageChange={(page) => {
+                    setCurrentPage(page)
+                    table.setPageIndex(Math.max(0, page - 1))
+                  }}
+                  onItemsPerPageChange={(newItemsPerPage) => {
+                    setItemsPerPage(newItemsPerPage)
+                    const size =
+                      newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
+                    table.setPageSize(size)
+                    setCurrentPage(1)
+                    table.setPageIndex(0)
+                  }}
+                />
               </div>
             )}
           </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }
