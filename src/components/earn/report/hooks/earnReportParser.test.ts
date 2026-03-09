@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { yieldgenReportToEarnReportEntries } from '@/lib/earnReportParser'
+import { yieldgenReportToEarnReportEntries } from '@/components/earn/report/hooks/earnReportParser'
 
 const EXPECTED_HEADER_LINE =
   'timestamp,cj amount/satoshi,my input count,my input value/satoshi,cjfee/satoshi,earned/satoshi,confirm time/min,notes\n'

@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { EarnReportEntry } from '@/components/earn/report/hooks/useQueryYieldgenReport'
 import { Balance } from '@/components/ui/jam/Balance'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import type { EarnReportEntry } from '@/hooks/useQueryYieldgenReport'
+import type { Days, Milliseconds } from '@/types/global'
 
-const MS_PER_DAY = 24 * 60 * 60 * 1_000
-const CHART_DAYS = 30
+const MILLISECONDS_IN_A_DAY: Milliseconds = 24 * 60 * 60 * 1_000
+const DEFAULT_CHART_DAYS: Days = 30
 
 interface DayBucket {
   label: string
@@ -14,14 +15,17 @@ interface DayBucket {
 }
 
 // Group entries into daily buckets for the past N days
-const bucketByDay = (entries: EarnReportEntry[], days: number): DayBucket[] => {
+const bucketByDay = (entries: EarnReportEntry[], days: Days): DayBucket[] => {
+  if (days < 0) {
+    return []
+  }
   const now = new Date()
   const buckets: DayBucket[] = []
 
   for (let index = days - 1; index >= 0; index--) {
-    const dayStart = new Date(now.getTime() - index * MS_PER_DAY)
+    const dayStart = new Date(now.getTime() - index * MILLISECONDS_IN_A_DAY)
     dayStart.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(dayStart.getTime() + MS_PER_DAY)
+    const dayEnd = new Date(dayStart.getTime() + MILLISECONDS_IN_A_DAY)
 
     const dayEntries = entries.filter(
       (entry) => entry.timestamp >= dayStart && entry.timestamp < dayEnd && entry.earnedAmount != null,
@@ -39,19 +43,24 @@ const bucketByDay = (entries: EarnReportEntry[], days: number): DayBucket[] => {
 
 interface EarnReportChartProps {
   entries: EarnReportEntry[]
+  days?: Days
 }
 
-export const EarnReportChart = ({ entries }: EarnReportChartProps) => {
+export const EarnReportChart = ({ entries, days = DEFAULT_CHART_DAYS }: EarnReportChartProps) => {
   const { t } = useTranslation()
-  const buckets = useMemo(() => bucketByDay(entries, CHART_DAYS), [entries])
+  const buckets = useMemo(() => bucketByDay(entries, days), [entries, days])
   const maxEarned = useMemo(() => Math.max(...buckets.map((bucket) => bucket.earned), 1), [buckets])
   const hasData = buckets.some((bucket) => bucket.earned > 0)
 
-  if (!hasData) return null
+  if (!hasData) {
+    return null
+  }
 
   return (
     <div className="space-y-2">
-      <div className="text-muted-foreground text-xs font-medium">{t('earn.report.chart_title_30d')}</div>
+      <div className="text-muted-foreground text-xs font-medium">
+        {t('earn.report.chart_title_days', { count: days })}
+      </div>
       <TooltipProvider delayDuration={0}>
         <div className="flex h-24 items-end gap-px">
           {buckets.map((bucket) => {
@@ -73,7 +82,7 @@ export const EarnReportChart = ({ entries }: EarnReportChartProps) => {
                     <Balance valueString={String(bucket.earned)} showBalance={true} enableVisibilityToggle={false} />
                   </div>
                   <div className="text-muted-foreground">
-                    {t('earn.report.chart_tooltip_txs', { count: bucket.count })}
+                    {t('earn.report.chart_tooltip_transactions', { count: bucket.count })}
                   </div>
                 </TooltipContent>
               </Tooltip>

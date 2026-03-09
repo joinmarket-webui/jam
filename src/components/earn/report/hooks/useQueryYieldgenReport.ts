@@ -2,11 +2,11 @@ import { yieldgenreportQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tan
 import { yieldgenreport } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
+import { yieldgenReportToEarnReportEntries } from '@/components/earn/report/hooks/earnReportParser'
 import { useApiClient } from '@/hooks/useApiClient'
-import { yieldgenReportToEarnReportEntries } from '@/lib/earnReportParser'
 
 // Re-export for consumers
-export type { EarnReportEntry } from '@/lib/earnReportParser'
+export type { EarnReportEntry } from '@/components/earn/report/hooks/earnReportParser'
 
 export function useQueryYieldgenReport({ enabled = true }: { enabled?: boolean } = {}) {
   const client = useApiClient()

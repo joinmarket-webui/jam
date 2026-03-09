@@ -546,9 +546,10 @@
         "earned_30days": "Earned (30 days)",
         "earned_24hours": "Earned (24 hours)"
       },
-      "chart_title_30d": "Daily earnings (30 days)",
-      "chart_tooltip_txs_one": "{{ count }} transaction",
-      "chart_tooltip_txs_other": "{{ count }} transactions"
+      "chart_title_days_one": "Daily earnings ({{ count }} day)",
+      "chart_title_days_other": "Daily earnings ({{ count }} days)",
+      "chart_tooltip_transactions_one": "{{ count }} transaction",
+      "chart_tooltip_transactions_other": "{{ count }} transactions"
     },
     "title_fidelity_bonds_zero": "Create a Fidelity Bond",
     "title_fidelity_bonds_one": "Your Fidelity Bond",

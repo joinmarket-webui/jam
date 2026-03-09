@@ -14,12 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils'
 
 const DEFAULT_PAGE_SIZES = [25, 50, 100]
-const DEFAULT_ALLOW_SHOW_ALL = true
+const DEFAULT_ITEMS_PER_PAGE = DEFAULT_PAGE_SIZES[0]
+const DEFAULT_PAGE_SIZES_ALLOW_SHOW_ALL = true
 
 interface TablePaginationProps {
   currentPage: number
   totalPages: number
-  itemsPerPage: number
+  itemsPerPage?: number
   totalItems: number
   pageSizes?: number[]
   allowShowAll?: boolean
@@ -31,13 +32,13 @@ interface TablePaginationProps {
 const TablePagination = ({
   currentPage,
   totalPages,
-  itemsPerPage,
+  itemsPerPage = DEFAULT_ITEMS_PER_PAGE,
   totalItems,
   onPageChange,
   onItemsPerPageChange,
   className,
   pageSizes = DEFAULT_PAGE_SIZES,
-  allowShowAll = DEFAULT_ALLOW_SHOW_ALL,
+  allowShowAll = DEFAULT_PAGE_SIZES_ALLOW_SHOW_ALL,
 }: TablePaginationProps) => {
   const { t } = useTranslation()
   const handlePageChange = (page: number) => {
