@@ -135,6 +135,9 @@ export const tryBtcToSat = (value: string): number | undefined => {
 
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
+//  if applicable, the genesis date can be used as minimum `since` timestamp
+export const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
+
 export const DUMMY_SEED_PHRASE: SeedPhrase =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
 
