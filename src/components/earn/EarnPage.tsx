@@ -35,7 +35,7 @@ import { FidelityBondCard } from './FidelityBondCard'
 import { MoveToJarDialog } from './MoveToJarDialog'
 import { OfferCard } from './OfferCard'
 import { RenewBondDialog } from './RenewBondDialog'
-import { EarnReportSheet } from './report/EarnReportSheet'
+import { EarnReportDialog } from './report/EarnReportDialog'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -376,7 +376,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       {/* Earn Report Sheet */}
-      <EarnReportSheet open={showEarnReport} onOpenChange={setShowEarnReport} />
+      <EarnReportDialog open={showEarnReport} onOpenChange={setShowEarnReport} />
     </div>
   )
 }

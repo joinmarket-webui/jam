@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -25,13 +25,10 @@ import { SortIcon } from '@/components/ui/jam/SortIcon'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
+import { BITCOIN_GENESIS_DATE, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import type { AmountSats, Milliseconds } from '@/types/global'
+import type { AmountSats, Milliseconds, WithRequiredProperty } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
-
-// Bitcoin genesis block date - used as the default 'since' for all-time sums
-const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
 
 const sumEarned = (entries: EarnReportEntry[], since: Date): AmountSats => {
   return entries.filter((entry) => entry.timestamp >= since).reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
@@ -62,12 +59,12 @@ const columnHelper = createColumnHelper<EarnReportEntry>()
 
 type EarnReportColumnMeta = { align?: string; numeric?: boolean } | undefined
 
-interface EarnReportSheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+type EarnReportDialogProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+>
 
-export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) => {
+export const EarnReportDialog = ({ open, onOpenChange }: EarnReportDialogProps) => {
   const { t } = useTranslation()
   const { data: entries, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled: open })
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
