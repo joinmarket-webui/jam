@@ -54,6 +54,7 @@ export default function PaymentConfirmDialog({
   values,
   meta,
   debug,
+  ...dialogProps
 }: PaymentConfirmDialogProps) {
   const { t } = useTranslation()
 
@@ -78,7 +79,7 @@ export default function PaymentConfirmDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-center gap-2 font-semibold">{title}</DialogTitle>
