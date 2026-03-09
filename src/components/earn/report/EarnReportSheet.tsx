@@ -98,14 +98,12 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
       }),
       columnHelper.accessor('earnedAmount', {
         header: () => <div className="flex items-center justify-end">{t('earn.report.heading_earned')}</div>,
-        cell: (info) =>
-          info.getValue() != null ? <Balance valueString={String(info.getValue())} showBalance={true} /> : undefined,
+        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
         meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
       }),
       columnHelper.accessor('cjTotalAmount', {
         header: () => <div className="flex items-center justify-end">{t('earn.report.heading_cj_amount')}</div>,
-        cell: (info) =>
-          info.getValue() != null ? <Balance valueString={String(info.getValue())} showBalance={true} /> : undefined,
+        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
         meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
       }),
       columnHelper.accessor('inputCount', {
@@ -115,8 +113,7 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
       }),
       columnHelper.accessor('inputAmount', {
         header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_value')}</div>,
-        cell: (info) =>
-          info.getValue() != null ? <Balance valueString={String(info.getValue())} showBalance={true} /> : undefined,
+        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
         meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
       }),
       columnHelper.accessor('notes', {
@@ -213,7 +210,7 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
             <Spinner />
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-2 pt-0">
             {/* Stats row */}
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
               {(
@@ -224,11 +221,11 @@ export const EarnReportSheet = ({ open, onOpenChange }: EarnReportSheetProps) =>
                   { label: t('earn.report.stats.earned_24hours'), value: earned24Hours },
                 ] as const
               ).map((stat) => (
-                <Card key={stat.label}>
-                  <CardContent className="p-3 text-center">
+                <Card key={stat.label} className="py-4">
+                  <CardContent className="text-center">
                     <div className="text-muted-foreground text-xs">{stat.label}</div>
-                    <div className="mt-1 text-lg font-semibold">
-                      <Balance valueString={String(stat.value)} showBalance={true} />
+                    <div className="mt-1 text-sm font-semibold sm:text-lg md:text-xl">
+                      <Balance valueString={String(stat.value)} />
                     </div>
                   </CardContent>
                 </Card>
