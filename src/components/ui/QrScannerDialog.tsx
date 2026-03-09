@@ -25,7 +25,7 @@ type QrScannerDialogProps = WithRequiredProperty<
   onScan: (result: Bip21ParseResult) => void
 }
 
-export default function QrScannerDialog({ open, onOpenChange, onScan }: QrScannerDialogProps) {
+export default function QrScannerDialog({ open, onOpenChange, onScan, ...dialogProps }: QrScannerDialogProps) {
   const { t } = useTranslation()
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const onScanRef = useRef(onScan)
@@ -149,7 +149,7 @@ export default function QrScannerDialog({ open, onOpenChange, onScan }: QrScanne
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('send.qr_scan_title')}</DialogTitle>

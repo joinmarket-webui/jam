@@ -64,7 +64,7 @@ type EarnReportDialogProps = WithRequiredProperty<
   'open' | 'onOpenChange'
 >
 
-export const EarnReportDialog = ({ open, onOpenChange }: EarnReportDialogProps) => {
+export const EarnReportDialog = ({ open, onOpenChange, ...dialogProps }: EarnReportDialogProps) => {
   const { t } = useTranslation()
   const { data: entries, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled: open })
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
@@ -189,7 +189,7 @@ export const EarnReportDialog = ({ open, onOpenChange }: EarnReportDialogProps) 
   const earned24Hours = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_A_DAY)), [allEntries, now])
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
         <DialogHeader>
           <DialogTitle>

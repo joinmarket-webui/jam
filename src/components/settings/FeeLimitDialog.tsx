@@ -38,7 +38,7 @@ type FeeLimitDialogProps = WithRequiredProperty<
   walletFileName: WalletFileName
 }
 
-export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitDialogProps) => {
+export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: FeeLimitDialogProps) => {
   const { t } = useTranslation()
 
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
@@ -155,7 +155,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('settings.fees.title')}</DialogTitle>

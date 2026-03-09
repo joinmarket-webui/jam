@@ -30,6 +30,7 @@ export default function JarSelectorDialog({
   disabledJars,
   walletBalanceSummary,
   onConfirm,
+  ...dialogProps
 }: JarSelectorDialogProps) {
   const { t } = useTranslation()
 
@@ -54,7 +55,7 @@ export default function JarSelectorDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">{title}</DialogTitle>

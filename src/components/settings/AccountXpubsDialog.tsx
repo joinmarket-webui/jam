@@ -186,6 +186,7 @@ export const AccountXpubsDialog = ({
   walletFileName,
   hashedPassword,
   autoCloseTimeout,
+  ...dialogProps
 }: AccountXpubsDialogProps) => {
   const { t } = useTranslation()
 
@@ -270,7 +271,7 @@ export const AccountXpubsDialog = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         {!isPasswordVerified ? (
           <>

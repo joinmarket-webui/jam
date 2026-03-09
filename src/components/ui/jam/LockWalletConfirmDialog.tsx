@@ -24,11 +24,12 @@ export const LockWalletConfirmDialog = ({
   isLocking,
   makerRunning,
   coinjoinInProgress,
+  ...dialogProps
 }: LockWalletConfirmDialogProps) => {
   const { t } = useTranslation()
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{t('wallets.wallet_preview.modal_lock_wallet_title')}</DialogTitle>
