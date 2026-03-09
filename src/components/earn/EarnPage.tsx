@@ -31,11 +31,11 @@ import type { Milliseconds } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
 import { EarnForm, type EarnFormValues } from './EarnForm'
-import { EarnReportSheet } from './EarnReportSheet'
 import { FidelityBondCard } from './FidelityBondCard'
 import { MoveToJarDialog } from './MoveToJarDialog'
 import { OfferCard } from './OfferCard'
 import { RenewBondDialog } from './RenewBondDialog'
+import { EarnReportSheet } from './report/EarnReportSheet'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
