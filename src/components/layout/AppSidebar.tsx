@@ -8,6 +8,7 @@ import {
   HandCoinsIcon,
   LogsIcon,
   MilkIcon,
+  NotebookTabsIcon,
   PackageSearchIcon,
   ServerIcon,
   SettingsIcon,
@@ -71,6 +72,13 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_earn'),
         url: routes.earn,
         icon: HandCoinsIcon,
+        subitems: [
+          {
+            title: /*TODO: i18n t('sidebar.item_earn_report.label')*/ 'Earn Report',
+            url: routes.earnReport,
+            icon: NotebookTabsIcon,
+          },
+        ],
       },
       {
         title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_sweep'),
@@ -98,8 +106,8 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         url: routes.home,
         icon: SparklesIcon,
         onClick: () => {
-          window.dispatchEvent(new CustomEvent(POST_LOGIN_TOUR_EVENT))
           toggleSidebar()
+          window.dispatchEvent(new CustomEvent(POST_LOGIN_TOUR_EVENT))
         },
       },
       {
@@ -178,6 +186,20 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
+                  {item.subitems?.length && (
+                    <SidebarMenuSub>
+                      {item.subitems?.map((subitem) => (
+                        <SidebarMenuSubItem key={subitem.title}>
+                          <SidebarMenuSubButton asChild title={subitem.title}>
+                            <Link to={subitem.url}>
+                              <subitem.icon />
+                              <span>{subitem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
