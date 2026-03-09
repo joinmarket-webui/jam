@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -18,16 +18,15 @@ import { useQueryYieldgenReport, type EarnReportEntry } from '@/components/earn/
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Balance } from '@/components/ui/jam/Balance'
 import { SortIcon } from '@/components/ui/jam/SortIcon'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { BITCOIN_GENESIS_DATE, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
+import { BITCOIN_GENESIS_DATE, cn, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import type { AmountSats, Milliseconds, WithRequiredProperty } from '@/types/global'
+import type { AmountSats, Milliseconds } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
 
 const sumEarned = (entries: EarnReportEntry[], since: Date): AmountSats => {
@@ -59,14 +58,14 @@ const columnHelper = createColumnHelper<EarnReportEntry>()
 
 type EarnReportColumnMeta = { align?: string; numeric?: boolean } | undefined
 
-type EarnReportDialogProps = WithRequiredProperty<
-  Omit<ComponentProps<typeof Dialog>, 'children'>,
-  'open' | 'onOpenChange'
->
+interface EarnReportContentProps {
+  className?: string
+  enabled: boolean
+}
 
-export const EarnReportDialog = ({ open, onOpenChange, ...dialogProps }: EarnReportDialogProps) => {
+export const EarnReportContent = ({ className, enabled }: EarnReportContentProps) => {
   const { t } = useTranslation()
-  const { data: entries, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled: open })
+  const { data: entries, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled })
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [now] = useState(() => Date.now())
 
@@ -189,151 +188,144 @@ export const EarnReportDialog = ({ open, onOpenChange, ...dialogProps }: EarnRep
   const earned24Hours = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_A_DAY)), [allEntries, now])
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
-      <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
-        <DialogHeader>
-          <DialogTitle>
-            {t('earn.report.title')}
+    <div className={cn('mx-auto flex-1 space-y-3', className)}>
+      {isLoading ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          {/* Stats row */}
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {(
+              [
+                { label: t('earn.report.stats.earned_total'), value: earnedTotal },
+                { label: t('earn.report.stats.earned_90days'), value: earned90Days },
+                { label: t('earn.report.stats.earned_30days'), value: earned30Days },
+                { label: t('earn.report.stats.earned_24hours'), value: earned24Hours },
+              ] as const
+            ).map((stat) => (
+              <Card key={stat.label} className="py-4">
+                <CardContent className="text-center">
+                  <div className="text-muted-foreground text-xs">{stat.label}</div>
+                  <div className="mt-1 text-sm font-semibold sm:text-lg md:text-xl">
+                    <Balance valueString={String(stat.value)} />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Daily earnings chart */}
+          <EarnReportChart entries={allEntries} />
+
+          {/* Toolbar: search + refresh */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <SearchIcon className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+              <Input
+                placeholder={t('earn.report.placeholder_search')}
+                value={globalFilter}
+                onChange={(event) => setGlobalFilter(event.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <Button variant="outline" size="icon" onClick={() => void refetch()} disabled={isRefetching}>
+              <RefreshCwIcon className={isRefetching ? 'animate-spin' : ''} />
+            </Button>
+            <Button variant="outline" size="sm" onClick={downloadCsv} disabled={allEntries.length === 0}>
+              <DownloadIcon />
+              {t('earn.report.text_button_download_csv')}
+            </Button>
+
             <span className="text-muted-foreground ml-2 text-sm font-normal">
               {globalFilter === ''
                 ? t('earn.report.text_report_summary', { count: allEntries.length })
                 : t('earn.report.text_report_summary_filtered', { count: table.getFilteredRowModel().rows.length })}
             </span>
-          </DialogTitle>
-        </DialogHeader>
-
-        {isLoading ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Spinner />
+            {isDeveloperMode ? (
+              <Button variant="outline" size="sm" onClick={addDemoEntry}>
+                <PlusIcon />
+                {t('earn.report.text_button_generate_demo_report')}
+                <DevBadge />
+              </Button>
+            ) : undefined}
           </div>
-        ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-2 pt-0">
-            {/* Stats row */}
-            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-              {(
-                [
-                  { label: t('earn.report.stats.earned_total'), value: earnedTotal },
-                  { label: t('earn.report.stats.earned_90days'), value: earned90Days },
-                  { label: t('earn.report.stats.earned_30days'), value: earned30Days },
-                  { label: t('earn.report.stats.earned_24hours'), value: earned24Hours },
-                ] as const
-              ).map((stat) => (
-                <Card key={stat.label} className="py-4">
-                  <CardContent className="text-center">
-                    <div className="text-muted-foreground text-xs">{stat.label}</div>
-                    <div className="mt-1 text-sm font-semibold sm:text-lg md:text-xl">
-                      <Balance valueString={String(stat.value)} />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+
+          {/* Table or empty state */}
+          {allEntries.length === 0 ? (
+            <div className="space-y-2">
+              <Alert variant="default">
+                <AlertTitle>{t('earn.alert_empty_report')}</AlertTitle>
+              </Alert>
             </div>
-
-            {/* Daily earnings chart */}
-            <EarnReportChart entries={allEntries} />
-
-            {/* Toolbar: search + refresh */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <SearchIcon className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-                <Input
-                  placeholder={t('earn.report.placeholder_search')}
-                  value={globalFilter}
-                  onChange={(event) => setGlobalFilter(event.target.value)}
-                  className="pl-8"
-                />
-              </div>
-              <Button variant="outline" size="icon" onClick={() => void refetch()} disabled={isRefetching}>
-                <RefreshCwIcon className={isRefetching ? 'animate-spin' : ''} />
-              </Button>
-              <Button variant="outline" size="sm" onClick={downloadCsv} disabled={allEntries.length === 0}>
-                <DownloadIcon />
-                {t('earn.report.text_button_download_csv')}
-              </Button>
-              {isDeveloperMode ? (
-                <Button variant="outline" size="sm" onClick={addDemoEntry}>
-                  <PlusIcon />
-                  {t('earn.report.text_button_generate_demo_report')}
-                  <DevBadge />
-                </Button>
-              ) : undefined}
-            </div>
-
-            {/* Table or empty state */}
-            {allEntries.length === 0 ? (
-              <div className="space-y-2">
-                <Alert variant="default">
-                  <AlertTitle>{t('earn.alert_empty_report')}</AlertTitle>
-                </Alert>
-              </div>
-            ) : (
-              <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
-                <div className="flex-1 overflow-auto">
-                  <Table>
-                    <TableHeader>
-                      {table.getHeaderGroups().map((headerGroup) => (
-                        <TableRow key={headerGroup.id}>
-                          {headerGroup.headers.map((header) => {
-                            const canSort = header.column.getCanSort()
-                            const alignRight = (header.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
-                            return (
-                              <TableHead
-                                key={header.id}
-                                className={canSort ? 'cursor-pointer select-none' : ''}
-                                onClick={canSort ? () => header.column.toggleSorting() : undefined}
+          ) : (
+            <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
+              <div className="flex-1 overflow-auto">
+                <Table>
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          const canSort = header.column.getCanSort()
+                          const alignRight = (header.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
+                          return (
+                            <TableHead
+                              key={header.id}
+                              className={canSort ? 'cursor-pointer select-none' : ''}
+                              onClick={canSort ? () => header.column.toggleSorting() : undefined}
+                            >
+                              <div
+                                className={`flex items-center gap-2 ${alignRight ? 'justify-end' : ''} ${canSort ? 'cursor-pointer select-none' : ''} ${header.column.getIsSorted() ? 'font-bold' : ''} ${table.getState().sorting.length > 0 && !header.column.getIsSorted() ? 'text-muted-foreground' : ''}`}
                               >
-                                <div
-                                  className={`flex items-center gap-2 ${alignRight ? 'justify-end' : ''} ${canSort ? 'cursor-pointer select-none' : ''} ${header.column.getIsSorted() ? 'font-bold' : ''} ${table.getState().sorting.length > 0 && !header.column.getIsSorted() ? 'text-muted-foreground' : ''}`}
-                                >
-                                  {flexRender(header.column.columnDef.header, header.getContext())}
-                                  {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
-                                </div>
-                              </TableHead>
-                            )
-                          })}
-                        </TableRow>
-                      ))}
-                    </TableHeader>
-                    <TableBody>
-                      {visibleRows.map((row) => (
-                        <TableRow key={row.id}>
-                          {row.getVisibleCells().map((cell) => {
-                            const alignRight = (cell.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
-                            return (
-                              <TableCell key={cell.id} className={alignRight ? 'text-right' : ''}>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </TableCell>
-                            )
-                          })}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                <TablePagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  itemsPerPage={itemsPerPage}
-                  totalItems={allEntries.length}
-                  onPageChange={(page) => {
-                    setCurrentPage(page)
-                    table.setPageIndex(Math.max(0, page - 1))
-                  }}
-                  onItemsPerPageChange={(newItemsPerPage) => {
-                    setItemsPerPage(newItemsPerPage)
-                    const size =
-                      newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
-                    table.setPageSize(size)
-                    setCurrentPage(1)
-                    table.setPageIndex(0)
-                  }}
-                />
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
+                              </div>
+                            </TableHead>
+                          )
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {visibleRows.map((row) => (
+                      <TableRow key={row.id}>
+                        {row.getVisibleCells().map((cell) => {
+                          const alignRight = (cell.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
+                          return (
+                            <TableCell key={cell.id} className={alignRight ? 'text-right' : ''}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          )
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-            )}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+
+              <TablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                totalItems={allEntries.length}
+                onPageChange={(page) => {
+                  setCurrentPage(page)
+                  table.setPageIndex(Math.max(0, page - 1))
+                }}
+                onItemsPerPageChange={(newItemsPerPage) => {
+                  setItemsPerPage(newItemsPerPage)
+                  const size =
+                    newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
+                  table.setPageSize(size)
+                  setCurrentPage(1)
+                  table.setPageIndex(0)
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }

@@ -8,6 +8,7 @@ export const routes = {
   send: '/send',
   rescan: '/settings/rescan',
   earn: '/earn',
+  earnReport: '/earn/report',
   sweep: '/sweep',
   settings: '/settings',
   orderbook: '/orderbook',

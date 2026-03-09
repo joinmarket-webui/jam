@@ -45,6 +45,7 @@ import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
@@ -195,6 +196,7 @@ function App() {
             <Route path={routes.receive} element={<ReceivePage walletFileName={walletFileName!} />} />
             <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
             <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
+            <Route path={routes.earnReport} element={<EarnReportPage walletFileName={walletFileName!} />} />
             <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
             <Route
               path={routes.settings}
