@@ -32,7 +32,7 @@ export function WalletJarsDetailsOverlay({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           <WalletJarsDetailsContent
             enabled={open}
             className="flex h-full flex-col overflow-auto p-2 pt-0"
