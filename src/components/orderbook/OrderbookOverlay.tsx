@@ -21,7 +21,7 @@ export function OrderbookOverlay({ open, onOpenChange, ...dialogProps }: Orderbo
           </DialogTitle>
         </DialogHeader>
 
-        <div className="overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           <OrderbookContent enabled={open} className="flex h-full flex-col p-2 pt-0" />
         </div>
       </DialogContent>

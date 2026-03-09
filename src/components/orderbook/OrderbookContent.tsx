@@ -258,7 +258,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   }
 
   return (
-    <div className={cn('mx-auto space-y-3', className)}>
+    <div className={cn('mx-auto flex-1 space-y-3', className)}>
       <div className="flex flex-col items-start justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-muted-foreground text-sm">
