@@ -34,6 +34,9 @@ export default defineConfig(
           varsIgnorePattern: '^_',
           destructuredArrayIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '_ignoredOnPurpose',
+          enableAutofixRemoval: {
+            imports: true,
+          },
         },
       ],
     },
