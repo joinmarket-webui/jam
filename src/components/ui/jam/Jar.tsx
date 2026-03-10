@@ -36,7 +36,12 @@ export function Jar({
         totalWalletBalance={totalWalletBalance}
       />
       <div className="flex flex-col items-center text-sm">
-        <p className={cn('text-muted-foreground group-hover/jar:font-bold', `group-hover/jar:text-[${color}]`)}>
+        <p
+          className={cn(
+            'text-muted-foreground',
+            disabled ? [] : ['group-hover/jar:font-bold', `group-hover/jar:text-[${color}]`],
+          )}
+        >
           {name}
         </p>
         <div className="flex min-w-[110px] items-center justify-center">
