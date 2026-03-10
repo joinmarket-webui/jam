@@ -10,15 +10,10 @@ export type SourceValue = {
   fromJar: JarIndex
 }
 
-export type DestinationValue =
-  | {
-      address: BitcoinAddress
-      fromJar: undefined
-    }
-  | {
-      address: BitcoinAddress
-      fromJar: JarIndex
-    }
+export type DestinationValue = {
+  address: BitcoinAddress
+  fromJar: JarIndex | undefined
+}
 
 export type AmountValue =
   | {
