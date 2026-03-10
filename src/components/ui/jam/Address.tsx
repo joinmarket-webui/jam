@@ -4,15 +4,24 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { BitcoinAddress } from '@/types/global'
 import { buttonVariants } from '../button-variants'
+import styles from './Address.module.css'
 import { CopyButton } from './CopyButton'
 
 type PlainAddressProps = {
   value: BitcoinAddress
   className?: string
+  chunked?: boolean
 }
 
-const PlainAddress = ({ value, className }: PlainAddressProps) => {
-  return <span className={cn('font-mono break-all select-all', className)}>{value}</span>
+const PlainAddress = ({ value, className, chunked = true }: PlainAddressProps) => {
+  const chunks = chunked ? value.match(/.{1,4}/g) : [value]
+  return (
+    <span className={cn(styles.bitcoinAddress, chunked ? styles.chunked : undefined, className)}>
+      {chunks?.map((it, index) => (
+        <span key={index}>{it}</span>
+      ))}
+    </span>
+  )
 }
 
 type CopyableAddressProps = PlainAddressProps
@@ -34,16 +43,10 @@ const CopyableAddress = ({ value, className }: CopyableAddressProps) => {
   )
 }
 
-type AddressProps = {
-  value: BitcoinAddress
-  className?: string
+type AddressProps = CopyableAddressProps & {
   copyable?: boolean
 }
 
-export const Address = ({ value, className, copyable = true }: AddressProps) => {
-  return copyable ? (
-    <CopyableAddress value={value} className={className} />
-  ) : (
-    <PlainAddress value={value} className={className} />
-  )
+export const Address = ({ copyable = true, ...props }: AddressProps) => {
+  return copyable ? <CopyableAddress {...props} /> : <PlainAddress {...props} />
 }

@@ -1,0 +1,19 @@
+.bitcoinAddress {
+  word-break: break-all;
+  user-select: all;
+  font-family: var(--font-mono);
+}
+
+.bitcoinAddress.chunked :nth-child(even) {
+  color: var(--muted-foreground);
+  filter: hue-rotate(270deg);
+}
+
+.bitcoinAddress.chunked :nth-child(odd) {
+  font-weight: var(--font-weight-semibold);
+}
+
+.bitcoinAddress.chunked :not(:first-child)::before {
+  font-size: 4px;
+  content: '\202F';
+}
