@@ -44,6 +44,10 @@ const meta = {
       description: 'Whether the jar is currently selected',
       control: 'boolean',
     },
+    disabled: {
+      description: 'Whether the jar is disabled (not selectable)',
+      control: 'boolean',
+    },
     onClick: {
       description: 'Callback function triggered when jar is clicked',
       action: 'clicked',
@@ -146,6 +150,28 @@ export const FullJar: Story = {
   },
 }
 
+export const DisabledJar: Story = {
+  decorators: [withPadding],
+  args: {
+    name: 'Disabled',
+    color: '#f39c12', // Orange
+    totalBalance: 500_000,
+    availableBalance: 500_000,
+    frozenOrLockedBalance: 0,
+    totalWalletBalance: 500_000,
+    isSelected: false,
+    disabled: true,
+    onClick: () => alert('Disabled jar clicked'),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'A jar containing the entire wallet balance. The jar is completely filled with the specified color.',
+      },
+    },
+  },
+}
+
 // Story that shows all jars in a grid layout
 export const JarGrid: Story = {
   args: {
@@ -168,10 +194,10 @@ export const JarGrid: Story = {
   },
   render: () => {
     const jars = [
-      { name: 'Spending', color: '#3498db' as JarColor, totalBalance: 150_000, isSelected: true },
-      { name: 'Savings', color: '#27ae60' as JarColor, totalBalance: 250_000, isSelected: false },
+      { name: 'Spending', color: '#3498db' as JarColor, totalBalance: 150_000, isSelected: false },
+      { name: 'Savings', color: '#27ae60' as JarColor, totalBalance: 250_000, isSelected: true },
       { name: 'Emergency', color: '#e74c3c' as JarColor, totalBalance: 50_000, isSelected: false },
-      { name: 'Travel', color: '#f39c12' as JarColor, totalBalance: 100_000, isSelected: false },
+      { name: 'Travel', color: '#f39c12' as JarColor, totalBalance: 100_000, isSelected: false, disabled: true },
       { name: 'Gift', color: '#9b59b6' as JarColor, totalBalance: 0, isSelected: false },
     ]
 
@@ -189,6 +215,7 @@ export const JarGrid: Story = {
             frozenOrLockedBalance={0}
             totalWalletBalance={totalWalletBalance}
             isSelected={jar.isSelected}
+            disabled={jar.disabled}
             onClick={() => alert(`Clicked on ${jar.name}`)}
           />
         ))}

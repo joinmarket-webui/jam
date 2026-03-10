@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 
@@ -36,6 +35,7 @@ interface JarIconProps {
   width?: number
   height?: number
   isSelected?: boolean
+  disabled?: boolean
   className?: string
 }
 
@@ -44,22 +44,21 @@ export function JarIcon({
   totalBalance = 0,
   totalWalletBalance = 0,
   isSelected = false,
+  disabled,
   className,
 }: JarIconProps) {
-  const [isHovered, setIsHovered] = useState(false)
   const fillLevel = calculateJarFillLevel(totalBalance, totalWalletBalance)
   const fillPercent = fillLevelToPercent(fillLevel)
-
-  const isLidOpen = isHovered || isSelected
 
   return (
     <div
       className={cn(
-        'relative flex h-20 w-12 flex-col items-center transition-transform duration-200 ease-in-out',
+        'group/jar-icon relative flex h-20 w-12 flex-col items-center transition-transform duration-200 ease-in-out',
+        {
+          grayscale: disabled,
+        },
         className,
       )}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Jar body */}
       <div className="absolute top-3 left-0 flex h-4/5 w-full items-end">
@@ -79,10 +78,11 @@ export function JarIcon({
       <div className="light:bg-white absolute top-0 left-2 z-10 mt-2 h-2 w-8 border-2 border-y-0 border-gray-400 bg-gray-300" />
       {/* Jar lid */}
       <div
-        className="absolute z-20 h-2 w-10 rounded-t-[8px] rounded-b-[8px] bg-gray-500 transition-transform duration-200 ease-in-out"
-        style={{
-          top: isLidOpen ? '-5px' : '0px',
-        }}
+        className={cn(
+          'absolute z-20 h-2 w-10 rounded-t-[8px] rounded-b-[8px] bg-gray-500 transition-transform duration-200 ease-in-out',
+          !disabled && !isSelected ? 'group-hover/jar-icon:top-[-5px]' : '',
+          isSelected ? 'top-[-5px]' : '',
+        )}
       />
     </div>
   )

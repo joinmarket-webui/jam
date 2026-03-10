@@ -39,7 +39,7 @@ export const SelectableJar = ({
           totalBalance={totalBalance}
           isSelected={isSelected}
           totalWalletBalance={totalWalletBalance}
-          className={`${disabled ? 'grayscale' : ''}`}
+          disabled={disabled}
         />
         <span className="text-xs">{name}</span>
         <div className="flex items-center text-sm">
