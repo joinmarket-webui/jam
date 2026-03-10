@@ -6,7 +6,7 @@
 
 .bitcoinAddress.chunked :nth-child(even) {
   color: var(--muted-foreground);
-  filter: hue-rotate(270deg);
+  filter: hue-rotate(45deg);
 }
 
 .bitcoinAddress.chunked :nth-child(odd) {

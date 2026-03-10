@@ -1,6 +1,7 @@
 import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { cn } from '@/lib/utils'
 import type { BitcoinAddress } from '@/types/global'
 import { buttonVariants } from '../button-variants'
@@ -13,10 +14,10 @@ type PlainAddressProps = {
   chunked?: boolean
 }
 
-const PlainAddress = ({ value, className, chunked = true }: PlainAddressProps) => {
+const PlainAddress = ({ value, className, chunked }: PlainAddressProps) => {
   const chunks = chunked ? value.match(/.{1,4}/g) : [value]
   return (
-    <span className={cn(styles.bitcoinAddress, chunked ? styles.chunked : undefined, className)}>
+    <span className={cn(styles.bitcoinAddress, chunked === true ? styles.chunked : undefined, className)}>
       {chunks?.map((it, index) => (
         <span key={index}>{it}</span>
       ))}
@@ -26,13 +27,13 @@ const PlainAddress = ({ value, className, chunked = true }: PlainAddressProps) =
 
 type CopyableAddressProps = PlainAddressProps
 
-const CopyableAddress = ({ value, className }: CopyableAddressProps) => {
+const CopyableAddress = (props: CopyableAddressProps) => {
   const { t } = useTranslation()
   return (
     <div className="flex items-center gap-2">
-      <PlainAddress value={value} className={className} />
+      <PlainAddress {...props} />
       <CopyButton
-        value={value}
+        value={props.value}
         text={<CopyIcon />}
         successText={<CheckIcon className="text-green-500" />}
         className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
@@ -47,6 +48,8 @@ type AddressProps = CopyableAddressProps & {
   copyable?: boolean
 }
 
-export const Address = ({ copyable = true, ...props }: AddressProps) => {
-  return copyable ? <CopyableAddress {...props} /> : <PlainAddress {...props} />
+export const Address = ({ chunked, copyable = true, ...props }: AddressProps) => {
+  const displayContext = useJamDisplayContext()
+  const isChunked = chunked ?? displayContext.addressChunkingEnabled === true
+  return copyable ? <CopyableAddress {...props} chunked={isChunked} /> : <PlainAddress {...props} chunked={isChunked} />
 }

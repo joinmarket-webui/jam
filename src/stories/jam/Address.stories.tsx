@@ -32,8 +32,15 @@ export const PlainAddress: Story = {
 
 export const CopyableAddress: Story = {
   args: {
-    value: 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx',
+    ...PlainAddress.args,
     copyable: true,
+  },
+}
+
+export const AddressChunkingDisabled: Story = {
+  args: {
+    ...PlainAddress.args,
+    chunked: false,
   },
 }
 
