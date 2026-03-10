@@ -29,12 +29,7 @@ export function Jar({
     <div
       className={cn('group/jar flex flex-row items-center gap-2 transition-all duration-300 sm:flex-col', className)}
     >
-      <JarIcon
-        className={`${disabled ? 'grayscale' : ''}`}
-        color={color}
-        totalBalance={totalBalance}
-        totalWalletBalance={totalWalletBalance}
-      />
+      <JarIcon color={color} totalBalance={totalBalance} totalWalletBalance={totalWalletBalance} disabled={disabled} />
       <div className="flex flex-col items-center text-sm">
         <p
           className={cn(
