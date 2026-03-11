@@ -24,10 +24,17 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const { t } = useTranslation()
   const token = authState?.auth?.token
 
-  const logQuery = useQuery({
-    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME, token],
+  const logQuery = useQuery<string>({
+    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME],
     enabled: enabled && token !== undefined,
     retry: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: (query) => {
+      if (!enabled || token === undefined) return false
+      if (query.state.error) return false
+      return 2_500
+    },
+    placeholderData: (previousData) => previousData,
     queryFn: ({ signal }) => {
       if (token === undefined) return Promise.resolve('')
       return fetchLog({
@@ -73,7 +80,7 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const logFileContent = useMemo(() => {
     if (logQuery.data) return logQuery.data
     if (!isDevMode() || alert?.variant !== 'warning') return undefined
-    return `${alert.message}\n`.repeat(1_000)
+    return `${alert.message}\nRun Jam in standalone mode: npm run dev:secondary.`
   }, [alert, logQuery.data])
 
   const refresh = useCallback(async () => {

@@ -332,7 +332,7 @@ export const WalletJarsDetailsContent = ({
   }
 
   return (
-    <div className={cn('mx-auto space-y-3', className)}>
+    <div className={cn('mx-auto flex-1 space-y-3', className)}>
       <Tabs
         value={activeJar.jarIndex.toString()}
         onValueChange={(value) => setActiveJarIndex(Number.parseInt(value, 10))}
@@ -349,7 +349,7 @@ export const WalletJarsDetailsContent = ({
         </TabsList>
       </Tabs>
 
-      <Tabs defaultValue="utxos" className="flex flex-col gap-4">
+      <Tabs defaultValue="utxos" className="flex flex-1 flex-col gap-4">
         <TabsList className="mx-auto flex items-center gap-2">
           <TabsTrigger value="utxos" className="cursor-pointer" disabled={!enabled}>
             {t('jar_details.title_tab_utxos')}

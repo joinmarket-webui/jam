@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import { FileTextIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -35,6 +35,7 @@ import { FidelityBondCard } from './FidelityBondCard'
 import { MoveToJarDialog } from './MoveToJarDialog'
 import { OfferCard } from './OfferCard'
 import { RenewBondDialog } from './RenewBondDialog'
+import { EarnReportOverlay } from './report/EarnReportOverlay'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -75,6 +76,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
   const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
   const [showCreateFidelityBondDialog, setShowCreateFidelityBondDialog] = useState(false)
+  const [showEarnReport, setShowEarnReport] = useState(false)
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
@@ -129,6 +131,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const waitingForMakerUpdate = isWaitingMakerStart || isWaitingMakerStop
   const waitingForOfferUpdate = makerRunning && !isCurrentOfferAvailable
+
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
     refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
@@ -136,16 +139,19 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   })
 
   const onStop = async () => {
+    startMaker.reset()
     await stopMaker.mutateAsync()
   }
 
   const onSubmit: SubmitHandler<EarnFormValues> = async (data) => {
-    return await startMaker.mutateAsync({
+    stopMaker.reset()
+    await startMaker.mutateAsync({
       path: {
         walletname: encodeURIComponent(walletFileName),
       },
       body: toStartMakerRequest(data),
     })
+    scrollToTop()
   }
 
   useEffect(() => {
@@ -154,9 +160,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     toast.dismiss('earn.alert_stopping')
     toast.dismiss('earn.alert_stopped')
     toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
-    scrollToTop()
-    startMaker.reset()
-  }, [jmSession, makerRunning, startMaker.isSuccess, startMaker, t])
+  }, [jmSession, makerRunning, startMaker.isSuccess, t])
 
   useEffect(() => {
     if (!jmSession || !stopMaker.isSuccess || makerRunning) return
@@ -164,8 +168,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     toast.dismiss('earn.alert_starting')
     toast.dismiss('earn.alert_running')
     toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
-    stopMaker.reset()
-  }, [jmSession, makerRunning, stopMaker.isSuccess, stopMaker, t])
+  }, [jmSession, makerRunning, stopMaker.isSuccess, t])
 
   if (!jmSession) {
     return <PageLoading />
@@ -174,6 +177,14 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
+
+      {/* Earn Report Button */}
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setShowEarnReport(true)}>
+          <FileTextIcon />
+          {t('earn.button_show_report')}
+        </Button>
+      </div>
 
       {/* Fee Config Error Alert */}
       {maxFeesConfigMissing && (
@@ -184,6 +195,18 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         <Alert variant="success" className="motion-safe:animate-in blur-in my-2">
           <ShuffleIcon className="motion-safe:animate-pulse" />
           <AlertTitle>{t('earn.alert_running')}</AlertTitle>
+        </Alert>
+      )}
+      {isWaitingMakerStart && (
+        <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+          <Spinner className="motion-reduce:hidden" />
+          <AlertTitle>{/* TODO: i18n */ t('Waiting for maker to start...')}</AlertTitle>
+        </Alert>
+      )}
+      {isWaitingMakerStop && (
+        <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+          <Spinner className="motion-reduce:hidden" />
+          <AlertTitle>{/* TODO: i18n */ t('Waiting for maker to stop...')}</AlertTitle>
         </Alert>
       )}
       {waitingForOfferUpdate && (
@@ -351,6 +374,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           </CardContent>
         </Card>
       )}
+
+      <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
     </div>
   )
 }

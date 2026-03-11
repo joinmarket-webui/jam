@@ -3,32 +3,53 @@ import { getErrorReason, normalizeAppError } from './errorReason'
 
 describe('normalizeAppError', () => {
   it('normalizes direct string errors', () => {
-    expect(normalizeAppError('backend exploded')).toEqual({ message: 'backend exploded' })
+    const context = 'backend exploded'
+
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('backend exploded')
+    expect(appError.error_message).toBe('backend exploded')
+    expect(appError.error_description).toBeUndefined()
   })
 
   it('normalizes Error instances', () => {
-    expect(normalizeAppError(new Error('request failed'))).toEqual({ message: 'request failed' })
+    const context = new Error('request failed')
+
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('request failed')
+    expect(appError.error_message).toBe('request failed')
+    expect(appError.error_description).toBeUndefined()
   })
 
   it('keeps message and error_description when present', () => {
-    const error = {
+    const context = {
       message: 'Request failed with status 400',
       error_description: 'Wallet is already unlocked',
     }
-    expect(normalizeAppError(error)).toEqual({
-      message: 'Request failed with status 400',
-      error_description: 'Wallet is already unlocked',
-    })
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Request failed with status 400')
+    expect(appError.error_message).toBe('Request failed with status 400')
+    expect(appError.error_description).toBe('Wallet is already unlocked')
   })
 
   it('uses error_description as message when message is missing', () => {
-    const error = {
+    const context = {
       error_description: 'Invalid wallet password',
     }
-    expect(normalizeAppError(error)).toEqual({
-      message: 'Invalid wallet password',
-      error_description: 'Invalid wallet password',
-    })
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Invalid wallet password')
+    expect(appError.error_message).toBe(undefined)
+    expect(appError.error_description).toBe('Invalid wallet password')
+  })
+
+  it('returns fallback message for unknown contexts', () => {
+    const context = {
+      dont: 'trust',
+      verify: true,
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Unknown error')
+    expect(appError.error_message).toBe(undefined)
+    expect(appError.error_description).toBe(undefined)
   })
 })
 

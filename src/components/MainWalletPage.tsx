@@ -67,11 +67,9 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                 {t('global.loading')}
               </div>
             ) : (
-              <div
-                onClick={() => toggleDisplayMode()}
-                className="flex cursor-pointer items-center text-4xl tracking-wider"
-              >
+              <div className="flex items-center text-4xl tracking-wider">
                 <Balance
+                  onClick={() => toggleDisplayMode()}
                   valueString={String(walletBalanceSummary.calculatedTotalBalanceInSats)}
                   enableVisibilityToggle={false}
                 />

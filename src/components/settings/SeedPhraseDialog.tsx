@@ -39,6 +39,7 @@ export const SeedPhraseDialog = ({
   walletFileName,
   hashedPassword,
   autoCloseTimeout,
+  ...dialogProps
 }: SeedPhraseDialogProps) => {
   const { t } = useTranslation()
 
@@ -99,7 +100,7 @@ export const SeedPhraseDialog = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         {!isPasswordVerified ? (
           <>
