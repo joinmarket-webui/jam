@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { session } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { validateMnemonic } from '@scure/bip39'
+import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
-import { useForm, type SubmitHandler } from 'react-hook-form'
+import { AlertCircleIcon, AlertTriangleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
+import { useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -19,6 +21,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { JM_DEFAULT_WALLET_TYPE, JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
@@ -32,8 +35,8 @@ import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 
-const MIN_SEED_WORDS = 12
-const MAX_SEED_WORDS = 24
+const VALID_SEED_WORD_COUNTS = new Set([12, 15, 18, 21, 24])
+const SEED_WORD_COUNT_HINT = '12 / 15 / 18 / 21 / 24'
 const SEED_WORD_PATTERN = /^[a-z]+$/
 
 interface ImportWalletFormValues {
@@ -53,13 +56,18 @@ const normalizeSeedPhrase = (value?: string) =>
     .filter(Boolean)
     .join(' ')
 
+const getSeedPhraseWords = (value: string) => normalizeSeedPhrase(value).split(' ').filter(Boolean)
+
 const isLikelySeedPhrase = (value: string) => {
-  const words = normalizeSeedPhrase(value).split(' ').filter(Boolean)
-  return (
-    words.length >= MIN_SEED_WORDS &&
-    words.length <= MAX_SEED_WORDS &&
-    words.every((word) => SEED_WORD_PATTERN.test(word))
-  )
+  const words = getSeedPhraseWords(value)
+  if (words.length === 0) return false
+  if (!VALID_SEED_WORD_COUNTS.has(words.length)) return false
+  return words.every((word) => SEED_WORD_PATTERN.test(word))
+}
+
+const isBip39Mnemonic = (value: string) => {
+  const normalized = normalizeSeedPhrase(value)
+  return validateMnemonic(normalized, wordlist)
 }
 
 const importWalletSchema = (wallets: WalletFileName[], t: (key: string) => string) =>
@@ -131,11 +139,22 @@ const ImportWalletPage = () => {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ImportWalletFormValues>({
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   })
+  const seedPhraseField = register('seedPhrase', {
+    required: true,
+  })
+  const watchedSeedPhrase = useWatch({
+    control,
+    name: 'seedPhrase',
+    defaultValue: '',
+  })
+  const seedWordCount = useMemo(() => getSeedPhraseWords(watchedSeedPhrase).length, [watchedSeedPhrase])
+  const isSeedPhraseBip39Valid = useMemo(() => isBip39Mnemonic(watchedSeedPhrase), [watchedSeedPhrase])
   const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
   const recoverWallet = useMutation({
@@ -178,13 +197,8 @@ const ImportWalletPage = () => {
     }
   }
 
-  const disabled =
-    isSubmitting ||
-    recoverWallet.isPending ||
-    walletsFetching ||
-    walletsLoading ||
-    sessionLoading ||
-    hasActiveWalletSession
+  const formDisabled = isSubmitting || recoverWallet.isPending || hasActiveWalletSession
+  const submitDisabled = formDisabled || walletsFetching || walletsLoading || sessionLoading
 
   return (
     <AuthPageShell>
@@ -234,7 +248,7 @@ const ImportWalletPage = () => {
                     {...register('walletName', {
                       required: true,
                     })}
-                    disabled={disabled}
+                    disabled={formDisabled}
                     placeholder={t('create_wallet.placeholder_wallet_name')}
                     autoComplete="off"
                   />
@@ -246,24 +260,53 @@ const ImportWalletPage = () => {
 
               <div className="space-y-2">
                 <Field data-invalid={errors.seedPhrase !== undefined}>
-                  <FieldLabel htmlFor="import-wallet-seed">{t('import_wallet.import_details.title')}</FieldLabel>
+                  <FieldLabel htmlFor="import-wallet-seed">
+                    {t('import_wallet.import_details.title')}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InfoIcon className="text-muted-foreground ml-1 inline size-3.5 align-text-bottom" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {/* TODO: i18n */}
+                        <p>{seedWordCount} words entered.</p>
+                        <p>Expected {SEED_WORD_COUNT_HINT} words.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </FieldLabel>
                   <Textarea
                     id="import-wallet-seed"
                     rows={4}
-                    {...register('seedPhrase', {
-                      required: true,
-                    })}
-                    disabled={disabled}
+                    {...seedPhraseField}
+                    disabled={formDisabled}
                     placeholder={t('import_wallet.import_details.feedback_invalid_menmonic_phrase')}
                     autoComplete="off"
+                    onBlur={(event) => {
+                      void seedPhraseField.onBlur(event)
+                      const normalized = normalizeSeedPhrase(event.target.value)
+                      if (normalized !== event.target.value) {
+                        setValue('seedPhrase', normalized, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                    }}
                   />
                 </Field>
+                {seedWordCount > 0 && !isSeedPhraseBip39Valid && isLikelySeedPhrase(watchedSeedPhrase) && (
+                  <Alert variant="warning" className="py-2">
+                    <AlertTriangleIcon className="size-4" />
+                    <AlertDescription className="text-xs">
+                      {/* TODO: i18n */}
+                      Mnemonic phrase is not BIP39-compliant. The backend may reject it.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 {showDummyMnemonicHelper && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={disabled}
+                    disabled={formDisabled}
                     onClick={() => {
                       setValue('seedPhrase', DUMMY_SEED_PHRASE.join(' '), {
                         shouldDirty: true,
@@ -288,7 +331,7 @@ const ImportWalletPage = () => {
                       {...register('password', {
                         required: true,
                       })}
-                      disabled={disabled}
+                      disabled={formDisabled}
                       type={showPassword ? 'text' : 'password'}
                       placeholder={t('create_wallet.placeholder_password')}
                       autoComplete="off"
@@ -320,7 +363,7 @@ const ImportWalletPage = () => {
                       {...register('confirmPassword', {
                         required: true,
                       })}
-                      disabled={disabled}
+                      disabled={formDisabled}
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder={t('create_wallet.placeholder_password_confirm')}
                       autoComplete="off"
@@ -343,7 +386,7 @@ const ImportWalletPage = () => {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={disabled} size="xxl">
+              <Button type="submit" className="w-full" disabled={submitDisabled} size="xxl">
                 {recoverWallet.isPending ? (
                   <>
                     <Spinner className="motion-reduce:hidden" />
