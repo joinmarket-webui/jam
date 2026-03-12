@@ -1,7 +1,6 @@
 import { AlertTriangleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { LogViewer } from '@/components/logging/LogViewer'
-import type { LogViewerVariant } from '@/components/logging/LogViewer'
 import { useJmwalletdStdoutLog } from '@/components/logging/useJmwalletdStdoutLog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
@@ -9,12 +8,13 @@ import { cn } from '@/lib/utils'
 interface LogsContentProps {
   className?: string
   enabled: boolean
-  viewerVariant?: LogViewerVariant
 }
 
-export const LogsContent = ({ enabled, className, viewerVariant = 'fill' }: LogsContentProps) => {
+export const LogsContent = ({ enabled, className }: LogsContentProps) => {
   const { t } = useTranslation()
   const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({ enabled })
+  const hasRealLogContent = Boolean(logFileContent)
+  const fallbackViewerText = t('logs.error_not_supported')
 
   if (!isInitialized) {
     return (
@@ -26,25 +26,20 @@ export const LogsContent = ({ enabled, className, viewerVariant = 'fill' }: Logs
   }
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-3',
-        {
-          'min-h-0 flex-1': viewerVariant === 'fill',
-        },
-        className,
-      )}
-    >
+    <div className={cn('flex flex-col gap-3', className)}>
       {alert && (
         <Alert variant={alert.variant}>
           <AlertTriangleIcon />
-          <AlertDescription>{alert.message}</AlertDescription>
+          <AlertDescription className="whitespace-pre-line">{alert.message}</AlertDescription>
         </Alert>
       )}
 
-      {logFileContent && (
-        <LogViewer variant={viewerVariant} fileName={fileName} value={logFileContent} refresh={refresh} />
-      )}
+      <LogViewer
+        fileName={fileName}
+        value={logFileContent || fallbackViewerText}
+        refresh={refresh}
+        showActions={hasRealLogContent}
+      />
     </div>
   )
 }
