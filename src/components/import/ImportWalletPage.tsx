@@ -218,19 +218,17 @@ const ImportWalletPage = () => {
             <Alert variant="warning">
               <AlertCircleIcon />
               <AlertDescription>
-                <p>
-                  <Trans
-                    i18nKey="import_wallet.alert_other_wallet_unlocked"
-                    values={{
-                      walletName: walletDisplayName((sessionInfo?.wallet_name || 'Unknown') as WalletFileName),
-                    }}
-                  >
-                    Currently <strong>walletName</strong> is active. You need to lock it first.
-                    <Link to={routes.login} className="font-semibold underline">
-                      Go back
-                    </Link>
-                  </Trans>
-                </p>
+                <Trans
+                  i18nKey="import_wallet.alert_other_wallet_unlocked"
+                  values={{
+                    walletName: walletDisplayName((sessionInfo?.wallet_name || 'Unknown') as WalletFileName),
+                  }}
+                >
+                  Currently <strong>walletName</strong> is active. You need to lock it first.
+                  <Link to={routes.login} className="font-semibold underline">
+                    Go back
+                  </Link>
+                </Trans>
               </AlertDescription>
             </Alert>
           ) : (

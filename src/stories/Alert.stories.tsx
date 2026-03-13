@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { AlertCircleIcon, CheckCircle2Icon } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 
 const meta: Meta<typeof Alert> = {
@@ -149,7 +149,7 @@ export const WithDescriptionLink: Story = {
   ),
 }
 
-export const WithDescriptionButtons: Story = {
+export const WithDescriptionAndButtons: Story = {
   render: () => (
     <Alert>
       <AlertCircleIcon />
@@ -165,6 +165,21 @@ export const WithDescriptionButtons: Story = {
           </Button>
         </div>
       </AlertDescription>
+    </Alert>
+  ),
+}
+
+export const WithActions: Story = {
+  render: () => (
+    <Alert>
+      <AlertCircleIcon />
+      <AlertTitle>Alert Title</AlertTitle>
+      <AlertAction className="flex items-center gap-2">
+        <Button size="xs">Action 1</Button>
+        <Button size="xs" variant="outline">
+          Action 2
+        </Button>
+      </AlertAction>
     </Alert>
   ),
 }
