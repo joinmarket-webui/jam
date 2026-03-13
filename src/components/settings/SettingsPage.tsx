@@ -14,6 +14,8 @@ import {
   ArrowLeftRightIcon,
   LockKeyholeIcon,
   BookKeyIcon,
+  FoldHorizontalIcon,
+  UnfoldHorizontalIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -46,7 +48,8 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
-  const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode } = useJamDisplayContext()
+  const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode, addressChunkingEnabled, toggleAddressChunking } =
+    useJamDisplayContext()
   const jamSettings = useStore(jamSettingsStore)
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
@@ -89,6 +92,18 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             checked={currency === 'btc'}
             onCheckedChange={toggleCurrencyUnit}
             displayToggle={false}
+          />
+          <Separator className="opacity-50" />
+          <SettingSwitch
+            icon={addressChunkingEnabled === true ? UnfoldHorizontalIcon : FoldHorizontalIcon}
+            title={t(
+              addressChunkingEnabled === true
+                ? 'settings.use_address_chunking_enabled'
+                : 'settings.use_address_chunking_disabled',
+            )}
+            checked={addressChunkingEnabled === true}
+            onCheckedChange={toggleAddressChunking}
+            displayToggle={true}
           />
           <Separator className="opacity-50" />
           <SettingSwitch

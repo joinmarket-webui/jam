@@ -37,6 +37,7 @@ import { Card, CardContent, CardHeader } from '../ui/card'
 import { Field, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
 import { inputVariants } from '../ui/input-variants'
+import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { SelectableJar } from '../ui/jam/SelectableJar'
@@ -537,34 +538,38 @@ export function SendForm({
                 hidden: destinationJar === undefined,
               })}
             >
-              <div
-                id="send-destination-address-from-jar"
-                className={cn(
-                  inputVariants(),
-                  'flex items-center justify-between gap-2',
-                  'bg-input/50 dark:bg-input/80 h-auto',
-                )}
-              >
-                <span className="font-mono break-all select-all">{values.destination?.address}</span>
-                <Badge className="text-sm" variant="default">
-                  {destinationJar?.name} <span className="text-xs">#{destinationJar?.jarIndex}</span>
-                </Badge>
-              </div>
+              {destinationJar === undefined || !values.destination?.address ? undefined : (
+                <>
+                  <div
+                    id="send-destination-address-from-jar"
+                    className={cn(
+                      inputVariants(),
+                      'flex items-center justify-between gap-2',
+                      'bg-input/50 dark:bg-input/80 h-auto',
+                    )}
+                  >
+                    <Address value={values.destination.address} copyable={true} />
+                    <Badge className="text-sm" variant="default">
+                      {destinationJar.name} <span className="text-xs">#{destinationJar.jarIndex}</span>
+                    </Badge>
+                  </div>
 
-              <Button
-                id="clear-address-from-jar-selector-trigger"
-                type="button"
-                variant="outline"
-                size="lg"
-                className="h-auto"
-                disabled={disabled}
-                onClick={() => {
-                  setValue('destination.address', '', { shouldValidate: true })
-                  setValue('destination.fromJar', undefined, { shouldValidate: true })
-                }}
-              >
-                <XIcon /> {t('global.clear')}
-              </Button>
+                  <Button
+                    id="clear-address-from-jar-selector-trigger"
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="h-auto"
+                    disabled={disabled}
+                    onClick={() => {
+                      setValue('destination.address', '', { shouldValidate: true })
+                      setValue('destination.fromJar', undefined, { shouldValidate: true })
+                    }}
+                  >
+                    <XIcon /> {t('global.clear')}
+                  </Button>
+                </>
+              )}
             </ButtonGroup>
           </Field>
 

@@ -4,7 +4,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 
 export function useDisplaySettings() {
   const {
-    state: { currencyUnit, privateMode },
+    state: { currencyUnit, privateMode, addressChunking },
     update,
   } = useStore(jamSettingsStore, (state) => state)
 
@@ -13,6 +13,10 @@ export function useDisplaySettings() {
     [currencyUnit, update],
   )
   const togglePrivacyMode = useCallback(() => update({ privateMode: !privateMode }), [privateMode, update])
+  const toggleAddressChunking = useCallback(
+    () => update({ addressChunking: !addressChunking }),
+    [addressChunking, update],
+  )
 
   const toggleDisplayMode = useCallback(() => {
     if (privateMode) {
@@ -35,8 +39,10 @@ export function useDisplaySettings() {
   return {
     currency: currencyUnit,
     isPrivate: privateMode,
+    addressChunkingEnabled: addressChunking,
     toggleCurrencyUnit,
     togglePrivacyMode,
     toggleDisplayMode,
+    toggleAddressChunking,
   }
 }

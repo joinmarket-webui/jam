@@ -17,18 +17,15 @@ import {
   type FilterFnOption,
   type Table as TableType,
 } from '@tanstack/react-table'
-import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { AccountBranch } from '@/context/JamWalletInfoContext'
 import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress, HdPath } from '@/types/global'
-import { buttonVariants } from '../ui/button-variants'
+import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
-import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 
@@ -115,19 +112,7 @@ export const BranchEntryTable = ({
           // tie-break using derivationIndex
           return a.original.derivationIndex - b.original.derivationIndex
         },
-        cell: (info) => (
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm select-all">{info.getValue()}</span>
-            <CopyButton
-              value={info.getValue()}
-              text={<CopyIcon />}
-              successText={<CheckIcon className="text-green-500" />}
-              className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
-              onSuccess={() => toast.success(t('receive.text_copy_address'))}
-              onError={() => toast.error(t('receive.error_copy_address_failed'))}
-            />
-          </div>
-        ),
+        cell: (info) => <Address value={info.getValue()} className="text-sm" copyable={true} />,
         meta: {
           alphabetic: true,
         },

@@ -1,10 +1,8 @@
 :root {
-  --jam-balance-color: #212529;
   --jam-balance-deemphasize-color: #9eacba;
 }
 
 :root[data-theme='dark'] {
-  --jam-balance-color: #ffffff;
   --jam-balance-deemphasize-color: #555c62;
 }
 

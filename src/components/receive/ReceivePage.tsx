@@ -20,6 +20,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
+import { Address } from '../ui/jam/Address'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { BitcoinQR } from './BitcoinQR'
 import { ReceiveForm } from './ReceiveForm'
@@ -162,7 +163,11 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           ) : (
             <div className="animate-in fade-in space-y-2 text-center duration-1000">
-              <div className="min-h-5 font-mono text-sm break-all select-all">{getAddressMutation.data?.address}</div>
+              <div className="min-h-5">
+                {!getAddressMutation.data?.address ? undefined : (
+                  <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
+                )}
+              </div>
               <Badge className="min-h-6 text-sm" variant={sourceJar ? 'default' : 'secondary'}>
                 {sourceJar ? (
                   <>

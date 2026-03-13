@@ -11,6 +11,7 @@ import { DevBadge } from '../dev/DevBadge'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } from '../ui/dialog'
+import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -100,12 +101,14 @@ export default function PaymentConfirmDialog({
                   {meta.destinationJar.name}{' '}
                   <span className="text-muted-foreground text-xs">#{meta.destinationJar.jarIndex}</span>
                 </span>
-                <span className="text-muted-foreground text-xs">
-                  <span className="font-mono break-all select-all">{values.destination?.address}</span>
-                </span>
+                <Address
+                  className="text-muted-foreground text-xs"
+                  value={values.destination?.address ?? ''}
+                  copyable={true}
+                />
               </>
             ) : (
-              <span className="font-mono break-all select-all">{values.destination?.address}</span>
+              <Address value={values.destination?.address ?? ''} copyable={true} />
             )}
           </div>
 

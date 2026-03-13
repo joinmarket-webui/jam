@@ -237,6 +237,8 @@
     "use_btc": "Display amounts in bitcoin",
     "use_dark_theme": "Switch to dark theme",
     "use_light_theme": "Switch to light theme",
+    "use_address_chunking_enabled": "Address display chunking enabled",
+    "use_address_chunking_disabled": "Address display chunking disabled",
     "label_select_language": "Language",
     "text_help_translate": "Missing your language? Help us out!",
     "show_seed": "Show seed phrase",
