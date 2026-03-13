@@ -33,6 +33,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { DUMMY_SEED_PHRASE, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { DevBadge } from '../dev/DevBadge'
 import { AuthPageShell } from '../layout/AuthPageShell'
 
 const VALID_SEED_WORD_COUNTS = new Set([12, 15, 18, 21, 24])
@@ -312,7 +313,7 @@ const ImportWalletPage = () => {
                       })
                     }}
                   >
-                    Use dummy mnemonic
+                    Use dummy mnemonic <DevBadge />
                   </Button>
                 )}
                 {errors.seedPhrase?.message && (
