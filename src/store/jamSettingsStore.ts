@@ -6,6 +6,7 @@ import type { Currency } from '@/types/global'
 export type JamSettings = {
   developerMode: boolean
   privateMode: boolean
+  addressChunking: boolean
   currencyUnit: Currency
   cheatsheetForceOpenAt?: number
 }
@@ -19,6 +20,7 @@ interface JamSettingsStoreState {
 const initial: JamSettings = {
   developerMode: isDevMode(),
   privateMode: false,
+  addressChunking: true,
   currencyUnit: 'sats',
   cheatsheetForceOpenAt: undefined,
 }
