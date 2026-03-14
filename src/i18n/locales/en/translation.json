@@ -762,6 +762,9 @@
     "market_summary_total_liquidity_label": "Total liquidity",
     "market_summary_offer_min_size_label": "Offer size range",
     "market_summary_bonded_makers": "{{ bonded }} bonded / {{ unbonded }} unbonded makers",
+    "chart_title": "Fee Distribution (absolute offers)",
+    "chart_tooltip_offers_one": "{{ count }} offer",
+    "chart_tooltip_offers_other": "{{ count }} offers",
     "table": {
       "heading_type": "Type",
       "heading_counterparty": "Counterparty",

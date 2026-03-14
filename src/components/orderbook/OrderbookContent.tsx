@@ -29,6 +29,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
+import { OrderbookChart } from './OrderbookChart'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
 
 const offerToTableEntry = (
@@ -399,6 +400,9 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                 unbonded: marketSummary.unbondedMakers,
               })}
             </p>
+          </CardContent>
+          <CardContent className="pt-0">
+            <OrderbookChart entries={(tableRowModel?.rows ?? []).map((r) => r.original)} />
           </CardContent>
         </Card>
       )}
