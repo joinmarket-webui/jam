@@ -27,6 +27,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer, pseudoRandomInteger, time } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
 
@@ -61,16 +62,16 @@ const offerToTableEntry = (
     fee:
       typeof offer.cjfee === 'number'
         ? {
-            value: offer.cjfee,
-            displayValue: String(offer.cjfee),
-          }
+          value: offer.cjfee,
+          displayValue: String(offer.cjfee),
+        }
         : (() => {
-            const value = Number.parseFloat(offer.cjfee || '0')
-            return {
-              value,
-              displayValue: factorToPercentage(value).toFixed(4) + '%',
-            }
-          })(),
+          const value = Number.parseFloat(offer.cjfee || '0')
+          return {
+            value,
+            displayValue: factorToPercentage(value).toFixed(4) + '%',
+          }
+        })(),
     minerFeeContribution: String(offer.txfee || 0),
     minimumSize: String(offer.minsize || 0),
     maximumSize: String(offer.maxsize || 0),
@@ -81,9 +82,9 @@ const offerToTableEntry = (
       displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
       displayExpiresIn: fidelityBond?.locktime
         ? time.humanReadableDuration({
-            to: fidelityBond.locktime * 1_000,
-            locale: i18n.resolvedLanguage || i18n.language,
-          })
+          to: fidelityBond.locktime * 1_000,
+          locale: i18n.resolvedLanguage || i18n.language,
+        })
         : undefined,
       amount: fidelityBond?.amount,
     },
@@ -370,8 +371,9 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           </CardHeader>
           <CardContent className="text-muted-foreground grid gap-1 text-sm sm:grid-cols-2">
             {marketSummary.medianAbsFee !== null && (
-              <p>
-                {t('orderbook.market_summary_median_abs_fee', { value: marketSummary.medianAbsFee.toLocaleString() })}
+              <p className="flex items-center gap-1">
+                <span>{t('orderbook.market_summary_median_abs_fee_label')}:</span>
+                <Balance valueString={String(marketSummary.medianAbsFee)} enableVisibilityToggle={false} />
               </p>
             )}
             {marketSummary.medianRelFee !== null && (
@@ -381,16 +383,15 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                 })}
               </p>
             )}
-            <p>
-              {t('orderbook.market_summary_total_liquidity', {
-                value: marketSummary.totalLiquidity.toLocaleString(),
-              })}
+            <p className="flex items-center gap-1">
+              <span>{t('orderbook.market_summary_total_liquidity_label')}:</span>
+              <Balance valueString={String(marketSummary.totalLiquidity)} enableVisibilityToggle={false} />
             </p>
-            <p>
-              {t('orderbook.market_summary_offer_size_range', {
-                min: marketSummary.minOfferSize.toLocaleString(),
-                max: marketSummary.maxOfferSize.toLocaleString(),
-              })}
+            <p className="flex items-center gap-1">
+              <span>{t('orderbook.market_summary_offer_min_size_label')}:</span>
+              <Balance valueString={String(marketSummary.minOfferSize)} enableVisibilityToggle={false} />
+              <span>–</span>
+              <Balance valueString={String(marketSummary.maxOfferSize)} enableVisibilityToggle={false} />
             </p>
             <p>
               {t('orderbook.market_summary_bonded_makers', {
