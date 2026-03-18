@@ -7,10 +7,10 @@ import { LogsContent } from './LogsContent'
 
 type LogsOverlayProps = WithRequiredProperty<Omit<ComponentProps<typeof Dialog>, 'children'>, 'open' | 'onOpenChange'>
 
-export function LogsOverlay({ open, onOpenChange, ...dialogProps }: LogsOverlayProps) {
+export function LogsOverlay({ open, onOpenChange }: LogsOverlayProps) {
   const { t } = useTranslation()
   return (
-    <Dialog open={open} onOpenChange={() => onOpenChange(false)} {...dialogProps}>
+    <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -18,8 +18,8 @@ export function LogsOverlay({ open, onOpenChange, ...dialogProps }: LogsOverlayP
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <LogsContent enabled={open} className="flex h-full flex-1 flex-col" />
+        <div className="flex-1 overflow-hidden">
+          <LogsContent enabled={open} className="flex h-full flex-col" viewerVariant="fill" />
         </div>
       </DialogContent>
     </Dialog>

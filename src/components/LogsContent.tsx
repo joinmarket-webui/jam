@@ -5,16 +5,17 @@ import { useJmwalletdStdoutLog } from '@/components/logging/useJmwalletdStdoutLo
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 
+type LogsViewerVariant = 'page' | 'fill'
+
 interface LogsContentProps {
   className?: string
   enabled: boolean
+  viewerVariant?: LogsViewerVariant
 }
 
-export const LogsContent = ({ enabled, className }: LogsContentProps) => {
+export const LogsContent = ({ enabled, className, viewerVariant = 'page' }: LogsContentProps) => {
   const { t } = useTranslation()
   const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({ enabled })
-  const hasRealLogContent = Boolean(logFileContent)
-  const fallbackViewerText = t('logs.error_not_supported')
 
   if (!isInitialized) {
     return (
@@ -34,12 +35,9 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
         </Alert>
       )}
 
-      <LogViewer
-        fileName={fileName}
-        value={logFileContent || fallbackViewerText}
-        refresh={refresh}
-        showActions={hasRealLogContent}
-      />
+      {logFileContent && (
+        <LogViewer variant={viewerVariant} fileName={fileName} value={logFileContent} refresh={refresh} />
+      )}
     </div>
   )
 }
