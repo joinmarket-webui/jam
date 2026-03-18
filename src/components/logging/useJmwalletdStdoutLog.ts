@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
-import { fetchLog } from '@/lib/api/logs'
+import { fetchLog, LogsApiError } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
@@ -23,17 +23,10 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const { t } = useTranslation()
   const token = authState?.auth?.token
 
-  const logQuery = useQuery<string>({
-    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME],
+  const logQuery = useQuery({
+    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME, token],
     enabled: enabled && token !== undefined,
     retry: false,
-    refetchOnWindowFocus: false,
-    refetchInterval: (query) => {
-      if (!enabled || token === undefined) return false
-      if (query.state.error) return false
-      return 2_500
-    },
-    placeholderData: (previousData) => previousData,
     queryFn: ({ signal }) => {
       if (token === undefined) return Promise.resolve('')
       return fetchLog({
@@ -57,6 +50,13 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
 
     if (!logQuery.error) return undefined
 
+    if (logQuery.error instanceof LogsApiError && logQuery.error.code === 'not_supported') {
+      return {
+        variant: 'warning',
+        message: t('logs.error_not_supported'),
+      }
+    }
+
     const reason =
       (logQuery.error instanceof Error ? logQuery.error.message : undefined) || t('global.errors.reason_unknown')
     const errorMessage = t('logs.error_loading_logs_failed', {
@@ -76,8 +76,6 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     return logQuery.isFetched
   }, [enabled, logQuery.isFetched, token])
 
-  // No synthetic fallback — the previous repeat(1_000) generated fake log lines
-  // that resembled real output, making the dev experience misleading.
   const logFileContent = useMemo(() => {
     if (logQuery.data) return logQuery.data
     return undefined
