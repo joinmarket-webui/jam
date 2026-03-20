@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { validateMnemonic } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -41,6 +40,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { DUMMY_SEED_PHRASE, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from '../dev/DevBadge'
 import { AuthPageShell } from '../layout/AuthPageShell'
 
@@ -103,6 +103,8 @@ const ImportWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
+
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
   const updateAuthState = useStore(authStore, (state) => state.update)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -120,17 +122,8 @@ const ImportWalletPage = () => {
     retry: false,
   })
 
-  const { data: sessionInfo, isLoading: sessionLoading } = useQuery({
-    queryKey: ['import-wallet-session'],
-    queryFn: async () => {
-      const { data } = await session({ client })
-      return data
-    },
-    retry: false,
-    refetchOnWindowFocus: false,
-  })
-
-  const hasActiveWalletSession = sessionInfo?.session === true
+  const isSessionActive = jmSession?.session === true
+  const isRescanActive = jmSession?.rescanning === true
 
   const wallets = useMemo(() => (walletsData?.wallets ?? []) as WalletFileName[], [walletsData?.wallets])
   const schema = useMemo(() => importWalletSchema(wallets, t), [wallets, t])
@@ -145,6 +138,7 @@ const ImportWalletPage = () => {
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   })
+
   const watchedSeedPhrase = useWatch({
     control,
     name: 'seedPhrase',
@@ -156,9 +150,11 @@ const ImportWalletPage = () => {
     retry: false,
   })
 
-  const onSubmit: SubmitHandler<ImportWalletFormValues> = async (values) => {
-    if (hasActiveWalletSession) return
+  const showForm = !isSessionActive && !isRescanActive
+  const formDisabled = isSubmitting || recoverWallet.isPending || isSessionActive || isRescanActive
+  const submitDisabled = formDisabled || walletsFetching || walletsLoading
 
+  const onSubmit: SubmitHandler<ImportWalletFormValues> = async (values) => {
     try {
       const walletFileName = walletDisplayNameToFileName(values.walletName)
       const response = await recoverWallet.mutateAsync({
@@ -192,9 +188,6 @@ const ImportWalletPage = () => {
     }
   }
 
-  const formDisabled = isSubmitting || recoverWallet.isPending || hasActiveWalletSession
-  const submitDisabled = formDisabled || walletsFetching || walletsLoading || sessionLoading
-
   return (
     <AuthPageShell>
       <Card className="w-full max-w-xl">
@@ -209,14 +202,14 @@ const ImportWalletPage = () => {
         <CardContent className="space-y-6">
           {walletsError && <WalletLoadErrorAlert reason={walletsError.message} />}
 
-          {hasActiveWalletSession ? (
+          {isSessionActive && (
             <Alert variant="warning">
               <AlertCircleIcon />
               <AlertDescription>
                 <Trans
                   i18nKey="import_wallet.alert_other_wallet_unlocked"
                   values={{
-                    walletName: walletDisplayName((sessionInfo?.wallet_name || 'Unknown') as WalletFileName),
+                    walletName: walletDisplayName((jmSession?.wallet_name || 'Unknown') as WalletFileName),
                   }}
                 >
                   Currently <strong>walletName</strong> is active. You need to lock it first.
@@ -226,7 +219,21 @@ const ImportWalletPage = () => {
                 </Trans>
               </AlertDescription>
             </Alert>
-          ) : (
+          )}
+          {isRescanActive && (
+            <Alert variant="warning">
+              <AlertCircleIcon />
+              <AlertDescription>
+                <Trans i18nKey="import_wallet.alert_rescan_in_progress">
+                  Rescanning the timechain is currently in progress.
+                  <Link to={routes.login} className="font-semibold underline">
+                    Go back
+                  </Link>
+                </Trans>
+              </AlertDescription>
+            </Alert>
+          )}
+          {showForm && (
             <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="flex flex-col gap-4" noValidate>
               <Alert>
                 <InfoIcon />

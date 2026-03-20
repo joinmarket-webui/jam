@@ -141,6 +141,13 @@ const CreateWalletPage = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {step === 'create' && (
+            <CreateStepDetailsInput
+              wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
+              onSubmit={handleCreateWallet}
+              sessionInfo={jmSession}
+            />
+          )}
           {step === 'seed' && (
             <>
               <PreventLeavingPageByMistake />
@@ -151,13 +158,6 @@ const CreateWalletPage = () => {
                 onConfirm={async () => await handleConfirmSeed(createWalletSuccessInfo!)}
               />
             </>
-          )}
-          {step === 'create' && (
-            <CreateStepDetailsInput
-              wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
-              onSubmit={handleCreateWallet}
-              sessionInfo={jmSession}
-            />
           )}
         </CardContent>
       </Card>
