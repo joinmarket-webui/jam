@@ -201,7 +201,7 @@
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
       "text_button_submit": "Import",
-      "text_button_submitting": "Recovering wallet..."
+      "text_button_submitting": "Importing..."
     },
     "success": {
       "title": "Wallet imported successfully!",

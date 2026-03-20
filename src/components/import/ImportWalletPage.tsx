@@ -5,14 +5,22 @@ import { session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { validateMnemonic } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, AlertTriangleIcon, EyeIcon, EyeOffIcon, InfoIcon, WalletIcon } from 'lucide-react'
+import {
+  AlertCircleIcon,
+  AlertTriangleIcon,
+  CheckCircle2Icon,
+  EyeIcon,
+  EyeOffIcon,
+  InfoIcon,
+  WalletIcon,
+} from 'lucide-react'
 import { useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import * as yup from 'yup'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -36,9 +44,10 @@ import { authStore } from '@/store/authStore'
 import { DevBadge } from '../dev/DevBadge'
 import { AuthPageShell } from '../layout/AuthPageShell'
 
-const VALID_SEED_WORD_COUNTS = new Set([12, 15, 18, 21, 24])
-const SEED_WORD_COUNT_HINT = '12 / 15 / 18 / 21 / 24'
-const SEED_WORD_PATTERN = /^[a-z]+$/
+const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
+
+const VALID_SEED_WORD_COUNTS = [12, 15, 18, 21, 24]
+const SEED_WORD_COUNT_HINT = VALID_SEED_WORD_COUNTS.join(' / ')
 
 interface ImportWalletFormValues {
   walletName: string
@@ -54,17 +63,7 @@ const normalizeSeedPhrase = (value?: string) =>
     .map((word) => word.trim())
     .map((word) => word.replace(/^\d+\.$/, ''))
     .map((word) => word.replaceAll(/^[^a-z]+|[^a-z]+$/g, ''))
-    .filter(Boolean)
     .join(' ')
-
-const getSeedPhraseWords = (value: string) => normalizeSeedPhrase(value).split(' ').filter(Boolean)
-
-const isLikelySeedPhrase = (value: string) => {
-  const words = getSeedPhraseWords(value)
-  if (words.length === 0) return false
-  if (!VALID_SEED_WORD_COUNTS.has(words.length)) return false
-  return words.every((word) => SEED_WORD_PATTERN.test(word))
-}
 
 const isBip39Mnemonic = (value: string) => {
   const normalized = normalizeSeedPhrase(value)
@@ -79,24 +78,24 @@ const importWalletSchema = (wallets: WalletFileName[], t: (key: string) => strin
         .trim()
         .max(MAX_WALLET_NAME_LENGTH)
         .required(t('create_wallet.feedback_invalid_wallet_name'))
-        .test('valid-wallet-name-format', t('create_wallet.feedback_invalid_wallet_name'), (value) =>
+        .test('valid-wallet-name-test', t('create_wallet.feedback_invalid_wallet_name'), (value) =>
           /^[\w-]+$/.test(value || ''),
         )
-        .test('wallet-name-unique', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
-          if (!value) return false
+        .test('valid-wallet-name-unique-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
           return !wallets.includes((value + JM_WALLET_FILE_EXTENSION) as WalletFileName)
         }),
       password: yup.string().min(1).required(t('create_wallet.feedback_invalid_password')),
       confirmPassword: yup
         .string()
         .required(t('create_wallet.feedback_invalid_password_confirm'))
-        .oneOf([yup.ref('password')], t('create_wallet.feedback_invalid_password_confirm')),
-      seedPhrase: yup
-        .string()
-        .required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase'))
-        .test('seed-phrase-format', t('import_wallet.import_details.feedback_invalid_menmonic_phrase'), (value) =>
-          isLikelySeedPhrase(value || ''),
+        .test(
+          'valid-confirm-password-test',
+          t('create_wallet.feedback_invalid_password_confirm'),
+          (value, { parent: { password } }) => {
+            return value === password
+          },
         ),
+      seedPhrase: yup.string().required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase')),
     })
     .required()
 
@@ -117,7 +116,7 @@ const ImportWalletPage = () => {
     refetch: walletsRefetch,
   } = useQuery({
     ...listWalletsQueryOptions,
-    queryFn: withQueryDelay(listWalletsQueryOptions.queryFn, { delayAfter: 210 }),
+    queryFn: withQueryDelay(listWalletsQueryOptions.queryFn, { throttle: 210 }),
     retry: false,
   })
 
@@ -141,22 +140,16 @@ const ImportWalletPage = () => {
     handleSubmit,
     setValue,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isValid, isSubmitting, isSubmitSuccessful, isSubmitted },
   } = useForm<ImportWalletFormValues>({
     mode: 'onSubmit',
     resolver: yupResolver(schema),
   })
-  const seedPhraseField = register('seedPhrase', {
-    required: true,
-  })
   const watchedSeedPhrase = useWatch({
     control,
     name: 'seedPhrase',
-    defaultValue: '',
   })
-  const seedWordCount = useMemo(() => getSeedPhraseWords(watchedSeedPhrase).length, [watchedSeedPhrase])
   const isSeedPhraseBip39Valid = useMemo(() => isBip39Mnemonic(watchedSeedPhrase), [watchedSeedPhrase])
-  const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
   const recoverWallet = useMutation({
     ...recoverwalletMutation({ client }),
@@ -195,6 +188,7 @@ const ImportWalletPage = () => {
     } catch (error: unknown) {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('import_wallet.error_importing_failed', { reason }))
+      throw error
     }
   }
 
@@ -267,38 +261,45 @@ const ImportWalletPage = () => {
                       </TooltipTrigger>
                       <TooltipContent>
                         {/* TODO: i18n */}
-                        <p>{seedWordCount} words entered.</p>
-                        <p>Expected {SEED_WORD_COUNT_HINT} words.</p>
+                        <p>Expects {SEED_WORD_COUNT_HINT} words.</p>
                       </TooltipContent>
                     </Tooltip>
                   </FieldLabel>
                   <Textarea
                     id="import-wallet-seed"
                     rows={4}
-                    {...seedPhraseField}
+                    placeholder="abandon abandon abandon ... about"
+                    {...register('seedPhrase', {
+                      required: true,
+                    })}
                     disabled={formDisabled}
-                    placeholder={t('import_wallet.import_details.feedback_invalid_menmonic_phrase')}
                     autoComplete="off"
-                    onBlur={(event) => {
-                      void seedPhraseField.onBlur(event)
-                      const normalized = normalizeSeedPhrase(event.target.value)
-                      if (normalized !== event.target.value) {
-                        setValue('seedPhrase', normalized, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        })
-                      }
-                    }}
                   />
                 </Field>
-                {seedWordCount > 0 && !isSeedPhraseBip39Valid && isLikelySeedPhrase(watchedSeedPhrase) && (
-                  <Alert variant="warning" className="py-2">
-                    <AlertTriangleIcon className="size-4" />
-                    <AlertDescription className="text-xs">
+                {isSeedPhraseBip39Valid && (
+                  <Alert variant="success" className="py-2">
+                    <CheckCircle2Icon />
+                    <AlertTitle>
                       {/* TODO: i18n */}
-                      Mnemonic phrase is not BIP39-compliant. The backend may reject it.
+                      Mnemonic phrase is valid
+                    </AlertTitle>
+                  </Alert>
+                )}
+                {!isSeedPhraseBip39Valid && isValid && isSubmitted && !isSubmitSuccessful && (
+                  <Alert variant="warning" className="py-2">
+                    <AlertTriangleIcon />
+                    <AlertTitle>
+                      {/* TODO: i18n */}
+                      Mnemonic phrase is not recognized
+                    </AlertTitle>
+                    <AlertDescription className="text-sm">
+                      {/* TODO: i18n */}
+                      It is not guaranteed that this mnemonic phrase can be imported successfully.
                     </AlertDescription>
                   </Alert>
+                )}
+                {errors.seedPhrase?.message && (
+                  <div className="text-destructive text-xs">{errors.seedPhrase.message}</div>
                 )}
                 {showDummyMnemonicHelper && (
                   <Button
@@ -315,9 +316,6 @@ const ImportWalletPage = () => {
                   >
                     Use dummy mnemonic <DevBadge />
                   </Button>
-                )}
-                {errors.seedPhrase?.message && (
-                  <div className="text-destructive text-xs">{errors.seedPhrase.message}</div>
                 )}
               </div>
 

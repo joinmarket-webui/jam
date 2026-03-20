@@ -31,7 +31,7 @@ const createFormSchema = (wallets: WalletFileName[], t: TFunction) => {
         .test('valid-wallet-name-test', t('create_wallet.feedback_invalid_wallet_name'), (value) => {
           return /^[\w-]+$/.test(value)
         })
-        .test('valid-wallet-name-exists-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
+        .test('valid-wallet-name-unique-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
           return !wallets.includes((value + JM_WALLET_FILE_EXTENSION) as WalletFileName)
         }),
       password: yup.string().min(1).required(t('create_wallet.feedback_invalid_password')),
