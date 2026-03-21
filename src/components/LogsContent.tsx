@@ -5,15 +5,12 @@ import { useJmwalletdStdoutLog } from '@/components/logging/useJmwalletdStdoutLo
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
 
-type LogsViewerVariant = 'page' | 'fill'
-
 interface LogsContentProps {
   className?: string
   enabled: boolean
-  viewerVariant?: LogsViewerVariant
 }
 
-export const LogsContent = ({ enabled, className, viewerVariant = 'page' }: LogsContentProps) => {
+export const LogsContent = ({ enabled, className }: LogsContentProps) => {
   const { t } = useTranslation()
   const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({ enabled })
 
@@ -35,9 +32,7 @@ export const LogsContent = ({ enabled, className, viewerVariant = 'page' }: Logs
         </Alert>
       )}
 
-      {logFileContent && (
-        <LogViewer variant={viewerVariant} fileName={fileName} value={logFileContent} refresh={refresh} />
-      )}
+      {logFileContent && <LogViewer fileName={fileName} value={logFileContent} refresh={refresh} />}
     </div>
   )
 }

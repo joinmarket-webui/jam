@@ -6,24 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { cn, delayedPromise } from '@/lib/utils'
 
-type LogViewerVariant = 'page' | 'fill'
-
 interface LogViewerProps {
   fileName: string
   value: string
   refresh: () => Promise<void>
-  variant?: LogViewerVariant
 }
 
-export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogViewerProps) {
+export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const [logScrollProgress, setLogScrollProgress] = useState(0)
+  const [logScrollProgress, setLogScrollProgress] = useState(1)
   const isScrolledToLogBottom = useMemo(() => logScrollProgress >= 0.995, [logScrollProgress])
-
-  const isFill = variant === 'fill'
 
   // Search: normalize query, split lines, filter matches, count results
   const normalizedSearchValue = useMemo(() => searchValue.trim().toLowerCase(), [searchValue])
@@ -50,6 +45,10 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
     const scrollHeight = event.currentTarget.scrollHeight
 
     const scrollTop = event.currentTarget.scrollTop
+    if (scrollHeight <= 0) {
+      setLogScrollProgress(1)
+      return
+    }
     setLogScrollProgress((scrollTop + containerHeight) / scrollHeight)
   }
 
@@ -61,8 +60,10 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
       setLogScrollProgress(0)
       return
     }
-    scrollToLogBottom()
-  }, [filteredLines.length, normalizedSearchValue])
+    if (isScrolledToLogBottom) {
+      scrollToLogBottom()
+    }
+  }, [filteredLines.length, isScrolledToLogBottom, normalizedSearchValue])
 
   const handleRefresh = useCallback(async () => {
     if (isLoadingRefresh) return
@@ -125,11 +126,7 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
   )
 
   return (
-    <Card
-      className={cn('pb-0', {
-        'flex flex-1 flex-col overflow-hidden': isFill,
-      })}
-    >
+    <Card className="flex flex-1 flex-col overflow-hidden pb-0">
       <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="font-mono break-all select-all">{fileName}</CardTitle>
         {/* Search + action buttons */}
@@ -186,21 +183,11 @@ export function LogViewer({ fileName, value, refresh, variant = 'page' }: LogVie
             : `${matchingLineCount} matching line${matchingLineCount > 1 ? 's' : ''}.`}
         </div>
       )}
-      <CardContent
-        className={cn('relative rounded-b-xl p-0', {
-          'flex-1 overflow-hidden': isFill,
-        })}
-      >
+      <CardContent className="relative flex-1 overflow-hidden rounded-b-xl p-0">
         <pre
           onScroll={logScrollHandler}
           ref={logContentRef}
-          className={cn(
-            'bg-muted/90 overflow-auto rounded-b-xl px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap',
-            {
-              'max-h-[600px] min-h-[300px]': !isFill,
-              'absolute inset-0': isFill,
-            },
-          )}
+          className="bg-muted/90 absolute inset-0 overflow-auto rounded-b-xl px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap"
         >
           {/* Render filtered lines with search highlights */}
           {filteredLines.length === 0 && normalizedSearchValue.length > 0
