@@ -20,7 +20,7 @@ import { jmSessionStore } from '@/store/jmSessionStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
-import { CreateStepDetailsInput } from './CreateStepDetailsInput'
+import { CreateStepWalletDetails } from './CreateStepWalletDetails'
 
 type WalletFormValues = { walletName: string; password: string; confirmPassword: string }
 
@@ -142,7 +142,7 @@ const CreateWalletPage = () => {
 
         <CardContent className="space-y-6">
           {step === 'create' && (
-            <CreateStepDetailsInput
+            <CreateStepWalletDetails
               wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
               onSubmit={handleCreateWallet}
               sessionInfo={jmSession}

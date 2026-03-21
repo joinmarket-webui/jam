@@ -6,13 +6,13 @@ import { useForm, type Mode, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { Spinner } from '@/components/ui/spinner'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import { cn, type WalletFileName } from '@/lib/utils'
-import { Field, FieldLabel } from '../ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
-import { Spinner } from '../ui/spinner'
 
 interface CreateFormValues {
   walletName: string

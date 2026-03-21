@@ -1,18 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { CreateStepDetailsInput } from '@/components/create/CreateStepDetailsInput'
+import { CreateStepWalletDetails } from '@/components/create/CreateStepWalletDetails'
 
-const meta: Meta<typeof CreateStepDetailsInput> = {
-  title: 'Page/Create/CreateStepDetailsInput',
-  component: CreateStepDetailsInput,
+const meta: Meta<typeof CreateStepWalletDetails> = {
+  title: 'Page/Create/CreateStepWalletDetails',
+  component: CreateStepWalletDetails,
   tags: ['autodocs'],
 }
 export default meta
 
-type Story = StoryObj<typeof CreateStepDetailsInput>
+type Story = StoryObj<typeof CreateStepWalletDetails>
 
 export const Default: Story = {
   args: {
-    wallets: ['Satoshi.jmdat'],
+    wallets: ['test.jmdat', 'Satoshi.jmdat'],
     mode: 'onChange',
     onSubmit: async () => alert('Submit clicked!'),
     sessionInfo: undefined,

@@ -10,11 +10,11 @@ import { walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { CreateWalletForm } from './CreateWalletForm'
 
-type CreateStepDetailsInputProps = ComponentProps<typeof CreateWalletForm> & {
+type CreateStepWalletDetailsProps = ComponentProps<typeof CreateWalletForm> & {
   sessionInfo: SessionResponse | undefined
 }
 
-export const CreateStepDetailsInput = ({ sessionInfo, ...createFormProps }: CreateStepDetailsInputProps) => {
+export const CreateStepWalletDetails = ({ sessionInfo, ...createFormProps }: CreateStepWalletDetailsProps) => {
   return (
     <>
       {sessionInfo?.session === true ? (
