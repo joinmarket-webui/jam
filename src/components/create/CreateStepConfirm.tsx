@@ -63,7 +63,7 @@ export const CreateStepConfirm = ({
     control,
     handleSubmit,
     setValue,
-    formState: { errors, touchedFields },
+    formState: { errors, touchedFields, isSubmitting },
   } = useForm({
     mode,
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
@@ -151,7 +151,7 @@ export const CreateStepConfirm = ({
         </div>
       </div>
 
-      <Button type="submit" className="w-full" size="xxl">
+      <Button type="submit" className="w-full" size="xxl" disabled={isSubmitting}>
         {t('create_wallet.next_button')}
       </Button>
     </form>

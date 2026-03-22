@@ -1,17 +1,30 @@
+import type { ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { ChevronLeftIcon } from 'lucide-react'
+import { AlertTriangleIcon, ChevronLeftIcon } from 'lucide-react'
 import { useForm, useWatch, type Mode, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import type { WalletFileName } from '@/lib/utils'
-import type { MnemonicPhrase } from '@/types/global'
+import { GAPLIMIT_WARN_THRESHOLD } from '@/constants/jam'
+import { cn, walletDisplayNameToFileName } from '@/lib/utils'
+import type { CreateWalletForm } from '../create/CreateWalletForm'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
+import { Alert, AlertDescription } from '../ui/alert'
 import { Field, FieldLabel } from '../ui/field'
 import { MaskedText } from '../ui/jam/MaskedText'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
+import type { ImportDetailsForm } from './ImportDetailsForm'
+
+type WalletDetailsValues = Parameters<ComponentProps<typeof CreateWalletForm>['onSubmit']>[0]
+type ImportDetailsValues = Parameters<ComponentProps<typeof ImportDetailsForm>['onSubmit']>[0]
+
+type ImportConfirmValues = {
+  walletDetails: WalletDetailsValues
+  importDetails: ImportDetailsValues
+}
 
 export interface ImportWalletConfirmFormValues {
   revealSensitiveInfo: boolean
@@ -30,18 +43,14 @@ const createFormSchema = () => {
 }
 
 interface ImportStepConfirmProps {
-  walletFileName: WalletFileName
-  password: string
-  mnemonicPhrase: MnemonicPhrase
-  onConfirm: () => Promise<void>
+  value: ImportConfirmValues
+  onConfirm: (value: ImportConfirmValues) => Promise<void>
   onBack: () => void
   mode?: Mode
 }
 
 export const ImportStepConfirm = ({
-  walletFileName,
-  password,
-  mnemonicPhrase,
+  value: { walletDetails, importDetails },
   onConfirm,
   onBack,
   mode = 'onSubmit',
@@ -64,7 +73,14 @@ export const ImportStepConfirm = ({
 
   const revealSensitiveInfo = useWatch({ control, name: 'revealSensitiveInfo' })
 
-  const doOnSubmit = handleSubmit(onConfirm)
+  const doOnSubmit = handleSubmit(() =>
+    onConfirm({
+      walletDetails,
+      importDetails,
+    }),
+  )
+
+  const showGaplimitWarning = importDetails.gaplimit > GAPLIMIT_WARN_THRESHOLD
 
   return (
     <div className="space-y-2">
@@ -72,7 +88,9 @@ export const ImportStepConfirm = ({
         <div className="space-y-2">
           <div>
             <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
-            <span className="text-sm font-semibold break-all select-all">{walletFileName}</span>
+            <span className="text-sm font-semibold break-all select-all">
+              {walletDisplayNameToFileName(walletDetails.walletName)}
+            </span>
           </div>
           <div>
             <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_password')}</Label>
@@ -81,7 +99,7 @@ export const ImportStepConfirm = ({
               masked={!revealSensitiveInfo}
               maskedText="maskedmaskedmaskedmasked"
             >
-              {password}
+              {walletDetails.password}
             </MaskedText>
           </div>
           <div>
@@ -89,11 +107,48 @@ export const ImportStepConfirm = ({
               {/* i18n confirmation_label_seedphrase */}Seed Phrase
             </Label>
             <div className="bg-muted rounded-lg p-2">
-              <SeedPhraseGrid value={mnemonicPhrase} masked={!revealSensitiveInfo} />
+              <SeedPhraseGrid value={importDetails.mnemonicPhrase.split(/\s+/)} masked={!revealSensitiveInfo} />
             </div>
           </div>
         </div>
-
+        <Accordion type="single" collapsible>
+          <AccordionItem value="options">
+            <AccordionTrigger
+              className={cn({
+                'light:text-yellow-800 text-yellow-200/90': showGaplimitWarning,
+              })}
+            >
+              <div className="flex items-center gap-2">
+                {showGaplimitWarning && <AlertTriangleIcon />}
+                {t('import_wallet.import_details.import_options')}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-2">
+              <div>
+                <div>{t('import_wallet.import_details.label_blockheight')}</div>
+                <div className="text-muted-foreground text-xs">
+                  {t('import_wallet.import_details.description_blockheight')}
+                </div>
+                <div className="text-xl">{importDetails.blockheight}</div>
+              </div>
+              <div>
+                <div>{t('import_wallet.import_details.label_gaplimit')}</div>
+                <div className="text-muted-foreground text-xs">
+                  {t('import_wallet.import_details.description_gaplimit')}
+                </div>
+                <div className="text-xl">{importDetails.gaplimit}</div>
+              </div>
+              {showGaplimitWarning && (
+                <Alert variant="warning">
+                  <AlertTriangleIcon />
+                  <AlertDescription className="whitespace-pre-line">
+                    {t('import_wallet.import_details.alert_high_gaplimit_value')}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         <div className="space-y-2">
           <Field data-invalid={errors.revealSensitiveInfo !== undefined} orientation="horizontal">
             <Switch
@@ -110,7 +165,7 @@ export const ImportStepConfirm = ({
           )}
         </div>
 
-        <Button type="submit" className="w-full" size="xxl">
+        <Button type="submit" className="w-full" size="xxl" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <Spinner className="motion-reduce:hidden" />

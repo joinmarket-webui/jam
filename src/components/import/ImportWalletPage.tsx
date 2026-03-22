@@ -156,15 +156,11 @@ const ImportWalletPage = () => {
               <PreventLeavingPageByMistake />
               {
                 <ImportStepConfirm
-                  walletFileName={walletDisplayNameToFileName(stepWalletDetailsValues!.walletName)}
-                  password={stepWalletDetailsValues!.password}
-                  mnemonicPhrase={stepImportDetailsValues!.mnemonicPhrase.split(/\s+/)}
-                  onConfirm={async () =>
-                    await handleConfirm({
-                      walletDetails: stepWalletDetailsValues!,
-                      importDetails: stepImportDetailsValues!,
-                    })
-                  }
+                  value={{
+                    walletDetails: stepWalletDetailsValues!,
+                    importDetails: stepImportDetailsValues!,
+                  }}
+                  onConfirm={handleConfirm}
                   onBack={() => setStep('import_details')}
                 />
               }
