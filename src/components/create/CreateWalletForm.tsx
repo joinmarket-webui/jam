@@ -53,17 +53,20 @@ type CreateWalletFormProps = {
   className?: string
   wallets: WalletFileName[]
   onSubmit: SubmitHandler<CreateFormValues>
+  initialValues?: CreateFormValues
   disabled?: boolean
   mode?: Mode
+  submitButtonText: ({ isSubmitting }: { isSubmitting: boolean }) => string
 }
 
-// TODO: use react-hook-form and yup schema
 export const CreateWalletForm = ({
   className,
   wallets,
   onSubmit,
+  initialValues,
   disabled,
   mode = 'onSubmit',
+  submitButtonText,
 }: CreateWalletFormProps) => {
   const { t } = useTranslation()
 
@@ -80,6 +83,7 @@ export const CreateWalletForm = ({
     formState: { errors, isSubmitting },
   } = useForm({
     mode,
+    values: initialValues,
     resolver: yupResolver(schema),
   })
 
@@ -172,14 +176,8 @@ export const CreateWalletForm = ({
       </div>
 
       <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="xxl">
-        {isSubmitting ? (
-          <>
-            <Spinner className="motion-reduce:hidden" />
-            {t('create_wallet.button_creating')}
-          </>
-        ) : (
-          <>{t('create_wallet.button_create')}</>
-        )}
+        {isSubmitting && <Spinner className="motion-reduce:hidden" />}
+        {submitButtonText({ isSubmitting })}
       </Button>
     </form>
   )

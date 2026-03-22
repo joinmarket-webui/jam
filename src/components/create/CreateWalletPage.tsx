@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { useState } from 'react'
 import { listwalletsOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -21,11 +22,12 @@ import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
 import { CreateStepWalletDetails } from './CreateStepWalletDetails'
+import { CreateWalletForm } from './CreateWalletForm'
 
-type WalletFormValues = { walletName: string; password: string; confirmPassword: string }
+type WalletDetailsValues = Parameters<ComponentProps<typeof CreateWalletForm>['onSubmit']>[0]
 
 type CreateWalletSuccessInfo = {
-  values: WalletFormValues
+  values: WalletDetailsValues
   response: CreateWalletResponse
   hashedPassword?: string
 }
@@ -37,13 +39,13 @@ const CreateWalletPage = () => {
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [createWalletSuccessInfo, setCreateWalletSuccessInfo] = useState<CreateWalletSuccessInfo>()
-  const [step, setStep] = useState<'create' | 'seed' | 'confirm'>('create')
+  const [step, setStep] = useState<'wallet_details' | 'confirm'>('wallet_details')
 
   const listWalletsQuery = useQuery({
     ...listwalletsOptions({ client }),
   })
 
-  const handleCreateWallet = async ({ walletName, password, confirmPassword }: WalletFormValues) => {
+  const handleCreateWallet = async ({ walletName, password, confirmPassword }: WalletDetailsValues) => {
     const durationHintToastId = toast.loading(t('create_wallet.hint_duration_text'), {
       id: 'alert-wallet-create-creating-duration-hint',
       duration: Number.POSITIVE_INFINITY,
@@ -106,7 +108,7 @@ const CreateWalletPage = () => {
         response: createData,
         hashedPassword,
       })
-      setStep('seed')
+      setStep('confirm')
     } catch (error: unknown) {
       /* TODO: i18n */
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
@@ -131,24 +133,27 @@ const CreateWalletPage = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2">
           <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            {step === 'create' && <WalletIcon className="text-primary" />}
-            {step === 'seed' && <CircleCheckBigIcon className="text-primary" />}
+            {step === 'wallet_details' && <WalletIcon className="text-primary" />}
+            {step === 'confirm' && <CircleCheckBigIcon className="text-primary" />}
           </div>
-          <CardTitle className="text-2xl font-bold">
-            {step === 'create' && t('create_wallet.title')}
-            {step === 'seed' && t('create_wallet.title_wallet_created')}
+          <CardTitle className="text-xl font-bold">
+            {step === 'wallet_details' && t('create_wallet.title')}
+            {step === 'confirm' && t('create_wallet.title_wallet_created')}
           </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {step === 'create' && (
+          {step === 'wallet_details' && (
             <CreateStepWalletDetails
               wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
               onSubmit={handleCreateWallet}
               sessionInfo={jmSession}
+              submitButtonText={({ isSubmitting }) =>
+                isSubmitting ? t('create_wallet.button_creating') : t('create_wallet.button_create')
+              }
             />
           )}
-          {step === 'seed' && (
+          {step === 'confirm' && (
             <>
               <PreventLeavingPageByMistake />
               <CreateStepConfirm

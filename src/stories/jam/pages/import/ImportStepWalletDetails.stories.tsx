@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { CreateStepWalletDetails } from '@/components/create/CreateStepWalletDetails'
+import { ImportStepWalletDetails } from '@/components/import/ImportStepWalletDetails'
 
-const meta: Meta<typeof CreateStepWalletDetails> = {
-  title: 'Page/Create/CreateStepWalletDetails',
-  component: CreateStepWalletDetails,
+const meta: Meta<typeof ImportStepWalletDetails> = {
+  title: 'Page/Import/ImportStepWalletDetails',
+  component: ImportStepWalletDetails,
   tags: ['autodocs'],
   args: {
     mode: 'onChange',
@@ -13,7 +13,7 @@ const meta: Meta<typeof CreateStepWalletDetails> = {
 }
 export default meta
 
-type Story = StoryObj<typeof CreateStepWalletDetails>
+type Story = StoryObj<typeof ImportStepWalletDetails>
 
 export const Default: Story = {
   args: {
@@ -31,6 +31,19 @@ export const WithActiveSession: Story = {
       maker_running: false,
       coinjoin_in_process: false,
       rescanning: false,
+    },
+  },
+}
+
+export const WithActiveRescan: Story = {
+  args: {
+    wallets: [],
+    sessionInfo: {
+      session: false,
+      wallet_name: 'Satoshi.jmdat',
+      maker_running: false,
+      coinjoin_in_process: false,
+      rescanning: true,
     },
   },
 }

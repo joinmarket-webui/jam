@@ -1,174 +1,96 @@
-import { useMemo, useState } from 'react'
-import { yupResolver } from '@hookform/resolvers/yup'
+import type { ComponentProps } from 'react'
+import { useState } from 'react'
 import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { validateMnemonic } from '@scure/bip39'
-import { wordlist } from '@scure/bip39/wordlists/english.js'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  AlertCircleIcon,
-  AlertTriangleIcon,
-  CheckCircle2Icon,
-  EyeIcon,
-  EyeOffIcon,
-  InfoIcon,
-  WalletIcon,
-} from 'lucide-react'
-import { useForm, useWatch, type SubmitHandler } from 'react-hook-form'
-import { Trans, useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { CircleCheckBigIcon, KeyRoundIcon, WalletIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import * as yup from 'yup'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Field, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
-import { Spinner } from '@/components/ui/spinner'
-import { Textarea } from '@/components/ui/textarea'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
-import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
-import { JM_DEFAULT_WALLET_TYPE, JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
+import { JM_DEFAULT_WALLET_TYPE } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
-import { withQueryDelay } from '@/lib/queryClient'
-import { DUMMY_SEED_PHRASE, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
+import { walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { DevBadge } from '../dev/DevBadge'
+import type { CreateWalletForm } from '../create/CreateWalletForm'
 import { AuthPageShell } from '../layout/AuthPageShell'
+import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
+import type { ImportDetailsForm } from './ImportDetailsForm'
+import { ImportStepConfirm } from './ImportStepConfirm'
+import { ImportStepImportDetails } from './ImportStepImportDetails'
+import { ImportStepWalletDetails } from './ImportStepWalletDetails'
 
-const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
+type WalletDetailsValues = Parameters<ComponentProps<typeof CreateWalletForm>['onSubmit']>[0]
+type ImportDetailsValues = Parameters<ComponentProps<typeof ImportDetailsForm>['onSubmit']>[0]
 
-const VALID_SEED_WORD_COUNTS = [12, 15, 18, 21, 24]
-const SEED_WORD_COUNT_HINT = VALID_SEED_WORD_COUNTS.join(' / ')
-
-interface ImportWalletFormValues {
-  walletName: string
-  password: string
-  confirmPassword: string
-  seedPhrase: string
-}
-
-const normalizeSeedPhrase = (value?: string) =>
-  (value ?? '')
-    .toLowerCase()
-    .split(/[\s,]+/)
-    .map((word) => word.trim())
-    .map((word) => word.replace(/^\d+\.$/, ''))
-    .map((word) => word.replaceAll(/^[^a-z]+|[^a-z]+$/g, ''))
-    .join(' ')
-
-const isBip39Mnemonic = (value: string) => {
-  const normalized = normalizeSeedPhrase(value)
-  return validateMnemonic(normalized, wordlist)
-}
-
-const importWalletSchema = (wallets: WalletFileName[], t: (key: string) => string) =>
-  yup
-    .object({
-      walletName: yup
-        .string()
-        .trim()
-        .max(MAX_WALLET_NAME_LENGTH)
-        .required(t('create_wallet.feedback_invalid_wallet_name'))
-        .test('valid-wallet-name-test', t('create_wallet.feedback_invalid_wallet_name'), (value) =>
-          /^[\w-]+$/.test(value || ''),
-        )
-        .test('valid-wallet-name-unique-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
-          return !wallets.includes((value + JM_WALLET_FILE_EXTENSION) as WalletFileName)
-        }),
-      password: yup.string().min(1).required(t('create_wallet.feedback_invalid_password')),
-      confirmPassword: yup
-        .string()
-        .required(t('create_wallet.feedback_invalid_password_confirm'))
-        .test(
-          'valid-confirm-password-test',
-          t('create_wallet.feedback_invalid_password_confirm'),
-          (value, { parent: { password } }) => {
-            return value === password
-          },
-        ),
-      seedPhrase: yup.string().required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase')),
-    })
-    .required()
+type ImportFlowStep = 'wallet_details' | 'import_details' | 'confirm'
 
 const ImportWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-
   const jmSession = useStore(jmSessionStore, (state) => state.state)
-  const updateAuthState = useStore(authStore, (state) => state.update)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const listWalletsQueryOptions = listwalletsOptions({ client })
+  const { update: updateAuthState } = useStore(authStore, (state) => state)
+  const [step, setStep] = useState<ImportFlowStep>('wallet_details')
+  const [stepWalletDetailsValues, setStepWalletDetailsValues] = useState<WalletDetailsValues>()
+  const [stepImportDetailsValues, setStepImportDetailsValues] = useState<ImportDetailsValues>()
 
-  const {
-    data: walletsData,
-    error: walletsError,
-    isLoading: walletsLoading,
-    isFetching: walletsFetching,
-    refetch: walletsRefetch,
-  } = useQuery({
-    ...listWalletsQueryOptions,
-    queryFn: withQueryDelay(listWalletsQueryOptions.queryFn, { throttle: 210 }),
-    retry: false,
+  const listWalletsQuery = useQuery({
+    ...listwalletsOptions({ client }),
   })
 
-  const isSessionActive = jmSession?.session === true
-  const isRescanActive = jmSession?.rescanning === true
+  const onSubmitWalletDetails = (values: WalletDetailsValues) => {
+    setStepWalletDetailsValues(values)
+    setStep('import_details')
+  }
 
-  const wallets = useMemo(() => (walletsData?.wallets ?? []) as WalletFileName[], [walletsData?.wallets])
-  const schema = useMemo(() => importWalletSchema(wallets, t), [wallets, t])
+  const onSubmitImportDetails = (values: ImportDetailsValues) => {
+    setStepImportDetailsValues(values)
+    setStep('confirm')
+  }
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    control,
-    formState: { errors, isValid, isSubmitting, isSubmitSuccessful, isSubmitted },
-  } = useForm<ImportWalletFormValues>({
-    mode: 'onSubmit',
-    resolver: yupResolver(schema),
-  })
-
-  const watchedSeedPhrase = useWatch({
-    control,
-    name: 'seedPhrase',
-  })
-  const isSeedPhraseBip39Valid = useMemo(() => isBip39Mnemonic(watchedSeedPhrase), [watchedSeedPhrase])
+  const onBackImportDetails = () => {
+    setStepImportDetailsValues(undefined)
+    setStep('wallet_details')
+  }
 
   const recoverWallet = useMutation({
-    ...recoverwalletMutation({ client }),
+    ...recoverwalletMutation({ client, throwOnError: true }),
     retry: false,
   })
 
-  const showForm = !isSessionActive && !isRescanActive
-  const formDisabled = isSubmitting || recoverWallet.isPending || isSessionActive || isRescanActive
-  const submitDisabled = formDisabled || walletsFetching || walletsLoading
-
-  const onSubmit: SubmitHandler<ImportWalletFormValues> = async (values) => {
+  // TODO update gaplimit like https://github.com/joinmarket-webui/jam/blob/devel/src/components/ImportWallet.tsx#L459
+  const handleConfirm = async ({
+    walletDetails,
+    importDetails,
+  }: {
+    walletDetails: WalletDetailsValues
+    importDetails: ImportDetailsValues
+  }) => {
+    const durationHintToastId = toast.loading(t('create_wallet.hint_duration_text'), {
+      id: 'alert-wallet-create-creating-duration-hint',
+      duration: Number.POSITIVE_INFINITY,
+      position: 'top-center',
+    })
     try {
-      const walletFileName = walletDisplayNameToFileName(values.walletName)
+      const walletFileName = walletDisplayNameToFileName(walletDetails.walletName)
       const response = await recoverWallet.mutateAsync({
         body: {
           walletname: walletFileName,
-          password: values.password,
+          password: walletDetails.password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
-          seedphrase: normalizeSeedPhrase(values.seedPhrase),
+          seedphrase: importDetails.seedPhrase,
         },
       })
 
       let hashedPassword: string | undefined
       try {
-        hashedPassword = await hashPassword(values.password, response.walletname as WalletFileName)
+        hashedPassword = await hashPassword(walletDetails.password, response.walletname as WalletFileName)
       } catch (hashError) {
         console.warn('Failed to hash password after wallet recovery:', hashError)
       }
@@ -185,234 +107,69 @@ const ImportWalletPage = () => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('import_wallet.error_importing_failed', { reason }))
       throw error
+    } finally {
+      toast.dismiss(durationHintToastId)
     }
   }
 
   return (
     <AuthPageShell>
-      <Card className="w-full max-w-xl">
+      <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2">
           <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            <WalletIcon className="text-primary" />
+            {step === 'wallet_details' && <WalletIcon className="text-primary" />}
+            {step === 'import_details' && <KeyRoundIcon className="text-primary" />}
+            {step === 'confirm' && <CircleCheckBigIcon className="text-primary" />}
           </div>
-          <CardTitle className="text-2xl font-bold">{t('import_wallet.wallet_details.title')}</CardTitle>
-          <CardDescription>{t('import_wallet.import_details.subtitle')}</CardDescription>
+          <CardTitle className="text-xl font-bold">
+            {step === 'wallet_details' && t('import_wallet.wallet_details.title')}
+            {step === 'import_details' && t('import_wallet.import_details.title')}
+            {step === 'confirm' && t('import_wallet.confirmation.title')}
+          </CardTitle>
+          {step === 'import_details' && <CardDescription>{t('import_wallet.import_details.subtitle')}</CardDescription>}
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {walletsError && <WalletLoadErrorAlert reason={walletsError.message} />}
-
-          {isSessionActive && (
-            <Alert variant="warning">
-              <AlertCircleIcon />
-              <AlertDescription>
-                <Trans
-                  i18nKey="import_wallet.alert_other_wallet_unlocked"
-                  values={{
-                    walletName: walletDisplayName((jmSession?.wallet_name || 'Unknown') as WalletFileName),
-                  }}
-                >
-                  Currently <strong>walletName</strong> is active. You need to lock it first.
-                  <Link to={routes.login} className="font-semibold underline">
-                    Go back
-                  </Link>
-                </Trans>
-              </AlertDescription>
-            </Alert>
+          {step === 'wallet_details' && (
+            <ImportStepWalletDetails
+              wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
+              initialValues={stepWalletDetailsValues}
+              onSubmit={onSubmitWalletDetails}
+              sessionInfo={jmSession}
+              submitButtonText={({ isSubmitting }) =>
+                isSubmitting
+                  ? t('import_wallet.wallet_details.text_button_submitting')
+                  : t('import_wallet.wallet_details.text_button_submit')
+              }
+            />
           )}
-          {isRescanActive && (
-            <Alert variant="warning">
-              <AlertCircleIcon />
-              <AlertDescription>
-                <Trans i18nKey="import_wallet.alert_rescan_in_progress">
-                  Rescanning the timechain is currently in progress.
-                  <Link to={routes.login} className="font-semibold underline">
-                    Go back
-                  </Link>
-                </Trans>
-              </AlertDescription>
-            </Alert>
+          {step === 'import_details' && (
+            <ImportStepImportDetails
+              initialValues={stepImportDetailsValues}
+              onSubmit={onSubmitImportDetails}
+              sessionInfo={jmSession}
+              onBack={onBackImportDetails}
+            />
           )}
-          {showForm && (
-            <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="flex flex-col gap-4" noValidate>
-              <Alert>
-                <InfoIcon />
-                <AlertDescription>{t('import_wallet.text_recovery_time_warning')}</AlertDescription>
-              </Alert>
-
-              <div className="space-y-2">
-                <Field data-invalid={errors.walletName !== undefined}>
-                  <FieldLabel htmlFor="import-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>
-                  <Input
-                    id="import-wallet-name"
-                    {...register('walletName', {
-                      required: true,
-                    })}
-                    disabled={formDisabled}
-                    placeholder={t('create_wallet.placeholder_wallet_name')}
-                    autoComplete="off"
-                  />
-                </Field>
-                {errors.walletName?.message && (
-                  <div className="text-destructive text-xs">{errors.walletName.message}</div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Field data-invalid={errors.seedPhrase !== undefined}>
-                  <FieldLabel htmlFor="import-wallet-seed">
-                    {t('import_wallet.import_details.title')}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <InfoIcon className="text-muted-foreground ml-1 inline size-3.5 align-text-bottom" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {/* TODO: i18n */}
-                        <p>Expects {SEED_WORD_COUNT_HINT} words.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </FieldLabel>
-                  <Textarea
-                    id="import-wallet-seed"
-                    rows={4}
-                    placeholder="abandon abandon abandon ... about"
-                    {...register('seedPhrase', {
-                      required: true,
-                    })}
-                    disabled={formDisabled}
-                    autoComplete="off"
-                  />
-                </Field>
-                {isSeedPhraseBip39Valid && (
-                  <Alert variant="success" className="py-2">
-                    <CheckCircle2Icon />
-                    <AlertTitle>
-                      {/* TODO: i18n */}
-                      Mnemonic phrase is valid
-                    </AlertTitle>
-                  </Alert>
-                )}
-                {!isSeedPhraseBip39Valid && isValid && isSubmitted && !isSubmitSuccessful && (
-                  <Alert variant="warning" className="py-2">
-                    <AlertTriangleIcon />
-                    <AlertTitle>
-                      {/* TODO: i18n */}
-                      Mnemonic phrase is not recognized
-                    </AlertTitle>
-                    <AlertDescription className="text-sm">
-                      {/* TODO: i18n */}
-                      It is not guaranteed that this mnemonic phrase can be imported successfully.
-                    </AlertDescription>
-                  </Alert>
-                )}
-                {errors.seedPhrase?.message && (
-                  <div className="text-destructive text-xs">{errors.seedPhrase.message}</div>
-                )}
-                {showDummyMnemonicHelper && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={formDisabled}
-                    onClick={() => {
-                      setValue('seedPhrase', DUMMY_SEED_PHRASE.join(' '), {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      })
-                    }}
-                  >
-                    Use dummy mnemonic <DevBadge />
-                  </Button>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Field data-invalid={errors.password !== undefined}>
-                  <FieldLabel htmlFor="import-wallet-password">{t('create_wallet.label_password')}</FieldLabel>
-                  <InputGroup>
-                    <InputGroupInput
-                      id="import-wallet-password"
-                      {...register('password', {
-                        required: true,
-                      })}
-                      disabled={formDisabled}
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder={t('create_wallet.placeholder_password')}
-                      autoComplete="off"
-                    />
-                    <InputGroupAddon align="inline-end">
-                      <Button
-                        tabIndex={-1}
-                        type="button"
-                        variant="link"
-                        size="icon"
-                        onClick={() => setShowPassword((val) => !val)}
-                      >
-                        {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-                      </Button>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </Field>
-                {errors.password?.message && <div className="text-destructive text-xs">{errors.password.message}</div>}
-              </div>
-
-              <div className="space-y-2">
-                <Field data-invalid={errors.confirmPassword !== undefined}>
-                  <FieldLabel htmlFor="import-wallet-password-confirm">
-                    {t('create_wallet.label_password_confirm')}
-                  </FieldLabel>
-                  <InputGroup>
-                    <InputGroupInput
-                      id="import-wallet-password-confirm"
-                      {...register('confirmPassword', {
-                        required: true,
-                      })}
-                      disabled={formDisabled}
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder={t('create_wallet.placeholder_password_confirm')}
-                      autoComplete="off"
-                    />
-                    <InputGroupAddon align="inline-end">
-                      <Button
-                        tabIndex={-1}
-                        type="button"
-                        variant="link"
-                        size="icon"
-                        onClick={() => setShowConfirmPassword((val) => !val)}
-                      >
-                        {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
-                      </Button>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </Field>
-                {errors.confirmPassword?.message && (
-                  <div className="text-destructive text-xs">{errors.confirmPassword.message}</div>
-                )}
-              </div>
-
-              <Button type="submit" className="w-full" disabled={submitDisabled} size="xxl">
-                {recoverWallet.isPending ? (
-                  <>
-                    <Spinner className="motion-reduce:hidden" />
-                    {t('import_wallet.confirmation.text_button_submitting')}
-                  </>
-                ) : (
-                  <>{t('import_wallet.confirmation.text_button_submit')}</>
-                )}
-              </Button>
-            </form>
+          {step === 'confirm' && (
+            <>
+              <PreventLeavingPageByMistake />
+              {
+                <ImportStepConfirm
+                  walletFileName={walletDisplayNameToFileName(stepWalletDetailsValues!.walletName)}
+                  password={stepWalletDetailsValues!.password}
+                  seedphrase={stepImportDetailsValues!.seedPhrase?.split(/\s+/)}
+                  onConfirm={async () =>
+                    await handleConfirm({
+                      walletDetails: stepWalletDetailsValues!,
+                      importDetails: stepImportDetailsValues!,
+                    })
+                  }
+                  onBack={() => setStep('import_details')}
+                />
+              }
+            </>
           )}
-
-          <div className="flex justify-center">
-            <Button variant="link" onClick={() => void navigate(routes.login)}>
-              {t('global.back')}
-            </Button>
-            {walletsError && (
-              <Button variant="link" onClick={() => void walletsRefetch()}>
-                {t('global.retry')}
-              </Button>
-            )}
-          </div>
         </CardContent>
       </Card>
     </AuthPageShell>
