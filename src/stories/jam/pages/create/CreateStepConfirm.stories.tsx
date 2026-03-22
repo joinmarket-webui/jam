@@ -19,6 +19,6 @@ export const Default: Story = {
   args: {
     walletFileName: 'Satoshi.jmdat',
     password: 'correct horse battery staple',
-    seedphrase: DUMMY_SEED_PHRASE,
+    mnemonicPhrase: DUMMY_SEED_PHRASE,
   },
 }

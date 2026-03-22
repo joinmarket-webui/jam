@@ -23,7 +23,7 @@ const SEED_WORD_COUNT_HINT = VALID_SEED_WORD_COUNTS.join(' / ')
 const showDummyMnemonicHelper = isDebugFeatureEnabled('importDummyMnemonicPhrase')
 
 interface ImportDetailsFormValues {
-  seedPhrase: string
+  mnemonicPhrase: string
 }
 
 const normalizeSeedPhrase = (value: string | undefined) =>
@@ -42,7 +42,7 @@ const isBip39Mnemonic = (value: string) => {
 const importDetailsFormSchema = (t: TFunction) => {
   return yup
     .object({
-      seedPhrase: yup
+      mnemonicPhrase: yup
         .string()
         .transform((currentValue: string | undefined) => normalizeSeedPhrase(currentValue))
         .required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase'))
@@ -89,7 +89,7 @@ export const ImportDetailsForm = ({
   })
   const watchedSeedPhrase = useWatch({
     control,
-    name: 'seedPhrase',
+    name: 'mnemonicPhrase',
   })
   const isSeedPhraseBip39Valid = useMemo(() => isBip39Mnemonic(watchedSeedPhrase), [watchedSeedPhrase])
 
@@ -98,7 +98,7 @@ export const ImportDetailsForm = ({
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
-        <Field data-invalid={errors.seedPhrase !== undefined}>
+        <Field data-invalid={errors.mnemonicPhrase !== undefined}>
           <FieldLabel htmlFor="import-wallet-seed">
             {t('import_wallet.import_details.label_menmonic_phrase')}
             <Tooltip>
@@ -115,14 +115,16 @@ export const ImportDetailsForm = ({
             id="import-wallet-seed"
             rows={4}
             placeholder={t('import_wallet.import_details.placeholder_menmonic_phrase')}
-            {...register('seedPhrase', {
+            {...register('mnemonicPhrase', {
               required: true,
             })}
             disabled={disabled}
             autoComplete="off"
           />
         </Field>
-        {errors.seedPhrase?.message && <div className="text-destructive text-xs">{errors.seedPhrase.message}</div>}
+        {errors.mnemonicPhrase?.message && (
+          <div className="text-destructive text-xs">{errors.mnemonicPhrase.message}</div>
+        )}
         {isSeedPhraseBip39Valid && (
           <Alert variant="success" className="py-2">
             <CheckCircle2Icon />
@@ -152,7 +154,7 @@ export const ImportDetailsForm = ({
             size="sm"
             disabled={disabled}
             onClick={() => {
-              setValue('seedPhrase', DUMMY_SEED_PHRASE.join(' '), {
+              setValue('mnemonicPhrase', DUMMY_SEED_PHRASE.join(' '), {
                 shouldDirty: true,
                 shouldValidate: true,
               })

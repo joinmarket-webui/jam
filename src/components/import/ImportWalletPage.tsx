@@ -84,7 +84,7 @@ const ImportWalletPage = () => {
           walletname: walletFileName,
           password: walletDetails.password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
-          seedphrase: importDetails.seedPhrase,
+          seedphrase: importDetails.mnemonicPhrase,
         },
       })
 
@@ -158,7 +158,7 @@ const ImportWalletPage = () => {
                 <ImportStepConfirm
                   walletFileName={walletDisplayNameToFileName(stepWalletDetailsValues!.walletName)}
                   password={stepWalletDetailsValues!.password}
-                  seedphrase={stepImportDetailsValues!.seedPhrase?.split(/\s+/)}
+                  mnemonicPhrase={stepImportDetailsValues!.mnemonicPhrase.split(/\s+/)}
                   onConfirm={async () =>
                     await handleConfirm({
                       walletDetails: stepWalletDetailsValues!,

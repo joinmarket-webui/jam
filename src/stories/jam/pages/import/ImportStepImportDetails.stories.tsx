@@ -27,7 +27,7 @@ export const WithInvalidMnemonicPhrase: Story = {
     sessionInfo: undefined,
     mode: 'all',
     initialValues: {
-      seedPhrase: 'invalid mnemonic',
+      mnemonicPhrase: 'invalid mnemonic',
     },
   },
 }
@@ -37,7 +37,7 @@ export const WithValidMnemonicPhrase: Story = {
     sessionInfo: undefined,
     mode: 'all',
     initialValues: {
-      seedPhrase: DUMMY_SEED_PHRASE.join(' '),
+      mnemonicPhrase: DUMMY_SEED_PHRASE.join(' '),
     },
   },
 }

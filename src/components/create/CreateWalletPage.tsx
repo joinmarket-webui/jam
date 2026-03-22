@@ -159,7 +159,7 @@ const CreateWalletPage = () => {
               <CreateStepConfirm
                 walletFileName={createWalletSuccessInfo!.response.walletname as WalletFileName}
                 password={createWalletSuccessInfo!.values.password}
-                seedphrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/)}
+                mnemonicPhrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/)}
                 onConfirm={async () => await handleConfirmSeed(createWalletSuccessInfo!)}
               />
             </>

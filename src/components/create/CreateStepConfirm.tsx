@@ -9,6 +9,7 @@ import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import type { WalletFileName } from '@/lib/utils'
+import type { MnemonicPhrase } from '@/types/global'
 import { Field, FieldLabel } from '../ui/field'
 import { MaskedText } from '../ui/jam/MaskedText'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
@@ -42,7 +43,7 @@ const createFormSchema = (t: TFunction) => {
 interface CreateStepConfirmProps {
   walletFileName: WalletFileName
   password: string
-  seedphrase: string[]
+  mnemonicPhrase: MnemonicPhrase
   onConfirm: () => Promise<void>
   mode?: Mode
 }
@@ -50,7 +51,7 @@ interface CreateStepConfirmProps {
 export const CreateStepConfirm = ({
   walletFileName,
   password,
-  seedphrase,
+  mnemonicPhrase,
   onConfirm,
   mode = 'onSubmit',
 }: CreateStepConfirmProps) => {
@@ -109,7 +110,7 @@ export const CreateStepConfirm = ({
         <div>
           <Label className="text-muted-foreground text-xs">{/* i18n confirmation_label_seedphrase */}Seed Phrase</Label>
           <div className="bg-muted rounded-lg p-2">
-            <SeedPhraseGrid value={seedphrase} masked={!revealSensitiveInfo} />
+            <SeedPhraseGrid value={mnemonicPhrase} masked={!revealSensitiveInfo} />
           </div>
         </div>
       </div>

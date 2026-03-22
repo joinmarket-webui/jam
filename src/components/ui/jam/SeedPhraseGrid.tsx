@@ -1,10 +1,10 @@
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
-import type { SeedPhrase } from '@/types/global'
+import type { MnemonicPhrase } from '@/types/global'
 import { MaskedText } from './MaskedText'
 
 type SeedPhraseGridProps = ComponentProps<typeof MaskedText> & {
-  value: SeedPhrase
+  value: MnemonicPhrase
   className?: string
 }
 
