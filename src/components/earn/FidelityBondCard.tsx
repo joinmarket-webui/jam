@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { time } from '@/lib/utils'
+import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
 
 interface FidelityBondCardProps {
@@ -79,9 +80,7 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
             <span className="text-muted-foreground text-sm font-semibold">
               {t('earn.fidelity_bond.existing.label_address')}
             </span>
-            <span className="text-sm">
-              <code>{value.address}</code>
-            </span>
+            <Address className="text-sm" value={value.address} />
           </div>
         </div>
       </CardContent>

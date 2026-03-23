@@ -13,7 +13,6 @@ import {
   CheckIcon,
   ChevronLeftIcon,
   CopyIcon,
-  Loader2Icon,
   RefreshCwIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -42,6 +41,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Address } from '../ui/jam/Address'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './CreateFidelityBondDialog/types'
 
 type Step = 'select_date' | 'confirm' | 'sending' | 'success'
@@ -321,52 +321,49 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           )}
 
           {step === 'confirm' && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-muted-foreground mb-1 text-xs">
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-muted-foreground text-xs">
                     {t('earn.fidelity_bond.review_inputs.label_lock_date')}
                   </p>
                   <p className="font-semibold">{selectedDateLabel}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-muted-foreground mb-1 text-xs">
-                    {t('earn.fidelity_bond.review_inputs.label_jar')}
-                  </p>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
                   <p className="font-semibold">
                     {t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: utxo.mixdepth })}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-primary/5 border-primary/20 rounded-lg border p-4">
-                <p className="text-muted-foreground mb-1 text-xs">
-                  {t('earn.fidelity_bond.review_inputs.label_amount')}
-                </p>
+              <div className="bg-primary/5 border-primary/20 rounded-lg border p-3">
+                <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_amount')}</p>
                 <p className="font-mono text-2xl font-bold">{formatSats(utxo.value)}</p>
               </div>
 
               {timelockAddressQuery.isLoading ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2Icon className="text-primary h-6 w-6 animate-spin" />
-                  <p className="text-muted-foreground ml-2">{t('earn.fidelity_bond.renew.text_loading')}</p>
+                <div className="text-muted-foreground flex items-center justify-center gap-2 py-4">
+                  <Spinner className="motion-reduce:hidden" />
+                  {t('earn.fidelity_bond.renew.text_loading')}
                 </div>
               ) : (
                 destinationAddress && (
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">{t('earn.fidelity_bond.review_inputs.label_address')}</Label>
-                    <code className="bg-muted block rounded-lg p-3 font-mono text-xs break-all">
-                      {destinationAddress}
-                    </code>
+                    <div className="bg-muted rounded-lg p-3">
+                      <Address className="text-xs" value={destinationAddress} />
+                    </div>
                   </div>
                 )
               )}
 
               <Alert variant="warning">
-                <AlertTriangleIcon className="h-4 w-4" />
+                <AlertTriangleIcon />
                 <AlertTitle>{t('earn.fidelity_bond.renew.confirm_send_modal.title')}</AlertTitle>
                 <AlertDescription>
                   {t('earn.fidelity_bond.confirm_modal.body', {
+                    /* TODO: fix human readable duration */
                     humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
                     date: selectedDateLabel || '',
                   })}
