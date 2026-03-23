@@ -13,8 +13,6 @@ interface LogsContentProps {
 export const LogsContent = ({ enabled, className }: LogsContentProps) => {
   const { t } = useTranslation()
   const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({ enabled })
-  const hasRealLogContent = Boolean(logFileContent)
-  const fallbackViewerText = t('logs.error_not_supported')
 
   if (!isInitialized) {
     return (
@@ -34,12 +32,7 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
         </Alert>
       )}
 
-      <LogViewer
-        fileName={fileName}
-        value={logFileContent || fallbackViewerText}
-        refresh={refresh}
-        showActions={hasRealLogContent}
-      />
+      {logFileContent && <LogViewer fileName={fileName} value={logFileContent} refresh={refresh} />}
     </div>
   )
 }

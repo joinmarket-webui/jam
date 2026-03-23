@@ -50,7 +50,8 @@ export const fetchLog = async ({
 }: AuthApiRequestContext & {
   fileName: string
 }) => {
-  return await fetch(`/jam/api/v0/log/${fileName}`, {
+  const encodedFileName = encodeURIComponent(fileName)
+  return await fetch(`/jam/api/v0/log/${encodedFileName}`, {
     headers: { ...buildAuthHeader(token) },
     signal,
   }).then((response) => withExpectedContentTypeOrThrow(response, 'text/plain'))
