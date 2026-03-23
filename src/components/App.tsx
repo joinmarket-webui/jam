@@ -87,7 +87,7 @@ export default function App() {
     [reloadCurrentWalletInfo],
   )
 
-  const router = createBrowserRouter(
+  const router = useMemo(()=>createBrowserRouter(
     createRoutesFromElements(
       <Route
         id="base"
@@ -218,7 +218,7 @@ export default function App() {
         v7_normalizeFormMethod: true,
       },
     },
-  )
+  ), [currentWallet, sessionConnectionError]);
 
   if (settings.showOnboarding === true) {
     return (
