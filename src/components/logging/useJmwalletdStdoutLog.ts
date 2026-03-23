@@ -24,15 +24,18 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const token = authState?.auth?.token
 
   const logQuery = useQuery<string>({
+    // Keep query identity stable across token refreshes to avoid flashing back to "loading".
     queryKey: ['logs', JMWALLETD_LOG_FILE_NAME],
     enabled: enabled && token !== undefined,
     retry: false,
     refetchOnWindowFocus: false,
+    // Poll logs continuously so users don't depend on manual refresh/token lifecycle.
     refetchInterval: (query) => {
       if (!enabled || token === undefined) return false
       if (query.state.error) return false
       return 2_500
     },
+    // Keep previous data during refetch to prevent content flicker on slower networks.
     placeholderData: (previousData) => previousData,
     queryFn: ({ signal }) => {
       if (token === undefined) return Promise.resolve('')
@@ -73,11 +76,10 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const isInitialized = useMemo(() => {
     if (!enabled) return false
     if (token === undefined) return true
-    return logQuery.isFetched
-  }, [enabled, logQuery.isFetched, token])
+    // Once we have data, stay initialized even while background refetches are in flight.
+    return logQuery.isFetched || logQuery.data !== undefined
+  }, [enabled, logQuery.data, logQuery.isFetched, token])
 
-  // No synthetic fallback — the previous repeat(1_000) generated fake log lines
-  // that resembled real output, making the dev experience misleading.
   const logFileContent = useMemo(() => {
     if (logQuery.data) return logQuery.data
     return undefined
