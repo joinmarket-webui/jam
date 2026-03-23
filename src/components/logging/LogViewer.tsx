@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { cn, delayedPromise } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 interface LogViewerProps {
   fileName: string
@@ -32,11 +32,17 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
     return filteredLines.length
   }, [filteredLines.length, normalizedSearchValue])
 
-  const scrollToLogBottom = () => {
-    logContentRef.current?.scrollTo({
-      top: logContentRef.current.scrollHeight,
-      behavior: 'smooth',
-    })
+  const scrollToLogBottom = (behavior: ScrollBehavior = 'smooth') => {
+    const logContentElement = logContentRef.current
+    if (!logContentElement) return
+    if (behavior === 'auto') {
+      logContentElement.scrollTop = logContentElement.scrollHeight
+    } else {
+      logContentElement.scrollTo({
+        top: logContentElement.scrollHeight,
+        behavior,
+      })
+    }
     setLogScrollProgress(1)
   }
 
@@ -61,7 +67,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
       return
     }
     if (isScrolledToLogBottom) {
-      scrollToLogBottom()
+      scrollToLogBottom('auto')
     }
   }, [filteredLines.length, isScrolledToLogBottom, normalizedSearchValue])
 
@@ -71,9 +77,10 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
     setIsLoadingRefresh(true)
 
     try {
-      await refresh().then(() => delayedPromise(210))
+      await refresh()
     } finally {
-      setIsLoadingRefresh(false)
+      // Keep spinner visible briefly to avoid quick UI flicker on fast refresh cycles.
+      setTimeout(() => setIsLoadingRefresh(false), 250)
     }
   }, [isLoadingRefresh, refresh])
 
@@ -207,7 +214,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
           variant={isScrolledToLogBottom ? 'ghost' : 'default'}
           disabled={isScrolledToLogBottom}
           size="icon"
-          onClick={scrollToLogBottom}
+          onClick={() => scrollToLogBottom('smooth')}
           title={/* TODO: i18n */ 'Scroll to bottom'}
         >
           <ArrowDownIcon />

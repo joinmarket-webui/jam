@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
-import { fetchLog, LogsApiError } from '@/lib/api/logs'
+import { fetchLog } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
@@ -49,13 +49,6 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     }
 
     if (!logQuery.error) return undefined
-
-    if (logQuery.error instanceof LogsApiError && logQuery.error.code === 'not_supported') {
-      return {
-        variant: 'warning',
-        message: t('logs.error_not_supported'),
-      }
-    }
 
     const reason =
       (logQuery.error instanceof Error ? logQuery.error.message : undefined) || t('global.errors.reason_unknown')
