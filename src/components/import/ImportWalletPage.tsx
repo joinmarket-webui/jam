@@ -1,6 +1,13 @@
 import type { ComponentProps } from 'react'
 import { useState } from 'react'
-import { listwalletsOptions, recoverwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import {
+  configgetMutation,
+  configsettingMutation,
+  listwalletsOptions,
+  recoverwalletMutation,
+  unlockwalletMutation,
+} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { lockwallet, rescanblockchain, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { CircleCheckBigIcon, KeyRoundIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -8,14 +15,15 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { JM_DEFAULT_WALLET_TYPE } from '@/constants/jm'
+import { JM_DEFAULT_WALLET_TYPE, JM_GAPLIMIT_CONFIGKEY, JM_GAPLIMIT_DEFAULT } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { buildAuthHeaderMap, type ApiToken } from '@/lib/config'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
+import { authStore, type AuthState } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { CreateWalletForm } from '../create/CreateWalletForm'
 import { AuthPageShell } from '../layout/AuthPageShell'
@@ -34,7 +42,8 @@ const ImportWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+
+  const { state: jmSession, update: updateSessionInfo } = useStore(jmSessionStore, (state) => state)
   const { update: updateAuthState } = useStore(authStore, (state) => state)
   const [step, setStep] = useState<ImportFlowStep>('wallet_details')
   const [stepWalletDetailsValues, setStepWalletDetailsValues] = useState<WalletDetailsValues>()
@@ -63,8 +72,58 @@ const ImportWalletPage = () => {
     ...recoverwalletMutation({ client, throwOnError: true }),
     retry: false,
   })
+  const fetchConfig = useMutation({
+    ...configgetMutation({
+      client,
+      throwOnError: true,
+    }),
+    retry: false,
+  })
+  const updateConfig = useMutation({
+    ...configsettingMutation({
+      client,
+      throwOnError: true,
+    }),
+    retry: false,
+  })
 
-  // TODO update gaplimit like https://github.com/joinmarket-webui/jam/blob/devel/src/components/ImportWallet.tsx#L459
+  const lockWallet = useMutation({
+    mutationFn: async (parameters: { walletFileName: WalletFileName; token: ApiToken }) => {
+      const { data } = await lockwallet({
+        client,
+        path: { walletname: encodeURIComponent(parameters.walletFileName) },
+        headers: { ...buildAuthHeaderMap(parameters.token) },
+        throwOnError: true,
+      })
+      return data
+    },
+    retry: false,
+  })
+  const unlockWallet = useMutation({
+    ...unlockwalletMutation({
+      client,
+      throwOnError: true,
+    }),
+    retry: false,
+  })
+
+  const rescanMutation = useMutation({
+    mutationFn: async (parameters: { walletFileName: WalletFileName; token: ApiToken; blockHeight: number }) => {
+      const { data } = await rescanblockchain({
+        client,
+        path: {
+          walletname: encodeURIComponent(parameters.walletFileName),
+          blockheight: parameters.blockHeight,
+        },
+        headers: { ...buildAuthHeaderMap(parameters.token) },
+        throwOnError: true,
+      })
+      return data
+    },
+    retry: false,
+  })
+
+  // TODO: error handling ->  verify all errors are handled correct (e.g. wallet is locked even on errors with best effort)
   const handleConfirm = async ({
     walletDetails,
     importDetails,
@@ -78,28 +137,101 @@ const ImportWalletPage = () => {
       position: 'top-center',
     })
     try {
-      const walletFileName = walletDisplayNameToFileName(walletDetails.walletName)
-      const response = await recoverWallet.mutateAsync({
+      // Step #1: recover wallet
+      const recoverWalletResponse = await recoverWallet.mutateAsync({
         body: {
-          walletname: walletFileName,
+          walletname: walletDisplayNameToFileName(walletDetails.walletName),
           password: walletDetails.password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
           seedphrase: importDetails.mnemonicPhrase,
         },
       })
 
+      const walletFileName = recoverWalletResponse.walletname as WalletFileName
+      const apiPathWithWallet = { walletname: encodeURIComponent(walletFileName) }
+
       let hashedPassword: string | undefined
       try {
-        hashedPassword = await hashPassword(walletDetails.password, response.walletname as WalletFileName)
+        hashedPassword = await hashPassword(walletDetails.password, recoverWalletResponse.walletname as WalletFileName)
       } catch (hashError) {
         console.warn('Failed to hash password after wallet recovery:', hashError)
       }
 
-      updateAuthState({
-        walletFileName: response.walletname as WalletFileName,
-        auth: { token: response.token, refresh_token: response.refresh_token },
+      const authState: Required<Omit<AuthState, 'hashed_password'>> & Pick<AuthState, 'hashed_password'> = {
+        walletFileName,
         hashed_password: hashedPassword,
+        auth: {
+          token: recoverWalletResponse.token,
+          refresh_token: recoverWalletResponse.refresh_token,
+        },
+      }
+
+      // Step #2: update the gaplimit config value if necessary
+      const originalGaplimitResponse = await fetchConfig.mutateAsync({
+        path: apiPathWithWallet,
+        headers: { ...buildAuthHeaderMap(authState.auth.token) },
+        body: JM_GAPLIMIT_CONFIGKEY,
       })
+      const originalGaplimit = Number.parseInt(originalGaplimitResponse.configvalue, 10) || JM_GAPLIMIT_DEFAULT
+
+      const gaplimitUpdateNecessary = importDetails.gaplimit !== originalGaplimit
+      if (gaplimitUpdateNecessary) {
+        console.info('Will update gaplimit from %d to %d', originalGaplimit, importDetails.gaplimit)
+
+        await updateConfig.mutateAsync({
+          path: apiPathWithWallet,
+          headers: { ...buildAuthHeaderMap(authState.auth.token) },
+          body: {
+            ...JM_GAPLIMIT_CONFIGKEY,
+            value: String(importDetails.gaplimit),
+          },
+        })
+      }
+      // Step #3: lock and unlock the wallet (for new addresses to be imported)
+      await lockWallet.mutateAsync({ walletFileName, token: authState.auth.token })
+
+      const unlockResponse = await unlockWallet.mutateAsync({
+        path: apiPathWithWallet,
+        headers: { ...buildAuthHeaderMap(authState.auth.token) },
+        body: {
+          password: walletDetails.password,
+        },
+      })
+
+      // use new token in requests
+      authState.auth = {
+        token: unlockResponse.token,
+        refresh_token: unlockResponse.refresh_token,
+      }
+
+      // Step #4: reset `gaplimit´ to previous value if necessary
+      if (gaplimitUpdateNecessary) {
+        console.info('Will reset gaplimit to previous value %d', originalGaplimit)
+        await updateConfig.mutateAsync({
+          path: apiPathWithWallet,
+          headers: { ...buildAuthHeaderMap(authState.auth.token) },
+          body: {
+            ...JM_GAPLIMIT_CONFIGKEY,
+            value: String(originalGaplimit),
+          },
+        })
+      }
+
+      // Step #5: invoke rescanning the timechain
+      console.info('Will start rescanning timechain from block %d', importDetails.blockheight)
+      await rescanMutation.mutateAsync({
+        walletFileName,
+        token: authState.auth.token,
+        blockHeight: importDetails.blockheight,
+      })
+
+      const { data: sessionInfo } = await session({ client, throwOnError: true })
+      updateSessionInfo({
+        ...sessionInfo,
+        rescanning: true,
+      })
+
+      updateAuthState(authState)
 
       toast.success(t('import_wallet.success.title'))
       await navigate(routes.home)

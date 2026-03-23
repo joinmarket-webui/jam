@@ -28,6 +28,11 @@ export const JM_MINIMUM_MAKERS_DEFAULT = 4
 
 export const JM_GAPLIMIT_DEFAULT = 6
 
+export const JM_GAPLIMIT_CONFIGKEY: ConfigKey = {
+  section: 'POLICY',
+  field: 'gaplimit',
+}
+
 // only support starting the maker with native segwit offers
 type RelativeOfferType = 'sw0reloffer'
 type AbsoluteOfferType = 'sw0absoffer'
