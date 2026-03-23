@@ -23,7 +23,7 @@ import { deriveAccountXpub } from '@/lib/bip32'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
-import type { JarIndex, Milliseconds, SeedPhrase, WithRequiredProperty } from '@/types/global'
+import type { JarIndex, Milliseconds, MnemonicPhrase, WithRequiredProperty } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
@@ -53,13 +53,13 @@ interface AccountXpubInfo {
  * not the child xpubs that the API incorrectly returns
  */
 async function deriveAccountXpubsFromSeed(
-  seedPhrase: SeedPhrase,
+  mnemonicPhrase: MnemonicPhrase,
   network: Network,
   jars: Jar[],
 ): Promise<AccountXpubInfo[]> {
   const coinType = network === Network.mainnet ? 0 : 1
 
-  const seed = await mnemonicToSeed(seedPhrase.join(' '))
+  const seed = await mnemonicToSeed(mnemonicPhrase.join(' '))
 
   // Convert to native segwit format (zpub/vpub) and build account info
   return jars.map((jar) => {
@@ -217,7 +217,7 @@ export const AccountXpubsDialog = ({
     gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
-    select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
+    select: (data) => data.seedphrase.split(/\s+/) as MnemonicPhrase,
   })
 
   const accountXpubsQueryKey = [walletFileName, 'xpubs']
