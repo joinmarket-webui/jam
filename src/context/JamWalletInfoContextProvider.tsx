@@ -1,11 +1,14 @@
 import { useMemo, type PropsWithChildren } from 'react'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
+import { useMutation } from '@tanstack/react-query'
 import { getAddressInfo } from 'bitcoin-address-validation'
 import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
 import { useQueryUtxos, type Utxo } from '@/hooks/useQueryUtxos'
 import { toBalanceSummary } from '@/lib/balanceSummary'
 import * as fb from '@/lib/fidelityBondUtils'
-import { walletDisplayName, type WalletFileName } from '@/lib/utils'
-import type { JarIndex } from '@/types/global'
+import { delayedPromise, walletDisplayName, type WalletFileName } from '@/lib/utils'
+import type { JarIndex, Milliseconds } from '@/types/global'
 import {
   JamWalletInfoContext,
   type AccountBranch,
@@ -126,14 +129,21 @@ interface JamWalletInfoContextProviderProps {
   walletFileName: WalletFileName
 }
 
+const combinedUtxosHash = (utxos: Utxo[]) => {
+  const utxoIds = utxos.map((it) => hexToBytes(it.utxo.split(':')[0]))
+  const combinedUtxoIds = new Uint8Array(utxoIds.reduce((acc, current) => [...acc, ...current], [] as number[]))
+  return sha256(combinedUtxoIds)
+}
+
 export const JamWalletInfoContextProvider = ({
   walletFileName,
   children,
 }: PropsWithChildren<JamWalletInfoContextProviderProps>) => {
   const { utxos, queryResult: utxosQueryResult } = useQueryUtxos({ walletFileName })
+  const utxosHashHex = useMemo(() => bytesToHex(combinedUtxosHash(utxos)), [utxos])
   const { queryResult: displayWalletQueryResult, ...displayWalletQuery } = useQueryDisplayWallet({
     walletFileName,
-    utxos,
+    utxosHashHex,
   })
 
   const walletBalanceSummary = toBalanceSummary(utxos)
@@ -208,6 +218,23 @@ export const JamWalletInfoContextProvider = ({
 
   const maxJarAvailableBalance = Math.max(0, ...jars.map((jar) => jar.balanceSummary.calculatedAvailableBalanceInSats))
 
+  // wrap as mutation manually, as `stopMakerQuery` is a `GET` request
+  const refetchMutation = useMutation({
+    scope: {
+      id: ['wallet-refetch', walletFileName].join('-'),
+    },
+    mutationFn: async (options?: { force?: boolean; delayBefore?: Milliseconds }) => {
+      if (options?.delayBefore !== undefined && options.delayBefore > 0) {
+        await delayedPromise(options.delayBefore)
+      }
+      return await utxosQueryResult
+        .refetch({ throwOnError: true })
+        .then((utxos) => displayWalletQueryResult.refetch({ throwOnError: true }).then(() => utxos))
+        .then((utxos) => toBalanceSummary((utxos.data?.utxos || []) as Utxo[]))
+    },
+    retry: false,
+  })
+
   const value = {
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     walletBalanceSummary: walletBalanceSummary,
@@ -216,17 +243,14 @@ export const JamWalletInfoContextProvider = ({
     addressSummary,
     accountSummary,
     jars,
+    utxosHashHex,
 
     detectedNetwork: detectedNetwork ?? null,
 
     isLoading: utxosQueryResult.isLoading || displayWalletQueryResult.isLoading,
-    isFetching: utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,
+    isFetching: refetchMutation.isPending || utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,
     error: utxosQueryResult.error || displayWalletQueryResult.error,
-    refetch: () =>
-      utxosQueryResult
-        .refetch()
-        .then(() => displayWalletQueryResult.refetch())
-        .then(() => undefined),
+    refetch: (options?: { force?: boolean; delayBefore?: Milliseconds }) => refetchMutation.mutateAsync(options),
     utxosQueryResult: utxosQueryResult,
     displayWalletQueryResult: displayWalletQueryResult,
   }

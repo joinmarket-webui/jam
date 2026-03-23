@@ -49,10 +49,13 @@ import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
+import { type RescanInfo, useRescanStatus } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
+import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { useJmWebsocket } from './hooks/useJmWebsocket'
 import { jmSessionStore } from './store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from './store/jmTxStore'
+import type { Milliseconds } from './types/global'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -175,6 +178,11 @@ function App() {
             <ProtectedRoute authenticated={authenticated}>
               <JamSessionInfoContextProvider walletFileName={walletFileName!}>
                 <JamWalletInfoContextProvider walletFileName={walletFileName!}>
+                  {walletFileName && (
+                    <>
+                      <WalletInfoAutoReload walletFileName={walletFileName} />
+                    </>
+                  )}
                   <Outlet />
                 </JamWalletInfoContextProvider>
               </JamSessionInfoContextProvider>
@@ -233,7 +241,11 @@ function App() {
           <RefreshApiToken />
           <RefreshJmSession />
           <HandleJmWebsocketMessages />
-          {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
+          {walletFileName && (
+            <>
+              <LoadFeeConfigData walletFileName={walletFileName} />
+            </>
+          )}
           {lockWalletDialogContext && (
             <LockWalletConfirmDialog
               open={lockWalletDialogContext?.open}
@@ -399,6 +411,61 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
         }
       })
   }, [fetchMissing])
+
+  return <></>
+}
+
+const RELOAD_WALLET_INFO_DELAY: {
+  AFTER_RESCAN: Milliseconds
+  AFTER_UTXO_CHANGE: Milliseconds
+} = {
+  // After rescanning, it is necessary to give the JM backend some time to synchronize.
+  // A couple of seconds should be enough, however, this depends on the user hardware
+  // and the delay might need to be increased if users encounter problems, e.g. the
+  // balance changes again when switching views.
+  // As reference: 4 seconds was not enough, even on regtest. But keep in mind, this only
+  // takes effect after rescanning the chain, which should happen quite infrequently.
+  AFTER_RESCAN: 8_000,
+
+  // No delay is needed after utxo change (e.g. normal unlock of wallet)
+  AFTER_UTXO_CHANGE: 0,
+}
+
+/**
+ * A component that automatically reloads wallet information on certain state changes,
+ * e.g. when the wallet is unlocked or rescanning the chain finished successfully.
+ *
+ * If the auto-reloading on wallet change fails, the error can currently
+ * only be logged and cannot be displayed to the user in a satisfying way.
+ * This might change in the future but is okay for now - components can
+ * always trigger a reload on demand and inform the user as they see fit.
+ */
+const WalletInfoAutoReload = ({ walletFileName }: { walletFileName: WalletFileName }) => {
+  const { rescanInfo: currentRescanInfo } = useRescanStatus()
+  const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
+  const [previousRescanInfo, setPreviousRescanInfo] = useState<RescanInfo>(currentRescanInfo)
+
+  useQuery({
+    queryKey: [
+      'reload-wallet-after-rescan-or-utxo-change',
+      walletFileName,
+      previousRescanInfo.rescanning,
+      currentRescanInfo.rescanning,
+      utxosHashHex,
+    ],
+    queryFn: async () => {
+      const rescanningFinished = previousRescanInfo.rescanning === true && currentRescanInfo.rescanning === false
+
+      const delayBefore: Milliseconds = rescanningFinished
+        ? RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
+        : RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
+      console.info('Trigger refetch looking for funds after rescan or utxo changes with delay %d...', delayBefore)
+
+      const result = await refetchWalletBalance({ delayBefore })
+      setPreviousRescanInfo(currentRescanInfo)
+      return result
+    },
+  })
 
   return <></>
 }

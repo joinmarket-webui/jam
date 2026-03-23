@@ -99,3 +99,10 @@ export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds = Math.max(
   parseAsIntOrDefault(import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX, 0),
   60_000,
 )
+
+/**
+ * A gaplimit threshold at which a warning is displayed that with the given value a
+ * decline in performance is to be expected. Importing 500 addresses (per jar!) leads to
+ * the `/display` endpoint taking more than ~15s.
+ */
+export const GAPLIMIT_WARN_THRESHOLD = 250

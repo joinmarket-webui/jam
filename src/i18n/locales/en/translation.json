@@ -186,6 +186,8 @@
     "import_details": {
       "title": "Please enter your mnemonic phrase!",
       "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
+      "label_menmonic_phrase": "Mnemonic phrase",
+      "placeholder_menmonic_phrase": "abandon abandon abandon ... about",
       "feedback_invalid_menmonic_phrase": "Please provide a valid mnemonic phrase",
       "import_options": "Import options",
       "label_blockheight": "Rescan height",
@@ -201,7 +203,7 @@
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
       "text_button_submit": "Import",
-      "text_button_submitting": "Recovering wallet..."
+      "text_button_submitting": "Importing..."
     },
     "success": {
       "title": "Wallet imported successfully!",

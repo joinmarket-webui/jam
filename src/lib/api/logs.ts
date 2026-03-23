@@ -1,10 +1,8 @@
+import { buildAuthHeaderMap } from '../config'
+
 export interface AuthApiRequestContext {
   token: string
   signal?: AbortSignal
-}
-
-const buildAuthHeader = (token: string) => {
-  return { 'x-jm-authorization': `Bearer ${token}` }
 }
 
 /**
@@ -31,7 +29,7 @@ const withExpectedContentTypeOrThrow = (response: Response, expectedContentType:
  */
 export const fetchFeatures = async ({ token, signal }: AuthApiRequestContext) => {
   return await fetch(`/features`, {
-    headers: { ...buildAuthHeader(token) },
+    headers: { ...buildAuthHeaderMap(token) },
     signal,
   }).then((response) => withExpectedContentTypeOrThrow(response, 'application/json'))
 }
@@ -52,7 +50,7 @@ export const fetchLog = async ({
 }) => {
   const encodedFileName = encodeURIComponent(fileName)
   return await fetch(`/jam/api/v0/log/${encodedFileName}`, {
-    headers: { ...buildAuthHeader(token) },
+    headers: { ...buildAuthHeaderMap(token) },
     signal,
   }).then((response) => withExpectedContentTypeOrThrow(response, 'text/plain'))
 }

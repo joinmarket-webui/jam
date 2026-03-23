@@ -3,7 +3,7 @@ export type AmountSats = number
 export type BitcoinAddress = string
 export type JarIndex = number
 
-export type SeedPhrase = string[]
+export type MnemonicPhrase = string[]
 
 export type HdPath =
   | `m/${number}'/${number}'/${number}'` // used internally

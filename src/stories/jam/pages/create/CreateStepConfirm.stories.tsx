@@ -6,6 +6,10 @@ const meta: Meta<typeof CreateStepConfirm> = {
   title: 'Page/Create/CreateStepConfirm',
   component: CreateStepConfirm,
   tags: ['autodocs'],
+  args: {
+    mode: 'onChange',
+    onConfirm: async () => alert('Confirm clicked!'),
+  },
 }
 export default meta
 
@@ -15,7 +19,6 @@ export const Default: Story = {
   args: {
     walletFileName: 'Satoshi.jmdat',
     password: 'correct horse battery staple',
-    seedphrase: DUMMY_SEED_PHRASE,
-    onConfirm: async () => alert('Confirm clicked!'),
+    mnemonicPhrase: DUMMY_SEED_PHRASE,
   },
 }
