@@ -17,7 +17,8 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const [logScrollProgress, setLogScrollProgress] = useState(1)
+  const [logScrollProgress, setLogScrollProgress] = useState(0)
+  const [hasAutoScrolledInitially, setHasAutoScrolledInitially] = useState(false)
   const isScrolledToLogBottom = useMemo(() => logScrollProgress >= 0.995, [logScrollProgress])
 
   // Search: normalize query, split lines, filter matches, count results
@@ -66,10 +67,13 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
       setLogScrollProgress(0)
       return
     }
-    if (isScrolledToLogBottom) {
+    // Follow log tail only on first render or when user is already at the bottom.
+    // This avoids jumping away while someone is reading older lines.
+    if (!hasAutoScrolledInitially || isScrolledToLogBottom) {
       scrollToLogBottom('auto')
+      if (!hasAutoScrolledInitially) setHasAutoScrolledInitially(true)
     }
-  }, [filteredLines.length, isScrolledToLogBottom, normalizedSearchValue])
+  }, [filteredLines.length, hasAutoScrolledInitially, isScrolledToLogBottom, normalizedSearchValue])
 
   const handleRefresh = useCallback(async () => {
     if (isLoadingRefresh) return
