@@ -73,12 +73,13 @@ export const ImportStepConfirm = ({
 
   const revealSensitiveInfo = useWatch({ control, name: 'revealSensitiveInfo' })
 
-  const doOnSubmit = handleSubmit(() =>
-    onConfirm({
+  const doOnSubmit = handleSubmit(async () => {
+    setValue('revealSensitiveInfo', false)
+    return await onConfirm({
       walletDetails,
       importDetails,
-    }),
-  )
+    })
+  })
 
   const showGaplimitWarning = importDetails.gaplimit > GAPLIMIT_WARN_THRESHOLD
 
@@ -176,7 +177,7 @@ export const ImportStepConfirm = ({
           )}
         </Button>
       </form>
-      <Button variant="ghost" onClick={onBack}>
+      <Button variant="ghost" onClick={onBack} disabled={isSubmitting}>
         <ChevronLeftIcon className="h-4 w-4" />
         {t('global.back')}
       </Button>

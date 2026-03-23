@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ImportStepImportDetails } from '@/components/import/ImportStepImportDetails'
-import { DUMMY_SEED_PHRASE } from '@/lib/utils'
+import { JM_GAPLIMIT_DEFAULT } from '@/constants/jm'
+import { DUMMY_SEED_PHRASE, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 
 const meta: Meta<typeof ImportStepImportDetails> = {
   title: 'Page/Import/ImportStepImportDetails',
@@ -28,6 +29,8 @@ export const WithInvalidMnemonicPhrase: Story = {
     mode: 'all',
     initialValues: {
       mnemonicPhrase: 'invalid mnemonic',
+      blockheight: SEGWIT_ACTIVATION_BLOCK,
+      gaplimit: JM_GAPLIMIT_DEFAULT,
     },
   },
 }
@@ -38,6 +41,8 @@ export const WithValidMnemonicPhrase: Story = {
     mode: 'all',
     initialValues: {
       mnemonicPhrase: DUMMY_SEED_PHRASE.join(' '),
+      blockheight: SEGWIT_ACTIVATION_BLOCK,
+      gaplimit: JM_GAPLIMIT_DEFAULT,
     },
   },
 }

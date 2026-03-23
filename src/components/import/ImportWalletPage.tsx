@@ -123,7 +123,6 @@ const ImportWalletPage = () => {
     retry: false,
   })
 
-  // TODO: error handling ->  verify all errors are handled correct (e.g. wallet is locked even on errors with best effort)
   const handleConfirm = async ({
     walletDetails,
     importDetails,
@@ -136,39 +135,41 @@ const ImportWalletPage = () => {
       duration: Number.POSITIVE_INFINITY,
       position: 'top-center',
     })
+
+    const walletFileName = walletDisplayNameToFileName(walletDetails.walletName)
+
+    let authState: (Required<Omit<AuthState, 'hashed_password'>> & Pick<AuthState, 'hashed_password'>) | undefined =
+      undefined
     try {
       // Step #1: recover wallet
       const recoverWalletResponse = await recoverWallet.mutateAsync({
         body: {
-          walletname: walletDisplayNameToFileName(walletDetails.walletName),
+          walletname: walletFileName,
           password: walletDetails.password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
           seedphrase: importDetails.mnemonicPhrase,
         },
       })
 
-      const walletFileName = recoverWalletResponse.walletname as WalletFileName
-      const apiPathWithWallet = { walletname: encodeURIComponent(walletFileName) }
-
-      let hashedPassword: string | undefined
-      try {
-        hashedPassword = await hashPassword(walletDetails.password, recoverWalletResponse.walletname as WalletFileName)
-      } catch (hashError) {
-        console.warn('Failed to hash password after wallet recovery:', hashError)
-      }
-
-      const authState: Required<Omit<AuthState, 'hashed_password'>> & Pick<AuthState, 'hashed_password'> = {
-        walletFileName,
-        hashed_password: hashedPassword,
+      authState = {
+        walletFileName: recoverWalletResponse.walletname as WalletFileName,
         auth: {
           token: recoverWalletResponse.token,
           refresh_token: recoverWalletResponse.refresh_token,
         },
       }
 
+      try {
+        authState.hashed_password = await hashPassword(
+          walletDetails.password,
+          recoverWalletResponse.walletname as WalletFileName,
+        )
+      } catch (hashError) {
+        console.warn('Failed to hash password after wallet recovery:', hashError)
+      }
       // Step #2: update the gaplimit config value if necessary
       const originalGaplimitResponse = await fetchConfig.mutateAsync({
-        path: apiPathWithWallet,
+        path: { walletname: encodeURIComponent(authState.walletFileName) },
         headers: { ...buildAuthHeaderMap(authState.auth.token) },
         body: JM_GAPLIMIT_CONFIGKEY,
       })
@@ -179,7 +180,7 @@ const ImportWalletPage = () => {
         console.info('Will update gaplimit from %d to %d', originalGaplimit, importDetails.gaplimit)
 
         await updateConfig.mutateAsync({
-          path: apiPathWithWallet,
+          path: { walletname: encodeURIComponent(authState.walletFileName) },
           headers: { ...buildAuthHeaderMap(authState.auth.token) },
           body: {
             ...JM_GAPLIMIT_CONFIGKEY,
@@ -188,10 +189,13 @@ const ImportWalletPage = () => {
         })
       }
       // Step #3: lock and unlock the wallet (for new addresses to be imported)
-      await lockWallet.mutateAsync({ walletFileName, token: authState.auth.token })
+      await lockWallet.mutateAsync({
+        walletFileName: authState.walletFileName,
+        token: authState.auth.token,
+      })
 
       const unlockResponse = await unlockWallet.mutateAsync({
-        path: apiPathWithWallet,
+        path: { walletname: encodeURIComponent(authState.walletFileName) },
         headers: { ...buildAuthHeaderMap(authState.auth.token) },
         body: {
           password: walletDetails.password,
@@ -199,6 +203,7 @@ const ImportWalletPage = () => {
       })
 
       // use new token in requests
+      authState.walletFileName = unlockResponse.walletname as WalletFileName
       authState.auth = {
         token: unlockResponse.token,
         refresh_token: unlockResponse.refresh_token,
@@ -208,7 +213,7 @@ const ImportWalletPage = () => {
       if (gaplimitUpdateNecessary) {
         console.info('Will reset gaplimit to previous value %d', originalGaplimit)
         await updateConfig.mutateAsync({
-          path: apiPathWithWallet,
+          path: { walletname: encodeURIComponent(authState.walletFileName) },
           headers: { ...buildAuthHeaderMap(authState.auth.token) },
           body: {
             ...JM_GAPLIMIT_CONFIGKEY,
@@ -220,16 +225,21 @@ const ImportWalletPage = () => {
       // Step #5: invoke rescanning the timechain
       console.info('Will start rescanning timechain from block %d', importDetails.blockheight)
       await rescanMutation.mutateAsync({
-        walletFileName,
+        walletFileName: authState.walletFileName,
         token: authState.auth.token,
         blockHeight: importDetails.blockheight,
       })
 
-      const { data: sessionInfo } = await session({ client, throwOnError: true })
-      updateSessionInfo({
-        ...sessionInfo,
-        rescanning: true,
-      })
+      try {
+        const { data: sessionInfo } = await session({ client, throwOnError: true })
+        updateSessionInfo({
+          ...sessionInfo,
+          rescanning: true,
+        })
+        toast.success(t('rescan_chain.success_rescan_started'))
+      } catch (_ignoredOnPurpose: unknown) {
+        // empty on purpose: it does not matter if session request fails
+      }
 
       updateAuthState(authState)
 
@@ -238,7 +248,18 @@ const ImportWalletPage = () => {
     } catch (error: unknown) {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('import_wallet.error_importing_failed', { reason }))
-      throw error
+
+      if (authState?.auth.token !== undefined) {
+        try {
+          // try to lock the current wallet on error on a best effort basis
+          await lockWallet.mutateAsync({
+            walletFileName: authState.walletFileName,
+            token: authState.auth.token,
+          })
+        } catch (_ignoredOnPurpose: unknown) {
+          // empty on purpose
+        }
+      }
     } finally {
       toast.dismiss(durationHintToastId)
     }

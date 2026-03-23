@@ -84,7 +84,8 @@ const normalizeSeedPhrase = (value: string | undefined) =>
     .toLowerCase()
     .split(/[\s,]+/)
     .map((word) => word.trim())
-    .map((word) => word.replace(/^\d+\.$/, ''))
+    .map((word) => word.replace(/^\d+\.$/, '').trim())
+    .filter((word) => !!word)
     .join(' ')
 
 const isBip39Mnemonic = (value: string) => {
