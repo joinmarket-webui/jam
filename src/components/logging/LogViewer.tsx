@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import { cn, delayedPromise } from '@/lib/utils'
 
 interface LogViewerProps {
   fileName: string
@@ -24,27 +24,31 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
   // Search: normalize query, split lines, filter matches, count results
   const normalizedSearchValue = useMemo(() => searchValue.trim().toLowerCase(), [searchValue])
   const allLines = useMemo(() => value.split('\n'), [value])
+
   const filteredLines = useMemo(() => {
     if (normalizedSearchValue.length === 0) return allLines
     return allLines.filter((line) => line.toLowerCase().includes(normalizedSearchValue))
   }, [allLines, normalizedSearchValue])
+
   const matchingLineCount = useMemo(() => {
     if (normalizedSearchValue.length === 0) return 0
     return filteredLines.length
   }, [filteredLines.length, normalizedSearchValue])
 
-  const scrollToLogBottom = (behavior: ScrollBehavior = 'smooth') => {
-    const logContentElement = logContentRef.current
-    if (!logContentElement) return
-    if (behavior === 'auto') {
-      logContentElement.scrollTop = logContentElement.scrollHeight
-    } else {
-      logContentElement.scrollTo({
-        top: logContentElement.scrollHeight,
-        behavior,
-      })
-    }
+  const scrollToLogBottom = () => {
+    logContentRef.current?.scrollTo({
+      top: logContentRef.current.scrollHeight,
+      behavior: 'smooth',
+    })
     setLogScrollProgress(1)
+  }
+
+  const scrollToLogTop = () => {
+    logContentRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+    setLogScrollProgress(0)
   }
 
   const logScrollHandler = (event: React.UIEvent<HTMLPreElement>) => {
@@ -63,15 +67,17 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
   useEffect(() => {
     if (filteredLines.length === 0) return
     if (normalizedSearchValue.length > 0) {
-      logContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-      setLogScrollProgress(0)
+      scrollToLogTop()
       return
     }
     // Follow log tail only on first render or when user is already at the bottom.
     // This avoids jumping away while someone is reading older lines.
     if (!hasAutoScrolledInitially || isScrolledToLogBottom) {
-      scrollToLogBottom('auto')
-      if (!hasAutoScrolledInitially) setHasAutoScrolledInitially(true)
+      scrollToLogBottom()
+
+      if (!hasAutoScrolledInitially) {
+        setHasAutoScrolledInitially(true)
+      }
     }
   }, [filteredLines.length, hasAutoScrolledInitially, isScrolledToLogBottom, normalizedSearchValue])
 
@@ -81,10 +87,9 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
     setIsLoadingRefresh(true)
 
     try {
-      await refresh()
+      await refresh().then(() => delayedPromise(210))
     } finally {
-      // Keep spinner visible briefly to avoid quick UI flicker on fast refresh cycles.
-      setTimeout(() => setIsLoadingRefresh(false), 250)
+      setIsLoadingRefresh(false)
     }
   }, [isLoadingRefresh, refresh])
 
@@ -218,7 +223,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
           variant={isScrolledToLogBottom ? 'ghost' : 'default'}
           disabled={isScrolledToLogBottom}
           size="icon"
-          onClick={() => scrollToLogBottom('smooth')}
+          onClick={scrollToLogBottom}
           title={/* TODO: i18n */ 'Scroll to bottom'}
         >
           <ArrowDownIcon />
