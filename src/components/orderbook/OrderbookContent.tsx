@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
@@ -63,16 +64,16 @@ const offerToTableEntry = (
     fee:
       typeof offer.cjfee === 'number'
         ? {
-          value: offer.cjfee,
-          displayValue: String(offer.cjfee),
-        }
-        : (() => {
-          const value = Number.parseFloat(offer.cjfee || '0')
-          return {
-            value,
-            displayValue: factorToPercentage(value).toFixed(4) + '%',
+            value: offer.cjfee,
+            displayValue: String(offer.cjfee),
           }
-        })(),
+        : (() => {
+            const value = Number.parseFloat(offer.cjfee || '0')
+            return {
+              value,
+              displayValue: factorToPercentage(value).toFixed(4) + '%',
+            }
+          })(),
     minerFeeContribution: String(offer.txfee || 0),
     minimumSize: String(offer.minsize || 0),
     maximumSize: String(offer.maxsize || 0),
@@ -83,9 +84,9 @@ const offerToTableEntry = (
       displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
       displayExpiresIn: fidelityBond?.locktime
         ? time.humanReadableDuration({
-          to: fidelityBond.locktime * 1_000,
-          locale: i18n.resolvedLanguage || i18n.language,
-        })
+            to: fidelityBond.locktime * 1_000,
+            locale: i18n.resolvedLanguage || i18n.language,
+          })
         : undefined,
       amount: fidelityBond?.amount,
     },
@@ -201,8 +202,10 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
 
     const counterpartyBonds = new Map<string, number>()
     for (const offer of entries) {
-      const previous = counterpartyBonds.get(offer.counterparty) ?? 0
-      if (offer.bondValue.value > previous) counterpartyBonds.set(offer.counterparty, offer.bondValue.value)
+      const previous = counterpartyBonds.get(offer.counterparty)
+      if (previous === undefined || offer.bondValue.value > previous) {
+        counterpartyBonds.set(offer.counterparty, offer.bondValue.value)
+      }
     }
     const bondedMakers = [...counterpartyBonds.values()].filter((v) => v > 0).length
 
@@ -370,39 +373,55 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">{t('orderbook.market_summary_title')}</CardTitle>
           </CardHeader>
-          <CardContent className="text-muted-foreground grid gap-1 text-sm sm:grid-cols-2">
-            {marketSummary.medianAbsFee !== null && (
-              <p className="flex items-center gap-1">
-                <span>{t('orderbook.market_summary_median_abs_fee_label')}:</span>
-                <Balance valueString={String(marketSummary.medianAbsFee)} enableVisibilityToggle={false} />
-              </p>
-            )}
-            {marketSummary.medianRelFee !== null && (
-              <p>
-                {t('orderbook.market_summary_median_rel_fee', {
-                  value: factorToPercentage(marketSummary.medianRelFee).toFixed(4),
-                })}
-              </p>
-            )}
-            <p className="flex items-center gap-1">
-              <span>{t('orderbook.market_summary_total_liquidity_label')}:</span>
-              <Balance valueString={String(marketSummary.totalLiquidity)} enableVisibilityToggle={false} />
-            </p>
-            <p className="flex items-center gap-1">
-              <span>{t('orderbook.market_summary_offer_min_size_label')}:</span>
-              <Balance valueString={String(marketSummary.minOfferSize)} enableVisibilityToggle={false} />
-              <span>–</span>
-              <Balance valueString={String(marketSummary.maxOfferSize)} enableVisibilityToggle={false} />
-            </p>
-            <p>
-              {t('orderbook.market_summary_bonded_makers', {
-                bonded: marketSummary.bondedMakers,
-                unbonded: marketSummary.unbondedMakers,
-              })}
-            </p>
-          </CardContent>
           <CardContent className="pt-0">
-            <OrderbookChart entries={(tableRowModel?.rows ?? []).map((r) => r.original)} />
+            <Tabs defaultValue="summary">
+              <TabsList>
+                <TabsTrigger value="summary" className="cursor-pointer">
+                  {t('orderbook.tab_summary')}
+                </TabsTrigger>
+                <TabsTrigger value="charts" className="cursor-pointer">
+                  {t('orderbook.tab_charts')}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="summary">
+                <div className="text-muted-foreground grid gap-1 text-sm sm:grid-cols-2">
+                  {marketSummary.medianAbsFee !== null && (
+                    <p className="flex items-center gap-1">
+                      <span>{t('orderbook.market_summary_median_abs_fee_label')}:</span>
+                      <Balance valueString={String(marketSummary.medianAbsFee)} enableVisibilityToggle={false} />
+                    </p>
+                  )}
+                  {marketSummary.medianRelFee !== null && (
+                    <p>
+                      {t('orderbook.market_summary_median_rel_fee', {
+                        value: factorToPercentage(marketSummary.medianRelFee).toFixed(4),
+                      })}
+                    </p>
+                  )}
+                  <p className="flex items-center gap-1">
+                    <span>{t('orderbook.market_summary_total_liquidity_label')}:</span>
+                    <Balance valueString={String(marketSummary.totalLiquidity)} enableVisibilityToggle={false} />
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <span>{t('orderbook.market_summary_offer_min_size_label')}:</span>
+                    <Balance valueString={String(marketSummary.minOfferSize)} enableVisibilityToggle={false} />
+                    <span>–</span>
+                    <Balance valueString={String(marketSummary.maxOfferSize)} enableVisibilityToggle={false} />
+                  </p>
+                  <p>
+                    {t('orderbook.market_summary_bonded_makers', {
+                      bonded: marketSummary.bondedMakers,
+                      unbonded: marketSummary.unbondedMakers,
+                    })}
+                  </p>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="charts">
+                <OrderbookChart entries={(tableRowModel?.rows ?? []).map((r) => r.original)} />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       )}
