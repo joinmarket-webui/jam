@@ -16,7 +16,7 @@ type FeaturesApiResponse = {
 }
 
 export const useFeatures = () => {
-  const devMode = useDeveloperMode()
+  const { enabled: isDeveloperMode } = useDeveloperMode()
   const authState = useStore(authStore, (state) => state.state)
 
   const {
@@ -66,7 +66,7 @@ export const useFeatures = () => {
     return features?.some((feature) => feature.name === featureName && feature.enabled === true)
   }
   const isFeatureEnabled = (featureName: SupportedFeature) => {
-    return isFeatureSupported(featureName) || devMode.enabled === true
+    return isFeatureSupported(featureName) || isDeveloperMode
   }
 
   return {

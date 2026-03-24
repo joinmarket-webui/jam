@@ -8,14 +8,13 @@ import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmar
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import type { WalletFileName } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
 import type { Step } from './types'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './types'
@@ -28,7 +27,7 @@ export function useCreateFidelityBondWizard(
   const { t } = useTranslation()
   const client = useApiClient()
   const walletInfo = useJamWalletInfoContext()
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [step, setStep] = useState<Step>('select_date')
   const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')
