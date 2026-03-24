@@ -31,7 +31,7 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
 import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import { Button } from '../ui/button'
@@ -64,7 +64,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { fetchIfMissing } = useJmConfig({ walletFileName })
   const { refetch: refetchWalletInfo } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [showAbortCoinjoinDialog, setShowAbortCoinjoinDialog] = useState(false)

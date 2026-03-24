@@ -20,7 +20,6 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useStore } from 'zustand'
 import {
   Sidebar,
   SidebarContent,
@@ -41,14 +40,14 @@ import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { DevBadge } from '../dev/DevBadge'
 
 export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
   const { t } = useTranslation()
   const { toggleSidebar } = useSidebar()
 
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const { isFeatureEnabled } = useFeatures()
   const mainItems = useMemo(

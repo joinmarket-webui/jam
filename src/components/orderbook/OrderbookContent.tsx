@@ -26,7 +26,7 @@ import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer, pseudoRandomInteger, time } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
@@ -108,7 +108,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   const [isPinMyOffers, setPinMyOffers] = useState(false)
 
   const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
   const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
 
   const __dev_generateDemoReportEntryButton = () => {

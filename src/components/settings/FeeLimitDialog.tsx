@@ -4,7 +4,6 @@ import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
@@ -23,7 +22,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { factorToPercentage } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
@@ -41,7 +40,7 @@ type FeeLimitDialogProps = WithRequiredProperty<
 export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: FeeLimitDialogProps) => {
   const { t } = useTranslation()
 
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
   const [enableFormValidation, setEnableFormValidation] = useState(true)
   const [collaboratorFeesExpanded, setCollaboratorFeesExpanded] = useState(false)
   const [miningFeesExpanded, setMiningFeesExpanded] = useState(false)

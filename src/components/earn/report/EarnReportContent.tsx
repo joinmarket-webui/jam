@@ -12,7 +12,6 @@ import {
 } from '@tanstack/react-table'
 import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { useQueryYieldgenReport, type EarnReportEntry } from '@/components/earn/report/hooks/useQueryYieldgenReport'
 import { Alert, AlertTitle } from '@/components/ui/alert'
@@ -25,7 +24,7 @@ import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BITCOIN_GENESIS_DATE, cn, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
 
@@ -66,7 +65,7 @@ interface EarnReportContentProps {
 export const EarnReportContent = ({ className, enabled }: EarnReportContentProps) => {
   const { t } = useTranslation()
   const { data: entries, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled })
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
   const [now] = useState(() => Date.now())
 
   const [demoEntries, setDemoEntries] = useState<EarnReportEntry[]>([])

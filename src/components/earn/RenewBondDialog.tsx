@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
@@ -40,7 +39,7 @@ import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { Address } from '../ui/jam/Address'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './CreateFidelityBondDialog/types'
 
@@ -57,7 +56,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   const { t } = useTranslation()
   const client = useApiClient()
   const walletInfo = useJamWalletInfoContext()
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [step, setStep] = useState<Step>('select_date')
   const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')

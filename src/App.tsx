@@ -44,7 +44,7 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { jamSettingsStore, useDeveloperMode } from '@/store/jamSettingsStore'
 import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
@@ -79,7 +79,7 @@ type LockWalletDialogContext = {
 function App() {
   const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
 
   const jmSession = useStore(jmSessionStore, (state) => state.state)

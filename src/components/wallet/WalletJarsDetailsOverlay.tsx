@@ -1,8 +1,7 @@
 import type { ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
 import PageTitle from '../ui/jam/PageTitle'
 import { WalletJarsDetailsContent } from './WalletJarsDetailsContent'
@@ -21,7 +20,7 @@ export function WalletJarsDetailsOverlay({
   ...dialogProps
 }: WalletJarsDetailsOverlayProps) {
   const { t } = useTranslation()
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   return (
     <Dialog open={open} onOpenChange={() => onOpenChange(false)} {...dialogProps}>
