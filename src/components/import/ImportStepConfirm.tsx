@@ -103,53 +103,56 @@ export const ImportStepConfirm = ({
               {walletDetails.password}
             </MaskedText>
           </div>
-          <div>
-            <Label className="text-muted-foreground text-xs">
-              {/* i18n confirmation_label_seedphrase */}Seed Phrase
-            </Label>
-            <div className="bg-muted rounded-lg p-2">
-              <SeedPhraseGrid value={importDetails.mnemonicPhrase.split(/\s+/)} masked={!revealSensitiveInfo} />
-            </div>
-          </div>
+
+          <Accordion type="single" collapsible>
+            <AccordionItem value="mnemonic">
+              <AccordionTrigger>{t('import_wallet.import_details.label_menmonic_phrase')}</AccordionTrigger>
+              <AccordionContent>
+                <Label className="text-muted-foreground text-xs"></Label>
+                <div className="bg-muted rounded-lg p-2">
+                  <SeedPhraseGrid value={importDetails.mnemonicPhrase.split(/\s+/)} masked={!revealSensitiveInfo} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="options">
+              <AccordionTrigger
+                className={cn({
+                  'light:text-yellow-800 text-yellow-200/90': showGaplimitWarning,
+                })}
+              >
+                <div className="flex items-center gap-2">
+                  {showGaplimitWarning && <AlertTriangleIcon />}
+                  {t('import_wallet.import_details.import_options')}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-2">
+                <div>
+                  <div>{t('import_wallet.import_details.label_blockheight')}</div>
+                  <div className="text-muted-foreground text-xs">
+                    {t('import_wallet.import_details.description_blockheight')}
+                  </div>
+                  <div className="text-xl">{importDetails.blockheight}</div>
+                </div>
+                <div>
+                  <div>{t('import_wallet.import_details.label_gaplimit')}</div>
+                  <div className="text-muted-foreground text-xs">
+                    {t('import_wallet.import_details.description_gaplimit')}
+                  </div>
+                  <div className="text-xl">{importDetails.gaplimit}</div>
+                </div>
+                {showGaplimitWarning && (
+                  <Alert variant="warning">
+                    <AlertTriangleIcon />
+                    <AlertDescription className="whitespace-pre-line">
+                      {t('import_wallet.import_details.alert_high_gaplimit_value')}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
-        <Accordion type="single" collapsible>
-          <AccordionItem value="options">
-            <AccordionTrigger
-              className={cn({
-                'light:text-yellow-800 text-yellow-200/90': showGaplimitWarning,
-              })}
-            >
-              <div className="flex items-center gap-2">
-                {showGaplimitWarning && <AlertTriangleIcon />}
-                {t('import_wallet.import_details.import_options')}
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-2">
-              <div>
-                <div>{t('import_wallet.import_details.label_blockheight')}</div>
-                <div className="text-muted-foreground text-xs">
-                  {t('import_wallet.import_details.description_blockheight')}
-                </div>
-                <div className="text-xl">{importDetails.blockheight}</div>
-              </div>
-              <div>
-                <div>{t('import_wallet.import_details.label_gaplimit')}</div>
-                <div className="text-muted-foreground text-xs">
-                  {t('import_wallet.import_details.description_gaplimit')}
-                </div>
-                <div className="text-xl">{importDetails.gaplimit}</div>
-              </div>
-              {showGaplimitWarning && (
-                <Alert variant="warning">
-                  <AlertTriangleIcon />
-                  <AlertDescription className="whitespace-pre-line">
-                    {t('import_wallet.import_details.alert_high_gaplimit_value')}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+
         <div className="space-y-2">
           <Field data-invalid={errors.revealSensitiveInfo !== undefined} orientation="horizontal">
             <Switch
@@ -178,7 +181,7 @@ export const ImportStepConfirm = ({
         </Button>
       </form>
       <Button variant="ghost" onClick={onBack} disabled={isSubmitting}>
-        <ChevronLeftIcon className="h-4 w-4" />
+        <ChevronLeftIcon />
         {t('global.back')}
       </Button>
     </div>

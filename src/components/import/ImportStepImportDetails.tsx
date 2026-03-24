@@ -26,7 +26,7 @@ export const ImportStepImportDetails = ({ sessionInfo, onBack, ...importFormProp
       {isRescanActive && <RescanActiveAlert linkTarget={'login'} />}
       {showForm && <ImportDetailsForm {...importFormProps} />}
       <Button variant="ghost" onClick={onBack}>
-        <ChevronLeftIcon className="h-4 w-4" />
+        <ChevronLeftIcon />
         {t('global.back')}
       </Button>
     </div>

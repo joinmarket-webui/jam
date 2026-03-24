@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps, PropsWithChildren } from 'react'
 import { useState } from 'react'
 import {
   configgetMutation,
@@ -9,7 +9,7 @@ import {
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { lockwallet, rescanblockchain, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { CircleCheckBigIcon, KeyRoundIcon, WalletIcon } from 'lucide-react'
+import { CircleCheckBigIcon, KeyRoundIcon, WalletIcon, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -37,6 +37,27 @@ type WalletDetailsValues = Parameters<ComponentProps<typeof CreateWalletForm>['o
 type ImportDetailsValues = Parameters<ComponentProps<typeof ImportDetailsForm>['onSubmit']>[0]
 
 type ImportFlowStep = 'wallet_details' | 'import_details' | 'confirm'
+
+const ImportWalletCard = ({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: PropsWithChildren<{ icon: LucideIcon; title: string; description?: string }>) => {
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader className="flex flex-col items-center space-y-2">
+        <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+          <Icon className="text-primary" />
+        </div>
+        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+        {description !== undefined && <CardDescription>{description}</CardDescription>}
+      </CardHeader>
+
+      <CardContent className="space-y-6">{children}</CardContent>
+    </Card>
+  )
+}
 
 const ImportWalletPage = () => {
   const { t } = useTranslation()
@@ -136,15 +157,13 @@ const ImportWalletPage = () => {
       position: 'top-center',
     })
 
-    const walletFileName = walletDisplayNameToFileName(walletDetails.walletName)
-
     let authState: (Required<Omit<AuthState, 'hashed_password'>> & Pick<AuthState, 'hashed_password'>) | undefined =
       undefined
     try {
       // Step #1: recover wallet
       const recoverWalletResponse = await recoverWallet.mutateAsync({
         body: {
-          walletname: walletFileName,
+          walletname: walletDisplayNameToFileName(walletDetails.walletName),
           password: walletDetails.password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
           seedphrase: importDetails.mnemonicPhrase,
@@ -164,8 +183,8 @@ const ImportWalletPage = () => {
           walletDetails.password,
           recoverWalletResponse.walletname as WalletFileName,
         )
-      } catch (hashError) {
-        console.warn('Failed to hash password after wallet recovery:', hashError)
+      } catch (hashError: unknown) {
+        console.warn('Failed to hash password after wallet import', hashError)
       }
       // Step #2: update the gaplimit config value if necessary
       const originalGaplimitResponse = await fetchConfig.mutateAsync({
@@ -237,8 +256,9 @@ const ImportWalletPage = () => {
           rescanning: true,
         })
         toast.success(t('rescan_chain.success_rescan_started'))
-      } catch (_ignoredOnPurpose: unknown) {
-        // empty on purpose: it does not matter if session request fails
+      } catch (error: unknown) {
+        const reason = getErrorReason(error, 'Unknown error.')
+        console.warn('Non-critical error while fetching session after wallet import. Continuing with import...', reason)
       }
 
       updateAuthState(authState)
@@ -246,8 +266,11 @@ const ImportWalletPage = () => {
       toast.success(t('import_wallet.success.title'))
       await navigate(routes.home)
     } catch (error: unknown) {
+      console.error('Error while importing wallet', error)
+
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      toast.error(t('import_wallet.error_importing_failed', { reason }))
+      const errorMessage = t('import_wallet.error_importing_failed', { reason })
+      toast.error(errorMessage)
 
       if (authState?.auth.token !== undefined) {
         try {
@@ -256,8 +279,12 @@ const ImportWalletPage = () => {
             walletFileName: authState.walletFileName,
             token: authState.auth.token,
           })
-        } catch (_ignoredOnPurpose: unknown) {
-          // empty on purpose
+        } catch (error: unknown) {
+          const reason = getErrorReason(error, 'Unknown error.')
+          console.warn(
+            'Non-critical error while fetching session after wallet import. Continuing with import...',
+            reason,
+          )
         }
       }
     } finally {
@@ -267,60 +294,50 @@ const ImportWalletPage = () => {
 
   return (
     <AuthPageShell>
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center space-y-2">
-          <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            {step === 'wallet_details' && <WalletIcon className="text-primary" />}
-            {step === 'import_details' && <KeyRoundIcon className="text-primary" />}
-            {step === 'confirm' && <CircleCheckBigIcon className="text-primary" />}
-          </div>
-          <CardTitle className="text-xl font-bold">
-            {step === 'wallet_details' && t('import_wallet.wallet_details.title')}
-            {step === 'import_details' && t('import_wallet.import_details.title')}
-            {step === 'confirm' && t('import_wallet.confirmation.title')}
-          </CardTitle>
-          {step === 'import_details' && <CardDescription>{t('import_wallet.import_details.subtitle')}</CardDescription>}
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {step === 'wallet_details' && (
-            <ImportStepWalletDetails
-              wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
-              initialValues={stepWalletDetailsValues}
-              onSubmit={onSubmitWalletDetails}
-              sessionInfo={jmSession}
-              submitButtonText={({ isSubmitting }) =>
-                isSubmitting
-                  ? t('import_wallet.wallet_details.text_button_submitting')
-                  : t('import_wallet.wallet_details.text_button_submit')
-              }
+      {step == 'wallet_details' && (
+        <ImportWalletCard icon={WalletIcon} title={t('import_wallet.wallet_details.title')}>
+          <ImportStepWalletDetails
+            sessionInfo={jmSession}
+            wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
+            initialValues={stepWalletDetailsValues}
+            onSubmit={onSubmitWalletDetails}
+            submitButtonText={({ isSubmitting }) =>
+              isSubmitting
+                ? t('import_wallet.wallet_details.text_button_submitting')
+                : t('import_wallet.wallet_details.text_button_submit')
+            }
+          />
+        </ImportWalletCard>
+      )}
+      {step == 'import_details' && (
+        <ImportWalletCard
+          icon={KeyRoundIcon}
+          title={t('import_wallet.import_details.title')}
+          description={t('import_wallet.import_details.subtitle')}
+        >
+          <ImportStepImportDetails
+            sessionInfo={jmSession}
+            initialValues={stepImportDetailsValues}
+            onSubmit={onSubmitImportDetails}
+            onBack={onBackImportDetails}
+          />
+        </ImportWalletCard>
+      )}
+      {step == 'confirm' && (
+        <>
+          <PreventLeavingPageByMistake />
+          <ImportWalletCard icon={CircleCheckBigIcon} title={t('import_wallet.confirmation.title')}>
+            <ImportStepConfirm
+              value={{
+                walletDetails: stepWalletDetailsValues!,
+                importDetails: stepImportDetailsValues!,
+              }}
+              onConfirm={handleConfirm}
+              onBack={() => setStep('import_details')}
             />
-          )}
-          {step === 'import_details' && (
-            <ImportStepImportDetails
-              initialValues={stepImportDetailsValues}
-              onSubmit={onSubmitImportDetails}
-              sessionInfo={jmSession}
-              onBack={onBackImportDetails}
-            />
-          )}
-          {step === 'confirm' && (
-            <>
-              <PreventLeavingPageByMistake />
-              {
-                <ImportStepConfirm
-                  value={{
-                    walletDetails: stepWalletDetailsValues!,
-                    importDetails: stepImportDetailsValues!,
-                  }}
-                  onConfirm={handleConfirm}
-                  onBack={() => setStep('import_details')}
-                />
-              }
-            </>
-          )}
-        </CardContent>
-      </Card>
+          </ImportWalletCard>
+        </>
+      )}
     </AuthPageShell>
   )
 }
