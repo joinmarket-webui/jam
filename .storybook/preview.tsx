@@ -100,17 +100,6 @@ const withI18next = (Story: React.ComponentType, context: GlobalContext) => {
   )
 }
 
-export const withJamDisplayContent = (Story: React.ComponentType) => {
-  const queryClient = new QueryClient()
-  return (
-    <JamDisplayContextProvider>
-      <Story />
-    </JamDisplayContextProvider>
-  )
-}
-
-// Use only when necessary! Try to pass data from queries to
-// components so they can be tested independently from an API.
 export const withQueryClient = (Story: React.ComponentType) => {
   const queryClient = new QueryClient()
   return (
@@ -120,7 +109,16 @@ export const withQueryClient = (Story: React.ComponentType) => {
   )
 }
 
+export const withJamDisplayContent = (Story: React.ComponentType) => {
+  const queryClient = new QueryClient()
+  return (
+    <JamDisplayContextProvider>
+      <Story />
+    </JamDisplayContextProvider>
+  )
+}
+
 // export decorators for storybook to wrap your stories in
-export const decorators = [withTheme, withMemoryRouter, withI18next, withJamDisplayContent]
+export const decorators = [withTheme, withMemoryRouter, withI18next, withQueryClient, withJamDisplayContent]
 
 export default preview

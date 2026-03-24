@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -41,7 +41,7 @@ import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProv
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
-import { queryClient } from '@/lib/queryClient'
+import { queryClient, withMutationDelay } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore, useDeveloperMode } from '@/store/jamSettingsStore'
@@ -95,12 +95,26 @@ function App() {
         client,
         path: { walletname: encodeURIComponent(walletFileName || '') },
       }),
-      staleTime: 1,
-      gcTime: 1,
       enabled: false,
     },
     queryClient,
   )
+  const lockWalletMutation = useMutation(
+    {
+      scope: { id: 'lock-wallet' },
+      mutationFn: withMutationDelay(
+        async () => {
+          return await lockWalletQuery.refetch({ throwOnError: true })
+        },
+        {
+          throttle: 210,
+        },
+      ),
+      retry: false,
+    },
+    queryClient,
+  )
+
   const [lockWalletDialogContext, setLockWalletDialogContext] = useState<LockWalletDialogContext>()
 
   const doOnLogout = async (navigate: NavigateFunction) => {
@@ -125,7 +139,7 @@ function App() {
   const doOnLockWalletConfirm = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
     if (!walletFileName) return
     try {
-      await lockWalletQuery.refetch({ throwOnError: true })
+      await lockWalletMutation.mutateAsync()
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
@@ -251,7 +265,6 @@ function App() {
               open={lockWalletDialogContext?.open}
               onOpenChange={() => setLockWalletDialogContext(undefined)}
               onConfirm={() => doOnLockWalletConfirm(lockWalletDialogContext?.navigate, lockWalletDialogContext?.t)}
-              isLocking={lockWalletQuery.isFetching}
               makerRunning={makerRunning}
               coinjoinInProgress={coinjoinInProgress}
             />

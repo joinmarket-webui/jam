@@ -25,7 +25,6 @@ export const Default: Story = {
   args: {
     coinjoinInProgress: false,
     makerRunning: false,
-    isLocking: false,
     onConfirm: async () => alert('Confirm clicked!'),
   },
 }
@@ -34,7 +33,6 @@ export const MakerRunning: Story = {
   args: {
     coinjoinInProgress: false,
     makerRunning: true,
-    isLocking: false,
     onConfirm: async () => alert('Confirm clicked!'),
   },
 }
@@ -43,16 +41,6 @@ export const CoinjoinInProgress: Story = {
   args: {
     coinjoinInProgress: true,
     makerRunning: false,
-    isLocking: false,
-    onConfirm: async () => alert('Confirm clicked!'),
-  },
-}
-
-export const Locking: Story = {
-  args: {
-    coinjoinInProgress: true,
-    makerRunning: false,
-    isLocking: true,
     onConfirm: async () => alert('Confirm clicked!'),
   },
 }
