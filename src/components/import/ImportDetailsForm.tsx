@@ -246,7 +246,7 @@ export const ImportDetailsForm = ({
         )}
       </div>
 
-      <Accordion type="single" collapsible defaultValue="options">
+      <Accordion type="single" collapsible>
         <AccordionItem value="options">
           <AccordionTrigger
             className={cn({
