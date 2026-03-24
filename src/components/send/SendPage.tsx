@@ -125,7 +125,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     ...directsendMutation({ client }),
     retry: false,
   })
-  const startCoinjoinMutation = useMutation({
+  const {
+    isPending: startCoinjoinMutationIsPending,
+    isSuccess: startCoinjoinMutationIsSuccess,
+    mutateAsync: startCoinjoinMutationMutateAsync,
+    reset: startCoinjoinMutationReset,
+  } = useMutation({
     ...docoinjoinMutation({ client }),
     retry: false,
     onMutate: () => {
@@ -152,7 +157,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     staleTime: 1,
     gcTime: 1,
   })
-  const stopCoinjoinMutation = useMutation({
+  const {
+    isPending: stopCoinjoinMutationIsPending,
+    isSuccess: stopCoinjoinMutationIsSuccess,
+    mutateAsync: stopCoinjoinMutationMutateAsync,
+    reset: stopCoinjoinMutationReset,
+  } = useMutation({
     mutationFn: async () => {
       return await stopCoinjoinQuery.refetch({ throwOnError: true })
     },
@@ -170,9 +180,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
   const coinjoinRunning = jmSession?.coinjoin_in_process === true
-  const isWaitingCoinjoinStart =
-    startCoinjoinMutation.isPending || (startCoinjoinMutation.isSuccess && !coinjoinRunning)
-  const isWaitingCoinjoinStop = stopCoinjoinMutation.isPending || (stopCoinjoinMutation.isSuccess && coinjoinRunning)
+  const isWaitingCoinjoinStart = startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !coinjoinRunning)
+  const isWaitingCoinjoinStop = stopCoinjoinMutationIsPending || (stopCoinjoinMutationIsSuccess && coinjoinRunning)
   const collaborativeFlowActive = coinjoinRunning || isWaitingCoinjoinStart || isWaitingCoinjoinStop
 
   const waitForUtxosToBeSpentContext = useMemo(
@@ -215,10 +224,16 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }, [collaborativeFlowActive])
 
   useEffect(() => {
-    if (coinjoinRunning && startCoinjoinMutation.isSuccess) {
-      startCoinjoinMutation.reset()
+    if (coinjoinRunning && startCoinjoinMutationIsSuccess) {
+      startCoinjoinMutationReset()
     }
-  }, [coinjoinRunning, startCoinjoinMutation])
+  }, [coinjoinRunning, startCoinjoinMutationIsSuccess, startCoinjoinMutationReset])
+
+  useEffect(() => {
+    if (!coinjoinRunning && stopCoinjoinMutationIsSuccess) {
+      stopCoinjoinMutationReset()
+    }
+  }, [coinjoinRunning, stopCoinjoinMutationIsSuccess, stopCoinjoinMutationReset])
 
   useEffect(() => {
     const state = collaborativeLifecycleRef.current
@@ -281,12 +296,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       isCancelled = true
     }
   }, [coinjoinRunning, t])
-
-  useEffect(() => {
-    if (!coinjoinRunning && stopCoinjoinMutation.isSuccess) {
-      stopCoinjoinMutation.reset()
-    }
-  }, [coinjoinRunning, stopCoinjoinMutation])
 
   useEffect(() => {
     let isCancelled = false
@@ -397,7 +406,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         const body = buildCollaborativeSendRequest(data)
         setPaymentSuccessfulInfoAlert(undefined)
         collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
-        await startCoinjoinMutation.mutateAsync({
+        await startCoinjoinMutationMutateAsync({
           path: { walletname: encodeURIComponent(walletFileName) },
           body,
         })
@@ -429,7 +438,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
     setPaymentSuccessfulInfoAlert(undefined)
     setShowAbortCoinjoinDialog(false)
-    await stopCoinjoinMutation.mutateAsync()
+    await stopCoinjoinMutationMutateAsync()
     void refetchWalletInfoRef.current()
   }
 
@@ -457,9 +466,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <Button
               variant="destructive"
               onClick={() => void onAbortCoinjoin()}
-              disabled={stopCoinjoinMutation.isPending}
+              disabled={stopCoinjoinMutationIsPending}
             >
-              {stopCoinjoinMutation.isPending ? (
+              {stopCoinjoinMutationIsPending ? (
                 <>
                   <Spinner className="motion-reduce:hidden" />
                   {t('global.abort')}

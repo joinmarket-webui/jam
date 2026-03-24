@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
 import { fetchLog } from '@/lib/api/logs'
+import { getErrorReason } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
@@ -23,7 +24,12 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const { t } = useTranslation()
   const token = authState?.auth?.token
 
-  const logQuery = useQuery<string>({
+  const {
+    refetch: logQueryRefetch,
+    isFetched: logQueryIsFetched,
+    data: logQueryData,
+    error: logQueryError,
+  } = useQuery<string>({
     // Keep query identity stable across token refreshes to avoid flashing back to "loading".
     queryKey: ['logs', JMWALLETD_LOG_FILE_NAME],
     enabled: enabled && token !== undefined,
@@ -58,10 +64,9 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
       }
     }
 
-    if (!logQuery.error) return undefined
+    if (!logQueryError) return undefined
 
-    const reason =
-      (logQuery.error instanceof Error ? logQuery.error.message : undefined) || t('global.errors.reason_unknown')
+    const reason = getErrorReason(logQueryError, t('global.errors.reason_unknown'))
     const errorMessage = t('logs.error_loading_logs_failed', {
       /* TODO: add reason to i18n string */
       reason,
@@ -71,24 +76,19 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
       variant: 'warning',
       message: errorMessage,
     }
-  }, [enabled, logQuery.error, t, token])
+  }, [enabled, logQueryError, t, token])
 
   const isInitialized = useMemo(() => {
     if (!enabled) return false
     if (token === undefined) return true
     // Once we have data, stay initialized even while background refetches are in flight.
-    return logQuery.isFetched || logQuery.data !== undefined
-  }, [enabled, logQuery.data, logQuery.isFetched, token])
-
-  const logFileContent = useMemo(() => {
-    if (logQuery.data) return logQuery.data
-    return undefined
-  }, [logQuery.data])
+    return logQueryIsFetched || logQueryData !== undefined
+  }, [enabled, logQueryData, logQueryIsFetched, token])
 
   const refresh = useCallback(async () => {
-    if (token === undefined) return
-    await logQuery.refetch()
-  }, [logQuery, token])
+    if (enabled === false || token === undefined) return
+    await logQueryRefetch()
+  }, [logQueryRefetch, token, enabled])
 
-  return { alert, isInitialized, logFileContent, refresh, fileName: JMWALLETD_LOG_FILE_NAME }
+  return { alert, isInitialized, logFileContent: logQueryData, refresh, fileName: JMWALLETD_LOG_FILE_NAME }
 }
