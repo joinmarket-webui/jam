@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import {
   EyeIcon,
@@ -33,6 +34,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Spinner } from '../ui/spinner'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
@@ -58,15 +60,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isFeatureEnabled } = useFeatures()
 
-  const [isLockingWallet, setIsLockingWallet] = useState(false)
-  const doOnLockWallet = async () => {
-    try {
-      setIsLockingWallet(true)
-      await onLockWallet(navigate, t)
-    } finally {
-      setIsLockingWallet(false)
-    }
-  }
+  const lockWalletMutation = useMutation({
+    mutationFn: async ({ navigate, t }: { navigate: NavigateFunction; t: TFunction<'translation', undefined> }) => {
+      return await onLockWallet(navigate, t)
+    },
+    retry: false,
+  })
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -153,10 +152,16 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
           <Separator className="opacity-50" />
           <SettingItem
-            icon={LockKeyholeIcon}
+            renderIcon={({ className }) =>
+              lockWalletMutation.isPending ? (
+                <Spinner className={className} />
+              ) : (
+                <LockKeyholeIcon className={className} />
+              )
+            }
             title={t('settings.button_lock_wallet')}
-            action={doOnLockWallet}
-            disabled={isLockingWallet}
+            action={() => void lockWalletMutation.mutateAsync({ navigate, t })}
+            disabled={lockWalletMutation.isPending}
           />
           <Separator className="opacity-50" />
           <SettingsLink icon={ArrowLeftRightIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />
