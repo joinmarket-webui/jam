@@ -1,13 +1,11 @@
 import type { ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { AppNavbar } from '@/components/layout/AppNavbar'
-import { withQueryClient } from '../../../.storybook/preview'
 
 const meta: Meta<typeof AppNavbar> = {
   title: 'Layout/AppNavbar',
   component: AppNavbar,
   tags: ['autodocs'],
-  decorators: [withQueryClient],
 }
 export default meta
 
