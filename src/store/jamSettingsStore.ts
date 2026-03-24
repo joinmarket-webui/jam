@@ -1,4 +1,4 @@
-import { createStore } from 'zustand'
+import { createStore, useStore } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { isDevMode } from '@/constants/debugFeatures'
 import type { Currency } from '@/types/global'
@@ -38,3 +38,8 @@ export const jamSettingsStore = createStore<JamSettingsStoreState>()(
     },
   ),
 )
+
+export const useDeveloperMode = () => {
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  return { enabled: isDeveloperMode }
+}

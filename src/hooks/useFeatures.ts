@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
-import { isDevMode } from '@/constants/debugFeatures'
 import { fetchFeatures } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 
 type SupportedFeature = 'logs' // add on demand
 
@@ -16,6 +16,7 @@ type FeaturesApiResponse = {
 }
 
 export const useFeatures = () => {
+  const devMode = useDeveloperMode()
   const authState = useStore(authStore, (state) => state.state)
 
   const {
@@ -65,7 +66,7 @@ export const useFeatures = () => {
     return features?.some((feature) => feature.name === featureName && feature.enabled === true)
   }
   const isFeatureEnabled = (featureName: SupportedFeature) => {
-    return isFeatureSupported(featureName) || isDevMode()
+    return isFeatureSupported(featureName) || devMode.enabled === true
   }
 
   return {
