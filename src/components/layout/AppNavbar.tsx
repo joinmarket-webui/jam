@@ -1,5 +1,6 @@
-import { useState, type PropsWithChildren } from 'react'
+import { type PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { LockKeyholeIcon, LogOutIcon, PackageSearchIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -16,6 +17,7 @@ import { cn, shortenStringMiddle } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
   return (
@@ -143,15 +145,19 @@ export function AppNavbar({
 
   const rescanningRoute = rescanInfo?.rescanning !== true ? undefined : routes.rescan
 
-  const [isLockingWallet, setIsLockingWallet] = useState(false)
-  const doOnLockWallet = async () => {
-    try {
-      setIsLockingWallet(true)
-      await onLockWallet(navigate, t)
-    } finally {
-      setIsLockingWallet(false)
-    }
-  }
+  const lockWalletMutation = useMutation({
+    mutationFn: async ({ navigate, t }: { navigate: NavigateFunction; t: TFunction<'translation', undefined> }) => {
+      return await onLockWallet(navigate, t)
+    },
+    retry: false,
+  })
+
+  const logoutMutation = useMutation({
+    mutationFn: async ({ navigate }: { navigate: NavigateFunction }) => {
+      return await onLogout(navigate)
+    },
+    retry: false,
+  })
 
   return (
     <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
@@ -191,61 +197,83 @@ export function AppNavbar({
       </div>
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2">
         {rescanningRoute && (
-          <Button
-            className="light:text-green-600 text-green-300"
-            variant="ghost-navbar"
-            size="icon"
-            onClick={() => void navigate(rescanningRoute)}
-            aria-label={t('navbar.text_rescan_in_progress')}
-            title={t('navbar.text_rescan_in_progress')}
-          >
-            <PackageSearchIcon className="motion-safe:animate-pulse" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="light:text-green-600 text-green-300"
+                variant="ghost-navbar"
+                size="icon"
+                onClick={() => void navigate(rescanningRoute)}
+                aria-label={t('navbar.text_rescan_in_progress')}
+              >
+                <PackageSearchIcon className="motion-safe:animate-pulse" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('navbar.text_rescan_in_progress')}</TooltipContent>
+          </Tooltip>
         )}
         {joiningRoute && (
-          <Button
-            className="light:text-green-600 text-green-300"
-            variant="ghost-navbar"
-            size="icon"
-            onClick={() => void navigate(joiningRoute)}
-            aria-label={t('navbar.joining_in_progress')}
-            title={t('navbar.joining_in_progress')}
-          >
-            <ShuffleIcon className="motion-safe:animate-pulse" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="light:text-green-600 text-green-300"
+                variant="ghost-navbar"
+                size="icon"
+                onClick={() => void navigate(joiningRoute)}
+                aria-label={t('navbar.joining_in_progress')}
+              >
+                <ShuffleIcon className="motion-safe:animate-pulse" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('navbar.joining_in_progress')}</TooltipContent>
+          </Tooltip>
         )}
         <ThemeToggleButton className="hidden sm:flex" variant="ghost-navbar" theme={theme} onClick={toggleTheme} />
-        <Button
-          data-tour-id="settings-button"
-          variant="ghost-navbar"
-          size="icon"
-          onClick={() => void navigate(routes.settings)}
-          aria-label={t('navbar.menu_mobile_settings')}
-          title={t('navbar.menu_mobile_settings')}
-        >
-          <SettingsIcon />
-        </Button>
-        <Button
-          className="hidden sm:flex"
-          variant="ghost-navbar"
-          size="icon"
-          onClick={() => void doOnLockWallet()}
-          aria-label={t('settings.button_lock_wallet')}
-          title={t('settings.button_lock_wallet')}
-          disabled={isLockingWallet}
-        >
-          <LockKeyholeIcon />
-        </Button>
-        <Button
-          className="hidden sm:flex"
-          variant="ghost-navbar"
-          size="icon"
-          onClick={() => void onLogout(navigate)}
-          aria-label={/* TODO: i18n */ 'Logout'}
-          title={/* TODO: i18n */ 'Logout'}
-        >
-          <LogOutIcon />
-        </Button>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              data-tour-id="settings-button"
+              variant="ghost-navbar"
+              size="icon"
+              onClick={() => void navigate(routes.settings)}
+              aria-label={t('navbar.menu_mobile_settings')}
+            >
+              <SettingsIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('navbar.menu_mobile_settings')}</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="hidden sm:flex"
+              variant="ghost-navbar"
+              size="icon"
+              onClick={() => void lockWalletMutation.mutateAsync({ navigate, t })}
+              aria-label={t('settings.button_lock_wallet')}
+              disabled={lockWalletMutation.isPending}
+            >
+              {lockWalletMutation.isPending ? <Spinner /> : <LockKeyholeIcon />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('settings.button_lock_wallet')}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="hidden sm:flex"
+              variant="ghost-navbar"
+              size="icon"
+              onClick={() => void logoutMutation.mutateAsync({ navigate })}
+              aria-label={/* TODO: i18n */ 'Logout'}
+            >
+              <LogOutIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{/* TODO: i18n */ 'Logout'}</TooltipContent>
+        </Tooltip>
         {sidebarTrigger}
       </div>
     </header>
