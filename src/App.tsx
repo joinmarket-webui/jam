@@ -49,7 +49,7 @@ import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
-import { type RescanInfo, useRescanStatus } from './context/JamSessionInfoContext'
+import { useRescanStatus } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { useJmWebsocket } from './hooks/useJmWebsocket'
@@ -456,18 +456,19 @@ const RELOAD_WALLET_INFO_DELAY: {
 const WalletInfoAutoReload = ({ walletFileName }: { walletFileName: WalletFileName }) => {
   const { rescanInfo: currentRescanInfo } = useRescanStatus()
   const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
-  const [previousRescanInfo, setPreviousRescanInfo] = useState<RescanInfo>(currentRescanInfo)
+  const [previousRescanning, setPreviousRescanning] = useState<boolean>(currentRescanInfo.rescanning)
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
   useQuery({
     queryKey: [
       'reload-wallet-after-rescan-or-utxo-change',
       walletFileName,
-      previousRescanInfo.rescanning,
+      previousRescanning,
       currentRescanInfo.rescanning,
       utxosHashHex,
     ],
     queryFn: async () => {
-      const rescanningFinished = previousRescanInfo.rescanning === true && currentRescanInfo.rescanning === false
+      const rescanningFinished = previousRescanning === true && currentRescanInfo.rescanning === false
 
       const delayBefore: Milliseconds = rescanningFinished
         ? RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
@@ -475,7 +476,7 @@ const WalletInfoAutoReload = ({ walletFileName }: { walletFileName: WalletFileNa
       console.info('Trigger refetch looking for funds after rescan or utxo changes with delay %d...', delayBefore)
 
       const result = await refetchWalletBalance({ delayBefore })
-      setPreviousRescanInfo(currentRescanInfo)
+      setPreviousRescanning(currentRescanInfo.rescanning)
       return result
     },
   })

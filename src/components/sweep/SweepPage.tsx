@@ -146,7 +146,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     gcTime: 1,
   })
 
-  const startScheduleMutation = useMutation({
+  const {
+    isPending: startScheduleMutationIsPending,
+    isSuccess: startScheduleMutationIsSuccess,
+    reset: startScheduleMutationReset,
+    mutateAsync: startScheduleMutationMutateAsync,
+  } = useMutation({
     ...runscheduleMutation({ client }),
     retry: false,
     onMutate: () => {
@@ -166,7 +171,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
   })
 
-  const stopScheduleMutation = useMutation({
+  const {
+    isPending: stopScheduleMutationIsPending,
+    isSuccess: stopScheduleMutationIsSuccess,
+    mutateAsync: stopScheduleMutationMutateAsync,
+    reset: stopScheduleMutationReset,
+  } = useMutation({
     mutationFn: async () => {
       return await stopScheduleQuery.refetch({ throwOnError: true })
     },
@@ -195,8 +205,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const collaborativeOperationRunning = makerRunning || jmSession?.coinjoin_in_process === true
 
   const isWaitingSchedulerStart =
-    startScheduleMutation.isPending || (startScheduleMutation.isSuccess && !schedulerRunning)
-  const isWaitingSchedulerStop = stopScheduleMutation.isPending || (stopScheduleMutation.isSuccess && schedulerRunning)
+    startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
+  const isWaitingSchedulerStop = stopScheduleMutationIsPending || (stopScheduleMutationIsSuccess && schedulerRunning)
 
   useRefreshSession({
     enabled: isWaitingSchedulerStart || isWaitingSchedulerStop,
@@ -205,16 +215,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   })
 
   useEffect(() => {
-    if (schedulerRunning && startScheduleMutation.isSuccess) {
-      startScheduleMutation.reset()
+    if (schedulerRunning && startScheduleMutationIsSuccess) {
+      startScheduleMutationReset()
     }
-  }, [schedulerRunning, startScheduleMutation])
+  }, [schedulerRunning, startScheduleMutationIsSuccess, startScheduleMutationReset])
 
   useEffect(() => {
-    if (!schedulerRunning && stopScheduleMutation.isSuccess) {
-      stopScheduleMutation.reset()
+    if (!schedulerRunning && stopScheduleMutationIsSuccess) {
+      stopScheduleMutationReset()
     }
-  }, [schedulerRunning, stopScheduleMutation])
+  }, [schedulerRunning, stopScheduleMutationIsSuccess, stopScheduleMutationReset])
 
   const isOperationDisabled =
     maxFeesConfigMissing || collaborativeOperationRunning || jmSession?.rescanning || !preconditionSummary.isFulfilled
@@ -268,7 +278,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         : {}),
     }
 
-    await startScheduleMutation.mutateAsync({
+    await startScheduleMutationMutateAsync({
       path: { walletname: encodeURIComponent(walletFileName) },
       body,
     })
@@ -283,7 +293,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }
 
   const stopSchedule = async () => {
-    await stopScheduleMutation.mutateAsync()
+    await stopScheduleMutationMutateAsync()
   }
 
   if (isLoading || walletInfo.isLoading || jmSession === undefined) {

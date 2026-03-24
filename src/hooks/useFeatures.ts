@@ -17,7 +17,7 @@ type FeaturesApiResponse = {
 
 export const useFeatures = () => {
   const { enabled: isDeveloperMode } = useDeveloperMode()
-  const authState = useStore(authStore, (state) => state.state)
+  const token = useStore(authStore, (state) => state.state?.auth?.token)
 
   const {
     data: features,
@@ -27,12 +27,12 @@ export const useFeatures = () => {
   } = useQuery({
     queryKey: ['features'],
     queryFn: async ({ signal }) => {
-      if (authState?.auth?.token === undefined) {
+      if (token === undefined) {
         throw new Error('No authentication token available')
       }
 
       const response = await fetchFeatures({
-        token: authState.auth.token,
+        token,
         signal,
       })
 
@@ -42,7 +42,7 @@ export const useFeatures = () => {
 
       return (await response.json()) as FeaturesApiResponse
     },
-    enabled: !!authState?.auth?.token,
+    enabled: token !== undefined,
     retry: false,
     select: (data: FeaturesApiResponse): FeatureItem[] => {
       if (!data.features) {

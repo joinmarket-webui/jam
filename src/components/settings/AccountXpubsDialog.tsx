@@ -211,7 +211,12 @@ export const AccountXpubsDialog = ({
     path: { walletname: encodeURIComponent(walletFileName) },
   })
 
-  const seedQuery = useQuery({
+  const {
+    data: seedQueryData,
+    error: seedQueryError,
+    isFetching: seedQueryIsFetching,
+    refetch: seedQueryRefetch,
+  } = useQuery({
     ...seedQueryOptions,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
@@ -226,8 +231,8 @@ export const AccountXpubsDialog = ({
     queryKey: accountXpubsQueryKey,
     queryFn: withQueryDelay(
       async () => {
-        if (!seedQuery.data) return undefined
-        return await deriveAccountXpubsFromSeed(seedQuery.data, network, jars)
+        if (!seedQueryData) return undefined
+        return await deriveAccountXpubsFromSeed(seedQueryData, network, jars)
       },
       {
         throttle: 210,
@@ -235,16 +240,16 @@ export const AccountXpubsDialog = ({
     ),
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
-    enabled: !!seedQuery.data,
+    enabled: !!seedQueryData,
   })
 
-  const isFetching = seedQuery.isFetching || accountXpubs.isFetching
+  const isFetching = seedQueryIsFetching || accountXpubs.isFetching
 
   useEffect(() => {
-    if (open && isPasswordVerified && seedQuery.data === undefined) {
-      void seedQuery.refetch()
+    if (open && isPasswordVerified && seedQueryData === undefined) {
+      void seedQueryRefetch()
     }
-  }, [open, isPasswordVerified, seedQuery])
+  }, [open, isPasswordVerified, seedQueryData, seedQueryRefetch])
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) return
@@ -329,11 +334,11 @@ export const AccountXpubsDialog = ({
                   )}
                 </div>
               )}
-              {!seedQuery.isFetching && seedQuery.error && (
+              {!seedQueryIsFetching && seedQueryError && (
                 <Alert variant="destructive">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
-                  <AlertDescription>{seedQuery.error.message || t('global.errors.reason_unknown')}</AlertDescription>
+                  <AlertDescription>{seedQueryError.message || t('global.errors.reason_unknown')}</AlertDescription>
                 </Alert>
               )}
               {!accountXpubs.isFetching && accountXpubs.error && (
