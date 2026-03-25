@@ -281,10 +281,7 @@ const ImportWalletPage = () => {
           })
         } catch (error: unknown) {
           const reason = getErrorReason(error, 'Unknown error.')
-          console.warn(
-            'Non-critical error while fetching session after wallet import. Continuing with import...',
-            reason,
-          )
+          console.warn('Loocking wallet attempt failed after import error.', reason)
         }
       }
     } finally {
