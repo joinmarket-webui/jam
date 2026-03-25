@@ -10,11 +10,9 @@ interface LogViewerProps {
   fileName: string
   value: string
   refresh: () => Promise<void>
-  /** When false, hides search, download and refresh actions (e.g. when showing fallback text) */
-  showActions?: boolean
 }
 
-export function LogViewer({ fileName, value, refresh, showActions = true }: LogViewerProps) {
+export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
@@ -22,12 +20,16 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
   const [logScrollProgress, setLogScrollProgress] = useState(0)
   const [hasAutoScrolledInitially, setHasAutoScrolledInitially] = useState(false)
   const isScrolledToLogBottom = useMemo(() => logScrollProgress >= 0.995, [logScrollProgress])
+
+  // Search: normalize query, split lines, filter matches, count results
   const normalizedSearchValue = useMemo(() => searchValue.trim().toLowerCase(), [searchValue])
   const allLines = useMemo(() => value.split('\n'), [value])
+
   const filteredLines = useMemo(() => {
     if (normalizedSearchValue.length === 0) return allLines
     return allLines.filter((line) => line.toLowerCase().includes(normalizedSearchValue))
   }, [allLines, normalizedSearchValue])
+
   const matchingLineCount = useMemo(() => {
     if (normalizedSearchValue.length === 0) return 0
     return filteredLines.length
@@ -39,6 +41,14 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
       behavior: 'smooth',
     })
     setLogScrollProgress(1)
+  }
+
+  const scrollToLogTop = () => {
+    logContentRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+    setLogScrollProgress(0)
   }
 
   const logScrollHandler = (event: React.UIEvent<HTMLPreElement>) => {
@@ -53,19 +63,21 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
     setLogScrollProgress((scrollTop + containerHeight) / scrollHeight)
   }
 
+  // Scroll to top when searching, otherwise scroll to bottom on new content
   useEffect(() => {
     if (filteredLines.length === 0) return
     if (normalizedSearchValue.length > 0) {
-      logContentRef.current?.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      })
-      setLogScrollProgress(0)
+      scrollToLogTop()
       return
     }
+    // Follow log tail only on first render or when user is already at the bottom.
+    // This avoids jumping away while someone is reading older lines.
     if (!hasAutoScrolledInitially || isScrolledToLogBottom) {
       scrollToLogBottom()
-      if (!hasAutoScrolledInitially) setHasAutoScrolledInitially(true)
+
+      if (!hasAutoScrolledInitially) {
+        setHasAutoScrolledInitially(true)
+      }
     }
   }, [filteredLines.length, hasAutoScrolledInitially, isScrolledToLogBottom, normalizedSearchValue])
 
@@ -84,17 +96,18 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
   const handleDownload = useCallback(() => {
     const blob = new Blob([value], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = fileName
-    document.body.append(anchor)
-    anchor.click()
-    anchor.remove()
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    document.body.append(a)
+    a.click()
+    a.remove()
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
   }, [fileName, value])
 
+  // Highlight search matches within a single line
   const renderHighlightedLine = useCallback(
     (line: string): ReactNode => {
       if (normalizedSearchValue.length === 0) return line
@@ -108,7 +121,6 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
         if (nextMatchIndex > cursor) {
           fragments.push(line.slice(cursor, nextMatchIndex))
         }
-
         const nextCursor = nextMatchIndex + queryLength
         fragments.push(
           <mark
@@ -118,15 +130,12 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
             {line.slice(nextMatchIndex, nextCursor)}
           </mark>,
         )
-
         cursor = nextCursor
         nextMatchIndex = lineLower.indexOf(normalizedSearchValue, cursor)
       }
-
       if (cursor < line.length) {
         fragments.push(line.slice(cursor))
       }
-
       return fragments
     },
     [normalizedSearchValue],
@@ -136,62 +145,53 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
     <Card className="flex flex-1 flex-col overflow-hidden pb-0">
       <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="font-mono break-all select-all">{fileName}</CardTitle>
-        {showActions && (
-          <div className="flex items-center justify-end gap-2">
-            <div className="relative max-w-[360px] min-w-[220px] flex-1">
-              <SearchIcon className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
-              <Input
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
-                className="h-9 pr-8 pl-8 text-xs"
-                placeholder="Search logs..."
-                aria-label="Search logs"
-              />
-              {searchValue.length > 0 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2"
-                  onClick={() => setSearchValue('')}
-                  title={t('global.clear')}
-                >
-                  <XIcon className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setSearchValue('')}
-              disabled={searchValue.length === 0}
-              title={t('global.clear')}
-            >
-              {t('global.clear')}
-            </Button>
-            <Button
-              className="hover:[&>svg]:motion-safe:animate-bounce"
-              variant="outline"
-              onClick={handleDownload}
-              disabled={!value || isLoadingRefresh}
-              title={t('global.download')}
-            >
-              <DownloadIcon className="group/download" />
-              {t('global.download')}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => void handleRefresh()}
-              disabled={isLoadingRefresh}
-              title={t('global.refresh')}
-            >
-              <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
-              {t('global.refresh')}
-            </Button>
+        {/* Search + action buttons */}
+        <div className="flex items-center justify-end gap-2">
+          <div className="relative max-w-[360px] min-w-[220px] flex-1">
+            <SearchIcon className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
+            <Input
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+              className="h-9 pr-8 pl-8 text-xs"
+              placeholder="Search logs..."
+              aria-label="Search logs"
+            />
+            {searchValue.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2"
+                onClick={() => setSearchValue('')}
+                title={t('global.clear')}
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-        )}
+          <Button
+            className="hover:[&>svg]:motion-safe:animate-bounce"
+            variant="outline"
+            onClick={handleDownload}
+            disabled={!value || isLoadingRefresh}
+            title={t('global.download')}
+          >
+            <DownloadIcon className="group/download" />
+            {t('global.download')}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => void handleRefresh()}
+            disabled={isLoadingRefresh}
+            title={t('global.refresh')}
+          >
+            <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
+            {t('global.refresh')}
+          </Button>
+        </div>
       </CardHeader>
-      {showActions && normalizedSearchValue.length > 0 && (
+      {/* Search match count */}
+      {normalizedSearchValue.length > 0 && (
         <div className="text-muted-foreground px-6 pb-2 text-xs">
           {/* TODO: i18n */}
           {matchingLineCount === 0
@@ -205,6 +205,7 @@ export function LogViewer({ fileName, value, refresh, showActions = true }: LogV
           ref={logContentRef}
           className="bg-muted/90 absolute inset-0 overflow-auto rounded-b-xl px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap"
         >
+          {/* Render filtered lines with search highlights */}
           {filteredLines.length === 0 && normalizedSearchValue.length > 0
             ? ''
             : filteredLines.map((line, index) => (

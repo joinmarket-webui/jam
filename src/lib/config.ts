@@ -5,10 +5,14 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { normalizeAppError } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
 
-type ApiToken = UnlockWalletResponse['token']
+export type ApiToken = UnlockWalletResponse['token']
 
-const buildAuthHeader = (token: ApiToken): [string, string] => {
+export const buildAuthHeader = (token: ApiToken): [string, string] => {
   return ['x-jm-authorization', `Bearer ${token}`]
+}
+
+export const buildAuthHeaderMap = (token: ApiToken) => {
+  return { 'x-jm-authorization': `Bearer ${token}` }
 }
 
 function loggingRequestInterceptor(request: Request) {

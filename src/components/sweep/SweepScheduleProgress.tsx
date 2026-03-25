@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Spinner } from '../ui/spinner'
-import type { Schedule } from './scheduleUtils'
+import type { Schedule, ScheduleEntryState } from './scheduleUtils'
 import { toScheduleProgressSummary } from './scheduleUtils'
 
 interface SweepScheduleProgressProps {
@@ -43,6 +43,30 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
     '3': <span className="font-semibold" />,
   }
 
+  const formatWaitTime = (seconds: number): string => {
+    const roundedSeconds = Math.max(0, Math.ceil(seconds))
+    const minutes = Math.floor(roundedSeconds / 60)
+    const remainingSeconds = roundedSeconds % 60
+
+    if (minutes === 0) {
+      return t('scheduler.progress_wait_seconds', { seconds: remainingSeconds })
+    }
+    if (remainingSeconds === 0) {
+      return t('scheduler.progress_wait_minutes', { minutes })
+    }
+    return t('scheduler.progress_wait_minutes_seconds', { minutes, seconds: remainingSeconds })
+  }
+
+  const toScheduleEntryStateText = (state: ScheduleEntryState, txid?: string): string => {
+    if (state === 'confirmed') {
+      return t('scheduler.progress_entry_state_confirmed')
+    }
+    if (state === 'broadcasted') {
+      return t('scheduler.progress_entry_state_waiting_confirmation', { txid: txid ?? '-' })
+    }
+    return t('scheduler.progress_entry_state_pending')
+  }
+
   return (
     <Card>
       <CardContent className="space-y-4">
@@ -78,18 +102,72 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
           <Alert>
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
-              <Trans
-                i18nKey="scheduler.progress_current_state"
-                values={{
-                  current: progress.currentTransactionIndex + 1,
-                  total: progress.totalTransactions,
-                }}
-                components={highlightedComponents}
-              />
+              {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
+              {progress.currentState?.type === 'waiting_before_next' ? (
+                <Trans
+                  i18nKey="scheduler.progress_current_state_wait_before_next"
+                  values={{
+                    current: progress.currentState.currentTransaction,
+                    total: progress.currentState.totalTransactions,
+                    wait: formatWaitTime(progress.currentState.waitSeconds ?? 0),
+                  }}
+                  components={highlightedComponents}
+                />
+              ) : progress.currentState?.type === 'waiting_for_confirmation' ? (
+                <Trans
+                  i18nKey="scheduler.progress_current_state_waiting_confirmation"
+                  values={{
+                    current: progress.currentState.currentTransaction,
+                    total: progress.currentState.totalTransactions,
+                    txid: progress.currentState.txid ?? '-',
+                  }}
+                  components={highlightedComponents}
+                />
+              ) : progress.currentState?.type === 'transaction_confirmed' ? (
+                <Trans
+                  i18nKey="scheduler.progress_current_state_transaction_confirmed"
+                  values={{
+                    current: progress.currentState.currentTransaction,
+                    total: progress.currentState.totalTransactions,
+                  }}
+                  components={highlightedComponents}
+                />
+              ) : (
+                <Trans
+                  i18nKey="scheduler.progress_current_state_creating_next"
+                  values={{
+                    current: progress.currentTransactionIndex + 1,
+                    total: progress.totalTransactions,
+                  }}
+                  components={highlightedComponents}
+                />
+              )}
             </AlertTitle>
             <AlertDescription />
           </Alert>
         )}
+
+        <div className="space-y-2 rounded-lg border p-3">
+          <div className="font-medium">{t('scheduler.progress_schedule_info_title')}</div>
+          <div className="space-y-2">
+            {progress.entries.map((entry) => (
+              <div
+                key={entry.index}
+                className="bg-muted/30 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-1.5 text-xs"
+              >
+                <div className="font-medium">{t('scheduler.progress_entry_label', { index: entry.index + 1 })}</div>
+                <div className="text-muted-foreground">{toScheduleEntryStateText(entry.state, entry.txid)}</div>
+                <div className="text-muted-foreground">
+                  {entry.isLast
+                    ? t('scheduler.progress_entry_wait_final')
+                    : t('scheduler.progress_entry_wait_before_next', {
+                        wait: formatWaitTime(entry.waitBeforeNextSeconds),
+                      })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <Button type="button" onClick={() => void onStop()} disabled={isStopping} size="lg" className="w-full">
           {isStopping ? (

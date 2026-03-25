@@ -186,6 +186,8 @@
     "import_details": {
       "title": "Please enter your mnemonic phrase!",
       "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
+      "label_menmonic_phrase": "Mnemonic phrase",
+      "placeholder_menmonic_phrase": "abandon abandon abandon ... about",
       "feedback_invalid_menmonic_phrase": "Please provide a valid mnemonic phrase",
       "import_options": "Import options",
       "label_blockheight": "Rescan height",
@@ -201,7 +203,7 @@
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
       "text_button_submit": "Import",
-      "text_button_submitting": "Recovering wallet..."
+      "text_button_submitting": "Importing..."
     },
     "success": {
       "title": "Wallet imported successfully!",
@@ -797,6 +799,20 @@
     "progress_tldr_hours": "Scheduled <1>{{ length }}</1> transactions over <3>{{ hours }}</3> hours.",
     "progress_description": "This estimate is the minimum waiting time. Additional delays due to network communication or transaction confirmation are not considered.",
     "progress_current_state": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> to process...",
+    "progress_current_state_wait_before_next": "Waiting {{ wait }} before creating and broadcasting transaction <1>{{ current }}</1> of <3>{{ total }}</3>.",
+    "progress_current_state_waiting_confirmation": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> ({{ txid }}) to be confirmed.",
+    "progress_current_state_transaction_confirmed": "Transaction <1>{{ current }}</1> of <3>{{ total }}</3> confirmed.",
+    "progress_current_state_creating_next": "Creating and broadcasting transaction <1>{{ current }}</1> of <3>{{ total }}</3>...",
+    "progress_wait_seconds": "{{ seconds }}s",
+    "progress_wait_minutes": "{{ minutes }}m",
+    "progress_wait_minutes_seconds": "{{ minutes }}m {{ seconds }}s",
+    "progress_schedule_info_title": "Schedule details",
+    "progress_entry_label": "Transaction {{ index }}",
+    "progress_entry_state_pending": "Pending",
+    "progress_entry_state_waiting_confirmation": "Waiting for confirmation ({{ txid }})",
+    "progress_entry_state_confirmed": "Confirmed",
+    "progress_entry_wait_before_next": "Wait before next: {{ wait }}",
+    "progress_entry_wait_final": "Final transaction",
     "progress_done": "All transactions completed successfully. The scheduler will stop soon.",
     "precondition": {
       "hint_missing_utxos": "To run the scheduler you need UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",

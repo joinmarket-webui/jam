@@ -26,6 +26,13 @@ export const JM_DUST_THRESHOLD: AmountSats = 27_300
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 export const JM_MINIMUM_MAKERS_DEFAULT = 4
 
+export const JM_GAPLIMIT_DEFAULT = 6
+
+export const JM_GAPLIMIT_CONFIGKEY: ConfigKey = {
+  section: 'POLICY',
+  field: 'gaplimit',
+}
+
 // only support starting the maker with native segwit offers
 type RelativeOfferType = 'sw0reloffer'
 type AbsoluteOfferType = 'sw0absoffer'
