@@ -46,9 +46,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     source: {
       fromJar: selectedSourceJar?.jarIndex,
     },
-    amount: {
-      amount: undefined,
-    },
+    amount: undefined,
   })
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
@@ -251,7 +249,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               debug={isDeveloperMode}
               onSubmit={(values) => {
                 setSelectedSourceJarIndex(values.source?.fromJar)
-                setAmount(values.amount.amount)
+                setAmount(values.amount)
               }}
             />
           </AccordionContent>
