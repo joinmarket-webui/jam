@@ -44,17 +44,13 @@ const receiveFormSchema = (jars: Jar[], t: TFunction) => {
         })
         .required(),
       amount: yup
-        .object({
-          amount: yup
-            .number()
-            .integer(t('receive.feedback_invalid_amount'))
-            .min(1, t('receive.feedback_invalid_amount'))
-            .max(21_000_000 * 100_000_000, t('receive.feedback_invalid_amount'))
-            .transform((value) => (Number.isNaN(value) ? null : Number(value)))
-            .nullable()
-            .optional(),
-        })
-        .required(),
+        .number()
+        .integer(t('receive.feedback_invalid_amount'))
+        .min(1, t('receive.feedback_invalid_amount'))
+        .max(21_000_000 * 100_000_000, t('receive.feedback_invalid_amount'))
+        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+        .nullable()
+        .optional(),
     })
     .required()
 }
@@ -92,7 +88,12 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
   const doOnChange = handleSubmit(onSubmit)
 
   return (
-    <form onChange={(event) => void doOnChange(event)} className={cn('flex flex-col gap-4', className)} noValidate>
+    <form
+      onSubmit={(event) => void doOnChange(event)}
+      onChange={(event) => void doOnChange(event)}
+      className={cn('flex flex-col gap-4', className)}
+      noValidate
+    >
       <div className="space-y-2">
         <Field className="space-y-4" data-invalid={errors.source !== undefined}>
           <FieldLabel>{t('receive.label_source_jar')}</FieldLabel>
@@ -126,7 +127,7 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
           <InputGroup>
             <InputGroupInput
               id="receive-amount"
-              {...register('amount.amount', {
+              {...register('amount', {
                 required: false,
                 disabled,
               })}
@@ -138,9 +139,7 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
             <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
           </InputGroup>
         </Field>
-        {errors.amount?.amount?.message && (
-          <div className="text-destructive text-xs">{errors.amount.amount.message}</div>
-        )}
+        {errors.amount?.message && <div className="text-destructive text-xs">{errors.amount.message}</div>}
       </div>
 
       {debug && (
