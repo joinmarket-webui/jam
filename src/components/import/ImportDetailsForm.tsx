@@ -116,12 +116,14 @@ const importDetailsFormSchema = (t: TFunction) => {
         ),
       blockheight: yup
         .number()
+        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
         .integer(invalidBlockheightMessage)
         .min(MIN_BLOCKHEIGHT_VALUE, invalidBlockheightMessage)
         .max(MAX_BLOCKHEIGHT_VALUE, invalidBlockheightMessage)
         .required(invalidBlockheightMessage),
       gaplimit: yup
         .number()
+        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
         .integer(invalidGaplimitMessage)
         .min(MIN_GAPLIMIT_VALUE, invalidGaplimitMessage)
         .max(MAX_GAPLIMIT_VALUE, invalidGaplimitMessage)
