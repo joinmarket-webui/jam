@@ -508,6 +508,7 @@
     "description_abs_fee": "The fee to charge others, as an absolute amount denominated in sats.",
     "feedback_invalid_abs_fee": "Invalid absolute fee.",
     "label_min_amount_input": "Minimum amount",
+    "description_min_amount_input": "The minimum size of your offer. You will not participate in collaborative transactions below this amount.",
     "placeholder_min_amount_input": "Enter a minimum amount in sats or BTC...",
     "feedback_invalid_min_amount": "Please provide a minimum amount.",
     "feedback_invalid_min_amount_range": "Please provide a minimum amount in sats between {{ minAmountMin }} and {{ minAmountMax }}.",

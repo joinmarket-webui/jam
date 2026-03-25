@@ -263,6 +263,7 @@ export function EarnForm({
       <div className="space-y-2">
         <Field data-invalid={errors.offerMinAmount !== undefined}>
           <FieldLabel htmlFor="offerMinAmount">{t('earn.label_min_amount_input')}</FieldLabel>
+          <FieldDescription className="text-xs">{t('earn.description_min_amount_input')}</FieldDescription>
           <InputGroup>
             <InputGroupInput
               id="offerMinAmount"
