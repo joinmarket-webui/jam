@@ -32,6 +32,30 @@ export interface ScheduleProgressStep {
   isLast: boolean
 }
 
+export type ScheduleEntryState = 'pending' | 'broadcasted' | 'confirmed'
+
+export interface ScheduleProgressEntry {
+  index: number
+  waitBeforeNextSeconds: number
+  state: ScheduleEntryState
+  txid?: TxId
+  isLast: boolean
+}
+
+export type ScheduleCurrentStateType =
+  | 'waiting_before_next'
+  | 'creating_and_broadcasting'
+  | 'waiting_for_confirmation'
+  | 'transaction_confirmed'
+
+export interface ScheduleCurrentState {
+  type: ScheduleCurrentStateType
+  currentTransaction: number
+  totalTransactions: number
+  waitSeconds?: number
+  txid?: TxId
+}
+
 export interface ScheduleProgressSummary {
   totalWaitSeconds: number
   totalTransactions: number
@@ -39,6 +63,8 @@ export interface ScheduleProgressSummary {
   currentTransactionIndex: number
   isDone: boolean
   steps: ScheduleProgressStep[]
+  entries: ScheduleProgressEntry[]
+  currentState?: ScheduleCurrentState
 }
 
 const MIN_STEP_WIDTH_PERCENT = 8
@@ -53,6 +79,25 @@ const getScheduleEntryWaitMinutes = (entry: ScheduleEntry): number => {
 
 const getScheduleEntryState = (entry: ScheduleEntry): string | number => {
   return entry[6] ?? 0
+}
+
+const getScheduleEntryTxId = (entry: ScheduleEntry): TxId | undefined => {
+  const state = getScheduleEntryState(entry)
+  return typeof state === 'string' ? state : undefined
+}
+
+// Scheduler state flag convention from backend:
+// 0 => not yet broadcast, txid string => broadcasted (unconfirmed), 1 => confirmed.
+const toScheduleEntryState = (entry: ScheduleEntry): ScheduleEntryState => {
+  const state = getScheduleEntryState(entry)
+
+  if (state === 1) {
+    return 'confirmed'
+  }
+  if (typeof state === 'string') {
+    return 'broadcasted'
+  }
+  return 'pending'
 }
 
 const isScheduleEntryConfirmed = (entry: ScheduleEntry): boolean => {
@@ -91,6 +136,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
       currentTransactionIndex: 0,
       isDone: true,
       steps: [],
+      entries: [],
     }
   }
 
@@ -106,6 +152,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
   )
 
   const isDone = completedTransactions >= schedule.length
+  const currentTransactionIndex = Math.min(completedTransactions, schedule.length - 1)
 
   const steps: ScheduleProgressStep[] = schedule.map((_entry, index) => {
     const widthPercent =
@@ -125,13 +172,67 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
     }
   })
 
+  const entries: ScheduleProgressEntry[] = schedule.map((entry, index) => {
+    return {
+      index,
+      waitBeforeNextSeconds: index >= schedule.length - 1 ? 0 : getScheduleEntryWaitMinutes(entry) * 60,
+      state: toScheduleEntryState(entry),
+      txid: getScheduleEntryTxId(entry),
+      isLast: index === schedule.length - 1,
+    }
+  })
+
+  let currentState: ScheduleCurrentState | undefined
+  if (!isDone) {
+    const activeEntry = schedule[currentTransactionIndex]
+    const activeEntryTxId = getScheduleEntryTxId(activeEntry)
+    const activeEntryState = getScheduleEntryState(activeEntry)
+
+    // Infer the user-facing phase from the currently active entry and the previous wait slot.
+    if (activeEntryTxId !== undefined) {
+      currentState = {
+        type: 'waiting_for_confirmation',
+        currentTransaction: currentTransactionIndex + 1,
+        totalTransactions: schedule.length,
+        txid: activeEntryTxId,
+      }
+    } else if (activeEntryState === 1) {
+      currentState = {
+        type: 'transaction_confirmed',
+        currentTransaction: currentTransactionIndex + 1,
+        totalTransactions: schedule.length,
+      }
+    } else {
+      const waitSeconds =
+        currentTransactionIndex > 0
+          ? Math.ceil(getScheduleEntryWaitMinutes(schedule[currentTransactionIndex - 1]) * 60)
+          : 0
+
+      currentState =
+        waitSeconds > 0
+          ? {
+              type: 'waiting_before_next',
+              currentTransaction: currentTransactionIndex + 1,
+              totalTransactions: schedule.length,
+              waitSeconds,
+            }
+          : {
+              type: 'creating_and_broadcasting',
+              currentTransaction: currentTransactionIndex + 1,
+              totalTransactions: schedule.length,
+            }
+    }
+  }
+
   return {
     totalWaitSeconds,
     totalTransactions: schedule.length,
     completedTransactions: Math.min(completedTransactions, schedule.length),
-    currentTransactionIndex: Math.min(completedTransactions, schedule.length - 1),
+    currentTransactionIndex,
     isDone,
     steps,
+    entries,
+    currentState,
   }
 }
 
