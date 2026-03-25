@@ -67,35 +67,38 @@ export function useCreateFidelityBondWizard(
 
   const hasDuplicateLockdate = selectedLockdate && existingFbLockdates.includes(selectedLockdate)
 
+  const selectedJar = useMemo(() => {
+    if (selectedJarIndex === undefined) return undefined
+    return walletInfo.jars.find((it) => it.jarIndex === selectedJarIndex)
+  }, [walletInfo.jars, selectedJarIndex])
+
   const jarsWithUtxos = useMemo(() => {
     return walletInfo.jars.filter((jar) => {
+      // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
       const availableUtxos = jar.utxos.filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
       return availableUtxos.length > 0
     })
   }, [walletInfo.jars])
 
   const availableUtxos = useMemo(() => {
-    if (selectedJarIndex === undefined) return []
-    const jar = walletInfo.jars.find((it) => it.jarIndex === selectedJarIndex)
-    if (!jar) return []
-    return jar.utxos
-      .filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
-      .toSorted((a, b) => b.value - a.value)
-  }, [walletInfo.jars, selectedJarIndex])
+    if (selectedJar === undefined) return []
+    return (
+      selectedJar.utxos
+        // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
+        .filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
+        .toSorted((a, b) => b.value - a.value)
+    )
+  }, [selectedJar])
 
   const utxosToFreeze = useMemo(() => {
-    if (selectedJarIndex === undefined) return []
-    const jar = walletInfo.jars.find((it) => it.jarIndex === selectedJarIndex)
-    if (!jar) return []
-    return jar.utxos.filter(
+    if (selectedJar === undefined) return []
+    return selectedJar.utxos.filter(
       (utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && !selectedUtxos.some((it) => it.utxo === utxo.utxo),
     )
-  }, [walletInfo.jars, selectedJarIndex, selectedUtxos])
+  }, [selectedJar, selectedUtxos])
 
   const isUsingAllFunds = useMemo(() => {
-    const totalWalletUtxos = walletInfo.jars.flatMap((jar) =>
-      jar.utxos.filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo)),
-    )
+    const totalWalletUtxos = walletInfo.jars.flatMap((jar) => jar.utxos.filter((utxo) => !fb.utxo.isFidelityBond(utxo)))
     return selectedUtxos.length === totalWalletUtxos.length && totalWalletUtxos.length > 0
   }, [walletInfo.jars, selectedUtxos])
 
@@ -250,7 +253,7 @@ export function useCreateFidelityBondWizard(
   }
 
   const handleCreateFidelityBond = async () => {
-    if (!address || selectedJarIndex === undefined) return
+    if (!address || selectedJar === undefined) return
 
     setStep('creating')
 
@@ -258,7 +261,7 @@ export function useCreateFidelityBondWizard(
       const result = await directSend.mutateAsync({
         path: { walletname: encodeURIComponent(walletFileName) },
         body: {
-          mixdepth: selectedJarIndex,
+          mixdepth: selectedJar.jarIndex,
           amount_sats: 0,
           destination: address,
         },
@@ -314,6 +317,7 @@ export function useCreateFidelityBondWizard(
   }
 
   const toggleUtxoSelection = (utxo: Utxo) => {
+    // TODO: select/deselect all utxos to the same address
     setSelectedUtxos((current) => {
       const isSelected = current.some((u) => u.utxo === utxo.utxo)
       if (isSelected) {
@@ -339,7 +343,7 @@ export function useCreateFidelityBondWizard(
       case 'select_date':
         return !!selectedLockdate
       case 'select_jar':
-        return selectedJarIndex !== undefined
+        return selectedJar !== undefined
       case 'select_utxos':
         return selectedUtxos.length > 0
       case 'freeze_utxos':
