@@ -1,5 +1,6 @@
-import { useId } from 'react'
+import { useId, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import type { TFunction } from 'i18next'
 import { HandshakeIcon, PercentIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
@@ -47,33 +48,46 @@ const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
   offerMinAmount: JAM.OFFER_MINSIZE_DEFAULT,
 }
 
-const baseSchema = yup
-  .object({
-    offerType: yup.string<OfferType>().default(FORM_INPUT_DEFAULT_VALUES.offerType).required(),
-    offerAbsoluteFee: yup
-      .number()
-      .integer()
-      .when('offerType', {
-        is: (val: OfferType) => val === OFFERTYPE_ABS,
-        then: (schema) => schema.min(JAM.OFFER_FEE_ABS_MIN).required(),
-        otherwise: (schema) =>
-          schema
-            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
-            .nullable()
-            .optional(),
-      }),
-    offerRelativeFeeInPercent: yup.number().when('offerType', {
-      is: (val: OfferType) => val === OFFERTYPE_REL,
-      then: (schema) =>
-        schema.min(factorToPercentage(JAM.OFFER_FEE_REL_MIN)).max(factorToPercentage(JAM.OFFER_FEE_REL_MAX)).required(),
-      otherwise: (schema) =>
-        schema
-          .transform((value) => (Number.isFinite(value) ? Number(value) : null))
-          .nullable()
-          .optional(),
-    }),
+const earnFormBaseSchema = (t: TFunction) => {
+  const invalidRelativeFeeMessage = t('earn.feedback_invalid_rel_fee', {
+    feeRelPercentageMin: `${factorToPercentage(JAM.OFFER_FEE_REL_MIN)}%`,
+    feeRelPercentageMax: `${factorToPercentage(JAM.OFFER_FEE_REL_MAX)}%`,
   })
-  .required()
+
+  return yup
+    .object({
+      offerType: yup.string<OfferType>().default(FORM_INPUT_DEFAULT_VALUES.offerType).required(),
+      offerAbsoluteFee: yup
+        .number()
+        .integer(t('earn.feedback_invalid_abs_fee'))
+        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+        .when('offerType', {
+          is: (val: OfferType) => val === OFFERTYPE_ABS,
+          then: (schema) =>
+            schema
+              .min(JAM.OFFER_FEE_ABS_MIN, t('earn.feedback_invalid_abs_fee'))
+              .required(t('earn.feedback_invalid_abs_fee')),
+          otherwise: (schema) => schema.nullable().optional(),
+        }),
+      offerRelativeFeeInPercent: yup
+        .number()
+        .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+        .when('offerType', {
+          is: (val: OfferType) => val === OFFERTYPE_REL,
+          then: (schema) =>
+            schema
+              .min(factorToPercentage(JAM.OFFER_FEE_REL_MIN), invalidRelativeFeeMessage)
+              .max(factorToPercentage(JAM.OFFER_FEE_REL_MAX), invalidRelativeFeeMessage)
+              .required(invalidRelativeFeeMessage),
+          otherwise: (schema) =>
+            schema
+              .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+              .nullable()
+              .optional(),
+        }),
+    })
+    .required()
+}
 
 const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
   const { t } = useTranslation()
@@ -130,11 +144,33 @@ export function EarnForm({
 }: EarnFormProps) {
   const { t } = useTranslation()
 
-  // eslint-disable-next-line unicorn/prefer-spread -- false positive
-  const schema = baseSchema.concat(
-    yup.object({
-      offerMinAmount: yup.number().integer().min(JAM.OFFER_MINSIZE_MIN).max(offerMinsizeMax).required(),
-    }),
+  const schema = useMemo(
+    () =>
+      // eslint-disable-next-line unicorn/prefer-spread -- false positive
+      earnFormBaseSchema(t).concat(
+        yup.object({
+          offerMinAmount: yup
+            .number()
+            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+            .integer(t('earn.feedback_invalid_min_amount'))
+            .min(
+              JAM.OFFER_MINSIZE_MIN,
+              t('earn.feedback_invalid_min_amount_range', {
+                minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
+                minAmountMax: offerMinsizeMax.toLocaleString(),
+              }),
+            )
+            .max(
+              offerMinsizeMax,
+              t('earn.feedback_invalid_min_amount_range', {
+                minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
+                minAmountMax: offerMinsizeMax.toLocaleString(),
+              }),
+            )
+            .required(t('earn.feedback_invalid_min_amount')),
+        }),
+      ),
+    [t, offerMinsizeMax],
   )
 
   const {
@@ -191,8 +227,8 @@ export function EarnForm({
                 <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
               </InputGroup>
             </Field>
-            {errors.offerAbsoluteFee && (
-              <div className="text-destructive text-xs">{t('earn.feedback_invalid_abs_fee')}</div>
+            {errors.offerAbsoluteFee?.message && (
+              <div className="text-destructive text-xs">{errors.offerAbsoluteFee.message}</div>
             )}
           </div>
         </TabsContent>
@@ -218,12 +254,7 @@ export function EarnForm({
               </InputGroup>
             </Field>
             {errors.offerRelativeFeeInPercent && (
-              <div className="text-destructive text-xs">
-                {t('earn.feedback_invalid_rel_fee', {
-                  feeRelPercentageMin: `${factorToPercentage(JAM.OFFER_FEE_REL_MIN)}%`,
-                  feeRelPercentageMax: `${factorToPercentage(JAM.OFFER_FEE_REL_MAX)}%`,
-                })}
-              </div>
+              <div className="text-destructive text-xs">{errors.offerRelativeFeeInPercent.message}</div>
             )}
           </div>
         </TabsContent>
@@ -252,15 +283,8 @@ export function EarnForm({
           <div className="text-destructive text-xs">
             {offerMinsizeMax < JAM.OFFER_MINSIZE_MIN ? (
               <>{t('earn.feedback_invalid_min_amount_insufficient_funds')}</>
-            ) : errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max' ? (
-              <>
-                {t('earn.feedback_invalid_min_amount_range', {
-                  minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
-                  minAmountMax: offerMinsizeMax.toLocaleString(),
-                })}
-              </>
             ) : (
-              <>{t('earn.feedback_invalid_min_amount')}</>
+              <>{errors.offerMinAmount?.message || t('earn.feedback_invalid_min_amount')}</>
             )}
           </div>
         )}
