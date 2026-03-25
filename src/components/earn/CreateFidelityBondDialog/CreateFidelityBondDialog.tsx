@@ -76,7 +76,7 @@ export function CreateFidelityBondDialog({
       <DialogFooter className="gap-3 sm:gap-2">
         {step !== 'select_date' && (
           <Button variant="ghost" onClick={handleBack} disabled={isLoading}>
-            <ChevronLeftIcon className="mr-1 h-4 w-4" />
+            <ChevronLeftIcon />
             {t('global.back')}
           </Button>
         )}

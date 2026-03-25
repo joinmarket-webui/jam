@@ -39,6 +39,7 @@ import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import { getErrorReason } from '@/lib/errorReason'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
+import { Address } from '../ui/jam/Address'
 
 type Step = 'select_jar' | 'confirm' | 'sending' | 'success'
 
@@ -305,10 +306,10 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
               ) : (
                 destinationAddress && (
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">{t('earn.fidelity_bond.review_inputs.label_address')}</Label>
-                    <code className="bg-muted block rounded-lg p-3 font-mono text-xs break-all">
-                      {destinationAddress}
-                    </code>
+                    <Label className="text-sm font-medium">{t('earn.fidelity_bond.move.label_destination')}</Label>
+                    <div className="bg-muted rounded-lg p-3">
+                      <Address className="text-xs" value={destinationAddress} />
+                    </div>
                   </div>
                 )
               )}
