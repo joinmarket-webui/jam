@@ -281,7 +281,7 @@ const ImportWalletPage = () => {
           })
         } catch (error: unknown) {
           const reason = getErrorReason(error, 'Unknown error.')
-          console.warn('Loocking wallet attempt failed after import error.', reason)
+          console.warn('Locking wallet attempt failed after import error.', reason)
         }
       }
     } finally {
@@ -291,7 +291,7 @@ const ImportWalletPage = () => {
 
   return (
     <AuthPageShell>
-      {step == 'wallet_details' && (
+      {step === 'wallet_details' && (
         <ImportWalletCard icon={WalletIcon} title={t('import_wallet.wallet_details.title')}>
           <ImportStepWalletDetails
             sessionInfo={jmSession}
@@ -306,7 +306,7 @@ const ImportWalletPage = () => {
           />
         </ImportWalletCard>
       )}
-      {step == 'import_details' && (
+      {step === 'import_details' && (
         <ImportWalletCard
           icon={KeyRoundIcon}
           title={t('import_wallet.import_details.title')}
@@ -320,7 +320,7 @@ const ImportWalletPage = () => {
           />
         </ImportWalletCard>
       )}
-      {step == 'confirm' && (
+      {step === 'confirm' && (
         <>
           <PreventLeavingPageByMistake />
           <ImportWalletCard icon={CircleCheckBigIcon} title={t('import_wallet.confirmation.title')}>
