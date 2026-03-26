@@ -57,7 +57,11 @@ export const LockWalletConfirmDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={confirmMutation.isPending}>
             {t('global.cancel')}
           </Button>
-          <Button variant="default" onClick={() => void onConfirm()} disabled={confirmMutation.isPending}>
+          <Button
+            variant="default"
+            onClick={() => void confirmMutation.mutateAsync()}
+            disabled={confirmMutation.isPending}
+          >
             {confirmMutation.isPending ? (
               <>
                 <Spinner className="motion-reduce:hidden" />
