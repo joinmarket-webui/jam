@@ -89,14 +89,14 @@ export const ImportStepConfirm = ({
         <div className="space-y-2">
           <div>
             <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
-            <span className="text-sm font-semibold break-all select-all">
+            <span className="font-semibold break-all select-all">
               {walletDisplayNameToFileName(walletDetails.walletName)}
             </span>
           </div>
           <div>
             <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_password')}</Label>
             <MaskedText
-              className="font-mono text-sm font-semibold break-all slashed-zero select-none"
+              className="font-mono font-semibold break-all slashed-zero select-none"
               masked={!revealSensitiveInfo}
               maskedText="maskedmaskedmaskedmasked"
             >
@@ -107,11 +107,8 @@ export const ImportStepConfirm = ({
           <Accordion type="single" collapsible>
             <AccordionItem value="mnemonic">
               <AccordionTrigger>{t('import_wallet.import_details.label_menmonic_phrase')}</AccordionTrigger>
-              <AccordionContent>
-                <Label className="text-muted-foreground text-xs"></Label>
-                <div className="bg-muted rounded-lg p-2">
-                  <SeedPhraseGrid value={importDetails.mnemonicPhrase.split(/\s+/)} masked={!revealSensitiveInfo} />
-                </div>
+              <AccordionContent className="bg-muted rounded-lg p-2">
+                <SeedPhraseGrid value={importDetails.mnemonicPhrase.split(/\s+/)} masked={!revealSensitiveInfo} />
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="options">
