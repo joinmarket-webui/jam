@@ -168,12 +168,18 @@
     "confirmation_button_fund_wallet": "Fund Wallet",
     "confirm_backup_title": "Confirm seed phrase backup",
     "confirm_backup_subtitle": "Enter each word in sequential order.",
-    "feedback_seed_confirmed": "Seed phrase confirmed.",
     "back_button": "Back",
     "skip_button": "Skip",
     "next_button": "Next",
     "placeholder_seed_word_input": "Word",
-    "hint_duration_text": "Please be patient, this may take a few minutes."
+    "hint_duration_text": "Please be patient, this may take a few minutes.",
+    "verify_mnemonic": {
+      "title": "Verify Mnemonic Phrase",
+      "subtitle": "Tap each word in the correct order to verify you have backed up your mnemonic phrase.",
+      "progress": "{{ current }} of {{ total }}",
+      "error": "Wrong order! Please try again.",
+      "feedback_mnemonic_confirmed": "Mnemonic phrase confirmed."
+    }
   },
   "import_wallet": {
     "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",

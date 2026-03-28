@@ -107,7 +107,7 @@ export const ImportStepConfirm = ({
           <Accordion type="single" collapsible>
             <AccordionItem value="mnemonic">
               <AccordionTrigger>{t('import_wallet.import_details.label_menmonic_phrase')}</AccordionTrigger>
-              <AccordionContent className="bg-muted rounded-lg p-2">
+              <AccordionContent className="bg-muted mb-2 rounded-lg p-2">
                 <SeedPhraseGrid value={importDetails.mnemonicPhrase.split(/\s+/)} masked={!revealSensitiveInfo} />
               </AccordionContent>
             </AccordionItem>
