@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import type { TFunction } from 'i18next'
-import { AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon, ChevronRightIcon } from 'lucide-react'
 import { useForm, useWatch, type Mode, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -78,6 +78,7 @@ export const CreateStepConfirm = ({
     if (backupConfirmed) return
 
     const toastId = toast.info(/* TODO: i18n */ 'Save Your Seed Phrase', {
+      id: 'save-seed-phrase-reminder',
       icon: <AlertCircleIcon />,
       description: /* TODO: change i18n key ("alert_description") */ t('create_wallet.subtitle_wallet_created'),
       duration: Number.POSITIVE_INFINITY,
@@ -95,12 +96,12 @@ export const CreateStepConfirm = ({
       <div className="space-y-2">
         <div>
           <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
-          <span className="text-sm font-semibold break-all select-all">{walletFileName}</span>
+          <span className="font-semibold break-all select-all">{walletFileName}</span>
         </div>
         <div>
           <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_password')}</Label>
           <MaskedText
-            className="font-mono text-sm font-semibold break-all slashed-zero select-none"
+            className="font-mono font-semibold break-all slashed-zero select-none"
             masked={!revealSensitiveInfo}
             maskedText="maskedmaskedmaskedmasked"
           >
@@ -153,6 +154,7 @@ export const CreateStepConfirm = ({
 
       <Button type="submit" className="w-full" size="xxl" disabled={isSubmitting}>
         {t('create_wallet.next_button')}
+        <ChevronRightIcon />
       </Button>
     </form>
   )

@@ -2,7 +2,7 @@ interface DebugFeatures {
   developerMode: boolean
   insecureScheduleTesting: boolean
   allowCreatingExpiredFidelityBond: boolean
-  skipWalletBackupConfirmation: boolean
+  skipWalletBackupVerification: boolean
   devErrorExamplePage: boolean
   devPage: boolean
   devSetupPage: boolean
@@ -18,7 +18,7 @@ const debugFeatures: DebugFeatures = {
   developerMode: developmentMode,
   allowCreatingExpiredFidelityBond: developmentMode,
   insecureScheduleTesting: developmentMode,
-  skipWalletBackupConfirmation: developmentMode,
+  skipWalletBackupVerification: developmentMode,
   devErrorExamplePage: developmentMode,
   devPage: developmentMode,
   devSetupPage: developmentMode,

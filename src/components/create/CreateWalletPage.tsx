@@ -1,9 +1,9 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps, PropsWithChildren } from 'react'
 import { useState } from 'react'
 import { listwalletsOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
-import { CircleCheckBigIcon, WalletIcon } from 'lucide-react'
+import { CircleCheckBigIcon, ShieldCheckIcon, WalletIcon, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -21,10 +21,25 @@ import { jmSessionStore } from '@/store/jmSessionStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
+import { CreateStepVerifyMnemonic } from './CreateStepVerifyMnemonic'
 import { CreateStepWalletDetails } from './CreateStepWalletDetails'
 import { CreateWalletForm } from './CreateWalletForm'
 
 type WalletDetailsValues = Parameters<ComponentProps<typeof CreateWalletForm>['onSubmit']>[0]
+
+const CreateWalletCard = ({ icon: Icon, title, children }: PropsWithChildren<{ icon: LucideIcon; title: string }>) => {
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader className="flex flex-col items-center space-y-2">
+        <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+          <Icon className="text-primary" />
+        </div>
+        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">{children}</CardContent>
+    </Card>
+  )
+}
 
 type CreateWalletSuccessInfo = {
   values: WalletDetailsValues
@@ -39,7 +54,7 @@ const CreateWalletPage = () => {
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [createWalletSuccessInfo, setCreateWalletSuccessInfo] = useState<CreateWalletSuccessInfo>()
-  const [step, setStep] = useState<'wallet_details' | 'confirm'>('wallet_details')
+  const [step, setStep] = useState<'wallet_details' | 'confirm' | 'verify_mnemonic'>('wallet_details')
 
   const listWalletsQuery = useQuery({
     ...listwalletsOptions({ client }),
@@ -108,20 +123,26 @@ const CreateWalletPage = () => {
         response: createData,
         hashedPassword,
       })
+
       setStep('confirm')
     } catch (error: unknown) {
-      /* TODO: i18n */
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      /* TODO: i18n */
       toast.error(`Failed to create wallet: ${reason}`)
     } finally {
       toast.dismiss(durationHintToastId)
     }
   }
 
-  const handleConfirmSeed = async ({ response, hashedPassword }: CreateWalletSuccessInfo) => {
+  const handleConfirmMnemonic = () => {
+    setStep('verify_mnemonic')
+    return Promise.resolve()
+  }
+
+  const handleMnemonicVerified = async ({ response, hashedPassword }: CreateWalletSuccessInfo) => {
     updateAuthState({
       walletFileName: response.walletname as WalletFileName,
-      auth: { token: response.token, refresh_token: response.refresh_token }, // We'll need to unlock it properly later
+      auth: { token: response.token, refresh_token: response.refresh_token },
       hashed_password: hashedPassword,
     })
 
@@ -130,42 +151,39 @@ const CreateWalletPage = () => {
 
   return (
     <AuthPageShell>
-      <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center space-y-2">
-          <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            {step === 'wallet_details' && <WalletIcon className="text-primary" />}
-            {step === 'confirm' && <CircleCheckBigIcon className="text-primary" />}
-          </div>
-          <CardTitle className="text-xl font-bold">
-            {step === 'wallet_details' && t('create_wallet.title')}
-            {step === 'confirm' && t('create_wallet.title_wallet_created')}
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {step === 'wallet_details' && (
-            <CreateStepWalletDetails
-              wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
-              onSubmit={handleCreateWallet}
-              sessionInfo={jmSession}
-              submitButtonText={({ isSubmitting }) =>
-                isSubmitting ? t('create_wallet.button_creating') : t('create_wallet.button_create')
-              }
-            />
-          )}
-          {step === 'confirm' && (
-            <>
-              <PreventLeavingPageByMistake />
-              <CreateStepConfirm
-                walletFileName={createWalletSuccessInfo!.response.walletname as WalletFileName}
-                password={createWalletSuccessInfo!.values.password}
-                mnemonicPhrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/)}
-                onConfirm={async () => await handleConfirmSeed(createWalletSuccessInfo!)}
-              />
-            </>
-          )}
-        </CardContent>
-      </Card>
+      {step === 'wallet_details' && (
+        <CreateWalletCard icon={WalletIcon} title={t('create_wallet.title')}>
+          <CreateStepWalletDetails
+            wallets={(listWalletsQuery.data?.wallets ?? []) as WalletFileName[]}
+            onSubmit={handleCreateWallet}
+            sessionInfo={jmSession}
+            submitButtonText={({ isSubmitting }) =>
+              isSubmitting ? t('create_wallet.button_creating') : t('create_wallet.button_create')
+            }
+          />
+        </CreateWalletCard>
+      )}
+      {step === 'confirm' && (
+        <CreateWalletCard icon={CircleCheckBigIcon} title={t('create_wallet.title_wallet_created')}>
+          <PreventLeavingPageByMistake />
+          <CreateStepConfirm
+            walletFileName={createWalletSuccessInfo!.response.walletname as WalletFileName}
+            password={createWalletSuccessInfo!.values.password}
+            mnemonicPhrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/)}
+            onConfirm={handleConfirmMnemonic}
+          />
+        </CreateWalletCard>
+      )}
+      {step === 'verify_mnemonic' && (
+        <CreateWalletCard icon={ShieldCheckIcon} title={t('create_wallet.verify_mnemonic.title')}>
+          <PreventLeavingPageByMistake />
+          <CreateStepVerifyMnemonic
+            mnemonicPhrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/) ?? []}
+            onVerified={async () => await handleMnemonicVerified(createWalletSuccessInfo!)}
+            onBack={() => setStep('confirm')}
+          />
+        </CreateWalletCard>
+      )}
     </AuthPageShell>
   )
 }
