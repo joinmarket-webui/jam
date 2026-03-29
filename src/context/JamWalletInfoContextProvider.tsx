@@ -1,10 +1,10 @@
-import { useMemo, type PropsWithChildren } from 'react'
+import { useMemo, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from 'react'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { getAddressInfo } from 'bitcoin-address-validation'
 import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
-import { useQueryUtxos, type Utxo } from '@/hooks/useQueryUtxos'
+import { useQueryUtxos, type Utxo, type UtxoId } from '@/hooks/useQueryUtxos'
 import { toBalanceSummary } from '@/lib/balanceSummary'
 import * as fb from '@/lib/fidelityBondUtils'
 import { delayedPromise, walletDisplayName, type WalletFileName } from '@/lib/utils'
@@ -135,6 +135,8 @@ const combinedUtxosHash = (utxos: Utxo[]) => {
   return sha256(combinedUtxoIds)
 }
 
+type RefetchOptions = { force?: boolean; delayBefore?: Milliseconds }
+
 export const JamWalletInfoContextProvider = ({
   walletFileName,
   children,
@@ -218,8 +220,7 @@ export const JamWalletInfoContextProvider = ({
 
   const maxJarAvailableBalance = Math.max(0, ...jars.map((jar) => jar.balanceSummary.calculatedAvailableBalanceInSats))
 
-  // wrap as mutation manually, as `stopMakerQuery` is a `GET` request
-  const refetchMutation = useMutation({
+  const { mutateAsync: refetchMutateAsync, isPending: refetchIsPending } = useMutation({
     scope: {
       id: ['wallet-refetch', walletFileName].join('-'),
     },
@@ -235,6 +236,12 @@ export const JamWalletInfoContextProvider = ({
     retry: false,
   })
 
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useWaitForUtxosToBeSpent({
+    refetch: refetchMutateAsync,
+    walletFileName,
+    utxos,
+  })
+
   const value = {
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     walletBalanceSummary: walletBalanceSummary,
@@ -245,15 +252,62 @@ export const JamWalletInfoContextProvider = ({
     jars,
     utxosHashHex,
 
+    waitForUtxosToBeSpent,
+    setWaitForUtxosToBeSpent,
+
     detectedNetwork: detectedNetwork ?? null,
 
     isLoading: utxosQueryResult.isLoading || displayWalletQueryResult.isLoading,
-    isFetching: refetchMutation.isPending || utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,
+    isFetching: refetchIsPending || utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,
     error: utxosQueryResult.error || displayWalletQueryResult.error,
-    refetch: (options?: { force?: boolean; delayBefore?: Milliseconds }) => refetchMutation.mutateAsync(options),
+    refetch: refetchMutateAsync,
     utxosQueryResult: utxosQueryResult,
     displayWalletQueryResult: displayWalletQueryResult,
   }
 
   return <JamWalletInfoContext.Provider value={value}>{children}</JamWalletInfoContext.Provider>
+}
+
+// Delaying the poll requests gives the wallet some time to synchronize
+// the utxo set and reduces amount of http requests
+const WAIT_FOR_UTXOS_TO_BE_SPENT_DEFAUL_DELAY: Milliseconds = 1_000
+
+const useWaitForUtxosToBeSpent = ({
+  refetch,
+  walletFileName,
+  utxos,
+  delay = WAIT_FOR_UTXOS_TO_BE_SPENT_DEFAUL_DELAY,
+  resetOnErrors = true,
+}: {
+  refetch: (options?: RefetchOptions) => Promise<unknown>
+  walletFileName: WalletFileName
+  utxos: Utxo[]
+  delay?: number
+  resetOnErrors?: boolean
+}): [UtxoId[], Dispatch<SetStateAction<UtxoId[]>>] => {
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
+  const { error: waitForUtxosToBeSpentQueryError } = useQuery({
+    queryKey: ['wait-for-utxos-to-be-spent', refetch, walletFileName, delay, ...waitForUtxosToBeSpent],
+    queryFn: async () => {
+      return await refetch({ delayBefore: delay })
+    },
+    enabled: waitForUtxosToBeSpent.length > 0,
+    refetchInterval: 21, // refetch as soon as possible
+    refetchIntervalInBackground: true,
+  })
+
+  if (waitForUtxosToBeSpentQueryError !== null) {
+    if (waitForUtxosToBeSpent.length > 0 && resetOnErrors === true) {
+      // Stop waiting for wallet synchronization on errors
+      setWaitForUtxosToBeSpent([])
+    }
+  } else if (waitForUtxosToBeSpent.length > 0) {
+    const outputs = new Set(utxos.map((it) => it.utxo))
+    const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.has(it))
+    if (utxosStillPresent.length !== waitForUtxosToBeSpent.length) {
+      setWaitForUtxosToBeSpent([...utxosStillPresent])
+    }
+  }
+
+  return [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent]
 }

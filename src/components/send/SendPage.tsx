@@ -29,7 +29,6 @@ import { useJmConfig } from '@/hooks/useJmConfig'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
-import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
 import { getErrorReason } from '@/lib/errorReason'
 import { withMutationDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
@@ -65,7 +64,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const { fetchIfMissing } = useJmConfig({ walletFileName })
-  const { refetch: refetchWalletInfo } = useJamWalletInfoContext()
+  const { refetch: refetchWalletInfo, waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
@@ -187,29 +186,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
   const coinjoinRunning = jmSession?.coinjoin_in_process === true
   const isWaitingCoinjoinStart = startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !coinjoinRunning)
   const isWaitingCoinjoinStop = stopCoinjoinMutationIsPending || (stopCoinjoinMutationIsSuccess && coinjoinRunning)
   const collaborativeFlowActive = coinjoinRunning || isWaitingCoinjoinStart || isWaitingCoinjoinStop
-
-  const waitForUtxosToBeSpentContext = useMemo(
-    () => ({
-      walletFileName,
-      waitForUtxosToBeSpent,
-      setWaitForUtxosToBeSpent,
-      onError: (error: unknown) => {
-        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        const message = t('global.errors.error_reloading_wallet_failed', {
-          reason,
-        })
-        toast.error(message)
-      },
-    }),
-    [walletFileName, waitForUtxosToBeSpent, t],
-  )
-
-  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
   useRefreshSession({
     enabled: isWaitingCoinjoinStart || isWaitingCoinjoinStop,
@@ -586,22 +566,20 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         ) : (
           <>
+            {waitForUtxosToBeSpent.length > 0 && (
+              <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                <Spinner className="motion-reduce:hidden" />
+                <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
+              </Alert>
+            )}
             {paymentSuccessfulInfoAlert && !coinjoinRunning && (
-              <>
-                {waitForUtxosToBeSpent.length > 0 && (
-                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
-                    <Spinner className="motion-reduce:hidden" />
-                    <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
-                  </Alert>
-                )}
-                <Alert variant={paymentSuccessfulInfoAlert.variant}>
-                  <AlertTriangleIcon />
-                  <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
-                  <AlertDescription className="ext-wrap slashed-zero">
-                    {paymentSuccessfulInfoAlert.description}
-                  </AlertDescription>
-                </Alert>
-              </>
+              <Alert variant={paymentSuccessfulInfoAlert.variant}>
+                <AlertTriangleIcon />
+                <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
+                <AlertDescription className="ext-wrap slashed-zero">
+                  {paymentSuccessfulInfoAlert.description}
+                </AlertDescription>
+              </Alert>
             )}
           </>
         )}
