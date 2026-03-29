@@ -1,8 +1,13 @@
 import type { ComponentProps, PropsWithChildren } from 'react'
 import { useState } from 'react'
-import { listwalletsOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useQuery } from '@tanstack/react-query'
+import {
+  createwalletMutation,
+  listwalletsOptions,
+  sessionOptions,
+  unlockwalletMutation,
+} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { lockwallet } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CircleCheckBigIcon, ShieldCheckIcon, WalletIcon, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -12,12 +17,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { JM_DEFAULT_WALLET_TYPE } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { buildAuthHeaderMap, type ApiToken } from '@/lib/config'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
-import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
+import { delayedPromise, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { MnemonicPhrase } from '@/types/global'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
@@ -42,8 +49,9 @@ const CreateWalletCard = ({ icon: Icon, title, children }: PropsWithChildren<{ i
 }
 
 type CreateWalletSuccessInfo = {
-  values: WalletDetailsValues
-  response: CreateWalletResponse
+  walletFileName: WalletFileName
+  password: WalletDetailsValues['password']
+  mnemonicPhrase: MnemonicPhrase
   hashedPassword?: string
 }
 
@@ -59,8 +67,37 @@ const CreateWalletPage = () => {
   const listWalletsQuery = useQuery({
     ...listwalletsOptions({ client }),
   })
+  const sessionQuery = useQuery({
+    ...sessionOptions({ client }),
+    enabled: false,
+  })
+  const createWalletMutation = useMutation({
+    ...createwalletMutation({ client }),
+    retry: false,
+  })
 
-  const handleCreateWallet = async ({ walletName, password, confirmPassword }: WalletDetailsValues) => {
+  const lockWalletMutation = useMutation({
+    mutationFn: async (parameters: { walletFileName: WalletFileName; token: ApiToken }) => {
+      const { data } = await lockwallet({
+        client,
+        path: { walletname: encodeURIComponent(parameters.walletFileName) },
+        headers: { ...buildAuthHeaderMap(parameters.token) },
+        throwOnError: true,
+      })
+      return data
+    },
+    retry: false,
+  })
+
+  const unlockWalletMutation = useMutation({
+    ...unlockwalletMutation({
+      client,
+      throwOnError: true,
+    }),
+    retry: false,
+  })
+
+  const handleCreateWallet = async ({ walletName, password }: WalletDetailsValues) => {
     const durationHintToastId = toast.loading(t('create_wallet.hint_duration_text'), {
       id: 'alert-wallet-create-creating-duration-hint',
       duration: Number.POSITIVE_INFINITY,
@@ -70,9 +107,9 @@ const CreateWalletPage = () => {
       // Clear any existing local session
       clearAuthState()
 
-      // Check if there's an active session on the server
+      // Step #1: Check if there's an active session on the server
       try {
-        const { data: sessionInfo } = await session({ client })
+        const { data: sessionInfo } = await sessionQuery.refetch()
         if (sessionInfo?.session === true) {
           console.warn('Active session detected:', sessionInfo)
           // TODO: i18n
@@ -95,20 +132,31 @@ const CreateWalletPage = () => {
           )
           return
         }
-      } catch (sessionError) {
+      } catch (sessionError: unknown) {
         console.warn('Could not check session status:', sessionError)
         // Continue anyway, wallet creation might still work
       }
 
+      // Step #2: create wallet
       const walletFileName = walletDisplayNameToFileName(walletName)
-      const { data: createData } = await createwallet({
-        client,
+      const createData = await createWalletMutation.mutateAsync({
         body: {
-          walletname: walletFileName,
+          walletname: encodeURIComponent(walletFileName),
           password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
         },
         throwOnError: true,
+      })
+
+      // Step #3: lock wallet
+      // since wallet is immediately unlocked, let's lock the wallet here.
+      // The token is only a valid certain amount of time, and the user
+      // might take longer than the validitiy time.
+      // after the mnemonic phrase is confirmed, we unlock the wallet again.
+      await delayedPromise(210) // wait some time before locking
+      await lockWalletMutation.mutateAsync({
+        walletFileName,
+        token: createData.token,
       })
 
       let hashedPassword: string | undefined = undefined
@@ -119,9 +167,10 @@ const CreateWalletPage = () => {
       }
 
       setCreateWalletSuccessInfo({
-        values: { walletName, password, confirmPassword },
-        response: createData,
+        walletFileName,
+        password,
         hashedPassword,
+        mnemonicPhrase: createData.seedphrase.split(/\s+/),
       })
 
       setStep('confirm')
@@ -139,14 +188,28 @@ const CreateWalletPage = () => {
     return Promise.resolve()
   }
 
-  const handleMnemonicVerified = async ({ response, hashedPassword }: CreateWalletSuccessInfo) => {
-    updateAuthState({
-      walletFileName: response.walletname as WalletFileName,
-      auth: { token: response.token, refresh_token: response.refresh_token },
-      hashed_password: hashedPassword,
-    })
+  const handleMnemonicVerified = async ({ walletFileName, password, hashedPassword }: CreateWalletSuccessInfo) => {
+    try {
+      const response = await unlockWalletMutation.mutateAsync({
+        path: { walletname: encodeURIComponent(walletFileName) },
+        body: {
+          password,
+        },
+      })
+      updateAuthState({
+        walletFileName: response.walletname as WalletFileName,
+        auth: { token: response.token, refresh_token: response.refresh_token },
+        hashed_password: hashedPassword,
+      })
 
-    await navigate(routes.home)
+      await navigate(routes.home)
+    } catch (error: unknown) {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      /* TODO: i18n */
+      toast.error(`Failed to unlock wallet: ${reason}`)
+
+      await navigate(routes.login)
+    }
   }
 
   return (
@@ -167,9 +230,9 @@ const CreateWalletPage = () => {
         <CreateWalletCard icon={CircleCheckBigIcon} title={t('create_wallet.title_wallet_created')}>
           <PreventLeavingPageByMistake />
           <CreateStepConfirm
-            walletFileName={createWalletSuccessInfo!.response.walletname as WalletFileName}
-            password={createWalletSuccessInfo!.values.password}
-            mnemonicPhrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/)}
+            walletFileName={createWalletSuccessInfo!.walletFileName}
+            password={createWalletSuccessInfo!.password}
+            mnemonicPhrase={createWalletSuccessInfo!.mnemonicPhrase}
             onConfirm={handleConfirmMnemonic}
           />
         </CreateWalletCard>
@@ -178,7 +241,7 @@ const CreateWalletPage = () => {
         <CreateWalletCard icon={ShieldCheckIcon} title={t('create_wallet.verify_mnemonic.title')}>
           <PreventLeavingPageByMistake />
           <CreateStepVerifyMnemonic
-            mnemonicPhrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/) ?? []}
+            mnemonicPhrase={createWalletSuccessInfo!.mnemonicPhrase}
             onVerified={async () => await handleMnemonicVerified(createWalletSuccessInfo!)}
             onBack={() => setStep('confirm')}
           />

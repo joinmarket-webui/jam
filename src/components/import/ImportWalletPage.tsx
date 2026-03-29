@@ -215,7 +215,6 @@ const ImportWalletPage = () => {
 
       const unlockResponse = await unlockWallet.mutateAsync({
         path: { walletname: encodeURIComponent(authState.walletFileName) },
-        headers: { ...buildAuthHeaderMap(authState.auth.token) },
         body: {
           password: walletDetails.password,
         },

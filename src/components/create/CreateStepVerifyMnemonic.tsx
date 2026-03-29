@@ -7,6 +7,7 @@ import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { cn } from '@/lib/utils'
 import type { MnemonicPhrase } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
+import { Spinner } from '../ui/spinner'
 
 const skipWalletBackupVerification = isDebugFeatureEnabled('skipWalletBackupVerification')
 
@@ -190,6 +191,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
           disabled={!isCorrect || verifyMutation.isPending}
           onClick={() => verifyMutation.mutate({ mustBeCorrect: true })}
         >
+          {verifyMutation.isPending && <Spinner className="motion-reduce:hidden" />}
           {t('create_wallet.confirmation_button_fund_wallet')}
         </Button>
       </div>
