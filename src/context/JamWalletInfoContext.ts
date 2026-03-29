@@ -1,8 +1,8 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
 import type { ErrorMessage, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { Network, type AddressInfo } from 'bitcoin-address-validation'
 import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
-import type { FidelityBondUtxo, UseQueryUtxosResult, Utxo } from '@/hooks/useQueryUtxos'
+import type { FidelityBondUtxo, UseQueryUtxosResult, Utxo, UtxoId } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import type { AmountSats, BitcoinAddress, HdPath, JarIndex, Milliseconds } from '@/types/global'
 
@@ -86,6 +86,9 @@ interface JamWalletInfoContextType {
   accountSummary: AccountSummary
   jars: Jar[]
   utxosHashHex: string
+
+  waitForUtxosToBeSpent: UtxoId[]
+  setWaitForUtxosToBeSpent: Dispatch<SetStateAction<UtxoId[]>>
 
   detectedNetwork: Network | null
 
