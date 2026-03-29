@@ -98,7 +98,7 @@ export const LoginFormComponent = ({
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <div className="space-y-2">
         <Field data-invalid={errors.walletFileName !== undefined}>
-          <FieldLabel>{/* TODO: i18n */}Wallet</FieldLabel>
+          <FieldLabel>{t('login.label_wallet')}</FieldLabel>
           <Select
             onValueChange={(val: WalletFileName) => setValue('walletFileName', val, { shouldValidate: true })}
             value={values.walletFileName ?? ''}
@@ -109,26 +109,20 @@ export const LoginFormComponent = ({
           >
             <SelectTrigger className="w-full">
               <SelectValue
-                placeholder={/* TODO: i18n */ wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'}
+                placeholder={
+                  wallets.length > 0 ? t('login.placeholder_select_wallet') : t('login.placeholder_no_wallets')
+                }
               />
             </SelectTrigger>
             <SelectContent>
-              {wallets?.map((wallet, index) => (
-                <SelectItem key={index} value={wallet} className="text-base">
+              {wallets?.map((wallet) => (
+                <SelectItem key={wallet} value={wallet} className="text-base">
                   {shortenStringMiddle(walletDisplayName(wallet), 32)}
                   {activeWallet === wallet ? (
-                    <span
-                      className={cn('inline-flex items-center gap-1.5 py-1 text-xs', {
-                        'text-muted-foreground/50': !(makerRunning || coinjoinInProgress),
-                        'light:text-green-600 animate-pulse text-green-300/90': makerRunning || coinjoinInProgress,
-                      })}
-                    >
-                      <span
-                        className={cn('h-2 w-2 rounded-full motion-safe:animate-pulse', {
-                          'bg-green-500/70': !(makerRunning || coinjoinInProgress),
-                          'light:bg-green-600 bg-green-300/90': makerRunning || coinjoinInProgress,
-                        })}
-                      />
+                    <span className="text-muted-foreground/50 inline-flex items-center gap-1.5 py-1 text-xs">
+                      {(makerRunning || coinjoinInProgress) && (
+                        <span className="light:bg-green-600 h-2 w-2 rounded-full bg-green-300/90 motion-safe:animate-pulse" />
+                      )}
                       {t('wallets.wallet_preview.wallet_active')}
                     </span>
                   ) : undefined}
@@ -141,7 +135,7 @@ export const LoginFormComponent = ({
 
       <div className="space-y-2">
         <Field data-invalid={errors.password !== undefined}>
-          <FieldLabel htmlFor="login-password">{t(/* TODO: i18n */ 'Password')}</FieldLabel>
+          <FieldLabel htmlFor="login-password">{t('login.label_password')}</FieldLabel>
           <InputGroup>
             <InputGroupInput
               id="login-password"

@@ -23,7 +23,7 @@ import { deriveAccountXpub } from '@/lib/bip32'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
-import type { JarIndex, Milliseconds, SeedPhrase, WithRequiredProperty } from '@/types/global'
+import type { JarIndex, Milliseconds, MnemonicPhrase, WithRequiredProperty } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
@@ -53,13 +53,13 @@ interface AccountXpubInfo {
  * not the child xpubs that the API incorrectly returns
  */
 async function deriveAccountXpubsFromSeed(
-  seedPhrase: SeedPhrase,
+  mnemonicPhrase: MnemonicPhrase,
   network: Network,
   jars: Jar[],
 ): Promise<AccountXpubInfo[]> {
   const coinType = network === Network.mainnet ? 0 : 1
 
-  const seed = await mnemonicToSeed(seedPhrase.join(' '))
+  const seed = await mnemonicToSeed(mnemonicPhrase.join(' '))
 
   // Convert to native segwit format (zpub/vpub) and build account info
   return jars.map((jar) => {
@@ -186,6 +186,7 @@ export const AccountXpubsDialog = ({
   walletFileName,
   hashedPassword,
   autoCloseTimeout,
+  ...dialogProps
 }: AccountXpubsDialogProps) => {
   const { t } = useTranslation()
 
@@ -210,13 +211,18 @@ export const AccountXpubsDialog = ({
     path: { walletname: encodeURIComponent(walletFileName) },
   })
 
-  const seedQuery = useQuery({
+  const {
+    data: seedQueryData,
+    error: seedQueryError,
+    isFetching: seedQueryIsFetching,
+    refetch: seedQueryRefetch,
+  } = useQuery({
     ...seedQueryOptions,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
-    select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
+    select: (data) => data.seedphrase.split(/\s+/) as MnemonicPhrase,
   })
 
   const accountXpubsQueryKey = [walletFileName, 'xpubs']
@@ -225,8 +231,8 @@ export const AccountXpubsDialog = ({
     queryKey: accountXpubsQueryKey,
     queryFn: withQueryDelay(
       async () => {
-        if (!seedQuery.data) return undefined
-        return await deriveAccountXpubsFromSeed(seedQuery.data, network, jars)
+        if (!seedQueryData) return undefined
+        return await deriveAccountXpubsFromSeed(seedQueryData, network, jars)
       },
       {
         throttle: 210,
@@ -234,16 +240,16 @@ export const AccountXpubsDialog = ({
     ),
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
-    enabled: !!seedQuery.data,
+    enabled: !!seedQueryData,
   })
 
-  const isFetching = seedQuery.isFetching || accountXpubs.isFetching
+  const isFetching = seedQueryIsFetching || accountXpubs.isFetching
 
   useEffect(() => {
-    if (open && isPasswordVerified && seedQuery.data === undefined) {
-      void seedQuery.refetch()
+    if (open && isPasswordVerified && seedQueryData === undefined) {
+      void seedQueryRefetch()
     }
-  }, [open, isPasswordVerified, seedQuery])
+  }, [open, isPasswordVerified, seedQueryData, seedQueryRefetch])
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) return
@@ -270,7 +276,7 @@ export const AccountXpubsDialog = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         {!isPasswordVerified ? (
           <>
@@ -285,6 +291,7 @@ export const AccountXpubsDialog = ({
             <PasswordVerificationForm
               walletFileName={walletFileName}
               hashedPassword={hashedPassword}
+              i18nKeyPrefix="settings.xpubs_modal.verification"
               onSubmit={() => {
                 setTimeLeft(autoCloseTimeout)
                 setPasswordVerifiedAt(Date.now())
@@ -327,11 +334,11 @@ export const AccountXpubsDialog = ({
                   )}
                 </div>
               )}
-              {!seedQuery.isFetching && seedQuery.error && (
+              {!seedQueryIsFetching && seedQueryError && (
                 <Alert variant="destructive">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
-                  <AlertDescription>{seedQuery.error.message || t('global.errors.reason_unknown')}</AlertDescription>
+                  <AlertDescription>{seedQueryError.message || t('global.errors.reason_unknown')}</AlertDescription>
                 </Alert>
               )}
               {!accountXpubs.isFetching && accountXpubs.error && (

@@ -1,11 +1,34 @@
 :root {
-  --jam-balance-color: #212529;
   --jam-balance-deemphasize-color: #9eacba;
 }
 
 :root[data-theme='dark'] {
-  --jam-balance-color: #ffffff;
   --jam-balance-deemphasize-color: #555c62;
+}
+
+.hideSymbol {
+  margin-left: 0.1em;
+  color: var(--jam-balance-deemphasize-color);
+}
+
+.frozenSymbol {
+  margin-left: 0.1em;
+}
+
+.bitcoinSymbol {
+  order: -1;
+  margin-right: -0.1em;
+}
+
+.satsSymbol {
+  order: 5;
+  margin-left: -0.1em;
+}
+
+.satsSymbol + .frozenSymbol {
+  order: -2;
+  margin-left: 0;
+  margin-right: 0.1em;
 }
 
 .bitcoinAmountSpacing .fractionalPart :nth-child(3)::before,
@@ -30,5 +53,10 @@
 .bitcoinAmountColor[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"],
 /** Symbol */
 .bitcoinAmountColor[data-raw-value="0"] + .bitcoinSymbol {
+  color: var(--jam-balance-deemphasize-color);
+}
+
+.satsAmountColor[data-raw-value='0'],
+.satsAmountColor[data-raw-value='0'] + .satsSymbol {
   color: var(--jam-balance-deemphasize-color);
 }

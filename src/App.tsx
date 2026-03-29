@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -41,17 +41,21 @@ import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProv
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
-import { queryClient } from '@/lib/queryClient'
+import { queryClient, withMutationDelay } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { jamSettingsStore, useDeveloperMode } from '@/store/jamSettingsStore'
+import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
+import { useRescanStatus } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
+import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { useJmWebsocket } from './hooks/useJmWebsocket'
 import { jmSessionStore } from './store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from './store/jmTxStore'
+import type { Milliseconds } from './types/global'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -75,7 +79,7 @@ type LockWalletDialogContext = {
 function App() {
   const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
 
   const jmSession = useStore(jmSessionStore, (state) => state.state)
@@ -91,12 +95,26 @@ function App() {
         client,
         path: { walletname: encodeURIComponent(walletFileName || '') },
       }),
-      staleTime: 1,
-      gcTime: 1,
       enabled: false,
     },
     queryClient,
   )
+  const lockWalletMutation = useMutation(
+    {
+      scope: { id: 'lock-wallet' },
+      mutationFn: withMutationDelay(
+        async () => {
+          return await lockWalletQuery.refetch({ throwOnError: true })
+        },
+        {
+          throttle: 210,
+        },
+      ),
+      retry: false,
+    },
+    queryClient,
+  )
+
   const [lockWalletDialogContext, setLockWalletDialogContext] = useState<LockWalletDialogContext>()
 
   const doOnLogout = async (navigate: NavigateFunction) => {
@@ -121,7 +139,7 @@ function App() {
   const doOnLockWalletConfirm = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
     if (!walletFileName) return
     try {
-      await lockWalletQuery.refetch({ throwOnError: true })
+      await lockWalletMutation.mutateAsync()
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
@@ -174,6 +192,11 @@ function App() {
             <ProtectedRoute authenticated={authenticated}>
               <JamSessionInfoContextProvider walletFileName={walletFileName!}>
                 <JamWalletInfoContextProvider walletFileName={walletFileName!}>
+                  {walletFileName && (
+                    <>
+                      <WalletInfoAutoReload walletFileName={walletFileName} />
+                    </>
+                  )}
                   <Outlet />
                 </JamWalletInfoContextProvider>
               </JamSessionInfoContextProvider>
@@ -195,6 +218,7 @@ function App() {
             <Route path={routes.receive} element={<ReceivePage walletFileName={walletFileName!} />} />
             <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
             <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
+            <Route path={routes.earnReport} element={<EarnReportPage walletFileName={walletFileName!} />} />
             <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
             <Route
               path={routes.settings}
@@ -231,13 +255,16 @@ function App() {
           <RefreshApiToken />
           <RefreshJmSession />
           <HandleJmWebsocketMessages />
-          {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
+          {walletFileName && (
+            <>
+              <LoadFeeConfigData walletFileName={walletFileName} />
+            </>
+          )}
           {lockWalletDialogContext && (
             <LockWalletConfirmDialog
               open={lockWalletDialogContext?.open}
               onOpenChange={() => setLockWalletDialogContext(undefined)}
               onConfirm={() => doOnLockWalletConfirm(lockWalletDialogContext?.navigate, lockWalletDialogContext?.t)}
-              isLocking={lockWalletQuery.isFetching}
               makerRunning={makerRunning}
               coinjoinInProgress={coinjoinInProgress}
             />
@@ -267,11 +294,6 @@ function RefreshApiToken() {
   useEffect(() => {
     if (!hasRefreshToken) return
 
-    const isDevMode = jamSettingsStore.getState().state.developerMode
-    if (isDevMode) {
-      toast.info(`[DEV] setup refresh interval`)
-    }
-
     let intervalId: NodeJS.Timeout
     setIntervalDebounced(
       async () => {
@@ -292,7 +314,9 @@ function RefreshApiToken() {
 
           if (isDevMode) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'
-            toast.error(`[DEV] Error while renewing auth token: ${message}`)
+            toast.error(`[DEV] Error while renewing auth token: ${message}`, {
+              id: 'token-renew-error',
+            })
           }
         } else {
           authStore.getState().update({
@@ -301,12 +325,6 @@ function RefreshApiToken() {
               refresh_token: response.data.refresh_token,
             },
           })
-
-          if (isDevMode) {
-            toast.info(`[DEV] Successfully renewed auth token.`, {
-              id: 'token-renew-success',
-            })
-          }
         }
       },
       JAM_API_AUTH_TOKEN_RENEW_INTERVAL,
@@ -406,6 +424,62 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
         }
       })
   }, [fetchMissing])
+
+  return <></>
+}
+
+const RELOAD_WALLET_INFO_DELAY: {
+  AFTER_RESCAN: Milliseconds
+  AFTER_UTXO_CHANGE: Milliseconds
+} = {
+  // After rescanning, it is necessary to give the JM backend some time to synchronize.
+  // A couple of seconds should be enough, however, this depends on the user hardware
+  // and the delay might need to be increased if users encounter problems, e.g. the
+  // balance changes again when switching views.
+  // As reference: 4 seconds was not enough, even on regtest. But keep in mind, this only
+  // takes effect after rescanning the chain, which should happen quite infrequently.
+  AFTER_RESCAN: 8_000,
+
+  // No delay is needed after utxo change (e.g. normal unlock of wallet)
+  AFTER_UTXO_CHANGE: 0,
+}
+
+/**
+ * A component that automatically reloads wallet information on certain state changes,
+ * e.g. when the wallet is unlocked or rescanning the chain finished successfully.
+ *
+ * If the auto-reloading on wallet change fails, the error can currently
+ * only be logged and cannot be displayed to the user in a satisfying way.
+ * This might change in the future but is okay for now - components can
+ * always trigger a reload on demand and inform the user as they see fit.
+ */
+const WalletInfoAutoReload = ({ walletFileName }: { walletFileName: WalletFileName }) => {
+  const { rescanInfo: currentRescanInfo } = useRescanStatus()
+  const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
+  const [previousRescanning, setPreviousRescanning] = useState<boolean>(currentRescanInfo.rescanning)
+
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
+  useQuery({
+    queryKey: [
+      'reload-wallet-after-rescan-or-utxo-change',
+      walletFileName,
+      previousRescanning,
+      currentRescanInfo.rescanning,
+      utxosHashHex,
+    ],
+    queryFn: async () => {
+      const rescanningFinished = previousRescanning === true && currentRescanInfo.rescanning === false
+
+      const delayBefore: Milliseconds = rescanningFinished
+        ? RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
+        : RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
+      console.info('Trigger refetch looking for funds after rescan or utxo changes with delay %d...', delayBefore)
+
+      const result = await refetchWalletBalance({ delayBefore })
+      setPreviousRescanning(currentRescanInfo.rescanning)
+      return result
+    },
+  })
 
   return <></>
 }

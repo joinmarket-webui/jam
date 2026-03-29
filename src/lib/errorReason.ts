@@ -1,64 +1,45 @@
-const toNonEmptyString = (value: unknown): string | undefined => {
-  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+const nonEmptyString = <T>(value: unknown, fallback: T): string | T => {
+  if (typeof value !== 'string') return fallback
+  const trimmed = value.trim()
+  return trimmed !== '' ? trimmed : fallback
 }
 
-const extractReason = (error: unknown, depth = 0): string | undefined => {
-  if (depth > 4 || error === null || error === undefined) {
-    return undefined
+const nonEmptyStringOrUndefined = (value: unknown) => {
+  return nonEmptyString(value, undefined)
+}
+
+export interface AppError {
+  message: string
+  error_message?: string
+  error_description?: string
+  context: unknown
+}
+
+const UNKNOWN_ERROR_MESSAGE = 'Unknown error'
+
+export const normalizeAppError = (error: unknown): AppError => {
+  let error_message
+  let error_description
+
+  if (typeof error === 'string') {
+    error_message = error.trim()
+  } else if (error instanceof Error) {
+    error_message = error.message.trim()
+  } else if (typeof error === 'object' && error !== null) {
+    const maybeError = error as { message?: unknown; error_description?: unknown }
+    error_message = nonEmptyStringOrUndefined(maybeError.message)
+    error_description = nonEmptyStringOrUndefined(maybeError.error_description)
   }
 
-  const directString = toNonEmptyString(error)
-  if (directString) {
-    return directString
+  return {
+    message: error_message || error_description || UNKNOWN_ERROR_MESSAGE,
+    error_message,
+    error_description,
+    context: error,
   }
-
-  if (typeof error !== 'object') {
-    return undefined
-  }
-
-  const maybeError = error as {
-    message?: unknown
-    error_description?: unknown
-    detail?: unknown
-    error?: unknown
-    response?: { data?: unknown } | unknown
-    data?: unknown
-    body?: unknown
-    cause?: unknown
-  }
-
-  const prioritizedReason = [maybeError.error_description, maybeError.detail, maybeError.message]
-    .map((value) => toNonEmptyString(value))
-    .find(Boolean)
-
-  if (prioritizedReason) {
-    return prioritizedReason
-  }
-
-  const responseData =
-    maybeError.response && typeof maybeError.response === 'object'
-      ? (maybeError.response as { data?: unknown }).data
-      : undefined
-
-  const nestedCandidates = [
-    maybeError.error,
-    maybeError.response,
-    responseData,
-    maybeError.data,
-    maybeError.body,
-    maybeError.cause,
-  ]
-
-  for (const candidate of nestedCandidates) {
-    const nestedReason = extractReason(candidate, depth + 1)
-    if (nestedReason) {
-      return nestedReason
-    }
-  }
-
-  return undefined
 }
 
 export const getErrorReason = (error: unknown, fallback: string): string => {
-  return extractReason(error) ?? fallback
+  const appError = normalizeAppError(error)
+  return nonEmptyString(appError.error_description || appError.error_message, fallback)
 }

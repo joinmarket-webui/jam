@@ -28,11 +28,11 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
       {alert && (
         <Alert variant={alert.variant}>
           <AlertTriangleIcon />
-          <AlertDescription>{alert.message}</AlertDescription>
+          <AlertDescription className="whitespace-pre-line">{alert.message}</AlertDescription>
         </Alert>
       )}
 
-      {logFileContent && <LogViewer variant="fill" fileName={fileName} value={logFileContent} refresh={refresh} />}
+      {logFileContent && <LogViewer fileName={fileName} value={logFileContent} refresh={refresh} />}
     </div>
   )
 }

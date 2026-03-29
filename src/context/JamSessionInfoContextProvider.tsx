@@ -58,7 +58,7 @@ export const JamSessionInfoContextProvider = ({
     setRescanInfo({
       updatedAt: getrescaninfoQuery.dataUpdatedAt,
       rescanning: isRescanning,
-      progress: rescanningFinished ? 100 : getrescaninfoQuery.data.progress,
+      progress: rescanningFinished ? 1 : getrescaninfoQuery.data.progress,
     })
   }
 

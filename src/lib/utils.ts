@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
-import type { Milliseconds, SeedPhrase } from '@/types/global'
+import type { Milliseconds, MnemonicPhrase } from '@/types/global'
 
 const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
 
@@ -135,7 +135,10 @@ export const tryBtcToSat = (value: string): number | undefined => {
 
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
-export const DUMMY_SEED_PHRASE: SeedPhrase =
+//  if applicable, the genesis date can be used as minimum `since` timestamp
+export const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
+
+export const DUMMY_SEED_PHRASE: MnemonicPhrase =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
 
 export const percentageToFactor = (val: number, precision = 6) => {

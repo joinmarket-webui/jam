@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
-import { isDevMode } from '@/constants/debugFeatures'
 import { fetchFeatures } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 
 type SupportedFeature = 'logs' // add on demand
 
@@ -16,7 +16,8 @@ type FeaturesApiResponse = {
 }
 
 export const useFeatures = () => {
-  const authState = useStore(authStore, (state) => state.state)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
+  const token = useStore(authStore, (state) => state.state?.auth?.token)
 
   const {
     data: features,
@@ -26,12 +27,12 @@ export const useFeatures = () => {
   } = useQuery({
     queryKey: ['features'],
     queryFn: async ({ signal }) => {
-      if (authState?.auth?.token === undefined) {
+      if (token === undefined) {
         throw new Error('No authentication token available')
       }
 
       const response = await fetchFeatures({
-        token: authState.auth.token,
+        token,
         signal,
       })
 
@@ -41,7 +42,7 @@ export const useFeatures = () => {
 
       return (await response.json()) as FeaturesApiResponse
     },
-    enabled: !!authState?.auth?.token,
+    enabled: token !== undefined,
     retry: false,
     select: (data: FeaturesApiResponse): FeatureItem[] => {
       if (!data.features) {
@@ -65,7 +66,7 @@ export const useFeatures = () => {
     return features?.some((feature) => feature.name === featureName && feature.enabled === true)
   }
   const isFeatureEnabled = (featureName: SupportedFeature) => {
-    return isFeatureSupported(featureName) || isDevMode()
+    return isFeatureSupported(featureName) || isDeveloperMode
   }
 
   return {

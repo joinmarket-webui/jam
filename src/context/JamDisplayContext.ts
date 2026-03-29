@@ -5,6 +5,8 @@ import type { Currency } from '@/types/global'
 interface JamDisplayContextType {
   currency: Currency
   isPrivate: boolean
+  addressChunkingEnabled: boolean
+  toggleAddressChunking: () => void
   toggleCurrencyUnit: () => void
   togglePrivacyMode: () => void
   toggleDisplayMode: () => void

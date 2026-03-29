@@ -1,8 +1,5 @@
-import { useMemo } from 'react'
 import { displaywalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DisplaywalletResponse, ErrorMessage, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { sha256 } from '@noble/hashes/sha2.js'
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { isDevMode } from '@/constants/debugFeatures'
@@ -10,15 +7,8 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import type { Utxo } from './useQueryUtxos'
 
 export type WalletInfoApiObject = NonNullable<WalletDisplayResponse['walletinfo']>
-
-const combinedUtxosHash = (utxos: Utxo[]) => {
-  const utxoIds = utxos.map((it) => hexToBytes(it.utxo.split(':')[0]))
-  const combinedUtxoIds = new Uint8Array(utxoIds.reduce((acc, current) => [...acc, ...current], [] as number[]))
-  return sha256(combinedUtxoIds)
-}
 
 export type UseQueryDisplayWalletResult = {
   walletInfo: WalletInfoApiObject | undefined
@@ -27,24 +17,22 @@ export type UseQueryDisplayWalletResult = {
 
 interface UseQueryDisplayWalletProps {
   walletFileName: WalletFileName
-  utxos?: Utxo[]
+  utxosHashHex?: string
 }
 
 export function useQueryDisplayWallet({
   walletFileName,
-  utxos = [],
+  utxosHashHex = '',
 }: UseQueryDisplayWalletProps): UseQueryDisplayWalletResult {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
-
-  const utxosHash = useMemo(() => bytesToHex(combinedUtxosHash(utxos)), [utxos])
 
   const displaywalletQueryOptions = displaywalletOptions({
     client,
     path: { walletname: encodeURIComponent(walletFileName || '') },
     query: {
       // cache busting: reload whenever local utxos change
-      '#cb': utxosHash,
+      '#cb': utxosHashHex,
     } as never,
   })
 

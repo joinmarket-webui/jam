@@ -5,7 +5,6 @@ import { useMutation } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, HatGlassesIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,10 +15,11 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { withMutationDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
+import { Address } from '../ui/jam/Address'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { BitcoinQR } from './BitcoinQR'
 import { ReceiveForm } from './ReceiveForm'
@@ -46,12 +46,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     source: {
       fromJar: selectedSourceJar?.jarIndex,
     },
-    amount: {
-      amount: undefined,
-    },
+    amount: undefined,
   })
 
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const client = useApiClient()
 
@@ -162,7 +160,11 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           ) : (
             <div className="animate-in fade-in space-y-2 text-center duration-1000">
-              <div className="min-h-5 font-mono text-sm break-all select-all">{getAddressMutation.data?.address}</div>
+              <div className="min-h-5">
+                {!getAddressMutation.data?.address ? undefined : (
+                  <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
+                )}
+              </div>
               <Badge className="min-h-6 text-sm" variant={sourceJar ? 'default' : 'secondary'}>
                 {sourceJar ? (
                   <>
@@ -247,7 +249,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               debug={isDeveloperMode}
               onSubmit={(values) => {
                 setSelectedSourceJarIndex(values.source?.fromJar)
-                setAmount(values.amount.amount)
+                setAmount(values.amount)
               }}
             />
           </AccordionContent>

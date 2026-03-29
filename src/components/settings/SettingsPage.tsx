@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import {
   EyeIcon,
@@ -14,13 +15,15 @@ import {
   ArrowLeftRightIcon,
   LockKeyholeIcon,
   BookKeyIcon,
+  FoldHorizontalIcon,
+  UnfoldHorizontalIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BtcSymbol, SatSymbol } from '@/components/ui/jam/CurrencySymbol'
+import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
@@ -31,6 +34,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Spinner } from '../ui/spinner'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
@@ -46,7 +50,8 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
-  const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode } = useJamDisplayContext()
+  const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode, addressChunkingEnabled, toggleAddressChunking } =
+    useJamDisplayContext()
   const jamSettings = useStore(jamSettingsStore)
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
@@ -55,15 +60,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isFeatureEnabled } = useFeatures()
 
-  const [isLockingWallet, setIsLockingWallet] = useState(false)
-  const doOnLockWallet = async () => {
-    try {
-      setIsLockingWallet(true)
-      await onLockWallet(navigate, t)
-    } finally {
-      setIsLockingWallet(false)
-    }
-  }
+  const lockWalletMutation = useMutation({
+    mutationFn: async ({ navigate, t }: { navigate: NavigateFunction; t: TFunction<'translation', undefined> }) => {
+      return await onLockWallet(navigate, t)
+    },
+    retry: false,
+  })
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -84,13 +86,23 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
           <Separator className="opacity-50" />
           <SettingSwitch
-            renderIcon={({ className }) =>
-              currency === 'btc' ? <BtcSymbol className={className} /> : <SatSymbol className={className} />
-            }
+            renderIcon={({ className }) => <CurrencySymbol currency={currency} className={className} />}
             title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
             checked={currency === 'btc'}
             onCheckedChange={toggleCurrencyUnit}
             displayToggle={false}
+          />
+          <Separator className="opacity-50" />
+          <SettingSwitch
+            icon={addressChunkingEnabled === true ? UnfoldHorizontalIcon : FoldHorizontalIcon}
+            title={t(
+              addressChunkingEnabled === true
+                ? 'settings.use_address_chunking_enabled'
+                : 'settings.use_address_chunking_disabled',
+            )}
+            checked={addressChunkingEnabled === true}
+            onCheckedChange={toggleAddressChunking}
+            displayToggle={true}
           />
           <Separator className="opacity-50" />
           <SettingSwitch
@@ -140,10 +152,16 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
           <Separator className="opacity-50" />
           <SettingItem
-            icon={LockKeyholeIcon}
+            renderIcon={({ className }) =>
+              lockWalletMutation.isPending ? (
+                <Spinner className={className} />
+              ) : (
+                <LockKeyholeIcon className={className} />
+              )
+            }
             title={t('settings.button_lock_wallet')}
-            action={doOnLockWallet}
-            disabled={isLockingWallet}
+            action={() => void lockWalletMutation.mutateAsync({ navigate, t })}
+            disabled={lockWalletMutation.isPending}
           />
           <Separator className="opacity-50" />
           <SettingsLink icon={ArrowLeftRightIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />

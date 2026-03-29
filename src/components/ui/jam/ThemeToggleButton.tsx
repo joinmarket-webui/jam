@@ -1,6 +1,8 @@
 import type { ComponentProps } from 'react'
 import { MoonIcon, SunIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip'
 
 type ThemeToggleButtonProps = {
   theme: string
@@ -10,16 +12,21 @@ type ThemeToggleButtonProps = {
 }
 
 export const ThemeToggleButton = ({ theme, variant, onClick, className }: ThemeToggleButtonProps) => {
+  const { t } = useTranslation()
   return (
-    <Button
-      size="icon"
-      variant={variant}
-      onClick={onClick}
-      className={className}
-      aria-label={/* TODO: i18n */ 'Toggle dark/light mode'}
-      title={/* TODO: i18n */ 'Toggle dark/light mode'}
-    >
-      {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          size="icon"
+          variant={variant}
+          onClick={onClick}
+          className={className}
+          aria-label={theme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
+        >
+          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{theme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}</TooltipContent>
+    </Tooltip>
   )
 }

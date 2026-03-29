@@ -1,60 +1,16 @@
 import { useState, type ComponentProps } from 'react'
-import {
-  AlertTriangleIcon,
-  BlocksIcon,
-  BookOpenIcon,
-  FileQuestionMarkIcon,
-  ScrollTextIcon,
-  SparklesIcon,
-} from 'lucide-react'
+import { BlocksIcon, BookOpenIcon, FileQuestionMarkIcon, ScrollTextIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
-import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
-import type { SemanticVersion } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import type { WithRequiredProperty } from '@/types/global'
-
-type BetaWarningModalProps = WithRequiredProperty<
-  Omit<ComponentProps<typeof Dialog>, 'children'>,
-  'open' | 'onOpenChange'
-> & {
-  jamVersion: SemanticVersion
-  joinmarketVersion?: SemanticVersion
-}
-
-const BetaWarningModal = ({ jamVersion, joinmarketVersion, ...dialogProps }: BetaWarningModalProps) => {
-  const { t } = useTranslation()
-
-  return (
-    <Dialog {...dialogProps}>
-      <DialogContent className="pt-12" showCloseButton={true}>
-        <Alert variant="default">
-          <AlertTriangleIcon />
-          <AlertTitle>{t('footer.warning_alert_title')}</AlertTitle>
-          <AlertDescription>{t('footer.warning_alert_text')}</AlertDescription>
-        </Alert>
-
-        <p className="text-muted-foreground text-sm">
-          JoinMarket: v{joinmarketVersion?.raw || '_unknown'}
-          <br />
-          Jam: v{jamVersion.raw || '_unknown'}
-        </p>
-        <DialogFooter>
-          <Button onClick={() => dialogProps.onOpenChange(false)}>{t('footer.warning_alert_button_ok')}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
+import { BetaWarningDialog } from './footer/BetaWarningDialog'
 
 type JmWebsocketInfo = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
 
-type AppFooterProps = Pick<BetaWarningModalProps, 'jamVersion' | 'joinmarketVersion'> & {
+type AppFooterProps = Pick<ComponentProps<typeof BetaWarningDialog>, 'jamVersion' | 'joinmarketVersion'> & {
   websocketInfo?: JmWebsocketInfo
   onClickCheatsheet: () => void
   onClickOrderbook: () => void
@@ -76,31 +32,27 @@ export function AppFooter({
 
   return (
     <>
+      <BetaWarningDialog
+        open={isShowBetaWarning}
+        onOpenChange={setShowBetaWarning}
+        joinmarketVersion={joinmarketVersion}
+        jamVersion={jamVersion}
+      />
       <footer className="flex items-center justify-between gap-2 p-4">
         <div className="hidden flex-1 text-xs sm:block">
-          <BetaWarningModal
-            open={isShowBetaWarning}
-            onOpenChange={setShowBetaWarning}
-            joinmarketVersion={joinmarketVersion}
-            jamVersion={jamVersion}
-          />
           <Trans i18nKey="footer.warning">
             This is pre-alpha software.
-            <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setShowBetaWarning(true)}>
+            <Button
+              variant="link"
+              size="sm"
+              className="h-auto p-0 text-xs font-semibold"
+              onClick={() => setShowBetaWarning(true)}
+            >
               Read this before using.
             </Button>
           </Trans>
         </div>
         <div className="flex flex-1 items-center justify-start gap-2 sm:justify-center" data-tour-id="footer-tools">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.dispatchEvent(new CustomEvent(POST_LOGIN_TOUR_EVENT))}
-            title="Tour"
-          >
-            <SparklesIcon />
-            <span className="hidden sm:inline-block">Tour</span>
-          </Button>
           <Button variant="outline" size="sm" onClick={onClickCheatsheet} title={t('footer.cheatsheet')}>
             <FileQuestionMarkIcon />
             <span className="hidden sm:inline-block">{t('footer.cheatsheet')}</span>
@@ -124,6 +76,11 @@ export function AppFooter({
             </div>
           )}
           <div className="flex flex-col gap-1">
+            {blockHeight && (
+              <span className="flex items-center gap-1">
+                <BlocksIcon className="size-4" /> {blockHeight}
+              </span>
+            )}
             <a
               href="https://github.com/joinmarket-webui/jam/tags"
               target="_blank"
@@ -132,11 +89,6 @@ export function AppFooter({
             >
               v{jamVersion?.raw}
             </a>
-            {blockHeight && (
-              <span className="flex items-center gap-1">
-                <BlocksIcon className="size-4" /> {blockHeight}
-              </span>
-            )}
           </div>
         </div>
       </footer>

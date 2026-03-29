@@ -1,5 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import js from '@eslint/js'
+import pluginQuery from '@tanstack/eslint-plugin-query'
 import compat from 'eslint-plugin-compat'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
@@ -34,6 +35,9 @@ export default defineConfig(
           varsIgnorePattern: '^_',
           destructuredArrayIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '_ignoredOnPurpose',
+          enableAutofixRemoval: {
+            imports: true,
+          },
         },
       ],
     },
@@ -53,6 +57,20 @@ export default defineConfig(
     extends: [...tseslint.configs.recommendedTypeChecked],
     rules: {
       '@typescript-eslint/no-redundant-type-constituents': ['off'], // shows intent
+    },
+  },
+  {
+    files: ['./src/**/*.{ts,tsx}'],
+    extends: [...pluginQuery.configs['flat/recommended']],
+    rules: {
+      '@tanstack/query/exhaustive-deps': [
+        'error',
+        {
+          allowlist: {
+            variables: ['client', 'token'],
+          },
+        },
+      ],
     },
   },
   {

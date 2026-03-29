@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEventHandler } from 'react'
+import { useEffect, useMemo, useState, type MouseEvent, type MouseEventHandler, type PropsWithChildren } from 'react'
 import { SnowflakeIcon } from 'lucide-react'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
@@ -8,22 +8,22 @@ import styles from './Balance.module.css'
 
 type DisplayMode = 'default' | Currency | 'hidden'
 
-const BTC_SYMBOL = <CurrencySymbol currency="btc" />
+const BTC_SYMBOL = <CurrencySymbol currency="btc" className={styles.bitcoinSymbol} />
 
-const SAT_SYMBOL = <CurrencySymbol currency="sats" />
+const SAT_SYMBOL = <CurrencySymbol currency="sats" className={styles.satsSymbol} />
 
-const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} />
+const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} className={styles.hideSymbol} />
 
-const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className="size-[1em]" />
+const FROZEN_SYMBOL = <SnowflakeIcon data-testid="frozen-symbol" className={cn('size-[1em]', styles.frozenSymbol)} />
 
-interface ElementWithSymbolsProps {
+type ElementWithSymbolsProps = PropsWithChildren<{
   symbol?: React.ReactNode
   showSymbol?: boolean
   frozen?: boolean
   frozenSymbol?: boolean
   className?: string
-  children: React.ReactNode
-}
+  onClick?: MouseEventHandler
+}>
 
 const ElementWithSymbols = ({
   symbol,
@@ -32,6 +32,7 @@ const ElementWithSymbols = ({
   frozenSymbol = true,
   className,
   children,
+  onClick,
 }: ElementWithSymbolsProps) => {
   return (
     <span
@@ -42,10 +43,11 @@ const ElementWithSymbols = ({
         },
         className,
       )}
+      onClick={onClick}
     >
-      {frozen && frozenSymbol && FROZEN_SYMBOL}
       {children}
       {showSymbol && symbol}
+      {frozen && frozenSymbol && FROZEN_SYMBOL}
     </span>
   )
 }
@@ -65,10 +67,12 @@ const BitcoinBalance = ({
   ...props
 }: BitcoinBalanceProps) => {
   const numberString = formatBtc(satsToBtc(String(value)))
-  const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
+  const [rawIntegerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
 
   const fractionPartArray = [...fractionalPart]
-  const integerPartIsZero = Number.parseInt(integerPart, 10) === 0
+  const sign = ['-', '+'].includes(rawIntegerPart[0]) ? rawIntegerPart[0] : undefined
+  const integerPart = sign !== undefined ? rawIntegerPart.slice(1) : rawIntegerPart
+  const integerPartIsZero = integerPart === '0'
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
   return (
@@ -84,6 +88,7 @@ const BitcoinBalance = ({
         data-raw-value={value}
         data-formatted-value={numberString}
       >
+        {sign && <span>{sign}</span>}
         <span className={styles.integerPart}>{integerPart}</span>
         <span className={styles.decimalPoint}>{DECIMAL_POINT_CHAR}</span>
         <span className={styles.fractionalPart}>
@@ -105,7 +110,11 @@ interface SatsBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'chi
 const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
   return (
     <ElementWithSymbols symbol={SAT_SYMBOL} {...props}>
-      <span className={cn('slashed-zero tabular-nums select-all')} data-testid="sats-amount" data-raw-value={value}>
+      <span
+        className={cn('slashed-zero tabular-nums select-all', styles.satsAmountColor)}
+        data-testid="sats-amount"
+        data-raw-value={value}
+      >
         {formatSats(value)}
       </span>
     </ElementWithSymbols>
@@ -116,10 +125,10 @@ type HiddenBalanceProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'> &
   hiddenAmountPlaceholder: string
 }
 
-const HiddenBalance = (props: HiddenBalanceProps) => {
+const HiddenBalance = ({ hiddenAmountPlaceholder, ...props }: HiddenBalanceProps) => {
   return (
     <ElementWithSymbols symbol={HIDE_SYMBOL} frozenSymbol={false} {...props}>
-      <span className="slashed-zero tabular-nums select-none">{props.hiddenAmountPlaceholder}</span>
+      <span className="slashed-zero tabular-nums select-none">{hiddenAmountPlaceholder}</span>
     </ElementWithSymbols>
   )
 }
@@ -141,7 +150,6 @@ type BalanceComponentProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'
  *  - 0.00000000, 150.00000001, 21000000.00000000 are treated as a value in BTC.
  * @param {convertToUnit}: The unit to convert the `valueString` to. If not specified, uses the global display mode.
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
- * Hidden balances are masked with `*****`.
  */
 export const BalanceComponent = ({
   valueString,
@@ -157,22 +165,35 @@ export const BalanceComponent = ({
     setIsBalanceVisible(showBalance)
   }, [showBalance])
 
-  const toggleVisibility: MouseEventHandler = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
+  const elementProps = useMemo(() => {
+    const toggleVisibility: MouseEventHandler = (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      setIsBalanceVisible((current) => !current)
+    }
+    const onClickHandler = enableVisibilityToggle === false ? undefined : toggleVisibility
 
-    setIsBalanceVisible((current) => !current)
-  }
+    return {
+      ...props,
+      className: cn(props.className, {
+        'cursor-pointer': onClickHandler || props.onClick,
+      }),
+      onClick: (event: MouseEvent<HTMLSpanElement>) => {
+        onClickHandler?.(event)
+        props.onClick?.(event)
+      },
+    }
+  }, [props, enableVisibilityToggle])
 
-  const balanceComponent = useMemo(() => {
+  const element = useMemo(() => {
     if (displayMode === 'hidden') {
-      return <HiddenBalance {...props} />
+      return <HiddenBalance {...elementProps} />
     }
 
     const valueNumber = Number.parseFloat(valueString)
     if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
-      return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
+      return <ElementWithSymbols {...elementProps}>{valueString}</ElementWithSymbols>
     }
 
     // Treat integers as sats.
@@ -182,39 +203,31 @@ export const BalanceComponent = ({
 
     if (valueIsSats) {
       if (displayMode === 'default' || displayMode === 'sats') {
-        return <SatsBalance value={valueNumber} {...props} />
+        return <SatsBalance {...elementProps} value={valueNumber} />
       }
       if (displayMode === 'btc') {
-        return <BitcoinBalance value={valueNumber} {...props} />
+        return <BitcoinBalance {...elementProps} value={valueNumber} />
       }
     }
     if (valueIsBtc) {
       const valueInSats = tryBtcToSat(valueString)
       if (!isValidNumber(valueInSats)) {
         console.warn('<Balance /> component expects decimal BTC input in plain notation')
-        return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
+        return <ElementWithSymbols {...elementProps}>{valueString}</ElementWithSymbols>
       }
       if (displayMode === 'default' || displayMode === 'btc') {
-        return <BitcoinBalance value={valueInSats} {...props} />
+        return <BitcoinBalance {...elementProps} value={valueInSats} />
       }
       if (displayMode === 'sats') {
-        return <SatsBalance value={valueInSats} {...props} />
+        return <SatsBalance {...elementProps} value={valueInSats} />
       }
     }
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <ElementWithSymbols {...props}>{valueString}</ElementWithSymbols>
-  }, [valueString, displayMode, props])
+    return <ElementWithSymbols {...elementProps}>{valueString}</ElementWithSymbols>
+  }, [valueString, displayMode, elementProps])
 
-  if (enableVisibilityToggle === false) {
-    return <>{balanceComponent}</>
-  } else {
-    return (
-      <span onClick={toggleVisibility} className="cursor-pointer">
-        {balanceComponent}
-      </span>
-    )
-  }
+  return element
 }
 
 type BalanceProps = Omit<BalanceComponentProps, 'hiddenAmountPlaceholder'> & {

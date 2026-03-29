@@ -29,14 +29,14 @@ export function Jar({
     <div
       className={cn('group/jar flex flex-row items-center gap-2 transition-all duration-300 sm:flex-col', className)}
     >
-      <JarIcon
-        className={`${disabled ? 'grayscale' : ''}`}
-        color={color}
-        totalBalance={totalBalance}
-        totalWalletBalance={totalWalletBalance}
-      />
+      <JarIcon color={color} totalBalance={totalBalance} totalWalletBalance={totalWalletBalance} disabled={disabled} />
       <div className="flex flex-col items-center text-sm">
-        <p className={cn('text-muted-foreground group-hover/jar:font-bold', `group-hover/jar:text-[${color}]`)}>
+        <p
+          className={cn(
+            'text-muted-foreground',
+            disabled ? [] : ['group-hover/jar:font-bold', `group-hover/jar:text-[${color}]`],
+          )}
+        >
           {name}
         </p>
         <div className="flex min-w-[110px] items-center justify-center">

@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
-import { isDevMode } from '@/constants/debugFeatures'
 import { fetchLog } from '@/lib/api/logs'
+import { getErrorReason } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
@@ -24,17 +24,32 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const { t } = useTranslation()
   const token = authState?.auth?.token
 
-  const logQuery = useQuery({
-    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME, token],
+  const {
+    refetch: logQueryRefetch,
+    isFetched: logQueryIsFetched,
+    data: logQueryData,
+    error: logQueryError,
+  } = useQuery<string>({
+    // Keep query identity stable across token refreshes to avoid flashing back to "loading".
+    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME],
     enabled: enabled && token !== undefined,
     retry: false,
+    refetchOnWindowFocus: false,
+    // Poll logs continuously so users don't depend on manual refresh/token lifecycle.
+    refetchInterval: (query) => {
+      if (!enabled || token === undefined) return false
+      if (query.state.error) return false
+      return 2_500
+    },
+    // Keep previous data during refetch to prevent content flicker on slower networks.
+    placeholderData: (previousData) => previousData,
     queryFn: ({ signal }) => {
       if (token === undefined) return Promise.resolve('')
       return fetchLog({
         token,
         fileName: JMWALLETD_LOG_FILE_NAME,
         signal,
-      }).then((response) => (response.ok ? response.text() : Promise.reject(new Error(`HTTP ${response.status}`))))
+      }).then((response) => response.text())
     },
   })
 
@@ -49,10 +64,9 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
       }
     }
 
-    if (!logQuery.error) return undefined
+    if (!logQueryError) return undefined
 
-    const reason =
-      (logQuery.error instanceof Error ? logQuery.error.message : undefined) || t('global.errors.reason_unknown')
+    const reason = getErrorReason(logQueryError, t('global.errors.reason_unknown'))
     const errorMessage = t('logs.error_loading_logs_failed', {
       /* TODO: add reason to i18n string */
       reason,
@@ -62,24 +76,19 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
       variant: 'warning',
       message: errorMessage,
     }
-  }, [enabled, logQuery.error, t, token])
+  }, [enabled, logQueryError, t, token])
 
   const isInitialized = useMemo(() => {
     if (!enabled) return false
     if (token === undefined) return true
-    return logQuery.isFetched
-  }, [enabled, logQuery.isFetched, token])
-
-  const logFileContent = useMemo(() => {
-    if (logQuery.data) return logQuery.data
-    if (!isDevMode() || alert?.variant !== 'warning') return undefined
-    return `${alert.message}\n`.repeat(1_000)
-  }, [alert, logQuery.data])
+    // Once we have data, stay initialized even while background refetches are in flight.
+    return logQueryIsFetched || logQueryData !== undefined
+  }, [enabled, logQueryData, logQueryIsFetched, token])
 
   const refresh = useCallback(async () => {
-    if (token === undefined) return
-    await logQuery.refetch()
-  }, [logQuery, token])
+    if (enabled === false || token === undefined) return
+    await logQueryRefetch()
+  }, [logQueryRefetch, token, enabled])
 
-  return { alert, isInitialized, logFileContent, refresh, fileName: JMWALLETD_LOG_FILE_NAME }
+  return { alert, isInitialized, logFileContent: logQueryData, refresh, fileName: JMWALLETD_LOG_FILE_NAME }
 }

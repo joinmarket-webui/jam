@@ -2,13 +2,18 @@ import { createClient } from '@joinmarket-webui/joinmarket-api-ts'
 import type { Client } from '@joinmarket-webui/joinmarket-api-ts/client'
 import type { ClientOptions, UnlockWalletResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { isDevMode } from '@/constants/debugFeatures'
+import { normalizeAppError } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
 import { queryClient } from './queryClient'
 
-type ApiToken = UnlockWalletResponse['token']
+export type ApiToken = UnlockWalletResponse['token']
 
-const buildAuthHeader = (token: ApiToken): [string, string] => {
+export const buildAuthHeader = (token: ApiToken): [string, string] => {
   return ['x-jm-authorization', `Bearer ${token}`]
+}
+
+export const buildAuthHeaderMap = (token: ApiToken) => {
+  return { 'x-jm-authorization': `Bearer ${token}` }
 }
 
 function loggingRequestInterceptor(request: Request) {
@@ -18,6 +23,10 @@ function loggingRequestInterceptor(request: Request) {
 function loggingResponseInterceptor(response: Response) {
   console.debug('[onResponse]', response)
   return response
+}
+
+function normalizeErrorInterceptor(error: unknown) {
+  return normalizeAppError(error)
 }
 
 const createJamAuthenticationMiddleware = () => {
@@ -50,6 +59,7 @@ export const createApiClient = (): Client => {
   const jamAuthMiddleware = createJamAuthenticationMiddleware()
   client.interceptors.request.use(jamAuthMiddleware)
   client.interceptors.response.use(unauthorizedResponseInterceptor)
+  client.interceptors.error.use(normalizeErrorInterceptor)
 
   if (isDevMode()) {
     client.interceptors.request.use(loggingRequestInterceptor)

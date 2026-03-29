@@ -6,13 +6,13 @@ import { useForm, type Mode, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { Spinner } from '@/components/ui/spinner'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import { cn, type WalletFileName } from '@/lib/utils'
-import { Field, FieldLabel } from '../ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
-import { Spinner } from '../ui/spinner'
 
 interface CreateFormValues {
   walletName: string
@@ -31,7 +31,7 @@ const createFormSchema = (wallets: WalletFileName[], t: TFunction) => {
         .test('valid-wallet-name-test', t('create_wallet.feedback_invalid_wallet_name'), (value) => {
           return /^[\w-]+$/.test(value)
         })
-        .test('valid-wallet-name-exists-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
+        .test('valid-wallet-name-unique-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
           return !wallets.includes((value + JM_WALLET_FILE_EXTENSION) as WalletFileName)
         }),
       password: yup.string().min(1).required(t('create_wallet.feedback_invalid_password')),
@@ -53,17 +53,20 @@ type CreateWalletFormProps = {
   className?: string
   wallets: WalletFileName[]
   onSubmit: SubmitHandler<CreateFormValues>
+  initialValues?: CreateFormValues
   disabled?: boolean
   mode?: Mode
+  submitButtonText: ({ isSubmitting }: { isSubmitting: boolean }) => string
 }
 
-// TODO: use react-hook-form and yup schema
 export const CreateWalletForm = ({
   className,
   wallets,
   onSubmit,
+  initialValues,
   disabled,
   mode = 'onSubmit',
+  submitButtonText,
 }: CreateWalletFormProps) => {
   const { t } = useTranslation()
 
@@ -80,6 +83,7 @@ export const CreateWalletForm = ({
     formState: { errors, isSubmitting },
   } = useForm({
     mode,
+    values: initialValues,
     resolver: yupResolver(schema),
   })
 
@@ -172,14 +176,8 @@ export const CreateWalletForm = ({
       </div>
 
       <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="xxl">
-        {isSubmitting ? (
-          <>
-            <Spinner className="motion-reduce:hidden" />
-            {t('create_wallet.button_creating')}
-          </>
-        ) : (
-          <>{t('create_wallet.button_create')}</>
-        )}
+        {isSubmitting && <Spinner className="motion-reduce:hidden" />}
+        {submitButtonText({ isSubmitting })}
       </Button>
     </form>
   )

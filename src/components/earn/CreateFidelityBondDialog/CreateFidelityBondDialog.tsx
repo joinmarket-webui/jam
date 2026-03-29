@@ -15,7 +15,12 @@ import { StepProgress } from './StepProgress'
 import type { CreateFidelityBondDialogProps } from './types'
 import { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
-export function CreateFidelityBondDialog({ open, onOpenChange, walletFileName }: CreateFidelityBondDialogProps) {
+export function CreateFidelityBondDialog({
+  open,
+  onOpenChange,
+  walletFileName,
+  ...dialogProps
+}: CreateFidelityBondDialogProps) {
   const wizard = useCreateFidelityBondWizard(open, onOpenChange, walletFileName)
 
   const {
@@ -71,7 +76,7 @@ export function CreateFidelityBondDialog({ open, onOpenChange, walletFileName }:
       <DialogFooter className="gap-3 sm:gap-2">
         {step !== 'select_date' && (
           <Button variant="ghost" onClick={handleBack} disabled={isLoading}>
-            <ChevronLeftIcon className="mr-1 h-4 w-4" />
+            <ChevronLeftIcon />
             {t('global.back')}
           </Button>
         )}
@@ -93,7 +98,7 @@ export function CreateFidelityBondDialog({ open, onOpenChange, walletFileName }:
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange} {...dialogProps}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('earn.fidelity_bond.create_fidelity_bond.title')}</DialogTitle>

@@ -8,9 +8,11 @@ import {
   HandCoinsIcon,
   LogsIcon,
   MilkIcon,
+  NotebookTabsIcon,
   PackageSearchIcon,
   ServerIcon,
   SettingsIcon,
+  SparklesIcon,
   TerminalIcon,
   UploadIcon,
   WalletIcon,
@@ -18,7 +20,6 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useStore } from 'zustand'
 import {
   Sidebar,
   SidebarContent,
@@ -36,16 +37,17 @@ import {
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
+import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { DevBadge } from '../dev/DevBadge'
 
 export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
   const { t } = useTranslation()
   const { toggleSidebar } = useSidebar()
 
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const { isFeatureEnabled } = useFeatures()
   const mainItems = useMemo(
@@ -69,6 +71,13 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_earn'),
         url: routes.earn,
         icon: HandCoinsIcon,
+        subitems: [
+          {
+            title: /*TODO: i18n t('sidebar.item_earn_report.label')*/ 'Earn Report',
+            url: routes.earnReport,
+            icon: NotebookTabsIcon,
+          },
+        ],
       },
       {
         title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_sweep'),
@@ -92,6 +101,15 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const settingsItems = useMemo(
     () => [
       {
+        title: /*TODO: i18n t('sidebar.item_tour.label')*/ 'Tour',
+        url: routes.home,
+        icon: SparklesIcon,
+        onClick: () => {
+          toggleSidebar()
+          window.dispatchEvent(new CustomEvent(POST_LOGIN_TOUR_EVENT))
+        },
+      },
+      {
         title: /*TODO: i18n t('sidebar.item_rescan.label')*/ t('settings.rescan_chain'),
         url: routes.rescan,
         icon: PackageSearchIcon,
@@ -106,7 +124,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
             },
           ]),
     ],
-    [t, isFeatureEnabled],
+    [t, isFeatureEnabled, toggleSidebar],
   )
 
   const devItems = useMemo(
@@ -167,6 +185,20 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
+                  {item.subitems?.length && (
+                    <SidebarMenuSub>
+                      {item.subitems?.map((subitem) => (
+                        <SidebarMenuSubItem key={subitem.title}>
+                          <SidebarMenuSubButton asChild title={subitem.title}>
+                            <Link to={subitem.url}>
+                              <subitem.icon />
+                              <span>{subitem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -188,7 +220,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                   {settingsItems.map((item) => (
                     <SidebarMenuSubItem key={item.title}>
                       <SidebarMenuSubButton asChild title={item.title}>
-                        <Link to={item.url}>
+                        <Link to={item.url} onClick={item.onClick}>
                           <item.icon />
                           <span>{item.title}</span>
                         </Link>

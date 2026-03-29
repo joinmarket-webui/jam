@@ -17,7 +17,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { WalletFileName } from '@/lib/utils'
-import type { Milliseconds, SeedPhrase, WithRequiredProperty } from '@/types/global'
+import type { Milliseconds, MnemonicPhrase, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
@@ -39,6 +39,7 @@ export const SeedPhraseDialog = ({
   walletFileName,
   hashedPassword,
   autoCloseTimeout,
+  ...dialogProps
 }: SeedPhraseDialogProps) => {
   const { t } = useTranslation()
 
@@ -62,25 +63,31 @@ export const SeedPhraseDialog = ({
     path: { walletname: encodeURIComponent(walletFileName) },
   })
 
-  const seedQuery = useQuery({
+  const {
+    data: seedQueryData,
+    error: seedQueryError,
+    isFetching: seedQueryIsFetching,
+    refetch: seedQueryRefetch,
+    dataUpdatedAt: seedQueryDataUpdatedAt,
+  } = useQuery({
     ...seedQueryOptions,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
-    select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
+    select: (data) => data.seedphrase.split(/\s+/) as MnemonicPhrase,
   })
 
   useEffect(() => {
-    if (open && isPasswordVerified && seedQuery.data === undefined) {
-      void seedQuery.refetch()
+    if (open && isPasswordVerified && seedQueryData === undefined) {
+      void seedQueryRefetch()
     }
-  }, [open, isPasswordVerified, seedQuery])
+  }, [open, isPasswordVerified, seedQueryData, seedQueryRefetch])
 
   useEffect(() => {
     if (!isPasswordVerified || passwordVerifiedAt === undefined) return
 
-    const seedDisplayedAt = Math.max(seedQuery.dataUpdatedAt, passwordVerifiedAt)
+    const seedDisplayedAt = Math.max(seedQueryDataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
       setTimeLeft(Math.max(0, seedDisplayedAt + autoCloseTimeout - Date.now()))
     }, 333)
@@ -88,7 +95,7 @@ export const SeedPhraseDialog = ({
     return () => {
       clearInterval(interval)
     }
-  }, [seedQuery.dataUpdatedAt, isPasswordVerified, passwordVerifiedAt, autoCloseTimeout])
+  }, [seedQueryDataUpdatedAt, isPasswordVerified, passwordVerifiedAt, autoCloseTimeout])
 
   const handleClose = () => {
     onOpenChange(false)
@@ -99,7 +106,7 @@ export const SeedPhraseDialog = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         {!isPasswordVerified ? (
           <>
@@ -114,6 +121,7 @@ export const SeedPhraseDialog = ({
             <PasswordVerificationForm
               walletFileName={walletFileName}
               hashedPassword={hashedPassword}
+              i18nKeyPrefix="settings.seed_modal.verification"
               onSubmit={() => {
                 setTimeLeft(autoCloseTimeout)
                 setPasswordVerifiedAt(Date.now())
@@ -131,15 +139,15 @@ export const SeedPhraseDialog = ({
             </DialogHeader>
 
             <div className="space-y-4">
-              {!seedQuery.error && (
+              {!seedQueryError && (
                 <div className="bg-muted rounded-lg p-4">
-                  {seedQuery.isFetching ? (
+                  {seedQueryIsFetching ? (
                     <div className="text-muted-foreground flex items-center justify-center gap-2">
                       <Spinner className="motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
-                  ) : seedQuery.data ? (
-                    <SeedPhraseGrid className="md:grid-cols-3" value={seedQuery.data} masked={!revealSeed} />
+                  ) : seedQueryData ? (
+                    <SeedPhraseGrid className="md:grid-cols-3" value={seedQueryData} masked={!revealSeed} />
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}
@@ -148,28 +156,28 @@ export const SeedPhraseDialog = ({
                 </div>
               )}
 
-              {!seedQuery.isFetching && seedQuery.error && (
+              {!seedQueryIsFetching && seedQueryError && (
                 <Alert variant="destructive">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
-                  <AlertDescription>{seedQuery.error.message || t('global.errors.reason_unknown')}</AlertDescription>
+                  <AlertDescription>{seedQueryError.message || t('global.errors.reason_unknown')}</AlertDescription>
                 </Alert>
               )}
 
-              {!seedQuery.isFetching && seedQuery.data && (
+              {!seedQueryIsFetching && seedQueryData && (
                 <Alert variant="warning">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_warning_title')}</AlertTitle>
                   <AlertDescription>{t('settings.seed_modal.text_warning_message')}</AlertDescription>
                 </Alert>
               )}
-              {!seedQuery.error && (
+              {!seedQueryError && (
                 <div className="flex justify-center gap-2">
                   <Switch
                     id="switch-reveal-seed"
                     checked={revealSeed}
                     onCheckedChange={(checked) => setRevealSeed(checked)}
-                    disabled={!seedQuery.data || seedQuery.isFetching}
+                    disabled={!seedQueryData || seedQueryIsFetching}
                   />
                   <Label htmlFor="switch-reveal-seed">{t('settings.reveal_seed')}</Label>
                 </div>

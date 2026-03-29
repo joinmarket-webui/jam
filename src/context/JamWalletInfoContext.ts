@@ -4,7 +4,7 @@ import { Network, type AddressInfo } from 'bitcoin-address-validation'
 import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
 import type { FidelityBondUtxo, UseQueryUtxosResult, Utxo } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
-import type { BitcoinAddress, HdPath, JarIndex } from '@/types/global'
+import type { AmountSats, BitcoinAddress, HdPath, JarIndex, Milliseconds } from '@/types/global'
 
 // Comments for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 // "text-[#e2b86a]", "group-hover/jar:text-[#e2b86a]"
@@ -80,17 +80,19 @@ export type AccountSummary = {
 interface JamWalletInfoContextType {
   walletName: string | null
   walletBalanceSummary: WalletBalanceSummary
+  maxJarAvailableBalance: AmountSats
   fidelityBondSummary: FidelityBondSummary
   addressSummary: AddressSummary
   accountSummary: AccountSummary
   jars: Jar[]
+  utxosHashHex: string
 
   detectedNetwork: Network | null
 
   isLoading: boolean
   isFetching: boolean
   error: Error | ErrorMessage | null
-  refetch: () => Promise<unknown>
+  refetch: (options?: { force?: boolean; delayBefore?: Milliseconds }) => Promise<BalanceSummary>
 
   utxosQueryResult: UseQueryUtxosResult['queryResult']
   displayWalletQueryResult: UseQueryDisplayWalletResult['queryResult']

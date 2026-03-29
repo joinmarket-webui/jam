@@ -3,7 +3,7 @@ export type AmountSats = number
 export type BitcoinAddress = string
 export type JarIndex = number
 
-export type SeedPhrase = string[]
+export type MnemonicPhrase = string[]
 
 export type HdPath =
   | `m/${number}'/${number}'/${number}'` // used internally
@@ -14,6 +14,7 @@ export type HdPath =
 
 export type Milliseconds = number
 export type Seconds = number
+export type Minutes = number
 export type Days = number
 
 export type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'

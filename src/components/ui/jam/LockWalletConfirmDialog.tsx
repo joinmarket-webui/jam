@@ -1,4 +1,5 @@
 import { type ComponentProps } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -12,7 +13,6 @@ type LockWalletConfirmDialogProps = WithRequiredProperty<
   'open' | 'onOpenChange'
 > & {
   onConfirm: () => Promise<void>
-  isLocking: boolean
   makerRunning: boolean
   coinjoinInProgress: boolean
 }
@@ -21,14 +21,19 @@ export const LockWalletConfirmDialog = ({
   open,
   onOpenChange,
   onConfirm,
-  isLocking,
   makerRunning,
   coinjoinInProgress,
+  ...dialogProps
 }: LockWalletConfirmDialogProps) => {
   const { t } = useTranslation()
 
+  const confirmMutation = useMutation({
+    mutationFn: onConfirm,
+    retry: false,
+  })
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{t('wallets.wallet_preview.modal_lock_wallet_title')}</DialogTitle>
@@ -49,11 +54,15 @@ export const LockWalletConfirmDialog = ({
         )}
         <p className="text-muted-foreground">{t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}</p>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLocking}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={confirmMutation.isPending}>
             {t('global.cancel')}
           </Button>
-          <Button variant="default" onClick={() => void onConfirm()} disabled={isLocking}>
-            {isLocking ? (
+          <Button
+            variant="default"
+            onClick={() => void confirmMutation.mutateAsync()}
+            disabled={confirmMutation.isPending}
+          >
+            {confirmMutation.isPending ? (
               <>
                 <Spinner className="motion-reduce:hidden" />
                 {t('wallets.wallet_preview.button_locking')}

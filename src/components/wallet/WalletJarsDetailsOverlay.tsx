@@ -1,8 +1,7 @@
 import type { ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
 import PageTitle from '../ui/jam/PageTitle'
 import { WalletJarsDetailsContent } from './WalletJarsDetailsContent'
@@ -16,13 +15,15 @@ type WalletJarsDetailsOverlayProps = WithRequiredProperty<
 export function WalletJarsDetailsOverlay({
   open,
   onOpenChange,
-  ...jarDetailsConentProps
+  selectedJarIndex,
+  walletFileName,
+  ...dialogProps
 }: WalletJarsDetailsOverlayProps) {
   const { t } = useTranslation()
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   return (
-    <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
+    <Dialog open={open} onOpenChange={() => onOpenChange(false)} {...dialogProps}>
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
         <DialogHeader className="px-2">
           <DialogTitle className="sr-only flex items-center gap-2">
@@ -30,12 +31,13 @@ export function WalletJarsDetailsOverlay({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           <WalletJarsDetailsContent
             enabled={open}
             className="flex h-full flex-col overflow-auto p-2 pt-0"
             debug={isDeveloperMode}
-            {...jarDetailsConentProps}
+            selectedJarIndex={selectedJarIndex}
+            walletFileName={walletFileName}
           />
         </div>
       </DialogContent>
