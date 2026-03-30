@@ -322,7 +322,7 @@ export function SendForm({
 }: SendFormProps) {
   const { t } = useTranslation()
   const client = useApiClient()
-  const walletInfo = useJamWalletInfoContext()
+  const { refetch: refetchWalletInfo } = useJamWalletInfoContext()
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
   const [showQrScannerDialog, setShowQrScannerDialog] = useState(false)
@@ -398,17 +398,17 @@ export function SendForm({
     return (sourceJar?.utxos || []).filter((utxo) => utxoRowSelection[utxo.utxo] === true)
   }, [sourceJar?.utxos, utxoRowSelection])
 
-  const freezeOrUnfreezeUtxo = useMutation({
+  const { mutateAsync: freezeOrUnfreezeUtxoMutateAsync } = useMutation({
     ...freezeMutation({ client }),
     retry: false,
   })
 
-  const applyUtxoSelectionMutation = useMutation({
+  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isApplyingUtxoSelection } = useMutation({
     mutationFn: async ({ utxosToFreeze, utxosToUnfreeze }: { utxosToFreeze: Utxo[]; utxosToUnfreeze: Utxo[] }) => {
       const [freezeResult, unfreezeResult] = await Promise.all([
         Promise.allSettled(
           utxosToFreeze.map((utxo) =>
-            freezeOrUnfreezeUtxo.mutateAsync({
+            freezeOrUnfreezeUtxoMutateAsync({
               path: {
                 walletname: encodeURIComponent(walletFileName),
               },
@@ -421,7 +421,7 @@ export function SendForm({
         ),
         Promise.allSettled(
           utxosToUnfreeze.map((utxo) =>
-            freezeOrUnfreezeUtxo.mutateAsync({
+            freezeOrUnfreezeUtxoMutateAsync({
               path: {
                 walletname: encodeURIComponent(walletFileName),
               },
@@ -481,8 +481,8 @@ export function SendForm({
     }
 
     try {
-      const result = await applyUtxoSelectionMutation.mutateAsync({ utxosToFreeze, utxosToUnfreeze })
-      await walletInfo.refetch()
+      const result = await applyUtxoSelectionMutateAsync({ utxosToFreeze, utxosToUnfreeze })
+      await refetchWalletInfo()
 
       if (utxosToFreeze.length > 0) {
         const rejected = result.freezeResult.filter((it) => it.status === 'rejected')
@@ -511,7 +511,7 @@ export function SendForm({
         toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
       }
     }
-  }, [applyUtxoSelectionMutation, selectedSourceJarUtxos, sourceJar, t, walletFileName, walletInfo])
+  }, [applyUtxoSelectionMutateAsync, refetchWalletInfo, selectedSourceJarUtxos, sourceJar, t])
 
   const destinationJar = useMemo(() => {
     if (destinationJarIndex === undefined) return
@@ -602,7 +602,7 @@ export function SendForm({
       <Dialog
         open={showUtxoSelectorDialog}
         onOpenChange={(open) => {
-          if (applyUtxoSelectionMutation.isPending) return
+          if (isApplyingUtxoSelection) return
           setShowUtxoSelectorDialog(open)
         }}
       >
@@ -635,16 +635,16 @@ export function SendForm({
               type="button"
               variant="outline"
               onClick={() => setShowUtxoSelectorDialog(false)}
-              disabled={applyUtxoSelectionMutation.isPending}
+              disabled={isApplyingUtxoSelection}
             >
               {t('modal.confirm_button_reject')}
             </Button>
             <Button
               type="button"
               onClick={() => void onApplyUtxoSelection()}
-              disabled={applyUtxoSelectionMutation.isPending}
+              disabled={isApplyingUtxoSelection}
             >
-              {applyUtxoSelectionMutation.isPending ? <Spinner /> : undefined}
+              {isApplyingUtxoSelection ? <Spinner /> : undefined}
               {t('modal.confirm_button_accept')}
             </Button>
           </DialogFooter>
@@ -663,7 +663,7 @@ export function SendForm({
                   disabled ||
                   sourceJar === undefined ||
                   sourceJar.utxos.length === 0 ||
-                  applyUtxoSelectionMutation.isPending
+                  isApplyingUtxoSelection
                 }
                 onClick={openUtxoSelectorDialog}
               >
@@ -699,7 +699,7 @@ export function SendForm({
                   }}
                   disabled={
                     disabled ||
-                    applyUtxoSelectionMutation.isPending ||
+                    isApplyingUtxoSelection ||
                     jar.balanceSummary.calculatedAvailableBalanceInSats <= 0
                   }
                 />
