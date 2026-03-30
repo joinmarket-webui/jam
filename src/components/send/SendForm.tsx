@@ -121,6 +121,7 @@ const initialNumberOfCollaborators = (minValue: number): number => {
 const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
 
 const MAX_NUM_COLLABORATORS = 99
+const SEND_AUTO_SELECTION_TOAST_ID = 'send.utxo.selection_changed_automatically'
 
 // TODO: this value should be dynamic via jm backend settings
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
@@ -439,6 +440,7 @@ export function SendForm({
 
   const openUtxoSelectorDialog = useCallback(() => {
     if (!sourceJar) return
+    toast.dismiss(SEND_AUTO_SELECTION_TOAST_ID)
     setUtxoFilter('')
     setUtxoRowSelection(defaultUtxoRowSelection)
     setShowUtxoSelectorDialog(true)
@@ -458,12 +460,14 @@ export function SendForm({
     if (groupedSelectedUtxos.length > selectedSourceJarUtxos.length) {
       toast.warning(`Security measure: Selection changed`, {
         description: `Automatically selected ${groupedSelectedUtxos.length - selectedSourceJarUtxos.length} additional UTXOs with matching addresses.`,
+        id: SEND_AUTO_SELECTION_TOAST_ID,
       })
     }
 
     if (groupedDeselectedUtxos.length > userDeselectedUtxos.length) {
       toast.warning(`Security measure: Selection changed`, {
         description: `Automatically deselected ${groupedDeselectedUtxos.length - userDeselectedUtxos.length} additional UTXOs with matching addresses.`,
+        id: SEND_AUTO_SELECTION_TOAST_ID,
       })
     }
 
