@@ -471,6 +471,7 @@ export function SendForm({
       })
     }
 
+    // The selected set should remain spendable; everything else becomes frozen.
     const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen === false)
     const utxosToUnfreeze = mutableUtxos.filter((it) => selectedAddresses.has(it.address) && it.frozen === true)
 
@@ -696,7 +697,11 @@ export function SendForm({
                       void trigger('destination.address')
                     }
                   }}
-                  disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
+                  disabled={
+                    disabled ||
+                    applyUtxoSelectionMutation.isPending ||
+                    jar.balanceSummary.calculatedAvailableBalanceInSats <= 0
+                  }
                 />
               ))}
             </div>
