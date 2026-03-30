@@ -1,10 +1,13 @@
 import { useCallback, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { freezeMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { useMutation } from '@tanstack/react-query'
+import type { RowSelectionState } from '@tanstack/react-table'
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
-import { BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
+import { BrushCleaningIcon, ListFilterIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -13,11 +16,18 @@ import * as yup from 'yup'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
-import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
+import {
+  useDetectNetwork,
+  useJamWalletInfoContext,
+  type AddressSummary,
+  type Jar,
+} from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
+import { utxoTags } from '@/lib/tags'
 import {
   cn,
   delayedPromise,
@@ -34,6 +44,7 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Field, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
 import { inputVariants } from '../ui/input-variants'
@@ -44,6 +55,7 @@ import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
+import { JarUtxosTable, type UtxoTableEntry } from '../wallet/JarUtxosTable'
 import JarSelectorDialog from './JarSelectorDialog'
 import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
 import { estimateMaxCollaboratorFee } from './feeEstimate'
@@ -88,6 +100,13 @@ const AddressFromJarSelectorDialog = ({
       }}
     />
   )
+}
+
+const utxoToTableEntry = (utxo: Utxo, addressSummary: AddressSummary, t: TFunction): UtxoTableEntry => {
+  return {
+    utxo,
+    tags: utxoTags(utxo, addressSummary, t),
+  }
 }
 
 const initialNumberOfCollaborators = (minValue: number): number => {
@@ -301,9 +320,14 @@ export function SendForm({
   debug,
 }: SendFormProps) {
   const { t } = useTranslation()
+  const client = useApiClient()
+  const walletInfo = useJamWalletInfoContext()
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
   const [showQrScannerDialog, setShowQrScannerDialog] = useState(false)
+  const [showUtxoSelectorDialog, setShowUtxoSelectorDialog] = useState(false)
+  const [utxoFilter, setUtxoFilter] = useState('')
+  const [utxoRowSelection, setUtxoRowSelection] = useState<RowSelectionState>({})
   const [bip21Message, setBip21Message] = useState<string>()
 
   const { network } = useDetectNetwork()
@@ -355,6 +379,134 @@ export function SendForm({
     if (sourceJarIndex === undefined) return
     return jars.find((it) => it.jarIndex === sourceJarIndex)
   }, [jars, sourceJarIndex])
+
+  const sourceJarTableEntries = useMemo(() => {
+    return (sourceJar?.utxos || []).map((it) => utxoToTableEntry(it, addressSummary, t))
+  }, [addressSummary, sourceJar?.utxos, t])
+
+  const defaultUtxoRowSelection = useMemo<RowSelectionState>(() => {
+    return (sourceJar?.utxos || []).reduce((acc, utxo) => {
+      if (utxo.frozen === false && utxo.locktime === undefined) {
+        acc[utxo.utxo] = true
+      }
+      return acc
+    }, {} as RowSelectionState)
+  }, [sourceJar?.utxos])
+
+  const selectedSourceJarUtxos = useMemo(() => {
+    return (sourceJar?.utxos || []).filter((utxo) => utxoRowSelection[utxo.utxo] === true)
+  }, [sourceJar?.utxos, utxoRowSelection])
+
+  const freezeOrUnfreezeUtxo = useMutation({
+    ...freezeMutation({ client }),
+    retry: false,
+  })
+
+  const applyUtxoSelectionMutation = useMutation({
+    mutationFn: async ({ utxosToFreeze, utxosToUnfreeze }: { utxosToFreeze: Utxo[]; utxosToUnfreeze: Utxo[] }) => {
+      const [freezeResult, unfreezeResult] = await Promise.all([
+        Promise.allSettled(
+          utxosToFreeze.map((utxo) =>
+            freezeOrUnfreezeUtxo.mutateAsync({
+              path: {
+                walletname: encodeURIComponent(walletFileName),
+              },
+              body: {
+                'utxo-string': utxo.utxo,
+                freeze: true,
+              },
+            }),
+          ),
+        ),
+        Promise.allSettled(
+          utxosToUnfreeze.map((utxo) =>
+            freezeOrUnfreezeUtxo.mutateAsync({
+              path: {
+                walletname: encodeURIComponent(walletFileName),
+              },
+              body: {
+                'utxo-string': utxo.utxo,
+                freeze: false,
+              },
+            }),
+          ),
+        ),
+      ])
+
+      return { freezeResult, unfreezeResult }
+    },
+  })
+
+  const openUtxoSelectorDialog = useCallback(() => {
+    if (!sourceJar) return
+    setUtxoFilter('')
+    setUtxoRowSelection(defaultUtxoRowSelection)
+    setShowUtxoSelectorDialog(true)
+  }, [defaultUtxoRowSelection, sourceJar])
+
+  const onApplyUtxoSelection = useCallback(async () => {
+    if (!sourceJar) return
+
+    // Keep same-address UTXOs together to avoid accidental privacy leaks.
+    const selectedUtxoIds = new Set(selectedSourceJarUtxos.map((it) => it.utxo))
+    const selectedAddresses = new Set(selectedSourceJarUtxos.map((it) => it.address))
+    const mutableUtxos = sourceJar.utxos.filter((it) => it.locktime === undefined)
+    const groupedSelectedUtxos = mutableUtxos.filter((it) => selectedAddresses.has(it.address))
+    const groupedDeselectedUtxos = mutableUtxos.filter((it) => !selectedAddresses.has(it.address))
+    const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
+
+    if (groupedSelectedUtxos.length > selectedSourceJarUtxos.length) {
+      toast.warning(`Security measure: Selection changed`, {
+        description: `Automatically selected ${groupedSelectedUtxos.length - selectedSourceJarUtxos.length} additional UTXOs with matching addresses.`,
+      })
+    }
+
+    if (groupedDeselectedUtxos.length > userDeselectedUtxos.length) {
+      toast.warning(`Security measure: Selection changed`, {
+        description: `Automatically deselected ${groupedDeselectedUtxos.length - userDeselectedUtxos.length} additional UTXOs with matching addresses.`,
+      })
+    }
+
+    const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen === false)
+    const utxosToUnfreeze = mutableUtxos.filter((it) => selectedAddresses.has(it.address) && it.frozen === true)
+
+    if (utxosToFreeze.length === 0 && utxosToUnfreeze.length === 0) {
+      setShowUtxoSelectorDialog(false)
+      return
+    }
+
+    try {
+      const result = await applyUtxoSelectionMutation.mutateAsync({ utxosToFreeze, utxosToUnfreeze })
+      await walletInfo.refetch()
+
+      if (utxosToFreeze.length > 0) {
+        const rejected = result.freezeResult.filter((it) => it.status === 'rejected')
+        if (rejected.length === 0) {
+          toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: utxosToFreeze.length }))
+        } else {
+          toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length }))
+        }
+      }
+
+      if (utxosToUnfreeze.length > 0) {
+        const rejected = result.unfreezeResult.filter((it) => it.status === 'rejected')
+        if (rejected.length === 0) {
+          toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: utxosToUnfreeze.length }))
+        } else {
+          toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length }))
+        }
+      }
+
+      setShowUtxoSelectorDialog(false)
+    } catch (_ignoredOnPurpose) {
+      if (utxosToFreeze.length > 0) {
+        toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: utxosToFreeze.length }))
+      }
+      if (utxosToUnfreeze.length > 0) {
+        toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
+      }
+    }
+  }, [applyUtxoSelectionMutation, selectedSourceJarUtxos, sourceJar, t, walletFileName, walletInfo])
 
   const destinationJar = useMemo(() => {
     if (destinationJarIndex === undefined) return
@@ -442,10 +594,78 @@ export function SendForm({
         }}
       />
       <QrScannerDialog open={showQrScannerDialog} onOpenChange={setShowQrScannerDialog} onScan={applyBip21Result} />
+      <Dialog
+        open={showUtxoSelectorDialog}
+        onOpenChange={(open) => {
+          if (applyUtxoSelectionMutation.isPending) return
+          setShowUtxoSelectorDialog(open)
+        }}
+      >
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle>{t('show_utxos.title')}</DialogTitle>
+            <DialogDescription>
+              {t('show_utxos.subtitle', { count: selectedSourceJarUtxos.length })} {t('show_utxos.text_subtitle_addon')}
+            </DialogDescription>
+          </DialogHeader>
+
+          <Input
+            value={utxoFilter}
+            onChange={(event) => setUtxoFilter(event.target.value)}
+            placeholder={t('jar_details.utxo_list.placeholder_search')}
+          />
+          <div className="max-h-[55vh] overflow-hidden">
+            <JarUtxosTable
+              globalFilter={utxoFilter}
+              tableEntries={sourceJarTableEntries}
+              pinnedEntries={[]}
+              initialRowSelection={defaultUtxoRowSelection}
+              onRowSelectionChange={setUtxoRowSelection}
+              enableRowSelection={(row) => row.original.utxo.locktime === undefined}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowUtxoSelectorDialog(false)}
+              disabled={applyUtxoSelectionMutation.isPending}
+            >
+              {t('modal.confirm_button_reject')}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void onApplyUtxoSelection()}
+              disabled={applyUtxoSelectionMutation.isPending}
+            >
+              {applyUtxoSelectionMutation.isPending ? <Spinner /> : undefined}
+              {t('modal.confirm_button_accept')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
           <Field className="space-y-4" data-invalid={errors.source !== undefined}>
-            <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
+            <div className="flex items-center justify-between gap-2">
+              <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={
+                  disabled ||
+                  sourceJar === undefined ||
+                  sourceJar.utxos.length === 0 ||
+                  applyUtxoSelectionMutation.isPending
+                }
+                onClick={openUtxoSelectorDialog}
+              >
+                <ListFilterIcon />
+                {t('show_utxos.text_select_utxos_tooltip')}
+              </Button>
+            </div>
             <div className="grid grid-cols-5 gap-4">
               {jars.map((jar, index) => (
                 <SelectableJar
