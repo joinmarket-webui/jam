@@ -13,6 +13,8 @@ export const SelectableJar = ({
   name,
   color,
   totalBalance,
+  availableBalance,
+  frozenOrLockedBalance,
   totalWalletBalance,
   isSelected,
   disabled = false,
@@ -42,8 +44,15 @@ export const SelectableJar = ({
           disabled={disabled}
         />
         <span className="text-xs">{name}</span>
-        <div className="flex items-center text-sm">
-          <Balance valueString={String(totalBalance)} />
+        <div className="flex min-w-[110px] items-center justify-center text-sm">
+          <Balance valueString={String(availableBalance)} />
+        </div>
+        <div
+          className={cn('light:text-blue-500/80 flex min-w-[110px] items-center justify-center gap-1 text-xs', {
+            hidden: frozenOrLockedBalance <= 0,
+          })}
+        >
+          <Balance valueString={String(frozenOrLockedBalance)} frozen={true} />
         </div>
       </div>
       <div className="flex items-center">
