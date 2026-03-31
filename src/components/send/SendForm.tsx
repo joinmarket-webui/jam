@@ -44,7 +44,6 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Field, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
 import { inputVariants } from '../ui/input-variants'
@@ -55,9 +54,10 @@ import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
-import { JarUtxosTable, type UtxoTableEntry } from '../wallet/JarUtxosTable'
+import type { UtxoTableEntry } from '../wallet/JarUtxosTable'
 import JarSelectorDialog from './JarSelectorDialog'
 import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
+import { UtxoSelectionDialog } from './UtxoSelectionDialog'
 import { estimateMaxCollaboratorFee } from './feeEstimate'
 import type { SendFormValues } from './types'
 
@@ -597,57 +597,22 @@ export function SendForm({
         }}
       />
       <QrScannerDialog open={showQrScannerDialog} onOpenChange={setShowQrScannerDialog} onScan={applyBip21Result} />
-      <Dialog
+      <UtxoSelectionDialog
         open={showUtxoSelectorDialog}
+        isApplying={isApplyingUtxoSelection}
+        selectedCount={selectedSourceJarUtxos.length}
+        filter={utxoFilter}
+        tableEntries={sourceJarTableEntries}
+        initialRowSelection={defaultUtxoRowSelection}
+        enableRowSelection={(row) => !fb.utxo.isFidelityBond(row.original.utxo)}
         onOpenChange={(open) => {
           if (isApplyingUtxoSelection) return
           setShowUtxoSelectorDialog(open)
         }}
-      >
-        <DialogContent className="max-w-6xl">
-          <DialogHeader>
-            <DialogTitle>{t('show_utxos.title')}</DialogTitle>
-            <DialogDescription>
-              {t('show_utxos.subtitle', { count: selectedSourceJarUtxos.length })} {t('show_utxos.text_subtitle_addon')}
-            </DialogDescription>
-          </DialogHeader>
-
-          <Input
-            value={utxoFilter}
-            onChange={(event) => setUtxoFilter(event.target.value)}
-            placeholder={t('jar_details.utxo_list.placeholder_search')}
-          />
-          <div className="max-h-[55vh] overflow-hidden">
-            <JarUtxosTable
-              globalFilter={utxoFilter}
-              tableEntries={sourceJarTableEntries}
-              pinnedEntries={[]}
-              initialRowSelection={defaultUtxoRowSelection}
-              onRowSelectionChange={setUtxoRowSelection}
-              enableRowSelection={(row) => !fb.utxo.isFidelityBond(row.original.utxo)}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowUtxoSelectorDialog(false)}
-              disabled={isApplyingUtxoSelection}
-            >
-              {t('modal.confirm_button_reject')}
-            </Button>
-            <Button
-              type="button"
-              onClick={() => void onApplyUtxoSelection()}
-              disabled={isApplyingUtxoSelection}
-            >
-              {isApplyingUtxoSelection ? <Spinner /> : undefined}
-              {t('modal.confirm_button_accept')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onFilterChange={setUtxoFilter}
+        onRowSelectionChange={setUtxoRowSelection}
+        onApply={() => void onApplyUtxoSelection()}
+      />
       <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
           <Field className="space-y-4" data-invalid={errors.source !== undefined}>
