@@ -26,6 +26,7 @@ import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
+import * as fb from '@/lib/fidelityBondUtils'
 import { utxoTags } from '@/lib/tags'
 import {
   cn,
@@ -385,7 +386,7 @@ export function SendForm({
 
   const defaultUtxoRowSelection = useMemo<RowSelectionState>(() => {
     return (sourceJar?.utxos || []).reduce((acc, utxo) => {
-      if (utxo.frozen === false && utxo.locktime === undefined) {
+      if (utxo.frozen === false && !fb.utxo.isFidelityBond(utxo)) {
         acc[utxo.utxo] = true
       }
       return acc
@@ -450,7 +451,7 @@ export function SendForm({
     // Keep same-address UTXOs together to avoid accidental privacy leaks.
     const selectedUtxoIds = new Set(selectedSourceJarUtxos.map((it) => it.utxo))
     const selectedAddresses = new Set(selectedSourceJarUtxos.map((it) => it.address))
-    const mutableUtxos = sourceJar.utxos.filter((it) => it.locktime === undefined)
+    const mutableUtxos = sourceJar.utxos.filter((it) => !fb.utxo.isFidelityBond(it))
     const groupedSelectedUtxos = mutableUtxos.filter((it) => selectedAddresses.has(it.address))
     const groupedDeselectedUtxos = mutableUtxos.filter((it) => !selectedAddresses.has(it.address))
     const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
@@ -623,7 +624,7 @@ export function SendForm({
               pinnedEntries={[]}
               initialRowSelection={defaultUtxoRowSelection}
               onRowSelectionChange={setUtxoRowSelection}
-              enableRowSelection={(row) => row.original.utxo.locktime === undefined}
+              enableRowSelection={(row) => !fb.utxo.isFidelityBond(row.original.utxo)}
             />
           </div>
 
