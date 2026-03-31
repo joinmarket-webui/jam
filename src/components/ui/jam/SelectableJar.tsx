@@ -1,8 +1,6 @@
 import { useRef, type ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
-import { Balance } from './Balance'
-import type { Jar } from './Jar'
-import { JarIcon } from './JarIcon'
+import { Jar } from './Jar'
 
 interface SelectableJarProps extends ComponentProps<typeof Jar> {
   isSelected: NonNullable<React.ComponentProps<'input'>['checked']>
@@ -35,26 +33,17 @@ export const SelectableJar = ({
       }}
       tabIndex={-1}
     >
-      <div className="flex flex-col items-center">
-        <JarIcon
-          color={color}
-          totalBalance={totalBalance}
-          isSelected={isSelected}
-          totalWalletBalance={totalWalletBalance}
-          disabled={disabled}
-        />
-        <span className="text-xs">{name}</span>
-        <div className="flex min-w-[110px] items-center justify-center text-sm">
-          <Balance valueString={String(availableBalance)} />
-        </div>
-        <div
-          className={cn('light:text-blue-500/80 flex min-w-[110px] items-center justify-center gap-1 text-xs', {
-            hidden: frozenOrLockedBalance <= 0,
-          })}
-        >
-          <Balance valueString={String(frozenOrLockedBalance)} frozen={true} />
-        </div>
-      </div>
+      <Jar
+        className="flex-col gap-0"
+        name={name}
+        color={color}
+        totalBalance={totalBalance}
+        availableBalance={availableBalance}
+        frozenOrLockedBalance={frozenOrLockedBalance}
+        totalWalletBalance={totalWalletBalance}
+        isSelected={isSelected}
+        disabled={disabled}
+      />
       <div className="flex items-center">
         <input
           ref={radioRef}
