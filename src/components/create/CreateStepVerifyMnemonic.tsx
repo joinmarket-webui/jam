@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { CheckCircle2Icon, ChevronLeftIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -7,6 +7,7 @@ import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { cn } from '@/lib/utils'
 import type { MnemonicPhrase } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
+import { MaskedText } from '../ui/jam/MaskedText'
 import { Spinner } from '../ui/spinner'
 
 const skipWalletBackupVerification = isDebugFeatureEnabled('skipWalletBackupVerification')
@@ -45,7 +46,6 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
 
       if (word !== expectedWord) {
         setWrongButtonIndex(shuffledIndex)
-        setTimeout(() => setWrongButtonIndex(undefined), 600)
         return
       }
 
@@ -54,6 +54,12 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
     },
     [mnemonicPhrase, selectedWords, pickedIndicesSet, wrongButtonIndex],
   )
+
+  useEffect(() => {
+    if (wrongButtonIndex === undefined) return
+    const timerId = setTimeout(() => setWrongButtonIndex(undefined), 600)
+    return () => clearTimeout(timerId)
+  }, [wrongButtonIndex])
 
   const progress = selectedWords.length
   const total = mnemonicPhrase.length
@@ -81,7 +87,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
           <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
             <div
               className={cn('h-full rounded-full transition-all duration-300 ease-out', {
-                'bg-green-100/50': isCorrect,
+                'bg-green-300/50': isCorrect,
                 'bg-primary': !isCorrect,
               })}
               style={{ width: `${(progress / total) * 100}%` }}
@@ -91,43 +97,45 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
       </div>
 
       <div
-        className={cn('min-h-[100px] rounded-lg border-2 border-dashed p-2.5 transition-colors', {
+        className={cn('h-1 min-h-[150px] rounded-lg border-2 border-dashed p-2.5 transition-colors', {
           'border-destructive/50': wrongButtonIndex !== undefined,
           'border-muted-foreground/20': wrongButtonIndex === undefined,
           'border-green-300/50 bg-green-600/5': allSelected && isCorrect,
         })}
       >
-        <div className="grid grid-cols-3 gap-1.5">
-          {mnemonicPhrase.map((_, index) => {
-            const word = selectedWords[index]
-            const isFilled = word !== undefined
-            return (
-              <div
-                key={index}
-                className={cn('flex items-center gap-0.5 rounded-md px-0.5 py-1.5 font-mono text-xs transition-all', {
-                  'bg-primary/10 text-primary border-primary/20 border': isFilled,
-                  'border-muted bg-muted/30 border border-dashed': !isFilled,
-                })}
-              >
-                <span
-                  className={cn('min-w-8 text-right tabular-nums', {
-                    'text-primary/50': isFilled,
-                    'text-muted-foreground/40': !isFilled,
+        <div className="grid grid-cols-3 gap-1.5 select-none">
+          {!isCorrect &&
+            mnemonicPhrase.map((_, index) => {
+              const word = selectedWords[index]
+              const isFilled = word !== undefined
+              const isHidden = index + 1 < progress
+              return (
+                <div
+                  key={index}
+                  className={cn('flex items-center gap-0.5 rounded-md px-0.5 py-1.5 font-mono text-xs transition-all', {
+                    'bg-primary/10 text-primary border-primary/20 border': isFilled,
+                    'border-muted bg-muted/30 border border-dashed': !isFilled,
                   })}
                 >
-                  {index + 1}.
-                </span>
-                {isFilled ? (
-                  <span className="font-medium">{word}</span>
-                ) : (
-                  <span className="text-muted-foreground/30">···</span>
-                )}
-              </div>
-            )
-          })}
+                  <span
+                    className={cn('min-w-8 text-right tabular-nums', {
+                      'text-primary/50': isFilled,
+                      'text-muted-foreground/40': !isFilled,
+                    })}
+                  >
+                    {index + 1}.
+                  </span>
+                  {isFilled ? (
+                    <span>{isHidden ? <MaskedText masked /> : word}</span>
+                  ) : (
+                    <span className="text-muted-foreground/30">···</span>
+                  )}
+                </div>
+              )
+            })}
         </div>
         {allSelected && isCorrect && (
-          <div className="mt-2.5 flex items-center justify-center gap-1.5 text-sm font-medium text-green-300">
+          <div className="flex h-full items-center justify-center gap-1.5 text-sm font-medium text-green-300">
             <CheckCircle2Icon className="size-4" />
             {t('create_wallet.verify_mnemonic.feedback_mnemonic_confirmed')}
           </div>
@@ -152,7 +160,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
                 })}
                 onClick={() => handleWordClick(word, index)}
               >
-                {isPicked ? '···' : word}
+                {isPicked ? <MaskedText masked /> : word}
               </Button>
             )
           })}
@@ -179,6 +187,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
             className="flex-1"
             variant="secondary"
             size="xxl"
+            disabled={verifyMutation.isPending}
             onClick={() => verifyMutation.mutate({ mustBeCorrect: false })}
           >
             Skip <DevBadge />
