@@ -141,7 +141,7 @@ const CreateWalletPage = () => {
       const walletFileName = walletDisplayNameToFileName(walletName)
       const createData = await createWalletMutation.mutateAsync({
         body: {
-          walletname: encodeURIComponent(walletFileName),
+          walletname: walletFileName,
           password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
         },
@@ -151,13 +151,18 @@ const CreateWalletPage = () => {
       // Step #3: lock wallet
       // since wallet is immediately unlocked, let's lock the wallet here.
       // The token is only a valid certain amount of time, and the user
-      // might take longer than the validitiy time.
-      // after the mnemonic phrase is confirmed, we unlock the wallet again.
-      await delayedPromise(210) // wait some time before locking
-      await lockWalletMutation.mutateAsync({
-        walletFileName,
-        token: createData.token,
-      })
+      // might take longer for the next steps than the token is valid.
+      // After the mnemonic phrase is confirmed, we unlock the wallet again.
+      try {
+        await delayedPromise(210) // wait some time before locking
+        await lockWalletMutation.mutateAsync({
+          walletFileName,
+          token: createData.token,
+        })
+      } catch (_ignoredOnPurpose: unknown) {
+        // user might face some problem afterwards, but can still write down the mnemonic phrase
+        console.warn('Locking wallet after creation failed, continuing with create flow anyway!')
+      }
 
       let hashedPassword: string | undefined = undefined
       try {
@@ -196,6 +201,7 @@ const CreateWalletPage = () => {
           password,
         },
       })
+
       updateAuthState({
         walletFileName: response.walletname as WalletFileName,
         auth: { token: response.token, refresh_token: response.refresh_token },
