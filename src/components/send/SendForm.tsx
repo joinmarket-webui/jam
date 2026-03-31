@@ -18,7 +18,6 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import {
   useDetectNetwork,
-  useJamWalletInfoContext,
   type AddressSummary,
   type Jar,
 } from '@/context/JamWalletInfoContext'
@@ -322,7 +321,6 @@ export function SendForm({
 }: SendFormProps) {
   const { t } = useTranslation()
   const client = useApiClient()
-  const { refetch: refetchWalletInfo } = useJamWalletInfoContext()
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
   const [showQrScannerDialog, setShowQrScannerDialog] = useState(false)
@@ -482,7 +480,6 @@ export function SendForm({
 
     try {
       const result = await applyUtxoSelectionMutateAsync({ utxosToFreeze, utxosToUnfreeze })
-      await refetchWalletInfo()
 
       if (utxosToFreeze.length > 0) {
         const rejected = result.freezeResult.filter((it) => it.status === 'rejected')
@@ -511,7 +508,7 @@ export function SendForm({
         toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
       }
     }
-  }, [applyUtxoSelectionMutateAsync, refetchWalletInfo, selectedSourceJarUtxos, sourceJar, t])
+  }, [applyUtxoSelectionMutateAsync, selectedSourceJarUtxos, sourceJar, t])
 
   const destinationJar = useMemo(() => {
     if (destinationJarIndex === undefined) return
