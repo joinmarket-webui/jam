@@ -1,9 +1,6 @@
-import { useCallback, useMemo, useState, type ComponentProps } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { freezeMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useMutation } from '@tanstack/react-query'
-import type { RowSelectionState } from '@tanstack/react-table'
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
@@ -22,12 +19,9 @@ import {
   type Jar,
 } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
-import * as fb from '@/lib/fidelityBondUtils'
-import { utxoTags } from '@/lib/tags'
 import {
   cn,
   delayedPromise,
@@ -54,10 +48,8 @@ import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
-import type { UtxoTableEntry } from '../wallet/JarUtxosTable'
 import JarSelectorDialog from './JarSelectorDialog'
 import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
-import { UtxoSelectionDialog } from './UtxoSelectionDialog'
 import { estimateMaxCollaboratorFee } from './feeEstimate'
 import type { SendFormValues } from './types'
 
@@ -102,13 +94,6 @@ const AddressFromJarSelectorDialog = ({
   )
 }
 
-const utxoToTableEntry = (utxo: Utxo, addressSummary: AddressSummary, t: TFunction): UtxoTableEntry => {
-  return {
-    utxo,
-    tags: utxoTags(utxo, addressSummary, t),
-  }
-}
-
 const initialNumberOfCollaborators = (minValue: number): number => {
   if (minValue > 8) {
     return minValue + pseudoRandomInteger(0, 2)
@@ -121,7 +106,6 @@ const initialNumberOfCollaborators = (minValue: number): number => {
 const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
 
 const MAX_NUM_COLLABORATORS = 99
-const SEND_AUTO_SELECTION_TOAST_ID = 'send.utxo.selection_changed_automatically'
 
 // TODO: this value should be dynamic via jm backend settings
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
@@ -296,6 +280,9 @@ const FieldPrefixSatSymbol = (
 interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
+  onSourceJarChange?: (jarIndex: JarIndex | undefined) => void
+  onOpenUtxoSelector?: () => void
+  utxoSelectorDisabled?: boolean
   minNumberOfCollaborators?: number
   feeConfigValues?: FeeConfigValues
   forceCoinJoinEnabled?: boolean
@@ -310,6 +297,9 @@ interface SendFormProps {
 export function SendForm({
   className,
   onSubmit,
+  onSourceJarChange,
+  onOpenUtxoSelector,
+  utxoSelectorDisabled = false,
   disabled,
   feeConfigValues,
   forceCoinJoinEnabled = false,
@@ -321,13 +311,9 @@ export function SendForm({
   debug,
 }: SendFormProps) {
   const { t } = useTranslation()
-  const client = useApiClient()
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
   const [showQrScannerDialog, setShowQrScannerDialog] = useState(false)
-  const [showUtxoSelectorDialog, setShowUtxoSelectorDialog] = useState(false)
-  const [utxoFilter, setUtxoFilter] = useState('')
-  const [utxoRowSelection, setUtxoRowSelection] = useState<RowSelectionState>({})
   const [bip21Message, setBip21Message] = useState<string>()
 
   const { network } = useDetectNetwork()
@@ -380,136 +366,9 @@ export function SendForm({
     return jars.find((it) => it.jarIndex === sourceJarIndex)
   }, [jars, sourceJarIndex])
 
-  const sourceJarTableEntries = useMemo(() => {
-    return (sourceJar?.utxos || []).map((it) => utxoToTableEntry(it, addressSummary, t))
-  }, [addressSummary, sourceJar?.utxos, t])
-
-  const defaultUtxoRowSelection = useMemo<RowSelectionState>(() => {
-    return (sourceJar?.utxos || []).reduce((acc, utxo) => {
-      if (utxo.frozen === false && !fb.utxo.isFidelityBond(utxo)) {
-        acc[utxo.utxo] = true
-      }
-      return acc
-    }, {} as RowSelectionState)
-  }, [sourceJar?.utxos])
-
-  const selectedSourceJarUtxos = useMemo(() => {
-    return (sourceJar?.utxos || []).filter((utxo) => utxoRowSelection[utxo.utxo] === true)
-  }, [sourceJar?.utxos, utxoRowSelection])
-
-  const { mutateAsync: freezeOrUnfreezeUtxoMutateAsync } = useMutation({
-    ...freezeMutation({ client }),
-    retry: false,
-  })
-
-  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isApplyingUtxoSelection } = useMutation({
-    mutationFn: async ({ utxosToFreeze, utxosToUnfreeze }: { utxosToFreeze: Utxo[]; utxosToUnfreeze: Utxo[] }) => {
-      const [freezeResult, unfreezeResult] = await Promise.all([
-        Promise.allSettled(
-          utxosToFreeze.map((utxo) =>
-            freezeOrUnfreezeUtxoMutateAsync({
-              path: {
-                walletname: encodeURIComponent(walletFileName),
-              },
-              body: {
-                'utxo-string': utxo.utxo,
-                freeze: true,
-              },
-            }),
-          ),
-        ),
-        Promise.allSettled(
-          utxosToUnfreeze.map((utxo) =>
-            freezeOrUnfreezeUtxoMutateAsync({
-              path: {
-                walletname: encodeURIComponent(walletFileName),
-              },
-              body: {
-                'utxo-string': utxo.utxo,
-                freeze: false,
-              },
-            }),
-          ),
-        ),
-      ])
-
-      return { freezeResult, unfreezeResult }
-    },
-  })
-
-  const openUtxoSelectorDialog = useCallback(() => {
-    if (!sourceJar) return
-    toast.dismiss(SEND_AUTO_SELECTION_TOAST_ID)
-    setUtxoFilter('')
-    setUtxoRowSelection(defaultUtxoRowSelection)
-    setShowUtxoSelectorDialog(true)
-  }, [defaultUtxoRowSelection, sourceJar])
-
-  const onApplyUtxoSelection = useCallback(async () => {
-    if (!sourceJar) return
-
-    // Keep same-address UTXOs together to avoid accidental privacy leaks.
-    const selectedUtxoIds = new Set(selectedSourceJarUtxos.map((it) => it.utxo))
-    const selectedAddresses = new Set(selectedSourceJarUtxos.map((it) => it.address))
-    const mutableUtxos = sourceJar.utxos.filter((it) => !fb.utxo.isFidelityBond(it))
-    const groupedSelectedUtxos = mutableUtxos.filter((it) => selectedAddresses.has(it.address))
-    const groupedDeselectedUtxos = mutableUtxos.filter((it) => !selectedAddresses.has(it.address))
-    const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
-
-    if (groupedSelectedUtxos.length > selectedSourceJarUtxos.length) {
-      toast.warning(`Security measure: Selection changed`, {
-        description: `Automatically selected ${groupedSelectedUtxos.length - selectedSourceJarUtxos.length} additional UTXOs with matching addresses.`,
-        id: SEND_AUTO_SELECTION_TOAST_ID,
-      })
-    }
-
-    if (groupedDeselectedUtxos.length > userDeselectedUtxos.length) {
-      toast.warning(`Security measure: Selection changed`, {
-        description: `Automatically deselected ${groupedDeselectedUtxos.length - userDeselectedUtxos.length} additional UTXOs with matching addresses.`,
-        id: SEND_AUTO_SELECTION_TOAST_ID,
-      })
-    }
-
-    // The selected set should remain spendable; everything else becomes frozen.
-    const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen === false)
-    const utxosToUnfreeze = mutableUtxos.filter((it) => selectedAddresses.has(it.address) && it.frozen === true)
-
-    if (utxosToFreeze.length === 0 && utxosToUnfreeze.length === 0) {
-      setShowUtxoSelectorDialog(false)
-      return
-    }
-
-    try {
-      const result = await applyUtxoSelectionMutateAsync({ utxosToFreeze, utxosToUnfreeze })
-
-      if (utxosToFreeze.length > 0) {
-        const rejected = result.freezeResult.filter((it) => it.status === 'rejected')
-        if (rejected.length === 0) {
-          toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: utxosToFreeze.length }))
-        } else {
-          toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length }))
-        }
-      }
-
-      if (utxosToUnfreeze.length > 0) {
-        const rejected = result.unfreezeResult.filter((it) => it.status === 'rejected')
-        if (rejected.length === 0) {
-          toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: utxosToUnfreeze.length }))
-        } else {
-          toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length }))
-        }
-      }
-
-      setShowUtxoSelectorDialog(false)
-    } catch (_ignoredOnPurpose) {
-      if (utxosToFreeze.length > 0) {
-        toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: utxosToFreeze.length }))
-      }
-      if (utxosToUnfreeze.length > 0) {
-        toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
-      }
-    }
-  }, [applyUtxoSelectionMutateAsync, selectedSourceJarUtxos, sourceJar, t])
+  useEffect(() => {
+    onSourceJarChange?.(sourceJarIndex)
+  }, [onSourceJarChange, sourceJarIndex])
 
   const destinationJar = useMemo(() => {
     if (destinationJarIndex === undefined) return
@@ -597,22 +456,6 @@ export function SendForm({
         }}
       />
       <QrScannerDialog open={showQrScannerDialog} onOpenChange={setShowQrScannerDialog} onScan={applyBip21Result} />
-      <UtxoSelectionDialog
-        open={showUtxoSelectorDialog}
-        isApplying={isApplyingUtxoSelection}
-        selectedCount={selectedSourceJarUtxos.length}
-        filter={utxoFilter}
-        tableEntries={sourceJarTableEntries}
-        initialRowSelection={defaultUtxoRowSelection}
-        enableRowSelection={(row) => !fb.utxo.isFidelityBond(row.original.utxo)}
-        onOpenChange={(open) => {
-          if (isApplyingUtxoSelection) return
-          setShowUtxoSelectorDialog(open)
-        }}
-        onFilterChange={setUtxoFilter}
-        onRowSelectionChange={setUtxoRowSelection}
-        onApply={() => void onApplyUtxoSelection()}
-      />
       <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
           <Field className="space-y-4" data-invalid={errors.source !== undefined}>
@@ -622,13 +465,8 @@ export function SendForm({
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={
-                  disabled ||
-                  sourceJar === undefined ||
-                  sourceJar.utxos.length === 0 ||
-                  isApplyingUtxoSelection
-                }
-                onClick={openUtxoSelectorDialog}
+                disabled={disabled || utxoSelectorDisabled}
+                onClick={() => onOpenUtxoSelector?.()}
               >
                 <ListFilterIcon />
                 {t('show_utxos.text_select_utxos_tooltip')}
@@ -662,7 +500,6 @@ export function SendForm({
                   }}
                   disabled={
                     disabled ||
-                    isApplyingUtxoSelection ||
                     jar.balanceSummary.calculatedAvailableBalanceInSats <= 0
                   }
                 />
