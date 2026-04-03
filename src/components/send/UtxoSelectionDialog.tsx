@@ -6,7 +6,7 @@ import { Input } from '../ui/input'
 import { Spinner } from '../ui/spinner'
 import { JarUtxosTable, type UtxoTableEntry } from '../wallet/JarUtxosTable'
 
-interface UtxoSelectionDialogProps {
+export interface UtxoSelectionDialogProps {
   open: boolean
   isApplying: boolean
   selectedCount: number
