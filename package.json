@@ -104,6 +104,14 @@
       "localStorage"
     ],
     "clearMocks": true,
+    "coverageThreshold": {
+      "global": {
+        "statements": 29,
+        "branches": 17,
+        "functions": 23,
+        "lines": 29
+      }
+    },
     "transformIgnorePatterns": [
       "node_modules/(?!@table-library)"
     ]
