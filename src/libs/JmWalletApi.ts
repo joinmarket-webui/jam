@@ -12,6 +12,9 @@
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
+const MOCK_WALLET_FILE_NAME = 'mock-wallet.jmdat' as const
+const MOCK_TOKEN = 'mock-token' as const
+
 type ApiToken = string
 type WalletFileName = `${string}.jmdat`
 
@@ -166,6 +169,70 @@ interface TumblerOptions {
   rounding_sigfig_weights?: number[]
 }
 
+const isBackendFallbackEnabled = () =>
+  process.env.NODE_ENV === 'development' || process.env.REACT_APP_JAM_ENABLE_BACKEND_FALLBACK === 'true'
+
+const jsonResponse = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  })
+
+const mockWalletUtxos = {
+  utxos: [],
+}
+
+const mockWalletDisplay = {
+  walletinfo: {
+    wallet_name: MOCK_WALLET_FILE_NAME,
+    total_balance: '0.00000000',
+    available_balance: '0.00000000',
+    accounts: [],
+  },
+}
+
+const mockSession = {
+  session: true,
+  maker_running: false,
+  coinjoin_in_process: false,
+  wallet_name: MOCK_WALLET_FILE_NAME,
+  schedule: null,
+  offer_list: null,
+  nickname: null,
+  rescanning: false,
+}
+
+const mockAuth = {
+  token: MOCK_TOKEN,
+  token_type: 'bearer',
+  expires_in: 1800,
+  scope: 'wallet',
+  refresh_token: MOCK_TOKEN,
+}
+
+const mockGetInfo = {
+  version: '0.0.0-dev',
+}
+
+const withBackendFallback = async (fetcher: () => Promise<Response>, fallbackFactory: () => Response) => {
+  try {
+    const response = await fetcher()
+    if (response.ok || !isBackendFallbackEnabled() || response.status < 500) {
+      return response
+    }
+
+    console.warn(`Backend unavailable (${response.status}). Falling back to mock data.`)
+    return fallbackFactory()
+  } catch (error) {
+    if (!isBackendFallbackEnabled()) {
+      throw error
+    }
+
+    console.warn('Backend request failed. Falling back to mock data.', error)
+    return fallbackFactory()
+  }
+}
+
 const Helper = (() => {
   const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
     try {
@@ -249,16 +316,24 @@ const Helper = (() => {
 })()
 
 const getGetinfo = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${basePath()}/v1/getinfo`, {
-    signal,
-  })
+  return await withBackendFallback(
+    () =>
+      fetch(`${basePath()}/v1/getinfo`, {
+        signal,
+      }),
+    () => jsonResponse(mockGetInfo),
+  )
 }
 
 const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {
-  return await fetch(`${basePath()}/v1/session`, {
-    headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
-    signal,
-  })
+  return await withBackendFallback(
+    () =>
+      fetch(`${basePath()}/v1/session`, {
+        headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
+        signal,
+      }),
+    () => jsonResponse(mockSession),
+  )
 }
 
 const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenRequest) => {
@@ -290,9 +365,13 @@ const getAddressTimelockNew = async ({
 }
 
 const getWalletAll = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/all`, {
-    signal,
-  })
+  return await withBackendFallback(
+    () =>
+      fetch(`${basePath()}/v1/wallet/all`, {
+        signal,
+      }),
+    () => jsonResponse({ wallets: [MOCK_WALLET_FILE_NAME] }),
+  )
 }
 
 const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWalletRequest) => {
@@ -316,10 +395,14 @@ const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWall
 }
 
 const getWalletDisplay = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/display`, {
-    headers: { ...Helper.buildAuthHeader(token) },
-    signal,
-  })
+  return await withBackendFallback(
+    () =>
+      fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/display`, {
+        headers: { ...Helper.buildAuthHeader(token) },
+        signal,
+      }),
+    () => jsonResponse(mockWalletDisplay),
+  )
 }
 
 const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestContext) => {
@@ -336,28 +419,44 @@ const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestCon
  * Note: Performs a non-idempotent GET request.
  */
 const getWalletLock = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/lock`, {
-    headers: { ...Helper.buildAuthHeader(token) },
-    signal,
-  })
+  return await withBackendFallback(
+    () =>
+      fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/lock`, {
+        headers: { ...Helper.buildAuthHeader(token) },
+        signal,
+      }),
+    () => jsonResponse({ walletname: walletFileName, already_locked: false }),
+  )
 }
 
 const postWalletUnlock = async (
   { signal, walletFileName }: ApiRequestContext & WithWalletFileName,
   { password }: WalletUnlockRequest,
 ) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/unlock`, {
-    method: 'POST',
-    body: JSON.stringify({ password }),
-    signal,
-  })
+  return await withBackendFallback(
+    () =>
+      fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/unlock`, {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+        signal,
+      }),
+    () =>
+      jsonResponse({
+        walletname: walletFileName,
+        ...mockAuth,
+      }),
+  )
 }
 
 const getWalletUtxos = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/utxos`, {
-    headers: { ...Helper.buildAuthHeader(token) },
-    signal,
-  })
+  return await withBackendFallback(
+    () =>
+      fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/utxos`, {
+        headers: { ...Helper.buildAuthHeader(token) },
+        signal,
+      }),
+    () => jsonResponse(mockWalletUtxos),
+  )
 }
 
 const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestContext, req: StartMakerRequest) => {
@@ -578,4 +677,7 @@ export {
   AmountSats,
   OfferType,
   BitcoinAddress,
+  MOCK_TOKEN,
+  MOCK_WALLET_FILE_NAME,
+  isBackendFallbackEnabled,
 }

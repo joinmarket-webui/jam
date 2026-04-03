@@ -186,7 +186,12 @@ const restoreWalletFromSession = (): CurrentWalletImpl | null => {
         walletFileName: session.walletFileName,
         token: session.auth.token,
       })
-    : null
+    : Api.isBackendFallbackEnabled()
+      ? new CurrentWalletImpl({
+          walletFileName: Api.MOCK_WALLET_FILE_NAME,
+          token: Api.MOCK_TOKEN,
+        })
+      : null
 }
 
 export const groupByJar = (utxos: Utxos): UtxosByJar => {
@@ -348,6 +353,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
 
   useEffect(() => {
     if (!currentWallet) return
+    if (Api.isBackendFallbackEnabled() && currentWallet.token === Api.MOCK_TOKEN) return
 
     const abortCtrl = new AbortController()
 

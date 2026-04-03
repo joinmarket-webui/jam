@@ -15,6 +15,8 @@ import { Jars } from './Jars'
 import styles from './MainWalletView.module.css'
 import Divider from './Divider'
 
+type JourneyState = 'no-wallet' | 'loading' | 'empty' | 'setup-pending' | 'ready'
+
 interface WalletHeaderProps {
   walletName: string
   balance: Api.AmountSats
@@ -82,7 +84,40 @@ const WalletHeaderRescanning = ({
 }
 
 interface MainWalletViewProps {
-  wallet: CurrentWallet
+  wallet: CurrentWallet | null
+}
+
+function getJourneyState({
+  wallet,
+  currentWalletInfo,
+  isLoading,
+  isWalletConfigured,
+}: {
+  wallet?: CurrentWallet | null
+  currentWalletInfo?: ReturnType<typeof useCurrentWalletInfo>
+  isLoading: boolean
+  isWalletConfigured: boolean
+}): JourneyState {
+  const accountBalances = currentWalletInfo?.balanceSummary?.accountBalances
+  const totalBalance = currentWalletInfo?.balanceSummary?.calculatedTotalBalanceInSats
+
+  if (!wallet) {
+    return 'no-wallet'
+  }
+
+  if (isLoading || !accountBalances) {
+    return 'loading'
+  }
+
+  if (totalBalance === 0) {
+    return 'empty'
+  }
+
+  if (!isWalletConfigured) {
+    return 'setup-pending'
+  }
+
+  return 'ready'
 }
 
 export default function MainWalletView({ wallet }: MainWalletViewProps) {
@@ -99,14 +134,27 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [showJars, setShowJars] = useState(false)
 
-  const jars = useMemo(() => currentWalletInfo?.data.display.walletinfo.accounts, [currentWalletInfo])
+  const jars = useMemo(() => currentWalletInfo?.data?.display?.walletinfo?.accounts, [currentWalletInfo])
+  const isWalletConfigured = serviceInfo?.sessionActive === true
+  const journeyState = useMemo(
+    () =>
+      getJourneyState({
+        wallet,
+        currentWalletInfo,
+        isLoading,
+        isWalletConfigured,
+      }),
+    [wallet, currentWalletInfo, isLoading, isWalletConfigured],
+  )
 
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
+  const walletName = wallet?.displayName ?? ''
+  const totalBalance = currentWalletInfo?.balanceSummary?.calculatedTotalBalanceInSats ?? 0
 
   const onJarClicked = (jarIndex: JarIndex) => {
     if (jarIndex === 0) {
-      const isEmpty = currentWalletInfo?.balanceSummary.accountBalances[jarIndex]?.calculatedTotalBalanceInSats === 0
+      const isEmpty = currentWalletInfo?.balanceSummary?.accountBalances?.[jarIndex]?.calculatedTotalBalanceInSats === 0
 
       if (isEmpty) {
         navigate(routes.receive, { state: { account: jarIndex } })
@@ -122,6 +170,12 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
     const abortCtrl = new AbortController()
 
     setAlert(undefined)
+
+    if (!wallet) {
+      setIsLoading(false)
+      return () => abortCtrl.abort()
+    }
+
     setIsLoading(true)
 
     reloadCurrentWalletInfo
@@ -137,10 +191,10 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
       })
 
     return () => abortCtrl.abort()
-  }, [reloadCurrentWalletInfo, t])
+  }, [wallet, reloadCurrentWalletInfo, t])
 
   return (
-    <div>
+    <div data-testid="main-wallet-view" data-journey-state={journeyState}>
       {alert && (
         <rb.Row>
           <rb.Col>
@@ -149,7 +203,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
         </rb.Row>
       )}
 
-      {currentWalletInfo && jars && (
+      {wallet && currentWalletInfo && jars && (
         <JarDetailsOverlay
           jars={jars}
           initialJarIndex={selectedJarIndex}
@@ -161,9 +215,9 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
       )}
       {serviceInfo?.rescanning === true ? (
         <rb.Row>
-          <WalletHeaderRescanning walletName={wallet.displayName} isLoading={isLoading} serviceInfo={serviceInfo} />
+          <WalletHeaderRescanning walletName={walletName} isLoading={isLoading} serviceInfo={serviceInfo} />
         </rb.Row>
-      ) : !currentWalletInfo || isLoading ? (
+      ) : journeyState === 'loading' || journeyState === 'no-wallet' ? (
         <rb.Row>
           <WalletHeaderPlaceholder />
         </rb.Row>
@@ -181,8 +235,8 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
           }}
         >
           <WalletHeader
-            walletName={wallet.displayName}
-            balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
+            walletName={walletName}
+            balance={totalBalance}
             unit={settings.unit}
             showBalance={settings.showBalance}
           />
@@ -225,15 +279,15 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
           <rb.Row>
             <div className="mb-5">
               <div>
-                {!currentWalletInfo || isLoading ? (
+                {journeyState === 'loading' || journeyState === 'no-wallet' || !currentWalletInfo ? (
                   <rb.Placeholder as="div" animation="wave">
                     <rb.Placeholder className={styles.jarsPlaceholder} />
                   </rb.Placeholder>
                 ) : (
                   <Jars
                     size="lg"
-                    accountBalances={currentWalletInfo.balanceSummary.accountBalances}
-                    totalBalance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
+                    accountBalances={currentWalletInfo?.balanceSummary?.accountBalances ?? {}}
+                    totalBalance={totalBalance}
                     onClick={onJarClicked}
                   />
                 )}
