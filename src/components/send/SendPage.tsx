@@ -2,12 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   directsendMutation,
   docoinjoinMutation,
-  freezeMutation,
   stopcoinjoinOptions,
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import type { RowSelectionState } from '@tanstack/react-table'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
@@ -28,17 +26,15 @@ import {
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useJmConfig } from '@/hooks/useJmConfig'
-import type { Utxo, UtxoId } from '@/hooks/useQueryUtxos'
+import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
+import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
 import { getErrorReason } from '@/lib/errorReason'
-import * as fb from '@/lib/fidelityBondUtils'
-import { utxoTags } from '@/lib/tags'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
-import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
@@ -60,8 +56,6 @@ type DirectSendResult = {
   response: DirectSendResponse
 }
 
-const SEND_AUTO_SELECTION_TOAST_ID = 'send.utxo.selection_changed_automatically'
-
 interface SendPageProps {
   walletFileName: WalletFileName
 }
@@ -76,10 +70,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [showAbortCoinjoinDialog, setShowAbortCoinjoinDialog] = useState(false)
-  const [showUtxoSelectorDialog, setShowUtxoSelectorDialog] = useState(false)
-  const [utxoFilter, setUtxoFilter] = useState('')
-  const [utxoRowSelection, setUtxoRowSelection] = useState<RowSelectionState>({})
-  const [sourceJarIndexForUtxoSelector, setSourceJarIndexForUtxoSelector] = useState<JarIndex>()
   const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
@@ -111,30 +101,11 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     refetchWalletInfoRef.current = refetchWalletInfo
   }, [refetchWalletInfo])
 
-  const sourceJarForUtxoSelector = useMemo(() => {
-    if (sourceJarIndexForUtxoSelector === undefined) return
-    return jars.find((it) => it.jarIndex === sourceJarIndexForUtxoSelector)
-  }, [jars, sourceJarIndexForUtxoSelector])
-
-  const sourceJarTableEntries = useMemo(() => {
-    return (sourceJarForUtxoSelector?.utxos || []).map((utxo) => ({
-      utxo,
-      tags: utxoTags(utxo, addressSummary, t),
-    }))
-  }, [addressSummary, sourceJarForUtxoSelector?.utxos, t])
-
-  const defaultUtxoRowSelection = useMemo<RowSelectionState>(() => {
-    return (sourceJarForUtxoSelector?.utxos || []).reduce((acc, utxo) => {
-      if (utxo.frozen === false && !fb.utxo.isFidelityBond(utxo)) {
-        acc[utxo.utxo] = true
-      }
-      return acc
-    }, {} as RowSelectionState)
-  }, [sourceJarForUtxoSelector?.utxos])
-
-  const selectedSourceJarUtxos = useMemo(() => {
-    return (sourceJarForUtxoSelector?.utxos || []).filter((utxo) => utxoRowSelection[utxo.utxo] === true)
-  }, [sourceJarForUtxoSelector?.utxos, utxoRowSelection])
+  const utxoSelectionDialog = useUtxoSelectionDialog({
+    walletFileName,
+    jars,
+    addressSummary,
+  })
 
   const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
@@ -157,46 +128,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     maxFeesConfigMissing,
     isLoading: isLoadingFeeConfig,
   } = useFeeConfigValidation({ walletFileName })
-
-  const { mutateAsync: freezeOrUnfreezeUtxoMutateAsync } = useMutation({
-    ...freezeMutation({ client }),
-    retry: false,
-  })
-
-  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isApplyingUtxoSelection } = useMutation({
-    mutationFn: async ({ utxosToFreeze, utxosToUnfreeze }: { utxosToFreeze: Utxo[]; utxosToUnfreeze: Utxo[] }) => {
-      const [freezeResult, unfreezeResult] = await Promise.all([
-        Promise.allSettled(
-          utxosToFreeze.map((utxo) =>
-            freezeOrUnfreezeUtxoMutateAsync({
-              path: {
-                walletname: encodeURIComponent(walletFileName),
-              },
-              body: {
-                'utxo-string': utxo.utxo,
-                freeze: true,
-              },
-            }),
-          ),
-        ),
-        Promise.allSettled(
-          utxosToUnfreeze.map((utxo) =>
-            freezeOrUnfreezeUtxoMutateAsync({
-              path: {
-                walletname: encodeURIComponent(walletFileName),
-              },
-              body: {
-                'utxo-string': utxo.utxo,
-                freeze: false,
-              },
-            }),
-          ),
-        ),
-      ])
-
-      return { freezeResult, unfreezeResult }
-    },
-  })
 
   const directSendMutation = useMutation({
     ...directsendMutation({ client }),
@@ -509,80 +440,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     setShowPaymentConfirmDialog(true)
   }
 
-  const onOpenUtxoSelector = () => {
-    if (!sourceJarForUtxoSelector) return
-    toast.dismiss(SEND_AUTO_SELECTION_TOAST_ID)
-    setUtxoFilter('')
-    setUtxoRowSelection(defaultUtxoRowSelection)
-    setShowUtxoSelectorDialog(true)
-  }
-
-  const onApplyUtxoSelection = async () => {
-    if (!sourceJarForUtxoSelector) return
-
-    // Keep same-address UTXOs together to avoid accidental privacy leaks.
-    const selectedUtxoIds = new Set(selectedSourceJarUtxos.map((it) => it.utxo))
-    const selectedAddresses = new Set(selectedSourceJarUtxos.map((it) => it.address))
-    const mutableUtxos = sourceJarForUtxoSelector.utxos.filter((it) => !fb.utxo.isFidelityBond(it))
-    const groupedSelectedUtxos = mutableUtxos.filter((it) => selectedAddresses.has(it.address))
-    const groupedDeselectedUtxos = mutableUtxos.filter((it) => !selectedAddresses.has(it.address))
-    const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
-
-    if (groupedSelectedUtxos.length > selectedSourceJarUtxos.length) {
-      toast.warning(`Security measure: Selection changed`, {
-        description: `Automatically selected ${groupedSelectedUtxos.length - selectedSourceJarUtxos.length} additional UTXOs with matching addresses.`,
-        id: SEND_AUTO_SELECTION_TOAST_ID,
-      })
-    }
-
-    if (groupedDeselectedUtxos.length > userDeselectedUtxos.length) {
-      toast.warning(`Security measure: Selection changed`, {
-        description: `Automatically deselected ${groupedDeselectedUtxos.length - userDeselectedUtxos.length} additional UTXOs with matching addresses.`,
-        id: SEND_AUTO_SELECTION_TOAST_ID,
-      })
-    }
-
-    // The selected set should remain spendable; everything else becomes frozen.
-    const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen === false)
-    const utxosToUnfreeze = mutableUtxos.filter((it) => selectedAddresses.has(it.address) && it.frozen === true)
-
-    if (utxosToFreeze.length === 0 && utxosToUnfreeze.length === 0) {
-      setShowUtxoSelectorDialog(false)
-      return
-    }
-
-    try {
-      const result = await applyUtxoSelectionMutateAsync({ utxosToFreeze, utxosToUnfreeze })
-
-      if (utxosToFreeze.length > 0) {
-        const rejected = result.freezeResult.filter((it) => it.status === 'rejected')
-        if (rejected.length === 0) {
-          toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: utxosToFreeze.length }))
-        } else {
-          toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length }))
-        }
-      }
-
-      if (utxosToUnfreeze.length > 0) {
-        const rejected = result.unfreezeResult.filter((it) => it.status === 'rejected')
-        if (rejected.length === 0) {
-          toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: utxosToUnfreeze.length }))
-        } else {
-          toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length }))
-        }
-      }
-
-      setShowUtxoSelectorDialog(false)
-    } catch (_ignoredOnPurpose) {
-      if (utxosToFreeze.length > 0) {
-        toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: utxosToFreeze.length }))
-      }
-      if (utxosToUnfreeze.length > 0) {
-        toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
-      }
-    }
-  }
-
   const onAbortCoinjoin = async () => {
     collaborativeLifecycleRef.current.awaitingCompletion = false
     collaborativeLifecycleRef.current.wasRunning = false
@@ -631,22 +488,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <UtxoSelectionDialog
-        open={showUtxoSelectorDialog}
-        isApplying={isApplyingUtxoSelection}
-        selectedCount={selectedSourceJarUtxos.length}
-        filter={utxoFilter}
-        tableEntries={sourceJarTableEntries}
-        initialRowSelection={defaultUtxoRowSelection}
-        enableRowSelection={(row) => !fb.utxo.isFidelityBond(row.original.utxo)}
-        onOpenChange={(open) => {
-          if (isApplyingUtxoSelection) return
-          setShowUtxoSelectorDialog(open)
-        }}
-        onFilterChange={setUtxoFilter}
-        onRowSelectionChange={setUtxoRowSelection}
-        onApply={() => void onApplyUtxoSelection()}
-      />
+      <UtxoSelectionDialog {...utxoSelectionDialog.dialogProps} />
       {sourceJar && sendFromValuesAwaitingConfirmation && (
         <PaymentConfirmDialog
           open={showPaymentConfirmDialog}
@@ -764,13 +606,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           <CardContent>
             <SendForm
               onSubmit={onSubmit}
-              onSourceJarChange={setSourceJarIndexForUtxoSelector}
-              onOpenUtxoSelector={onOpenUtxoSelector}
-              utxoSelectorDisabled={
-                isApplyingUtxoSelection ||
-                sourceJarForUtxoSelector === undefined ||
-                sourceJarForUtxoSelector.utxos.length === 0
-              }
+              onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
+              onOpenUtxoSelector={utxoSelectionDialog.onOpenUtxoSelector}
+              utxoSelectorDisabled={utxoSelectionDialog.utxoSelectorDisabled}
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
               feeConfigValues={feeConfigValues}
@@ -782,7 +620,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||
-                isApplyingUtxoSelection ||
+                utxoSelectionDialog.isApplying ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}
