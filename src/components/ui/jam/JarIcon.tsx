@@ -17,7 +17,7 @@ type JamFillRect = {
   transform: string
 }
 
-const LEGACY_JAR_FILL_RECTS: Record<Exclude<JarFillLevel, 0>, JamFillRect[]> = {
+const JAR_FILL_RECTS: Record<Exclude<JarFillLevel, 0>, JamFillRect[]> = {
   1: [
     { x: '26.9983', y: '47.1555', height: '5.45425', transform: 'rotate(45 26.9983 47.1555)' },
     { x: '27.001', y: '43.6182', height: '10.4318', transform: 'rotate(45 27.001 43.6182)' },
@@ -66,15 +66,15 @@ const calculateJarFillLevel = (jarBalance: number, totalBalance: number): JarFil
   return 0
 }
 
-type LegacyJarSvgProps = {
+type JarSvgProps = {
   color: string
   fillLevel: JarFillLevel
   isOpen: boolean
   className?: string
 }
 
-function LegacyJarSvg({ color, fillLevel, isOpen, className }: LegacyJarSvgProps) {
-  const fillRects = fillLevel === 0 ? [] : LEGACY_JAR_FILL_RECTS[fillLevel]
+function JarSvg({ color, fillLevel, isOpen, className }: JarSvgProps) {
+  const fillRects = fillLevel === 0 ? [] : JAR_FILL_RECTS[fillLevel]
 
   return (
     <svg className={className} viewBox="0 0 30 55" style={{ ['--jamColor' as const]: color } as CSSProperties}>
@@ -138,7 +138,7 @@ export function JarIcon({
       )}
       style={sizeStyle}
     >
-      <LegacyJarSvg
+      <JarSvg
         color={color}
         fillLevel={fillLevel}
         isOpen={false}
@@ -148,7 +148,7 @@ export function JarIcon({
           'group-hover/jar-icon:opacity-0': !disabled && !isSelected,
         })}
       />
-      <LegacyJarSvg
+      <JarSvg
         color={color}
         fillLevel={fillLevel}
         isOpen={true}
