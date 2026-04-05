@@ -262,11 +262,12 @@ export default function Send({ wallet }: SendProps) {
           txinfo: { outputs, inputs, txid },
         } = await res.json()
         const output = outputs.find((o: any) => o.address === destination)
+        const successfulOutput = output ?? { value_sats: amountSats, address: destination }
         setPaymentSuccessfulInfoAlert({
           variant: 'success',
           message: t('send.alert_payment_successful', {
-            amount: output.value_sats,
-            address: output.address,
+            amount: successfulOutput.value_sats,
+            address: successfulOutput.address,
             txid,
           }),
         })
