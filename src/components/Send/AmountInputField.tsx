@@ -35,6 +35,9 @@ export const AmountInputField = ({
   const form = useFormikContext<any>()
   const ref = useRef<HTMLInputElement>(null)
 
+  const isCoinJoin = form.values.isCoinJoin !== false
+  const isSweepDisabledByDirectSend = enableSweep && !isCoinJoin
+
   return (
     <>
       <rb.Form.Group className="mb-4" controlId={name}>
@@ -73,28 +76,42 @@ export const AmountInputField = ({
                 </rb.Button>
               )}
               {enableSweep && field.value?.isSweep !== true && (
-                <rb.Button
-                  variant="outline-dark"
-                  className={styles.button}
-                  onClick={() => {
-                    if (!sourceJarBalance) return
-                    form.setFieldValue(
-                      field.name,
-                      {
-                        value: 0,
-                        isSweep: true,
-                        displayValue: formatBtcDisplayValue(sourceJarBalance.calculatedAvailableBalanceInSats),
-                      },
-                      true,
+                <rb.OverlayTrigger
+                  placement="bottom"
+                  overlay={
+                    isSweepDisabledByDirectSend ? (
+                      <rb.Tooltip>{t('send.button_sweep_disabled_direct_send')}</rb.Tooltip>
+                    ) : (
+                      <span />
                     )
-                  }}
-                  disabled={disabled || !sourceJarBalance}
+                  }
                 >
-                  <div className="d-flex justify-content-center align-items-center">
-                    <Sprite symbol="sweep" width="24px" height="24px" className="me-1" />
-                    {t('send.button_sweep')}
-                  </div>
-                </rb.Button>
+                  <span className="d-inline-block">
+                    <rb.Button
+                      variant="outline-dark"
+                      className={styles.button}
+                      onClick={() => {
+                        if (!sourceJarBalance) return
+                        form.setFieldValue(
+                          field.name,
+                          {
+                            value: 0,
+                            isSweep: true,
+                            displayValue: formatBtcDisplayValue(sourceJarBalance.calculatedAvailableBalanceInSats),
+                          },
+                          true,
+                        )
+                      }}
+                      disabled={disabled || !sourceJarBalance || isSweepDisabledByDirectSend}
+                      style={isSweepDisabledByDirectSend ? { pointerEvents: 'none' } : undefined}
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        <Sprite symbol="sweep" width="24px" height="24px" className="me-1" />
+                        {t('send.button_sweep')}
+                      </div>
+                    </rb.Button>
+                  </span>
+                </rb.OverlayTrigger>
               )}
             </BitcoinAmountInput>
           </div>

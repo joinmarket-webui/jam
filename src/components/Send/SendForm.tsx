@@ -339,13 +339,26 @@ const InnerSendForm = ({
           disabled={disabled}
         >
           <rb.Form.Group controlId="isCoinjoin" className="mb-3">
-            <ToggleSwitch
-              label={t('send.toggle_coinjoin')}
-              subtitle={t('send.toggle_coinjoin_subtitle')}
-              toggledOn={props.values.isCoinJoin}
-              onToggle={(isToggled) => props.setFieldValue('isCoinJoin', isToggled, true)}
-              disabled={disabled || isLoading}
-            />
+            <rb.OverlayTrigger
+              placement="right"
+              overlay={
+                props.values.amount?.isSweep ? (
+                  <rb.Tooltip>{t('send.toggle_coinjoin_disabled_sweep')}</rb.Tooltip>
+                ) : (
+                  <span />
+                )
+              }
+            >
+              <div>
+                <ToggleSwitch
+                  label={t('send.toggle_coinjoin')}
+                  subtitle={t('send.toggle_coinjoin_subtitle')}
+                  toggledOn={props.values.isCoinJoin}
+                  onToggle={(isToggled) => props.setFieldValue('isCoinJoin', isToggled, true)}
+                  disabled={disabled || isLoading || props.values.amount?.isSweep === true}
+                />
+              </div>
+            </rb.OverlayTrigger>
           </rb.Form.Group>
 
           <div className={!props.values.isCoinJoin ? 'mb-4 d-block' : 'd-none'}>
@@ -432,6 +445,9 @@ export const SendForm = ({
     /** amount */
     if (!isValidAmount(values.amount?.value ?? null, values.amount?.isSweep || false)) {
       errors.amount = t('send.feedback_invalid_amount')
+    }
+    if (values.amount?.isSweep === true && values.isCoinJoin === false) {
+      errors.amount = t('send.button_sweep_disabled_direct_send')
     }
     /** amount - end */
 

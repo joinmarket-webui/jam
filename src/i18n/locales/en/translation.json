@@ -322,6 +322,8 @@
     "text_sending": "Sending",
     "button_sweep": "Sweep",
     "button_clear_sweep": "Clear",
+    "button_sweep_disabled_direct_send": "Sweep is not available because direct send is activated.",
+    "toggle_coinjoin_disabled_sweep": "This option cannot be changed because sweep is activated.",
     "button_sweep_amount_breakdown": "How is this calculated?",
     "sweep_amount_breakdown_total_balance": "Total balance",
     "sweep_amount_breakdown_frozen_balance": "Frozen or locked balance",
