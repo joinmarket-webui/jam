@@ -338,7 +338,7 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
         const info = await reloadWalletInfo({ delay, force: false })
         const newBalance = info.balanceSummary.calculatedTotalBalanceInSats
         if (newBalance > currentBalance) {
-          await reloadWhileBalanceChangesRecursively(newBalance, delay, maxCalls, callCounter++)
+          await reloadWhileBalanceChangesRecursively(newBalance, delay, maxCalls, callCounter + 1)
         }
       }
 
