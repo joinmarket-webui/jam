@@ -4,7 +4,7 @@ import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
-import { BrushCleaningIcon, ListFilterIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
+import { BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -13,11 +13,7 @@ import * as yup from 'yup'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
-import {
-  useDetectNetwork,
-  type AddressSummary,
-  type Jar,
-} from '@/context/JamWalletInfoContext'
+import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { BalanceSummary } from '@/lib/balanceSummary'
@@ -281,8 +277,7 @@ interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
   onSourceJarChange?: (jarIndex: JarIndex | undefined) => void
-  onOpenUtxoSelector?: () => void
-  utxoSelectorDisabled?: boolean
+  sourceJarLabelButton?: React.ReactElement
   minNumberOfCollaborators?: number
   feeConfigValues?: FeeConfigValues
   forceCoinJoinEnabled?: boolean
@@ -298,8 +293,7 @@ export function SendForm({
   className,
   onSubmit,
   onSourceJarChange,
-  onOpenUtxoSelector,
-  utxoSelectorDisabled = false,
+  sourceJarLabelButton,
   disabled,
   feeConfigValues,
   forceCoinJoinEnabled = false,
@@ -461,16 +455,7 @@ export function SendForm({
           <Field className="space-y-4" data-invalid={errors.source !== undefined}>
             <div className="flex items-center justify-between gap-2">
               <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={disabled || utxoSelectorDisabled}
-                onClick={() => onOpenUtxoSelector?.()}
-              >
-                <ListFilterIcon />
-                {t('show_utxos.text_select_utxos_tooltip')}
-              </Button>
+              {sourceJarLabelButton && <>{sourceJarLabelButton}</>}
             </div>
             <div className="grid grid-cols-5 gap-4">
               {jars.map((jar, index) => (
@@ -498,10 +483,7 @@ export function SendForm({
                       void trigger('destination.address')
                     }
                   }}
-                  disabled={
-                    disabled ||
-                    jar.balanceSummary.calculatedAvailableBalanceInSats <= 0
-                  }
+                  disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
                 />
               ))}
             </div>

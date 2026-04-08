@@ -7,7 +7,7 @@ import {
 import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
-import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
+import { AlertTriangleIcon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -26,9 +26,9 @@ import {
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useJmConfig } from '@/hooks/useJmConfig'
-import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
 import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
@@ -606,9 +606,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           <CardContent>
             <SendForm
               onSubmit={onSubmit}
-              onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
-              onOpenUtxoSelector={utxoSelectionDialog.onOpenUtxoSelector}
-              utxoSelectorDisabled={utxoSelectionDialog.utxoSelectorDisabled}
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
               feeConfigValues={feeConfigValues}
@@ -624,6 +621,19 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}
+              onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
+              sourceJarLabelButton={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={utxoSelectionDialog.utxoSelectorDisabled}
+                  onClick={utxoSelectionDialog.onOpenUtxoSelector}
+                >
+                  <ListFilterIcon />
+                  {t('show_utxos.text_select_utxos_tooltip')}
+                </Button>
+              }
             />
           </CardContent>
         </Card>
