@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import type { TFunction } from 'i18next'
 import { useForm, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form'
@@ -76,6 +76,7 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
     setValue,
+    reset,
   } = useForm<ReceiveFormValues, unknown, ReceiveFormValues>({
     mode: 'onChange',
     defaultValues,
@@ -84,6 +85,10 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
   })
 
   const values = useWatch({ control })
+
+  useEffect(() => {
+    reset(defaultValues)
+  }, [defaultValues?.amount, defaultValues?.source?.fromJar, reset])
 
   const doOnChange = handleSubmit(onSubmit)
 

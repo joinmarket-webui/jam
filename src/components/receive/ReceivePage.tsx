@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import { getaddressQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, HatGlassesIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
@@ -33,46 +32,44 @@ interface ReceivePageProps {
 export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const { t } = useTranslation()
   const { jars } = useJars()
+  const client = useApiClient()
 
   const [selectedSourceJarIndex, setSelectedSourceJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
   const [amount, setAmount] = useState<AmountSats>()
 
   const selectedSourceJar = useMemo(() => {
     if (selectedSourceJarIndex === undefined) return
-    return jars[selectedSourceJarIndex]
+    return jars.find((jar) => jar.jarIndex === selectedSourceJarIndex)
   }, [jars, selectedSourceJarIndex])
 
-  const [receiveFormDefaultValues] = useState({
-    source: {
-      fromJar: selectedSourceJar?.jarIndex,
-    },
-    amount: undefined,
-  })
+  useEffect(() => {
+    setSelectedSourceJarIndex((current) =>
+      jars.some((jar) => jar.jarIndex === current) ? current : jars[0]?.jarIndex,
+    )
+  }, [jars])
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
-  const client = useApiClient()
-
-  const getAddressOptions = {
-    client,
-    path: {
-      walletname: encodeURIComponent(walletFileName),
-      mixdepth: String(selectedSourceJar?.jarIndex),
-    },
-  }
-
   // wrap as mutation manually, as `getAddressQuery` is a `GET` request
   const getAddressMutation = useMutation({
-    mutationKey: ['receive', ...getaddressQueryKey(getAddressOptions)],
+    mutationKey: ['receive', walletFileName, selectedSourceJar?.jarIndex ?? 'jar-not-ready'],
     mutationFn: withMutationDelay(
       async () => {
+        if (!selectedSourceJar) {
+          throw new Error('Cannot fetch a receive address before jars are ready.')
+        }
+
         const { data } = await getaddress({
-          ...getAddressOptions,
+          client,
+          path: {
+            walletname: encodeURIComponent(walletFileName),
+            mixdepth: String(selectedSourceJar.jarIndex),
+          },
           throwOnError: true,
         })
         return {
           address: data.address,
-          sourceJarIndex: Number.parseInt(getAddressOptions.path.mixdepth, 10),
+          sourceJarIndex: selectedSourceJar.jarIndex,
         }
       },
       {
@@ -90,7 +87,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
   const sourceJar = useMemo(() => {
     if (getAddressMutation.data?.sourceJarIndex === undefined) return
-    return jars[getAddressMutation.data.sourceJarIndex]
+    return jars.find((jar) => jar.jarIndex === getAddressMutation.data.sourceJarIndex)
   }, [jars, getAddressMutation.data])
 
   const shareAddress = async (bitcoinAddress: BitcoinAddress) => {
@@ -109,6 +106,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   }
 
   const fetchNewAddress = async () => {
+    if (!selectedSourceJar) return
     await getAddressMutation.mutateAsync()
   }
 
@@ -136,7 +134,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 variant="outline"
                 size="lg"
                 onClick={() => void fetchNewAddress()}
-                disabled={getAddressMutation.isPending}
+                disabled={getAddressMutation.isPending || !selectedSourceJar}
               >
                 <HatGlassesIcon />
                 {t('receive.button_reveal_address', {
@@ -184,7 +182,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               variant="outline"
               size="sm"
               onClick={() => void fetchNewAddress()}
-              disabled={getAddressMutation.isPending}
+              disabled={getAddressMutation.isPending || !selectedSourceJar}
             >
               {getAddressMutation.isPending ? (
                 <>
@@ -243,7 +241,12 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
           <AccordionContent className="flex flex-col gap-4">
             <ReceiveForm
               className={'mx-1' /* add x-spacing for input component focus state*/}
-              defaultValues={receiveFormDefaultValues}
+              defaultValues={{
+                source: {
+                  fromJar: selectedSourceJar?.jarIndex,
+                },
+                amount,
+              }}
               jars={jars}
               disabled={getAddressMutation.isPending}
               debug={isDeveloperMode}
