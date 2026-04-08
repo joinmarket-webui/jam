@@ -12,6 +12,7 @@ interface JarProps {
   availableBalance: AmountSats
   frozenOrLockedBalance: AmountSats
   totalWalletBalance: AmountSats
+  isSelected?: boolean
   disabled?: boolean
 }
 
@@ -23,13 +24,20 @@ export function Jar({
   availableBalance,
   frozenOrLockedBalance,
   totalWalletBalance,
+  isSelected = false,
   disabled = false,
 }: JarProps) {
   return (
     <div
       className={cn('group/jar flex flex-row items-center gap-2 transition-all duration-300 sm:flex-col', className)}
     >
-      <JarIcon color={color} totalBalance={totalBalance} totalWalletBalance={totalWalletBalance} disabled={disabled} />
+      <JarIcon
+        color={color}
+        totalBalance={totalBalance}
+        totalWalletBalance={totalWalletBalance}
+        isSelected={isSelected}
+        disabled={disabled}
+      />
       <div className="flex flex-col items-center text-sm">
         <p
           className={cn(

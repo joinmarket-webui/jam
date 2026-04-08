@@ -262,6 +262,8 @@ interface JarUtxosTableProps {
   globalFilter?: string
   tableEntries: UtxoTableEntry[]
   pinnedEntries: UtxoTableEntry[]
+  initialRowSelection?: RowSelectionState
+  enableRowSelection?: boolean | ((row: Row<UtxoTableEntry>) => boolean)
   onChange?: (table: TableType<UtxoTableEntry>) => void
   onRowSelectionChange?: OnChangeFn<RowSelectionState>
 }
@@ -270,6 +272,8 @@ export const JarUtxosTable = ({
   globalFilter,
   tableEntries,
   pinnedEntries,
+  initialRowSelection,
+  enableRowSelection,
   onChange,
   onRowSelectionChange,
 }: JarUtxosTableProps) => {
@@ -289,7 +293,7 @@ export const JarUtxosTable = ({
     bottom: [],
   })
 
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection ?? {})
 
   const table = useReactTable<UtxoTableEntry>({
     data: tableEntries,
@@ -310,7 +314,7 @@ export const JarUtxosTable = ({
     },
     globalFilterFn: 'fuzzy' as FilterFnOption<UtxoTableEntry>,
     keepPinnedRows: true,
-    enableRowSelection: true,
+    enableRowSelection: enableRowSelection ?? true,
     enableMultiRowSelection: true,
     getRowId: (row) => row.utxo.utxo,
     onSortingChange: setSorting,
@@ -343,6 +347,12 @@ export const JarUtxosTable = ({
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
   }, [table, pinnedEntries])
+
+  useEffect(() => {
+    if (!initialRowSelection) return
+    setRowSelection(initialRowSelection)
+    onRowSelectionChange?.(initialRowSelection)
+  }, [initialRowSelection, onRowSelectionChange])
 
   useEffect(() => {
     if (currentPage > totalPages) {

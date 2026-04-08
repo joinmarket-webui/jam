@@ -1,8 +1,6 @@
 import { useRef, type ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
-import { Balance } from './Balance'
-import type { Jar } from './Jar'
-import { JarIcon } from './JarIcon'
+import { Jar } from './Jar'
 
 interface SelectableJarProps extends ComponentProps<typeof Jar> {
   isSelected: NonNullable<React.ComponentProps<'input'>['checked']>
@@ -13,6 +11,8 @@ export const SelectableJar = ({
   name,
   color,
   totalBalance,
+  availableBalance,
+  frozenOrLockedBalance,
   totalWalletBalance,
   isSelected,
   disabled = false,
@@ -33,19 +33,17 @@ export const SelectableJar = ({
       }}
       tabIndex={-1}
     >
-      <div className="flex flex-col items-center">
-        <JarIcon
-          color={color}
-          totalBalance={totalBalance}
-          isSelected={isSelected}
-          totalWalletBalance={totalWalletBalance}
-          disabled={disabled}
-        />
-        <span className="text-xs">{name}</span>
-        <div className="flex items-center text-sm">
-          <Balance valueString={String(totalBalance)} />
-        </div>
-      </div>
+      <Jar
+        className="flex-col gap-0"
+        name={name}
+        color={color}
+        totalBalance={totalBalance}
+        availableBalance={availableBalance}
+        frozenOrLockedBalance={frozenOrLockedBalance}
+        totalWalletBalance={totalWalletBalance}
+        isSelected={isSelected}
+        disabled={disabled}
+      />
       <div className="flex items-center">
         <input
           ref={radioRef}
