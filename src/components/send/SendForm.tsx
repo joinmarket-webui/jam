@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
-import { BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
+import { BlocksIcon, BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import * as yup from 'yup'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
-import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
+import { JM_MINIMUM_MAKERS_DEFAULT, txFeeUnit, type TxFeeUnit } from '@/constants/jm'
 import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
@@ -34,16 +34,19 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
-import { Field, FieldLabel } from '../ui/field'
+import { Field, FieldDescription, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { inputVariants } from '../ui/input-variants'
 import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
-import { SatSymbol } from '../ui/jam/CurrencySymbol'
+import { CurrencySymbol, SatSymbol } from '../ui/jam/CurrencySymbol'
 import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Label } from '../ui/label'
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
+import { Tabs, TabsContent } from '../ui/tabs'
 import JarSelectorDialog from './JarSelectorDialog'
 import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
 import { estimateMaxCollaboratorFee } from './feeEstimate'
@@ -106,13 +109,22 @@ const MAX_NUM_COLLABORATORS = 99
 // TODO: this value should be dynamic via jm backend settings
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
 
+const MIN_TX_FEE_IN_BLOCKS = 1
+const MAX_TX_FEE_IN_BLOCKS = 1_000
+
+const MIN_TX_FEE_IN_SATS_PER_VBYTE = 1.001
+const MAX_TX_FEE_IN_SATS_PER_VBYTE = 350
+
 const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   source: undefined,
   destination: undefined,
   amount: undefined,
   txFee: undefined,
   isCoinJoin: true,
-  numCollaborators: MIN_NUM_COLLABORATORS,
+  numCollaborators: undefined,
+  txFeeUnit: txFeeUnit.BLOCKS,
+  txFeeInBlocks: undefined,
+  txFeeInSatsPerVbyte: undefined,
 }
 
 const sendFormSchema = (
@@ -122,6 +134,15 @@ const sendFormSchema = (
   network: Network,
   t: TFunction,
 ) => {
+  const feedbackInvalidTxFeesBlocks = t('settings.fees.feedback_invalid_tx_fees_blocks', {
+    min: MIN_TX_FEE_IN_BLOCKS,
+    max: MAX_TX_FEE_IN_BLOCKS,
+  })
+  const feedbackInvalidTxFeeInSatsPerVbyte = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
+    min: MIN_TX_FEE_IN_SATS_PER_VBYTE,
+    max: MAX_TX_FEE_IN_SATS_PER_VBYTE,
+  })
+
   return yup
     .object({
       source: yup
@@ -228,6 +249,36 @@ const sendFormSchema = (
             .nullable()
             .optional(),
       }),
+      txFeeUnit: yup.mixed<TxFeeUnit>().oneOf(Object.values(txFeeUnit)).optional(),
+      txFeeInBlocks: yup.number().when('txFeeUnit', {
+        is: (val: TxFeeUnit) => val === 'blocks',
+        then: (schema) =>
+          schema
+            .integer(feedbackInvalidTxFeesBlocks)
+            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+            .min(MIN_TX_FEE_IN_BLOCKS, feedbackInvalidTxFeesBlocks)
+            .max(MAX_TX_FEE_IN_BLOCKS, feedbackInvalidTxFeesBlocks)
+            .required(feedbackInvalidTxFeesBlocks),
+        otherwise: (schema) =>
+          schema
+            .transform(() => null)
+            .nullable()
+            .optional(),
+      }),
+      txFeeInSatsPerVbyte: yup.number().when('txFeeUnit', {
+        is: (val: TxFeeUnit) => val === 'sats/kilo-vbyte',
+        then: (schema) =>
+          schema
+            .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+            .min(MIN_TX_FEE_IN_SATS_PER_VBYTE, feedbackInvalidTxFeeInSatsPerVbyte)
+            .max(MAX_TX_FEE_IN_SATS_PER_VBYTE, feedbackInvalidTxFeeInSatsPerVbyte)
+            .required(feedbackInvalidTxFeeInSatsPerVbyte),
+        otherwise: (schema) =>
+          schema
+            .transform(() => null)
+            .nullable()
+            .optional(),
+      }),
     })
     .required()
     .test('address-not-from-source-jar-test', function (root) {
@@ -261,6 +312,45 @@ const sendFormSchema = (
         true,
       )
     })
+}
+
+const TxFeeUnitInput = (props: React.ComponentProps<typeof RadioGroup>) => {
+  const { t } = useTranslation()
+  const id = useId()
+
+  return (
+    <RadioGroup className="flex items-center justify-center" {...props}>
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
+        <RadioGroupItem
+          value={txFeeUnit.BLOCKS}
+          id={`${id}-blocks`}
+          className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
+        />
+        <div className="grid grow justify-items-center gap-2">
+          <BlocksIcon />
+          <Label htmlFor={`${id}-blocks`} className="justify-center">
+            {t('settings.fees.radio_tx_fees_blocks')}
+          </Label>
+        </div>
+      </div>
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
+        <RadioGroupItem
+          value={txFeeUnit.SATS_PER_KILO_VBYTE}
+          id={`${id}-satsperkvb`}
+          className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
+        />
+        <div className="grid grow justify-items-center gap-2">
+          <span>
+            <CurrencySymbol currency="sats" />
+            <span className="text-xs text-nowrap">/&nbsp;vB</span>
+          </span>
+          <Label htmlFor={`${id}-satsperkvb`} className="justify-center">
+            {t('settings.fees.radio_tx_fees_satspervbyte')}
+          </Label>
+        </div>
+      </div>
+    </RadioGroup>
+  )
 }
 
 const FieldPrefixSatSymbol = (
@@ -345,6 +435,7 @@ export function SendForm({
   const isSweep = useWatch({ control, name: 'amount.isSweep' })
   const isCoinJoin = useWatch({ control, name: 'isCoinJoin' })
   const collaboratorCount = useWatch({ control, name: 'numCollaborators' })
+  const txFeeUnitWatch = useWatch({ control, name: 'txFeeUnit' })
   const isCoinJoinEnabled = forceCoinJoinEnabled || isCoinJoin === true
 
   const destinationAddressInfo = useMemo(() => {
@@ -692,79 +783,147 @@ export function SendForm({
         <Accordion type="single" collapsible>
           <AccordionItem value="options">
             <AccordionTrigger>{t('send.sending_options')}</AccordionTrigger>
-            <AccordionContent className="flex flex-col gap-4">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="switch-is-collaborative-transaction"
-                    checked={isCoinJoinEnabled}
-                    onCheckedChange={(checked) => {
-                      if (forceCoinJoinEnabled) {
-                        return
-                      }
-                      setValue('isCoinJoin', checked, {
+
+            <AccordionContent
+              className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
+            >
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="switch-is-collaborative-transaction"
+                  checked={isCoinJoinEnabled}
+                  onCheckedChange={(checked) => {
+                    if (forceCoinJoinEnabled) {
+                      return
+                    }
+                    setValue('isCoinJoin', checked, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                      shouldTouch: true,
+                    })
+                    setValue(
+                      'numCollaborators',
+                      checked
+                        ? (collaboratorCount ?? initialNumberOfCollaborators(minNumberOfCollaborators))
+                        : undefined,
+                      {
                         shouldValidate: true,
                         shouldDirty: true,
                         shouldTouch: true,
-                      })
-                      setValue(
-                        'numCollaborators',
-                        checked
-                          ? (collaboratorCount ?? initialNumberOfCollaborators(minNumberOfCollaborators))
-                          : undefined,
-                        {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                          shouldTouch: true,
-                        },
-                      )
-                    }}
-                    disabled={disabled}
-                  />
-                  <Label htmlFor="switch-is-collaborative-transaction" className="flex flex-col items-start gap-0">
-                    <div className="font-medium">{t('send.toggle_coinjoin')}</div>
-                    <div className="text-muted-foreground text-sm">{t('send.toggle_coinjoin_subtitle')}</div>
-                  </Label>
-                </div>
+                      },
+                    )
+                  }}
+                  disabled={disabled}
+                />
+                <Label htmlFor="switch-is-collaborative-transaction" className="flex flex-col items-start gap-0">
+                  <div className="font-medium">{t('send.toggle_coinjoin')}</div>
+                  <div className="text-muted-foreground text-sm">{t('send.toggle_coinjoin_subtitle')}</div>
+                </Label>
+              </div>
 
-                {isCoinJoinEnabled && (
-                  <div className="space-y-2">
-                    <Field data-invalid={errors.numCollaborators !== undefined}>
-                      <FieldLabel htmlFor="send-num-collaborators">
-                        {t('send.label_num_collaborators', {
-                          numCollaborators: isValidNumber(values.numCollaborators) ? values.numCollaborators : '-',
-                        })}
-                      </FieldLabel>
-                      <Input
-                        id="send-num-collaborators"
-                        {...register('numCollaborators', {
-                          required: values.isCoinJoin,
-                          disabled,
-                          valueAsNumber: true,
-                        })}
-                        type="number"
-                        min={minNumberOfCollaborators}
-                        max={MAX_NUM_COLLABORATORS}
-                        placeholder={t('send.input_num_collaborators_placeholder')}
-                      />
-                    </Field>
-                    <p className="text-muted-foreground text-xs">{t('send.description_num_collaborators')}</p>
-                    {estimatedMaxCollaboratorFee && (
-                      <div className="text-muted-foreground text-xs">
-                        <span className="mr-1">{t('send.fee_breakdown.title', { maxCollaboratorFee: '≤' })}</span>
-                        <span className="text-foreground inline-flex items-center gap-1">
-                          <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} />
-                        </span>
-                        <span className="ml-1">
-                          ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
-                        </span>
-                      </div>
-                    )}
-                    {errors.numCollaborators?.message && (
-                      <div className="text-destructive text-xs">{errors.numCollaborators.message}</div>
-                    )}
-                  </div>
-                )}
+              {isCoinJoinEnabled && (
+                <div className="space-y-2">
+                  <Field data-invalid={errors.numCollaborators !== undefined}>
+                    <FieldLabel htmlFor="send-num-collaborators">
+                      {t('send.label_num_collaborators', {
+                        numCollaborators: isValidNumber(values.numCollaborators) ? values.numCollaborators : '-',
+                      })}
+                    </FieldLabel>
+                    <Input
+                      id="send-num-collaborators"
+                      {...register('numCollaborators', {
+                        required: values.isCoinJoin,
+                        disabled,
+                        valueAsNumber: true,
+                      })}
+                      type="number"
+                      min={minNumberOfCollaborators}
+                      max={MAX_NUM_COLLABORATORS}
+                      placeholder={t('send.input_num_collaborators_placeholder')}
+                    />
+                  </Field>
+                  <p className="text-muted-foreground text-xs">{t('send.description_num_collaborators')}</p>
+                  {estimatedMaxCollaboratorFee && (
+                    <div className="text-muted-foreground text-xs">
+                      <span className="mr-1">{t('send.fee_breakdown.title', { maxCollaboratorFee: '≤' })}</span>
+                      <span className="text-foreground inline-flex items-center gap-1">
+                        <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} />
+                      </span>
+                      <span className="ml-1">
+                        ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
+                      </span>
+                    </div>
+                  )}
+                  {errors.numCollaborators?.message && (
+                    <div className="text-destructive text-xs">{errors.numCollaborators.message}</div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <Tabs value={txFeeUnitWatch}>
+                  <TabsContent value={txFeeUnit.BLOCKS}>
+                    <div className="space-y-2">
+                      <Field data-invalid={errors.txFeeInBlocks !== undefined}>
+                        <FieldLabel htmlFor="txFeeInBlocks">{t('send.label_tx_fees')}</FieldLabel>
+                        <FieldDescription>{t('settings.fees.description_tx_fees_blocks')}</FieldDescription>
+                        <InputGroup>
+                          <InputGroupInput
+                            id="txFeeInBlocks"
+                            {...register('txFeeInBlocks', {
+                              disabled,
+                            })}
+                            type="number"
+                            min={MIN_TX_FEE_IN_BLOCKS}
+                            max={MAX_TX_FEE_IN_BLOCKS}
+                            step={1}
+                          />
+                          <InputGroupAddon align="inline-start">
+                            <BlocksIcon />
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </Field>
+                      {errors.txFeeInBlocks?.message && (
+                        <div className="text-destructive text-xs">{errors.txFeeInBlocks.message}</div>
+                      )}
+                    </div>
+                  </TabsContent>
+                  <TabsContent value={txFeeUnit.SATS_PER_KILO_VBYTE}>
+                    <div className="space-y-2">
+                      <Field data-invalid={errors.txFeeInSatsPerVbyte !== undefined}>
+                        <FieldLabel htmlFor="txFeeInSatsPerVbyte">{t('send.label_tx_fees')}</FieldLabel>
+                        <FieldDescription>{t('settings.fees.description_tx_fees_satspervbyte')}</FieldDescription>
+                        <InputGroup>
+                          <InputGroupInput
+                            id="txFeeInSatsPerVbyte"
+                            {...register('txFeeInSatsPerVbyte', {
+                              disabled,
+                            })}
+                            type="number"
+                            step={1}
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <CurrencySymbol currency="sats" />
+                            <span className="text-xs text-nowrap">/&nbsp;vB</span>
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </Field>
+                      {errors.txFeeInSatsPerVbyte?.message && (
+                        <div className="text-destructive text-xs">{errors.txFeeInSatsPerVbyte.message}</div>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                <TxFeeUnitInput
+                  disabled={disabled}
+                  defaultValue={FORM_INPUT_DEFAULT_VALUES.txFeeUnit}
+                  onValueChange={(value) => {
+                    setValue('txFeeUnit', value as TxFeeUnit, {
+                      shouldValidate: true, // trigger validation
+                      shouldTouch: true, // update touched fields form state
+                      shouldDirty: true, // update dirty and dirty fields form state
+                    })
+                  }}
+                />
               </div>
             </AccordionContent>
           </AccordionItem>
