@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -7,6 +7,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type ColumnDef,
+  type PaginationState,
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
@@ -71,8 +72,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   const [demoEntries, setDemoEntries] = useState<EarnReportEntry[]>([])
   const [sorting, setSorting] = useState<SortingState>([{ id: 'timestamp', desc: true }])
   const [globalFilter, setGlobalFilter] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE)
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: ITEMS_PER_PAGE })
 
   const addDemoEntry = useCallback(() => {
     setDemoEntries((previous) => [...previous, generateDemoEntry()])
@@ -126,29 +126,17 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     state: {
       globalFilter,
       sorting,
-      pagination: {
-        pageIndex: Math.max(0, currentPage - 1),
-        pageSize: itemsPerPage === -1 ? allEntries.length || 1 : itemsPerPage,
-      },
+      pagination,
     },
     onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: setPagination,
+    autoResetPageIndex: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   })
-
-  const totalPages = useMemo(() => {
-    if (itemsPerPage === -1) return 1
-    return Math.max(1, Math.ceil(allEntries.length / itemsPerPage))
-  }, [itemsPerPage, allEntries.length])
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages)
-      table.setPageIndex(Math.max(0, totalPages - 1))
-    }
-  }, [totalPages, currentPage, table])
 
   const visibleRows = table.getRowModel().rows
 
@@ -225,7 +213,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
               <Input
                 placeholder={t('earn.report.placeholder_search')}
                 value={globalFilter}
-                onChange={(event) => setGlobalFilter(event.target.value)}
+                onChange={(event) => table.setGlobalFilter(event.target.value)}
                 className="pl-8"
               />
             </div>
@@ -304,20 +292,19 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
               </div>
 
               <TablePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                itemsPerPage={itemsPerPage}
-                totalItems={allEntries.length}
-                onPageChange={(page) => {
-                  setCurrentPage(page)
-                  table.setPageIndex(Math.max(0, page - 1))
-                }}
+                currentPage={table.getState().pagination.pageIndex + 1}
+                totalPages={table.getPageCount()}
+                itemsPerPage={
+                  pagination.pageSize === allEntries.length || allEntries.length === 0 ? -1 : pagination.pageSize
+                }
+                totalItems={table.getFilteredRowModel().rows.length}
+                onPageChange={(page) => table.setPageIndex(page - 1)}
                 onItemsPerPageChange={(newItemsPerPage) => {
-                  setItemsPerPage(newItemsPerPage)
-                  const size =
-                    newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
-                  table.setPageSize(size)
-                  setCurrentPage(1)
+                  if (newItemsPerPage === -1) {
+                    table.setPageSize(table.getPrePaginationRowModel().rows.length || 1)
+                  } else {
+                    table.setPageSize(newItemsPerPage)
+                  }
                   table.setPageIndex(0)
                 }}
               />
