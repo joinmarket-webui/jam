@@ -100,7 +100,13 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
           title: 'Bitcoin Address',
           text: bitcoinAddress,
         })
-        .catch(() => {
+        .catch((error: unknown) => {
+          if (
+            error instanceof DOMException
+            && (error.name === 'AbortError' || error.name === 'NotAllowedError')
+          ) {
+            return
+          }
           toast.error(t('receive.error_share_address_failed'))
         })
     } else {
