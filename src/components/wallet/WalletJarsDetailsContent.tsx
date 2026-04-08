@@ -62,7 +62,7 @@ interface UtxosContentProps {
 
 export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
-  const walletInfo = useJamWalletInfoContext()
+  const { refetch: walletInfoRefetch, isFetching: walletInfoIsFetching } = useJamWalletInfoContext()
 
   const client = useApiClient()
 
@@ -92,11 +92,11 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
   })
   const freezeUtxos = useMutation({
     mutationFn: (values: Utxo[]) =>
-      freezeOrUnfreezeUtxos.mutateAsync({ values, freeze: true }).then((it) => walletInfo.refetch().then(() => it)),
+      freezeOrUnfreezeUtxos.mutateAsync({ values, freeze: true }).then((it) => walletInfoRefetch().then(() => it)),
   })
   const unfreezeUtxos = useMutation({
     mutationFn: (values: Utxo[]) =>
-      freezeOrUnfreezeUtxos.mutateAsync({ values, freeze: false }).then((it) => walletInfo.refetch().then(() => it)),
+      freezeOrUnfreezeUtxos.mutateAsync({ values, freeze: false }).then((it) => walletInfoRefetch().then(() => it)),
   })
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -133,7 +133,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
   }, [tableEntries])
 
   // TODO: makerRunning, takerRunner, rescanRunning, etc.
-  const operationsEnabled = enabled && !(walletInfo.isFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
+  const operationsEnabled = enabled && !(walletInfoIsFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
 
   const onFreezeClick = async () => {
     const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
@@ -207,10 +207,10 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         <div className="flex items-center gap-2">
           <Button
             size="sm"
-            disabled={!operationsEnabled || walletInfo.isFetching}
-            onClick={() => void walletInfo.refetch()}
+            disabled={!operationsEnabled || walletInfoIsFetching}
+            onClick={() => void walletInfoRefetch()}
           >
-            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': walletInfo.isFetching })} />
+            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': walletInfoIsFetching })} />
             {t('global.refresh')}
           </Button>
           <ButtonGroup>

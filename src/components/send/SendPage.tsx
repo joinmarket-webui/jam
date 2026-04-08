@@ -7,7 +7,7 @@ import {
 import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
-import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
+import { AlertTriangleIcon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -28,6 +28,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useJmConfig } from '@/hooks/useJmConfig'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
 import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
@@ -40,6 +41,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Spinner } from '../ui/spinner'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
+import { UtxoSelectionDialog } from './UtxoSelectionDialog'
 import { buildCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
 
@@ -98,6 +100,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   useEffect(() => {
     refetchWalletInfoRef.current = refetchWalletInfo
   }, [refetchWalletInfo])
+
+  const utxoSelectionDialog = useUtxoSelectionDialog({
+    walletFileName,
+    jars,
+    addressSummary,
+  })
 
   const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
@@ -480,6 +488,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <UtxoSelectionDialog {...utxoSelectionDialog.dialogProps} />
       {sourceJar && sendFromValuesAwaitingConfirmation && (
         <PaymentConfirmDialog
           open={showPaymentConfirmDialog}
@@ -608,9 +617,23 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||
+                utxoSelectionDialog.isApplying ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}
+              onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
+              sourceJarLabelButton={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={utxoSelectionDialog.utxoSelectorDisabled}
+                  onClick={utxoSelectionDialog.onOpenUtxoSelector}
+                >
+                  <ListFilterIcon />
+                  {t('show_utxos.text_select_utxos_tooltip')}
+                </Button>
+              }
             />
           </CardContent>
         </Card>
