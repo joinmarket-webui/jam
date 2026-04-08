@@ -5,7 +5,7 @@ import type { RowSelectionState } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import type { UtxoSelectionDialogProps } from '@/components/send/UtxoSelectionDialog'
-import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
+import { useJamWalletInfoContext, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
@@ -21,13 +21,11 @@ interface UseUtxoSelectionDialogProps {
   addressSummary: AddressSummary
 }
 
-export const useUtxoSelectionDialog = ({
-  walletFileName,
-  jars,
-  addressSummary,
-}: UseUtxoSelectionDialogProps) => {
+export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }: UseUtxoSelectionDialogProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
+
+  const { refetch: walletInfoRefetch } = useJamWalletInfoContext()
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -58,6 +56,8 @@ export const useUtxoSelectionDialog = ({
     return (sourceJar?.utxos || []).filter((utxo) => rowSelection[utxo.utxo] === true)
   }, [sourceJar?.utxos, rowSelection])
 
+  // TODO: Should this be moved to `WalletInfoContext`?
+  // Similar/Duplicate code in `WalletJarDetailsContent`
   const { mutateAsync: freezeOrUnfreezeUtxoMutateAsync } = useMutation({
     ...freezeMutation({ client }),
     retry: false,
@@ -92,7 +92,7 @@ export const useUtxoSelectionDialog = ({
             }),
           ),
         ),
-      ])
+      ]).then((it) => walletInfoRefetch().then(() => it))
 
       return { freezeResult, unfreezeResult }
     },
@@ -109,7 +109,6 @@ export const useUtxoSelectionDialog = ({
   const onApplyUtxoSelection = async () => {
     if (!sourceJar) return
 
-    // Keep same-address UTXOs together to avoid accidental privacy leaks.
     const selectedUtxoIds = new Set(selectedUtxos.map((it) => it.utxo))
     const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
     const mutableUtxos = sourceJar.utxos.filter((it) => !fb.utxo.isFidelityBond(it))
@@ -118,6 +117,7 @@ export const useUtxoSelectionDialog = ({
     const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
 
     if (groupedSelectedUtxos.length > selectedUtxos.length) {
+      // TODO: i18n
       toast.warning(`Security measure: Selection changed`, {
         description: `Automatically selected ${groupedSelectedUtxos.length - selectedUtxos.length} additional UTXOs with matching addresses.`,
         id: SEND_AUTO_SELECTION_TOAST_ID,
@@ -125,6 +125,7 @@ export const useUtxoSelectionDialog = ({
     }
 
     if (groupedDeselectedUtxos.length > userDeselectedUtxos.length) {
+      // TODO: i18n
       toast.warning(`Security measure: Selection changed`, {
         description: `Automatically deselected ${groupedDeselectedUtxos.length - userDeselectedUtxos.length} additional UTXOs with matching addresses.`,
         id: SEND_AUTO_SELECTION_TOAST_ID,
