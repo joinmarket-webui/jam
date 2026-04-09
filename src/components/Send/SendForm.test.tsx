@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '../../testUtils'
 import * as apiMock from '../../libs/JmWalletApi'
 import { clearSession, setSession } from '../../session'
 import { toBalanceSummary } from '../../context/BalanceSummary'
-import { CurrentWallet, WalletInfo, groupByJar, Utxo } from '../../context/WalletContext'
+import { CombinedRawWalletData, CurrentWallet, WalletInfo, groupByJar, Utxo } from '../../context/WalletContext'
 import { SendForm, SendFormValues } from './SendForm'
 
 jest.mock('../../libs/JmWalletApi', () => ({
@@ -77,7 +77,7 @@ const REUSED_DESTINATION_ADDRESS = 'reused-destination-address'
 
 const ALL_UTXOS = [HEALTHY_SPENDABLE_UTXO, HEALTHY_FROZEN_UTXO, WARNING_UTXO]
 
-const walletDisplayResponse = {
+const walletDisplayResponse: CombinedRawWalletData['display'] = {
   walletinfo: {
     wallet_name: wallet.walletFileName,
     total_balance: '0.00290000',
@@ -152,7 +152,7 @@ const walletDisplayResponse = {
 }
 
 const createWalletInfo = (): WalletInfo => {
-  const data = {
+  const data: CombinedRawWalletData = {
     utxos: {
       utxos: ALL_UTXOS,
     },

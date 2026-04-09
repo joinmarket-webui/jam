@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { act, render, screen, waitFor } from '../../testUtils'
 import * as apiMock from '../../libs/JmWalletApi'
 import { clearSession, setSession } from '../../session'
-import { CurrentWallet, Utxo } from '../../context/WalletContext'
+import { CombinedRawWalletData, CurrentWallet, Utxo } from '../../context/WalletContext'
 import Send from './index'
 
 jest.mock('../../libs/JmWalletApi', () => ({
@@ -78,7 +78,7 @@ const WARNING_UTXO: Utxo = {
 const ALL_UTXOS = [HEALTHY_SPENDABLE_UTXO, HEALTHY_FROZEN_UTXO, WARNING_UTXO]
 const UTXOS_AFTER_DIRECT_SEND = [HEALTHY_FROZEN_UTXO, WARNING_UTXO]
 
-const walletDisplayResponse = {
+const walletDisplayResponse: CombinedRawWalletData['display'] = {
   walletinfo: {
     wallet_name: wallet.walletFileName,
     total_balance: '0.00290000',
