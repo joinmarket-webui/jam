@@ -16,6 +16,7 @@ import {
   BookKeyIcon,
   FoldHorizontalIcon,
   UnfoldHorizontalIcon,
+  KeyRoundIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
