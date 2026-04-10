@@ -149,8 +149,10 @@ export const isValidNumber = (val: unknown): val is number => {
   return val !== undefined && typeof val === 'number' && !Number.isNaN(val)
 }
 
+const number_format = 'en-US'
+
 export const formatBtc = (value: number) => {
-  return value.toLocaleString(undefined, {
+  return value.toLocaleString(number_format, {
     minimumFractionDigits: 8,
     maximumFractionDigits: 8,
     roundingMode: 'trunc',
@@ -158,7 +160,7 @@ export const formatBtc = (value: number) => {
 }
 
 export const formatSats = (value: number) => {
-  return value.toLocaleString(undefined, {
+  return value.toLocaleString(number_format, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
     roundingMode: 'trunc',
