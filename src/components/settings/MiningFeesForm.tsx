@@ -211,7 +211,7 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.txFeesFactor && <div className="mt-1 text-xs text-red-500">{errors.txFeesFactor}</div>}
+          {errors.txFeesFactor && <div className="text-destructive mt-1 text-xs">{errors.txFeesFactor}</div>}
         </div>
 
         <div className="space-y-2">
@@ -234,7 +234,7 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.maxSweepFeeChange && <div className="mt-1 text-xs text-red-500">{errors.maxSweepFeeChange}</div>}
+          {errors.maxSweepFeeChange && <div className="text-destructive mt-1 text-xs">{errors.maxSweepFeeChange}</div>}
         </div>
       </div>
     )
