@@ -93,7 +93,7 @@ export const TxFeeInputField = ({
           disabled={disabled}
         />
       </div>
-      {error && <div className="mt-1 text-xs text-red-500">{error}</div>}
+      {error && <div className="text-destructive mt-1 text-xs">{error}</div>}
     </div>
   )
 }
