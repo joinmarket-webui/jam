@@ -85,7 +85,10 @@ export const TxFeeInputField = ({
           )}
         </div>
         <Input
-          type="text"
+          type="number"
+          inputMode="decimal"
+          min="0"
+          step="any"
           value={value}
           onChange={(event) => onValueChange(event.target.value)}
           placeholder={unit === txFeeUnit.BLOCKS ? '3' : '1.0'}

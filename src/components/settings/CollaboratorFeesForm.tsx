@@ -121,7 +121,10 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
             </div>
             <Input
               id="max-cj-fee-abs"
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
               value={maxCjFeeAbs}
               onChange={(event) => setMaxCjFeeAbs(event.target.value)}
               placeholder="0.00 007 517"
@@ -141,7 +144,11 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
             </div>
             <Input
               id="max-cj-fee-rel"
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              max="100"
+              step="any"
               value={maxCjFeeRel}
               onChange={(event) => setMaxCjFeeRel(event.target.value)}
               placeholder="0.03"
