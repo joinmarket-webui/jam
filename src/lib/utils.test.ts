@@ -26,6 +26,20 @@ import {
 } from './utils'
 import type { WalletFileName } from './utils'
 
+const withRuntimeLocale = (locale: string, callback: () => void) => {
+  const toLocaleStringMock = vi
+    .spyOn(Number.prototype, 'toLocaleString')
+    .mockImplementation(function (this: number, locales, options) {
+      return Intl.NumberFormat(locales ?? locale, options).format(this)
+    })
+
+  try {
+    callback()
+  } finally {
+    toLocaleStringMock.mockRestore()
+  }
+}
+
 describe('cn', () => {
   it('should merge class names correctly', () => {
     expect(cn('text-red-500', 'bg-blue-500')).toBe('text-red-500 bg-blue-500')
@@ -366,6 +380,13 @@ describe('formatSats', () => {
   it('should handle negative satoshi values', () => {
     expect(formatSats(-1000)).toBe('-1,000')
     expect(formatSats(-1234567)).toBe('-1,234,567')
+  })
+
+  it('should follow runtime locale when no explicit locale is provided', () => {
+    withRuntimeLocale('en-IN', () => {
+      expect(formatBtc(21000000)).toBe('2,10,00,000.00000000')
+      expect(formatSats(2100000000000000)).toBe('2,10,00,00,00,00,00,000')
+    })
   })
 })
 
