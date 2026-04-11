@@ -7,7 +7,7 @@ import {
 import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
-import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
+import { AlertTriangleIcon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -28,8 +28,9 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useJmConfig } from '@/hooks/useJmConfig'
 import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
-import { useWaitForUtxosToBeSpent } from '@/hooks/useWaitForUtxosToBeSpent'
+import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { getErrorReason } from '@/lib/errorReason'
+import { withMutationDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -40,6 +41,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Spinner } from '../ui/spinner'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
+import { UtxoSelectionDialog } from './UtxoSelectionDialog'
 import { buildCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
 
@@ -61,8 +63,9 @@ interface SendPageProps {
 export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
+  const [formId, setFormId] = useState<number>(0)
   const { fetchIfMissing } = useJmConfig({ walletFileName })
-  const { refetch: refetchWalletInfo } = useJamWalletInfoContext()
+  const { refetch: refetchWalletInfo, waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
@@ -99,6 +102,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     refetchWalletInfoRef.current = refetchWalletInfo
   }, [refetchWalletInfo])
 
+  const utxoSelectionDialog = useUtxoSelectionDialog({
+    walletFileName,
+    jars,
+    addressSummary,
+  })
+
   const sourceJar = useMemo(() => {
     const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
     if (sourceJarIndex === undefined) return
@@ -125,6 +134,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     ...directsendMutation({ client }),
     retry: false,
   })
+
   const {
     isPending: startCoinjoinMutationIsPending,
     isSuccess: startCoinjoinMutationIsSuccess,
@@ -178,29 +188,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
   const coinjoinRunning = jmSession?.coinjoin_in_process === true
   const isWaitingCoinjoinStart = startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !coinjoinRunning)
   const isWaitingCoinjoinStop = stopCoinjoinMutationIsPending || (stopCoinjoinMutationIsSuccess && coinjoinRunning)
   const collaborativeFlowActive = coinjoinRunning || isWaitingCoinjoinStart || isWaitingCoinjoinStop
-
-  const waitForUtxosToBeSpentContext = useMemo(
-    () => ({
-      walletFileName,
-      waitForUtxosToBeSpent,
-      setWaitForUtxosToBeSpent,
-      onError: (error: unknown) => {
-        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        const message = t('global.errors.error_reloading_wallet_failed', {
-          reason,
-        })
-        toast.error(message)
-      },
-    }),
-    [walletFileName, waitForUtxosToBeSpent, t],
-  )
-
-  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
   useRefreshSession({
     enabled: isWaitingCoinjoinStart || isWaitingCoinjoinStop,
@@ -322,38 +313,63 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }, [fetchIfMissing, t])
 
   const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
-    mutationFn: async (data: SendFormValues) => {
-      if (data.amount === undefined) {
-        throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
-      }
-      if (data.destination === undefined || !isValidBitcoinAddress(data.destination.address)) {
-        throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
-      }
-      if (data.source?.fromJar === undefined) {
-        throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
-      }
-      if (data.amount.isSweep === true && data.amount.amount !== undefined) {
-        throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given for sweep.')
-      }
+    mutationFn: withMutationDelay(
+      async (data: SendFormValues) => {
+        if (data.amount === undefined) {
+          throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
+        }
+        if (data.destination === undefined || !isValidBitcoinAddress(data.destination.address)) {
+          throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
+        }
+        if (data.source?.fromJar === undefined) {
+          throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
+        }
+        if (data.amount.isSweep === true && data.amount.amount !== undefined) {
+          throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given for sweep.')
+        }
 
-      const body = {
-        amount_sats: data.amount.isSweep === true ? 0 : data.amount.amount,
-        destination: data.destination.address,
-        mixdepth: data.source.fromJar,
-      }
-      const response = await directSendMutation.mutateAsync({
-        path: {
-          walletname: encodeURIComponent(walletFileName),
-        },
-        body,
-      })
+        const body = {
+          amount_sats: data.amount.isSweep === true ? 0 : data.amount.amount,
+          destination: data.destination.address,
+          mixdepth: data.source.fromJar,
+        }
+        const response = await directSendMutation.mutateAsync({
+          path: {
+            walletname: encodeURIComponent(walletFileName),
+          },
+          body,
+        })
 
-      return {
-        request: body,
-        response,
-      }
+        return {
+          request: body,
+          response,
+        }
+      },
+      { throttle: 2_100 },
+    ),
+    onMutate: () => {
+      setPaymentSuccessfulInfoAlert(undefined)
     },
-    onSuccess: () => {
+    onSuccess: (result: DirectSendResult, data: SendFormValues) => {
+      const tx = result.response.txinfo as Required<JmTxInfo>
+      const output = tx.outputs.find((output) => output.address === data.destination.address)
+      const inputUtxoIds = (tx.inputs || []).flatMap((it) =>
+        it?.outpoint !== undefined ? [it.outpoint as UtxoId] : [],
+      )
+
+      jmTxStore.getState().add(tx)
+
+      setWaitForUtxosToBeSpent(inputUtxoIds)
+      setFormId((current) => current + 1)
+      setPaymentSuccessfulInfoAlert({
+        variant: 'success',
+        title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
+        description: t('send.alert_payment_successful', {
+          amount: output?.value_sats,
+          address: output?.address,
+          txid: tx.txid,
+        }),
+      })
       /* TODO: i18n */
       toast.success('Successfully sent non-collaborative transaction.')
     },
@@ -364,37 +380,13 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const onSubmitDirectSend: SubmitHandler<SendFormValues> = async (data) => {
-    try {
-      setPaymentSuccessfulInfoAlert(undefined)
-      const result = await triggerNonCollaborativeTransaction.mutateAsync(data)
-      const tx = result.response.txinfo as Required<JmTxInfo>
-
-      const output = tx.outputs.find((output) => output.address === data.destination.address)
-      setPaymentSuccessfulInfoAlert({
-        variant: 'success',
-        title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
-        description: t('send.alert_payment_successful', {
-          amount: output?.value_sats,
-          address: output?.address,
-          txid: tx.txid,
-        }),
-      })
-
-      const inputUtxoIds = (result.response.txinfo.inputs || []).flatMap((it) =>
-        it?.outpoint !== undefined ? [it.outpoint as UtxoId] : [],
-      )
-      setWaitForUtxosToBeSpent(inputUtxoIds)
-
-      jmTxStore.getState().add(result.response.txinfo as JmTxInfo)
-    } catch (error: unknown) {
-      console.error('Error while sending non-collaborative transaction', error)
-    }
-  }
-
   const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data) => {
     if (data.isCoinJoin !== true) {
-      await onSubmitDirectSend(data)
+      try {
+        await triggerNonCollaborativeTransaction.mutateAsync(data)
+      } catch (error: unknown) {
+        console.error('Error while sending non-collaborative transaction', error)
+      }
     } else {
       if (maxFeesConfigMissing) {
         toast.error(t('send.taker_error_message_max_fees_config_missing'))
@@ -480,6 +472,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <UtxoSelectionDialog {...utxoSelectionDialog.dialogProps} />
       {sourceJar && sendFromValuesAwaitingConfirmation && (
         <PaymentConfirmDialog
           open={showPaymentConfirmDialog}
@@ -569,25 +562,27 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               <p>Please validate your inputs and try again.</p>
             </AlertDescription>
           </Alert>
+        ) : triggerNonCollaborativeTransaction.isPending ? (
+          <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+            <Spinner className="motion-reduce:hidden" />
+            <AlertTitle>{/* TODO: i18n*/ t('Initiating non-collaborative transaction...')}</AlertTitle>
+          </Alert>
         ) : (
           <>
+            {waitForUtxosToBeSpent.length > 0 && (
+              <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                <Spinner className="motion-reduce:hidden" />
+                <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
+              </Alert>
+            )}
             {paymentSuccessfulInfoAlert && !coinjoinRunning && (
-              <>
-                <Alert variant={paymentSuccessfulInfoAlert.variant}>
-                  <AlertTriangleIcon />
-                  <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
-                  <AlertDescription className="ext-wrap slashed-zero">
-                    {paymentSuccessfulInfoAlert.description}
-                  </AlertDescription>
-                </Alert>
-
-                {waitForUtxosToBeSpent.length > 0 && (
-                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
-                    <Spinner className="motion-reduce:hidden" />
-                    <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
-                  </Alert>
-                )}
-              </>
+              <Alert variant={paymentSuccessfulInfoAlert.variant}>
+                <AlertTriangleIcon />
+                <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
+                <AlertDescription className="ext-wrap slashed-zero">
+                  {paymentSuccessfulInfoAlert.description}
+                </AlertDescription>
+              </Alert>
             )}
           </>
         )}
@@ -596,6 +591,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         <Card>
           <CardContent>
             <SendForm
+              key={formId}
               onSubmit={onSubmit}
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
@@ -608,9 +604,24 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||
+                utxoSelectionDialog.isApplying ||
+                triggerNonCollaborativeTransaction.isPending ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}
+              onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
+              sourceJarLabelButton={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={utxoSelectionDialog.utxoSelectorDisabled}
+                  onClick={utxoSelectionDialog.onOpenUtxoSelector}
+                >
+                  <ListFilterIcon />
+                  {t('show_utxos.text_select_utxos_tooltip')}
+                </Button>
+              }
             />
           </CardContent>
         </Card>

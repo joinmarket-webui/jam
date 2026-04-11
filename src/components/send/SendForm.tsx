@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ComponentProps } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
@@ -276,6 +276,8 @@ const FieldPrefixSatSymbol = (
 interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
+  onSourceJarChange?: (jarIndex: JarIndex | undefined) => void
+  sourceJarLabelButton?: React.ReactElement
   minNumberOfCollaborators?: number
   feeConfigValues?: FeeConfigValues
   forceCoinJoinEnabled?: boolean
@@ -290,6 +292,8 @@ interface SendFormProps {
 export function SendForm({
   className,
   onSubmit,
+  onSourceJarChange,
+  sourceJarLabelButton,
   disabled,
   feeConfigValues,
   forceCoinJoinEnabled = false,
@@ -355,6 +359,10 @@ export function SendForm({
     if (sourceJarIndex === undefined) return
     return jars.find((it) => it.jarIndex === sourceJarIndex)
   }, [jars, sourceJarIndex])
+
+  useEffect(() => {
+    onSourceJarChange?.(sourceJarIndex)
+  }, [onSourceJarChange, sourceJarIndex])
 
   const destinationJar = useMemo(() => {
     if (destinationJarIndex === undefined) return
@@ -445,7 +453,10 @@ export function SendForm({
       <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
         <div className="space-y-2">
           <Field className="space-y-4" data-invalid={errors.source !== undefined}>
-            <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
+            <div className="flex items-center justify-between gap-2">
+              <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
+              {sourceJarLabelButton && <>{sourceJarLabelButton}</>}
+            </div>
             <div className="grid grid-cols-5 gap-4">
               {jars.map((jar, index) => (
                 <SelectableJar
