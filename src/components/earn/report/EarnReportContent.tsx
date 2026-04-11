@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -72,6 +72,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   const [demoEntries, setDemoEntries] = useState<EarnReportEntry[]>([])
   const [sorting, setSorting] = useState<SortingState>([{ id: 'timestamp', desc: true }])
   const [globalFilter, setGlobalFilter] = useState('')
+  const [isShowAll, setIsShowAll] = useState(false)
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: ITEMS_PER_PAGE })
 
   const addDemoEntry = useCallback(() => {
@@ -137,6 +138,12 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   })
+
+  useEffect(() => {
+    if (isShowAll) {
+      table.setPageSize(allEntries.length || 1)
+    }
+  }, [isShowAll, allEntries.length, table])
 
   const visibleRows = table.getRowModel().rows
 
@@ -294,15 +301,15 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
               <TablePagination
                 currentPage={table.getState().pagination.pageIndex + 1}
                 totalPages={table.getPageCount()}
-                itemsPerPage={
-                  pagination.pageSize === allEntries.length || allEntries.length === 0 ? -1 : pagination.pageSize
-                }
+                itemsPerPage={isShowAll ? -1 : pagination.pageSize}
                 totalItems={table.getFilteredRowModel().rows.length}
                 onPageChange={(page) => table.setPageIndex(page - 1)}
                 onItemsPerPageChange={(newItemsPerPage) => {
                   if (newItemsPerPage === -1) {
-                    table.setPageSize(table.getPrePaginationRowModel().rows.length || 1)
+                    setIsShowAll(true)
+                    table.setPageSize(allEntries.length || 1)
                   } else {
+                    setIsShowAll(false)
                     table.setPageSize(newItemsPerPage)
                   }
                   table.setPageIndex(0)
