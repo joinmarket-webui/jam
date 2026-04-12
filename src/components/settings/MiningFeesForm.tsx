@@ -204,7 +204,11 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               <span className="text-sm font-medium">%</span>
             </div>
             <Input
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              max="100"
+              step="any"
               value={txFeesFactor}
               onChange={(event) => setTxFeesFactor(event.target.value)}
               placeholder="20"
@@ -227,7 +231,11 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               <span className="text-sm font-medium">%</span>
             </div>
             <Input
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              max="100"
+              step="any"
               value={maxSweepFeeChange}
               onChange={(event) => setMaxSweepFeeChange(event.target.value)}
               placeholder="80"
