@@ -33,21 +33,9 @@ export const TxFeeInputField = ({
   )
 
   const handleUnitChange = (newUnit: TxFeeUnit) => {
-    if (newUnit !== unit && value) {
-      const numberValue = Number(value)
-      if (!Number.isNaN(numberValue)) {
-        if (newUnit === txFeeUnit.SATS_PER_KILO_VBYTE && unit === txFeeUnit.BLOCKS) {
-          // Convert blocks to sats/vbyte
-          const converted = Math.round(numberValue * 1_000)
-          onValueChange(String(converted / 1_000))
-        } else if (newUnit === txFeeUnit.BLOCKS && unit === txFeeUnit.SATS_PER_KILO_VBYTE) {
-          // Convert sats/vbyte to blocks
-          const converted = Math.round(numberValue * 1_000)
-          onValueChange(String(Math.round(converted / 1_000)))
-        }
-      }
+    if (newUnit !== unit) {
+      onUnitChange(newUnit)
     }
-    onUnitChange(newUnit)
   }
 
   return (
