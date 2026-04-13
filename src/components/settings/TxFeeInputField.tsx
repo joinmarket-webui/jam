@@ -85,7 +85,10 @@ export const TxFeeInputField = ({
           )}
         </div>
         <Input
-          type="text"
+          type="number"
+          inputMode="decimal"
+          min="0"
+          step="any"
           value={value}
           onChange={(event) => onValueChange(event.target.value)}
           placeholder={unit === txFeeUnit.BLOCKS ? '3' : '1.0'}
@@ -93,7 +96,7 @@ export const TxFeeInputField = ({
           disabled={disabled}
         />
       </div>
-      {error && <div className="mt-1 text-xs text-red-500">{error}</div>}
+      {error && <div className="text-destructive mt-1 text-xs">{error}</div>}
     </div>
   )
 }
