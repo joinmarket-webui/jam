@@ -1,9 +1,9 @@
 import { useEffect, forwardRef, useImperativeHandle, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { PercentIcon } from 'lucide-react'
 import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   TX_FEES_FACTOR_MIN,
@@ -13,6 +13,8 @@ import {
 } from '@/constants/jam'
 import { JM_MAX_SWEEP_FEE_CHANGE_DEFAULT, txFeeUnit, type TxFeeUnit } from '@/constants/jm'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '@/lib/utils'
+import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { TxFeeInputField } from './TxFeeInputField'
 
 interface MiningFeesFormProps {
@@ -90,20 +92,20 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
       }
 
       const txFeesBlocksMessage = t('settings.fees.feedback_invalid_tx_fees_blocks', {
-        min: 1,
-        max: 1_000,
+        min: Number(1).toLocaleString(),
+        max: Number(1_000).toLocaleString(),
       })
       const txFeesSatsMessage = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
-        min: 1.001,
-        max: 350,
+        min: Number(1.001).toLocaleString(),
+        max: Number(350).toLocaleString(),
       })
       const txFeesFactorMessage = t('settings.fees.feedback_invalid_tx_fees_factor', {
-        min: factorToPercentage(TX_FEES_FACTOR_MIN),
-        max: factorToPercentage(TX_FEES_FACTOR_MAX),
+        min: factorToPercentage(TX_FEES_FACTOR_MIN).toLocaleString(),
+        max: factorToPercentage(TX_FEES_FACTOR_MAX).toLocaleString(),
       })
       const maxSweepFeeChangeMessage = t('settings.fees.feedback_invalid_max_sweep_fee_change', {
-        min: factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN),
-        max: factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX),
+        min: factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN).toLocaleString(),
+        max: factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX).toLocaleString(),
       })
 
       return yup
@@ -259,10 +261,10 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
     const txFeesError = feeType === txFeeUnit.BLOCKS ? errors.txFeesBlocks?.message : errors.txFeesSatsPerVbyte?.message
 
     return (
-      <div>
+      <div className="space-y-6">
         <p className="text-muted-foreground mb-6 text-sm">{t('settings.fees.description_general_fee_settings')}</p>
 
-        <div className="mb-6 space-y-2">
+        <div className="space-y-2">
           <Label>{t('settings.fees.label_tx_fees')}</Label>
           <TxFeeInputField
             value={feeType === txFeeUnit.BLOCKS ? txFeesBlocks : txFeesSatsPerVbyte}
@@ -274,55 +276,63 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
           />
         </div>
 
-        <div className="mb-6 space-y-2">
-          <Label>{t('settings.fees.label_tx_fees_factor')}</Label>
-          <p className="text-muted-foreground text-xs">{t('settings.fees.description_tx_fees_factor_^0.9.10')}</p>
-          <div className="flex h-12 items-center">
-            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
-              <span className="text-sm font-medium">%</span>
-            </div>
-            <Input
-              {...register('txFeesFactor')}
-              type="number"
-              inputMode="decimal"
-              min="0"
-              max="100"
-              step="any"
-              placeholder="20"
-              className="h-full rounded-l-none"
-            />
-          </div>
+        <div className="space-y-2">
+          <Field data-invalid={errors.txFeesFactor !== undefined}>
+            <FieldLabel htmlFor="mining-fees-tx-fees-factor">{t('settings.fees.label_tx_fees_factor')}</FieldLabel>
+            <FieldDescription className="text-xs">
+              {t('settings.fees.description_tx_fees_factor_^0.9.10')}
+            </FieldDescription>
+            <InputGroup>
+              <InputGroupInput
+                id="mining-fees-tx-fees-factor"
+                {...register('txFeesFactor')}
+                type="number"
+                inputMode="decimal"
+                min="0"
+                max="100"
+                step="any"
+                placeholder="20"
+              />
+              <InputGroupAddon align="inline-start">
+                <PercentIcon />
+              </InputGroupAddon>
+            </InputGroup>
+          </Field>
           {errors.txFeesFactor?.message && (
-            <div className="text-destructive mt-1 text-xs">{errors.txFeesFactor.message}</div>
+            <div className="text-destructive text-xs">{errors.txFeesFactor.message}</div>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label>{t('settings.fees.label_max_sweep_fee_change')}</Label>
-          <p className="text-muted-foreground text-xs">
-            {t('settings.fees.description_max_sweep_fee_change', {
-              // TODO: i18n - change variable name.. `defaultValue` is used by the library!
-              defaultValue: `${factorToPercentage(JM_MAX_SWEEP_FEE_CHANGE_DEFAULT)}%`,
-            })}
-          </p>
-          <div className="flex h-12 items-center">
-            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
-              <span className="text-sm font-medium">%</span>
-            </div>
-            <Input
-              {...register('maxSweepFeeChange')}
-              type="number"
-              inputMode="decimal"
-              min="0"
-              max="100"
-              step="any"
-              placeholder="80"
-              className="h-full rounded-l-none"
-            />
-          </div>
-          {errors.maxSweepFeeChange?.message && (
-            <div className="text-destructive mt-1 text-xs">{errors.maxSweepFeeChange.message}</div>
-          )}
+          <Field data-invalid={errors.maxSweepFeeChange !== undefined}>
+            <FieldLabel htmlFor="mining-fees-sweep-fee-change">
+              {t('settings.fees.label_max_sweep_fee_change')}
+            </FieldLabel>
+            <FieldDescription className="text-xs">
+              {t('settings.fees.description_max_sweep_fee_change', {
+                // TODO: i18n - change variable name.. `defaultValue` is used by the library!
+                defaultValue: `${factorToPercentage(JM_MAX_SWEEP_FEE_CHANGE_DEFAULT)}%`,
+              })}
+            </FieldDescription>
+            <InputGroup>
+              <InputGroupInput
+                id="mining-fees-sweep-fee-change"
+                {...register('maxSweepFeeChange')}
+                type="number"
+                inputMode="decimal"
+                min="0"
+                max="100"
+                step="any"
+                placeholder="80"
+              />
+              <InputGroupAddon align="inline-start">
+                <PercentIcon />
+              </InputGroupAddon>
+            </InputGroup>
+            {errors.maxSweepFeeChange?.message && (
+              <div className="text-destructive text-xs">{errors.maxSweepFeeChange.message}</div>
+            )}
+          </Field>
         </div>
       </div>
     )

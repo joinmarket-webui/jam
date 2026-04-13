@@ -74,7 +74,7 @@ export const TxFeeInputField = ({
         </div>
         <Input
           type="number"
-          inputMode="decimal"
+          inputMode={unit === txFeeUnit.BLOCKS ? 'numeric' : 'decimal'}
           min="0"
           step="any"
           value={value}

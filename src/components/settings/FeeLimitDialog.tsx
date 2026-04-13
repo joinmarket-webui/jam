@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
-import { factorToPercentage } from '@/lib/utils'
+import { cn, factorToPercentage } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
@@ -211,7 +211,9 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
                 >
                   {t('settings.fees.title_max_cj_fee_settings')}
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent
+                  className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+                >
                   {isLoadingConfig ? (
                     <div className="m-2 flex items-center justify-center gap-2">
                       <Spinner className="motion-reduce:hidden" />
@@ -252,7 +254,9 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
                 >
                   {t('settings.fees.title_general_fee_settings')}
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent
+                  className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+                >
                   {isLoadingConfig ? (
                     <div className="m-2 flex items-center justify-center gap-2">
                       <Spinner className="motion-reduce:hidden" />
