@@ -121,14 +121,17 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
             </div>
             <Input
               id="max-cj-fee-abs"
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="any"
               value={maxCjFeeAbs}
               onChange={(event) => setMaxCjFeeAbs(event.target.value)}
               placeholder="0.00 007 517"
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.maxCjFeeAbs && <div className="text-desctructive mt-1 text-xs">{errors.maxCjFeeAbs}</div>}
+          {errors.maxCjFeeAbs && <div className="text-destructive mt-1 text-xs">{errors.maxCjFeeAbs}</div>}
         </div>
 
         {/* Relative limit field */}
@@ -141,14 +144,18 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
             </div>
             <Input
               id="max-cj-fee-rel"
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              max="100"
+              step="any"
               value={maxCjFeeRel}
               onChange={(event) => setMaxCjFeeRel(event.target.value)}
               placeholder="0.03"
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.maxCjFeeRel && <div className="text-desctructive mt-1 text-xs">{errors.maxCjFeeRel}</div>}
+          {errors.maxCjFeeRel && <div className="text-destructive mt-1 text-xs">{errors.maxCjFeeRel}</div>}
         </div>
       </div>
     )

@@ -8,6 +8,9 @@ import viteConfig from './vite.config'
 export default defineConfig((args: ConfigEnv): ViteUserConfig => {
   return mergeConfig(viteConfig(args), {
     test: {
+      env: {
+        LC_ALL: 'en_US.UTF-8',
+      },
       projects: [
         {
           extends: true,

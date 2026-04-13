@@ -205,7 +205,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
               <AccordionItem value="collaborator-fees">
                 <AccordionTrigger
                   className={cx({
-                    'text-desctructive border-red-300':
+                    'text-destructive border-red-300':
                       collaboratorFormRef.current && !collaboratorFormRef.current.getFormData(),
                   })}
                 >
@@ -247,7 +247,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
               <AccordionItem value="mining-fees">
                 <AccordionTrigger
                   className={cx({
-                    'text-desctructive border-red-300': miningFormRef.current && !miningFormRef.current.getFormData(),
+                    'text-destructive border-red-300': miningFormRef.current && !miningFormRef.current.getFormData(),
                   })}
                 >
                   {t('settings.fees.title_general_fee_settings')}
@@ -281,7 +281,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
         </div>
 
         {saveErrorMessage && (
-          <div className="text-desctructive mb-4 w-full rounded-lg border border-red-200 p-2 text-sm">
+          <div className="text-destructive mb-4 w-full rounded-lg border border-red-200 p-2 text-sm">
             {saveErrorMessage}
           </div>
         )}

@@ -204,14 +204,18 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               <span className="text-sm font-medium">%</span>
             </div>
             <Input
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              max="100"
+              step="any"
               value={txFeesFactor}
               onChange={(event) => setTxFeesFactor(event.target.value)}
               placeholder="20"
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.txFeesFactor && <div className="mt-1 text-xs text-red-500">{errors.txFeesFactor}</div>}
+          {errors.txFeesFactor && <div className="text-destructive mt-1 text-xs">{errors.txFeesFactor}</div>}
         </div>
 
         <div className="space-y-2">
@@ -227,14 +231,18 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               <span className="text-sm font-medium">%</span>
             </div>
             <Input
-              type="text"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              max="100"
+              step="any"
               value={maxSweepFeeChange}
               onChange={(event) => setMaxSweepFeeChange(event.target.value)}
               placeholder="80"
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.maxSweepFeeChange && <div className="mt-1 text-xs text-red-500">{errors.maxSweepFeeChange}</div>}
+          {errors.maxSweepFeeChange && <div className="text-destructive mt-1 text-xs">{errors.maxSweepFeeChange}</div>}
         </div>
       </div>
     )
