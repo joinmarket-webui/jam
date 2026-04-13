@@ -74,8 +74,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
 
   const handleSubmit = async () => {
     // Trigger validation on both forms before submission
-    const collaboratorValid = collaboratorFormRef.current?.validateForm() ?? false
-    const miningValid = miningFormRef.current?.validateForm() ?? false
+    const collaboratorValid = await collaboratorFormRef.current?.validateForm()
+    const miningValid = await miningFormRef.current?.validateForm()
 
     if (!collaboratorValid || !miningValid) {
       toast.error(t('settings.fees.error_message'))
@@ -146,8 +146,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
     })
 
     setTimeout(() => {
-      collaboratorFormRef.current?.validateForm()
-      miningFormRef.current?.validateForm()
+      void collaboratorFormRef.current?.validateForm()
+      void miningFormRef.current?.validateForm()
     }, 4)
 
     toast.success('[DEV] Form values have been reset')
