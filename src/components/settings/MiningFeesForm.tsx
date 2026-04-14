@@ -12,7 +12,7 @@ import {
   MAX_SWEEP_FEE_CHANGE_MAX,
 } from '@/constants/jam'
 import { JM_MAX_SWEEP_FEE_CHANGE_DEFAULT, txFeeUnit, type TxFeeUnit } from '@/constants/jm'
-import { isValidNumber, factorToPercentage, percentageToFactor } from '@/lib/utils'
+import { factorToPercentage, percentageToFactor } from '@/lib/utils'
 import { Field, FieldDescription, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { TxFeeInputField } from './TxFeeInputField'
@@ -111,51 +111,38 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
       return yup
         .object({
           feeType: yup.string<TxFeeUnit>().oneOf([txFeeUnit.BLOCKS, txFeeUnit.SATS_PER_KILO_VBYTE]).required(),
-          txFeesBlocks: yup.string().when('feeType', {
+          txFeesBlocks: yup.number().when('feeType', {
             is: txFeeUnit.BLOCKS,
             then: (schema) =>
               schema
-                .test('tx-fees-blocks', txFeesBlocksMessage, (value) => {
-                  const val = Number(value)
-                  return !!value && isValidNumber(val) && val >= 1 && val <= 1_000
-                })
+                .integer(txFeesBlocksMessage)
+                .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+                .min(1, txFeesBlocksMessage)
+                .max(1_000, txFeesBlocksMessage)
                 .required(txFeesBlocksMessage),
-            otherwise: (schema) => schema.default(''),
+            otherwise: (schema) => schema.nullable().optional(),
           }),
-          txFeesSatsPerVbyte: yup.string().when('feeType', {
+          txFeesSatsPerVbyte: yup.number().when('feeType', {
             is: txFeeUnit.SATS_PER_KILO_VBYTE,
             then: (schema) =>
               schema
-                .test('tx-fees-sats', txFeesSatsMessage, (value) => {
-                  const val = Number(value)
-                  return !!value && isValidNumber(val) && val >= 1.001 && val <= 350
-                })
+                .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+                .min(1.001, txFeesSatsMessage)
+                .max(350, txFeesSatsMessage)
                 .required(txFeesSatsMessage),
-            otherwise: (schema) => schema.default(''),
+            otherwise: (schema) => schema.nullable().optional(),
           }),
           txFeesFactor: yup
-            .string()
-            .test('tx-fees-factor', txFeesFactorMessage, (value) => {
-              const factorValue = percentageToFactor(Number(value))
-              return (
-                !!value &&
-                isValidNumber(Number(value)) &&
-                factorValue >= TX_FEES_FACTOR_MIN &&
-                factorValue <= TX_FEES_FACTOR_MAX
-              )
-            })
+            .number()
+            .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+            .min(factorToPercentage(TX_FEES_FACTOR_MIN), txFeesFactorMessage)
+            .max(factorToPercentage(TX_FEES_FACTOR_MAX), txFeesFactorMessage)
             .required(txFeesFactorMessage),
           maxSweepFeeChange: yup
-            .string()
-            .test('max-sweep-fee-change', maxSweepFeeChangeMessage, (value) => {
-              const sweepValue = percentageToFactor(Number(value))
-              return (
-                !!value &&
-                isValidNumber(Number(value)) &&
-                sweepValue >= MAX_SWEEP_FEE_CHANGE_MIN &&
-                sweepValue <= MAX_SWEEP_FEE_CHANGE_MAX
-              )
-            })
+            .number()
+            .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+            .min(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN), maxSweepFeeChangeMessage)
+            .max(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX), maxSweepFeeChangeMessage)
             .required(maxSweepFeeChangeMessage),
         })
         .required()

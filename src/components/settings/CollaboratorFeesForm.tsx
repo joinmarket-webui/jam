@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CJ_FEE_ABS_MIN, CJ_FEE_ABS_MAX, CJ_FEE_REL_MIN, CJ_FEE_REL_MAX } from '@/constants/jam'
-import { isValidNumber, factorToPercentage, percentageToFactor, formatSats } from '@/lib/utils'
+import { factorToPercentage, percentageToFactor, formatSats } from '@/lib/utils'
 import { Field, FieldDescription, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
@@ -69,29 +69,17 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
       return yup
         .object({
           maxCjFeeAbs: yup
-            .string()
-            .test('max-cj-fee-abs', maxCjFeeAbsMessage, (value) => {
-              const absoluteFeeValue = Number(value)
-              return (
-                !!value &&
-                isValidNumber(absoluteFeeValue) &&
-                absoluteFeeValue >= CJ_FEE_ABS_MIN &&
-                absoluteFeeValue <= CJ_FEE_ABS_MAX
-              )
-            })
+            .number()
+            .integer(maxCjFeeAbsMessage)
+            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+            .min(CJ_FEE_ABS_MIN, maxCjFeeAbsMessage)
+            .max(CJ_FEE_ABS_MAX, maxCjFeeAbsMessage)
             .required(maxCjFeeAbsMessage),
           maxCjFeeRel: yup
-            .string()
-            .test('max-cj-fee-rel', maxCjFeeRelMessage, (value) => {
-              const relativeFeeValue = Number(value)
-              const relFactorVal = percentageToFactor(relativeFeeValue)
-              return (
-                !!value &&
-                isValidNumber(relativeFeeValue) &&
-                relFactorVal >= CJ_FEE_REL_MIN &&
-                relFactorVal <= CJ_FEE_REL_MAX
-              )
-            })
+            .number()
+            .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+            .min(factorToPercentage(CJ_FEE_REL_MIN), maxCjFeeRelMessage)
+            .max(factorToPercentage(CJ_FEE_REL_MAX), maxCjFeeRelMessage)
             .required(maxCjFeeRelMessage),
         })
         .required()
