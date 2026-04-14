@@ -37,6 +37,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
 
   const walletName = walletDisplayName(walletFileName)
   const walletNameTitle = shortenStringMiddle(walletName, 32)
+  const journeyState = 'initial'
 
   const onJarClicked = (jar: JarObject) => {
     setSelectedJar(jar)
@@ -54,7 +55,11 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
         walletFileName={walletFileName}
         selectedJarIndex={selectedJar?.jarIndex}
       />
-      <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
+      <div
+        className="flex flex-col items-center justify-center gap-8 px-4 py-12"
+        data-journey-state={journeyState}
+        data-testid="wallet-view"
+      >
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
           <p className="text-muted-foreground hover:text-foreground text-xl select-all" title={walletName}>
             {walletNameTitle}
