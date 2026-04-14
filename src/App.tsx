@@ -1,5 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import type { PropsWithChildren } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
@@ -13,6 +12,7 @@ import {
   Outlet,
   Route,
   RouterProvider,
+  useOutletContext,
   type NavigateFunction,
 } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -66,8 +66,23 @@ const clearAuthAndQueryCache = () => {
   queryClient.clear()
 }
 
-const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authenticated: boolean }>) => {
-  return authenticated ? <>{children}</> : <Navigate to={routes.login} replace />
+const useWalletFileName = () => useStore(authStore, (state) => state.state?.walletFileName)
+
+const useAuthenticated = () =>
+  useStore(authStore, (state) => state.state?.walletFileName !== undefined && state.state?.auth?.token !== undefined)
+
+const ProtectedRoute = () => {
+  const walletFileName = useWalletFileName()
+  return useAuthenticated() ? (
+    <JamSessionInfoContextProvider walletFileName={walletFileName!}>
+      <JamWalletInfoContextProvider walletFileName={walletFileName!}>
+        {walletFileName && <WalletInfoAutoReload walletFileName={walletFileName} />}
+        <Outlet />
+      </JamWalletInfoContextProvider>
+    </JamSessionInfoContextProvider>
+  ) : (
+    <Navigate to={routes.login} replace />
+  )
 }
 
 type LockWalletDialogContext = {
@@ -76,20 +91,50 @@ type LockWalletDialogContext = {
   t: TFunction<'translation', undefined>
 }
 
-function App() {
-  const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
-  const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
-  const { enabled: isDeveloperMode } = useDeveloperMode()
-  const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
+type LockWalletActionContextValue = {
+  onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
+}
 
+const LoginRoute = () => {
+  return useAuthenticated() ? <Navigate to={routes.home} replace /> : <LoginPage />
+}
+
+const CreateWalletRoute = () => {
+  return useAuthenticated() ? <Navigate to={routes.home} replace /> : <CreateWalletPage />
+}
+
+const ImportWalletRoute = () => {
+  return useAuthenticated() ? <Navigate to={routes.home} replace /> : <ImportWalletPage />
+}
+
+const DevSetupRoute = () => {
+  return useDeveloperMode().enabled && isDebugFeatureEnabled('devSetupPage') ? (
+    <Suspense fallback={<Loading />}>
+      <DevSetupPage />
+    </Suspense>
+  ) : (
+    <Navigate to={routes.login} replace />
+  )
+}
+
+const DevErrorExampleRoute = () => {
+  return useDeveloperMode().enabled && isDebugFeatureEnabled('devErrorExamplePage') ? (
+    <Suspense fallback={<Loading />}>
+      <DevErrorThrowingComponent />
+    </Suspense>
+  ) : (
+    <Navigate to={routes.login} replace />
+  )
+}
+
+const useWalletLockController = () => {
+  const walletFileName = useWalletFileName()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
-
   const makerRunning = jmSession?.maker_running === true
   const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
-
   const client = useApiClient()
 
-  const lockWalletQuery = useQuery(
+  const { refetch: refetchLockWallet, isFetching: isLockingWallet } = useQuery(
     {
       ...lockwalletOptions({
         client,
@@ -99,12 +144,12 @@ function App() {
     },
     queryClient,
   )
-  const lockWalletMutation = useMutation(
+  const { mutateAsync: lockWalletMutateAsync } = useMutation(
     {
       scope: { id: 'lock-wallet' },
       mutationFn: withMutationDelay(
         async () => {
-          return await lockWalletQuery.refetch({ throwOnError: true })
+          return await refetchLockWallet({ throwOnError: true })
         },
         {
           throttle: 210,
@@ -117,137 +162,148 @@ function App() {
 
   const [lockWalletDialogContext, setLockWalletDialogContext] = useState<LockWalletDialogContext>()
 
-  const doOnLogout = async (navigate: NavigateFunction) => {
+  const doOnLogout = useCallback(async (navigate: NavigateFunction) => {
     clearAuthAndQueryCache()
     await navigate(routes.login)
-  }
+  }, [])
 
-  const doOnLockWallet = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
-    if (!walletFileName) return
+  const doOnLockWalletConfirm = useCallback(
+    async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
+      if (!walletFileName) return
 
-    if (makerRunning || coinjoinInProgress) {
-      setLockWalletDialogContext({
-        open: true,
-        navigate,
-        t,
-      })
-    } else {
-      await doOnLockWalletConfirm(navigate, t)
-    }
-  }
-
-  const doOnLockWalletConfirm = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
-    if (!walletFileName) return
-    try {
-      await lockWalletMutation.mutateAsync()
-      toast.success(
-        t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
-      )
-      setLockWalletDialogContext(undefined)
-      await doOnLogout(navigate)
-    } catch (error: unknown) {
-      const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
-      toast.error(t('global.errors.error_reloading_wallet_failed', { reason }))
-      console.error('Failed to lock wallet:', error)
-    }
-  }
-
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route id="base" element={<Outlet />} errorElement={<ErrorPage />}>
-        <Route path={routes.login} element={authenticated ? <Navigate to={routes.home} replace /> : <LoginPage />} />
-        <Route
-          path={routes.createWallet}
-          element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWalletPage />}
-        />
-        <Route
-          path={routes.importWallet}
-          element={authenticated ? <Navigate to={routes.home} replace /> : <ImportWalletPage />}
-        />
-        {isDeveloperMode && isDebugFeatureEnabled('devSetupPage') && (
-          <Route
-            id="dev-setup"
-            path={routes.__devSetup}
-            element={
-              <Suspense fallback={<Loading />}>
-                <DevSetupPage />
-              </Suspense>
-            }
-          />
-        )}
-        {isDeveloperMode && isDebugFeatureEnabled('devErrorExamplePage') && (
-          <Route
-            id="error-example"
-            path={routes.__devErrorExample}
-            element={
-              <Suspense fallback={<Loading />}>
-                <DevErrorThrowingComponent />
-              </Suspense>
-            }
-          />
-        )}
-        <Route
-          id="protected"
-          element={
-            <ProtectedRoute authenticated={authenticated}>
-              <JamSessionInfoContextProvider walletFileName={walletFileName!}>
-                <JamWalletInfoContextProvider walletFileName={walletFileName!}>
-                  {walletFileName && (
-                    <>
-                      <WalletInfoAutoReload walletFileName={walletFileName} />
-                    </>
-                  )}
-                  <Outlet />
-                </JamWalletInfoContextProvider>
-              </JamSessionInfoContextProvider>
-            </ProtectedRoute>
-          }
-        >
-          <Route id="protected-without-navbar" element={<Outlet />}>
-            <Route path={routes.switchWallet} element={<SwitchWalletPage walletFileName={walletFileName!} />} />
-          </Route>
-          <Route
-            id="protected-with-navbar"
-            element={
-              <Layout onLogout={doOnLogout} onLockWallet={doOnLockWallet} walletFileName={walletFileName!}>
-                <Outlet />
-              </Layout>
-            }
-          >
-            <Route path={routes.home} element={<MainWalletPage walletFileName={walletFileName!} />} />
-            <Route path={routes.receive} element={<ReceivePage walletFileName={walletFileName!} />} />
-            <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
-            <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
-            <Route path={routes.earnReport} element={<EarnReportPage walletFileName={walletFileName!} />} />
-            <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
-            <Route
-              path={routes.settings}
-              element={<SettingsPage walletFileName={walletFileName!} onLockWallet={doOnLockWallet} />}
-            />
-            <Route path={routes.orderbook} element={<OrderbookPage />} />
-            <Route path={routes.logs} element={<LogsPage />} />
-            <Route path={routes.rescan} element={<RescanChainPage walletFileName={walletFileName!} />} />
-            <Route
-              path={routes.walletJarsDetails}
-              element={<WalletJarsDetailsPage walletFileName={walletFileName!} />}
-            />
-            {isDeveloperMode && isDebugFeatureEnabled('devPage') && (
-              <Route
-                id="dev-page"
-                path={routes.__dev}
-                element={
-                  <Suspense fallback={<Loading />}>
-                    <DevPage walletFileName={walletFileName} />
-                  </Suspense>
-                }
-              />
-            )}
-          </Route>
-        </Route>
-        <Route path="*" element={<Navigate to={routes.login} replace />} />
-      </Route>,
-    ),
+      try {
+        await lockWalletMutateAsync()
+        toast.success(
+          t('wallets.wallet_preview.alert_wallet_locked_successfully', {
+            walletName: walletDisplayName(walletFileName),
+          }),
+        )
+        setLockWalletDialogContext(undefined)
+        await doOnLogout(navigate)
+      } catch (error: unknown) {
+        const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
+        toast.error(t('global.errors.error_reloading_wallet_failed', { reason }))
+        console.error('Failed to lock wallet:', error)
+      }
+    },
+    [doOnLogout, lockWalletMutateAsync, walletFileName],
   )
+
+  const doOnLockWallet = useCallback(
+    async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
+      if (!walletFileName) return
+
+      if (makerRunning || coinjoinInProgress) {
+        setLockWalletDialogContext({
+          open: true,
+          navigate,
+          t,
+        })
+      } else {
+        await doOnLockWalletConfirm(navigate, t)
+      }
+    },
+    [coinjoinInProgress, makerRunning, doOnLockWalletConfirm, walletFileName],
+  )
+
+  return {
+    walletFileName,
+    doOnLogout,
+    doOnLockWallet,
+    doOnLockWalletConfirm,
+    lockWalletDialogContext,
+    setLockWalletDialogContext,
+    isLockingWallet,
+    makerRunning,
+    coinjoinInProgress,
+  }
+}
+
+const ProtectedNavbarRoute = () => {
+  const controller = useWalletLockController()
+
+  if (!controller.walletFileName) {
+    return <Navigate to={routes.login} replace />
+  }
+
+  return (
+    <Layout
+      onLogout={controller.doOnLogout}
+      onLockWallet={controller.doOnLockWallet}
+      walletFileName={controller.walletFileName}
+    >
+      <Outlet context={{ onLockWallet: controller.doOnLockWallet }} />
+    </Layout>
+  )
+}
+
+const walletFileNameOrRedirect = (Component: React.FC<{ walletFileName: WalletFileName }>) => {
+  const Wrapped: React.FC = () => {
+    const walletFileName = useWalletFileName()
+    return walletFileName ? <Component walletFileName={walletFileName} /> : <Navigate to={routes.login} replace />
+  }
+  return <Wrapped />
+}
+
+const SettingsRoute = () => {
+  const walletFileName = useWalletFileName()
+  const { onLockWallet } = useOutletContext<LockWalletActionContextValue>()
+
+  return walletFileName ? (
+    <SettingsPage walletFileName={walletFileName} onLockWallet={onLockWallet} />
+  ) : (
+    <Navigate to={routes.login} replace />
+  )
+}
+
+const DevPageRoute = () => {
+  const walletFileName = useWalletFileName()
+  return useDeveloperMode().enabled && isDebugFeatureEnabled('devPage') && walletFileName ? (
+    <Suspense fallback={<Loading />}>
+      <DevPage walletFileName={walletFileName} />
+    </Suspense>
+  ) : (
+    <Navigate to={routes.login} replace />
+  )
+}
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route id="base" element={<Outlet />} errorElement={<ErrorPage />}>
+      <Route path={routes.login} element={<LoginRoute />} />
+      <Route path={routes.createWallet} element={<CreateWalletRoute />} />
+      <Route path={routes.importWallet} element={<ImportWalletRoute />} />
+      <Route path={routes.__devSetup} element={<DevSetupRoute />} />
+      <Route path={routes.__devErrorExample} element={<DevErrorExampleRoute />} />
+      <Route id="protected" element={<ProtectedRoute />}>
+        <Route id="protected-without-navbar" element={<Outlet />}>
+          <Route path={routes.switchWallet} element={walletFileNameOrRedirect(SwitchWalletPage)} />
+        </Route>
+        <Route id="protected-with-navbar" element={<ProtectedNavbarRoute />}>
+          <Route path={routes.home} element={walletFileNameOrRedirect(MainWalletPage)} />
+          <Route path={routes.receive} element={walletFileNameOrRedirect(ReceivePage)} />
+          <Route path={routes.send} element={walletFileNameOrRedirect(SendPage)} />
+          <Route path={routes.earn} element={walletFileNameOrRedirect(EarnPage)} />
+          <Route path={routes.earnReport} element={walletFileNameOrRedirect(EarnReportPage)} />
+          <Route path={routes.sweep} element={walletFileNameOrRedirect(SweepPage)} />
+          <Route path={routes.settings} element={<SettingsRoute />} />
+          <Route path={routes.orderbook} element={<OrderbookPage />} />
+          <Route path={routes.logs} element={<LogsPage />} />
+          <Route path={routes.rescan} element={walletFileNameOrRedirect(RescanChainPage)} />
+          <Route path={routes.walletJarsDetails} element={walletFileNameOrRedirect(WalletJarsDetailsPage)} />
+          <Route path={routes.__dev} element={<DevPageRoute />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to={routes.login} replace />} />
+    </Route>,
+  ),
+)
+
+function App() {
+  const walletFileName = useWalletFileName()
+  const controller = useWalletLockController()
+  const lockWalletDialogContext = controller.lockWalletDialogContext
+
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
       <JamDisplayContextProvider>
@@ -255,18 +311,17 @@ function App() {
           <RefreshApiToken />
           <RefreshJmSession />
           <HandleJmWebsocketMessages />
-          {walletFileName && (
-            <>
-              <LoadFeeConfigData walletFileName={walletFileName} />
-            </>
-          )}
+
+          {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
           {lockWalletDialogContext && (
             <LockWalletConfirmDialog
-              open={lockWalletDialogContext?.open}
-              onOpenChange={() => setLockWalletDialogContext(undefined)}
-              onConfirm={() => doOnLockWalletConfirm(lockWalletDialogContext?.navigate, lockWalletDialogContext?.t)}
-              makerRunning={makerRunning}
-              coinjoinInProgress={coinjoinInProgress}
+              open={lockWalletDialogContext.open}
+              onOpenChange={() => controller.setLockWalletDialogContext(undefined)}
+              onConfirm={() =>
+                controller.doOnLockWalletConfirm(lockWalletDialogContext.navigate, lockWalletDialogContext.t)
+              }
+              makerRunning={controller.makerRunning}
+              coinjoinInProgress={controller.coinjoinInProgress}
             />
           )}
           <RouterProvider router={router} />
