@@ -27,11 +27,13 @@ import {
 import type { WalletFileName } from './utils'
 
 const withRuntimeLocale = (locale: string, callback: () => void) => {
-  const toLocaleStringMock = vi
-    .spyOn(Number.prototype, 'toLocaleString')
-    .mockImplementation(function (this: number, locales, options) {
-      return Intl.NumberFormat(locales ?? locale, options).format(this)
-    })
+  const toLocaleStringMock = vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
+    this: number,
+    locales,
+    options,
+  ) {
+    return Intl.NumberFormat(locales ?? locale, options).format(this)
+  })
 
   try {
     callback()

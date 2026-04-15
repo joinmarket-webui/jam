@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 
-* update jar balance ([9b84278](https://github.com/joinmarket-webui/jam/commit/9b842789deff5e59c4237c6a26b717448c5983d7))
+- update jar balance ([9b84278](https://github.com/joinmarket-webui/jam/commit/9b842789deff5e59c4237c6a26b717448c5983d7))
 
 ## [0.4.0](https://github.com/joinmarket-webui/jam/compare/v0.3.0...v0.4.0) (2025-06-07)
 
