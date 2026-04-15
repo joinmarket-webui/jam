@@ -70,7 +70,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }:
           utxosToFreeze.map((utxo) =>
             freezeOrUnfreezeUtxoMutateAsync({
               path: {
-                walletname: encodeURIComponent(walletFileName),
+                walletname: walletFileName,
               },
               body: {
                 'utxo-string': utxo.utxo,
@@ -83,7 +83,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }:
           utxosToUnfreeze.map((utxo) =>
             freezeOrUnfreezeUtxoMutateAsync({
               path: {
-                walletname: encodeURIComponent(walletFileName),
+                walletname: walletFileName,
               },
               body: {
                 'utxo-string': utxo.utxo,

@@ -78,7 +78,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
           freezeOrUnfreezeUtxo
             .mutateAsync({
               path: {
-                walletname: encodeURIComponent(walletFileName),
+                walletname: walletFileName,
               },
               body: {
                 'utxo-string': utxo.utxo,

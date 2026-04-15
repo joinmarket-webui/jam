@@ -61,7 +61,7 @@ const LoginPage = () => {
     mutationFn: async (data: LoginFormData) => {
       const response = await unlockWallet.mutateAsync({
         path: {
-          walletname: encodeURIComponent(data.walletFileName),
+          walletname: data.walletFileName,
         },
         body: {
           password: data.password,

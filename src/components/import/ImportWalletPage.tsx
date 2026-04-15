@@ -112,7 +112,7 @@ const ImportWalletPage = () => {
     mutationFn: async (parameters: { walletFileName: WalletFileName; token: ApiToken }) => {
       const { data } = await lockwallet({
         client,
-        path: { walletname: encodeURIComponent(parameters.walletFileName) },
+        path: { walletname: parameters.walletFileName },
         headers: { ...buildAuthHeaderMap(parameters.token) },
         throwOnError: true,
       })
@@ -133,7 +133,7 @@ const ImportWalletPage = () => {
       const { data } = await rescanblockchain({
         client,
         path: {
-          walletname: encodeURIComponent(parameters.walletFileName),
+          walletname: parameters.walletFileName,
           blockheight: parameters.blockHeight,
         },
         headers: { ...buildAuthHeaderMap(parameters.token) },
@@ -188,7 +188,7 @@ const ImportWalletPage = () => {
       }
       // Step #2: update the gaplimit config value if necessary
       const originalGaplimitResponse = await fetchConfig.mutateAsync({
-        path: { walletname: encodeURIComponent(authState.walletFileName) },
+        path: { walletname: authState.walletFileName },
         headers: { ...buildAuthHeaderMap(authState.auth.token) },
         body: JM_GAPLIMIT_CONFIGKEY,
       })
@@ -199,7 +199,7 @@ const ImportWalletPage = () => {
         console.info('Will update gaplimit from %d to %d', originalGaplimit, importDetails.gaplimit)
 
         await updateConfig.mutateAsync({
-          path: { walletname: encodeURIComponent(authState.walletFileName) },
+          path: { walletname: authState.walletFileName },
           headers: { ...buildAuthHeaderMap(authState.auth.token) },
           body: {
             ...JM_GAPLIMIT_CONFIGKEY,
@@ -214,7 +214,7 @@ const ImportWalletPage = () => {
       })
 
       const unlockResponse = await unlockWallet.mutateAsync({
-        path: { walletname: encodeURIComponent(authState.walletFileName) },
+        path: { walletname: authState.walletFileName },
         body: {
           password: walletDetails.password,
         },
@@ -231,7 +231,7 @@ const ImportWalletPage = () => {
       if (gaplimitUpdateNecessary) {
         console.info('Will reset gaplimit to previous value %d', originalGaplimit)
         await updateConfig.mutateAsync({
-          path: { walletname: encodeURIComponent(authState.walletFileName) },
+          path: { walletname: authState.walletFileName },
           headers: { ...buildAuthHeaderMap(authState.auth.token) },
           body: {
             ...JM_GAPLIMIT_CONFIGKEY,

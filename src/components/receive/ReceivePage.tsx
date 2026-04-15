@@ -56,7 +56,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const getAddressOptions = {
     client,
     path: {
-      walletname: encodeURIComponent(walletFileName),
+      walletname: walletFileName,
       mixdepth: String(selectedSourceJar?.jarIndex),
     },
   }
