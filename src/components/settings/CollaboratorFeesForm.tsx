@@ -48,7 +48,9 @@ export const CollaboratorFeesForm = ({
           <InputGroup>
             <InputGroupInput
               id="collaborator-fees-max-cj-fee-abs"
-              {...register('maxCjFeeAbs')}
+              {...register('maxCjFeeAbs', {
+                valueAsNumber: true,
+              })}
               type="number"
               inputMode="numeric"
               min="0"
@@ -67,7 +69,9 @@ export const CollaboratorFeesForm = ({
           <InputGroup>
             <InputGroupInput
               id="collaborator-fees-max-cj-fee-rel"
-              {...register('maxCjFeeRelInPercent')}
+              {...register('maxCjFeeRelInPercent', {
+                valueAsNumber: true,
+              })}
               type="number"
               inputMode="decimal"
               min="0"

@@ -64,7 +64,7 @@ export const MiningFeesForm = ({
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
-      <p className="text-muted-foreground mb-6 text-sm">{t('settings.fees.description_general_fee_settings')}</p>
+      <p className="text-muted-foreground text-sm">{t('settings.fees.description_general_fee_settings')}</p>
 
       <div className="space-y-2">
         <Label>{t('settings.fees.label_tx_fees')}</Label>
@@ -87,7 +87,9 @@ export const MiningFeesForm = ({
           <InputGroup>
             <InputGroupInput
               id="mining-fees-tx-fees-factor"
-              {...register('txFeesFactorInPercent')}
+              {...register('txFeesFactorInPercent', {
+                valueAsNumber: true,
+              })}
               type="number"
               inputMode="decimal"
               min="0"
@@ -118,7 +120,9 @@ export const MiningFeesForm = ({
           <InputGroup>
             <InputGroupInput
               id="mining-fees-sweep-fee-change"
-              {...register('maxSweepFeeChangeInPercent')}
+              {...register('maxSweepFeeChangeInPercent', {
+                valueAsNumber: true,
+              })}
               type="number"
               inputMode="decimal"
               min="0"
