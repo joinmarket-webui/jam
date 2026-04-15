@@ -27,7 +27,7 @@ export const CollaboratorFeesForm = ({
   className,
   form: {
     register,
-    formState: { errors },
+    formState: { errors, disabled },
   },
 }: CollaboratorFeesFormProps) => {
   const { t } = useTranslation()
@@ -49,6 +49,7 @@ export const CollaboratorFeesForm = ({
             <InputGroupInput
               id="collaborator-fees-max-cj-fee-abs"
               {...register('maxCjFeeAbs', {
+                disabled,
                 valueAsNumber: true,
               })}
               type="number"
@@ -70,6 +71,7 @@ export const CollaboratorFeesForm = ({
             <InputGroupInput
               id="collaborator-fees-max-cj-fee-rel"
               {...register('maxCjFeeRelInPercent', {
+                disabled,
                 valueAsNumber: true,
               })}
               type="number"

@@ -1,4 +1,4 @@
-import { useState, useEffect, type ComponentProps, useMemo } from 'react'
+import { useState, type ComponentProps, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
@@ -78,6 +78,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
 
   const miningFeesForm = useForm<MiningFeesFormValues, unknown, MiningFeesFormValues>({
     mode: 'onChange',
+    disabled: isSubmitting || isLoadingConfig,
     values: miningFeeFormInitialValues,
     resolver: yupResolver(miningFeeFormSchema as yup.AnyObjectSchema) as Resolver<
       MiningFeesFormValues,
@@ -101,6 +102,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
 
   const collaboratorFeesForm = useForm<CollaboratorFeesFormValues, unknown, CollaboratorFeesFormValues>({
     mode: 'onChange',
+    disabled: isSubmitting || isLoadingConfig,
     values: collaboratorFeesFormInitialValues,
     resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema) as Resolver<
       CollaboratorFeesFormValues,
@@ -108,10 +110,6 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
       CollaboratorFeesFormValues
     >,
   })
-
-  useEffect(() => {
-    setAccordionValue([])
-  }, [open])
 
   const setconfigMutation = useMutation(configsettingMutation({ client }))
 
@@ -213,7 +211,6 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
             </Trans>
           </DialogDescription>
         </DialogHeader>
-
         <div className="flex-1 space-y-4">
           {isDeveloperMode && (
             <>
@@ -278,7 +275,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
         </div>
 
         <DialogFooter
-          className={cx('', {
+          className={cx({
             'border-t pt-4': accordionValue.length > 0,
           })}
         >

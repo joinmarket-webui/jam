@@ -20,7 +20,7 @@ export const MiningFeesForm = ({
     register,
     control,
     setValue,
-    formState: { errors },
+    formState: { errors, disabled },
   },
 }: MiningFeesFormProps) => {
   const { t } = useTranslation()
@@ -74,7 +74,7 @@ export const MiningFeesForm = ({
           onUnitChange={handleTxFeeUnitChange}
           onValueChange={handleTxFeeValueChange}
           error={txFeesError}
-          disabled={false}
+          disabled={disabled}
         />
       </div>
 
@@ -88,6 +88,7 @@ export const MiningFeesForm = ({
             <InputGroupInput
               id="mining-fees-tx-fees-factor"
               {...register('txFeesFactorInPercent', {
+                disabled,
                 valueAsNumber: true,
               })}
               type="number"
@@ -121,6 +122,7 @@ export const MiningFeesForm = ({
             <InputGroupInput
               id="mining-fees-sweep-fee-change"
               {...register('maxSweepFeeChangeInPercent', {
+                disabled,
                 valueAsNumber: true,
               })}
               type="number"

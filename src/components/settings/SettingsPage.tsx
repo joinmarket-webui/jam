@@ -251,7 +251,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </>
       )}
 
-      <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />
+      <FeeLimitDialog
+        key={`fee-dialog-open-${showFeeLimitDialog}`}
+        walletFileName={walletFileName}
+        open={showFeeLimitDialog}
+        onOpenChange={setShowFeeLimitDialog}
+      />
 
       {hashedPassword && (
         <>
