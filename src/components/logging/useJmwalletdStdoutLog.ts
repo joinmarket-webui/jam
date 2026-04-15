@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
-import { fetchLog } from '@/lib/api/logs'
+import { fetchLog } from '@/lib/api/jam'
 import { getErrorReason } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
 

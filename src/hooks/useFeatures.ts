@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
-import { fetchFeatures } from '@/lib/api/logs'
+import { fetchFeatures } from '@/lib/api/jam'
 import { authStore } from '@/store/authStore'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 

@@ -28,7 +28,7 @@ const withExpectedContentTypeOrThrow = (response: Response, expectedContentType:
  * @returns Promise<Response>
  */
 export const fetchFeatures = async ({ token, signal }: AuthApiRequestContext) => {
-  return await fetch(`/features`, {
+  return await fetch(`/jam/api/v0/features`, {
     headers: { ...buildAuthHeaderMap(token) },
     signal,
   }).then((response) => withExpectedContentTypeOrThrow(response, 'application/json'))
