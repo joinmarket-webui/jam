@@ -15,7 +15,7 @@ export const estimateMaxCollaboratorFee = (
     throw new Error('Invalid state: Missing fee config values.')
   }
   const maxAbsoluteFee = Number.parseInt(feeConfigValues.max_cj_fee_abs || '', 10)
-  if (!Number.isFinite(maxAbsoluteFee)) {
+  if (!Number.isSafeInteger(maxAbsoluteFee)) {
     throw new TypeError('Invalid state: Missing "max_cj_fee_abs" fee config value.')
   }
   const maxRelativeFee = Number.parseFloat(feeConfigValues.max_cj_fee_rel || '')

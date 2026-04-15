@@ -1,9 +1,12 @@
-import { useState, useRef, useEffect, type ComponentProps } from 'react'
+import { useState, useRef, useEffect, type ComponentProps, useMemo } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
+import { useForm, type Resolver } from 'react-hook-form'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
+import * as yup from 'yup'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
@@ -20,15 +23,14 @@ import { Switch } from '@/components/ui/switch'
 import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
-import { cn, factorToPercentage } from '@/lib/utils'
+import { cn, factorToPercentage, percentageToFactor } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
 import { Spinner } from '../ui/spinner'
-import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
+import { CollaboratorFeesForm } from './CollaboratorFeesForm'
+import { collaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesFormSchema'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
-
-//TODO: needs testing!
 
 type FeeLimitDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
@@ -60,8 +62,32 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
   }, [open])
 
   const client = useApiClient()
-  const collaboratorFormRef = useRef<CollaboratorFeesFormRef>(null)
   const miningFormRef = useRef<MiningFeesFormRef>(null)
+
+  const collaboratorFormSchema = useMemo(() => {
+    return collaboratorFeesFormSchema(enableFormValidation, t)
+  }, [enableFormValidation, t])
+
+  const collaboratorFeesFormInitialValues: CollaboratorFeesFormValues = useMemo(() => {
+    const maxCjFeeAbsolute = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
+    const maxCjFeeRelative = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
+    return {
+      maxCjFeeAbs: Number.isSafeInteger(maxCjFeeAbsolute) ? maxCjFeeAbsolute : undefined,
+      maxCjFeeRelInPercent: Number.isFinite(maxCjFeeRelative) ? factorToPercentage(maxCjFeeRelative) : undefined,
+    }
+  }, [feeConfigValues])
+
+  console.log(feeConfigValues)
+  console.log(collaboratorFeesFormInitialValues)
+  const collaboratorFeesForm = useForm<CollaboratorFeesFormValues, unknown, CollaboratorFeesFormValues>({
+    mode: 'onChange',
+    values: collaboratorFeesFormInitialValues,
+    resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema) as Resolver<
+      CollaboratorFeesFormValues,
+      unknown,
+      CollaboratorFeesFormValues
+    >,
+  })
 
   const setconfigMutation = useMutation(configsettingMutation({ client }))
 
@@ -74,7 +100,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
 
   const handleSubmit = async () => {
     // Trigger validation on both forms before submission
-    const collaboratorValid = await collaboratorFormRef.current?.validateForm()
+    const collaboratorValid = collaboratorFeesForm.formState.isValid
     const miningValid = await miningFormRef.current?.validateForm()
 
     if (!collaboratorValid || !miningValid) {
@@ -86,7 +112,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
     setSaveErrorMessage(undefined)
 
     try {
-      const collaboratorData = collaboratorFormRef.current?.getFormData()
+      const collaboratorData = collaboratorFeesForm.getValues()
       const miningData = miningFormRef.current?.getFormData()
 
       if (!collaboratorData || !miningData) {
@@ -96,8 +122,17 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
       }
 
       const configUpdates: { key: FeeConfigName; value: string }[] = [
-        { key: 'max_cj_fee_abs', value: collaboratorData.maxCjFeeAbs },
-        { key: 'max_cj_fee_rel', value: collaboratorData.maxCjFeeRel },
+        {
+          key: 'max_cj_fee_abs',
+          value: collaboratorData.maxCjFeeAbs !== undefined ? String(collaboratorData.maxCjFeeAbs) : '',
+        },
+        {
+          key: 'max_cj_fee_rel',
+          value:
+            collaboratorData.maxCjFeeRelInPercent !== undefined
+              ? String(percentageToFactor(collaboratorData.maxCjFeeRelInPercent))
+              : '',
+        },
         { key: 'tx_fees', value: miningData.txFees },
         { key: 'tx_fees_factor', value: miningData.txFeesFactor },
         { key: 'max_sweep_fee_change', value: miningData.maxSweepFeeChange },
@@ -135,10 +170,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
   }
 
   const handleResetFormValues = () => {
-    collaboratorFormRef.current?.setFormData({
-      maxCjFeeAbs: '',
-      maxCjFeeRel: '',
-    })
+    collaboratorFeesForm.reset()
     miningFormRef.current?.setFormData({
       txFees: '',
       txFeesFactor: '',
@@ -146,7 +178,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
     })
 
     setTimeout(() => {
-      void collaboratorFormRef.current?.validateForm()
+      void collaboratorFeesForm.trigger()
       void miningFormRef.current?.validateForm()
     }, 4)
 
@@ -205,8 +237,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
               <AccordionItem value="collaborator-fees">
                 <AccordionTrigger
                   className={cx({
-                    'text-destructive border-red-300':
-                      collaboratorFormRef.current && !collaboratorFormRef.current.getFormData(),
+                    'text-destructive border-red-300': !!collaboratorFeesForm.formState.errors.form,
                   })}
                 >
                   {t('settings.fees.title_max_cj_fee_settings')}
@@ -220,17 +251,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
                       {t('global.loading')}
                     </div>
                   ) : (
-                    <CollaboratorFeesForm
-                      key={`collaborator-${walletFileName}-${open}`}
-                      ref={collaboratorFormRef}
-                      initialValues={{
-                        maxCjFeeAbs: feeConfigValues?.max_cj_fee_abs || '',
-                        maxCjFeeRel: feeConfigValues?.max_cj_fee_rel
-                          ? String(factorToPercentage(Number(feeConfigValues.max_cj_fee_rel)))
-                          : '',
-                      }}
-                      enableValidation={enableFormValidation}
-                    />
+                    <CollaboratorFeesForm key={`collaborator-${walletFileName}-${open}`} form={collaboratorFeesForm} />
                   )}
                 </AccordionContent>
               </AccordionItem>
