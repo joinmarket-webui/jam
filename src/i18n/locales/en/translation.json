@@ -116,7 +116,6 @@
     "text_loading": "Loading wallets",
     "button_new_wallet": "Create new wallet",
     "button_import_wallet": "Import existing wallet",
-    "alert_wallet_open": "There can be only one active wallet. If you want to open another wallet, please lock '{{ currentWalletName }}' first.",
     "error_loading_failed": "Loading wallets failed.",
     "wallet_preview": {
       "alert_wallet_already_unlocked": "{{ walletName }} is already unlocked.",
@@ -258,8 +257,6 @@
     "show_lock_confirmation": "Ask confirmation before locking",
     "button_lock_wallet": "Lock wallet",
     "button_locking_wallet": "Locking...",
-    "button_switch_wallet": "Switch wallet",
-    "switch_wallet_current_wallet_locked_select_other": "Current wallet is locked. Select a different wallet to continue.",
     "error_lock_wallet_failed": "Failed to lock current wallet: {{ reason }}",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal": {

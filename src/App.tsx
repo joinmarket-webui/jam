@@ -19,7 +19,6 @@ import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { LogsPage } from '@/components/LogsPage'
 import MainWalletPage from '@/components/MainWalletPage'
-import SwitchWalletPage from '@/components/SwitchWalletPage'
 import CreateWalletPage from '@/components/create/CreateWalletPage'
 import { EarnPage } from '@/components/earn/EarnPage'
 import ErrorPage from '@/components/error/ErrorPage'
@@ -203,9 +202,6 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route id="protected-without-navbar" element={<Outlet />}>
-            <Route path={routes.switchWallet} element={<SwitchWalletPage walletFileName={walletFileName!} />} />
-          </Route>
           <Route
             id="protected-with-navbar"
             element={

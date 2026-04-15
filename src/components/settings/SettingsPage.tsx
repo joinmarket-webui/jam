@@ -11,7 +11,6 @@ import {
   BookIcon,
   TerminalIcon,
   PackageSearchIcon,
-  ArrowLeftRightIcon,
   LockKeyholeIcon,
   BookKeyIcon,
   FoldHorizontalIcon,
@@ -163,8 +162,6 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             action={() => void lockWalletMutation.mutateAsync({ navigate, t })}
             disabled={lockWalletMutation.isPending}
           />
-          <Separator className="opacity-50" />
-          <SettingsLink icon={ArrowLeftRightIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />
           <Separator className="opacity-50" />
           <SettingsLink icon={PackageSearchIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
           <Separator className="opacity-50" />
