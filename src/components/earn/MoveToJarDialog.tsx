@@ -77,7 +77,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const getAddressQueryOptions = getaddressOptions({
     client,
     path: {
-      walletname: encodeURIComponent(walletFileName),
+      walletname: walletFileName,
       mixdepth: String(selectedJarIndex ?? 0),
     },
   })
@@ -145,7 +145,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
       // Freeze other UTXOs in the source jar so only the FB gets swept
       for (const u of utxosToFreeze) {
         await freezeUtxo.mutateAsync({
-          path: { walletname: encodeURIComponent(walletFileName) },
+          path: { walletname: walletFileName },
           body: { 'utxo-string': u.utxo, freeze: true },
         })
         frozen.push(u)
@@ -153,13 +153,13 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
       if (utxo.frozen) {
         await unfreezeUtxo.mutateAsync({
-          path: { walletname: encodeURIComponent(walletFileName) },
+          path: { walletname: walletFileName },
           body: { 'utxo-string': utxo.utxo, freeze: false },
         })
       }
 
       const result = await directSend.mutateAsync({
-        path: { walletname: encodeURIComponent(walletFileName) },
+        path: { walletname: walletFileName },
         body: {
           mixdepth: utxo.mixdepth,
           amount_sats: 0,
@@ -175,7 +175,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
       for (const u of frozen) {
         try {
           await unfreezeUtxo.mutateAsync({
-            path: { walletname: encodeURIComponent(walletFileName) },
+            path: { walletname: walletFileName },
             body: { 'utxo-string': u.utxo, freeze: false },
           })
         } catch {
@@ -189,7 +189,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
       for (const u of frozen) {
         try {
           await unfreezeUtxo.mutateAsync({
-            path: { walletname: encodeURIComponent(walletFileName) },
+            path: { walletname: walletFileName },
             body: { 'utxo-string': u.utxo, freeze: false },
           })
         } catch {

@@ -112,7 +112,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
       const { data } = await rescanblockchain({
         client,
         path: {
-          walletname: encodeURIComponent(walletFileName),
+          walletname: walletFileName,
           blockheight: blockHeight,
         },
         throwOnError: true,

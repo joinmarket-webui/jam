@@ -80,7 +80,7 @@ const CreateWalletPage = () => {
     mutationFn: async (parameters: { walletFileName: WalletFileName; token: ApiToken }) => {
       const { data } = await lockwallet({
         client,
-        path: { walletname: encodeURIComponent(parameters.walletFileName) },
+        path: { walletname: parameters.walletFileName },
         headers: { ...buildAuthHeaderMap(parameters.token) },
         throwOnError: true,
       })
@@ -196,7 +196,7 @@ const CreateWalletPage = () => {
   const handleMnemonicVerified = async ({ walletFileName, password, hashedPassword }: CreateWalletSuccessInfo) => {
     try {
       const response = await unlockWalletMutation.mutateAsync({
-        path: { walletname: encodeURIComponent(walletFileName) },
+        path: { walletname: walletFileName },
         body: {
           password,
         },
