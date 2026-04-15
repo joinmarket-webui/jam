@@ -41,8 +41,6 @@ export const CollaboratorFeesForm = ({
         <AlertDescription>{t('settings.fees.subtitle_max_cj_fee')}</AlertDescription>
       </Alert>
 
-      {/* Absolute limit field */}
-
       <div className="space-y-2">
         <Field data-invalid={errors.maxCjFeeAbs !== undefined}>
           <FieldLabel htmlFor="collaborator-fees-max-cj-fee-abs">{t('settings.fees.label_max_cj_fee_abs')}</FieldLabel>
@@ -54,7 +52,7 @@ export const CollaboratorFeesForm = ({
               type="number"
               inputMode="numeric"
               min="0"
-              step="any"
+              step="1"
             />
             <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
           </InputGroup>
@@ -62,7 +60,6 @@ export const CollaboratorFeesForm = ({
         {errors.maxCjFeeAbs?.message && <div className="text-destructive text-xs">{errors.maxCjFeeAbs.message}</div>}
       </div>
 
-      {/* Relative limit field */}
       <div className="space-y-2">
         <Field data-invalid={errors.maxCjFeeRelInPercent !== undefined}>
           <FieldLabel htmlFor="collaborator-fees-max-cj-fee-rel">{t('settings.fees.label_max_cj_fee_rel')}</FieldLabel>
@@ -75,7 +72,7 @@ export const CollaboratorFeesForm = ({
               inputMode="decimal"
               min="0"
               max="100"
-              step="any"
+              step="0.0001"
             />
             <InputGroupAddon align="inline-start">
               <PercentIcon />
