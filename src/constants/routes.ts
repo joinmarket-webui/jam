@@ -3,7 +3,6 @@ export const routes = {
   login: '/login',
   createWallet: '/create-wallet',
   importWallet: '/import-wallet',
-  switchWallet: '/switch-wallet',
   receive: '/receive',
   send: '/send',
   rescan: '/settings/rescan',
