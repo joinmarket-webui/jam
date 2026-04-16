@@ -18,7 +18,7 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
   const { mutateAsync: fetchConfigAsync } = useMutation({
     ...configgetMutation({
       client,
-      path: { walletname: encodeURIComponent(walletFileName) },
+      path: { walletname: walletFileName },
     }),
     retry: 3,
   })
@@ -26,7 +26,7 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
   const refetch = useCallback(
     async (key: ConfigKey): Promise<ConfigValue> => {
       const { configvalue } = await fetchConfigAsync({
-        path: { walletname: encodeURIComponent(walletFileName) },
+        path: { walletname: walletFileName },
         body: {
           section: key.section,
           field: key.field,

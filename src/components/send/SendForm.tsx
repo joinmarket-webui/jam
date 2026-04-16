@@ -71,7 +71,7 @@ const AddressFromJarSelectorDialog = ({
           getaddress({
             client,
             path: {
-              walletname: encodeURIComponent(walletFileName),
+              walletname: walletFileName,
               mixdepth: String(selectedJarIndex),
             },
           }),

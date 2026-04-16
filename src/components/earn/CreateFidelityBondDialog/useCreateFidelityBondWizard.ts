@@ -108,7 +108,7 @@ export function useCreateFidelityBondWizard(
     ...gettimelockaddressOptions({
       client,
       path: {
-        walletname: encodeURIComponent(walletFileName),
+        walletname: walletFileName,
         lockdate: selectedLockdate || '',
       },
     }),
@@ -230,7 +230,7 @@ export function useCreateFidelityBondWizard(
     try {
       for (const utxo of utxosToFreeze) {
         await freezeUtxo.mutateAsync({
-          path: { walletname: encodeURIComponent(walletFileName) },
+          path: { walletname: walletFileName },
           body: { 'utxo-string': utxo.utxo, freeze: true },
         })
         frozen.push(utxo)
@@ -242,7 +242,7 @@ export function useCreateFidelityBondWizard(
       for (const utxo of frozen) {
         try {
           await unfreezeUtxo.mutateAsync({
-            path: { walletname: encodeURIComponent(walletFileName) },
+            path: { walletname: walletFileName },
             body: { 'utxo-string': utxo.utxo, freeze: false },
           })
         } catch {
@@ -259,7 +259,7 @@ export function useCreateFidelityBondWizard(
 
     try {
       const result = await directSend.mutateAsync({
-        path: { walletname: encodeURIComponent(walletFileName) },
+        path: { walletname: walletFileName },
         body: {
           mixdepth: selectedJar.jarIndex,
           amount_sats: 0,
@@ -274,7 +274,7 @@ export function useCreateFidelityBondWizard(
       for (const utxo of frozenUtxos) {
         try {
           await unfreezeUtxo.mutateAsync({
-            path: { walletname: encodeURIComponent(walletFileName) },
+            path: { walletname: walletFileName },
             body: { 'utxo-string': utxo.utxo, freeze: false },
           })
         } catch {
@@ -288,7 +288,7 @@ export function useCreateFidelityBondWizard(
       for (const utxo of frozenUtxos) {
         try {
           await unfreezeUtxo.mutateAsync({
-            path: { walletname: encodeURIComponent(walletFileName) },
+            path: { walletname: walletFileName },
             body: { 'utxo-string': utxo.utxo, freeze: false },
           })
         } catch {
@@ -304,7 +304,7 @@ export function useCreateFidelityBondWizard(
     try {
       for (const utxo of frozenUtxos) {
         await unfreezeUtxo.mutateAsync({
-          path: { walletname: encodeURIComponent(walletFileName) },
+          path: { walletname: walletFileName },
           body: { 'utxo-string': utxo.utxo, freeze: false },
         })
       }

@@ -46,7 +46,7 @@ export function useQueryUtxos({ walletFileName }: UseQueryUtxosProps): UseQueryU
 
   const listutxosQueryOptions = listutxosOptions({
     client,
-    path: { walletname: encodeURIComponent(walletFileName || '') },
+    path: { walletname: walletFileName || '' },
   })
 
   const queryResult = useQuery({
