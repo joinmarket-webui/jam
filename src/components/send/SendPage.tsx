@@ -601,6 +601,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
+                maxFeesConfigMissing ||
                 jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||

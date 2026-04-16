@@ -1,163 +1,94 @@
-import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react'
-import { InfoIcon } from 'lucide-react'
+import { InfoIcon, PercentIcon } from 'lucide-react'
+import { type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { CJ_FEE_ABS_MIN, CJ_FEE_ABS_MAX, CJ_FEE_REL_MIN, CJ_FEE_REL_MAX } from '@/constants/jam'
-import { isValidNumber, factorToPercentage, percentageToFactor } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
+import { SatSymbol } from '../ui/jam/CurrencySymbol'
+import type { CollaboratorFeesFormValues } from './CollaboratorFeesFormSchema'
+
+const FieldPrefixSatSymbol = (
+  <SatSymbol
+    width={'18px'}
+    height={'18px'}
+    style={{
+      margin: '5px -1px',
+    }}
+  />
+)
 
 interface CollaboratorFeesFormProps {
-  initialValues: {
-    maxCjFeeAbs: string
-    maxCjFeeRel: string
-  }
-  enableValidation?: boolean
+  className?: string
+  form: UseFormReturn<CollaboratorFeesFormValues, unknown, CollaboratorFeesFormValues>
 }
 
-export interface CollaboratorFeesFormRef {
-  getFormData: () => {
-    maxCjFeeAbs: string
-    maxCjFeeRel: string
-  } | null
-  setFormData: (data: { maxCjFeeAbs: string; maxCjFeeRel: string }) => void
-  resetForm: () => void
-  validateForm: () => boolean
-}
+export const CollaboratorFeesForm = ({
+  className,
+  form: {
+    register,
+    formState: { errors, disabled },
+  },
+}: CollaboratorFeesFormProps) => {
+  const { t } = useTranslation()
 
-export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, CollaboratorFeesFormProps>(
-  ({ initialValues, enableValidation = true }, ref) => {
-    const { t } = useTranslation()
-    const [maxCjFeeAbs, setMaxCjFeeAbs] = useState(initialValues.maxCjFeeAbs)
-    const [maxCjFeeRel, setMaxCjFeeRel] = useState(initialValues.maxCjFeeRel)
-    const [errors, setErrors] = useState<{ maxCjFeeAbs?: string; maxCjFeeRel?: string }>({})
+  return (
+    <div className={cn('flex flex-col gap-4', className)}>
+      <p className="text-muted-foreground text-sm">{t('settings.fees.description_max_cj_fee_settings')}</p>
 
-    const validate = useCallback(() => {
-      if (!enableValidation) {
-        setErrors({})
-        return true
-      }
-      const absoluteFeeValue = Number(maxCjFeeAbs)
-      const relativeFeeValue = Number(maxCjFeeRel)
-      const newErrors: { maxCjFeeAbs?: string; maxCjFeeRel?: string } = {}
+      <Alert variant="default">
+        <InfoIcon className="text-muted-foreground size-4 shrink-0" />
+        <AlertDescription>{t('settings.fees.subtitle_max_cj_fee')}</AlertDescription>
+      </Alert>
 
-      if (!maxCjFeeAbs) {
-        newErrors.maxCjFeeAbs = t('settings.fees.feedback_invalid_max_cj_fee_abs', {
-          min: CJ_FEE_ABS_MIN,
-          max: CJ_FEE_ABS_MAX,
-        })
-      } else if (
-        !isValidNumber(absoluteFeeValue) ||
-        absoluteFeeValue < CJ_FEE_ABS_MIN ||
-        absoluteFeeValue > CJ_FEE_ABS_MAX
-      ) {
-        newErrors.maxCjFeeAbs = t('settings.fees.feedback_invalid_max_cj_fee_abs', {
-          min: CJ_FEE_ABS_MIN,
-          max: CJ_FEE_ABS_MAX,
-        })
-      }
-
-      if (!maxCjFeeRel) {
-        newErrors.maxCjFeeRel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {
-          min: factorToPercentage(CJ_FEE_REL_MIN),
-          max: factorToPercentage(CJ_FEE_REL_MAX),
-        })
-      } else {
-        const relFactorVal = percentageToFactor(relativeFeeValue)
-        if (!isValidNumber(relativeFeeValue) || relFactorVal < CJ_FEE_REL_MIN || relFactorVal > CJ_FEE_REL_MAX) {
-          newErrors.maxCjFeeRel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {
-            min: factorToPercentage(CJ_FEE_REL_MIN),
-            max: factorToPercentage(CJ_FEE_REL_MAX),
-          })
-        }
-      }
-      setErrors(newErrors)
-      return Object.keys(newErrors).length === 0
-    }, [enableValidation, maxCjFeeAbs, maxCjFeeRel, t])
-
-    useEffect(() => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      validate()
-    }, [maxCjFeeAbs, maxCjFeeRel, validate, enableValidation])
-
-    useImperativeHandle(ref, () => ({
-      getFormData: () => {
-        if (!validate()) return null
-        return {
-          maxCjFeeAbs,
-          maxCjFeeRel: maxCjFeeRel ? String(percentageToFactor(Number(maxCjFeeRel))) : '',
-        }
-      },
-      setFormData: (data) => {
-        setMaxCjFeeAbs(data.maxCjFeeAbs)
-        const relVal = data.maxCjFeeRel ? factorToPercentage(Number(data.maxCjFeeRel)) : ''
-        setMaxCjFeeRel(String(relVal))
-        setErrors({})
-      },
-      resetForm: () => {
-        setMaxCjFeeAbs('')
-        setMaxCjFeeRel('')
-        setErrors({})
-      },
-      validateForm: () => validate(),
-    }))
-
-    return (
-      <div>
-        <p className="text-muted-foreground mb-6 text-sm">{t('settings.fees.description_max_cj_fee_settings')}</p>
-
-        <Alert variant="default" className="mb-6">
-          <InfoIcon className="text-muted-foreground size-4 shrink-0" />
-          <AlertDescription>{t('settings.fees.subtitle_max_cj_fee')}</AlertDescription>
-        </Alert>
-
-        {/* Absolute limit field */}
-        <div className="mb-6 space-y-2">
-          <Label htmlFor="max-cj-fee-abs">{t('settings.fees.label_max_cj_fee_abs')}</Label>
-          <p className="text-muted-foreground text-xs">{t('settings.fees.description_max_cj_fee_abs')}</p>
-          <div className="flex h-12 items-center">
-            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
-              <span className="text-sm font-medium">₿</span>
-            </div>
-            <Input
-              id="max-cj-fee-abs"
+      <div className="space-y-2">
+        <Field data-invalid={errors.maxCjFeeAbs !== undefined}>
+          <FieldLabel htmlFor="collaborator-fees-max-cj-fee-abs">{t('settings.fees.label_max_cj_fee_abs')}</FieldLabel>
+          <FieldDescription className="text-xs">{t('settings.fees.description_max_cj_fee_abs')}</FieldDescription>
+          <InputGroup>
+            <InputGroupInput
+              id="collaborator-fees-max-cj-fee-abs"
+              {...register('maxCjFeeAbs', {
+                disabled,
+                valueAsNumber: true,
+              })}
               type="number"
-              inputMode="decimal"
+              inputMode="numeric"
               min="0"
-              step="any"
-              value={maxCjFeeAbs}
-              onChange={(event) => setMaxCjFeeAbs(event.target.value)}
-              placeholder="0.00 007 517"
-              className="h-full rounded-l-none"
+              step="1"
             />
-          </div>
-          {errors.maxCjFeeAbs && <div className="text-destructive mt-1 text-xs">{errors.maxCjFeeAbs}</div>}
-        </div>
+            <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
+          </InputGroup>
+        </Field>
+        {errors.maxCjFeeAbs?.message && <div className="text-destructive text-xs">{errors.maxCjFeeAbs.message}</div>}
+      </div>
 
-        {/* Relative limit field */}
-        <div className="space-y-2">
-          <Label htmlFor="max-cj-fee-rel">{t('settings.fees.label_max_cj_fee_rel')}</Label>
-          <p className="text-muted-foreground text-xs">{t('settings.fees.description_max_cj_fee_rel')}</p>
-          <div className="flex h-12 items-center">
-            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
-              <span className="text-sm font-medium">%</span>
-            </div>
-            <Input
-              id="max-cj-fee-rel"
+      <div className="space-y-2">
+        <Field data-invalid={errors.maxCjFeeRelInPercent !== undefined}>
+          <FieldLabel htmlFor="collaborator-fees-max-cj-fee-rel">{t('settings.fees.label_max_cj_fee_rel')}</FieldLabel>
+          <FieldDescription className="text-xs">{t('settings.fees.description_max_cj_fee_rel')}</FieldDescription>
+          <InputGroup>
+            <InputGroupInput
+              id="collaborator-fees-max-cj-fee-rel"
+              {...register('maxCjFeeRelInPercent', {
+                disabled,
+                valueAsNumber: true,
+              })}
               type="number"
               inputMode="decimal"
               min="0"
               max="100"
-              step="any"
-              value={maxCjFeeRel}
-              onChange={(event) => setMaxCjFeeRel(event.target.value)}
-              placeholder="0.03"
-              className="h-full rounded-l-none"
+              step="0.0001"
             />
-          </div>
-          {errors.maxCjFeeRel && <div className="text-destructive mt-1 text-xs">{errors.maxCjFeeRel}</div>}
-        </div>
+            <InputGroupAddon align="inline-start">
+              <PercentIcon />
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
+        {errors.maxCjFeeRelInPercent?.message && (
+          <div className="text-destructive text-xs">{errors.maxCjFeeRelInPercent.message}</div>
+        )}
       </div>
-    )
-  },
-)
+    </div>
+  )
+}
