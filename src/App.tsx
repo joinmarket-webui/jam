@@ -92,7 +92,7 @@ function App() {
     {
       ...lockwalletOptions({
         client,
-        path: { walletname: encodeURIComponent(walletFileName || '') },
+        path: { walletname: walletFileName || '' },
       }),
       enabled: false,
     },

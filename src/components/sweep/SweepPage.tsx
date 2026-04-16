@@ -118,7 +118,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       const result = await getschedule({
         client,
         signal,
-        path: { walletname: encodeURIComponent(walletFileName) },
+        path: { walletname: walletFileName },
         throwOnError: false,
       })
 
@@ -135,7 +135,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const stopScheduleQueryOptions = stopcoinjoinOptions({
     client,
-    path: { walletname: encodeURIComponent(walletFileName) },
+    path: { walletname: walletFileName },
   })
 
   const stopScheduleQuery = useQuery({
@@ -279,7 +279,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     }
 
     await startScheduleMutationMutateAsync({
-      path: { walletname: encodeURIComponent(walletFileName) },
+      path: { walletname: walletFileName },
       body,
     })
   }

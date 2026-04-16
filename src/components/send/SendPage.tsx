@@ -158,7 +158,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   })
   const stopCoinjoinQueryOptions = stopcoinjoinOptions({
     client,
-    path: { walletname: encodeURIComponent(walletFileName) },
+    path: { walletname: walletFileName },
   })
   const stopCoinjoinQuery = useQuery({
     ...stopCoinjoinQueryOptions,
@@ -335,7 +335,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         }
         const response = await directSendMutation.mutateAsync({
           path: {
-            walletname: encodeURIComponent(walletFileName),
+            walletname: walletFileName,
           },
           body,
         })
@@ -399,7 +399,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         setPaymentSuccessfulInfoAlert(undefined)
         collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
         await startCoinjoinMutationMutateAsync({
-          path: { walletname: encodeURIComponent(walletFileName) },
+          path: { walletname: walletFileName },
           body,
         })
         collaborativeLifecycleRef.current.awaitingCompletion = true

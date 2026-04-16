@@ -30,7 +30,7 @@ export const JamSessionInfoContextProvider = ({
     () =>
       getrescaninfoOptions({
         client,
-        path: { walletname: encodeURIComponent(walletFileName) },
+        path: { walletname: walletFileName },
       }),
     [client, walletFileName],
   )

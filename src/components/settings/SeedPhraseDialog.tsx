@@ -60,7 +60,7 @@ export const SeedPhraseDialog = ({
 
   const seedQueryOptions = getseedOptions({
     client,
-    path: { walletname: encodeURIComponent(walletFileName) },
+    path: { walletname: walletFileName },
   })
 
   const {

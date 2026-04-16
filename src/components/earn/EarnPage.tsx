@@ -85,7 +85,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const stopMakerQueryOptions = stopmakerOptions({
     client,
-    path: { walletname: encodeURIComponent(walletFileName) },
+    path: { walletname: walletFileName },
   })
 
   const stopMakerQuery = useQuery({
@@ -147,7 +147,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     stopMaker.reset()
     await startMaker.mutateAsync({
       path: {
-        walletname: encodeURIComponent(walletFileName),
+        walletname: walletFileName,
       },
       body: toStartMakerRequest(data),
     })
