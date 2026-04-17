@@ -8,6 +8,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   type SortingState,
+  type PaginationState,
   type ColumnDef,
   useReactTable,
   type RowPinningState,
@@ -57,8 +58,6 @@ export interface OrderTableEntry {
   }
 }
 
-type SortKey = keyof OrderTableEntry
-
 const columnHelper = createColumnHelper<OrderTableEntry>()
 
 type OrderTableColumnMeta =
@@ -93,9 +92,9 @@ export const OrderbookTable = ({
 }: OrderbookTableProps) => {
   const { t } = useTranslation()
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE)
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: ITEMS_PER_PAGE })
+  const [isShowAll, setIsShowAll] = useState(false)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns = useMemo<ColumnDef<OrderTableEntry, any>[]>(
@@ -241,10 +240,7 @@ export const OrderbookTable = ({
     state: {
       globalFilter,
       sorting,
-      pagination: {
-        pageIndex: Math.max(0, currentPage - 1),
-        pageSize: itemsPerPage === -1 ? tableEntries.length || 1 : itemsPerPage,
-      },
+      pagination,
       rowPinning,
       rowSelection,
       columnVisibility,
@@ -252,7 +248,9 @@ export const OrderbookTable = ({
     globalFilterFn: 'fuzzy' as FilterFnOption<OrderTableEntry>,
     keepPinnedRows: true,
     enableRowSelection: true,
+    autoResetPageIndex: true,
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     onRowPinningChange: setRowPinning,
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: setColumnVisibility,
@@ -276,26 +274,11 @@ export const OrderbookTable = ({
     })
   }, [table, highlightedEntries])
 
-  const totalPages = useMemo(() => {
-    if (itemsPerPage === -1) {
-      return 1
-    }
-    return Math.max(1, Math.ceil(tableEntries.length / itemsPerPage))
-  }, [itemsPerPage, tableEntries.length])
-
   useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages)
-      table.setPageIndex(Math.max(0, totalPages - 1))
+    if (isShowAll) {
+      table.setPageSize(tableEntries.length || 1)
     }
-  }, [totalPages, currentPage, table])
-
-  const handleSort = (key: SortKey) => {
-    const col = table.getColumn(key)
-    if (col) {
-      col.toggleSorting()
-    }
-  }
+  }, [isShowAll, tableEntries.length, table])
 
   const tableTopRows = () => {
     try {
@@ -323,7 +306,6 @@ export const OrderbookTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const key = header.column.id as SortKey
                   const alignCenter = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
                   const alignRight = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
                   return (
@@ -334,7 +316,7 @@ export const OrderbookTable = ({
                         'text-center': alignCenter,
                         'text-right': alignRight,
                       })}
-                      onClick={canSort ? () => handleSort(key) : undefined}
+                      onClick={canSort ? () => header.column.toggleSorting() : undefined}
                     >
                       <div
                         className={cn('flex items-center gap-2', {
@@ -400,19 +382,19 @@ export const OrderbookTable = ({
       </div>
 
       <TablePagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        itemsPerPage={itemsPerPage}
-        totalItems={tableEntries.length}
-        onPageChange={(page) => {
-          setCurrentPage(page)
-          table.setPageIndex(Math.max(0, page - 1))
-        }}
+        currentPage={table.getState().pagination.pageIndex + 1}
+        totalPages={table.getPageCount()}
+        itemsPerPage={isShowAll ? -1 : pagination.pageSize}
+        totalItems={table.getFilteredRowModel().rows.length}
+        onPageChange={(page) => table.setPageIndex(page - 1)}
         onItemsPerPageChange={(newItemsPerPage) => {
-          setItemsPerPage(newItemsPerPage)
-          const size = newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
-          table.setPageSize(size)
-          setCurrentPage(1)
+          if (newItemsPerPage === -1) {
+            setIsShowAll(true)
+            table.setPageSize(tableEntries.length || 1)
+          } else {
+            setIsShowAll(false)
+            table.setPageSize(newItemsPerPage)
+          }
           table.setPageIndex(0)
         }}
       />
