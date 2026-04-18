@@ -9,6 +9,7 @@ import {
   getPaginationRowModel,
   getExpandedRowModel,
   type SortingState,
+  type PaginationState,
   type ColumnDef,
   useReactTable,
   type RowPinningState,
@@ -45,8 +46,6 @@ export type UtxoTableEntry = {
   utxo: Utxo
   tags: UtxoTag[]
 }
-
-type SortKey = keyof UtxoTableEntry
 
 const columnHelper = createColumnHelper<UtxoTableEntry>()
 
@@ -279,9 +278,9 @@ export const JarUtxosTable = ({
 }: JarUtxosTableProps) => {
   const { t } = useTranslation()
 
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE)
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: ITEMS_PER_PAGE })
+  const [isShowAll, setIsShowAll] = useState(false)
 
   const columns = useMemo(() => utxoTableColumns(t), [t])
 
@@ -304,10 +303,7 @@ export const JarUtxosTable = ({
     state: {
       globalFilter,
       sorting,
-      pagination: {
-        pageIndex: Math.max(0, currentPage - 1),
-        pageSize: itemsPerPage === -1 ? tableEntries.length || 1 : itemsPerPage,
-      },
+      pagination,
       rowPinning,
       rowSelection,
       columnVisibility,
@@ -316,8 +312,10 @@ export const JarUtxosTable = ({
     keepPinnedRows: true,
     enableRowSelection: enableRowSelection ?? true,
     enableMultiRowSelection: true,
+    autoResetPageIndex: true,
     getRowId: (row) => row.utxo.utxo,
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     onRowPinningChange: setRowPinning,
     onRowSelectionChange: (rowSelection) => {
       setRowSelection(rowSelection)
@@ -334,13 +332,6 @@ export const JarUtxosTable = ({
     paginateExpandedRows: false,
   })
 
-  const totalPages = useMemo(() => {
-    if (itemsPerPage === -1) {
-      return 1
-    }
-    return Math.max(1, Math.ceil(tableEntries.length / itemsPerPage))
-  }, [itemsPerPage, tableEntries.length])
-
   useEffect(() => {
     table.resetRowPinning(true)
     table.getRowModel().rows.forEach((row) => {
@@ -355,11 +346,10 @@ export const JarUtxosTable = ({
   }, [initialRowSelection, onRowSelectionChange])
 
   useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages)
-      table.setPageIndex(Math.max(0, totalPages - 1))
+    if (isShowAll) {
+      table.setPageSize(tableEntries.length || 1)
     }
-  }, [totalPages, currentPage, table])
+  }, [isShowAll, tableEntries.length, table])
 
   useEffect(() => {
     if (onChange) {
@@ -382,8 +372,6 @@ export const JarUtxosTable = ({
     }
   }
 
-  const handleSort = (key: SortKey) => table.getColumn(key)?.toggleSorting()
-
   return (
     <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
       <div className="flex-1 overflow-auto">
@@ -393,7 +381,6 @@ export const JarUtxosTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const key = header.column.id as SortKey
                   const alignCenter = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
                   const alignRight = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
                   return (
@@ -404,7 +391,7 @@ export const JarUtxosTable = ({
                         'text-center': alignCenter,
                         'text-right': alignRight,
                       })}
-                      onClick={canSort ? () => handleSort(key) : undefined}
+                      onClick={canSort ? () => header.column.toggleSorting() : undefined}
                     >
                       <div
                         className={cn('flex items-center gap-2', {
@@ -436,19 +423,19 @@ export const JarUtxosTable = ({
       </div>
 
       <TablePagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        itemsPerPage={itemsPerPage}
-        totalItems={tableEntries.length}
-        onPageChange={(page) => {
-          setCurrentPage(page)
-          table.setPageIndex(Math.max(0, page - 1))
-        }}
+        currentPage={table.getState().pagination.pageIndex + 1}
+        totalPages={table.getPageCount()}
+        itemsPerPage={isShowAll ? -1 : pagination.pageSize}
+        totalItems={table.getFilteredRowModel().rows.length}
+        onPageChange={(page) => table.setPageIndex(page - 1)}
         onItemsPerPageChange={(newItemsPerPage) => {
-          setItemsPerPage(newItemsPerPage)
-          const size = newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
-          table.setPageSize(size)
-          setCurrentPage(1)
+          if (newItemsPerPage === -1) {
+            setIsShowAll(true)
+            table.setPageSize(tableEntries.length || 1)
+          } else {
+            setIsShowAll(false)
+            table.setPageSize(newItemsPerPage)
+          }
           table.setPageIndex(0)
         }}
       />
