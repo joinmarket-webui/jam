@@ -126,3 +126,12 @@ npm install && npm run dev
 - yup (GitHub): https://github.com/jquense/yup
 - react-hook-form (GitHub): https://github.com/react-hook-form/react-hook-form
 - react-query (GitHub): https://github.com/TanStack/query
+
+## Simulating Wallet Journey States
+
+The main wallet page exposes its current state with `data-journey-state` on `data-testid="main-wallet"`. This is useful when checking UI behavior in tests or during development.
+
+- Loading state: mock the wallet info hook with `isLoading: true`. The expected state is `loading`.
+- Empty wallet: mock `walletBalanceSummary.calculatedTotalBalanceInSats` as `0`. The expected state is `empty`.
+- Missing fee config: mock `useFeeConfigValidation` with `maxFeesConfigMissing: true` and use a positive wallet balance. The expected state is `needs_fee`.
+- Ready state: mock `isLoading: false`, a positive wallet balance, and `maxFeesConfigMissing: false`. The expected state is `ready`.
