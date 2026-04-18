@@ -62,7 +62,7 @@ describe('isValidNumCollaborators', () => {
   })
 
   it('returns false one above MAX_NUM_COLLABORATORS', () => {
-    expect(isValidNumCollaborators(100, 1)).toBe(false)
+    expect(isValidNumCollaborators(MAX_NUM_COLLABORATORS + 1, 1)).toBe(false)
   })
 
   it('returns false for null', () => {

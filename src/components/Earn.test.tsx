@@ -46,6 +46,6 @@ describe('<Earn />', () => {
       setup()
     })
     // When context reports makerRunning=false (default), start button visible
-    expect(screen.getByRole('button', { name: /start/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'earn.button_start' })).toBeInTheDocument()
   })
 })
