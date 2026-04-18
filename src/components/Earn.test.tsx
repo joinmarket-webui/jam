@@ -16,7 +16,7 @@ jest.mock('../libs/JmWalletApi', () => ({
 
 const neverResolves = new Promise(() => {})
 
-const mockWallet = { name: 'test.jmdat', token: 'mock-token' }
+const mockWallet = { walletFileName: 'test.jmdat' as any, token: 'mock-token' }
 
 const setup = () =>
   render(

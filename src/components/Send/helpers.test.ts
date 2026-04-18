@@ -46,6 +46,10 @@ describe('isValidAmount', () => {
   it('returns false for NaN in sweep mode', () => {
     expect(isValidAmount(NaN, true)).toBe(false)
   })
+
+  it('returns false for null in sweep mode', () => {
+    expect(isValidAmount(null, true)).toBe(false)
+  })
 })
 
 describe('isValidNumCollaborators', () => {

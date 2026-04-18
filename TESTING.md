@@ -55,7 +55,7 @@ import WS from 'jest-websocket-mock'
 let wsServer: WS
 
 beforeEach(() => {
-  wsServer = new WS('wss://localhost/jmws')
+  wsServer = new WS('ws://localhost/jmws')
 })
 
 afterEach(() => {
@@ -78,3 +78,5 @@ To raise thresholds after adding new tests:
 2. Check the `All files` row in the output
 3. Update thresholds to `floor(new value)` in `package.json`
 4. Commit and push
+
+Also update thresholds when adding new source files without tests — new untested code lowers coverage percentages and will cause CI to fail if thresholds aren't adjusted.
