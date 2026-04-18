@@ -38,6 +38,14 @@ describe('isValidAmount', () => {
   it('returns false for NaN', () => {
     expect(isValidAmount(NaN, false)).toBe(false)
   })
+
+  it('returns false for positive amount in sweep mode', () => {
+    expect(isValidAmount(100_000, true)).toBe(false)
+  })
+
+  it('returns false for NaN in sweep mode', () => {
+    expect(isValidAmount(NaN, true)).toBe(false)
+  })
 })
 
 describe('isValidNumCollaborators', () => {
@@ -45,7 +53,7 @@ describe('isValidNumCollaborators', () => {
     expect(isValidNumCollaborators(3, 3)).toBe(true)
   })
 
-  it('returns true at upper boundary (MAX_NUM_COLLABORATORS = 99)', () => {
+  it('returns true at upper boundary (MAX_NUM_COLLABORATORS)', () => {
     expect(isValidNumCollaborators(MAX_NUM_COLLABORATORS, 1)).toBe(true)
   })
 
