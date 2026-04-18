@@ -27,6 +27,10 @@ describe('<FeeConfigModal />', () => {
     ;(apiMock.postConfigGet as jest.Mock).mockReturnValue(neverResolves)
   })
 
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   it('renders when show=true', async () => {
     await act(async () => {
       render(<FeeConfigModal {...defaultProps} />)
