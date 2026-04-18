@@ -14,6 +14,8 @@ import {
   useWalletBalanceSummary,
   type Jar as JarObject,
 } from '@/context/JamWalletInfoContext'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { getJourneyState } from '@/lib/journeyState'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import { Balance } from './ui/jam/Balance'
@@ -34,10 +36,14 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const { isLoading, isFetching, error, refetch: refetchWalletData } = useJamWalletInfoContext()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
+  const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
 
   const walletName = walletDisplayName(walletFileName)
   const walletNameTitle = shortenStringMiddle(walletName, 32)
-  const journeyState = 'initial'
+  const journeyState = getJourneyState(
+    isLoading ? undefined : { balanceSats: walletBalanceSummary.calculatedTotalBalanceInSats },
+    { feeConfigMissing: maxFeesConfigMissing },
+  )
 
   const onJarClicked = (jar: JarObject) => {
     setSelectedJar(jar)
@@ -58,7 +64,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
       <div
         className="flex flex-col items-center justify-center gap-8 px-4 py-12"
         data-journey-state={journeyState}
-        data-testid="wallet-view"
+        data-testid="main-wallet"
       >
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
           <p className="text-muted-foreground hover:text-foreground text-xl select-all" title={walletName}>
