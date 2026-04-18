@@ -106,6 +106,14 @@
     "clearMocks": true,
     "transformIgnorePatterns": [
       "node_modules/(?!@table-library)"
-    ]
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 38,
+        "branches": 28,
+        "functions": 30,
+        "lines": 39
+      }
+    }
   }
 }
