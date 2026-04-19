@@ -17,7 +17,7 @@ const {
 } = process.env
 
 // https://vite.dev/config/
-export default defineConfig((): UserConfig => {
+export default defineConfig((config): UserConfig => {
   if (!SUPPORTED_BACKENDS.includes(JAM_BACKEND)) {
     throw new Error(`Unsupported backend: Use one of [${SUPPORTED_BACKENDS.join(', ')}]`)
   }
@@ -26,6 +26,7 @@ export default defineConfig((): UserConfig => {
     throw new Error('Unsupported port: Please specify a valid JAM_API_PORT')
   }
 
+  const buildOrPreview = config.command === 'build' || config.isPreview === true
   const server = JAM_BACKEND === BACKEND_NATIVE ? serverConfigNative() : serverConfigStandalone()
   return {
     plugins: [react(), tailwindcss()],
@@ -33,6 +34,10 @@ export default defineConfig((): UserConfig => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
+    },
+    esbuild: {
+      drop: buildOrPreview ? ['debugger'] : [],
+      pure: buildOrPreview ? ['console.debug'] : [],
     },
     server: {
       ...server,
