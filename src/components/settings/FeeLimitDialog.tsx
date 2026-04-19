@@ -28,6 +28,7 @@ import { cn, factorToPercentage, percentageToFactor } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
+import { toTxFee } from '../send/feeEstimate'
 import { Spinner } from '../ui/spinner'
 import { CollaboratorFeesForm } from './CollaboratorFeesForm'
 import { collaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesFormSchema'
@@ -61,14 +62,13 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
   }, [enableFormValidation, t])
 
   const miningFeeFormInitialValues: MiningFeesFormValues = useMemo(() => {
-    const txFeesValue = Number.parseInt(feeConfigValues?.tx_fees || '', 10)
-    const txFeesFactor = Number.parseFloat(feeConfigValues?.tx_fees_factor || '')
-    const maxSweepChangeFactor = Number.parseFloat(feeConfigValues?.max_sweep_fee_change || '')
-    const feeType = txFeesValue >= 1_001 ? txFeeUnit.SATS_PER_KILO_VBYTE : txFeeUnit.BLOCKS
+    const txFee = toTxFee(feeConfigValues)
+    const txFeesFactor = Number.parseFloat(feeConfigValues.tx_fees_factor || '')
+    const maxSweepChangeFactor = Number.parseFloat(feeConfigValues.max_sweep_fee_change || '')
     return {
-      feeType,
-      txFeesBlocks: feeType === txFeeUnit.BLOCKS ? txFeesValue : undefined,
-      txFeesSatsPerVbyte: feeType === txFeeUnit.SATS_PER_KILO_VBYTE ? txFeesValue / 1_000 : undefined,
+      feeType: txFee.unit,
+      txFeesBlocks: txFee.unit === txFeeUnit.BLOCKS ? txFee.value : undefined,
+      txFeesSatsPerVbyte: txFee.unit === txFeeUnit.SATS_PER_KILO_VBYTE ? txFee.value / 1_000 : undefined,
       txFeesFactorInPercent: Number.isFinite(txFeesFactor) ? factorToPercentage(txFeesFactor) : undefined,
       maxSweepFeeChangeInPercent: Number.isFinite(maxSweepChangeFactor)
         ? factorToPercentage(maxSweepChangeFactor)

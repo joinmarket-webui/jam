@@ -3,8 +3,8 @@ import type { AmountSats, BitcoinAddress, JarIndex } from '@/types/global'
 
 export type TxFeeValue = number
 export type TxFee = {
-  value?: TxFeeValue
-  unit?: TxFeeUnit
+  value: TxFeeValue
+  unit: TxFeeUnit
 }
 
 export type SourceValue = {
@@ -32,10 +32,9 @@ export interface SendFormValues {
   source: SourceValue
   destination: DestinationValue
   amount: AmountValue
-  txFee?: TxFee
   isCoinJoin: boolean
   numCollaborators?: number
-  txFeeUnit?: TxFeeUnit
+  txFeeUnit: TxFeeUnit
   txFeeInBlocks?: number
   txFeeInSatsPerVbyte?: number
 }

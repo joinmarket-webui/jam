@@ -49,7 +49,7 @@ import { Switch } from '../ui/switch'
 import { Tabs, TabsContent } from '../ui/tabs'
 import JarSelectorDialog from './JarSelectorDialog'
 import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
-import { estimateMaxCollaboratorFee } from './feeEstimate'
+import { estimateMaxCollaboratorFee, toTxFee } from './feeEstimate'
 import type { SendFormValues } from './types'
 
 type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog>, 'onConfirm'> & {
@@ -119,7 +119,6 @@ const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   source: undefined,
   destination: undefined,
   amount: undefined,
-  txFee: undefined,
   isCoinJoin: true,
   numCollaborators: undefined,
   txFeeUnit: txFeeUnit.BLOCKS,
@@ -249,7 +248,7 @@ const sendFormSchema = (
             .nullable()
             .optional(),
       }),
-      txFeeUnit: yup.mixed<TxFeeUnit>().oneOf(Object.values(txFeeUnit)).optional(),
+      txFeeUnit: yup.mixed<TxFeeUnit>().oneOf(Object.values(txFeeUnit)).required(),
       txFeeInBlocks: yup.number().when('txFeeUnit', {
         is: (val: TxFeeUnit) => val === 'blocks',
         then: (schema) =>
@@ -369,7 +368,7 @@ interface SendFormProps {
   onSourceJarChange?: (jarIndex: JarIndex | undefined) => void
   sourceJarLabelButton?: React.ReactElement
   minNumberOfCollaborators?: number
-  feeConfigValues?: FeeConfigValues
+  feeConfigValues: FeeConfigValues
   forceCoinJoinEnabled?: boolean
   walletFileName: WalletFileName
   jars: Jar[]
@@ -406,13 +405,16 @@ export function SendForm({
     () => sendFormSchema(jars, addressSummary, minNumberOfCollaborators, network, t),
     [jars, addressSummary, minNumberOfCollaborators, network, t],
   )
-  const defaultValues = useMemo<Partial<SendFormValues>>(
-    () => ({
+  const defaultValues = useMemo<Partial<SendFormValues>>(() => {
+    const txFee = toTxFee(feeConfigValues)
+    return {
       ...FORM_INPUT_DEFAULT_VALUES,
       numCollaborators: initialNumberOfCollaborators(minNumberOfCollaborators),
-    }),
-    [minNumberOfCollaborators],
-  )
+      txFeeUnit: txFee.unit,
+      txFeeInBlocks: txFee.unit === txFeeUnit.BLOCKS ? txFee.value : undefined,
+      txFeeInSatsPerVbyte: txFee.unit === txFeeUnit.SATS_PER_KILO_VBYTE ? txFee.value / 1_000 : undefined,
+    }
+  }, [minNumberOfCollaborators, feeConfigValues])
 
   const {
     control,
@@ -471,12 +473,7 @@ export function SendForm({
     return values.amount?.amount
   }, [sourceJar, values.amount?.amount, values.amount?.isSweep])
   const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (
-      !isCoinJoinEnabled ||
-      values.numCollaborators === undefined ||
-      amountForFeeEstimate === undefined ||
-      feeConfigValues === undefined
-    ) {
+    if (!isCoinJoinEnabled || values.numCollaborators === undefined || amountForFeeEstimate === undefined) {
       return undefined
     }
 
@@ -828,6 +825,7 @@ export function SendForm({
                         numCollaborators: isValidNumber(values.numCollaborators) ? values.numCollaborators : '-',
                       })}
                     </FieldLabel>
+                    <FieldDescription>{t('send.description_num_collaborators')}</FieldDescription>
                     <Input
                       id="send-num-collaborators"
                       {...register('numCollaborators', {
@@ -841,9 +839,8 @@ export function SendForm({
                       placeholder={t('send.input_num_collaborators_placeholder')}
                     />
                   </Field>
-                  <p className="text-muted-foreground text-xs">{t('send.description_num_collaborators')}</p>
                   {estimatedMaxCollaboratorFee && (
-                    <div className="text-muted-foreground text-xs">
+                    <div className="text-muted-foreground inline-flex items-center text-xs">
                       <span className="mr-1">{t('send.fee_breakdown.title', { maxCollaboratorFee: '≤' })}</span>
                       <span className="text-foreground inline-flex items-center gap-1">
                         <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} />
@@ -901,7 +898,7 @@ export function SendForm({
                             type="number"
                             step={1}
                           />
-                          <InputGroupAddon align="inline-end">
+                          <InputGroupAddon align="inline-start">
                             <CurrencySymbol currency="sats" />
                             <span className="text-xs text-nowrap">/&nbsp;vB</span>
                           </InputGroupAddon>

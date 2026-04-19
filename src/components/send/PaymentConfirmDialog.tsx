@@ -2,6 +2,7 @@ import { useMemo, useState, type ComponentProps, type ReactNode } from 'react'
 import { DialogTitle } from '@radix-ui/react-dialog'
 import { InfoIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
+import { txFeeUnit } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { Utxo } from '@/hooks/useQueryUtxos'
@@ -15,7 +16,7 @@ import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { estimateMaxCollaboratorFee, type EstimateMaxCollaboratorFeeResult } from './feeEstimate'
+import { estimateMaxCollaboratorFee, useMiningFeeText, type EstimateMaxCollaboratorFeeResult } from './feeEstimate'
 import type { SendFormValues } from './types'
 
 const maxCollaboraterFee = (
@@ -38,7 +39,7 @@ type PaymentConfirmDialogProps = WithRequiredProperty<
   onConfirm: (values: SendFormValues) => Promise<void>
   values: SendFormValues
   meta: {
-    feeConfigValues?: FeeConfigValues
+    feeConfigValues: FeeConfigValues
     availableUtxos?: Utxo[]
     sourceJar: Jar
     destinationJar?: Jar
@@ -62,9 +63,17 @@ export default function PaymentConfirmDialog({
   const [isConfirming, setIsConfirming] = useState(false)
 
   const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (meta.feeConfigValues === undefined) return undefined
     return maxCollaboraterFee(meta.feeConfigValues, values)
   }, [values, meta.feeConfigValues])
+
+  const miningFeeText = useMiningFeeText({
+    tx_fees: {
+      unit: values.txFeeUnit,
+      value: (values.txFeeUnit === txFeeUnit.BLOCKS ? values.txFeeInBlocks : values.txFeeInSatsPerVbyte) || Number.NaN,
+    },
+    tx_fees_factor: Number.parseFloat(meta.feeConfigValues.tx_fees_factor || ''),
+    t,
+  })
 
   const handleClose = () => {
     onOpenChange(false)
@@ -161,6 +170,15 @@ export default function PaymentConfirmDialog({
                   </TooltipContent>
                 </Tooltip>
               </div>
+            </>
+          )}
+
+          {miningFeeText && (
+            <>
+              <div className="col-span-1 font-semibold md:text-right">
+                {t('send.confirm_send_modal.label_miner_fee')}
+              </div>
+              <div className="col-span-4">{miningFeeText}</div>
             </>
           )}
         </div>

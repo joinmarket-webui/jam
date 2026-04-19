@@ -10,6 +10,7 @@ const baseValues = (): SendFormValues => ({
   amount: { isSweep: false, amount: 100_000, sweepAmount: undefined },
   isCoinJoin: true,
   numCollaborators: 4,
+  txFeeUnit: 'blocks',
 })
 
 describe('buildCollaborativeSendRequest', () => {
@@ -37,13 +38,24 @@ describe('buildCollaborativeSendRequest', () => {
     expect(request.amount_sats).toBe(0)
   })
 
-  it('passes txfee when present', () => {
+  it('passes txfee when xFeeInBlocks is present', () => {
     const request = buildCollaborativeSendRequest({
       ...baseValues(),
-      txFee: { value: 3, unit: 'blocks' },
+      txFeeUnit: 'blocks',
+      txFeeInBlocks: 3,
     })
 
     expect(request.txfee).toBe(3)
+  })
+
+  it('passes txfee when txFeeInSatsPerVbyte is present', () => {
+    const request = buildCollaborativeSendRequest({
+      ...baseValues(),
+      txFeeUnit: 'sats/kilo-vbyte',
+      txFeeInSatsPerVbyte: 3,
+    })
+
+    expect(request.txfee).toBe(3000)
   })
 
   it('throws for invalid destination address', () => {

@@ -4,10 +4,14 @@ import {
   docoinjoinMutation,
   stopcoinjoinOptions,
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type {
+  DirectSendRequest,
+  DirectSendResponse,
+  DoCoinjoinRequest,
+  ErrorMessage,
+} from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
-import { AlertTriangleIcon, HourglassIcon, ListFilterIcon } from 'lucide-react'
+import { AlertTriangleIcon, CheckCircle2Icon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -42,7 +46,7 @@ import { Spinner } from '../ui/spinner'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
-import { buildCollaborativeSendRequest } from './collaborativeSend'
+import { buildCollaborativeSendRequest, buildNonCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
 
 interface SimpleAlert {
@@ -315,24 +319,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
     mutationFn: withMutationDelay(
       async (data: SendFormValues) => {
-        if (data.amount === undefined) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
-        }
-        if (data.destination === undefined || !isValidBitcoinAddress(data.destination.address)) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
-        }
-        if (data.source?.fromJar === undefined) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
-        }
-        if (data.amount.isSweep === true && data.amount.amount !== undefined) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given for sweep.')
-        }
-
-        const body = {
-          amount_sats: data.amount.isSweep === true ? 0 : data.amount.amount,
-          destination: data.destination.address,
-          mixdepth: data.source.fromJar,
-        }
+        const body: DirectSendRequest = buildNonCollaborativeSendRequest(data)
         const response = await directSendMutation.mutateAsync({
           path: {
             walletname: walletFileName,
@@ -380,7 +367,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data) => {
+  const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data: SendFormValues) => {
     if (data.isCoinJoin !== true) {
       try {
         await triggerNonCollaborativeTransaction.mutateAsync(data)
@@ -395,7 +382,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       }
 
       try {
-        const body = buildCollaborativeSendRequest(data)
+        const body: DoCoinjoinRequest = buildCollaborativeSendRequest(data)
         setPaymentSuccessfulInfoAlert(undefined)
         collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
         await startCoinjoinMutationMutateAsync({
@@ -577,7 +564,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             )}
             {paymentSuccessfulInfoAlert && !coinjoinRunning && (
               <Alert variant={paymentSuccessfulInfoAlert.variant}>
-                <AlertTriangleIcon />
+                <CheckCircle2Icon />
                 <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
                 <AlertDescription className="ext-wrap slashed-zero">
                   {paymentSuccessfulInfoAlert.description}
