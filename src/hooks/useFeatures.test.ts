@@ -3,19 +3,19 @@ import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { useQuery } from '@tanstack/react-query'
 import { useFeatures } from './useFeatures'
 
-const mockUseDeveloperMode = vi.fn()
-const mockUseStore = vi.fn()
+const mockUseDeveloperMode = vi.fn<() => { enabled: boolean }>()
+const mockUseStore = vi.fn<(...args: unknown[]) => string>()
 
 vi.mock('@tanstack/react-query', () => ({
     useQuery: vi.fn(),
 }))
 
 vi.mock('zustand', () => ({
-    useStore: (...args: unknown[]) => mockUseStore(...args),
+    useStore: (...args: unknown[]): string => mockUseStore(...args),
 }))
 
 vi.mock('@/store/jamSettingsStore', () => ({
-    useDeveloperMode: () => mockUseDeveloperMode(),
+    useDeveloperMode: (): { enabled: boolean } => mockUseDeveloperMode(),
 }))
 
 vi.mock('@/store/authStore', () => ({

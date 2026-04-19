@@ -22,24 +22,30 @@ describe('buildCollaborativeSendRequest address and amount validation', () => {
 
   it('rejects malformed, null, and undefined addresses', () => {
     expect(() =>
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        destination: { address: 'invalid-address', fromJar: undefined },
-      }),
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          destination: { address: 'invalid-address', fromJar: undefined },
+        } as unknown as SendFormValues,
+      ),
     ).toThrowError('Invalid bitcoin address.')
 
     expect(() =>
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        destination: { address: null, fromJar: undefined },
-      }),
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          destination: { address: null, fromJar: undefined },
+        } as unknown as SendFormValues,
+      ),
     ).toThrowError('Invalid bitcoin address.')
 
     expect(() =>
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        destination: { address: undefined, fromJar: undefined },
-      }),
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          destination: { address: undefined, fromJar: undefined },
+        } as unknown as SendFormValues,
+      ),
     ).toThrowError('Invalid bitcoin address.')
   })
 
@@ -66,17 +72,21 @@ describe('buildCollaborativeSendRequest address and amount validation', () => {
     ).toThrowError('Invalid amount.')
 
     expect(() =>
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        amount: { isSweep: false, amount: '1000', sweepAmount: undefined },
-      }),
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          amount: { isSweep: false, amount: '1000', sweepAmount: undefined },
+        } as unknown as SendFormValues,
+      ),
     ).toThrowError('Invalid amount.')
 
     expect(() =>
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        amount: { isSweep: false, amount: null, sweepAmount: undefined },
-      }),
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          amount: { isSweep: false, amount: null, sweepAmount: undefined },
+        } as unknown as SendFormValues,
+      ),
     ).toThrowError('Invalid amount.')
   })
 
@@ -89,31 +99,33 @@ describe('buildCollaborativeSendRequest address and amount validation', () => {
     ).toBe(0)
 
     expect(
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        amount: { isSweep: true, amount: 0, sweepAmount: 500_000 },
-      }).amount_sats,
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          amount: { isSweep: true, amount: 0, sweepAmount: 500_000 },
+        } as unknown as SendFormValues,
+      ).amount_sats,
     ).toBe(0)
   })
 
   it('accepts extremely large safe integer amounts', () => {
-    const req = buildCollaborativeSendRequest({
+    const request = buildCollaborativeSendRequest({
       ...baseValues(),
       amount: { isSweep: false, amount: Number.MAX_SAFE_INTEGER, sweepAmount: undefined },
     })
 
-    expect(req.amount_sats).toBe(Number.MAX_SAFE_INTEGER)
+    expect(request.amount_sats).toBe(Number.MAX_SAFE_INTEGER)
   })
 })
 
 describe('buildCollaborativeSendRequest collaborator validation', () => {
   it('accepts boundary collaborator count of 1', () => {
-    const req = buildCollaborativeSendRequest({
+    const request = buildCollaborativeSendRequest({
       ...baseValues(),
       numCollaborators: 1,
     })
 
-    expect(req.counterparties).toBe(1)
+    expect(request.counterparties).toBe(1)
   })
 
   it('rejects zero, negative, NaN, null, undefined, and malformed collaborator values', () => {
@@ -139,10 +151,12 @@ describe('buildCollaborativeSendRequest collaborator validation', () => {
     ).toThrowError('Invalid number of collaborators.')
 
     expect(() =>
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        numCollaborators: null,
-      }),
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          numCollaborators: null,
+        } as unknown as SendFormValues,
+      ),
     ).toThrowError('Invalid number of collaborators.')
 
     expect(() =>
@@ -153,10 +167,12 @@ describe('buildCollaborativeSendRequest collaborator validation', () => {
     ).toThrowError('Invalid number of collaborators.')
 
     expect(() =>
-      buildCollaborativeSendRequest({
-        ...baseValues(),
-        numCollaborators: '3',
-      }),
+      buildCollaborativeSendRequest(
+        {
+          ...baseValues(),
+          numCollaborators: '3',
+        } as unknown as SendFormValues,
+      ),
     ).toThrowError('Invalid number of collaborators.')
   })
 })

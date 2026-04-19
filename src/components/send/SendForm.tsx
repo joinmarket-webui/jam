@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { getAddressInfo } from 'bitcoin-address-validation'
+import { getAddressInfo, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import { BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
@@ -110,6 +110,17 @@ interface SendFormProps {
   addressSummary: AddressSummary
   disabled?: boolean
   debug?: boolean
+}
+
+const initialNumberOfCollaborators = (minValue: number): number => Math.max(1, minValue)
+
+const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
+  source: undefined,
+  destination: undefined,
+  amount: undefined,
+  txFee: undefined,
+  isCoinJoin: true,
+  numCollaborators: MIN_NUM_COLLABORATORS,
 }
 
 export function SendForm({
@@ -525,22 +536,22 @@ export function SendForm({
                       if (forceCoinJoinEnabled) {
                         return
                       }
+                      const nextCollaborators: number | undefined = checked
+                        ? (typeof collaboratorCount === 'number'
+                            ? collaboratorCount
+                            : initialNumberOfCollaborators(minNumberOfCollaborators))
+                        : undefined
+
                       setValue('isCoinJoin', checked, {
                         shouldValidate: true,
                         shouldDirty: true,
                         shouldTouch: true,
                       })
-                      setValue(
-                        'numCollaborators',
-                        checked
-                          ? (collaboratorCount ?? initialNumberOfCollaborators(minNumberOfCollaborators))
-                          : undefined,
-                        {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                          shouldTouch: true,
-                        },
-                      )
+                      setValue('numCollaborators', nextCollaborators, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      })
                     }}
                     disabled={disabled}
                   />
