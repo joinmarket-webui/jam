@@ -538,8 +538,8 @@ export function SendForm({
                       }
                       const nextCollaborators: number | undefined = checked
                         ? (typeof collaboratorCount === 'number'
-                            ? collaboratorCount
-                            : initialNumberOfCollaborators(minNumberOfCollaborators))
+                          ? collaboratorCount
+                          : initialNumberOfCollaborators(minNumberOfCollaborators))
                         : undefined
 
                       setValue('isCoinJoin', checked, {
