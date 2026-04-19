@@ -7,88 +7,88 @@ const mockUseDeveloperMode = vi.fn()
 const mockUseStore = vi.fn()
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn(),
+    useQuery: vi.fn(),
 }))
 
 vi.mock('zustand', () => ({
-  useStore: (...args: unknown[]) => mockUseStore(...args),
+    useStore: (...args: unknown[]) => mockUseStore(...args),
 }))
 
 vi.mock('@/store/jamSettingsStore', () => ({
-  useDeveloperMode: () => mockUseDeveloperMode(),
+    useDeveloperMode: () => mockUseDeveloperMode(),
 }))
 
 vi.mock('@/store/authStore', () => ({
-  authStore: {},
+    authStore: {},
 }))
 
 vi.mock('@/lib/api/logs', () => ({
-  fetchFeatures: vi.fn(),
+    fetchFeatures: vi.fn(),
 }))
 
 type FeatureItem = {
-  name: string
-  enabled: boolean
+    name: string
+    enabled: boolean
 }
 
 const setQueryData = (data: FeatureItem[] | undefined) => {
-  vi.mocked(useQuery).mockReturnValue({
-    data,
-    error: null,
-    isLoading: false,
-    isFetching: false,
-  } as ReturnType<typeof useQuery>)
+    vi.mocked(useQuery).mockReturnValue({
+        data,
+        error: null,
+        isLoading: false,
+        isFetching: false,
+    } as ReturnType<typeof useQuery>)
 }
 
 describe('useFeatures.isFeatureEnabled', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mockUseStore.mockReturnValue('test-token')
-    mockUseDeveloperMode.mockReturnValue({ enabled: false })
-    setQueryData(undefined)
-  })
+    beforeEach(() => {
+        vi.clearAllMocks()
+        mockUseStore.mockReturnValue('test-token')
+        mockUseDeveloperMode.mockReturnValue({ enabled: false })
+        setQueryData(undefined)
+    })
 
-  it('returns true when feature is enabled by server response', () => {
-    setQueryData([{ name: 'logs', enabled: true }])
+    it('returns true when feature is enabled by server response', () => {
+        setQueryData([{ name: 'logs', enabled: true }])
 
-    const { result } = renderHook(() => useFeatures())
+        const { result } = renderHook(() => useFeatures())
 
-    expect(result.current.isFeatureEnabled('logs')).toBe(true)
-  })
+        expect(result.current.isFeatureEnabled('logs')).toBe(true)
+    })
 
-  it('returns false when feature is present but disabled by server', () => {
-    setQueryData([{ name: 'logs', enabled: false }])
+    it('returns false when feature is present but disabled by server', () => {
+        setQueryData([{ name: 'logs', enabled: false }])
 
-    const { result } = renderHook(() => useFeatures())
+        const { result } = renderHook(() => useFeatures())
 
-    expect(result.current.isFeatureEnabled('logs')).toBe(false)
-  })
+        expect(result.current.isFeatureEnabled('logs')).toBe(false)
+    })
 
-  it('returns false when feature flags are missing', () => {
-    setQueryData([])
+    it('returns false when feature flags are missing', () => {
+        setQueryData([])
 
-    const { result } = renderHook(() => useFeatures())
+        const { result } = renderHook(() => useFeatures())
 
-    expect(result.current.isFeatureEnabled('logs')).toBe(false)
-  })
+        expect(result.current.isFeatureEnabled('logs')).toBe(false)
+    })
 
-  it('applies developer mode override even when server reports disabled', () => {
-    setQueryData([{ name: 'logs', enabled: false }])
-    mockUseDeveloperMode.mockReturnValue({ enabled: true })
+    it('applies developer mode override even when server reports disabled', () => {
+        setQueryData([{ name: 'logs', enabled: false }])
+        mockUseDeveloperMode.mockReturnValue({ enabled: true })
 
-    const { result } = renderHook(() => useFeatures())
+        const { result } = renderHook(() => useFeatures())
 
-    expect(result.current.isFeatureEnabled('logs')).toBe(true)
-  })
+        expect(result.current.isFeatureEnabled('logs')).toBe(true)
+    })
 
-  it('handles invalid and undefined inputs safely', () => {
-    setQueryData([{ name: 'logs', enabled: false }])
+    it('handles invalid and undefined inputs safely', () => {
+        setQueryData([{ name: 'logs', enabled: false }])
 
-    const { result } = renderHook(() => useFeatures())
+        const { result } = renderHook(() => useFeatures())
 
-    const runtimeIsFeatureEnabled = result.current.isFeatureEnabled as (featureName: unknown) => boolean
+        const runtimeIsFeatureEnabled = result.current.isFeatureEnabled as (featureName: unknown) => boolean
 
-    expect(runtimeIsFeatureEnabled('invalid-feature')).toBe(false)
-    expect(runtimeIsFeatureEnabled(undefined)).toBe(false)
-  })
+        expect(runtimeIsFeatureEnabled('invalid-feature')).toBe(false)
+        expect(runtimeIsFeatureEnabled(undefined)).toBe(false)
+    })
 })
