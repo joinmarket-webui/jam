@@ -409,7 +409,7 @@ const EarnForm = ({
   )
 }
 
-const toStartMakerRequest = (values: EarnFormValues): Api.StartMakerRequest => {
+export const toStartMakerRequest = (values: EarnFormValues): Api.StartMakerRequest => {
   // both fee properties need to be provided.
   // prevent providing an invalid value by setting the ignored prop to zero
   const cjfee_a = isAbsoluteOffer(values.offertype) ? values.feeAbs!.value! : 0
