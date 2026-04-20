@@ -119,6 +119,18 @@
         "branches": 38,
         "functions": 31,
         "lines": 43
+      },
+      "./src/components/settings/": {
+        "statements": 60,
+        "branches": 60,
+        "functions": 53,
+        "lines": 59
+      },
+      "./src/components/Earn.tsx": {
+        "statements": 57,
+        "branches": 53,
+        "functions": 37,
+        "lines": 59
       }
     }
   }
