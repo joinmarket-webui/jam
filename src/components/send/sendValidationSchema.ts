@@ -117,6 +117,7 @@ export const sendFormSchema = (
         is: (val: boolean) => val === true,
         then: (schema) =>
           schema
+            .strict(true)
             .integer()
             .default(initialNumberOfCollaborators(minNumberOfCollaborators))
             .min(
@@ -133,12 +134,7 @@ export const sendFormSchema = (
                 maxNumCollaborators: MAX_NUM_COLLABORATORS,
               }),
             )
-            .required(
-              t('send.error_invalid_num_collaborators', {
-                minNumCollaborators: minNumberOfCollaborators,
-                maxNumCollaborators: MAX_NUM_COLLABORATORS,
-              }),
-            ),
+            .optional(),
         otherwise: (schema) =>
           schema
             .transform(() => null)
