@@ -1,8 +1,10 @@
 import { BrowserRouter } from 'react-router-dom'
-import { render, screen, fireEvent } from '../../testUtils'
+import { render, screen, fireEvent, waitFor } from '../../testUtils'
 import { SendForm } from './SendForm'
 import type { WalletInfo } from '../../context/WalletContext'
 import type { SendFormValues } from './SendForm'
+import type { CurrentWallet } from '../../context/WalletContext'
+import * as Api from '../../libs/JmWalletApi'
 
 jest.mock('../../libs/JmWalletApi', () => ({
   ...jest.requireActual('../../libs/JmWalletApi'),
@@ -34,8 +36,14 @@ const initialValues: SendFormValues = {
   txFee: undefined,
 }
 
+const makeWallet = (): CurrentWallet => ({
+  walletFileName: 'test.jmdat' as Api.WalletFileName,
+  token: 'mock-token' as Api.ApiToken,
+  displayName: 'test',
+})
+
 const defaultProps = {
-  wallet: { walletFileName: 'test.jmdat' as any, token: 'mock-token', displayName: 'test' },
+  wallet: makeWallet(),
   walletInfo: mockWalletInfo as WalletInfo,
   initialValues,
   onSubmit: jest.fn().mockResolvedValue(undefined),
@@ -82,5 +90,49 @@ describe('<SendForm />', () => {
     fireEvent.click(sendingOptionsBtn!)
     // CollaboratorsSelector renders a custom number input; i18n in tests returns keys directly
     expect(screen.getByPlaceholderText(/num_collaborators_placeholder/i)).toBeInTheDocument()
+  })
+
+  it('calls onSubmit when form has valid direct-send values', async () => {
+    const onSubmit = jest.fn().mockResolvedValue(undefined)
+    setup({
+      onSubmit,
+      initialValues: {
+        sourceJarIndex: 0,
+        destination: { value: 'bc1qtest', fromJar: null },
+        amount: { value: 100_000, isSweep: false },
+        isCoinJoin: false,
+        numCollaborators: 3,
+        txFee: { value: 1, unit: 'blocks' },
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /send.button_send/i }))
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isCoinJoin: false,
+          destination: expect.objectContaining({ value: 'bc1qtest' }),
+        }),
+        expect.anything(),
+      )
+    })
+  })
+
+  it('does not call onSubmit when collaborator count is below minimum', async () => {
+    const onSubmit = jest.fn().mockResolvedValue(undefined)
+    setup({
+      onSubmit,
+      initialValues: {
+        sourceJarIndex: 0,
+        destination: { value: 'bc1qtest', fromJar: null },
+        amount: { value: 100_000, isSweep: false },
+        isCoinJoin: true,
+        numCollaborators: 1,
+        txFee: undefined,
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /send.button_send/i }))
+    await waitFor(() => {
+      expect(onSubmit).not.toHaveBeenCalled()
+    })
   })
 })
