@@ -113,6 +113,12 @@
         "branches": 28,
         "functions": 30,
         "lines": 39
+      },
+      "./src/components/Send/": {
+        "statements": 42,
+        "branches": 38,
+        "functions": 31,
+        "lines": 43
       }
     }
   }
