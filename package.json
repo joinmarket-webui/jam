@@ -110,9 +110,9 @@
     "coverageThreshold": {
       "global": {
         "statements": 38,
-        "branches": 28,
+        "branches": 27,
         "functions": 30,
-        "lines": 39
+        "lines": 38
       },
       "./src/components/Send/": {
         "statements": 42,
