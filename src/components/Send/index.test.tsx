@@ -2,9 +2,9 @@ import { BrowserRouter } from 'react-router-dom'
 import { act, fireEvent, render, screen, waitFor } from '../../testUtils'
 import Send from './index'
 import * as apiMock from '../../libs/JmWalletApi'
+import type { WalletFileName, ApiToken } from '../../libs/JmWalletApi'
 import { setSession } from '../../session'
 import type { CurrentWallet } from '../../context/WalletContext'
-import * as Api from '../../libs/JmWalletApi'
 
 jest.mock('../../libs/JmWalletApi', () => ({
   ...jest.requireActual('../../libs/JmWalletApi'),
@@ -90,8 +90,8 @@ const mockUtxosData = {
 }
 
 const mockWallet: CurrentWallet = {
-  walletFileName: 'test.jmdat' as Api.WalletFileName,
-  token: 'mock-token' as Api.ApiToken,
+  walletFileName: 'test.jmdat' as WalletFileName,
+  token: 'mock-token' as ApiToken,
   displayName: 'test',
 }
 
@@ -104,9 +104,9 @@ const setup = () =>
 
 const setupSession = () => {
   setSession({
-    walletFileName: 'test.jmdat' as any,
-    auth: { token: 'mock-token' as any, refresh_token: undefined },
-  } as any)
+    walletFileName: 'test.jmdat' as WalletFileName,
+    auth: { token: 'mock-token' as ApiToken, refresh_token: undefined },
+  })
 }
 
 describe('<Send />', () => {
@@ -245,17 +245,14 @@ describe('<Send />', () => {
     })
 
     const sendingOptionsBtn = screen.getAllByRole('button').find((b) => /sending/i.test(b.textContent || ''))
-    if (sendingOptionsBtn) {
-      await act(async () => {
-        fireEvent.click(sendingOptionsBtn)
-      })
-    }
-    const coinjoinToggle = screen.queryByRole('checkbox', { name: /send.toggle_coinjoin/i })
-    if (coinjoinToggle) {
-      await act(async () => {
-        fireEvent.click(coinjoinToggle)
-      })
-    }
+    if (!sendingOptionsBtn) throw new Error('sending options button not found')
+    await act(async () => {
+      fireEvent.click(sendingOptionsBtn)
+    })
+    const coinjoinToggle = screen.getByRole('checkbox', { name: /send.toggle_coinjoin/i })
+    await act(async () => {
+      fireEvent.click(coinjoinToggle)
+    })
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /send.button_send/i }))
