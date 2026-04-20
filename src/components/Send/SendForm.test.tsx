@@ -35,7 +35,7 @@ const initialValues: SendFormValues = {
 }
 
 const defaultProps = {
-  wallet: { walletFileName: 'test.jmdat' as any, token: 'mock-token' },
+  wallet: { walletFileName: 'test.jmdat' as any, token: 'mock-token', displayName: 'test' },
   walletInfo: mockWalletInfo as WalletInfo,
   initialValues,
   onSubmit: jest.fn().mockResolvedValue(undefined),
