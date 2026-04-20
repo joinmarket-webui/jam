@@ -3,6 +3,8 @@ import { act, fireEvent, render, screen, waitFor } from '../../testUtils'
 import Send from './index'
 import * as apiMock from '../../libs/JmWalletApi'
 import { setSession } from '../../session'
+import type { CurrentWallet } from '../../context/WalletContext'
+import * as Api from '../../libs/JmWalletApi'
 
 jest.mock('../../libs/JmWalletApi', () => ({
   ...jest.requireActual('../../libs/JmWalletApi'),
@@ -87,12 +89,16 @@ const mockUtxosData = {
   ],
 }
 
-const mockWallet = { walletFileName: 'test.jmdat' as any, token: 'mock-token' }
+const mockWallet: CurrentWallet = {
+  walletFileName: 'test.jmdat' as Api.WalletFileName,
+  token: 'mock-token' as Api.ApiToken,
+  displayName: 'test',
+}
 
 const setup = () =>
   render(
     <BrowserRouter>
-      <Send wallet={mockWallet as any} />
+      <Send wallet={mockWallet} />
     </BrowserRouter>,
   )
 
@@ -191,11 +197,11 @@ describe('<Send />', () => {
       })
     }
 
-    // Disable coinjoin (first checkbox is the coinjoin toggle)
-    const checkboxes = screen.queryAllByRole('checkbox')
-    if (checkboxes.length > 0) {
+    // Disable coinjoin
+    const coinjoinToggle = screen.queryByRole('checkbox', { name: /send.toggle_coinjoin/i })
+    if (coinjoinToggle) {
       await act(async () => {
-        fireEvent.click(checkboxes[0])
+        fireEvent.click(coinjoinToggle)
       })
     }
 
@@ -209,6 +215,99 @@ describe('<Send />', () => {
 
     await waitFor(() => {
       expect(apiMock.postDirectSend).toHaveBeenCalled()
+    })
+  })
+
+  it('shows error alert and re-enables send button when postDirectSend rejects', async () => {
+    setupSession()
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(makeOkResponse(mockGetinfoData))
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(makeOkResponse(mockSessionData))
+    ;(apiMock.getWalletDisplay as jest.Mock).mockResolvedValue(makeOkResponse(mockWalletDisplayData))
+    ;(apiMock.getWalletUtxos as jest.Mock).mockResolvedValue(makeOkResponse(mockUtxosData))
+    ;(apiMock.postConfigGet as jest.Mock).mockResolvedValue(makeOkResponse({ configvalue: '3' }))
+    ;(apiMock.postDirectSend as jest.Mock).mockRejectedValue(new Error('direct send failed'))
+
+    await act(async () => {
+      setup()
+    })
+
+    const recipient = await screen.findByRole('textbox', { name: /send.label_recipient/i })
+    const jarRadios = screen.getAllByRole('radio')
+    await act(async () => {
+      fireEvent.click(jarRadios[0])
+    })
+    await act(async () => {
+      fireEvent.change(recipient, { target: { value: 'bc1qrecipient000000000000000000000000test' } })
+    })
+    const amountInput = screen.getByRole('textbox', { name: /send.label_amount_input/i })
+    await act(async () => {
+      fireEvent.change(amountInput, { target: { value: '10000' } })
+    })
+
+    const sendingOptionsBtn = screen.getAllByRole('button').find((b) => /sending/i.test(b.textContent || ''))
+    if (sendingOptionsBtn) {
+      await act(async () => {
+        fireEvent.click(sendingOptionsBtn)
+      })
+    }
+    const coinjoinToggle = screen.queryByRole('checkbox', { name: /send.toggle_coinjoin/i })
+    if (coinjoinToggle) {
+      await act(async () => {
+        fireEvent.click(coinjoinToggle)
+      })
+    }
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /send.button_send/i }))
+    })
+    await waitFor(() => screen.getByRole('button', { name: /modal.confirm_button_accept/i }), { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: /modal.confirm_button_accept/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('direct send failed')).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: /send.button_send/i })).not.toBeDisabled()
+  })
+
+  it('calls postCoinjoin when coinjoin form is confirmed', async () => {
+    setupSession()
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(makeOkResponse(mockGetinfoData))
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(makeOkResponse(mockSessionData))
+    ;(apiMock.getWalletDisplay as jest.Mock).mockResolvedValue(makeOkResponse(mockWalletDisplayData))
+    ;(apiMock.getWalletUtxos as jest.Mock).mockResolvedValue(makeOkResponse(mockUtxosData))
+    ;(apiMock.postConfigGet as jest.Mock).mockResolvedValue(makeOkResponse({ configvalue: '3' }))
+    ;(apiMock.postCoinjoin as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await act(async () => {
+      setup()
+    })
+
+    const recipient = await screen.findByRole('textbox', { name: /send.label_recipient/i })
+    const jarRadios = screen.getAllByRole('radio')
+    await act(async () => {
+      fireEvent.click(jarRadios[0])
+    })
+    await act(async () => {
+      fireEvent.change(recipient, { target: { value: 'bc1qrecipient000000000000000000000000test' } })
+    })
+    const amountInput = screen.getByRole('textbox', { name: /send.label_amount_input/i })
+    await act(async () => {
+      fireEvent.change(amountInput, { target: { value: '10000' } })
+    })
+
+    // Leave coinjoin ON (default) — do not open accordion or toggle
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /send.button_send/i }))
+    })
+    await waitFor(() => screen.getByRole('button', { name: /modal.confirm_button_accept/i }), { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: /modal.confirm_button_accept/i }))
+
+    await waitFor(() => {
+      expect(apiMock.postCoinjoin).toHaveBeenCalledWith(
+        expect.objectContaining({ walletFileName: 'test.jmdat' }),
+        expect.objectContaining({ counterparties: expect.any(Number) }),
+      )
     })
   })
 })
