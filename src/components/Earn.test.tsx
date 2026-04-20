@@ -6,6 +6,8 @@ import * as apiMock from '../libs/JmWalletApi'
 import { setSession } from '../session'
 import { useReloadCurrentWalletInfo } from '../context/WalletContext'
 import type { AmountValue } from './BitcoinAmountInput'
+import type { CurrentWallet } from '../context/WalletContext'
+import type { WalletFileName, ApiToken } from '../libs/JmWalletApi'
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
@@ -59,12 +61,16 @@ const mockUtxosData = {
   ],
 }
 
-const mockWallet = { walletFileName: 'test.jmdat' as any, token: 'mock-token' }
+const mockWallet: CurrentWallet = {
+  walletFileName: 'test.jmdat' as WalletFileName,
+  token: 'mock-token' as ApiToken,
+  displayName: 'test',
+}
 
 const setup = () =>
   render(
     <BrowserRouter>
-      <Earn wallet={mockWallet as any} />
+      <Earn wallet={mockWallet} />
     </BrowserRouter>,
   )
 
@@ -90,7 +96,7 @@ const setupFull = () =>
   render(
     <BrowserRouter>
       <WalletPreloader>
-        <Earn wallet={mockWallet as any} />
+        <Earn wallet={mockWallet} />
       </WalletPreloader>
     </BrowserRouter>,
   )
@@ -181,6 +187,60 @@ describe('<Earn />', () => {
         expect.objectContaining({ walletFileName: 'test.jmdat' }),
         expect.objectContaining({ ordertype: expect.any(String) }),
       )
+    })
+  })
+
+  it('shows error alert and re-enables start button when postMakerStart rejects', async () => {
+    setupSession()
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(makeOkResponse(mockGetinfoData))
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(makeOkResponse(mockSessionData))
+    ;(apiMock.getWalletDisplay as jest.Mock).mockResolvedValue(makeOkResponse(mockWalletDisplayData))
+    ;(apiMock.getWalletUtxos as jest.Mock).mockResolvedValue(makeOkResponse(mockUtxosData))
+    ;(apiMock.postMakerStart as jest.Mock).mockRejectedValue(new Error('maker start failed'))
+
+    await act(async () => {
+      setupFull()
+    })
+
+    const startBtn = await screen.findByRole('button', { name: /earn.button_start/i })
+    await waitFor(() => {
+      expect(startBtn).not.toBeDisabled()
+    })
+
+    await act(async () => {
+      fireEvent.click(startBtn)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('maker start failed')).toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(startBtn).not.toBeDisabled()
+    })
+  })
+
+  it('calls getMakerStop when stop is clicked', async () => {
+    setupSession()
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(makeOkResponse(mockGetinfoData))
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(makeOkResponse({ ...mockSessionData, maker_running: true }))
+    ;(apiMock.getWalletDisplay as jest.Mock).mockResolvedValue(makeOkResponse(mockWalletDisplayData))
+    ;(apiMock.getWalletUtxos as jest.Mock).mockResolvedValue(makeOkResponse(mockUtxosData))
+    ;(apiMock.getMakerStop as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await act(async () => {
+      setupFull()
+    })
+
+    // serviceInfo.makerRunning=true causes stop form to render instead of start form
+    const stopBtn = await screen.findByRole('button', { name: /earn.button_stop/i })
+    await waitFor(() => {
+      expect(stopBtn).not.toBeDisabled()
+    })
+
+    fireEvent.click(stopBtn)
+
+    await waitFor(() => {
+      expect(apiMock.getMakerStop).toHaveBeenCalledWith(expect.objectContaining({ walletFileName: 'test.jmdat' }))
     })
   })
 })
