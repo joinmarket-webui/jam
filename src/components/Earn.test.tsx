@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter } from 'react-router-dom'
-import { act, render, screen } from '../testUtils'
+import { act, fireEvent, render, screen, waitFor } from '../testUtils'
 import Earn, { toStartMakerRequest, EarnFormValues } from './Earn'
 import * as apiMock from '../libs/JmWalletApi'
+import { setSession } from '../session'
+import { useReloadCurrentWalletInfo } from '../context/WalletContext'
 import type { AmountValue } from './BitcoinAmountInput'
 
 jest.mock('../libs/JmWalletApi', () => ({
@@ -17,6 +20,45 @@ jest.mock('../libs/JmWalletApi', () => ({
 
 const neverResolves = new Promise(() => {})
 
+const makeOkResponse = <T,>(data: T) => ({ ok: true, json: () => Promise.resolve(data) })
+
+const mockGetinfoData = { version: '0.9.10' }
+const mockSessionData = {
+  session: true,
+  maker_running: false,
+  coinjoin_in_process: false,
+  wallet_name: 'test.jmdat',
+  schedule: null,
+  offer_list: null,
+  nickname: null,
+  rescanning: false,
+}
+const mockWalletDisplayData = {
+  walletinfo: {
+    wallet_name: 'test.jmdat',
+    total_balance: '0.00100000',
+    available_balance: '0.00100000',
+    accounts: [{ account: '0', account_balance: '0.00100000', available_balance: '0.00100000', branches: [] }],
+  },
+}
+const mockUtxosData = {
+  utxos: [
+    {
+      utxo: 'abc0000000000000000000000000000000000000000000000000000000000000001:0',
+      address: 'bc1qtest',
+      path: "m/49'/1'/0'/0/0",
+      label: '',
+      value: 10_000_000,
+      tries: 0,
+      tries_remaining: 0,
+      external: false,
+      mixdepth: 0,
+      confirmations: 6,
+      frozen: false,
+    },
+  ],
+}
+
 const mockWallet = { walletFileName: 'test.jmdat' as any, token: 'mock-token' }
 
 const setup = () =>
@@ -26,13 +68,52 @@ const setup = () =>
     </BrowserRouter>,
   )
 
+// Pre-loads both utxos and display data so that currentWalletInfo is populated
+// in WalletContext before Earn mounts, enabling the start button.
+const WalletPreloader = ({ children }: { children: React.ReactNode }) => {
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    const ctrl = new AbortController()
+    reloadCurrentWalletInfo
+      .reloadAllForce({ signal: ctrl.signal })
+      .then(() => setReady(true))
+      .catch(() => setReady(true))
+    return () => ctrl.abort()
+  }, [reloadCurrentWalletInfo])
+
+  return ready ? <>{children}</> : null
+}
+
+const setupFull = () =>
+  render(
+    <BrowserRouter>
+      <WalletPreloader>
+        <Earn wallet={mockWallet as any} />
+      </WalletPreloader>
+    </BrowserRouter>,
+  )
+
+const setupSession = () => {
+  setSession({
+    walletFileName: 'test.jmdat' as any,
+    auth: { token: 'mock-token' as any, refresh_token: undefined },
+  } as any)
+}
+
 describe('<Earn />', () => {
   beforeEach(() => {
+    sessionStorage.clear()
     ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolves)
     ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolves)
     ;(apiMock.getWalletDisplay as jest.Mock).mockReturnValue(neverResolves)
     ;(apiMock.getWalletUtxos as jest.Mock).mockReturnValue(neverResolves)
     ;(apiMock.postConfigGet as jest.Mock).mockReturnValue(neverResolves)
+  })
+
+  afterEach(() => {
+    sessionStorage.clear()
   })
 
   it('renders without crashing', async () => {
@@ -48,6 +129,59 @@ describe('<Earn />', () => {
     })
     // When context reports makerRunning=false (default), start button visible
     expect(screen.getByRole('button', { name: 'earn.button_start' })).toBeInTheDocument()
+  })
+
+  it('start button is disabled while maker is waiting to start', async () => {
+    setupSession()
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(makeOkResponse(mockGetinfoData))
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(makeOkResponse(mockSessionData))
+    ;(apiMock.getWalletDisplay as jest.Mock).mockResolvedValue(makeOkResponse(mockWalletDisplayData))
+    ;(apiMock.getWalletUtxos as jest.Mock).mockResolvedValue(makeOkResponse(mockUtxosData))
+    ;(apiMock.postMakerStart as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await act(async () => {
+      setupFull()
+    })
+
+    const startBtn = await screen.findByRole('button', { name: /earn.button_start/i })
+
+    await waitFor(() => {
+      expect(startBtn).not.toBeDisabled()
+    })
+
+    fireEvent.click(startBtn)
+
+    await waitFor(() => {
+      expect(startBtn).toBeDisabled()
+    })
+  })
+
+  it('calls postMakerStart when start is clicked', async () => {
+    setupSession()
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(makeOkResponse(mockGetinfoData))
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(makeOkResponse(mockSessionData))
+    ;(apiMock.getWalletDisplay as jest.Mock).mockResolvedValue(makeOkResponse(mockWalletDisplayData))
+    ;(apiMock.getWalletUtxos as jest.Mock).mockResolvedValue(makeOkResponse(mockUtxosData))
+    ;(apiMock.postMakerStart as jest.Mock).mockReturnValue(new Promise(() => {}))
+
+    await act(async () => {
+      setupFull()
+    })
+
+    const startBtn = await screen.findByRole('button', { name: /earn.button_start/i })
+
+    await waitFor(() => {
+      expect(startBtn).not.toBeDisabled()
+    })
+
+    fireEvent.click(startBtn)
+
+    await waitFor(() => {
+      expect(apiMock.postMakerStart).toHaveBeenCalledWith(
+        expect.objectContaining({ walletFileName: 'test.jmdat' }),
+        expect.objectContaining({ ordertype: expect.any(String) }),
+      )
+    })
   })
 })
 
