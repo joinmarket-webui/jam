@@ -22,7 +22,8 @@ jest.mock('../libs/JmWalletApi', () => ({
 
 const neverResolves = new Promise(() => {})
 
-const makeOkResponse = <T,>(data: T) => ({ ok: true, json: () => Promise.resolve(data) })
+const makeOkResponse = <T,>(data: T): Response =>
+  ({ ok: true, status: 200, json: () => Promise.resolve(data) }) as unknown as Response
 
 const mockGetinfoData = { version: '0.9.10' }
 const mockSessionData = {
@@ -103,9 +104,9 @@ const setupFull = () =>
 
 const setupSession = () => {
   setSession({
-    walletFileName: 'test.jmdat' as any,
-    auth: { token: 'mock-token' as any, refresh_token: undefined },
-  } as any)
+    walletFileName: 'test.jmdat' as WalletFileName,
+    auth: { token: 'mock-token' as ApiToken, refresh_token: undefined },
+  })
 }
 
 describe('<Earn />', () => {
