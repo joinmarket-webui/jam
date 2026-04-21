@@ -1,18 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
+import { useFieldArray, useForm, useWatch, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import * as yup from 'yup'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { SweepDestinationInputs } from '@/components/sweep/SweepDestinationInputs'
+import {
+  buildSweepDestinationValues,
+  getSweepDestinationAddresses,
+  sweepFormSchema,
+  type SweepFormValues,
+} from '@/components/sweep/SweepFormSchema'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
-import { buildDestinationErrors, normalizeDestinationAddresses } from '@/components/sweep/destinationValidation'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
 import { isScheduleValue, type Schedule } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -55,9 +63,6 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
   waittime: 0,
 }
 
-const initialDestinationAddresses = (count: number) => Array.from({ length: count }, () => '')
-const initialTouchedValues = (count: number) => Array.from({ length: count }, () => false)
-
 const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
   const newAddressFromDefaultJar =
     Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new' && addressMeta.jarIndex === 0)
@@ -77,12 +82,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState(false)
-  const [destinationAddresses, setDestinationAddresses] = useState(() =>
-    initialDestinationAddresses(DESTINATION_ADDRESS_COUNT_PROD),
-  )
-  const [destinationTouched, setDestinationTouched] = useState(() =>
-    initialTouchedValues(DESTINATION_ADDRESS_COUNT_PROD),
-  )
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
   const [localSchedule, setLocalSchedule] = useState<Schedule>()
@@ -97,16 +96,32 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     return buildSweepPreconditionSummary(allUtxos)
   }, [allUtxos])
 
-  const destinationErrors = useMemo(() => {
-    return buildDestinationErrors(destinationAddresses, walletInfo.addressSummary, t)
-  }, [destinationAddresses, walletInfo.addressSummary, t])
+  const schema = useMemo(() => sweepFormSchema(walletInfo.addressSummary, t), [walletInfo.addressSummary, t])
+  const form = useForm<SweepFormValues, unknown, SweepFormValues>({
+    mode: 'onChange',
+    defaultValues: {
+      destinations: buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD),
+    },
+    resolver: yupResolver(schema as yup.AnyObjectSchema) as Resolver<SweepFormValues, unknown, SweepFormValues>,
+  })
 
-  const normalizedDestinationAddresses = useMemo(() => {
-    return normalizeDestinationAddresses(destinationAddresses)
-  }, [destinationAddresses])
+  const { fields, replace } = useFieldArray({
+    control: form.control,
+    name: 'destinations',
+  })
+  const { trigger } = form
 
-  const hasDestinationErrors = destinationErrors.some((error) => error !== undefined)
+  const destinationValues = useWatch({ control: form.control, name: 'destinations' }) ?? []
+  const normalizedDestinationAddresses = useMemo(
+    () => getSweepDestinationAddresses({ destinations: destinationValues }),
+    [destinationValues],
+  )
+  const hasDestinationErrors = !form.formState.isValid
   const allDestinationAddressesPresent = normalizedDestinationAddresses.every((address) => address !== '')
+
+  useEffect(() => {
+    void trigger('destinations')
+  }, [trigger, schema])
 
   const getScheduleQuery = useQuery({
     queryKey: ['sweep-get-schedule', walletFileName],
@@ -236,60 +251,47 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     hasDestinationErrors ||
     !allDestinationAddressesPresent
 
-  const touchAllDestinations = () => {
-    setDestinationTouched((current) => current.map(() => true))
-  }
-
   const onInsecureTestingToggleChange = (checked: boolean) => {
     setUseInsecureTestingSettings(checked)
 
     if (checked) {
-      setDestinationAddresses([getNewTestingDestinationAddress(walletInfo.addressSummary)])
-      setDestinationTouched(initialTouchedValues(DESTINATION_ADDRESS_COUNT_TEST))
+      replace([{ address: getNewTestingDestinationAddress(walletInfo.addressSummary) }])
+      void trigger('destinations')
       return
     }
 
-    setDestinationAddresses(initialDestinationAddresses(DESTINATION_ADDRESS_COUNT_PROD))
-    setDestinationTouched(initialTouchedValues(DESTINATION_ADDRESS_COUNT_PROD))
-  }
-
-  const updateDestinationAddress = (index: number, value: string) => {
-    setDestinationAddresses((current) =>
-      current.map((address, currentIndex) => (currentIndex === index ? value : address)),
-    )
-  }
-
-  const markDestinationTouched = (index: number) => {
-    setDestinationTouched((current) =>
-      current.map((touched, currentIndex) => (currentIndex === index ? true : touched)),
-    )
+    replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
+    void trigger('destinations')
   }
 
   const startSchedule = async () => {
-    touchAllDestinations()
-    if (isStartDisabled) {
+    if (isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop) {
       return
     }
 
-    const body = {
-      destination_addresses: normalizeDestinationAddresses(destinationAddresses),
-      ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
-        ? { tumbler_options: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
-        : {}),
-    }
+    await form.handleSubmit(async (values) => {
+      const body = {
+        destination_addresses: getSweepDestinationAddresses(values),
+        ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
+          ? { tumbler_options: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
+          : {}),
+      }
 
-    await startScheduleMutationMutateAsync({
-      path: { walletname: walletFileName },
-      body,
-    })
+      await startScheduleMutationMutateAsync({
+        path: { walletname: walletFileName },
+        body,
+      })
+    })()
   }
 
-  const onOpenScheduleConfirm = () => {
-    touchAllDestinations()
-    if (isStartDisabled) {
+  const onOpenScheduleConfirm = async () => {
+    if (isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop) {
       return
     }
-    setShowScheduleConfirmDialog(true)
+
+    await form.handleSubmit(() => {
+      setShowScheduleConfirmDialog(true)
+    })()
   }
 
   const stopSchedule = async () => {
@@ -399,19 +401,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
               )}
 
               <SweepDestinationInputs
-                addresses={destinationAddresses}
-                errors={destinationErrors}
-                touched={destinationTouched}
+                form={form}
+                fields={fields}
                 disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                onChange={updateDestinationAddress}
-                onBlur={markDestinationTouched}
               />
 
               <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
 
               <Button
                 type="button"
-                onClick={onOpenScheduleConfirm}
+                onClick={() => void onOpenScheduleConfirm()}
                 disabled={isStartDisabled}
                 size="xxl"
                 className="w-full"
