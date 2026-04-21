@@ -8,6 +8,74 @@ A place to collect useful information for developers that doesn't really fit els
 
 For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
 
+## Simulating Wallet Journey States (Regtest)
+
+Use these shortcuts when testing wallet-state driven UI flows.
+
+### Setup
+
+```sh
+npm run regtest:up
+npm run dev
+```
+
+### Simulate Empty Wallet
+
+Use a fresh environment and do not run initialization funding.
+
+```sh
+npm run regtest:down
+npm run regtest:clear
+npm run regtest:up
+# do NOT run: npm run regtest:init
+```
+
+Expected result in UI: wallet opens with zero balance and no spendable funds.
+
+### Simulate Funded Wallet
+
+Fund wallets using the bundled init flow:
+
+```sh
+npm run regtest:init
+```
+
+This funds wallets and starts makers in secondary/tertiary containers.
+
+Expected result in UI: non-zero balance and selectable source jars with available balance.
+
+### Simulate CoinJoin-Ready State
+
+CoinJoin-ready in UI typically means:
+- wallet funded with available (not frozen/locked) UTXOs
+- enough confirmations (default precondition: 5)
+- no active maker/coinjoin/rescan conflict for the action you test
+
+Practical flow:
+
+```sh
+npm run regtest:init
+npm run regtest:mine
+```
+
+Then open Send and select a funded source jar. Preconditions warning should disappear once confirmations/eligibility are satisfied.
+
+### Verify UI State Changes
+
+- Main wallet page exposes a journey marker: inspect `[data-journey-state]` in browser devtools.
+- Common values: `no_wallet_or_not_initialized`, `empty_wallet`, `ready_for_coinjoin`, `coinjoin_in_progress`, `funded_not_ready`.
+- Cross-check with route behavior:
+  - disabled/enabled actions on Send, Earn, Sweep
+  - precondition alerts on Send/Sweep
+  - fee-config blocker banner and dialog CTA
+
+### Contributor Tips
+
+- Keep `npm run regtest:mine` running while testing confirmation-dependent flows.
+- If UI seems stuck, check for maker running / coinjoin running / rescanning state first.
+- For fee-related blockers, use the Settings fee dialog from the in-page alert instead of retrying submits.
+- Use `npm run regtest:clear` when state gets hard to reason about.
+
 ## Linting
 
 We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).
