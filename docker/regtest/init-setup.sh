@@ -7,7 +7,7 @@
 #
 # It has two responsibilities:
 # - funding wallets in all containers with some coins
-# - starting the maker service in the secondary and tertiary container
+# - starting the maker service in secondary through quinary containers
 #
 ###
 
@@ -23,6 +23,10 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 # to run the scheduler (scheduled sweep) successfully multiple times.
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 50
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket3 --unmatured --blocks 50
+
+# fund wallet in quaternary and quinary JoinMarket NG containers.
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket4 --unmatured --blocks 50
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket5 --unmatured --blocks 50
 
 # fund addresses of seed 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 # this is useful if you "import an existing wallet" and verify rescanning the chain works as expected.
@@ -83,3 +87,9 @@ start_maker "https://localhost:29183" "Satoshi.jmdat" "test"
 
 msg "Attempt to start maker service for wallet $wallet_name in tertiary container.."
 start_maker "https://localhost:30183" "Satoshi.jmdat" "test"
+
+msg "Attempt to start maker service for wallet $wallet_name in quaternary container.."
+start_maker "https://localhost:31183" "Satoshi.jmdat" "test"
+
+msg "Attempt to start maker service for wallet $wallet_name in quinary container.."
+start_maker "https://localhost:32183" "Satoshi.jmdat" "test"

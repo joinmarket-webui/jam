@@ -1,5 +1,68 @@
 services:
   joinmarket_native:
+    build:
+      context: ./dockerfile-deps/joinmarket/latest
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ENSURE_WALLET: 'true'
+      REMOVE_LOCK_FILES: 'true'
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_directory_nodes: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      jm_socks5_host: tor
+      jm_socks5_port: 9050
+      jm_tor_control_host: tor
+      jm_tor_control_port: 9051
+      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
+      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
+      jm_maker_timeout_sec: 30 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
+    expose:
+      - 62601 # obwatch
+      - 27183 # joinmarketd daemon
+      - 28183 # jmwalletd api
+      - 28283 # jmwalletd websocket
+    healthcheck:
+      test: ['CMD', 'supervisorctl', 'status']
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
+
+  joinmarket_jam_standalone:
+    build:
+      context: ./dockerfile-deps/joinmarket/webui-standalone
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ENSURE_WALLET: 'true'
+      REMOVE_LOCK_FILES: 'true'
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_directory_nodes: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      jm_socks5_host: tor
+      jm_socks5_port: 9050
+      jm_tor_control_host: tor
+      jm_tor_control_port: 9051
+      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
+      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
+    expose:
+      - 80 # nginx
+      - 28183 # jmwalletd api
+    healthcheck:
+      test: ['CMD', 'dinitctl', 'status', 'jmwalletd']
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
+
+  joinmarket_ng_native:
     image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main
     restart: unless-stopped
     environment:
@@ -10,10 +73,16 @@ services:
       BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: regtest
       BITCOIN__RPC_PASSWORD: regtest
-      NETWORK_CONFIG__NETWORK: regtest
-      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      DIRECTORY_NODES: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      OBWATCH_URL: http://joinmarket_orderbook_watcher:8000
+      NETWORK_CONFIG__NETWORK: testnet
+      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
+      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      DIRECTORY_NODES: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      OBWATCH_URL: http://joinmarket_ng_orderbook_watcher:8000
+      TOR__SOCKS_HOST: tor
+      TOR__SOCKS_PORT: 9050
+      TOR__CONTROL_HOST: tor
+      TOR__CONTROL_PORT: 9051
+      TOR__COOKIE_PATH: /var/lib/tor/control_auth_cookie
       TAKER__MINIMUM_MAKERS: 1 # necessary to do coinjoins with this regtest setup
       TAKER__MAKER_TIMEOUT_SEC: 30 # easier testing of maker timeouts on regtest
     expose:
@@ -34,7 +103,7 @@ services:
       start_period: 60s
       start_interval: 3s
 
-  joinmarket_jam_standalone:
+  joinmarket_ng_peer:
     image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main
     restart: unless-stopped
     environment:
@@ -45,10 +114,16 @@ services:
       BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: regtest
       BITCOIN__RPC_PASSWORD: regtest
-      NETWORK_CONFIG__NETWORK: regtest
-      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      DIRECTORY_NODES: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      OBWATCH_URL: http://joinmarket_orderbook_watcher:8000
+      NETWORK_CONFIG__NETWORK: testnet
+      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
+      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      DIRECTORY_NODES: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      OBWATCH_URL: http://joinmarket_ng_orderbook_watcher:8000
+      TOR__SOCKS_HOST: tor
+      TOR__SOCKS_PORT: 9050
+      TOR__CONTROL_HOST: tor
+      TOR__CONTROL_PORT: 9051
+      TOR__COOKIE_PATH: /var/lib/tor/control_auth_cookie
       TAKER__MINIMUM_MAKERS: 1 # necessary to do coinjoins with this regtest setup
     expose:
       - 8000 # obwatch

@@ -2,7 +2,7 @@
 
 This setup will help you set up a regtest environment quickly.
 It starts multiple JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
-Communication between these containers is done via Tor and a local JoinMarket NG directory server.
+Communication between these containers is done via Tor and local directory servers.
 
 All containers will have a wallet named `Satoshi.jmdat` with password `test`.
 The second container has basic auth enabled (username `joinmarket` and password `joinmarket`).
@@ -22,8 +22,11 @@ npm run regtest:init
 # mine blocks in regtest periodically
 npm run regtest:mine
 
-# start jam in development mode
+# start jam in development mode against joinmarket-clientserver primary backend
 npm run dev
+
+# or start jam in development mode against the initialized jm-ng backend
+npm run jm-ng:dev
 
 [...]
 
@@ -51,7 +54,25 @@ Once the regtest environment is up and running you can start Jam with:
 
 ```sh
 npm run dev
+
+# optionally switch to the initialized jm-ng backend
+npm run jm-ng:dev
 ```
+
+Backend selection can also be controlled manually via environment variables:
+
+- `JAM_BACKEND=native` with `JMWALLETD_API_PORT`, `JMWALLETD_WEBSOCKET_PORT`, and `JMOBWATCH_PORT`
+- `JAM_BACKEND=jam-standalone` with `JAM_API_PORT`
+
+### Orderbook Access
+
+There are two easy ways to access orderbook data in this setup:
+
+- Through Jam itself: start `npm run dev` or `npm run jm-ng:dev` and use the Orderbook page in the UI.
+- Through the NG orderbook watcher directly: `http://localhost:31800`.
+
+For API-level access, Jam proxies `/obwatch` based on `JMOBWATCH_PORT`.
+For example, with `npm run jm-ng:dev` it targets port `31800`.
 
 ### Stop
 
@@ -77,17 +98,30 @@ npm run regtest:mine
 
 ## Images
 
-The JoinMarket containers use `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`.
-The directory service uses `ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main`.
-The orderbook watcher uses `ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main`.
+This setup runs a mixed environment:
+
+- `joinmarket`, `joinmarket2`, `joinmarket3`: `joinmarket-clientserver`
+- `joinmarket4`, `joinmarket5`: `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`
+- JoinMarket NG directory service: `ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main`
+- JoinMarket NG orderbook watcher: `ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main`
 
 Use `:main` for latest unstable/unreleased changes and `:latest` for the latest tagged release.
 
 The second JoinMarket container is exposed on port `29080`.
 The third container is exposed on port `30080`.
-This is useful if you want to perform regression tests.
+The first JoinMarket NG container is exposed on ports `31080` (API) and `31283` (websocket).
+The second JoinMarket NG container is exposed on ports `32080` (API) and `32283` (websocket).
+This is useful if you want to perform regression tests across mixed implementations.
 
-Additional JoinMarket NG containers act as directory server and orderbook watcher to enable peer discovery and orderbook queries between peers.
+The setup includes both a reference directory node and a JoinMarket NG directory server. They implement the same onion directory protocol and run side-by-side for compatibility testing.
+All JoinMarket components (reference containers, JoinMarket NG containers, and orderbook watcher) are configured with both directory nodes via `JM_ALL_DIRECTORY_NODES`.
+
+All directory access is Tor-only in this setup:
+
+- An external Tor service (`jm_regtest_tor`) is started as part of the regtest stack.
+- Both directory implementations are exposed as `.onion` services by that Tor service.
+- All clients use those `.onion` addresses and route directory traffic through Tor SOCKS.
+- JoinMarket NG makers also use Tor control + cookie auth via mounted `/var/lib/tor/control_auth_cookie`.
 
 ### Build
 
