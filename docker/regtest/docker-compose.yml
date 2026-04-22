@@ -1,6 +1,4 @@
-
 services:
-
   joinmarket:
     container_name: jm_regtest_joinmarket
     extends:
@@ -8,48 +6,44 @@ services:
       service: joinmarket_native
     environment:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      jm_rpc_wallet_file: jm_primary
-      jm_rpc_user: joinmarket
-      jm_rpc_password: joinmarket
+      BITCOIN__RPC_USER: joinmarket
+      BITCOIN__RPC_PASSWORD: joinmarket
+      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_primary
     ports:
-      - "62601:62601"
-      - "28183:28183"
-      - "28283:28283"
+      - '62601:8000'
+      - '28183:28183'
+      - '28283:28283'
     volumes:
-      - "joinmarket_datadir:/root/.joinmarket"
-      - "initializer_datadir:/root/.regtest-initializer"
+      - 'joinmarket_datadir:/root/.joinmarket-ng'
+      - 'initializer_datadir:/root/.regtest-initializer'
     depends_on:
       bitcoind:
         condition: service_healthy
       bitcoind_regtest_initializer:
         condition: service_started
-      irc:
-        condition: service_started
-
+      joinmarket_orderbook_watcher:
+        condition: service_healthy
   joinmarket2:
     container_name: jm_regtest_joinmarket2
     extends:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone
     environment:
-      APP_USER: joinmarket
-      APP_PASSWORD: joinmarket
-      jm_rpc_wallet_file: jm_secondary
-      jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
+      BITCOIN__RPC_USER: joinmarket2
+      BITCOIN__RPC_PASSWORD: joinmarket2
+      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_secondary
     ports:
-      - "29080:80"
-      - "29183:28183" # exposed for "init setup" routine
+      - '29080:28183'
+      - '29183:28183' # exposed for "init setup" routine
     volumes:
-      - "joinmarket2_datadir:/root/.joinmarket"
-      - "bitcoin_datadir:/root/.bitcoin_data" # mount bitcoind dir to access .cookie file
+      - 'joinmarket2_datadir:/root/.joinmarket-ng'
     depends_on:
       bitcoind:
         condition: service_healthy
       bitcoind_regtest_initializer:
         condition: service_started
-      irc:
-        condition: service_started
-
+      joinmarket_orderbook_watcher:
+        condition: service_healthy
   joinmarket3:
     container_name: jm_regtest_joinmarket3
     extends:
@@ -57,54 +51,60 @@ services:
       service: joinmarket_jam_standalone
     environment:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      WAIT_FOR_BITCOIND: "false"
-      jm_rpc_wallet_file: jm_tertiary
-      jm_rpc_user: joinmarket3
-      jm_rpc_password: joinmarket3
+      BITCOIN__RPC_USER: joinmarket3
+      BITCOIN__RPC_PASSWORD: joinmarket3
+      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_tertiary
     ports:
-      - "30080:80"
-      - "30183:28183" # exposed for "init setup" routine
+      - '30080:28183'
+      - '30183:28183' # exposed for "init setup" routine
     volumes:
-      - "joinmarket3_datadir:/root/.joinmarket"
-      - "initializer_datadir:/root/.regtest-initializer"
+      - 'joinmarket3_datadir:/root/.joinmarket-ng'
+      - 'initializer_datadir:/root/.regtest-initializer'
     depends_on:
       bitcoind:
         condition: service_healthy
       bitcoind_regtest_initializer:
         condition: service_started
-      irc:
-        condition: service_started
+      joinmarket_orderbook_watcher:
+        condition: service_healthy
 
-  joinmarket_directory_node:
-    container_name: jm_regtest_joinmarket_directory_node
-    build:
-      context: ./dockerfile-deps/joinmarket/directory_node
-      dockerfile: Dockerfile
+  joinmarket_orderbook_watcher:
+    container_name: jm_regtest_joinmarket_orderbook_watcher
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main
     restart: unless-stopped
     environment:
-      jm_hidden_service_dir: \/root\/.joinmarket\/hidden_service_dir
-      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      jm_blockchain_source: regtest
-      jm_network: testnet
-    volumes:
-      - "joinmarket_directory_node_datadir:/root/.joinmarket"
-      - "./out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
+      NETWORK_CONFIG__NETWORK: regtest
+      DIRECTORY_NODES: ${JM_DIRECTORY_NODES:?You must set the directory node address in generated env file}
+      LOGGING__LEVEL: DEBUG
+    expose:
+      - 8000
     healthcheck:
-      test: ["CMD", "supervisorctl", "status"]
+      test: ['CMD', 'python', '-c', "import socket; s = socket.create_connection(('127.0.0.1', 8000), 5); s.close()"]
       interval: 10s
       timeout: 10s
       retries: 20
       start_period: 60s
       start_interval: 3s
-
-  irc:
-    container_name: jm_regtest_irc
+    depends_on:
+      joinmarket_directory_node:
+        condition: service_healthy
+  joinmarket_directory_node:
+    container_name: jm_regtest_joinmarket_directory_node
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main
     restart: unless-stopped
-    image: ghcr.io/ergochat/ergo:v2.15.0@sha256:135cd42c6300d957e0045ee53fbe886e43e1c04bb621391ed7b8940c174d68f3
-    expose:
-      - 6667
-    volumes:
-      - "irc_datadir:/ircd"
+    environment:
+      NETWORK_CONFIG__NETWORK: regtest
+      DIRECTORY_SERVER__HOST: 0.0.0.0
+      DIRECTORY_SERVER__PORT: 5222
+      LOGGING__LEVEL: DEBUG
+    command: ['python', '-m', 'directory_server.main']
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import socket; s = socket.socket(); s.connect(('127.0.0.1', 5222)); s.close()"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   bitcoind:
     container_name: jm_regtest_bitcoind
@@ -149,12 +149,21 @@ services:
       - 28333 # ZMQ
       - 28334 # ZMQ
     ports:
-      - "17782:43782"
+      - '17782:43782'
     volumes:
-      - "bitcoin_datadir:/home/bitcoin/data"
-      - "bitcoin_wallet_datadir:/home/bitcoin/walletdata"
+      - 'bitcoin_datadir:/home/bitcoin/data'
+      - 'bitcoin_wallet_datadir:/home/bitcoin/walletdata'
     healthcheck:
-      test: [ "CMD", "/entrypoint.sh", "bitcoin-cli", "-chain=regtest", "-rpcport=43782", "-datadir=/home/bitcoin/data", "-getinfo" ]
+      test:
+        [
+          'CMD',
+          '/entrypoint.sh',
+          'bitcoin-cli',
+          '-chain=regtest',
+          '-rpcport=43782',
+          '-datadir=/home/bitcoin/data',
+          '-getinfo',
+        ]
       interval: 10s
       timeout: 10s
       retries: 20
@@ -162,22 +171,22 @@ services:
       start_interval: 3s
 
   bitcoind_regtest_initializer:
-      container_name: jm_regtest_bitcoind_initializer
-      build:
-        context: ./dockerfile-deps/bitcoin/regtest-initializer
-        dockerfile: Dockerfile
-      restart: on-failure
-      environment:
-        READY_FILE: /root/.regtest-initializer/btc_fully_synched
-        RPC_HOST: bitcoind
-        RPC_PORT: 43782
-        RPC_USER: regtest
-        RPC_PASSWORD: regtest
-      volumes:
-        - "initializer_datadir:/root/.regtest-initializer"
-      depends_on:
-        bitcoind:
-          condition: service_healthy
+    container_name: jm_regtest_bitcoind_initializer
+    build:
+      context: ./dockerfile-deps/bitcoin/regtest-initializer
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      RPC_HOST: bitcoind
+      RPC_PORT: 43782
+      RPC_USER: regtest
+      RPC_PASSWORD: regtest
+    volumes:
+      - 'initializer_datadir:/root/.regtest-initializer'
+    depends_on:
+      bitcoind:
+        condition: service_healthy
 
   nginx:
     container_name: jm_regtest_nginx_test_basepath
@@ -185,11 +194,11 @@ services:
     volumes:
       - ./dockerfile-deps/nginx:/etc/nginx/templates
     ports:
-      - "8000:80"
+      - '8000:80'
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     healthcheck:
-      test: ["CMD-SHELL", "wget --output-document /dev/null http://127.0.0.1:80/health || exit 1"]
+      test: ['CMD-SHELL', 'wget --output-document /dev/null http://127.0.0.1:80/health || exit 1']
       interval: 10s
       timeout: 10s
       retries: 20
@@ -212,7 +221,7 @@ services:
       BTCEXP_NO_RATES: 'true'
       BTCEXP_RPC_ALLOWALL: 'true'
     ports:
-      - "3002:3002"
+      - '3002:3002'
     depends_on:
       bitcoind:
         condition: service_healthy
@@ -224,5 +233,3 @@ volumes:
   joinmarket_datadir:
   joinmarket2_datadir:
   joinmarket3_datadir:
-  joinmarket_directory_node_datadir:
-  irc_datadir:

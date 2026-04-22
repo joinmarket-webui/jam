@@ -29,21 +29,10 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 OUTPUT_FILE="$SCRIPT_DIR/.env.generated"
 
-# generate an onion address
-HS_SCRIPT_TARGET_DIR="${SCRIPT_DIR}/out/hidden_service_dir"
-. "$SCRIPT_DIR/generate-onion-address.sh" "${HS_SCRIPT_TARGET_DIR}"
-
-
-ONION_ADDRESS=`cat ${HS_SCRIPT_TARGET_DIR}/hostname`
-
-if ! [[ "${ONION_ADDRESS}" == *.onion ]]; then
-  die "Invalid argument: Could not find onion address in ${HS_SCRIPT_TARGET_DIR}/hostname"
-fi
-
-ONION_ADDRESS_WITH_PORT="${ONION_ADDRESS}:5222"
+DIRECTORY_NODE_ADDRESS="joinmarket_directory_node:5222"
 
 cat <<EOF > "${OUTPUT_FILE}"
-JM_DIRECTORY_NODES=${ONION_ADDRESS_WITH_PORT}
+JM_DIRECTORY_NODES=${DIRECTORY_NODE_ADDRESS}
 
 EOF
 

@@ -12,7 +12,6 @@ const {
   JAM_BACKEND = BACKEND_NATIVE,
   JMWALLETD_API_PORT = '28183',
   JMWALLETD_WEBSOCKET_PORT = '28283',
-  JMOBWATCH_PORT = '62601',
   JAM_API_PORT = undefined,
 } = process.env
 
@@ -64,10 +63,9 @@ const serverConfigNative = (): ServerOptions => {
         },
       },
       '/obwatch': {
-        target: `http://127.0.0.1:${JMOBWATCH_PORT}`,
+        target: `https://127.0.0.1:${JMWALLETD_API_PORT}`,
         changeOrigin: true,
         secure: false,
-        rewrite: (p) => p.replace(/^\/obwatch/, ''),
       },
       '/jmws': {
         target: `https://127.0.0.1:${JMWALLETD_WEBSOCKET_PORT}`,

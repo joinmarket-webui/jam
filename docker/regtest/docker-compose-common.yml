@@ -1,28 +1,33 @@
-
 services:
-
   joinmarket_native:
-    build:
-      context: ./dockerfile-deps/joinmarket/latest
-      dockerfile: Dockerfile
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main
     restart: unless-stopped
     environment:
-      ENSURE_WALLET: "true"
-      REMOVE_LOCK_FILES: "true"
-      jm_blockchain_source: regtest
-      jm_network: testnet
-      jm_rpc_host: bitcoind
-      jm_rpc_port: 43782
-      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
-      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
-      jm_maker_timeout_sec: 30 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
+      JOINMARKET_DATA_DIR: /root/.joinmarket-ng
+      JMWALLETD_HOST: 0.0.0.0
+      JMWALLETD_NO_TLS: ${JMWALLETD_NO_TLS:-false}
+      BITCOIN__BACKEND_TYPE: descriptor_wallet
+      BITCOIN__RPC_URL: http://bitcoind:43782
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: regtest
+      NETWORK_CONFIG__NETWORK: regtest
+      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      DIRECTORY_NODES: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      OBWATCH_URL: http://joinmarket_orderbook_watcher:8000
+      TAKER__MINIMUM_MAKERS: 1 # necessary to do coinjoins with this regtest setup
+      TAKER__MAKER_TIMEOUT_SEC: 30 # easier testing of maker timeouts on regtest
     expose:
-      - 62601 # obwatch
+      - 8000 # obwatch
       - 28183 # jmwalletd api
       - 28283 # jmwalletd websocket
     healthcheck:
-      test: ["CMD", "supervisorctl", "status"]
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import socket,ssl,sys; s=socket.socket(); s.settimeout(5);\ntry:\n c=ssl.create_default_context(); c.check_hostname=False; c.verify_mode=ssl.CERT_NONE; c.wrap_socket(s, server_hostname='localhost').connect(('127.0.0.1',28183)); sys.exit(0)\nexcept Exception:\n pass\ntry:\n s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1',28183)); s.close(); sys.exit(0)\nexcept Exception:\n sys.exit(1)",
+        ]
       interval: 10s
       timeout: 10s
       retries: 20
@@ -30,25 +35,33 @@ services:
       start_interval: 3s
 
   joinmarket_jam_standalone:
-    build:
-      context: ./dockerfile-deps/joinmarket/webui-standalone
-      dockerfile: Dockerfile
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main
     restart: unless-stopped
     environment:
-      ENSURE_WALLET: "true"
-      REMOVE_LOCK_FILES: "true"
-      jm_blockchain_source: regtest
-      jm_network: testnet
-      jm_rpc_host: bitcoind
-      jm_rpc_port: 43782
-      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
-      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
+      JOINMARKET_DATA_DIR: /root/.joinmarket-ng
+      JMWALLETD_HOST: 0.0.0.0
+      JMWALLETD_NO_TLS: ${JMWALLETD_NO_TLS:-false}
+      BITCOIN__BACKEND_TYPE: descriptor_wallet
+      BITCOIN__RPC_URL: http://bitcoind:43782
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: regtest
+      NETWORK_CONFIG__NETWORK: regtest
+      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      DIRECTORY_NODES: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      OBWATCH_URL: http://joinmarket_orderbook_watcher:8000
+      TAKER__MINIMUM_MAKERS: 1 # necessary to do coinjoins with this regtest setup
     expose:
-      - 80    # nginx
+      - 8000 # obwatch
       - 28183 # jmwalletd api
+      - 28283 # jmwalletd websocket
     healthcheck:
-      test: [ "CMD", "dinitctl", "status", "jmwalletd" ]
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import socket,ssl,sys; s=socket.socket(); s.settimeout(5);\ntry:\n c=ssl.create_default_context(); c.check_hostname=False; c.verify_mode=ssl.CERT_NONE; c.wrap_socket(s, server_hostname='localhost').connect(('127.0.0.1',28183)); sys.exit(0)\nexcept Exception:\n pass\ntry:\n s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1',28183)); s.close(); sys.exit(0)\nexcept Exception:\n sys.exit(1)",
+        ]
       interval: 10s
       timeout: 10s
       retries: 20

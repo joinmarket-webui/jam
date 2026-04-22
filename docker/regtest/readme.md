@@ -2,7 +2,7 @@
 
 This setup will help you set up a regtest environment quickly.
 It starts multiple JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
-Communication between these containers is done via Tor (if internet connection is available) and IRC (locally running container).
+Communication between these containers is done via Tor and a local JoinMarket NG directory server.
 
 All containers will have a wallet named `Satoshi.jmdat` with password `test`.
 The second container has basic auth enabled (username `joinmarket` and password `joinmarket`).
@@ -77,16 +77,17 @@ npm run regtest:mine
 
 ## Images
 
-The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is an adaption of [jam-standalone](https://github.com/joinmarket-webui/jam-docker/tree/master/standalone) with as little adaptations as possible.
-It will fetch the latest commit from the [`master` branch of the joinmarket-clientserver repo](https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master).
-Keep in mind: Building from `master` is not always reliable. This tradeoff is made to enable testing new features immediately by just rebuilding the images.
+The JoinMarket containers use `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`.
+The directory service uses `ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main`.
+The orderbook watcher uses `ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main`.
 
-The second JoinMarket container is based on `joinmarket-webui/jam-dev-standalone:master` which exposes an UI on port `29080`
-(username `joinmarket` and pass `joinmarket` for Basic Authentication).
-The third container is a copy of the second one exposed on port `30080` without authentication.
+Use `:main` for latest unstable/unreleased changes and `:latest` for the latest tagged release.
+
+The second JoinMarket container is exposed on port `29080`.
+The third container is exposed on port `30080`.
 This is useful if you want to perform regression tests.
 
-One additional JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
+Additional JoinMarket NG containers act as directory server and orderbook watcher to enable peer discovery and orderbook queries between peers.
 
 ### Build
 
@@ -95,7 +96,7 @@ One additional JoinMarket container acts as [Directory Node](https://github.com/
 npm run regtest:build
 ```
 
-In order to incorporate recent upstream changes (of the `master` branch), simply rebuild the setup from scratch.
+In order to incorporate recent upstream image changes, simply rebuild the setup from scratch.
 
 ```sh
 # download and recompile the images from scratch (without using docker cache)
@@ -114,7 +115,7 @@ npm run regtest:logs:jmwalletd
 ### Display running JoinMarket version
 
 ```sh
-docker exec -t jm_regtest_joinmarket git log --oneline -1
+curl --insecure --silent https://localhost:28183/api/v1/getinfo | jq
 ```
 
 ## Helper scripts
@@ -222,5 +223,4 @@ Successfully generated 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339
 
 ## Resources
 
-- [JoinMarket Server (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver)
-- [JoinMarket Server Testing Docs (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/TESTING.md)
+- [JoinMarket NG (GitHub)](https://github.com/joinmarket-ng/joinmarket-ng)
