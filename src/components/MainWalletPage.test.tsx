@@ -204,6 +204,24 @@ describe('<MainWalletPage /> journey state', () => {
     expect(getJourneyState(container)).toBe('service-offline')
   })
 
+  it('should prioritize service-offline over no-wallet when both are true', () => {
+    testState.walletInfo = {
+      ...testState.walletInfo,
+      walletName: null,
+    }
+    testState.jmInfo = {
+      version: undefined,
+      queryResult: {
+        isLoading: false,
+        isError: true,
+      },
+    }
+
+    const { container } = renderMainWalletPage()
+
+    expect(getJourneyState(container)).toBe('service-offline')
+  })
+
   it('should set action-required when wallet query has an error', () => {
     testState.walletInfo = {
       ...testState.walletInfo,
