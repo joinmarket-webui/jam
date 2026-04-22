@@ -1,0 +1,15 @@
+DataDirectory /var/lib/tor
+Log notice stdout
+
+# SOCKS proxy for JoinMarket components
+SocksPort 0.0.0.0:9050
+
+# Control port for maker onion service handling
+ControlPort 0.0.0.0:9051
+CookieAuthentication 1
+CookieAuthFile /var/lib/tor/control_auth_cookie
+
+# Hidden service for JoinMarket NG directory node
+HiddenServiceDir /var/lib/tor/ng-directory
+HiddenServicePort 5222 172.30.0.21:5223
+HiddenServiceVersion 3
