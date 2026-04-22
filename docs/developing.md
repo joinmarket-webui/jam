@@ -126,3 +126,17 @@ npm install && npm run dev
 - yup (GitHub): https://github.com/jquense/yup
 - react-hook-form (GitHub): https://github.com/react-hook-form/react-hook-form
 - react-query (GitHub): https://github.com/TanStack/query
+- zustand (GitHub): https://github.com/pmndrs/zustand
+
+## Simulating Wallet Journey States
+
+For manual verification of the UI flow, you can simulate different wallet journey states in the regtest environment:
+
+- **Idle State**: A funded wallet with no active processes and valid fee configuration.
+- **Empty State**: Use a freshly created wallet with no funds.
+- **Syncing State**: Trigger a wallet rescan from the Settings page. This will set the `rescanning` flag in the session.
+- **Fee Config Missing**: Temporarily rename or remove the `max_jupiter_fee_abs` and `max_jupiter_fee_rel` fields in your `joinmarket.cfg` policy section.
+- **Coinjoining State**: Start a collaborative send (CoinJoin) from the Send page.
+- **Making State**: Start the Yield Generator from the Earn page.
+
+You can verify the active state by inspecting the `data-journey-state` attribute on the main container in the browser's developer tools.

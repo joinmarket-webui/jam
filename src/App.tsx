@@ -18,7 +18,7 @@ import {
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { LogsPage } from '@/components/LogsPage'
-import MainWalletPage from '@/components/MainWalletPage'
+import MainWalletView from '@/components/MainWalletView'
 import CreateWalletPage from '@/components/create/CreateWalletPage'
 import { EarnPage } from '@/components/earn/EarnPage'
 import ErrorPage from '@/components/error/ErrorPage'
@@ -210,7 +210,7 @@ function App() {
               </Layout>
             }
           >
-            <Route path={routes.home} element={<MainWalletPage walletFileName={walletFileName!} />} />
+            <Route path={routes.home} element={<MainWalletView walletFileName={walletFileName!} />} />
             <Route path={routes.receive} element={<ReceivePage walletFileName={walletFileName!} />} />
             <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
             <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />

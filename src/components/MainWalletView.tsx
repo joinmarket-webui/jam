@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { DownloadIcon, InfoIcon, RefreshCwIcon, UploadIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { useStore } from 'zustand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ClickableJar } from '@/components/ui/jam/ClickableJar'
@@ -16,15 +17,17 @@ import {
 } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { Balance } from './ui/jam/Balance'
 import { Spinner } from './ui/spinner'
 import { WalletJarsDetailsOverlay } from './wallet/WalletJarsDetailsOverlay'
 
-interface MainWalletPageProps {
+interface MainWalletViewProps {
   walletFileName: WalletFileName
 }
 
-export default function MainWalletPage({ walletFileName }: MainWalletPageProps) {
+export default function MainWalletView({ walletFileName }: MainWalletViewProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [selectedJar, setSelectedJar] = useState<JarObject>()
@@ -34,6 +37,18 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const { isLoading, isFetching, error, refetch: refetchWalletData } = useJamWalletInfoContext()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
+
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
+
+  const journeyState = useMemo(() => {
+    if (jmSession?.rescanning) return 'syncing'
+    if (walletBalanceSummary.calculatedTotalBalanceInSats === 0) return 'empty'
+    if (maxFeesConfigMissing) return 'fee-config-missing'
+    if (jmSession?.coinjoin_in_process || (jmSession?.schedule?.length || 0) > 0) return 'coinjoining'
+    if (jmSession?.maker_running) return 'making'
+    return 'idle'
+  }, [jmSession, walletBalanceSummary, maxFeesConfigMissing])
 
   const walletName = walletDisplayName(walletFileName)
   const walletNameTitle = shortenStringMiddle(walletName, 32)
@@ -54,7 +69,11 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
         walletFileName={walletFileName}
         selectedJarIndex={selectedJar?.jarIndex}
       />
-      <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
+      <div
+        className="flex flex-col items-center justify-center gap-8 px-4 py-12"
+        data-journey-state={journeyState}
+        data-testid="main-wallet-view"
+      >
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
           <p className="text-muted-foreground hover:text-foreground text-xl select-all" title={walletName}>
             {walletNameTitle}
