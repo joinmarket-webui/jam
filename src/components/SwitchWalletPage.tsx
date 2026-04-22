@@ -121,7 +121,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
           <>
             {listWalletsError ? (
               <CardContent className="space-y-6">
-                <WalletLoadErrorAlert reason={listWalletsError.message} iconClassName="h-4 w-4" />
+                <WalletLoadErrorAlert reason={getErrorReason(listWalletsError, t('global.errors.reason_unknown'))} iconClassName="h-4 w-4" />
                 <Button variant="ghost" size="sm" onClick={() => void listWalletsRefetch()}>
                   <RefreshCwIcon className="h-4 w-4" /> {t('global.retry')}
                 </Button>

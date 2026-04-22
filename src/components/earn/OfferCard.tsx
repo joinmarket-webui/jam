@@ -19,10 +19,11 @@ const OfferTypeBadge = ({ value }: { value: Offer }) => {
 }
 
 const renderOfferText = (value: Offer, t: TFunction<'translation', undefined>) => {
-  if (isAbsoluteOffer(value?.ordertype || '')) {
+  const ordertype = String(value?.ordertype ?? '')
+  if (isAbsoluteOffer(ordertype)) {
     return t('earn.current.text_offer_type_absolute')
   }
-  if (isRelativeOffer(value?.ordertype || '')) {
+  if (isRelativeOffer(ordertype)) {
     return t('earn.current.text_offer_type_relative')
   }
   return value?.ordertype
@@ -67,10 +68,10 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
           <div className="flex flex-col">
             <Label className="font-semibold">{t('earn.current.text_cjfee')}</Label>
             <span className="text-sm">
-              {isRelativeOffer(value?.ordertype || '') ? (
-                <span className="select-all">{factorToPercentage(Number.parseFloat(value?.cjfee || '') || 0)}%</span>
+              {isRelativeOffer(String(value?.ordertype ?? '')) ? (
+                <span className="select-all">{factorToPercentage(Number.parseFloat(String(value?.cjfee ?? '')) || 0)}%</span>
               ) : (
-                <Balance valueString={String(value?.cjfee || '0')} />
+                <Balance valueString={String(value?.cjfee ?? '0')} />
               )}
             </span>
           </div>

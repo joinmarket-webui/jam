@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
@@ -51,7 +51,7 @@ import type { SendFormValues } from './types'
 
 type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog>, 'onConfirm'> & {
   walletFileName: WalletFileName
-  onError: (error: ErrorMessage) => void
+  onError: (error: unknown) => void
   onConfirm: (jar: JarIndex, address: AddressInfo) => void
 }
 

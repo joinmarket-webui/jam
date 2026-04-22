@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label'
 import { useJars, useDetectNetwork, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { deriveAccountXpub } from '@/lib/bip32'
+import { getErrorReason } from '@/lib/errorReason'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
@@ -338,7 +339,7 @@ export const AccountXpubsDialog = ({
                 <Alert variant="destructive">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
-                  <AlertDescription>{seedQueryError.message || t('global.errors.reason_unknown')}</AlertDescription>
+                  <AlertDescription>{getErrorReason(seedQueryError, t('global.errors.reason_unknown'))}</AlertDescription>
                 </Alert>
               )}
               {!accountXpubs.isFetching && accountXpubs.error && (

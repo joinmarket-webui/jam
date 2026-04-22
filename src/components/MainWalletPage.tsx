@@ -14,6 +14,7 @@ import {
   useWalletBalanceSummary,
   type Jar as JarObject,
 } from '@/context/JamWalletInfoContext'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import { Balance } from './ui/jam/Balance'
@@ -88,11 +89,11 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
           </div>
         </div>
 
-        {error && (
+        {error ? (
           <Alert variant="destructive" className="mb-4 max-w-xl">
             <AlertDescription>
               {t('global.errors.error_loading_wallet_failed', {
-                reason: error.message || t('global.errors.reason_unknown'),
+                reason: getErrorReason(error, t('global.errors.reason_unknown')),
               })}
               <Button variant="outline" size="sm" onClick={() => void refetchWalletData()}>
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
@@ -100,7 +101,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
               </Button>
             </AlertDescription>
           </Alert>
-        )}
+        ) : null}
 
         <div className="light:text-black mt-8 mb-4 flex w-full flex-col gap-8 text-white" data-tour-id="wallet-jars">
           <div className="text-muted-foreground hover:text-foreground">

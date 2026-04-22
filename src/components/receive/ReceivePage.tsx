@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { getaddressQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, HatGlassesIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -81,7 +81,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     ),
     retry: false,
     gcTime: Number.POSITIVE_INFINITY,
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       // TODO: add reason to i18n
       toast.error(t('receive.error_loading_address_failed', { reason }))

@@ -4,7 +4,7 @@ import {
   docoinjoinMutation,
   stopcoinjoinOptions,
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { DirectSendRequest, DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { AlertTriangleIcon, HourglassIcon, ListFilterIcon } from 'lucide-react'
@@ -149,7 +149,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     onSuccess: () => {
       toast.success(t('send.alert_collaborative_started_title'))
     },
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('send.error_starting_collaborative_transaction', { reason })
       setCollaborativeFlowError(message)
@@ -312,7 +312,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     }
   }, [fetchIfMissing, t])
 
-  const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
+  const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, unknown, SendFormValues, unknown>({
     mutationFn: withMutationDelay(
       async (data: SendFormValues) => {
         if (data.amount === undefined) {

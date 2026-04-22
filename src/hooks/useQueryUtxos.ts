@@ -1,5 +1,5 @@
 import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { ErrorMessage, ListUtxosResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { ListUtxosResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { isDevMode } from '@/constants/debugFeatures'
@@ -31,7 +31,7 @@ export type FidelityBondUtxo = Omit<Utxo, 'locktime'> & {
 
 export type UseQueryUtxosResult = {
   utxos: Utxo[]
-  queryResult: UseQueryResult<ListUtxosResponse, ErrorMessage>
+  queryResult: UseQueryResult<ListUtxosResponse, unknown>
 }
 
 interface UseQueryUtxosProps {
