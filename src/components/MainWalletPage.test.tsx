@@ -15,11 +15,13 @@ type WalletContextMock = {
   }
 }
 
-type ServiceInfoContextMock = {
-  maker_running?: boolean
-  coinjoin_in_process?: boolean
-  schedule?: unknown[]
-} | undefined
+type ServiceInfoContextMock =
+  | {
+      maker_running?: boolean
+      coinjoin_in_process?: boolean
+      schedule?: unknown[]
+    }
+  | undefined
 
 const walletContextMock: WalletContextMock = {
   walletName: 'Test Wallet',
@@ -121,5 +123,65 @@ describe('<MainWalletPage /> journey state', () => {
     const journeyContainer = container.querySelector('[data-journey-state]')
 
     expect(journeyContainer).toHaveAttribute('data-journey-state', 'coinjoin_in_progress')
+  })
+
+  it('sets data-journey-state to empty_wallet when balance is zero', () => {
+    setWalletContextMock({
+      walletBalanceSummary: {
+        calculatedTotalBalanceInSats: 0,
+        calculatedAvailableBalanceInSats: 0,
+        calculatedFrozenOrLockedBalanceInSats: 0,
+      },
+    })
+    setServiceInfoContextMock({
+      maker_running: false,
+      coinjoin_in_process: false,
+      schedule: [],
+    })
+
+    const { container } = render(<MainWalletPage walletFileName={'wallet.jmdat'} />)
+    const journeyContainer = container.querySelector('[data-journey-state]')
+
+    expect(journeyContainer).toHaveAttribute('data-journey-state', 'empty_wallet')
+  })
+
+  it('sets data-journey-state to ready_for_coinjoin when service is available and funds are spendable', () => {
+    setWalletContextMock({
+      walletBalanceSummary: {
+        calculatedTotalBalanceInSats: 250_000,
+        calculatedAvailableBalanceInSats: 250_000,
+        calculatedFrozenOrLockedBalanceInSats: 0,
+      },
+    })
+    setServiceInfoContextMock({
+      maker_running: false,
+      coinjoin_in_process: false,
+      schedule: [],
+    })
+
+    const { container } = render(<MainWalletPage walletFileName={'wallet.jmdat'} />)
+    const journeyContainer = container.querySelector('[data-journey-state]')
+
+    expect(journeyContainer).toHaveAttribute('data-journey-state', 'ready_for_coinjoin')
+  })
+
+  it('sets data-journey-state to funded_not_ready when maker is running', () => {
+    setWalletContextMock({
+      walletBalanceSummary: {
+        calculatedTotalBalanceInSats: 250_000,
+        calculatedAvailableBalanceInSats: 250_000,
+        calculatedFrozenOrLockedBalanceInSats: 0,
+      },
+    })
+    setServiceInfoContextMock({
+      maker_running: true,
+      coinjoin_in_process: false,
+      schedule: [],
+    })
+
+    const { container } = render(<MainWalletPage walletFileName={'wallet.jmdat'} />)
+    const journeyContainer = container.querySelector('[data-journey-state]')
+
+    expect(journeyContainer).toHaveAttribute('data-journey-state', 'funded_not_ready')
   })
 })

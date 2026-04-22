@@ -47,6 +47,7 @@ Expected result in UI: non-zero balance and selectable source jars with availabl
 ### Simulate CoinJoin-Ready State
 
 CoinJoin-ready in UI typically means:
+
 - wallet funded with available (not frozen/locked) UTXOs
 - enough confirmations (default precondition: 5)
 - no active maker/coinjoin/rescan conflict for the action you test

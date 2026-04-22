@@ -8,13 +8,13 @@ import { ClickableJar } from '@/components/ui/jam/ClickableJar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { useWalletJourneyState } from '@/hooks/useWalletJourneyState'
 import {
   useJamWalletInfoContext,
   useJars,
   useWalletBalanceSummary,
   type Jar as JarObject,
 } from '@/context/JamWalletInfoContext'
+import { useWalletJourneyState } from '@/hooks/useWalletJourneyState'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import { Balance } from './ui/jam/Balance'
