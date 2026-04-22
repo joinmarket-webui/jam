@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import {
+  tumblerplandeleteMutation,
+  tumblerplanMutation,
+  tumblerstartMutation,
+  tumblerstopMutation,
+} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { tumblerstatus, type TumblerPlanRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -40,9 +45,13 @@ interface SweepPageProps {
 
 const DESTINATION_ADDRESS_COUNT_PROD = 3
 const DESTINATION_ADDRESS_COUNT_TEST = 1
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
-const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
-const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
+const STATUS_POLLING_INTERVAL = 3_000
+const SESSION_POLLING_DELAY = 1_000
+
+// Fast/insecure parameters for regtest debugging. Mirrors the legacy
+// ``tumbler_options`` payload but is forwarded through the new tumbler plan's
+// ``parameters`` bag (see :class:`jm_tumbler.plan.TumblerPlanRequest`).
+const INSECURE_TUMBLER_PARAMETERS: Record<string, unknown> = {
   addrcount: DESTINATION_ADDRESS_COUNT_TEST,
   minmakercount: 1,
   makercountrange: [1, 0],
@@ -54,6 +63,11 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
   liquiditywait: 13,
   waittime: 0,
 }
+
+// Plan statuses for which the runner has already finished and the user is
+// looking at a historical record. Polling can stop and the UI may offer to
+// clear the plan to start a fresh one.
+const TERMINAL_PLAN_STATUSES = new Set(['completed', 'failed', 'cancelled'])
 
 const initialDestinationAddresses = (count: number) => Array.from({ length: count }, () => '')
 const initialTouchedValues = (count: number) => Array.from({ length: count }, () => false)
@@ -72,6 +86,7 @@ const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
+  const queryClient = useQueryClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const walletInfo = useJamWalletInfoContext()
 
@@ -85,7 +100,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   )
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
-  const [localSchedule, setLocalSchedule] = useState<Schedule>()
   const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
 
   const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
@@ -108,14 +122,19 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const hasDestinationErrors = destinationErrors.some((error) => error !== undefined)
   const allDestinationAddressesPresent = normalizedDestinationAddresses.every((address) => address !== '')
 
-  const getScheduleQuery = useQuery({
-    queryKey: ['sweep-get-schedule', walletFileName],
+  const coinjoinInProcess = jmSession?.coinjoin_in_process === true
+
+  // Poll ``/tumbler/status`` whenever a tumble might be in flight. The query
+  // also runs once on mount so a stale terminal plan is surfaced even before
+  // the session reports an active coinjoin.
+  const tumblerStatusQuery = useQuery({
+    queryKey: ['tumbler-status', walletFileName],
+    enabled: jmSession !== undefined,
     retry: false,
-    enabled: jmSession?.coinjoin_in_process === true,
-    refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
+    refetchInterval: coinjoinInProcess ? STATUS_POLLING_INTERVAL : false,
     refetchIntervalInBackground: true,
     queryFn: async ({ signal }) => {
-      const result = await getschedule({
+      const result = await tumblerstatus({
         client,
         signal,
         path: { walletname: walletFileName },
@@ -123,111 +142,92 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       })
 
       if (result.error !== undefined) {
+        // 404 simply means there is no plan on disk yet; treat as "no schedule".
         if (result.response.status === 404) {
           return null
         }
-        throw new Error(getErrorReason(result.error, 'Failed to load schedule'))
+        throw new Error(getErrorReason(result.error, 'Failed to load tumbler status'))
       }
 
-      return result.data
+      return result.data ?? null
     },
   })
 
-  const stopScheduleQueryOptions = stopcoinjoinOptions({
-    client,
-    path: { walletname: walletFileName },
-  })
+  const planFromStatus: Schedule | undefined = isScheduleValue(tumblerStatusQuery.data)
+    ? tumblerStatusQuery.data
+    : undefined
 
-  const stopScheduleQuery = useQuery({
-    ...stopScheduleQueryOptions,
-    enabled: false,
-    retry: false,
-    staleTime: 1,
-    gcTime: 1,
-  })
+  const planStatus = planFromStatus?.status
+  const planIsTerminal = planStatus !== undefined && TERMINAL_PLAN_STATUSES.has(planStatus)
+  const planIsRunning = planStatus === 'running'
+  const planIsPending = planStatus === 'pending'
 
-  const {
-    isPending: startScheduleMutationIsPending,
-    isSuccess: startScheduleMutationIsSuccess,
-    reset: startScheduleMutationReset,
-    mutateAsync: startScheduleMutationMutateAsync,
-  } = useMutation({
-    ...runscheduleMutation({ client }),
-    retry: false,
-    onMutate: () => {
-      setAlertMessage(undefined)
-    },
-    onSuccess: (result) => {
-      if (isScheduleValue(result.schedule)) {
-        setLocalSchedule(result.schedule)
-      }
-      setShowScheduleConfirmDialog(false)
-    },
-    onError: (error: ErrorMessage) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
-      setAlertMessage(message)
-      toast.error(message)
-    },
-  })
+  // ``coinjoin_in_process`` from the session is the canonical "tumble in
+  // progress" signal. The plan status is used as a UX hint (e.g. to keep the
+  // progress card visible during the gap between user-stop and the runner
+  // reaching a terminal state).
+  const schedulerRunning = coinjoinInProcess || planIsRunning
 
-  const {
-    isPending: stopScheduleMutationIsPending,
-    isSuccess: stopScheduleMutationIsSuccess,
-    mutateAsync: stopScheduleMutationMutateAsync,
-    reset: stopScheduleMutationReset,
-  } = useMutation({
-    mutationFn: async () => {
-      return await stopScheduleQuery.refetch({ throwOnError: true })
-    },
-    retry: false,
-    onMutate: () => {
-      setAlertMessage(undefined)
-    },
-    onSuccess: () => {
-      setLocalSchedule(undefined)
-    },
-    onError: (error: unknown) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
-      setAlertMessage(message)
-      toast.error(message)
-    },
-  })
-
-  const sessionSchedule = isScheduleValue(jmSession?.schedule) ? jmSession.schedule : undefined
-  const queriedSchedule = isScheduleValue(getScheduleQuery.data?.schedule) ? getScheduleQuery.data.schedule : undefined
-  const currentSchedule = sessionSchedule ?? queriedSchedule ?? localSchedule
-
-  const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
-  const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true && !schedulerRunning
+  const singleCoinJoinRunning = coinjoinInProcess && planFromStatus === undefined
   const makerRunning = jmSession?.maker_running === true
-  const collaborativeOperationRunning = makerRunning || jmSession?.coinjoin_in_process === true
+  const collaborativeOperationRunning = makerRunning || coinjoinInProcess
+
+  const planMutation = useMutation({
+    ...tumblerplanMutation({ client }),
+    retry: false,
+    onMutate: () => setAlertMessage(undefined),
+  })
+
+  const startMutation = useMutation({
+    ...tumblerstartMutation({ client }),
+    retry: false,
+    onMutate: () => setAlertMessage(undefined),
+  })
+
+  const stopMutation = useMutation({
+    ...tumblerstopMutation({ client }),
+    retry: false,
+    onMutate: () => setAlertMessage(undefined),
+  })
+
+  const deletePlanMutation = useMutation({
+    ...tumblerplandeleteMutation({ client }),
+    retry: false,
+  })
 
   const isWaitingSchedulerStart =
-    startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
-  const isWaitingSchedulerStop = stopScheduleMutationIsPending || (stopScheduleMutationIsSuccess && schedulerRunning)
+    planMutation.isPending || startMutation.isPending || (startMutation.isSuccess && !coinjoinInProcess)
+  const isWaitingSchedulerStop = stopMutation.isPending || (stopMutation.isSuccess && coinjoinInProcess)
 
   useRefreshSession({
     enabled: isWaitingSchedulerStart || isWaitingSchedulerStop,
-    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
-    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
+    refetchInterval: STATUS_POLLING_INTERVAL,
+    refetchDelay: SESSION_POLLING_DELAY,
   })
 
+  // Reset success flags so the start/stop spinner doesn't get stuck once the
+  // session/plan transitions catch up with the user's intent.
+  const startMutationIsSuccess = startMutation.isSuccess
+  const startMutationReset = startMutation.reset
   useEffect(() => {
-    if (schedulerRunning && startScheduleMutationIsSuccess) {
-      startScheduleMutationReset()
+    if (coinjoinInProcess && startMutationIsSuccess) {
+      startMutationReset()
     }
-  }, [schedulerRunning, startScheduleMutationIsSuccess, startScheduleMutationReset])
+  }, [coinjoinInProcess, startMutationIsSuccess, startMutationReset])
 
+  const stopMutationIsSuccess = stopMutation.isSuccess
+  const stopMutationReset = stopMutation.reset
   useEffect(() => {
-    if (!schedulerRunning && stopScheduleMutationIsSuccess) {
-      stopScheduleMutationReset()
+    if (!coinjoinInProcess && stopMutationIsSuccess) {
+      stopMutationReset()
     }
-  }, [schedulerRunning, stopScheduleMutationIsSuccess, stopScheduleMutationReset])
+  }, [coinjoinInProcess, stopMutationIsSuccess, stopMutationReset])
 
   const isOperationDisabled =
-    maxFeesConfigMissing || collaborativeOperationRunning || jmSession?.rescanning || !preconditionSummary.isFulfilled
+    maxFeesConfigMissing ||
+    collaborativeOperationRunning ||
+    jmSession?.rescanning === true ||
+    !preconditionSummary.isFulfilled
 
   const isStartDisabled =
     isOperationDisabled ||
@@ -265,23 +265,43 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     )
   }
 
+  const refetchTumblerStatus = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['tumbler-status', walletFileName] })
+  }
+
   const startSchedule = async () => {
     touchAllDestinations()
     if (isStartDisabled) {
       return
     }
 
-    const body = {
-      destination_addresses: normalizeDestinationAddresses(destinationAddresses),
+    const body: TumblerPlanRequest = {
+      destinations: normalizeDestinationAddresses(destinationAddresses),
+      // Always pass ``force=true``: the backend rejects overwrites of in-flight
+      // plans regardless, but a leftover PENDING plan from a previous attempt
+      // would otherwise block the user with no in-UI escape hatch.
+      force: true,
       ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
-        ? { tumbler_options: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
+        ? { parameters: INSECURE_TUMBLER_PARAMETERS }
         : {}),
     }
 
-    await startScheduleMutationMutateAsync({
-      path: { walletname: walletFileName },
-      body,
-    })
+    try {
+      await planMutation.mutateAsync({
+        path: { walletname: walletFileName },
+        body,
+      })
+      await startMutation.mutateAsync({
+        path: { walletname: walletFileName },
+      })
+      setShowScheduleConfirmDialog(false)
+      await refetchTumblerStatus()
+    } catch (error) {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
+      setAlertMessage(message)
+      toast.error(message)
+    }
   }
 
   const onOpenScheduleConfirm = () => {
@@ -293,12 +313,39 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }
 
   const stopSchedule = async () => {
-    await stopScheduleMutationMutateAsync()
+    try {
+      await stopMutation.mutateAsync({
+        path: { walletname: walletFileName },
+      })
+      await refetchTumblerStatus()
+    } catch (error) {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
+      setAlertMessage(message)
+      toast.error(message)
+    }
+  }
+
+  const dismissTerminalPlan = async () => {
+    try {
+      await deletePlanMutation.mutateAsync({
+        path: { walletname: walletFileName },
+      })
+      await refetchTumblerStatus()
+    } catch (error) {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(`${t('scheduler.error_dismissing_plan_failed')} ${reason}`)
+    }
   }
 
   if (isLoading || walletInfo.isLoading || jmSession === undefined) {
     return <PageLoading />
   }
+
+  // Treat the page as "showing the run" whenever there's a plan to display,
+  // even if the runner has already finished -- the user should see the final
+  // outcome instead of being thrown back to the start form.
+  const showProgressCard = planFromStatus !== undefined && (schedulerRunning || planIsTerminal || planIsPending)
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -356,11 +403,46 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         </Alert>
       )}
 
-      {schedulerRunning && currentSchedule && (
-        <SweepScheduleProgress schedule={currentSchedule} isStopping={isWaitingSchedulerStop} onStop={stopSchedule} />
+      {showProgressCard && planFromStatus !== undefined && (
+        <SweepScheduleProgress
+          schedule={planFromStatus}
+          isStopping={isWaitingSchedulerStop}
+          onStop={stopSchedule}
+        />
       )}
 
-      {!schedulerRunning && (
+      {planIsTerminal && planFromStatus !== undefined && (
+        <Alert variant={planStatus === 'completed' ? 'success' : 'destructive'}>
+          <AlertTitle>
+            {planStatus === 'completed'
+              ? t('scheduler.terminal_completed')
+              : planStatus === 'cancelled'
+                ? t('scheduler.terminal_cancelled')
+                : t('scheduler.terminal_failed')}
+          </AlertTitle>
+          {planFromStatus.error && <AlertDescription>{planFromStatus.error}</AlertDescription>}
+          <div className="mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void dismissTerminalPlan()}
+              disabled={deletePlanMutation.isPending}
+            >
+              {deletePlanMutation.isPending ? (
+                <>
+                  <Spinner className="motion-reduce:hidden" />
+                  {t('scheduler.button_dismiss_plan')}
+                </>
+              ) : (
+                t('scheduler.button_dismiss_plan')
+              )}
+            </Button>
+          </div>
+        </Alert>
+      )}
+
+      {!schedulerRunning && !planIsTerminal && (
         <>
           <SweepPreconditionAlert summary={preconditionSummary} />
 

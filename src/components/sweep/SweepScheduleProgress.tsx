@@ -64,6 +64,12 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
     if (state === 'broadcasted') {
       return t('scheduler.progress_entry_state_waiting_confirmation', { txid: txid ?? '-' })
     }
+    if (state === 'failed') {
+      return t('scheduler.progress_entry_state_failed')
+    }
+    if (state === 'cancelled') {
+      return t('scheduler.progress_entry_state_cancelled')
+    }
     return t('scheduler.progress_entry_state_pending')
   }
 

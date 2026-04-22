@@ -1,28 +1,19 @@
+import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TxId } from '@/store/jmTxStore'
-import type { BitcoinAddress, JarIndex, Minutes } from '@/types/global'
 
-type AmountFraction = number
-type AmountCounterparties = number
-type SchedulerDestinationAddress = 'INTERNAL' | BitcoinAddress
-type WaitTimeInMinutes = Minutes
-type Rounding = number
-type StateFlag = 0 | 1 | TxId
+// Phase ``status`` values mirror :class:`jm_tumbler.plan.PhaseStatus` on the
+// backend. Treat any unknown value as ``pending`` so future status additions
+// degrade gracefully.
+export type SchedulePhaseStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
 
-// [mixdepth, amount-fraction, N-counterparties (requested), destination address, wait time in minutes, rounding, flag indicating incomplete/broadcast/completed (0/txid/1)]
-// e.g.
-// - [ 2, 0.2456498211214867, 4, "INTERNAL", 0.01, 16, 1 ]
-// - [ 3, 0, 8, "bcrt1qpnv3nze7u6ecw63mn06ksxh497a3lryagh233q", 0.04, 16, 0 ]
-export type ScheduleEntry = [
-  JarIndex,
-  AmountFraction,
-  AmountCounterparties,
-  SchedulerDestinationAddress,
-  WaitTimeInMinutes,
-  Rounding,
-  StateFlag,
-]
+// Plan ``status`` values mirror :class:`jm_tumbler.plan.PlanStatus`.
+export type SchedulePlanStatus = SchedulePhaseStatus
 
-export type Schedule = ScheduleEntry[]
+// Re-export the SDK schedule type under a UI-local alias so that consumers
+// don't have to reach into the generated client and so that future shape
+// changes are localized to this module.
+export type Schedule = TumblerPlanResponse
+export type SchedulePhase = TumblerPhaseResponse
 
 export interface ScheduleProgressStep {
   widthPercent: number
@@ -32,7 +23,7 @@ export interface ScheduleProgressStep {
   isLast: boolean
 }
 
-export type ScheduleEntryState = 'pending' | 'broadcasted' | 'confirmed'
+export type ScheduleEntryState = 'pending' | 'broadcasted' | 'confirmed' | 'failed' | 'cancelled'
 
 export interface ScheduleProgressEntry {
   index: number
@@ -69,66 +60,85 @@ export interface ScheduleProgressSummary {
 
 const MIN_STEP_WIDTH_PERCENT = 8
 
-const toNumberOrDefault = (value: unknown, fallback: number): number => {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+const PHASE_STATUS_VALUES: ReadonlySet<SchedulePhaseStatus> = new Set([
+  'pending',
+  'running',
+  'completed',
+  'failed',
+  'cancelled',
+])
+
+const toPhaseStatus = (value: unknown): SchedulePhaseStatus => {
+  return typeof value === 'string' && PHASE_STATUS_VALUES.has(value as SchedulePhaseStatus)
+    ? (value as SchedulePhaseStatus)
+    : 'pending'
 }
 
-const getScheduleEntryWaitMinutes = (entry: ScheduleEntry): number => {
-  return Math.max(0, toNumberOrDefault(entry[4], 0))
+const isTerminalStatus = (status: SchedulePhaseStatus): boolean => {
+  return status === 'completed' || status === 'failed' || status === 'cancelled'
 }
 
-const getScheduleEntryState = (entry: ScheduleEntry): string | number => {
-  return entry[6] ?? 0
+const phaseTxId = (phase: SchedulePhase): TxId | undefined => {
+  // Bondless taker bursts emit multiple txids; surface the most recent one
+  // so the UI keeps showing live progress instead of falling back to the
+  // single-tx ``txid`` field.
+  const fromList = Array.isArray(phase.txids) && phase.txids.length > 0 ? phase.txids.at(-1) : null
+  const candidate = phase.txid ?? fromList
+  return typeof candidate === 'string' && candidate !== '' ? candidate : undefined
 }
 
-const getScheduleEntryTxId = (entry: ScheduleEntry): TxId | undefined => {
-  const state = getScheduleEntryState(entry)
-  return typeof state === 'string' ? state : undefined
+const phaseWaitSeconds = (phase: SchedulePhase): number => {
+  return Number.isFinite(phase.wait_seconds) ? Math.max(0, phase.wait_seconds) : 0
 }
 
-// Scheduler state flag convention from backend:
-// 0 => not yet broadcast, txid string => broadcasted (unconfirmed), 1 => confirmed.
-const toScheduleEntryState = (entry: ScheduleEntry): ScheduleEntryState => {
-  const state = getScheduleEntryState(entry)
-
-  if (state === 1) {
-    return 'confirmed'
-  }
-  if (typeof state === 'string') {
-    return 'broadcasted'
-  }
+const phaseEntryState = (phase: SchedulePhase): ScheduleEntryState => {
+  const status = toPhaseStatus(phase.status)
+  if (status === 'completed') return 'confirmed'
+  if (status === 'failed') return 'failed'
+  if (status === 'cancelled') return 'cancelled'
+  if (status === 'running' && phaseTxId(phase) !== undefined) return 'broadcasted'
   return 'pending'
 }
 
-const isScheduleEntryConfirmed = (entry: ScheduleEntry): boolean => {
-  return getScheduleEntryState(entry) === 1
+const isPhaseSuccessful = (phase: SchedulePhase): boolean => {
+  // ``completed`` is the only terminal "succeeded" state. ``running`` with a
+  // broadcast txid is still in flight: don't claim success until the runner
+  // has confirmed it.
+  return toPhaseStatus(phase.status) === 'completed'
 }
 
-export const isScheduleEntrySuccessful = (entry: ScheduleEntry): boolean => {
-  const state = getScheduleEntryState(entry)
-  return state === 1 || typeof state === 'string'
+const isPhaseFinished = (phase: SchedulePhase): boolean => {
+  return isTerminalStatus(toPhaseStatus(phase.status))
 }
 
+export const isSchedulePhaseSuccessful = isPhaseSuccessful
+
+// Narrow ``unknown`` to a usable ``Schedule``. This guards against pre-plan
+// state (``null``/``undefined``) and ensures the required scalar fields are
+// present so the rest of the module can operate without per-call validation.
 export const isScheduleValue = (value: unknown): value is Schedule => {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (entry) =>
-        Array.isArray(entry) &&
-        entry.length >= 7 &&
-        typeof entry[0] === 'number' /* JarIndex */ &&
-        typeof entry[1] === 'number' /* AmountFraction */ &&
-        typeof entry[2] === 'number' /* AmountCounterparties */ &&
-        typeof entry[3] === 'string' /* SchedulerDestinationAddress */ &&
-        typeof entry[4] === 'number' /* WaitTimeInMinutes */ &&
-        typeof entry[5] === 'number' /* Rounding */ &&
-        (typeof entry[6] === 'number' || typeof entry[6] === 'string') /* StateFlag */,
-    )
+  if (value === null || typeof value !== 'object') return false
+  const candidate = value as Partial<Schedule>
+  if (typeof candidate.plan_id !== 'string') return false
+  if (typeof candidate.wallet_name !== 'string') return false
+  if (typeof candidate.status !== 'string') return false
+  if (!Array.isArray(candidate.destinations)) return false
+  if (typeof candidate.current_phase !== 'number') return false
+  if (!Array.isArray(candidate.phases)) return false
+  return candidate.phases.every(
+    (phase) =>
+      phase !== null &&
+      typeof phase === 'object' &&
+      typeof phase.kind === 'string' &&
+      typeof phase.index === 'number' &&
+      typeof phase.status === 'string' &&
+      typeof phase.wait_seconds === 'number',
   )
 }
 
 export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressSummary => {
-  if (schedule.length === 0) {
+  const phases = schedule.phases
+  if (phases.length === 0) {
     return {
       totalWaitSeconds: 0,
       totalTransactions: 0,
@@ -140,95 +150,118 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
     }
   }
 
-  const completedTransactions = schedule.reduce((acc, entry) => {
-    return acc + (isScheduleEntryConfirmed(entry) ? 1 : 0)
-  }, 0)
+  const planStatus = toPhaseStatus(schedule.status)
+  const completedTransactions = phases.reduce((acc, phase) => acc + (isPhaseSuccessful(phase) ? 1 : 0), 0)
 
+  // Sum waits between phases (i.e. drop the trailing phase's post-wait, since
+  // there's nothing after it). Floor at 1 so per-step width math never divides
+  // by zero on instant-run schedules.
   const totalWaitSeconds = Math.max(
     1,
-    schedule.slice(0, Math.max(0, schedule.length - 1)).reduce((acc, entry) => {
-      return acc + getScheduleEntryWaitMinutes(entry) * 60
-    }, 0),
+    phases.slice(0, Math.max(0, phases.length - 1)).reduce((acc, phase) => acc + phaseWaitSeconds(phase), 0),
   )
 
-  const isDone = completedTransactions >= schedule.length
-  const currentTransactionIndex = Math.min(completedTransactions, schedule.length - 1)
+  const isDone = isTerminalStatus(planStatus)
 
-  const steps: ScheduleProgressStep[] = schedule.map((_entry, index) => {
+  // ``current_phase`` is authoritative when the plan is mid-run; otherwise
+  // fall back to "after the last completed one" so the UI keeps highlighting
+  // a sensible step before the runner advances the index.
+  const currentPhaseIndex = (() => {
+    const declared = schedule.current_phase
+    if (typeof declared === 'number' && declared >= 0 && declared < phases.length) {
+      return declared
+    }
+    return Math.min(completedTransactions, phases.length - 1)
+  })()
+
+  const steps: ScheduleProgressStep[] = phases.map((_phase, index) => {
     const widthPercent =
       index === 0
         ? MIN_STEP_WIDTH_PERCENT
-        : Math.max(
-            MIN_STEP_WIDTH_PERCENT,
-            ((Math.max(1, getScheduleEntryWaitMinutes(schedule[index - 1])) * 60) / totalWaitSeconds) * 100,
-          )
+        : Math.max(MIN_STEP_WIDTH_PERCENT, (Math.max(1, phaseWaitSeconds(phases[index - 1])) / totalWaitSeconds) * 100)
 
+    const isPhaseComplete = isPhaseFinished(phases[index])
     return {
       widthPercent,
-      isComplete: completedTransactions > index,
-      isActive: !isDone && completedTransactions === index,
+      isComplete: isPhaseComplete,
+      isActive: !isDone && index === currentPhaseIndex && !isPhaseComplete,
       isFirst: index === 0,
-      isLast: index === schedule.length - 1,
+      isLast: index === phases.length - 1,
     }
   })
 
-  const entries: ScheduleProgressEntry[] = schedule.map((entry, index) => {
-    return {
-      index,
-      waitBeforeNextSeconds: index >= schedule.length - 1 ? 0 : getScheduleEntryWaitMinutes(entry) * 60,
-      state: toScheduleEntryState(entry),
-      txid: getScheduleEntryTxId(entry),
-      isLast: index === schedule.length - 1,
-    }
-  })
+  const entries: ScheduleProgressEntry[] = phases.map((phase, index) => ({
+    index,
+    waitBeforeNextSeconds: index >= phases.length - 1 ? 0 : phaseWaitSeconds(phase),
+    state: phaseEntryState(phase),
+    txid: phaseTxId(phase),
+    isLast: index === phases.length - 1,
+  }))
 
   let currentState: ScheduleCurrentState | undefined
   if (!isDone) {
-    const activeEntry = schedule[currentTransactionIndex]
-    const activeEntryTxId = getScheduleEntryTxId(activeEntry)
-    const activeEntryState = getScheduleEntryState(activeEntry)
+    const activePhase = phases[currentPhaseIndex]
+    const activeStatus = toPhaseStatus(activePhase.status)
+    const activeTxId = phaseTxId(activePhase)
 
-    // Infer the user-facing phase from the currently active entry and the previous wait slot.
-    if (activeEntryTxId !== undefined) {
+    if (activeStatus === 'running' && activeTxId !== undefined) {
       currentState = {
         type: 'waiting_for_confirmation',
-        currentTransaction: currentTransactionIndex + 1,
-        totalTransactions: schedule.length,
-        txid: activeEntryTxId,
+        currentTransaction: currentPhaseIndex + 1,
+        totalTransactions: phases.length,
+        txid: activeTxId,
       }
-    } else if (activeEntryState === 1) {
-      currentState = {
-        type: 'transaction_confirmed',
-        currentTransaction: currentTransactionIndex + 1,
-        totalTransactions: schedule.length,
-      }
-    } else {
-      const waitSeconds =
-        currentTransactionIndex > 0
-          ? Math.ceil(getScheduleEntryWaitMinutes(schedule[currentTransactionIndex - 1]) * 60)
-          : 0
-
+    } else if (activeStatus === 'completed') {
+      // The runner finished this phase but hasn't advanced ``current_phase``
+      // yet (we're inside the inter-phase wait). Show the wait before the
+      // next phase starts when there is one.
+      const nextPhase = phases[currentPhaseIndex + 1]
+      const waitSeconds = Math.ceil(phaseWaitSeconds(activePhase))
+      currentState =
+        nextPhase !== undefined && waitSeconds > 0
+          ? {
+              type: 'waiting_before_next',
+              currentTransaction: currentPhaseIndex + 2,
+              totalTransactions: phases.length,
+              waitSeconds,
+            }
+          : {
+              type: 'transaction_confirmed',
+              currentTransaction: currentPhaseIndex + 1,
+              totalTransactions: phases.length,
+            }
+    } else if (activeStatus === 'pending' && currentPhaseIndex > 0) {
+      // We're between two phases: the previous one completed and the next is
+      // queued but not yet started.
+      const previousPhase = phases[currentPhaseIndex - 1]
+      const waitSeconds = Math.ceil(phaseWaitSeconds(previousPhase))
       currentState =
         waitSeconds > 0
           ? {
               type: 'waiting_before_next',
-              currentTransaction: currentTransactionIndex + 1,
-              totalTransactions: schedule.length,
+              currentTransaction: currentPhaseIndex + 1,
+              totalTransactions: phases.length,
               waitSeconds,
             }
           : {
               type: 'creating_and_broadcasting',
-              currentTransaction: currentTransactionIndex + 1,
-              totalTransactions: schedule.length,
+              currentTransaction: currentPhaseIndex + 1,
+              totalTransactions: phases.length,
             }
+    } else {
+      currentState = {
+        type: 'creating_and_broadcasting',
+        currentTransaction: currentPhaseIndex + 1,
+        totalTransactions: phases.length,
+      }
     }
   }
 
   return {
     totalWaitSeconds,
-    totalTransactions: schedule.length,
-    completedTransactions: Math.min(completedTransactions, schedule.length),
-    currentTransactionIndex,
+    totalTransactions: phases.length,
+    completedTransactions: Math.min(completedTransactions, phases.length),
+    currentTransactionIndex: currentPhaseIndex,
     isDone,
     steps,
     entries,
@@ -237,17 +270,21 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
 }
 
 export const isScheduleLikelyCompletedSuccessfully = (schedule: Schedule, allUtxosFrozen: boolean): boolean => {
-  if (schedule.length === 0) {
-    return false
+  const phases = schedule.phases
+  if (phases.length === 0) return false
+
+  // The plan status is authoritative when the runner reaches a terminal state.
+  const planStatus = toPhaseStatus(schedule.status)
+  if (planStatus === 'completed') return true
+  if (planStatus === 'failed' || planStatus === 'cancelled') {
+    // Mirror the legacy heuristic: if every non-final phase succeeded and the
+    // user has no remaining spendable UTXOs, treat the run as a successful
+    // sweep even if the last phase didn't formally complete.
+    const allButLastSucceeded = phases.slice(0, -1).every((phase) => isPhaseSuccessful(phase))
+    return allButLastSucceeded && allUtxosFrozen
   }
 
-  const entriesBeforeLastSucceeded = schedule.slice(0, -1).every((entry) => isScheduleEntrySuccessful(entry))
-  const lastEntry = schedule.at(-1)
-  if (lastEntry === undefined) {
-    return false
-  }
-
-  const lastEntrySucceeded = isScheduleEntrySuccessful(lastEntry)
-
-  return entriesBeforeLastSucceeded && (lastEntrySucceeded || allUtxosFrozen)
+  // Plan still running but every phase succeeded — caller is asking whether
+  // the run "looks done"; defer until the backend marks the plan completed.
+  return false
 }
