@@ -8,6 +8,83 @@ A place to collect useful information for developers that doesn't really fit els
 
 For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
 
+## Simulating Wallet Journey States in Regtest
+
+Use this flow to manually verify state-aware wallet guidance (including the `data-journey-state` marker in the main wallet view).
+
+### 1. Start the regtest environment
+
+```bash
+npm run regtest:up
+npm run regtest:init
+npm run dev
+```
+
+Log in with the default regtest wallet (`Satoshi.jmdat` / `test`).
+
+### 2. Empty wallet
+
+To verify `empty-wallet`, use a fresh wallet with no UTXOs:
+
+1. Create a new wallet in Jam (`Create Wallet`) and do not fund it.
+2. Log in to that wallet.
+3. Open the main wallet route (`/`) and verify `data-journey-state="empty-wallet"`.
+
+`fund-wallet.sh` always mines at least one block, so it cannot be used to produce a truly empty wallet state.
+
+### 3. Funded wallet
+
+To verify a funded wallet with spendable balance:
+
+```bash
+./docker/regtest/fund-wallet.sh --wallet-name Satoshi.jmdat --password test --blocks 1
+```
+
+This script also mines maturation blocks, so funds become spendable.
+
+### 4. Pending confirmation
+
+To simulate incoming funds that are not yet confirmed enough for coinjoin-related flows:
+
+```bash
+./docker/regtest/fund-wallet.sh --wallet-name Satoshi.jmdat --password test --blocks 1 --unmatured
+```
+
+Open the main wallet, Send, and Sweep flows before extra mining; confirmation-related guidance should appear until confirmations increase.
+
+### 5. Fee config incomplete
+
+For local UI testing of fee-config blockers, start the app with:
+
+```bash
+VITE_FORCE_FEE_CONFIG_MISSING=true npm run dev
+```
+
+Then visit Send, Earn, and Sweep routes to verify that fee configuration callouts are shown and flows are blocked as expected.
+
+### 6. Coinjoin ready
+
+To verify coinjoin-ready behavior:
+
+1. Ensure the wallet has confirmed, spendable UTXOs (run the funded wallet step above).
+2. Ensure fee configuration is present (disable `VITE_FORCE_FEE_CONFIG_MISSING` if set).
+3. Keep secondary/tertiary makers running (`npm run regtest:init` sets this up).
+4. Mine additional blocks if needed (`./docker/regtest/mine-block.sh 5`) to clear confirmation waits.
+5. Open Send/Sweep and select a source jar with confirmed UTXOs.
+
+At this point, coinjoin precondition alerts should clear and collaborative actions should be available.
+
+### 7. Quick verification checklist
+
+Use this checklist to confirm route behavior after each setup change:
+
+| State | Primary setup | Expected check |
+| --- | --- | --- |
+| `empty-wallet` | New wallet with no funding | Main wallet wrapper has `data-journey-state="empty-wallet"` |
+| `awaiting-confirmation` | Fund with `--unmatured` and avoid extra mining | Main wallet wrapper has `data-journey-state="awaiting-confirmation"` |
+| `ready` | Matured spendable funds available | Main wallet wrapper has `data-journey-state="ready"` |
+| fee-config blocked | Start app with `VITE_FORCE_FEE_CONFIG_MISSING=true` | Send/Earn/Sweep show fee-config blocker UI |
+
 ## Linting
 
 We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).
