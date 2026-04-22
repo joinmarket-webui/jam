@@ -1,112 +1,106 @@
 # Wallet State Friction Audit
 
-## Scope
+## Goal
 
-This audit focuses on state-related UX friction that can silently block user progress across wallet flows, especially:
+Identify where wallet users can be blocked without a clear next step, with focus on:
 
 - fee configuration blockers
 - coinjoin precondition blockers
 - empty-wallet confusion
-- missing "what should I do next?" guidance
 
-## Evidence Map (Current Code)
+This audit is based on current behavior in:
 
-- Home wallet actions are always visible on the main wallet screen: `src/components/MainWalletPage.tsx`
-- Send flow fee-config blocker and precondition alerting: `src/components/send/SendPage.tsx` and `src/components/send/SendForm.tsx`
-- Sweep flow operation disabling conditions: `src/components/sweep/SweepPage.tsx`
-- Earn flow fee-config blocker and maker state gating: `src/components/earn/EarnPage.tsx`
-- Shared fee config validation logic: `src/hooks/useFeeConfigValidation.ts`
+- `src/components/MainWalletPage.tsx`
+- `src/components/send/SendPage.tsx`
+- `src/components/sweep/SweepPage.tsx`
+- `src/components/earn/EarnPage.tsx`
+- `src/hooks/useFeeConfigValidation.ts`
 
-## High-Frictions Routes
+## Summary
 
-| Route | Friction Type | Current Behavior | User Risk |
+The main friction is not missing validation. The app already checks the right things in most places. The gap is that blocker reasons are route-local, differently phrased, and often shown after the user has already started a flow. That creates avoidable confusion during first use.
+
+## Friction Map
+
+| Route | Silent blocker or ambiguity | Why users get confused | Severity |
 | --- | --- | --- | --- |
-| `/` (Main Wallet) | Empty-state confusion | Wallet actions are always visible, but there is no explicit next-step guidance when balance is 0 or funds are pending confirmations. | New users can click into flows that are not yet actionable and may interpret this as app instability. |
-| `/send` | Fee-config + coinjoin precondition ambiguity | Fee config missing and coinjoin preconditions are shown as separate alerts, but flow context is fragmented. | Users may see "withdraw" UI first, then discover blockers late, causing retry loops. |
-| `/sweep` | Compound blockers (fee + precondition + schedule constraints) | Start conditions depend on multiple hidden checks (`maxFeesConfigMissing`, ongoing ops, rescan, precondition summary, destination validity). | Users can perceive the scheduler as "randomly disabled" without a single causal summary. |
-| `/earn` | Fee-config gate + maker lifecycle dependency | Maker actions are disabled under several states; fee-config blocker appears but lacks route-level escalation guidance. | Users may not know whether the right fix is in Settings, wallet funding, or waiting for service state updates. |
-| `/settings` | Discoverability | Fee controls exist, but entry to settings depends on user inference from other routes' errors. | Users often arrive only after failed attempts elsewhere. |
+| `/` (Main wallet) | Action buttons are visible even when wallet is empty or funds are not actionable yet | UI invites action before readiness is obvious | High |
+| `/send` | Multiple blockers can stack (`maxFeesConfigMissing`, coinjoin state, UTXO readiness) | Users often see destination/amount UI first, then discover blockers later | High |
+| `/sweep` | Start action is gated by fee config, running operations, rescans, preconditions, destination validity | Disabled state can feel "random" because no single primary blocker reason is surfaced | High |
+| `/earn` | Maker lifecycle states + fee config gate + bond constraints | Users may not know whether they should wait, fund, or change settings | Medium |
+| `/settings` | Fee controls exist but are usually discovered only after failures elsewhere | Remediation path is indirect instead of guided | Medium |
 
-## Fee-Config Blockers
+## Key Findings
 
-Observed in `SendPage`, `EarnPage`, and `SweepPage` through `useFeeConfigValidation`.
+### 1) Fee-config blockers are technically correct but fragmented
 
-### Friction pattern
+`useFeeConfigValidation` is reused across Send/Earn/Sweep, which is good for consistency. The UX gap is that each route explains the blocker in isolation. Users do not get one global answer to: "What is blocking me right now?"
 
-- A blocker appears per route, but there is no shared journey-state summary that says "You are blocked by missing fee config."
-- Users can navigate to blocked actions before learning required setup.
+Impact:
 
-### Recommendation
+- repeated failed attempts across routes
+- increased support burden ("why is this disabled?")
+- slower time-to-first-successful transaction
 
-- Add a global route-level guidance primitive (banner/card) keyed from a shared state machine.
-- Use consistent copy with direct CTA: "Set fee limits in Settings to continue."
-- Keep the current local alerts, but promote one canonical blocker reason near page title.
+This is the clearest low-risk opportunity because the validation already exists and only the guidance layer is missing.
 
-## Coinjoin Readiness Ambiguity
+### 2) Coinjoin preconditions are exposed as low-level checks, not outcomes
 
-Observed in `SendForm` and `SweepPage` via `buildSweepPreconditionSummary`.
+Send/Sweep correctly check confirmations, UTXO readiness, and in-progress operations. But the user-facing model is still implementation-level. Users need to infer next steps from multiple alerts.
 
-### Friction pattern
+Impact:
 
-- Preconditions are technically correct but split into low-level causes (missing UTXOs, missing confirmations, retries exhausted) without a single journey outcome.
-- Users must infer which action unblocks them (deposit, wait, mine blocks in regtest, change source jar).
+- high cognitive load for first-time users
+- avoidable retries and route switching
 
-### Recommendation
+The current behavior is defensively correct, but it asks users to translate internal conditions into actions.
 
-- Surface a normalized readiness summary:
-  - `coinjoin-ready`
-  - `needs-confirmations`
-  - `needs-eligible-utxo`
-  - `retry-locked`
-- Attach one explicit next action per state (for example: "Choose a jar with confirmed UTXOs" or "Wait for confirmations").
+### 3) Empty wallet state lacks guided progression
 
-## Empty Wallet Dead Ends
+Main wallet shows advanced actions immediately, even when the next logical step is simply "receive funds first." The app has the data needed to guide users, but guidance is not yet centralized.
 
-Most visible on main wallet and send/sweep entry points.
+Impact:
 
-### Friction pattern
+- weak first-run onboarding
+- users misinterpret valid guards as instability
 
-- Empty wallets still present advanced actions immediately.
-- No progressive onboarding cue explains the intended sequence: Receive -> wait confirmations -> Send/Earn/Sweep.
+This is the highest-visibility onboarding gap because it appears on the first meaningful screen after login.
 
-### Recommendation
+## Recommended Improvements
 
-- On the main wallet page, use state-aware hints from `data-journey-state`:
-  - `empty-wallet`: show primary CTA to Receive page
-  - `awaiting-confirmation`: show "waiting for confirmations" status
-  - `ready`: show advanced actions normally
+### Quick wins (small, low risk)
 
-## Missing Next-Step Guidance
+1. Add one primary blocker summary at the top of Send/Earn/Sweep when actions are disabled.
+2. Standardize copy shape: "Blocked because X. Next step: Y."
+3. On the main wallet route, show a single next-step hint when wallet is empty or awaiting confirmations.
+4. Reuse one shared guidance primitive so wording and CTA targets do not drift by route.
 
-### Current gap
+### Medium-term (incremental architecture)
 
-- The app has rich state data but decision support is distributed across independent components.
-- Users must mentally merge wallet status, service status, and operation-specific blockers.
+1. Derive a shared journey state from wallet + service + fee-config signals.
+2. Map each journey state to exactly one primary CTA.
+3. Keep existing local guards, but make route-level guidance deterministic and consistent.
 
-### Recommendation (priority order)
+### Long-term (product feedback loop)
 
-1. Introduce a shared journey-state model used by home, send, earn, and sweep.
-2. Standardize blocker messaging with one "primary reason" and one "next action" per route.
-3. Add analytics (or debug counters in dev) for blocker frequency to guide iteration.
-4. Add integration tests that assert guidance state for common journeys (empty, pending, blocked by fee config, ready).
+1. Add lightweight telemetry/debug counters for blocker frequency by route.
+2. Use the data to prioritize copy and flow improvements.
+3. Add integration tests for common journeys (empty wallet, pending confirmations, fee-config missing, ready).
 
-## Expected Outcome
+## Acceptance Criteria for Follow-up UX Work
 
-Consolidating these states into explicit guidance should reduce failed action attempts, shorten time-to-first-successful-flow, and make onboarding materially clearer for first-time JoinMarket users.
+1. Every disabled primary action exposes a visible, plain-language reason.
+2. Every blocker reason includes one concrete next step.
+3. Fee-config messaging is consistent across `/send`, `/earn`, and `/sweep`.
+4. Main wallet communicates first-run progression (fund -> confirm -> transact).
+5. Tests cover blocker precedence and at least one route-level guidance assertion per flow.
 
-## Immediate Low-Risk Improvements
+## Suggested Scope for an Initial PR
 
-1. Add a compact status banner on `/` keyed by `data-journey-state` with one next action.
-2. Reuse one shared guidance component in Send/Earn/Sweep for fee-config blockers.
-3. Standardize precondition copy around one sentence format: "Blocked because X. Do Y."
-4. Add route-level smoke tests that assert at least one blocker explanation is visible when actions are disabled.
+1. Start on the main wallet route with a derived journey state and one next-step hint.
+2. Reuse the same journey state or blocker vocabulary on one action route, preferably `/send`.
+3. Keep the first PR additive and UI-only so existing backend and validation behavior remain unchanged.
 
-## Suggested Acceptance Criteria (Follow-up PR)
+## Why This Matters
 
-1. Home route displays a primary "next step" hint for `empty-wallet`, `awaiting-confirmation`, and `action-required`.
-2. Send/Earn/Sweep each expose exactly one primary blocker summary above form controls when disabled.
-3. Fee-config blocker copy and CTA target are consistent across all affected routes.
-4. Added tests cover:
-   - journey-state precedence
-   - blocker summary rendering on disabled action routes
-   - regression case where wallet has mixed UTXO confirmation levels
+JoinMarket concepts are powerful but non-trivial. Clear state-aware guidance improves user trust, reduces trial-and-error, and lowers onboarding drop-off without changing backend behavior.
