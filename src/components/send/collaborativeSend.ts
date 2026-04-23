@@ -12,10 +12,10 @@ const ensureInteger = (value: unknown, message: string): number => {
 }
 
 const txFeeValueForRequest = (data: SendFormValues): number | undefined => {
-  if (data.txFeeUnit === txFeeUnit.BLOCKS && data.txFeeInBlocks !== undefined) {
-    return data.txFeeInBlocks
-  } else if (data.txFeeUnit === txFeeUnit.SATS_PER_KILO_VBYTE && data.txFeeInSatsPerVbyte !== undefined) {
-    return Math.ceil(data.txFeeInSatsPerVbyte * 1_000)
+  if (data.txFee.txFeeUnit === txFeeUnit.BLOCKS && data.txFee.txFeeInBlocks !== undefined) {
+    return data.txFee.txFeeInBlocks
+  } else if (data.txFee.txFeeUnit === txFeeUnit.SATS_PER_KILO_VBYTE && data.txFee.txFeeInSatsPerVbyte !== undefined) {
+    return Math.ceil(data.txFee.txFeeInSatsPerVbyte * 1_000)
   }
   return undefined
 }

@@ -10,7 +10,9 @@ const baseValues = (): SendFormValues => ({
   amount: { isSweep: false, amount: 100_000, sweepAmount: undefined },
   isCoinJoin: true,
   numCollaborators: 4,
-  txFeeUnit: 'blocks',
+  txFee: {
+    txFeeUnit: 'blocks',
+  },
 })
 
 describe('buildCollaborativeSendRequest', () => {
@@ -41,8 +43,10 @@ describe('buildCollaborativeSendRequest', () => {
   it('passes txfee when xFeeInBlocks is present', () => {
     const request = buildCollaborativeSendRequest({
       ...baseValues(),
-      txFeeUnit: 'blocks',
-      txFeeInBlocks: 3,
+      txFee: {
+        txFeeUnit: 'blocks',
+        txFeeInBlocks: 3,
+      },
     })
 
     expect(request.txfee).toBe(3)
@@ -51,8 +55,10 @@ describe('buildCollaborativeSendRequest', () => {
   it('passes txfee when txFeeInSatsPerVbyte is present', () => {
     const request = buildCollaborativeSendRequest({
       ...baseValues(),
-      txFeeUnit: 'sats/kilo-vbyte',
-      txFeeInSatsPerVbyte: 3,
+      txFee: {
+        txFeeUnit: 'sats/kilo-vbyte',
+        txFeeInSatsPerVbyte: 3,
+      },
     })
 
     expect(request.txfee).toBe(3000)
