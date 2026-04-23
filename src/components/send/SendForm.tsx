@@ -155,12 +155,19 @@ export function SendForm({
     SendFormValues
   >({
     mode: 'onSubmit',
-
+    disabled,
     defaultValues,
     // force type (see https://github.com/react-hook-form/resolvers/issues/807)
     resolver: yupResolver(schema) as Resolver<SendFormValues, unknown, SendFormValues>,
   })
-  const { errors, isSubmitting, isValid } = formState
+  const { errors, isValid, isSubmitting } = useMemo(
+    () => ({
+      errors: formState.errors,
+      isValid: formState.isValid,
+      isSubmitting: formState.isSubmitting,
+    }),
+    [formState.errors, formState.isValid, formState.isSubmitting],
+  )
 
   const values = useWatch({ control })
   const sourceJarIndex = useWatch({ control, name: 'source.fromJar' })
@@ -598,75 +605,7 @@ export function SendForm({
                     )}
                   </div>
                 )}
-
                 <TxFeeForm />
-
-                {/*<div className="space-y-4">
-                <Tabs value={txFeeUnitWatch}>
-                  <TabsContent value={txFeeUnit.BLOCKS}>
-                    <div className="space-y-2">
-                      <Field data-invalid={errors.txFeeInBlocks !== undefined}>
-                        <FieldLabel htmlFor="txFeeInBlocks">{t('send.label_tx_fees')}</FieldLabel>
-                        <FieldDescription>{t('settings.fees.description_tx_fees_blocks')}</FieldDescription>
-                        <InputGroup>
-                          <InputGroupInput
-                            id="txFeeInBlocks"
-                            {...register('txFeeInBlocks', {
-                              disabled,
-                            })}
-                            type="number"
-                            min={MIN_TX_FEE_IN_BLOCKS}
-                            max={MAX_TX_FEE_IN_BLOCKS}
-                            step={1}
-                          />
-                          <InputGroupAddon align="inline-start">
-                            <BlocksIcon />
-                          </InputGroupAddon>
-                        </InputGroup>
-                      </Field>
-                      {errors.txFeeInBlocks?.message && (
-                        <div className="text-destructive text-xs">{errors.txFeeInBlocks.message}</div>
-                      )}
-                    </div>
-                  </TabsContent>
-                  <TabsContent value={txFeeUnit.SATS_PER_KILO_VBYTE}>
-                    <div className="space-y-2">
-                      <Field data-invalid={errors.txFeeInSatsPerVbyte !== undefined}>
-                        <FieldLabel htmlFor="txFeeInSatsPerVbyte">{t('send.label_tx_fees')}</FieldLabel>
-                        <FieldDescription>{t('settings.fees.description_tx_fees_satspervbyte')}</FieldDescription>
-                        <InputGroup>
-                          <InputGroupInput
-                            id="txFeeInSatsPerVbyte"
-                            {...register('txFeeInSatsPerVbyte', {
-                              disabled,
-                            })}
-                            type="number"
-                            step={1}
-                          />
-                          <InputGroupAddon align="inline-start">
-                            <CurrencySymbol currency="sats" />
-                            <span className="text-xs text-nowrap">/&nbsp;vB</span>
-                          </InputGroupAddon>
-                        </InputGroup>
-                      </Field>
-                      {errors.txFeeInSatsPerVbyte?.message && (
-                        <div className="text-destructive text-xs">{errors.txFeeInSatsPerVbyte.message}</div>
-                      )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-                <TxFeeUnitInput
-                  disabled={disabled}
-                  defaultValue={FORM_INPUT_DEFAULT_VALUES.txFeeUnit}
-                  onValueChange={(value) => {
-                    setValue('txFeeUnit', value as TxFeeUnit, {
-                      shouldValidate: true, // trigger validation
-                      shouldTouch: true, // update touched fields form state
-                      shouldDirty: true, // update dirty and dirty fields form state
-                    })
-                  }}
-                />
-              </div>*/}
               </AccordionContent>
             </AccordionItem>
           </Accordion>

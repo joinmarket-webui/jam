@@ -9,16 +9,11 @@ export type CollaboratorFeesFormValues = {
   maxCjFeeRelInPercent?: number
 }
 
-export function collaboratorFeesFormSchema(enableFormValidation: boolean, t: TFunction<'translation', undefined>) {
-  if (!enableFormValidation) {
-    return yup
-      .object({
-        maxCjFeeAbs: yup.string().default(''),
-        maxCjFeeRelInPercent: yup.string().default(''),
-      })
-      .required()
-  }
-
+export function createCollaboratorFeesFormSchema({
+  t,
+}: {
+  t: TFunction<'translation', undefined>
+}): yup.ObjectSchema<CollaboratorFeesFormValues> {
   const maxCjFeeAbsoluteMessage = t('settings.fees.feedback_invalid_max_cj_fee_abs', {
     min: formatSats(CJ_FEE_ABS_MIN),
     max: formatSats(CJ_FEE_ABS_MAX),

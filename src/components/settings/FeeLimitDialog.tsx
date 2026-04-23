@@ -28,12 +28,12 @@ import { cn, factorToPercentage, percentageToFactor } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
-import { toTxFee } from '../send/feeEstimate'
+import { toTxFeeFormDefaultValues } from '../send/TxFeeForm.schema'
 import { Spinner } from '../ui/spinner'
 import { CollaboratorFeesForm } from './CollaboratorFeesForm'
-import { collaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesFormSchema'
+import { createCollaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesForm.schema'
 import { MiningFeesForm } from './MiningFeesForm'
-import { miningFeesFormSchema, type MiningFeesFormValues } from './MiningFeesFormSchema'
+import { createMiningFeesFormSchema, type MiningFeesFormValues } from './MiningFeesForm.schema'
 
 type FeeLimitDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
@@ -57,29 +57,24 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
 
   const client = useApiClient()
 
-  const miningFeeFormSchema = useMemo(() => {
-    return miningFeesFormSchema(enableFormValidation, t)
-  }, [enableFormValidation, t])
+  const miningFeeFormSchema = useMemo(() => createMiningFeesFormSchema({ t }), [t])
 
-  const miningFeeFormInitialValues: MiningFeesFormValues = useMemo(() => {
-    const txFee = toTxFee(feeConfigValues)
+  const miningFeeFormDefaultValues: MiningFeesFormValues = useMemo(() => {
     const txFeesFactor = Number.parseFloat(feeConfigValues.tx_fees_factor || '')
     const maxSweepChangeFactor = Number.parseFloat(feeConfigValues.max_sweep_fee_change || '')
     return {
-      feeType: txFee.unit,
-      txFeesBlocks: txFee.unit === txFeeUnit.BLOCKS ? txFee.value : undefined,
-      txFeesSatsPerVbyte: txFee.unit === txFeeUnit.SATS_PER_KILO_VBYTE ? txFee.value / 1_000 : undefined,
       txFeesFactorInPercent: Number.isFinite(txFeesFactor) ? factorToPercentage(txFeesFactor) : undefined,
       maxSweepFeeChangeInPercent: Number.isFinite(maxSweepChangeFactor)
         ? factorToPercentage(maxSweepChangeFactor)
         : undefined,
+      ...toTxFeeFormDefaultValues(feeConfigValues),
     }
   }, [feeConfigValues])
 
   const miningFeesForm = useForm<MiningFeesFormValues, unknown, MiningFeesFormValues>({
     mode: 'onChange',
     disabled: isSubmitting || isLoadingConfig,
-    values: miningFeeFormInitialValues,
+    defaultValues: miningFeeFormDefaultValues,
     resolver: yupResolver(miningFeeFormSchema as yup.AnyObjectSchema) as Resolver<
       MiningFeesFormValues,
       unknown,
@@ -87,11 +82,9 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
     >,
   })
 
-  const collaboratorFormSchema = useMemo(() => {
-    return collaboratorFeesFormSchema(enableFormValidation, t)
-  }, [enableFormValidation, t])
+  const collaboratorFormSchema = useMemo(() => createCollaboratorFeesFormSchema({ t }), [t])
 
-  const collaboratorFeesFormInitialValues: CollaboratorFeesFormValues = useMemo(() => {
+  const collaboratorFeesFormDefaultValues: CollaboratorFeesFormValues = useMemo(() => {
     const maxCjFeeAbsolute = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
     const maxCjFeeRelative = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
     return {
@@ -103,7 +96,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
   const collaboratorFeesForm = useForm<CollaboratorFeesFormValues, unknown, CollaboratorFeesFormValues>({
     mode: 'onChange',
     disabled: isSubmitting || isLoadingConfig,
-    values: collaboratorFeesFormInitialValues,
+    defaultValues: collaboratorFeesFormDefaultValues,
     resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema) as Resolver<
       CollaboratorFeesFormValues,
       unknown,
@@ -117,12 +110,14 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
     setIsSubmitting(true)
 
     try {
-      // Trigger validation on both forms before submission
-      const collaboratorValid = await collaboratorFeesForm.trigger()
-      const miningValid = await miningFeesForm.trigger()
+      if (enableFormValidation) {
+        // Trigger validation on both nested forms before submission
+        const collaboratorValid = await collaboratorFeesForm.trigger()
+        const miningValid = await miningFeesForm.trigger()
 
-      if (!collaboratorValid || !miningValid) {
-        return
+        if (!collaboratorValid || !miningValid) {
+          return
+        }
       }
 
       const collaboratorData = collaboratorFeesForm.getValues()
@@ -136,12 +131,14 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
         collaboratorData.maxCjFeeRelInPercent !== undefined && Number.isFinite(collaboratorData.maxCjFeeRelInPercent)
           ? String(percentageToFactor(collaboratorData.maxCjFeeRelInPercent))
           : ''
-      const txFeesBlocksValue = Number.isSafeInteger(miningData.txFeesBlocks) ? String(miningData.txFeesBlocks) : ''
+      const txFeesBlocksValue = Number.isSafeInteger(miningData.txFee.txFeeInBlocks)
+        ? String(miningData.txFee.txFeeInBlocks)
+        : ''
       const txFeesSatsPerKvByteValue =
-        miningData.txFeesSatsPerVbyte !== undefined && Number.isFinite(miningData.txFeesSatsPerVbyte)
-          ? String(Math.round(miningData.txFeesSatsPerVbyte * 1_000))
+        miningData.txFee.txFeeInSatsPerVbyte !== undefined && Number.isFinite(miningData.txFee.txFeeInSatsPerVbyte)
+          ? String(Math.ceil(miningData.txFee.txFeeInSatsPerVbyte * 1_000))
           : ''
-      const txFeesValue = miningData.feeType === txFeeUnit.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
+      const txFeesValue = miningData.txFee.txFeeUnit === txFeeUnit.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
       const txFeesFactorValue =
         miningData.txFeesFactorInPercent !== undefined && Number.isFinite(miningData.txFeesFactorInPercent)
           ? String(percentageToFactor(miningData.txFeesFactorInPercent))
@@ -211,7 +208,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
             </Trans>
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-1 space-y-4">
+        <div className="space-y-4">
           {isDeveloperMode && (
             <>
               <div className="flex items-center gap-3">

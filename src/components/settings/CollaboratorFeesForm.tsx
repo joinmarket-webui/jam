@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { Field, FieldDescription, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
-import type { CollaboratorFeesFormValues } from './CollaboratorFeesFormSchema'
+import type { CollaboratorFeesFormValues } from './CollaboratorFeesForm.schema'
 
 const FieldPrefixSatSymbol = (
   <SatSymbol

@@ -29,7 +29,11 @@ export interface TxFeeFormValues {
   }
 }
 
-export function createTxFeeFormSchema(t: TFunction): yup.ObjectSchema<TxFeeFormValues> {
+export function createTxFeeFormSchema({
+  t,
+}: {
+  t: TFunction<'translation', undefined>
+}): yup.ObjectSchema<TxFeeFormValues> {
   const feedbackInvalidTxFeesBlocks = t('settings.fees.feedback_invalid_tx_fees_blocks', {
     min: MIN_TX_FEE_IN_BLOCKS,
     max: MAX_TX_FEE_IN_BLOCKS,
