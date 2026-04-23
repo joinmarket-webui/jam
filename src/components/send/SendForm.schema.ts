@@ -161,7 +161,7 @@ export const createSendFormSchema = (
         }),
       })
       // eslint-disable-next-line unicorn/prefer-spread -- false positive
-      .concat(createTxFeeFormSchema(t))
+      .concat(createTxFeeFormSchema({ t }))
       .required()
       .test('address-not-from-source-jar-test', function (root) {
         // Note: `fromJar` might still be `undefined` at this point

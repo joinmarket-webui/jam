@@ -44,10 +44,7 @@ const TxFeeUnitInput = (props: React.ComponentProps<typeof RadioGroup>) => {
           className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
         />
         <div className="grid grow justify-items-center gap-2">
-          <span>
-            <CurrencySymbol currency="sats" />
-            <span className="text-xs text-nowrap">/&nbsp;vB</span>
-          </span>
+          <CurrencySymbol currency="sats" className="size-[1.75em]" />
           <Label htmlFor={`${id}-satsperkvb`} className="justify-center">
             {t('settings.fees.radio_tx_fees_satspervbyte')}
           </Label>
@@ -87,6 +84,7 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
                     id="txFeeInBlocks"
                     {...register('txFee.txFeeInBlocks', {
                       disabled,
+                      valueAsNumber: true,
                     })}
                     type="number"
                     min={MIN_TX_FEE_IN_BLOCKS}
@@ -113,13 +111,14 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
                     id="txFeeInSatsPerVbyte"
                     {...register('txFee.txFeeInSatsPerVbyte', {
                       disabled,
+                      valueAsNumber: true,
                     })}
                     type="number"
                     min={MIN_TX_FEE_IN_SATS_PER_VBYTE}
                     max={MAX_TX_FEE_IN_SATS_PER_VBYTE}
                     step={1}
                   />
-                  <InputGroupAddon align="inline-start">
+                  <InputGroupAddon align="inline-start" className="mr-1 gap-0.5">
                     <CurrencySymbol currency="sats" />
                     <span className="text-xs text-nowrap">/&nbsp;vB</span>
                   </InputGroupAddon>

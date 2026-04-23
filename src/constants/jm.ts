@@ -19,12 +19,19 @@ export const JM_API_AUTH_TOKEN_EXPIRY: Milliseconds = Math.max(
   ),
 )
 
+// initial value for `max_sweep_fee_change` from the default joinmarket.cfg (last check on 2026-04-22 of v0.9.12)
 export const JM_MAX_SWEEP_FEE_CHANGE_DEFAULT = 0.8
 
 export const JM_DUST_THRESHOLD: AmountSats = 27_300
 
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 export const JM_MINIMUM_MAKERS_DEFAULT = 4
+
+// initial value for `tx_fees` from the default joinmarket.cfg (last check on 2026-04-22 of v0.9.12)
+export const JM_TX_FEES_DEFAULT = 3
+
+// initial value for `tx_fees_factor` from the default joinmarket.cfg (last check on 2026-04-22 of v0.9.12)
+export const JM_TX_FEES_FACTOR_DEFAULT = 0.2
 
 export const JM_GAPLIMIT_DEFAULT = 6
 
