@@ -68,8 +68,10 @@ export default function PaymentConfirmDialog({
 
   const miningFeeText = useMiningFeeText({
     tx_fees: {
-      unit: values.txFeeUnit,
-      value: (values.txFeeUnit === txFeeUnit.BLOCKS ? values.txFeeInBlocks : values.txFeeInSatsPerVbyte) || Number.NaN,
+      unit: values.txFee.txFeeUnit,
+      value:
+        (values.txFee.txFeeUnit === txFeeUnit.BLOCKS ? values.txFee.txFeeInBlocks : values.txFee.txFeeInSatsPerVbyte) ||
+        Number.NaN,
     },
     tx_fees_factor: Number.parseFloat(meta.feeConfigValues.tx_fees_factor || ''),
     t,
