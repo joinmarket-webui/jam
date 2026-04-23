@@ -294,6 +294,7 @@ export const JarUtxosTable = ({
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection ?? {})
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable<UtxoTableEntry>({
     data: tableEntries,
     columns,

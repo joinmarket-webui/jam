@@ -121,6 +121,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     [t],
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable<EarnReportEntry>({
     data: allEntries,
     columns,

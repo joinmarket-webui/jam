@@ -231,6 +231,7 @@ export const OrderbookTable = ({
     bottom: [],
   })
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable<OrderTableEntry>({
     data: tableEntries,
     columns,
