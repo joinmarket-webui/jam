@@ -52,8 +52,8 @@ const SESSION_POLLING_DELAY = 1_000
 // ``TumbleParameters`` field names directly so the dev sweep flow can exercise
 // the live backend without legacy payload translation.
 const INSECURE_TUMBLER_PARAMETERS: Record<string, unknown> = {
-  maker_count_min: 1,
-  maker_count_max: 1,
+  maker_count_min: 2,
+  maker_count_max: 3,
   mintxcount: 1,
   time_lambda_seconds: 0.025,
   include_maker_sessions: false,
