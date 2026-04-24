@@ -41,7 +41,7 @@ describe('buildCollaborativeSendRequest', () => {
     expect(request.amount_sats).toBe(0)
   })
 
-  it('passes txfee when xFeeInBlocks is present', () => {
+  it('passes txfee when txFeeInBlocks is present', () => {
     const request = buildCollaborativeSendRequest({
       ...baseValues(),
       txFee: {

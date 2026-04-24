@@ -3,7 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
-import { BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
+import { AlertTriangleIcon, BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -167,6 +167,10 @@ export function SendForm({
       isSubmitting: formState.isSubmitting,
     }),
     [formState.errors, formState.isValid, formState.isSubmitting],
+  )
+  const collapsibleFormElementsValid = useMemo(
+    () => errors.numCollaborators === undefined && errors.txFee === undefined,
+    [errors.numCollaborators, errors.txFee],
   )
 
   const values = useWatch({ control })
@@ -529,7 +533,16 @@ export function SendForm({
 
           <Accordion type="single" collapsible>
             <AccordionItem value="options">
-              <AccordionTrigger>{t('send.sending_options')}</AccordionTrigger>
+              <AccordionTrigger
+                className={cn({
+                  'text-destructive': !collapsibleFormElementsValid,
+                })}
+              >
+                <div className="flex items-center gap-2">
+                  {!collapsibleFormElementsValid ? <AlertTriangleIcon /> : null}
+                  {t('send.sending_options')}
+                </div>
+              </AccordionTrigger>
 
               <AccordionContent
                 className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
