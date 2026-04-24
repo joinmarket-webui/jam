@@ -48,20 +48,16 @@ const DESTINATION_ADDRESS_COUNT_TEST = 1
 const STATUS_POLLING_INTERVAL = 3_000
 const SESSION_POLLING_DELAY = 1_000
 
-// Fast/insecure parameters for regtest debugging. Mirrors the legacy
-// ``tumbler_options`` payload but is forwarded through the new tumbler plan's
-// ``parameters`` bag (see :class:`jm_tumbler.plan.TumblerPlanRequest`).
+// Fast/insecure parameters for regtest debugging. These target jm-ng's current
+// ``TumbleParameters`` field names directly so the dev sweep flow can exercise
+// the live backend without legacy payload translation.
 const INSECURE_TUMBLER_PARAMETERS: Record<string, unknown> = {
-  addrcount: DESTINATION_ADDRESS_COUNT_TEST,
-  minmakercount: 1,
-  makercountrange: [1, 0],
-  mixdepthcount: DESTINATION_ADDRESS_COUNT_TEST,
+  maker_count_min: 1,
+  maker_count_max: 1,
   mintxcount: 1,
-  txcountparams: [1, 0],
-  timelambda: 0.025,
-  stage1_timelambda_increase: 1,
-  liquiditywait: 13,
-  waittime: 0,
+  time_lambda_seconds: 0.025,
+  include_maker_sessions: false,
+  include_bondless_bursts: false,
 }
 
 // Plan statuses for which the runner has already finished and the user is
@@ -345,7 +341,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   // Treat the page as "showing the run" whenever there's a plan to display,
   // even if the runner has already finished -- the user should see the final
   // outcome instead of being thrown back to the start form.
-  const showProgressCard = planFromStatus !== undefined && (schedulerRunning || planIsTerminal || planIsPending)
+  const showProgressCard = planFromStatus !== undefined && (schedulerRunning || planIsTerminal)
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -409,6 +405,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
           isStopping={isWaitingSchedulerStop}
           onStop={stopSchedule}
         />
+      )}
+
+      {planIsPending && !schedulerRunning && (
+        <Alert>
+          <AlertTitle>Pending sweep plan</AlertTitle>
+          <AlertDescription>
+            A sweep plan exists for this wallet but is not currently running. Start it to continue, or create a new plan to
+            replace it.
+          </AlertDescription>
+        </Alert>
       )}
 
       {planIsTerminal && planFromStatus !== undefined && (
