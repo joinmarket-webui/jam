@@ -7,7 +7,7 @@ const t = ((key: string) => key) as unknown as TFunction
 
 describe('buildDestinationErrors', () => {
   it('reports invalid addresses', () => {
-    const errors = buildDestinationErrors(['invalid-address', '', 'also-invalid'], {} as AddressSummary, t)
+    const errors = buildDestinationErrors(['invalid-address', '', 'also-invalid'], {}, t)
 
     expect(errors).toEqual([
       'scheduler.feedback_invalid_destination_address',
@@ -18,7 +18,7 @@ describe('buildDestinationErrors', () => {
 
   it('reports duplicate addresses', () => {
     const validAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
-    const errors = buildDestinationErrors([validAddress, validAddress, validAddress], {} as AddressSummary, t)
+    const errors = buildDestinationErrors([validAddress, validAddress, validAddress], {}, t)
 
     expect(errors).toEqual([
       'scheduler.feedback_reused_destination_address',

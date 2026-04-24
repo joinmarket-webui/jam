@@ -58,26 +58,29 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
     const scrollTop = event.currentTarget.scrollTop
     if (scrollHeight <= 0) {
       setLogScrollProgress(1)
-      return
+    } else {
+      setLogScrollProgress((scrollTop + containerHeight) / scrollHeight)
     }
-    setLogScrollProgress((scrollTop + containerHeight) / scrollHeight)
   }
 
   // Scroll to top when searching, otherwise scroll to bottom on new content
   useEffect(() => {
     if (filteredLines.length === 0) return
     if (normalizedSearchValue.length > 0) {
-      scrollToLogTop()
-      return
+      const timerId = setTimeout(() => scrollToLogTop(), 4)
+      return () => clearTimeout(timerId)
     }
     // Follow log tail only on first render or when user is already at the bottom.
     // This avoids jumping away while someone is reading older lines.
     if (!hasAutoScrolledInitially || isScrolledToLogBottom) {
-      scrollToLogBottom()
+      const timerId = setTimeout(() => {
+        scrollToLogBottom()
 
-      if (!hasAutoScrolledInitially) {
-        setHasAutoScrolledInitially(true)
-      }
+        if (!hasAutoScrolledInitially) {
+          setHasAutoScrolledInitially(true)
+        }
+      }, 4)
+      return () => clearTimeout(timerId)
     }
   }, [filteredLines.length, hasAutoScrolledInitially, isScrolledToLogBottom, normalizedSearchValue])
 

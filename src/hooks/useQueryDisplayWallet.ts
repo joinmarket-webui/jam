@@ -46,7 +46,7 @@ export function useQueryDisplayWallet({
   })
 
   return {
-    walletInfo: queryResult.data?.walletinfo as WalletInfoApiObject,
+    walletInfo: queryResult.data?.walletinfo,
     queryResult,
   }
 }

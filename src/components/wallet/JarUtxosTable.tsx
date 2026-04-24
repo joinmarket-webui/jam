@@ -49,14 +49,6 @@ export type UtxoTableEntry = {
 
 const columnHelper = createColumnHelper<UtxoTableEntry>()
 
-type UtxoTableColumnMeta =
-  | {
-      align?: string
-      numeric?: boolean
-      alphabetic?: boolean
-    }
-  | undefined
-
 const fuzzyFilter: FilterFn<UtxoTableEntry> = (row, columnId, value, addMeta) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -75,8 +67,8 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
         })}
       >
         {row.getVisibleCells().map((cell) => {
-          const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-          const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
+          const alignCenter = cell.column.columnDef.meta?.align === 'center'
+          const alignRight = cell.column.columnDef.meta?.align === 'right'
           return (
             <TableCell
               key={cell.id}
@@ -177,7 +169,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
       },
       meta: {
         align: 'center',
-      } as UtxoTableColumnMeta,
+      },
     }),
     columnHelper.accessor('utxo.value', {
       header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
@@ -193,7 +185,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
       meta: {
         align: 'right',
         numeric: true,
-      } as UtxoTableColumnMeta,
+      },
     }),
     columnHelper.accessor<'utxo.address', UtxoTableEntry['utxo']['address']>('utxo.address', {
       header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
@@ -208,7 +200,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
       cell: (info) => <Address value={info.getValue()} className="text-sm" copyable={true} />,
       meta: {
         alphabetic: true,
-      } as UtxoTableColumnMeta,
+      },
     }),
     columnHelper.accessor('utxo.confirmations', {
       header: () => t('jar_details.utxo_list.column_title_confirmations'),
@@ -216,7 +208,7 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
       meta: {
         numeric: true,
         align: 'center',
-      } as UtxoTableColumnMeta,
+      },
     }),
     columnHelper.accessor('tags', {
       header: () => t('jar_details.utxo_list.column_title_label_and_status'),
@@ -381,8 +373,8 @@ export const JarUtxosTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const alignCenter = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                  const alignRight = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
+                  const alignCenter = header.column.columnDef.meta?.align === 'center'
+                  const alignRight = header.column.columnDef.meta?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}

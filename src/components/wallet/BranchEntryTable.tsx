@@ -44,14 +44,6 @@ export type BranchEntryTableRow = BranchEntryApiObject & {
 
 const columnHelper = createColumnHelper<BranchEntryTableRow>()
 
-type BranchEntryTableColumnMeta =
-  | {
-      align?: string
-      numeric?: boolean
-      alphabetic?: boolean
-    }
-  | undefined
-
 const fuzzyFilter: FilterFn<BranchEntryTableRow> = (row, columnId, value, addMeta) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -239,8 +231,8 @@ export const BranchEntryTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const alignCenter = (header.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'center'
-                  const alignRight = (header.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'right'
+                  const alignCenter = header.column.columnDef.meta?.align === 'center'
+                  const alignRight = header.column.columnDef.meta?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -273,8 +265,8 @@ export const BranchEntryTable = ({
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                 {row.getVisibleCells().map((cell) => {
-                  const alignCenter = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'center'
-                  const alignRight = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'right'
+                  const alignCenter = cell.column.columnDef.meta?.align === 'center'
+                  const alignRight = cell.column.columnDef.meta?.align === 'right'
                   return (
                     <TableCell
                       key={cell.id}
@@ -293,8 +285,8 @@ export const BranchEntryTable = ({
               return (
                 <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                   {row.getVisibleCells().map((cell) => {
-                    const alignCenter = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'center'
-                    const alignRight = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'right'
+                    const alignCenter = cell.column.columnDef.meta?.align === 'center'
+                    const alignRight = cell.column.columnDef.meta?.align === 'right'
                     return (
                       <TableCell
                         key={cell.id}

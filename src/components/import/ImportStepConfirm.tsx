@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { AlertTriangleIcon, ChevronLeftIcon } from 'lucide-react'
-import { useForm, useWatch, type Mode, type Resolver } from 'react-hook-form'
+import { useForm, useWatch, type Mode } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
@@ -67,8 +67,7 @@ export const ImportStepConfirm = ({
   } = useForm({
     mode,
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
-    // force type (see https://github.com/react-hook-form/resolvers/issues/807)
-    resolver: yupResolver(schema) as Resolver<ImportWalletConfirmFormValues, unknown, ImportWalletConfirmFormValues>,
+    resolver: yupResolver(schema),
   })
 
   const revealSensitiveInfo = useWatch({ control, name: 'revealSensitiveInfo' })
