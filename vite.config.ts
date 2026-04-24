@@ -11,8 +11,11 @@ const {
   //PUBLIC_URL = '', // TODO: support serving from non-root?
   JAM_BACKEND = BACKEND_NATIVE,
   JMWALLETD_API_PORT = '28183',
-  // jm-ng jmwalletd serves WebSocket on the same port as the HTTPS API.
-  JMWALLETD_WEBSOCKET_PORT = '28183',
+  // jm-ng jmwalletd serves WebSocket on the same port as the HTTPS API, so the
+  // default mirrors JMWALLETD_API_PORT. The env var remains overridable for
+  // setups that still run the reference JoinMarket ``wss_port`` on a separate
+  // TCP port (e.g. 28283).
+  JMWALLETD_WEBSOCKET_PORT = JMWALLETD_API_PORT,
   JMOBWATCH_PORT = '8080',
   JAM_API_PORT = undefined,
 } = process.env
