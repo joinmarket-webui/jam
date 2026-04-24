@@ -1,9 +1,9 @@
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
-import { txFeeUnit } from '@/constants/jm'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
-import type { FeeConfigValues } from '@/lib/feeConfig'
+import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { pseudoRandomInteger } from '@/lib/utils'
 import { toTxFeeFormDefaultValues, createTxFeeFormSchema } from './TxFeeForm.schema'
 import type { SendFormValues } from './types'
@@ -25,7 +25,7 @@ const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   isCoinJoin: true,
   numCollaborators: undefined,
   txFee: {
-    txFeeUnit: txFeeUnit.BLOCKS,
+    txFeeUnit: TX_FEE_UNITS.BLOCKS,
     txFeeInBlocks: undefined,
     txFeeInSatsPerVbyte: undefined,
   },
@@ -35,7 +35,7 @@ export const toSendFormDefaultValues = ({
   feeConfigValues,
   minNumberOfCollaborators,
 }: {
-  feeConfigValues: FeeConfigValues
+  feeConfigValues: JamFeeConfigValues
   minNumberOfCollaborators: number
 }): Partial<SendFormValues> => {
   return {

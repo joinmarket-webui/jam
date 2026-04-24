@@ -1,8 +1,8 @@
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
-import { txFeeUnit, type TxFeeUnit } from '@/constants/jm'
-import type { FeeConfigValues } from '@/lib/feeConfig'
-import { toTxFee } from './feeEstimate'
+import { type TxFeeUnit } from '@/lib/feeConfig'
+import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import type { JamFeeConfigValues } from '@/lib/feeConfig'
 
 export const MIN_TX_FEE_IN_BLOCKS = 1
 export const MAX_TX_FEE_IN_BLOCKS = 1_000
@@ -10,13 +10,12 @@ export const MAX_TX_FEE_IN_BLOCKS = 1_000
 export const MIN_TX_FEE_IN_SATS_PER_VBYTE = 1.001
 export const MAX_TX_FEE_IN_SATS_PER_VBYTE = 350
 
-export const toTxFeeFormDefaultValues = (feeConfigValues: FeeConfigValues): TxFeeFormValues => {
-  const txFee = toTxFee(feeConfigValues)
+export const toTxFeeFormDefaultValues = (feeConfigValues: JamFeeConfigValues): TxFeeFormValues => {
   return {
     txFee: {
-      txFeeUnit: txFee.unit,
-      txFeeInBlocks: txFee.unit === txFeeUnit.BLOCKS ? txFee.value : undefined,
-      txFeeInSatsPerVbyte: txFee.unit === txFeeUnit.SATS_PER_KILO_VBYTE ? txFee.value / 1_000 : undefined,
+      txFeeUnit: feeConfigValues.txFee.txFeeUnit,
+      txFeeInBlocks: feeConfigValues.txFee.txFeeInBlocks,
+      txFeeInSatsPerVbyte: feeConfigValues.txFee.txFeeInSatsPerVbyte,
     },
   }
 }
@@ -47,9 +46,9 @@ export function createTxFeeFormSchema({
     .object({
       txFee: yup
         .object({
-          txFeeUnit: yup.mixed<TxFeeUnit>().oneOf(Object.values(txFeeUnit)).required(),
+          txFeeUnit: yup.mixed<TxFeeUnit>().oneOf(Object.values(TX_FEE_UNITS)).required(),
           txFeeInBlocks: yup.number().when('txFeeUnit', {
-            is: (val: TxFeeUnit) => val === 'blocks',
+            is: (val: TxFeeUnit) => val === TX_FEE_UNITS.BLOCKS,
             then: (schema) =>
               schema
                 .integer(feedbackInvalidTxFeesBlocks)
@@ -64,7 +63,7 @@ export function createTxFeeFormSchema({
                 .optional(),
           }),
           txFeeInSatsPerVbyte: yup.number().when('txFeeUnit', {
-            is: (val: TxFeeUnit) => val === 'sats/kilo-vbyte',
+            is: (val: TxFeeUnit) => val === TX_FEE_UNITS.SATS_PER_VBYTE,
             then: (schema) =>
               schema
                 .transform((value) => (Number.isFinite(value) ? Number(value) : null))

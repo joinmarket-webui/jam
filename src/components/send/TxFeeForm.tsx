@@ -2,7 +2,8 @@ import { useId } from 'react'
 import { BlocksIcon } from 'lucide-react'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { txFeeUnit, type TxFeeUnit } from '@/constants/jm'
+import { type TxFeeUnit } from '@/lib/feeConfig'
+import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { cn } from '@/lib/utils'
 import { Field, FieldDescription, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
@@ -26,7 +27,7 @@ const TxFeeUnitInput = (props: React.ComponentProps<typeof RadioGroup>) => {
     <RadioGroup className="flex items-center justify-center" {...props}>
       <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
         <RadioGroupItem
-          value={txFeeUnit.BLOCKS}
+          value={TX_FEE_UNITS.BLOCKS}
           id={`${id}-blocks`}
           className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
         />
@@ -39,7 +40,7 @@ const TxFeeUnitInput = (props: React.ComponentProps<typeof RadioGroup>) => {
       </div>
       <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
         <RadioGroupItem
-          value={txFeeUnit.SATS_PER_KILO_VBYTE}
+          value={TX_FEE_UNITS.SATS_PER_VBYTE}
           id={`${id}-satsperkvb`}
           className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
         />
@@ -74,7 +75,7 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
     <>
       <div className={cn('flex flex-col gap-4', className)}>
         <Tabs value={txFeeUnitWatch}>
-          <TabsContent value={txFeeUnit.BLOCKS}>
+          <TabsContent value={TX_FEE_UNITS.BLOCKS}>
             <div className="space-y-2">
               <Field data-invalid={errors.txFee?.txFeeInBlocks !== undefined}>
                 <FieldLabel htmlFor="txFeeInBlocks">{t('send.label_tx_fees')}</FieldLabel>
@@ -101,7 +102,7 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
               )}
             </div>
           </TabsContent>
-          <TabsContent value={txFeeUnit.SATS_PER_KILO_VBYTE}>
+          <TabsContent value={TX_FEE_UNITS.SATS_PER_VBYTE}>
             <div className="space-y-2">
               <Field data-invalid={errors.txFee?.txFeeInSatsPerVbyte !== undefined}>
                 <FieldLabel htmlFor="txFeeInSatsPerVbyte">{t('send.label_tx_fees')}</FieldLabel>

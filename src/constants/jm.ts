@@ -66,10 +66,3 @@ export const FEE_CONFIG_KEYS: Record<FeeConfigName, ConfigKey> = {
   max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
   max_sweep_fee_change: { section: 'POLICY', field: 'max_sweep_fee_change' },
 }
-
-export type TxFeeUnit = 'blocks' | 'sats/kilo-vbyte'
-
-export const txFeeUnit = {
-  BLOCKS: 'blocks' as TxFeeUnit,
-  SATS_PER_KILO_VBYTE: 'sats/kilo-vbyte' as TxFeeUnit,
-}

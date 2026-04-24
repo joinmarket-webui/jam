@@ -20,10 +20,11 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { FEE_CONFIG_KEYS, txFeeUnit, type FeeConfigName } from '@/constants/jm'
+import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { getErrorReason } from '@/lib/errorReason'
+import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { cn, factorToPercentage, percentageToFactor } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
@@ -60,12 +61,11 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
   const miningFeeFormSchema = useMemo(() => createMiningFeesFormSchema({ t }), [t])
 
   const miningFeeFormDefaultValues: MiningFeesFormValues = useMemo(() => {
-    const txFeesFactor = Number.parseFloat(feeConfigValues.tx_fees_factor || '')
-    const maxSweepChangeFactor = Number.parseFloat(feeConfigValues.max_sweep_fee_change || '')
     return {
-      txFeesFactorInPercent: Number.isFinite(txFeesFactor) ? factorToPercentage(txFeesFactor) : undefined,
-      maxSweepFeeChangeInPercent: Number.isFinite(maxSweepChangeFactor)
-        ? factorToPercentage(maxSweepChangeFactor)
+      txFeesFactorInPercent:
+        feeConfigValues.txFeeFactor !== undefined ? factorToPercentage(feeConfigValues.txFeeFactor) : undefined,
+      maxSweepFeeChangeInPercent: feeConfigValues.maxSweepFeeChangeFactor
+        ? factorToPercentage(feeConfigValues.maxSweepFeeChangeFactor)
         : undefined,
       ...toTxFeeFormDefaultValues(feeConfigValues),
     }
@@ -85,11 +85,12 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
   const collaboratorFormSchema = useMemo(() => createCollaboratorFeesFormSchema({ t }), [t])
 
   const collaboratorFeesFormDefaultValues: CollaboratorFeesFormValues = useMemo(() => {
-    const maxCjFeeAbsolute = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
-    const maxCjFeeRelative = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
     return {
-      maxCjFeeAbs: Number.isSafeInteger(maxCjFeeAbsolute) ? maxCjFeeAbsolute : undefined,
-      maxCjFeeRelInPercent: Number.isFinite(maxCjFeeRelative) ? factorToPercentage(maxCjFeeRelative) : undefined,
+      maxCjFeeAbs: feeConfigValues.maxCjAbsoluteFee,
+      maxCjFeeRelInPercent:
+        feeConfigValues.maxCjRelativeFee !== undefined
+          ? factorToPercentage(feeConfigValues.maxCjRelativeFee)
+          : undefined,
     }
   }, [feeConfigValues])
 
@@ -138,7 +139,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
         miningData.txFee.txFeeInSatsPerVbyte !== undefined && Number.isFinite(miningData.txFee.txFeeInSatsPerVbyte)
           ? String(Math.ceil(miningData.txFee.txFeeInSatsPerVbyte * 1_000))
           : ''
-      const txFeesValue = miningData.txFee.txFeeUnit === txFeeUnit.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
+      const txFeesValue =
+        miningData.txFee.txFeeUnit === TX_FEE_UNITS.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
       const txFeesFactorValue =
         miningData.txFeesFactorInPercent !== undefined && Number.isFinite(miningData.txFeesFactorInPercent)
           ? String(percentageToFactor(miningData.txFeesFactorInPercent))

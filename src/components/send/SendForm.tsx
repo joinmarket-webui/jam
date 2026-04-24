@@ -13,9 +13,9 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
+import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { cn, delayedPromise, factorToPercentage, isValidNumber, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
@@ -107,7 +107,7 @@ interface SendFormProps {
   onSourceJarChange?: (jarIndex: JarIndex | undefined) => void
   sourceJarLabelButton?: React.ReactElement
   minNumberOfCollaborators?: number
-  feeConfigValues: FeeConfigValues
+  feeConfigValues: JamFeeConfigValues
   forceCoinJoinEnabled?: boolean
   walletFileName: WalletFileName
   jars: Jar[]
