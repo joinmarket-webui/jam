@@ -286,6 +286,12 @@ interface SendFormProps {
   walletBalanceSummary: BalanceSummary
   addressSummary: AddressSummary
   disabled?: boolean
+  /**
+   * True while the maker service is running. jm-ng permits non-collaborative
+   * (direct) sends concurrently but rejects any new coinjoin or tumbler
+   * activity, so the collaborative toggle is hidden/disabled in that case.
+   */
+  makerRunning?: boolean
   debug?: boolean
 }
 
@@ -295,6 +301,7 @@ export function SendForm({
   onSourceJarChange,
   sourceJarLabelButton,
   disabled,
+  makerRunning = false,
   feeConfigValues,
   forceCoinJoinEnabled = false,
   walletFileName,
@@ -345,7 +352,7 @@ export function SendForm({
   const isSweep = useWatch({ control, name: 'amount.isSweep' })
   const isCoinJoin = useWatch({ control, name: 'isCoinJoin' })
   const collaboratorCount = useWatch({ control, name: 'numCollaborators' })
-  const isCoinJoinEnabled = forceCoinJoinEnabled || isCoinJoin === true
+  const isCoinJoinEnabled = !makerRunning && (forceCoinJoinEnabled || isCoinJoin === true)
 
   const destinationAddressInfo = useMemo(() => {
     try {
@@ -719,13 +726,15 @@ export function SendForm({
                         },
                       )
                     }}
-                    disabled={disabled}
+                    disabled={disabled || makerRunning}
                   />
                   <Label htmlFor="switch-is-collaborative-transaction" className="flex flex-col items-start gap-0">
                     <div className="font-medium">{t('send.toggle_coinjoin')}</div>
                     <div className="text-muted-foreground text-sm">{t('send.toggle_coinjoin_subtitle')}</div>
                   </Label>
                 </div>
+
+                {makerRunning && <p className="text-muted-foreground -mt-2 text-sm">{t('send.text_maker_running')}</p>}
 
                 {isCoinJoinEnabled && (
                   <div className="space-y-2">

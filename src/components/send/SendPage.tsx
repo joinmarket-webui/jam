@@ -600,14 +600,17 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
+              // jm-ng allows non-collaborative (direct) sends while the maker service is
+              // running; only collaborative sends (coinjoin) conflict with it. The form
+              // disables the coinjoin toggle separately when ``makerRunning`` is true.
               disabled={
-                jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||
                 utxoSelectionDialog.isApplying ||
                 triggerNonCollaborativeTransaction.isPending ||
                 waitForUtxosToBeSpent.length > 0
               }
+              makerRunning={jmSession?.maker_running === true}
               debug={isDeveloperMode}
               onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
               sourceJarLabelButton={

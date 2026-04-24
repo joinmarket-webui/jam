@@ -410,6 +410,7 @@
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
     "toggle_coinjoin_subtitle": "Collaborative transactions improve the privacy of yourself and others.",
+    "text_maker_running": "Collaborative transactions are unavailable while the maker service is running. Stop earning to send collaboratively.",
     "label_tx_fees": "Mining fee",
     "button_send": "Send",
     "button_send_despite_warning": "Ignore warning & try send",
