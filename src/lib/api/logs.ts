@@ -35,21 +35,24 @@ export const fetchFeatures = async ({ token, signal }: AuthApiRequestContext) =>
 }
 
 /**
- * Fetch log file content from the server
+ * Fetch log content from the server.
+ *
+ * jm-ng exposes a single in-memory log buffer (the daemon does not write log
+ * files); the ``fileName`` parameter is retained for API compatibility but
+ * ignored server-side.
  * @param token - Authentication token
  * @param signal - AbortSignal for cancelling requests
- * @param fileName - Name of the log file to fetch
+ * @param fileName - Deprecated/ignored; present for reference API compat.
  * @returns Promise<Response>
  */
 export const fetchLog = async ({
   token,
   signal,
-  fileName,
+  fileName: _fileName,
 }: AuthApiRequestContext & {
   fileName: string
 }) => {
-  const encodedFileName = encodeURIComponent(fileName)
-  return await fetch(`/jam/api/v0/log/${encodedFileName}`, {
+  return await fetch(`/api/v1/logs`, {
     headers: { ...buildAuthHeaderMap(token) },
     signal,
   }).then((response) => withExpectedContentTypeOrThrow(response, 'text/plain'))
