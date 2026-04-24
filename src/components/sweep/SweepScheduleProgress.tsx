@@ -3,9 +3,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { Balance } from '@/components/ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
-import type { Schedule, ScheduleEntryState } from './scheduleUtils'
-import { toScheduleProgressSummary } from './scheduleUtils'
+import type { Schedule, ScheduleEntryState, SchedulePhase } from './scheduleUtils'
+import { toScheduleProgressSummary, toPhaseStatus, isScheduleTerminal } from './scheduleUtils'
 
 interface SweepScheduleProgressProps {
   schedule: Schedule
@@ -38,6 +39,8 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
   const progress = toScheduleProgressSummary(schedule)
   const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
   const totalSeconds = Math.ceil(progress.totalWaitSeconds)
+  const isTerminal = isScheduleTerminal(schedule)
+  const isSuccessTerminal = isTerminal && toPhaseStatus(schedule.status) === 'completed'
   const highlightedComponents = {
     '1': <span className="font-semibold" />,
     '3': <span className="font-semibold" />,
@@ -73,6 +76,65 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
     return t('scheduler.progress_entry_state_pending')
   }
 
+  const describePhasePlan = (phase: SchedulePhase): React.ReactNode => {
+    const kind = phase.kind
+    if (kind === 'maker_session') {
+      const target = phase.target_cj_count ?? undefined
+      const duration = phase.duration_seconds ?? undefined
+      const parts: string[] = ['Maker session']
+      if (typeof target === 'number') parts.push(`${target} CJs target`)
+      if (typeof duration === 'number') parts.push(`${Math.round(duration)}s max`)
+      return parts.join(' · ')
+    }
+
+    // Taker / bondless burst share the same informational fields.
+    const pieces: React.ReactNode[] = []
+    if (kind === 'bondless_taker_burst') {
+      pieces.push(<span key="kind">Bondless burst</span>)
+      if (typeof phase.cj_count === 'number') pieces.push(<span key="cj">{phase.cj_count} CJs</span>)
+    } else {
+      pieces.push(<span key="kind">Taker CoinJoin</span>)
+    }
+
+    if (typeof phase.mixdepth === 'number') pieces.push(<span key="mix">mixdepth {phase.mixdepth}</span>)
+
+    if (phase.amount === 0) {
+      pieces.push(<span key="amt">sweep</span>)
+    } else if (typeof phase.amount === 'number' && phase.amount > 0) {
+      pieces.push(
+        <span key="amt" className="inline-flex items-center gap-1">
+          <Balance valueString={`${phase.amount}`} convertToUnit="sats" showBalance />
+        </span>,
+      )
+    } else if (typeof phase.amount_fraction === 'number') {
+      pieces.push(<span key="amt">{Math.round(phase.amount_fraction * 100)}% of mixdepth</span>)
+    }
+
+    const destination = phase.destination
+    if (typeof destination === 'string' && destination.length > 0) {
+      pieces.push(
+        <span key="dst">
+          → {destination === 'INTERNAL' ? <em>internal</em> : `${destination.slice(0, 12)}…${destination.slice(-6)}`}
+        </span>,
+      )
+    }
+
+    if (typeof phase.counterparty_count === 'number') {
+      pieces.push(<span key="cp">{phase.counterparty_count} makers</span>)
+    }
+
+    return (
+      <span className="inline-flex flex-wrap items-center gap-x-1 gap-y-0.5">
+        {pieces.map((piece, index) => (
+          <span key={index} className="inline-flex items-center">
+            {index > 0 && <span className="text-muted-foreground/60 px-1">·</span>}
+            {piece}
+          </span>
+        ))}
+      </span>
+    )
+  }
+
   return (
     <Card>
       <CardContent className="space-y-4">
@@ -99,12 +161,20 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
 
         <SweepProgressBar schedule={schedule} />
 
-        {progress.isDone ? (
+        {!isTerminal && progress.isDone ? (
           <Alert variant="success">
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>{t('scheduler.progress_done')}</AlertTitle>
           </Alert>
-        ) : (
+        ) : null}
+
+        {isSuccessTerminal && (
+          <Alert variant="success">
+            <AlertTitle>{t('scheduler.progress_done')}</AlertTitle>
+          </Alert>
+        )}
+
+        {!isTerminal && !progress.isDone && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
@@ -156,35 +226,50 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
         <div className="space-y-2 rounded-lg border p-3">
           <div className="font-medium">{t('scheduler.progress_schedule_info_title')}</div>
           <div className="space-y-2">
-            {progress.entries.map((entry) => (
-              <div
-                key={entry.index}
-                className="bg-muted/30 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-1.5 text-xs"
-              >
-                <div className="font-medium">{t('scheduler.progress_entry_label', { index: entry.index + 1 })}</div>
-                <div className="text-muted-foreground">{toScheduleEntryStateText(entry.state, entry.txid)}</div>
-                <div className="text-muted-foreground">
-                  {entry.isLast
-                    ? t('scheduler.progress_entry_wait_final')
-                    : t('scheduler.progress_entry_wait_before_next', {
-                        wait: formatWaitTime(entry.waitBeforeNextSeconds),
-                      })}
+            {progress.entries.map((entry) => {
+              const phase = schedule.phases[entry.index]
+              return (
+                <div
+                  key={entry.index}
+                  className="bg-muted/30 flex flex-col gap-1 rounded-md px-2 py-1.5 text-xs"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <div className="font-medium">
+                      {t('scheduler.progress_entry_label', { index: entry.index + 1 })}
+                    </div>
+                    <div className="text-muted-foreground">{toScheduleEntryStateText(entry.state, entry.txid)}</div>
+                    <div className="text-muted-foreground">
+                      {entry.isLast
+                        ? t('scheduler.progress_entry_wait_final')
+                        : t('scheduler.progress_entry_wait_before_next', {
+                            wait: formatWaitTime(entry.waitBeforeNextSeconds),
+                          })}
+                    </div>
+                  </div>
+                  {phase !== undefined && (
+                    <div className="text-muted-foreground text-[11px] leading-snug">{describePhasePlan(phase)}</div>
+                  )}
+                  {phase?.error && (
+                    <div className="text-destructive text-[11px] leading-snug break-words">{phase.error}</div>
+                  )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
-        <Button type="button" onClick={() => void onStop()} disabled={isStopping} size="lg" className="w-full">
-          {isStopping ? (
-            <>
-              <Spinner className="motion-reduce:hidden" />
-              {t('scheduler.button_stop')}
-            </>
-          ) : (
-            t('scheduler.button_stop')
-          )}
-        </Button>
+        {!isTerminal && (
+          <Button type="button" onClick={() => void onStop()} disabled={isStopping} size="lg" className="w-full">
+            {isStopping ? (
+              <>
+                <Spinner className="motion-reduce:hidden" />
+                {t('scheduler.button_stop')}
+              </>
+            ) : (
+              t('scheduler.button_stop')
+            )}
+          </Button>
+        )}
       </CardContent>
     </Card>
   )

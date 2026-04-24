@@ -74,8 +74,14 @@ const toPhaseStatus = (value: unknown): SchedulePhaseStatus => {
     : 'pending'
 }
 
+export { toPhaseStatus }
+
 const isTerminalStatus = (status: SchedulePhaseStatus): boolean => {
   return status === 'completed' || status === 'failed' || status === 'cancelled'
+}
+
+export const isScheduleTerminal = (schedule: Schedule): boolean => {
+  return isTerminalStatus(toPhaseStatus(schedule.status))
 }
 
 const phaseTxId = (phase: SchedulePhase): TxId | undefined => {
