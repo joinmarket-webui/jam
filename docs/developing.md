@@ -8,6 +8,53 @@ A place to collect useful information for developers that doesn't really fit els
 
 For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
 
+## Running Jam Against JoinMarket-NG
+
+Jam v2 can talk directly to a separately running `jmwalletd` / orderbook watcher from `joinmarket-ng`. You do not need to run the Jam regtest compose or the reference implementation for this workflow.
+
+### Local dev against a manually started jm-ng backend
+
+1. Start `jmwalletd` from your `joinmarket-ng` checkout so it is reachable on `https://127.0.0.1:28183`.
+2. Start the jm-ng orderbook watcher so it is reachable on `http://127.0.0.1:8080`.
+3. In the Jam repo, run:
+
+```bash
+npm run dev
+```
+
+This uses the default `native` backend mode and proxies:
+
+- `/api` -> `https://127.0.0.1:28183`
+- `/jmws` -> `https://127.0.0.1:28183`
+- `/obwatch` -> `http://127.0.0.1:8080`
+
+### Local dev against the Jam regtest jm-ng services
+
+If you are using Jam's own regtest environment, the initialized jm-ng services are exposed on different host ports. In that case run:
+
+```bash
+npm run jm-ng:dev
+```
+
+That switches the Vite proxy to the jm-ng regtest ports exposed by `docker/regtest/docker-compose.yml`:
+
+- `JMWALLETD_API_PORT=32183`
+- `JMWALLETD_WEBSOCKET_PORT=32283`
+- `JMOBWATCH_PORT=31800`
+
+### Custom jm-ng ports
+
+If your separately running jm-ng services use different ports, you can override them directly:
+
+```bash
+JMWALLETD_API_PORT=28183 \
+JMWALLETD_WEBSOCKET_PORT=28183 \
+JMOBWATCH_PORT=8080 \
+npm run dev
+```
+
+`jmwalletd` serves the HTTPS API and WebSocket on the same port in jm-ng, so `JMWALLETD_API_PORT` and `JMWALLETD_WEBSOCKET_PORT` are usually identical.
+
 ## Linting
 
 We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).

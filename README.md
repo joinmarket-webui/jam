@@ -84,6 +84,8 @@ There are many ways you can contribute: testing, sharing ideas, writing document
 
 Want to get your hands dirty with code? Great! [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/developing.md](docs/developing.md) are where it's at.
 
+For local development against a separately running `joinmarket-ng` backend, start `jmwalletd` and the jm-ng orderbook watcher first, then run Jam with `npm run dev`. Jam's default Vite proxy targets `https://127.0.0.1:28183` for `/api` and `/jmws`, and `http://127.0.0.1:8080` for `/obwatch`. If you are using Jam's regtest jm-ng services instead, run `npm run jm-ng:dev`.
+
 ## 🏛️ History
 
 This project builds upon the [jm-web-client](https://github.com/JoinMarket-Org/jm-web-client) which was developed by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [waxwing](https://github.com/AdamISZ) himself. Many people contributed over time, some of which are [listed here](https://github.com/joinmarket-webui/jam/graphs/contributors).
