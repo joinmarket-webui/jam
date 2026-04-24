@@ -3,6 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
+import { AlertTriangleIcon } from 'lucide-react'
 import { useForm, type Resolver } from 'react-hook-form'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
@@ -235,10 +236,13 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
             <AccordionItem value="collaborator-fees">
               <AccordionTrigger
                 className={cx({
-                  'text-destructive border-red-300': !collaboratorFeesForm.formState.isValid,
+                  'text-destructive': !collaboratorFeesForm.formState.isValid,
                 })}
               >
-                {t('settings.fees.title_max_cj_fee_settings')}
+                <div className="flex items-center gap-2">
+                  {!collaboratorFeesForm.formState.isValid ? <AlertTriangleIcon /> : null}
+                  {t('settings.fees.title_max_cj_fee_settings')}
+                </div>
               </AccordionTrigger>
               <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
                 {isLoadingConfig ? (
@@ -254,10 +258,13 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
             <AccordionItem value="mining-fees">
               <AccordionTrigger
                 className={cx({
-                  'text-destructive border-red-300': !miningFeesForm.formState.isValid,
+                  'text-destructive': !miningFeesForm.formState.isValid,
                 })}
               >
-                {t('settings.fees.title_general_fee_settings')}
+                <div className="flex items-center gap-2">
+                  {!miningFeesForm.formState.isValid ? <AlertTriangleIcon /> : null}
+                  {t('settings.fees.title_general_fee_settings')}
+                </div>
               </AccordionTrigger>
               <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
                 {isLoadingConfig ? (
