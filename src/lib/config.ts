@@ -42,7 +42,13 @@ const createJamAuthenticationMiddleware = () => {
 }
 
 export function unauthorizedResponseInterceptor(response: Response) {
-  if (response.status === 401) {
+  const wwwAuthenticate = response.headers.get('WWW-Authenticate')
+  const isInvalidToken =
+    response.status === 401 &&
+    typeof wwwAuthenticate === 'string' &&
+    wwwAuthenticate.toLowerCase().includes('error="invalid_token"')
+
+  if (isInvalidToken) {
     authStore.getState().clear()
     queryClient.clear()
   }

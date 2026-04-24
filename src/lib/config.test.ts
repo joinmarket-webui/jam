@@ -20,18 +20,37 @@ describe('unauthorizedResponseInterceptor', () => {
     })
   })
 
-  it('should clear auth on 401', () => {
+  it('should clear auth on invalid-token 401', () => {
     expect(authStore.getState().state?.auth?.token).toBe('tok')
 
-    unauthorizedResponseInterceptor(new Response(null, { status: 401 }))
+    unauthorizedResponseInterceptor(
+      new Response(null, {
+        status: 401,
+        headers: { 'WWW-Authenticate': 'Bearer, error="invalid_token", error_description="Invalid token."' },
+      }),
+    )
 
     expect(authStore.getState().state).toBeUndefined()
   })
 
   it('should return the response after clearing', () => {
-    const response = new Response(null, { status: 401 })
+    const response = new Response(null, {
+      status: 401,
+      headers: { 'WWW-Authenticate': 'Bearer, error="invalid_token", error_description="Invalid token."' },
+    })
     const result = unauthorizedResponseInterceptor(response)
     expect(result).toBe(response)
+  })
+
+  it('should not clear auth on non-auth 401 responses', () => {
+    unauthorizedResponseInterceptor(new Response(null, { status: 401 }))
+    unauthorizedResponseInterceptor(
+      new Response(null, {
+        status: 401,
+        headers: { 'WWW-Authenticate': 'Bearer, error="service_state", error_description="Not running."' },
+      }),
+    )
+    expect(authStore.getState().state?.auth?.token).toBe('tok')
   })
 
   it('should not clear auth on non-401 responses', () => {
