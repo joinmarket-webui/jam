@@ -3,6 +3,7 @@ import type { RowData } from '@tanstack/react-table'
 
 export type Currency = 'sats' | 'btc'
 export type AmountSats = number
+export type Factor = number
 export type BitcoinAddress = string
 export type JarIndex = number
 

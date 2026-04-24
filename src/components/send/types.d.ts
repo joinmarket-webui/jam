@@ -1,12 +1,5 @@
-import type { TxFeeUnit } from '@/constants/jm'
 import type { AmountSats, BitcoinAddress, JarIndex } from '@/types/global'
 import type { TxFeeFormValues } from './TxFeeForm.schema'
-
-export type TxFeeValue = number
-export type TxFee = {
-  value: TxFeeValue
-  unit: TxFeeUnit
-}
 
 export type SourceValue = {
   fromJar: JarIndex

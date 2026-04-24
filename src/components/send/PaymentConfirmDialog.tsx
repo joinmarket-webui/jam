@@ -2,10 +2,9 @@ import { useMemo, useState, type ComponentProps, type ReactNode } from 'react'
 import { DialogTitle } from '@radix-ui/react-dialog'
 import { InfoIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
-import { txFeeUnit } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'
-import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { factorToPercentage } from '@/lib/utils'
 import type { WithRequiredProperty } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
@@ -20,7 +19,7 @@ import { estimateMaxCollaboratorFee, useMiningFeeText, type EstimateMaxCollabora
 import type { SendFormValues } from './types'
 
 const maxCollaboraterFee = (
-  feeConfigValues: FeeConfigValues,
+  feeConfigValues: JamFeeConfigValues,
   values: SendFormValues,
 ): EstimateMaxCollaboratorFeeResult | undefined => {
   if (!values.isCoinJoin || values.numCollaborators === undefined) {
@@ -39,7 +38,7 @@ type PaymentConfirmDialogProps = WithRequiredProperty<
   onConfirm: (values: SendFormValues) => Promise<void>
   values: SendFormValues
   meta: {
-    feeConfigValues: FeeConfigValues
+    feeConfigValues: JamFeeConfigValues
     availableUtxos?: Utxo[]
     sourceJar: Jar
     destinationJar?: Jar
@@ -67,13 +66,14 @@ export default function PaymentConfirmDialog({
   }, [values, meta.feeConfigValues])
 
   const miningFeeText = useMiningFeeText({
-    tx_fees: {
-      unit: values.txFee.txFeeUnit,
-      value:
-        (values.txFee.txFeeUnit === txFeeUnit.BLOCKS ? values.txFee.txFeeInBlocks : values.txFee.txFeeInSatsPerVbyte) ||
-        Number.NaN,
+    feeConfigValues: {
+      txFeeFactor: meta.feeConfigValues.txFeeFactor || 0,
+      txFee: {
+        txFeeUnit: values.txFee.txFeeUnit,
+        txFeeInBlocks: values.txFee.txFeeInBlocks,
+        txFeeInSatsPerVbyte: values.txFee.txFeeInSatsPerVbyte,
+      },
     },
-    tx_fees_factor: Number.parseFloat(meta.feeConfigValues.tx_fees_factor || ''),
     t,
   })
 

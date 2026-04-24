@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { buildCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
 
@@ -44,7 +45,7 @@ describe('buildCollaborativeSendRequest', () => {
     const request = buildCollaborativeSendRequest({
       ...baseValues(),
       txFee: {
-        txFeeUnit: 'blocks',
+        txFeeUnit: TX_FEE_UNITS.BLOCKS,
         txFeeInBlocks: 3,
       },
     })
@@ -56,12 +57,12 @@ describe('buildCollaborativeSendRequest', () => {
     const request = buildCollaborativeSendRequest({
       ...baseValues(),
       txFee: {
-        txFeeUnit: 'sats/kilo-vbyte',
-        txFeeInSatsPerVbyte: 3,
+        txFeeUnit: TX_FEE_UNITS.SATS_PER_VBYTE,
+        txFeeInSatsPerVbyte: 1 + 1 / 3,
       },
     })
 
-    expect(request.txfee).toBe(3000)
+    expect(request.txfee).toBe(1_334)
   })
 
   it('throws for invalid destination address', () => {
