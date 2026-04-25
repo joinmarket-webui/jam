@@ -100,8 +100,8 @@ const withI18next = (Story: React.ComponentType, context: GlobalContext) => {
   )
 }
 
+const queryClient = new QueryClient()
 export const withQueryClient = (Story: React.ComponentType) => {
-  const queryClient = new QueryClient()
   return (
     <QueryClientProvider client={queryClient}>
       <Story />
@@ -110,7 +110,6 @@ export const withQueryClient = (Story: React.ComponentType) => {
 }
 
 export const withJamDisplayContent = (Story: React.ComponentType) => {
-  const queryClient = new QueryClient()
   return (
     <JamDisplayContextProvider>
       <Story />
