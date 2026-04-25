@@ -14,7 +14,7 @@ Jam v2 can talk directly to a separately running `jmwalletd` / orderbook watcher
 
 ### Local dev against a manually started jm-ng backend
 
-1. Start `jmwalletd` from your `joinmarket-ng` checkout so it is reachable on `https://127.0.0.1:28183`.
+1. Start `jmwalletd` from your `joinmarket-ng` checkout so it is reachable on `https://127.0.0.1:28183` (HTTPS API) and `wss://127.0.0.1:28283` (WebSocket).
 2. Start the jm-ng orderbook watcher so it is reachable on `http://127.0.0.1:8080`.
 3. In the Jam repo, run:
 
@@ -25,7 +25,7 @@ npm run dev
 This uses the default `native` backend mode and proxies:
 
 - `/api` -> `https://127.0.0.1:28183`
-- `/jmws` -> `https://127.0.0.1:28183`
+- `/jmws` -> `wss://127.0.0.1:28283`
 - `/obwatch` -> `http://127.0.0.1:8080`
 
 ### Local dev against the Jam regtest jm-ng services
@@ -48,12 +48,12 @@ If your separately running jm-ng services use different ports, you can override 
 
 ```bash
 JMWALLETD_API_PORT=28183 \
-JMWALLETD_WEBSOCKET_PORT=28183 \
+JMWALLETD_WEBSOCKET_PORT=28283 \
 JMOBWATCH_PORT=8080 \
 npm run dev
 ```
 
-`jmwalletd` serves the HTTPS API and WebSocket on the same port in jm-ng, so `JMWALLETD_API_PORT` and `JMWALLETD_WEBSOCKET_PORT` are usually identical.
+`jmwalletd` exposes the HTTPS API and the WebSocket on separate TCP ports in jm-ng (`28183` and `28283` by default), so set both env vars when overriding.
 
 ## Linting
 

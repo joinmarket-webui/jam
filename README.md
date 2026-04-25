@@ -84,7 +84,7 @@ There are many ways you can contribute: testing, sharing ideas, writing document
 
 Want to get your hands dirty with code? Great! [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/developing.md](docs/developing.md) are where it's at.
 
-For local development against a separately running `joinmarket-ng` backend, start `jmwalletd` and the jm-ng orderbook watcher first, then run Jam with `npm run dev`. Jam's default Vite proxy targets `https://127.0.0.1:28183` for `/api` and `/jmws`, and `http://127.0.0.1:8080` for `/obwatch`. If you are using Jam's regtest jm-ng services instead, run `npm run jm-ng:dev`.
+For local development against a separately running `joinmarket-ng` backend, start `jmwalletd` and the jm-ng orderbook watcher first, then run Jam with `npm run dev`. Jam's default Vite proxy targets `https://127.0.0.1:28183` for `/api`, `wss://127.0.0.1:28283` for `/jmws`, and `http://127.0.0.1:8080` for `/obwatch`. If you are using Jam's regtest jm-ng services instead, run `npm run jm-ng:dev`.
 
 ## 🏛️ History
 
