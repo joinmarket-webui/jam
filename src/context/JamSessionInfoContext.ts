@@ -7,6 +7,7 @@ export interface RescanInfo {
 }
 
 interface JamSessionInfoContextType {
+  blockHeight?: number
   rescanInfo: RescanInfo
   setRescanInfo: Dispatch<SetStateAction<RescanInfo>>
 }

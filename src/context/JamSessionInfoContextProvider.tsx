@@ -19,11 +19,11 @@ export const JamSessionInfoContextProvider = ({
   walletFileName,
   children,
 }: PropsWithChildren<JamSessionInfoContextProviderProps>) => {
-  const jmSession = useStore(jmSessionStore, (state) => state)
+  const { state } = useStore(jmSessionStore, (state) => state)
   const client = useApiClient()
   const [rescanInfo, setRescanInfo] = useState<RescanInfo>({
     updatedAt: 0,
-    rescanning: jmSession.state?.rescanning === true,
+    rescanning: state?.rescanning === true,
   })
 
   const getrescaninfoQueryOptions = useMemo(
@@ -42,7 +42,7 @@ export const JamSessionInfoContextProvider = ({
     }),
     refetchInterval: JAM_RESCAN_PROGRESS_INTERVAL,
     refetchIntervalInBackground: true,
-    enabled: rescanInfo.rescanning || jmSession.state?.rescanning === true,
+    enabled: rescanInfo.rescanning || state?.rescanning === true,
   })
 
   // only update rescan info if data is available and the current rescan info is younger than the latest data from the query
@@ -52,8 +52,8 @@ export const JamSessionInfoContextProvider = ({
     (rescanInfo.updatedAt === undefined || rescanInfo.updatedAt < getrescaninfoQuery.dataUpdatedAt)
 
   if (shouldUpdateRescanInfo) {
-    const isRescanning = getrescaninfoQuery.data.rescanning || jmSession.state?.rescanning === true
-    const rescanningFinished = getrescaninfoQuery.data.rescanning === false && jmSession.state?.rescanning === true
+    const isRescanning = getrescaninfoQuery.data.rescanning || state?.rescanning === true
+    const rescanningFinished = getrescaninfoQuery.data.rescanning === false && state?.rescanning === true
 
     setRescanInfo({
       updatedAt: getrescaninfoQuery.dataUpdatedAt,
@@ -63,6 +63,7 @@ export const JamSessionInfoContextProvider = ({
   }
 
   const value = {
+    blockHeight: state?.block_height,
     rescanInfo,
     setRescanInfo,
   }
