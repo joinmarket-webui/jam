@@ -194,7 +194,7 @@ function App() {
                 <JamWalletInfoContextProvider walletFileName={walletFileName!}>
                   {walletFileName && (
                     <>
-                      <WalletInfoAutoReload walletFileName={walletFileName} />
+                      <WalletInfoAutoReload />
                     </>
                   )}
                   <Outlet />
@@ -453,20 +453,12 @@ const RELOAD_WALLET_INFO_DELAY: {
  * This might change in the future but is okay for now - components can
  * always trigger a reload on demand and inform the user as they see fit.
  */
-const WalletInfoAutoReload = ({ walletFileName }: { walletFileName: WalletFileName }) => {
+const WalletInfoAutoReload = () => {
   const { rescanInfo: currentRescanInfo } = useRescanStatus()
   const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
   const previousRescanning = useRef<boolean>(currentRescanInfo.rescanning)
 
-  useEffect(() => {
-    const delayBefore: Milliseconds = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
-    console.info('Trigger refetch looking for funds after wallet change with delay %d...', delayBefore)
-    refetchWalletBalance({ delayBefore }).catch((error: unknown) => {
-      console.error('Error while auto-reloading wallet info after wallet change', error)
-    })
-  }, [walletFileName, refetchWalletBalance])
-
-  useEffect(() => {
+  useEffect(function refetchWalletInfoAfterRescanFinished() {
     const wasRescanning = previousRescanning.current
     const isRescanning = currentRescanInfo.rescanning
     previousRescanning.current = isRescanning
@@ -476,22 +468,20 @@ const WalletInfoAutoReload = ({ walletFileName }: { walletFileName: WalletFileNa
     }
 
     const delayBefore: Milliseconds = RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
-    console.info('Trigger refetch looking for funds after rescan or utxo changes with delay %d...', delayBefore)
+    console.info('Trigger refetch looking for funds AFTER_RESCAN with delay %d...', delayBefore)
     refetchWalletBalance({ delayBefore }).catch((error: unknown) => {
       console.error('Error while auto-reloading wallet info after rescanning finished', error)
     })
-  }, [currentRescanInfo.rescanning, refetchWalletBalance])
+  }, [refetchWalletBalance, currentRescanInfo.rescanning])
 
-  useEffect(() => {
-    if (!utxosHashHex) return
-    if (currentRescanInfo.rescanning) return
-
+  useEffect(function refetchWalletInfoAfterUtxoChange() {
     const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
+    console.info('Trigger refetch looking for funds AFTER_UTXO_CHANGE (%s) with delay %d...', utxosHashHex, delayBefore)
 
-    console.info('UTXO changed → refetching...')
-
-    refetchWalletBalance({ delayBefore }).catch(console.error)
-  }, [utxosHashHex, currentRescanInfo.rescanning])
+    refetchWalletBalance({ delayBefore }).catch((error: unknown) => {
+      console.error('Error while auto-reloading wallet info after utxo change finished', error)
+    })
+  }, [refetchWalletBalance, utxosHashHex])
 
   return <></>
 }
