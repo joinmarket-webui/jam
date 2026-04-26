@@ -77,6 +77,8 @@ export type AccountSummary = {
   [key: AccountMeta['jarIndex']]: AccountMeta
 }
 
+export type WalletRefetchOptions = { force?: boolean; delayBefore?: Milliseconds; signal?: AbortSignal }
+
 interface JamWalletInfoContextType {
   walletName: string | null
   walletBalanceSummary: WalletBalanceSummary
@@ -95,7 +97,7 @@ interface JamWalletInfoContextType {
   isLoading: boolean
   isFetching: boolean
   error: Error | ErrorMessage | null
-  refetch: (options?: { force?: boolean; delayBefore?: Milliseconds }) => Promise<BalanceSummary>
+  refetch: (options?: WalletRefetchOptions) => Promise<BalanceSummary>
 
   utxosQueryResult: UseQueryUtxosResult['queryResult']
   displayWalletQueryResult: UseQueryDisplayWalletResult['queryResult']

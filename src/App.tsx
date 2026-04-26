@@ -440,8 +440,8 @@ const RELOAD_WALLET_INFO_DELAY: {
   // takes effect after rescanning the chain, which should happen quite infrequently.
   AFTER_RESCAN: 8_000,
 
-  // No delay is needed after utxo change (e.g. normal unlock of wallet)
-  AFTER_UTXO_CHANGE: 0,
+  // Small delay is sufficient after utxo change (e.g. normal unlock of wallet)
+  AFTER_UTXO_CHANGE: 210,
 }
 
 /**
@@ -455,33 +455,51 @@ const RELOAD_WALLET_INFO_DELAY: {
  */
 const WalletInfoAutoReload = () => {
   const { rescanInfo: currentRescanInfo } = useRescanStatus()
-  const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
   const previousRescanning = useRef<boolean>(currentRescanInfo.rescanning)
 
-  useEffect(function refetchWalletInfoAfterRescanFinished() {
-    const wasRescanning = previousRescanning.current
-    const isRescanning = currentRescanInfo.rescanning
-    previousRescanning.current = isRescanning
+  const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
 
-    if (!(wasRescanning === true && isRescanning === false)) {
-      return
-    }
+  useEffect(
+    function refetchWalletInfoAfterRescanFinished() {
+      const wasRescanning = previousRescanning.current
+      const isRescanning = currentRescanInfo.rescanning
+      previousRescanning.current = isRescanning
 
-    const delayBefore: Milliseconds = RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
-    console.info('Trigger refetch looking for funds AFTER_RESCAN with delay %d...', delayBefore)
-    refetchWalletBalance({ delayBefore }).catch((error: unknown) => {
-      console.error('Error while auto-reloading wallet info after rescanning finished', error)
-    })
-  }, [refetchWalletBalance, currentRescanInfo.rescanning])
+      const rescanFinished = wasRescanning === true && isRescanning === false
+      if (!rescanFinished) {
+        console.debug('Abort refetching: Rescan did not finish yet.')
+        return
+      }
 
-  useEffect(function refetchWalletInfoAfterUtxoChange() {
-    const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
-    console.info('Trigger refetch looking for funds AFTER_UTXO_CHANGE (%s) with delay %d...', utxosHashHex, delayBefore)
+      const delayBefore: Milliseconds = RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
+      console.debug('Trigger refetch looking for funds AFTER_RESCAN with delay %d...', delayBefore)
 
-    refetchWalletBalance({ delayBefore }).catch((error: unknown) => {
-      console.error('Error while auto-reloading wallet info after utxo change finished', error)
-    })
-  }, [refetchWalletBalance, utxosHashHex])
+      const abortCtrl = new AbortController()
+      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
+        console.warn('Error while auto-reloading wallet info after rescanning finished', error)
+      })
+      return () => abortCtrl.abort('useEffect(AFTER_RESCAN) ended')
+    },
+    [refetchWalletBalance, currentRescanInfo.rescanning],
+  )
+
+  useEffect(
+    function refetchWalletInfoAfterUtxoChange() {
+      const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
+      console.debug(
+        'Trigger refetch looking for funds AFTER_UTXO_CHANGE (%s) with delay %d...',
+        utxosHashHex,
+        delayBefore,
+      )
+
+      const abortCtrl = new AbortController()
+      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
+        console.error('Error while auto-reloading wallet info after utxo change finished', error)
+      })
+      return () => abortCtrl.abort('useEffect(AFTER_UTXO_CHANGE) ended')
+    },
+    [refetchWalletBalance, utxosHashHex],
+  )
 
   return <></>
 }
