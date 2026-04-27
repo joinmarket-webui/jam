@@ -189,21 +189,6 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
         numeric: true,
       },
     }),
-    columnHelper.accessor<'utxo.address', UtxoTableEntry['utxo']['address']>('utxo.address', {
-      header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
-      sortingFn: (a, b) => {
-        const val = a.original.utxo.address.localeCompare(b.original.utxo.address)
-        if (val !== 0) return val
-        // tie-break using confirmations
-        const aid = Number(a.original.utxo.confirmations)
-        const bid = Number(b.original.utxo.confirmations)
-        return aid - bid
-      },
-      cell: (info) => <Address value={info.getValue()} className="text-sm" copyable={true} />,
-      meta: {
-        alphabetic: true,
-      },
-    }),
     columnHelper.accessor('utxo.confirmations', {
       header: () => t('jar_details.utxo_list.column_title_confirmations'),
       cell: (info) => <>{info.getValue()}</>,
@@ -229,6 +214,21 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
         </div>
       ),
       enableSorting: false,
+    }),
+    columnHelper.accessor<'utxo.address', UtxoTableEntry['utxo']['address']>('utxo.address', {
+      header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
+      sortingFn: (a, b) => {
+        const val = a.original.utxo.address.localeCompare(b.original.utxo.address)
+        if (val !== 0) return val
+        // tie-break using confirmations
+        const aid = Number(a.original.utxo.confirmations)
+        const bid = Number(b.original.utxo.confirmations)
+        return aid - bid
+      },
+      cell: (info) => <Address value={info.getValue()} className="text-sm" copyable={true} />,
+      meta: {
+        alphabetic: true,
+      },
     }),
     {
       id: 'expand-col',
