@@ -62,8 +62,16 @@ export function useCreateFidelityBondWizard(
   const watchedLockdate = useWatch({ control: form.control, name: 'lockdate' })
   const selectedLockdate = watchedLockdate ?? ''
   const selectedJarIndex = useWatch({ control: form.control, name: 'jarIndex' })
-  const selectedUtxoIds = useWatch({ control: form.control, name: 'utxoIds' }) ?? []
-  const confirmationChecked = useWatch({ control: form.control, name: 'confirmationAccepted' }) ?? false
+  const selectedUtxoIds = useWatch({
+    control: form.control,
+    name: 'utxoIds',
+    defaultValue: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES.utxoIds,
+  })
+  const confirmationChecked = useWatch({
+    control: form.control,
+    name: 'confirmationAccepted',
+    defaultValue: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES.confirmationAccepted,
+  })
 
   const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
   const monthOptions = useMemo(() => getMonthOptions(), [])
