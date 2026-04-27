@@ -19,7 +19,9 @@ describe('createFidelityBondFormSchema', () => {
   it('provides defaults for the wizard form', () => {
     expect(CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES).toEqual({
       lockdate: undefined,
-      jarIndex: undefined,
+      source: {
+        fromJar: undefined,
+      },
       utxoIds: [],
       confirmationAccepted: false,
     })
@@ -29,13 +31,17 @@ describe('createFidelityBondFormSchema', () => {
     await expect(
       validate({
         lockdate: '2026-07' as fb.Lockdate,
-        jarIndex: 0,
+        source: {
+          fromJar: 0,
+        },
         utxoIds: ['txid:0'],
         confirmationAccepted: true,
       }),
     ).resolves.toEqual({
       lockdate: '2026-07',
-      jarIndex: 0,
+      source: {
+        fromJar: 0,
+      },
       utxoIds: ['txid:0'],
       confirmationAccepted: true,
     })
@@ -45,7 +51,7 @@ describe('createFidelityBondFormSchema', () => {
     await expect(validate(CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES)).rejects.toMatchObject({
       inner: [
         expect.objectContaining({ path: 'lockdate' }),
-        expect.objectContaining({ path: 'jarIndex' }),
+        expect.objectContaining({ path: 'source.fromJar' }),
         expect.objectContaining({ path: 'utxoIds' }),
         expect.objectContaining({ path: 'confirmationAccepted' }),
       ],
@@ -56,7 +62,9 @@ describe('createFidelityBondFormSchema', () => {
     await expect(
       validate({
         lockdate: '2025-01' as fb.Lockdate,
-        jarIndex: 0,
+        source: {
+          fromJar: 0,
+        },
         utxoIds: ['txid:0'],
         confirmationAccepted: true,
       }),
@@ -69,12 +77,14 @@ describe('createFidelityBondFormSchema', () => {
     await expect(
       validate({
         lockdate: '2026-07' as fb.Lockdate,
-        jarIndex: 99,
+        source: {
+          fromJar: 99,
+        },
         utxoIds: ['txid:0'],
         confirmationAccepted: true,
       }),
     ).rejects.toMatchObject({
-      inner: [expect.objectContaining({ path: 'jarIndex' })],
+      inner: [expect.objectContaining({ path: 'source.fromJar' })],
     })
   })
 })

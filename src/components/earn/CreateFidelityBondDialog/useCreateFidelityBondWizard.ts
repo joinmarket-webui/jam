@@ -61,7 +61,7 @@ export function useCreateFidelityBondWizard(
 
   const watchedLockdate = useWatch({ control: form.control, name: 'lockdate' })
   const selectedLockdate = watchedLockdate ?? ''
-  const selectedJarIndex = useWatch({ control: form.control, name: 'jarIndex' })
+  const selectedJarIndex = useWatch({ control: form.control, name: 'source.fromJar' })
   const selectedUtxoIds = useWatch({
     control: form.control,
     name: 'utxoIds',
@@ -91,7 +91,7 @@ export function useCreateFidelityBondWizard(
     form.setValue('lockdate', lockdate || undefined, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
   }
   const setSelectedJarIndex = (jarIndex: JarIndex | undefined) => {
-    form.setValue('jarIndex', jarIndex, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+    form.setValue('source.fromJar', jarIndex, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
   }
   const setSelectedUtxoIds = (utxoIds: string[]) => {
     form.setValue('utxoIds', utxoIds, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
@@ -261,7 +261,7 @@ export function useCreateFidelityBondWizard(
         }
         break
       case 'select_jar':
-        if (!(await form.trigger('jarIndex'))) return
+        if (!(await form.trigger('source.fromJar'))) return
         setUtxoPage(0)
         setStep('select_utxos')
         break
