@@ -1,4 +1,4 @@
-import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { describe, expect, it } from 'vitest'
 import {
   isScheduleLikelyCompletedSuccessfully,

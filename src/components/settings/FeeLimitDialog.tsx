@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type ComponentProps } from 'react'
-import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { configsettingMutation } from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { useTranslation, Trans } from 'react-i18next'

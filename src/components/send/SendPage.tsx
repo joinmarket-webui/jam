@@ -3,8 +3,8 @@ import {
   directsendMutation,
   docoinjoinMutation,
   stopcoinjoinOptions,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { DirectSendRequest, DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { DirectSendRequest, DirectSendResponse } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { AlertTriangleIcon, HourglassIcon, ListFilterIcon } from 'lucide-react'

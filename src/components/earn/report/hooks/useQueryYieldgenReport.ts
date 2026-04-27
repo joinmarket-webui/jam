@@ -1,5 +1,5 @@
-import { yieldgenreportQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { yieldgenreport } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { yieldgenreportQueryKey } from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
+import { yieldgenreport } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { yieldgenReportToEarnReportEntries } from '@/components/earn/report/hooks/earnReportParser'
 import { useApiClient } from '@/hooks/useApiClient'

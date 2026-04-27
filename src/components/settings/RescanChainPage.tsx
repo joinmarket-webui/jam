@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup'
-import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { rescanblockchain } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowLeftIcon, PackageSearchIcon, RefreshCwIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'

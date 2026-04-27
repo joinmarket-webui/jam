@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { ChevronLeftIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'

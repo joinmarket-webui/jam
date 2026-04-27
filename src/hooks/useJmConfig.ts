@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { configgetMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { configgetMutation } from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import type { ConfigKey, ConfigValue } from '@/constants/jm'

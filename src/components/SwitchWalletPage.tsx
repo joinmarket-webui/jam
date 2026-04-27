@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { listwalletsOptions, lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { listwalletsOptions, lockwalletOptions } from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { LockIcon, RefreshCwIcon, UnlockIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'

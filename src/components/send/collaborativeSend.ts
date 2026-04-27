@@ -1,4 +1,4 @@
-import type { DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { DoCoinjoinRequest } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { isValidNumber } from '@/lib/utils'
 import type { SendFormValues } from './types'

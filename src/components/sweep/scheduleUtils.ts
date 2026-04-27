@@ -1,4 +1,4 @@
-import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import type { TxId } from '@/store/jmTxStore'
 
 // Phase ``status`` values mirror :class:`jm_tumbler.plan.PhaseStatus` on the

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
-import { getaddressQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getaddressQueryKey } from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
+import { getaddress } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, HatGlassesIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'

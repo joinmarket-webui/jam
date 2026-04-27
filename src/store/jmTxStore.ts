@@ -1,4 +1,4 @@
-import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { DirectSendResponse } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { createStore } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { authStore } from '@/store/authStore'
 import { unauthorizedResponseInterceptor } from './config'
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts', () => ({
+vi.mock('@joinmarket-ng/joinmarket-ng-api-ts', () => ({
   createClient: vi.fn(() => ({
     interceptors: {
       request: { use: vi.fn() },

@@ -1,5 +1,5 @@
 import { type PropsWithChildren } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { LockKeyholeIcon, LogOutIcon, PackageSearchIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'

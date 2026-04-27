@@ -6,8 +6,8 @@ import {
   listwalletsOptions,
   recoverwalletMutation,
   unlockwalletMutation,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { lockwallet, rescanblockchain, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
+import { lockwallet, rescanblockchain, session } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { CircleCheckBigIcon, KeyRoundIcon, WalletIcon, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'

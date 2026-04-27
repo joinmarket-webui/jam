@@ -4,8 +4,8 @@ import {
   tumblerplanMutation,
   tumblerstartMutation,
   tumblerstopMutation,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { tumblerstatus, type TumblerPlanRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-ng/joinmarket-ng-api-ts/@tanstack/react-query'
+import { tumblerstatus, type TumblerPlanRequest } from '@joinmarket-ng/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
