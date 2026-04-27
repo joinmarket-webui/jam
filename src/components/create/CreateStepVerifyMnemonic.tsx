@@ -97,7 +97,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
       </div>
 
       <div
-        className={cn('h-1 min-h-[150px] rounded-lg border-2 border-dashed p-2.5 transition-colors', {
+        className={cn('rounded-lg border-2 border-dashed p-2.5 transition-colors', {
           'border-destructive/50': wrongButtonIndex !== undefined,
           'border-muted-foreground/20': wrongButtonIndex === undefined,
           'border-green-300/50 bg-green-600/5': allSelected && isCorrect,
