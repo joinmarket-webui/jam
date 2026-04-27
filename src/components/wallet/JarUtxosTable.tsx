@@ -332,12 +332,6 @@ export const JarUtxosTable = ({
   }, [table, pinnedEntries])
 
   useEffect(() => {
-    if (!initialRowSelection) return
-    setRowSelection(initialRowSelection)
-    onRowSelectionChange?.(initialRowSelection)
-  }, [initialRowSelection, onRowSelectionChange])
-
-  useEffect(() => {
     if (isShowAll) {
       table.setPageSize(tableEntries.length || 1)
     }
