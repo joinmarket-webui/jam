@@ -9,9 +9,10 @@ import {
 
 const t = ((key: string) => key) as unknown as TFunction<'translation', undefined>
 const lockdateOptions = [{ value: '2026-07' as fb.Lockdate }, { value: '2026-08' as fb.Lockdate }]
+const jarIndexes = [0, 1]
 
 const validate = async (values: CreateFidelityBondFormValues) => {
-  return await createFidelityBondFormSchema(lockdateOptions, t).validate(values, { abortEarly: false })
+  return await createFidelityBondFormSchema(lockdateOptions, jarIndexes, t).validate(values, { abortEarly: false })
 }
 
 describe('createFidelityBondFormSchema', () => {
@@ -61,6 +62,19 @@ describe('createFidelityBondFormSchema', () => {
       }),
     ).rejects.toMatchObject({
       inner: [expect.objectContaining({ path: 'lockdate' })],
+    })
+  })
+
+  it('rejects jar index values that are not in the available jar list', async () => {
+    await expect(
+      validate({
+        lockdate: '2026-07' as fb.Lockdate,
+        jarIndex: 99,
+        utxoIds: ['txid:0'],
+        confirmationAccepted: true,
+      }),
+    ).rejects.toMatchObject({
+      inner: [expect.objectContaining({ path: 'jarIndex' })],
     })
   })
 })

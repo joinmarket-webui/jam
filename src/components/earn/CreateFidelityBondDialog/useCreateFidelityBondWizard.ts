@@ -44,7 +44,11 @@ export function useCreateFidelityBondWizard(
   const [error, setError] = useState<string | undefined>()
 
   const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
-  const formSchema = useMemo(() => createFidelityBondFormSchema(lockdateOptions, t), [lockdateOptions, t])
+  const jarIndexes = useMemo(() => walletInfo.jars.map((jar) => jar.jarIndex), [walletInfo.jars])
+  const formSchema = useMemo(
+    () => createFidelityBondFormSchema(lockdateOptions, jarIndexes, t),
+    [lockdateOptions, jarIndexes, t],
+  )
   const form = useForm<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>({
     mode: 'onChange',
     defaultValues: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES,
