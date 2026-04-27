@@ -590,7 +590,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||
-                utxoSelectionDialog.isApplying ||
+                utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
                 waitForUtxosToBeSpent.length > 0
               }

@@ -56,7 +56,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     retry: false,
   })
 
-  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isApplying } = useMutation({
+  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isSubmitting } = useMutation({
     mutationFn: async ({ utxosToFreeze, utxosToUnfreeze }: { utxosToFreeze: Utxo[]; utxosToUnfreeze: Utxo[] }) => {
       const [freezeResult, unfreezeResult] = await Promise.all([
         Promise.allSettled(
@@ -99,7 +99,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     setOpen(true)
   }
 
-  const onApplyUtxoSelection = async () => {
+  const onSubmit = async () => {
     if (!sourceJar) return
 
     const selectedUtxoIds = new Set(selectedUtxos.map((it) => it.utxo))
@@ -168,25 +168,25 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
 
   const dialogProps: UtxoSelectionDialogProps = {
     open,
-    isApplying,
+    isSubmitting,
     selectedCount: selectedUtxos.length,
     filter,
     tableEntries,
     initialRowSelection,
-    enableRowSelection: isApplying ? false : undefined,
+    enableRowSelection: isSubmitting ? false : undefined,
     onOpenChange: (nextOpen: boolean) => {
-      if (isApplying) return
+      if (isSubmitting) return
       setOpen(nextOpen)
     },
     onFilterChange: setFilter,
     onRowSelectionChange: setRowSelection,
-    onApply: () => void onApplyUtxoSelection(),
+    onSubmit,
   }
 
   return {
-    isApplying,
+    isSubmitting,
     onOpenUtxoSelector,
-    utxoSelectorDisabled: isApplying || sourceJar === undefined || sourceJar.utxos.length === 0,
+    utxoSelectorDisabled: isSubmitting || sourceJar === undefined || sourceJar.utxos.length === 0,
     dialogProps,
   }
 }
