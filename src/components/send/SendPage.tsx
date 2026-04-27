@@ -39,6 +39,7 @@ import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
+import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
@@ -81,6 +82,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
+  const [sourceJarIndex, setSourceJarIndex] = useState<JarIndex>()
   // TODO: "Lifecycle" or state management should be handled outside of this component
   const collaborativeLifecycleRef = useRef({
     awaitingCompletion: false,
@@ -108,17 +110,16 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     refetchWalletInfoRef.current = refetchWalletInfo
   }, [refetchWalletInfo])
 
-  const utxoSelectionDialog = useUtxoSelectionDialog({
-    walletFileName,
-    jars,
-    addressSummary,
-  })
-
   const sourceJar = useMemo(() => {
-    const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
     if (sourceJarIndex === undefined) return
     return jars.find((it) => it.jarIndex === sourceJarIndex)
-  }, [jars, sendFromValuesAwaitingConfirmation])
+  }, [jars, sourceJarIndex])
+
+  const utxoSelectionDialog = useUtxoSelectionDialog({
+    walletFileName,
+    sourceJar,
+    addressSummary,
+  })
 
   const availableUtxosForPayment = useMemo(() => {
     return (sourceJar?.utxos || []).filter((utxo) => !utxo.frozen).toSorted((a, b) => a.confirmations - b.confirmations)
@@ -594,7 +595,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}
-              onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
+              onSourceJarChange={setSourceJarIndex}
               sourceJarLabelButton={
                 <Button
                   type="button"
