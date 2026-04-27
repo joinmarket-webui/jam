@@ -22,6 +22,7 @@ import {
   type OnChangeFn,
   type HeaderContext,
   type CellContext,
+  type RowSelectionOptions,
 } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import { ChevronDownIcon, SnowflakeIcon } from 'lucide-react'
@@ -30,6 +31,7 @@ import { toast } from 'sonner'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import * as fb from '@/lib/fidelityBondUtils'
 import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
@@ -249,6 +251,10 @@ const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
   ]
 }
 
+const defaultRowSelection: RowSelectionOptions<UtxoTableEntry>['enableRowSelection'] = (row: Row<UtxoTableEntry>) => {
+  return !fb.utxo.isFidelityBond(row.original.utxo)
+}
+
 interface JarUtxosTableProps {
   globalFilter?: string
   tableEntries: UtxoTableEntry[]
@@ -264,7 +270,7 @@ export const JarUtxosTable = ({
   tableEntries,
   pinnedEntries,
   initialRowSelection,
-  enableRowSelection,
+  enableRowSelection = defaultRowSelection,
   onChange,
   onRowSelectionChange,
 }: JarUtxosTableProps) => {
@@ -302,7 +308,7 @@ export const JarUtxosTable = ({
     },
     globalFilterFn: 'fuzzy' as FilterFnOption<UtxoTableEntry>,
     keepPinnedRows: true,
-    enableRowSelection: enableRowSelection ?? true,
+    enableRowSelection,
     enableMultiRowSelection: true,
     autoResetPageIndex: true,
     getRowId: (row) => row.utxo.utxo,

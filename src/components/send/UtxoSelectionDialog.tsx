@@ -13,7 +13,7 @@ export interface UtxoSelectionDialogProps {
   filter: string
   tableEntries: UtxoTableEntry[]
   initialRowSelection: RowSelectionState
-  enableRowSelection: boolean | ((row: Row<UtxoTableEntry>) => boolean)
+  enableRowSelection?: boolean | ((row: Row<UtxoTableEntry>) => boolean)
   onOpenChange: (open: boolean) => void
   onFilterChange: (value: string) => void
   onRowSelectionChange: OnChangeFn<RowSelectionState>

@@ -173,7 +173,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     filter,
     tableEntries,
     initialRowSelection,
-    enableRowSelection: (row) => !fb.utxo.isFidelityBond(row.original.utxo),
+    enableRowSelection: isApplying ? false : undefined,
     onOpenChange: (nextOpen: boolean) => {
       if (isApplying) return
       setOpen(nextOpen)
