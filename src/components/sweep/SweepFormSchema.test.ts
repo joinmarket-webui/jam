@@ -9,6 +9,7 @@ import {
 } from './SweepFormSchema'
 
 const t = ((key: string) => key) as unknown as TFunction<'translation', undefined>
+const validRegtestAddress = 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx'
 
 const validate = async (values: SweepFormValues, addressSummary = {} as AddressSummary) => {
   return await sweepFormSchema(addressSummary, t).validate(values, { abortEarly: false })
@@ -22,9 +23,9 @@ describe('sweepFormSchema', () => {
   it('normalizes destination addresses', () => {
     expect(
       getSweepDestinationAddresses({
-        destinations: [{ address: '  1BoatSLRHtKNngkdXEeobR76b53LETtpyT  ' }],
+        destinations: [{ address: `  ${validRegtestAddress}  ` }],
       }),
-    ).toEqual(['1BoatSLRHtKNngkdXEeobR76b53LETtpyT'])
+    ).toEqual([validRegtestAddress])
   })
 
   it('rejects invalid addresses per destination field', async () => {
@@ -47,11 +48,9 @@ describe('sweepFormSchema', () => {
   })
 
   it('rejects duplicate destination addresses', async () => {
-    const validAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
-
     await expect(
       validate({
-        destinations: [{ address: validAddress }, { address: validAddress }],
+        destinations: [{ address: validRegtestAddress }, { address: validRegtestAddress }],
       }),
     ).rejects.toMatchObject({
       inner: [
@@ -68,7 +67,7 @@ describe('sweepFormSchema', () => {
   })
 
   it('rejects reused wallet addresses', async () => {
-    const usedAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
+    const usedAddress = validRegtestAddress
     const addressSummary = {
       [usedAddress]: {
         used: true,
