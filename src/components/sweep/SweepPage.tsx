@@ -97,10 +97,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }, [allUtxos])
 
   const schema = useMemo(() => sweepFormSchema(walletInfo.addressSummary, t), [walletInfo.addressSummary, t])
+  const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
   const form = useForm<SweepFormValues, unknown, SweepFormValues>({
     mode: 'onChange',
     defaultValues: {
-      destinations: buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD),
+      destinations: initialDestinations,
     },
     resolver: yupResolver(schema as yup.AnyObjectSchema) as Resolver<SweepFormValues, unknown, SweepFormValues>,
   })
@@ -111,7 +112,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   })
   const { trigger } = form
 
-  const destinationValues = useWatch({ control: form.control, name: 'destinations' }) ?? []
+  const destinationValues = useWatch({
+    control: form.control,
+    name: 'destinations',
+    defaultValue: initialDestinations,
+  })
   const normalizedDestinationAddresses = useMemo(
     () => getSweepDestinationAddresses({ destinations: destinationValues }),
     [destinationValues],
