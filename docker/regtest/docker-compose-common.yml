@@ -63,7 +63,7 @@ services:
       start_interval: 3s
 
   joinmarket_ng_native:
-    image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:ci-unsafe-do-not-run-e14d64208edea5061066142710b6c80c588c1776
     restart: unless-stopped
     environment:
       JOINMARKET_DATA_DIR: /root/.joinmarket-ng
@@ -104,7 +104,7 @@ services:
       start_interval: 3s
 
   joinmarket_ng_peer:
-    image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:ci-unsafe-do-not-run-e14d64208edea5061066142710b6c80c588c1776
     restart: unless-stopped
     environment:
       JOINMARKET_DATA_DIR: /root/.joinmarket-ng
