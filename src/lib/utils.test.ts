@@ -298,14 +298,18 @@ describe('isValidNumber', () => {
     expect(isValidNumber(1)).toBe(true)
     expect(isValidNumber(-1)).toBe(true)
     expect(isValidNumber(3.14)).toBe(true)
-    expect(isValidNumber(Number.POSITIVE_INFINITY)).toBe(true)
-    expect(isValidNumber(Number.NEGATIVE_INFINITY)).toBe(true)
+    expect(isValidNumber(Number('2e307'))).toBe(true)
+    expect(isValidNumber(Number('-2e307'))).toBe(true)
   })
 
   it('should return false for invalid values', () => {
+    expect(isValidNumber(Number.POSITIVE_INFINITY)).toBe(false)
+    expect(isValidNumber(Number.NEGATIVE_INFINITY)).toBe(false)
     expect(isValidNumber(Number.NaN)).toBe(false)
     expect(isValidNumber(undefined)).toBe(false)
     expect(isValidNumber(null)).toBe(false)
+    expect(isValidNumber(Number('2e308'))).toBe(false) // Number(2e308) := Number.POSITIVE_INFINITY
+    expect(isValidNumber(Number('-2e308'))).toBe(false) // Number(-2e308) := Number.NEGATIVE_INFINITY
   })
 })
 
