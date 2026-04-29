@@ -68,8 +68,9 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    const abortCtrl = new AbortController()
+    window.addEventListener('keydown', handleKeyDown, { signal: abortCtrl.signal })
+    return () => abortCtrl.abort()
   }, [])
 
   return (
