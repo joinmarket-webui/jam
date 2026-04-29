@@ -1,11 +1,11 @@
 import type { DirectSendRequest, DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
-import { isValidNumber } from '@/lib/utils'
+import { isValidInteger, isValidNumber } from '@/lib/utils'
 import type { SendFormValues } from './types'
 
 const ensureInteger = (value: unknown, message: string): number => {
-  if (!isValidNumber(value) || !Number.isSafeInteger(value)) {
+  if (!isValidInteger(value)) {
     throw new TypeError(message)
   }
   return value

@@ -16,7 +16,12 @@ import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
-import { cn, delayedPromise, factorToPercentage, isValidNumber, type WalletFileName } from '@/lib/utils'
+import {
+  cn,
+  delayedPromise,
+  factorToPercentage,
+  type WalletFileName,
+} from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
@@ -593,7 +598,7 @@ export function SendForm({
                     <Field data-invalid={errors.numCollaborators !== undefined}>
                       <FieldLabel htmlFor="send-num-collaborators">
                         {t('send.label_num_collaborators', {
-                          numCollaborators: isValidNumber(values.numCollaborators) ? values.numCollaborators : '-',
+                          numCollaborators: values.numCollaborators ?? '?',
                         })}
                       </FieldLabel>
                       <FieldDescription>{t('send.description_num_collaborators')}</FieldDescription>

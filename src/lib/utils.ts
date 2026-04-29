@@ -150,7 +150,11 @@ export const percentageToFactor = (val: number, precision = 6) => {
 }
 
 export const isValidNumber = (val: unknown): val is number => {
-  return val !== undefined && Number.isFinite(val)
+  return Number.isFinite(val)
+}
+
+export const isValidInteger = (val: unknown): val is number => {
+  return Number.isSafeInteger(val)
 }
 
 export const formatBtc = (value: number) => {

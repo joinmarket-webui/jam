@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import type { AccountBranch, AccountMeta } from '@/context/JamWalletInfoContext'
 import { statusTags } from '@/lib/tags'
-import { tryBtcToSat, isValidNumber } from '@/lib/utils'
+import { tryBtcToSat, isValidInteger } from '@/lib/utils'
 import type { HdPath } from '@/types/global'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { BranchEntryTable, type BranchEntryApiObject, type BranchEntryTableRow } from './BranchEntryTable'
@@ -30,8 +30,8 @@ const toLastHdPathIndex = (hdPath: HdPath): number | null => {
   const indexOfFirstColon = stringValue.indexOf(':') // value can be `/76:1777593600`
 
   const sanitizedStringValue = indexOfFirstColon === -1 ? stringValue : stringValue.substring(0, indexOfFirstColon)
-  const numberValue = Number.parseInt(sanitizedStringValue, 10)
-  return !isValidNumber(numberValue) ? null : numberValue
+  const numberValue = Number(sanitizedStringValue)
+  return !isValidInteger(numberValue) ? null : numberValue
 }
 
 const branchToTableEntry = (value: BranchEntryApiObject): BranchEntryTableRow => {

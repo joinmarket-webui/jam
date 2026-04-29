@@ -8,6 +8,7 @@ import {
   tryBtcToSat,
   percentageToFactor,
   isValidNumber,
+  isValidInteger,
   factorToPercentage,
   parseSemanticVersion,
   UNKNOWN_VERSION,
@@ -298,18 +299,59 @@ describe('isValidNumber', () => {
     expect(isValidNumber(1)).toBe(true)
     expect(isValidNumber(-1)).toBe(true)
     expect(isValidNumber(3.14)).toBe(true)
+    expect(isValidNumber(1_234_567_890)).toBe(true)
+    expect(isValidNumber(1_234_567_890.123)).toBe(true)
     expect(isValidNumber(Number('2e307'))).toBe(true)
     expect(isValidNumber(Number('-2e307'))).toBe(true)
+    expect(isValidNumber(Math.PI)).toBe(true)
+    expect(isValidNumber(Math.E)).toBe(true)
+    expect(isValidNumber(Number.MIN_SAFE_INTEGER)).toBe(true)
+    expect(isValidNumber(Number.MAX_SAFE_INTEGER)).toBe(true)
+    expect(isValidNumber(Number.MIN_VALUE)).toBe(true)
+    expect(isValidNumber(Number.MAX_VALUE)).toBe(true)
   })
 
   it('should return false for invalid values', () => {
+    expect(isValidNumber(undefined)).toBe(false)
+    expect(isValidNumber(null)).toBe(false)
     expect(isValidNumber(Number.POSITIVE_INFINITY)).toBe(false)
     expect(isValidNumber(Number.NEGATIVE_INFINITY)).toBe(false)
     expect(isValidNumber(Number.NaN)).toBe(false)
-    expect(isValidNumber(undefined)).toBe(false)
-    expect(isValidNumber(null)).toBe(false)
     expect(isValidNumber(Number('2e308'))).toBe(false) // Number(2e308) := Number.POSITIVE_INFINITY
     expect(isValidNumber(Number('-2e308'))).toBe(false) // Number(-2e308) := Number.NEGATIVE_INFINITY
+  })
+})
+
+describe('isValidInteger', () => {
+  it('should return true for valid integers', () => {
+    expect(isValidInteger(0)).toBe(true)
+    expect(isValidInteger(1)).toBe(true)
+    expect(isValidInteger(21)).toBe(true)
+    expect(isValidInteger(1_234_567_890)).toBe(true)
+    expect(isValidInteger(-1)).toBe(true)
+    expect(isValidInteger(-1_234_567_890)).toBe(true)
+    expect(isValidInteger(Number.MIN_SAFE_INTEGER)).toBe(true)
+    expect(isValidInteger(Number.MAX_SAFE_INTEGER)).toBe(true)
+  })
+
+  it('should return false for invalid values', () => {
+    expect(isValidInteger(undefined)).toBe(false)
+    expect(isValidInteger(null)).toBe(false)
+    expect(isValidInteger(-42.1337)).toBe(false)
+    expect(isValidInteger(3.1415)).toBe(false)
+    expect(isValidInteger(Math.PI)).toBe(false)
+    expect(isValidInteger(Math.E)).toBe(false)
+    expect(isValidInteger(1 / 3)).toBe(false)
+    expect(isValidInteger(1_234_567_890.123)).toBe(false)
+    expect(isValidInteger(Number.MIN_SAFE_INTEGER - 1)).toBe(false)
+    expect(isValidInteger(Number.MAX_SAFE_INTEGER + 1)).toBe(false)
+    expect(isValidInteger(Number.MIN_VALUE)).toBe(false)
+    expect(isValidInteger(Number.MAX_VALUE)).toBe(false)
+    expect(isValidInteger(Number.POSITIVE_INFINITY)).toBe(false)
+    expect(isValidInteger(Number.NEGATIVE_INFINITY)).toBe(false)
+    expect(isValidInteger(Number.NaN)).toBe(false)
+    expect(isValidInteger(Number('2e308'))).toBe(false) // Number(2e308) := Number.POSITIVE_INFINITY
+    expect(isValidInteger(Number('-2e308'))).toBe(false) // Number(-2e308) := Number.NEGATIVE_INFINITY
   })
 })
 
