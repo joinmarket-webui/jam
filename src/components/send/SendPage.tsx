@@ -16,7 +16,7 @@ import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
@@ -427,7 +427,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   return (
     <>
-      <FeeLimitDialog
+      <FeeConfigDialog
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
         walletFileName={walletFileName}

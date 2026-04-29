@@ -7,7 +7,7 @@ import {
   MAX_SWEEP_FEE_CHANGE_MAX,
 } from '@/constants/jam'
 import { factorToPercentage } from '@/lib/utils'
-import { createTxFeeFormSchema, type TxFeeFormValues } from '../send/TxFeeForm.schema'
+import { createTxFeeFormSchema, type TxFeeFormValues } from '../../send/TxFeeForm.schema'
 
 export type MiningFeesFormValues = {
   txFeesFactorInPercent?: number

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
@@ -46,7 +46,7 @@ export const FeeConfigTestComponent = ({ walletFileName }: FeeConfigTestComponen
         {forceError && <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mt-4" />}
 
         {/* Fee Configuration Dialog */}
-        <FeeLimitDialog
+        <FeeConfigDialog
           open={showFeeConfigDialog}
           onOpenChange={setShowFeeConfigDialog}
           walletFileName={walletFileName}

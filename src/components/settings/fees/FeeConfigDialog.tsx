@@ -30,8 +30,8 @@ import { cn, factorToPercentage, percentageToFactorString } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
-import { toTxFeeFormDefaultValues } from '../send/TxFeeForm.schema'
-import { Spinner } from '../ui/spinner'
+import { toTxFeeFormDefaultValues } from '../../send/TxFeeForm.schema'
+import { Spinner } from '../../ui/spinner'
 import { CollaboratorFeesForm } from './CollaboratorFeesForm'
 import { createCollaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesForm.schema'
 import { MiningFeesForm } from './MiningFeesForm'
@@ -50,14 +50,14 @@ const safeIntegerOrUndefined = (value: number | undefined) => {
   return isSafe ? value : undefined
 }
 
-type FeeLimitDialogProps = WithRequiredProperty<
+type FeeConfigDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
   'open' | 'onOpenChange'
 > & {
   walletFileName: WalletFileName
 }
 
-export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: FeeLimitDialogProps) => {
+export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: FeeConfigDialogProps) => {
   const { t } = useTranslation()
 
   const { enabled: isDeveloperMode } = useDeveloperMode()

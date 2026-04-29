@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -324,7 +324,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       {/* Fee Configuration Dialog */}
-      <FeeLimitDialog
+      <FeeConfigDialog
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
         walletFileName={walletFileName}

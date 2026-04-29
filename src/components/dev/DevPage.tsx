@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { FeeConfigTestComponent } from '@/components/dev/FeeConfigTestComponent'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -63,7 +63,7 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
         <div className="">
           <h3 className="text-xl font-semibold tracking-tight">Fees</h3>
 
-          <FeeLimitDialog
+          <FeeConfigDialog
             open={showFeeConfigDialog}
             onOpenChange={setShowFeeConfigDialog}
             walletFileName={walletFileName}
