@@ -26,7 +26,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { getErrorReason } from '@/lib/errorReason'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
-import { cn, factorToPercentage, percentageToFactor } from '@/lib/utils'
+import { cn, factorToPercentage, percentageToFactorString } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
@@ -36,6 +36,19 @@ import { CollaboratorFeesForm } from './CollaboratorFeesForm'
 import { createCollaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesForm.schema'
 import { MiningFeesForm } from './MiningFeesForm'
 import { createMiningFeesFormSchema, type MiningFeesFormValues } from './MiningFeesForm.schema'
+
+const factorToPercentageOrUndefined = (value: number | undefined) => {
+  return value !== undefined ? factorToPercentage(value) : undefined
+}
+
+const safePercentageToFactorStringOrUndefined = (value: number | undefined) => {
+  const isSafe = value !== undefined && Number.isFinite(value)
+  return isSafe ? percentageToFactorString(value) : undefined
+}
+const safeIntegerOrUndefined = (value: number | undefined) => {
+  const isSafe = value !== undefined && Number.isSafeInteger(value)
+  return isSafe ? value : undefined
+}
 
 type FeeLimitDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
@@ -63,11 +76,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
 
   const miningFeeFormDefaultValues: MiningFeesFormValues = useMemo(() => {
     return {
-      txFeesFactorInPercent:
-        feeConfigValues.txFeeFactor !== undefined ? factorToPercentage(feeConfigValues.txFeeFactor) : undefined,
-      maxSweepFeeChangeInPercent: feeConfigValues.maxSweepFeeChangeFactor
-        ? factorToPercentage(feeConfigValues.maxSweepFeeChangeFactor)
-        : undefined,
+      txFeesFactorInPercent: factorToPercentageOrUndefined(feeConfigValues.txFeeFactor),
+      maxSweepFeeChangeInPercent: factorToPercentageOrUndefined(feeConfigValues.maxSweepFeeChangeFactor),
       ...toTxFeeFormDefaultValues(feeConfigValues),
     }
   }, [feeConfigValues])
@@ -88,10 +98,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
   const collaboratorFeesFormDefaultValues: CollaboratorFeesFormValues = useMemo(() => {
     return {
       maxCjFeeAbs: feeConfigValues.maxCjAbsoluteFee,
-      maxCjFeeRelInPercent:
-        feeConfigValues.maxCjRelativeFee !== undefined
-          ? factorToPercentage(feeConfigValues.maxCjRelativeFee)
-          : undefined,
+      maxCjFeeRelInPercent: factorToPercentageOrUndefined(feeConfigValues.maxCjRelativeFee),
     }
   }, [feeConfigValues])
 
@@ -125,31 +132,20 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
       const collaboratorData = collaboratorFeesForm.getValues()
       const miningData = miningFeesForm.getValues()
 
-      const maxCjFeeAbsoluteValue =
-        collaboratorData.maxCjFeeAbs !== undefined && Number.isSafeInteger(collaboratorData.maxCjFeeAbs)
-          ? String(collaboratorData.maxCjFeeAbs)
-          : ''
-      const maxCjFeeRelativeValue =
-        collaboratorData.maxCjFeeRelInPercent !== undefined && Number.isFinite(collaboratorData.maxCjFeeRelInPercent)
-          ? String(percentageToFactor(collaboratorData.maxCjFeeRelInPercent))
-          : ''
-      const txFeesBlocksValue = Number.isSafeInteger(miningData.txFee.txFeeInBlocks)
-        ? String(miningData.txFee.txFeeInBlocks)
-        : ''
+      const maxCjFeeAbsoluteValue = String(safeIntegerOrUndefined(collaboratorData.maxCjFeeAbs) ?? '')
+      const maxCjFeeRelativeValue = safePercentageToFactorStringOrUndefined(collaboratorData.maxCjFeeRelInPercent) ?? ''
+      const txFeesBlocksValue = String(safeIntegerOrUndefined(miningData.txFee.txFeeInBlocks) ?? '')
+
+      const txFeesFactorValue = safePercentageToFactorStringOrUndefined(miningData.txFeesFactorInPercent) ?? ''
+      const maxSweepFeeChangeValue =
+        safePercentageToFactorStringOrUndefined(miningData.maxSweepFeeChangeInPercent) ?? ''
+
       const txFeesSatsPerKvByteValue =
         miningData.txFee.txFeeInSatsPerVbyte !== undefined && Number.isFinite(miningData.txFee.txFeeInSatsPerVbyte)
           ? String(Math.ceil(miningData.txFee.txFeeInSatsPerVbyte * 1_000))
           : ''
       const txFeesValue =
         miningData.txFee.txFeeUnit === TX_FEE_UNITS.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
-      const txFeesFactorValue =
-        miningData.txFeesFactorInPercent !== undefined && Number.isFinite(miningData.txFeesFactorInPercent)
-          ? String(percentageToFactor(miningData.txFeesFactorInPercent))
-          : ''
-      const maxSweepFeeChangeValue =
-        miningData.maxSweepFeeChangeInPercent !== undefined && Number.isFinite(miningData.maxSweepFeeChangeInPercent)
-          ? String(percentageToFactor(miningData.maxSweepFeeChangeInPercent))
-          : ''
 
       const configUpdates: { key: FeeConfigName; value: string }[] = [
         { key: 'max_cj_fee_abs', value: maxCjFeeAbsoluteValue },
