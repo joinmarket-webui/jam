@@ -222,7 +222,7 @@ export const AccountXpubsDialog = ({
     gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
-    select: (data) => data.seedphrase.split(/\s+/) as MnemonicPhrase,
+    select: (data) => data.seedphrase.split(/\s+/),
   })
 
   const accountXpubsQueryKey = useMemo(() => [walletFileName, 'xpubs'], [walletFileName])

@@ -159,10 +159,13 @@ export const BalanceComponent = ({
   ...props
 }: BalanceComponentProps) => {
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
-  const displayMode: DisplayMode = isBalanceVisible ? (convertToUnit ?? 'default') : 'hidden'
+  const displayMode = useMemo<DisplayMode>(() => {
+    return isBalanceVisible ? (convertToUnit ?? 'default') : 'hidden'
+  }, [isBalanceVisible, convertToUnit])
 
   useEffect(() => {
-    setIsBalanceVisible(showBalance)
+    const timerId = setTimeout(() => setIsBalanceVisible(showBalance), 4)
+    return () => clearTimeout(timerId)
   }, [showBalance])
 
   const elementProps = useMemo(() => {
@@ -243,7 +246,10 @@ export const Balance = ({
   ...props
 }: BalanceProps) => {
   const displayContext = useJamDisplayContext()
-  const isBalanceVisible = showBalance ?? displayContext.isPrivate === false
+  const isBalanceVisible = useMemo(
+    () => showBalance ?? displayContext.isPrivate === false,
+    [showBalance, displayContext.isPrivate],
+  )
 
   return (
     <BalanceComponent

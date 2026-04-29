@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [master, devel, v2]
+    branches: [master, devel]
   pull_request:
-    branches: [master, devel, v2]
+    branches: [master, devel]
 
 jobs:
   build:
@@ -45,6 +45,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Test
         run: npm test

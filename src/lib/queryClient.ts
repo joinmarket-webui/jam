@@ -27,18 +27,18 @@ export function withQueryDelay<TQueryFnData, TQueryKey extends QueryKey>(
   delayOptions: WithQueryDelayOptions,
 ): QueryFunction<TQueryFnData, TQueryKey> | undefined {
   if (queryFn === undefined) return undefined
-  return (async (context) => {
+  return async (context) => {
     return await applyDelay(async () => await queryFn(context), delayOptions)
-  }) as QueryFunction<TQueryFnData, TQueryKey>
+  }
 }
 
 export function withMutationDelay<TMutateFnData, TVariables = void>(
   queryFn: MutationFunction<TMutateFnData, TVariables>,
   delayOptions: WithQueryDelayOptions,
 ): MutationFunction<TMutateFnData, TVariables> {
-  return (async (variables, options) => {
+  return async (variables, options) => {
     return await applyDelay(async () => await queryFn(variables, options), delayOptions)
-  }) as MutationFunction<TMutateFnData, TVariables>
+  }
 }
 
 async function applyDelay<T>(

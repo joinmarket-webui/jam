@@ -60,14 +60,6 @@ export interface OrderTableEntry {
 
 const columnHelper = createColumnHelper<OrderTableEntry>()
 
-type OrderTableColumnMeta =
-  | {
-      align?: string
-      numeric?: boolean
-      alphabetic?: boolean
-    }
-  | undefined
-
 const fuzzyFilter: FilterFn<OrderTableEntry> = (row, columnId, value, addMeta) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -112,14 +104,14 @@ export const OrderbookTable = ({
         cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
         meta: {
           alphabetic: true,
-        } as OrderTableColumnMeta,
+        },
       }),
       columnHelper.accessor('orderId', {
         header: () => t('orderbook.table.heading_order_id'),
         cell: (info) => <span>{info.getValue()}</span>,
         meta: {
           numeric: true,
-        } as OrderTableColumnMeta,
+        },
       }),
       columnHelper.accessor<'type', OrderTableEntry['type']>('type', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
@@ -137,7 +129,7 @@ export const OrderbookTable = ({
         meta: {
           align: 'center',
           alphabetic: true,
-        } as OrderTableColumnMeta,
+        },
       }),
       columnHelper.accessor('fee', {
         header: () => <div className="flex items-center justify-end">{t('orderbook.table.heading_fee')}</div>,
@@ -159,7 +151,7 @@ export const OrderbookTable = ({
         meta: {
           align: 'right',
           numeric: true,
-        } as OrderTableColumnMeta,
+        },
       }),
       columnHelper.accessor<'minimumSize', OrderTableEntry['minimumSize']>('minimumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
@@ -168,7 +160,7 @@ export const OrderbookTable = ({
         meta: {
           align: 'right',
           numeric: true,
-        } as OrderTableColumnMeta,
+        },
       }),
       columnHelper.accessor<'maximumSize', OrderTableEntry['maximumSize']>('maximumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
@@ -177,7 +169,7 @@ export const OrderbookTable = ({
         meta: {
           align: 'right',
           numeric: true,
-        } as OrderTableColumnMeta,
+        },
       }),
       columnHelper.accessor<'minerFeeContribution', OrderTableEntry['minerFeeContribution']>('minerFeeContribution', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
@@ -187,7 +179,7 @@ export const OrderbookTable = ({
         meta: {
           align: 'right',
           numeric: true,
-        } as OrderTableColumnMeta,
+        },
       }),
       columnHelper.accessor('bondValue', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
@@ -217,7 +209,7 @@ export const OrderbookTable = ({
         meta: {
           numeric: true,
           align: 'right',
-        } as OrderTableColumnMeta,
+        },
       }),
     ],
     [t],
@@ -306,8 +298,8 @@ export const OrderbookTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const alignCenter = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
-                  const alignRight = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
+                  const alignCenter = header.column.columnDef.meta?.align === 'center'
+                  const alignRight = header.column.columnDef.meta?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -340,8 +332,8 @@ export const OrderbookTable = ({
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                 {row.getVisibleCells().map((cell) => {
-                  const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
-                  const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
+                  const alignCenter = cell.column.columnDef.meta?.align === 'center'
+                  const alignRight = cell.column.columnDef.meta?.align === 'right'
                   return (
                     <TableCell
                       key={cell.id}
@@ -360,8 +352,8 @@ export const OrderbookTable = ({
               return (
                 <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                   {row.getVisibleCells().map((cell) => {
-                    const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
-                    const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
+                    const alignCenter = cell.column.columnDef.meta?.align === 'center'
+                    const alignRight = cell.column.columnDef.meta?.align === 'right'
                     return (
                       <TableCell
                         key={cell.id}

@@ -17,7 +17,7 @@ const utxo = (overrides: Partial<Utxo>): Utxo => {
     frozen: false,
     locktime: undefined,
     ...overrides,
-  } as Utxo
+  }
 }
 
 describe('buildSweepPreconditionSummary', () => {
