@@ -51,7 +51,7 @@ export const toJamFeeConfigValues = (values: JmRawFeeConfigValues): JamFeeConfig
   return {
     maxCjAbsoluteFee: Number.isSafeInteger(maxCjAbsoluteFee) ? maxCjAbsoluteFee : undefined,
     maxCjRelativeFee: Number.isFinite(maxCjRelativeFee) ? maxCjRelativeFee : undefined,
-    txFeeFactor: Number.isFinite(maxCjRelativeFee) ? txFeeFactor : undefined,
+    txFeeFactor: Number.isFinite(txFeeFactor) ? txFeeFactor : undefined,
     maxSweepFeeChangeFactor: Number.isFinite(maxSweepFeeChangeFactor) ? maxSweepFeeChangeFactor : undefined,
     txFee: {
       txFeeUnit,
