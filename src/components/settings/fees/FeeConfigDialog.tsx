@@ -4,7 +4,7 @@ import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tans
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { AlertTriangleIcon } from 'lucide-react'
-import { useForm, type Resolver } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import * as yup from 'yup'
@@ -74,7 +74,7 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
 
   const miningFeeFormSchema = useMemo(() => createMiningFeesFormSchema({ t }), [t])
 
-  const miningFeeFormDefaultValues: MiningFeesFormValues = useMemo(() => {
+  const miningFeeFormInitialValues: MiningFeesFormValues = useMemo(() => {
     return {
       txFeesFactorInPercent: factorToPercentageOrUndefined(feeConfigValues.txFeeFactor),
       maxSweepFeeChangeInPercent: factorToPercentageOrUndefined(feeConfigValues.maxSweepFeeChangeFactor),
@@ -85,17 +85,13 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
   const miningFeesForm = useForm<MiningFeesFormValues, unknown, MiningFeesFormValues>({
     mode: 'onChange',
     disabled: isSubmitting || isLoadingConfig,
-    defaultValues: miningFeeFormDefaultValues,
-    resolver: yupResolver(miningFeeFormSchema as yup.AnyObjectSchema) as Resolver<
-      MiningFeesFormValues,
-      unknown,
-      MiningFeesFormValues
-    >,
+    values: miningFeeFormInitialValues,
+    resolver: yupResolver(miningFeeFormSchema as yup.AnyObjectSchema),
   })
 
   const collaboratorFormSchema = useMemo(() => createCollaboratorFeesFormSchema({ t }), [t])
 
-  const collaboratorFeesFormDefaultValues: CollaboratorFeesFormValues = useMemo(() => {
+  const collaboratorFeesFormInitialValues: CollaboratorFeesFormValues = useMemo(() => {
     return {
       maxCjFeeAbs: feeConfigValues.maxCjAbsoluteFee,
       maxCjFeeRelInPercent: factorToPercentageOrUndefined(feeConfigValues.maxCjRelativeFee),
@@ -105,12 +101,8 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
   const collaboratorFeesForm = useForm<CollaboratorFeesFormValues, unknown, CollaboratorFeesFormValues>({
     mode: 'onChange',
     disabled: isSubmitting || isLoadingConfig,
-    defaultValues: collaboratorFeesFormDefaultValues,
-    resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema) as Resolver<
-      CollaboratorFeesFormValues,
-      unknown,
-      CollaboratorFeesFormValues
-    >,
+    values: collaboratorFeesFormInitialValues,
+    resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema),
   })
 
   const setconfigMutation = useMutation(configsettingMutation({ client }))

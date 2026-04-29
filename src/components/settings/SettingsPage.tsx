@@ -249,7 +249,6 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
       )}
 
       <FeeConfigDialog
-        key={`fee-dialog-open-${showFeeConfigDialog}`}
         walletFileName={walletFileName}
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
