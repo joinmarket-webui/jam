@@ -69,7 +69,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
     }
 
     return isMaxFeesConfigMissing(feeConfigValues)
-  }, [feeConfigValues, forceFeeConfigMissing])
+  }, [feeConfigValues])
 
   return {
     feeConfigValues,
