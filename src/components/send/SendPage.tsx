@@ -72,6 +72,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { refetch: refetchWalletInfo, waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { enabled: isDeveloperMode } = useDeveloperMode()
+
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName })
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [showAbortCoinjoinDialog, setShowAbortCoinjoinDialog] = useState(false)
@@ -428,9 +430,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   return (
     <>
       <FeeConfigDialog
+        walletFileName={walletFileName}
+        feeConfigValidation={feeConfigValidation}
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
-        walletFileName={walletFileName}
       />
       <Dialog open={showAbortCoinjoinDialog} onOpenChange={setShowAbortCoinjoinDialog}>
         <DialogContent>

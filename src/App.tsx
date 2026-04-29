@@ -52,6 +52,7 @@ import { useRescanStatus } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { useJmWebsocket } from './hooks/useJmWebsocket'
+import { getErrorReason } from './lib/errorReason'
 import { jmSessionStore } from './store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from './store/jmTxStore'
 import type { Milliseconds } from './types/global'
@@ -393,6 +394,7 @@ function HandleJmWebsocketMessages() {
 }
 
 function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName }) {
+  const { t } = useTranslation()
   const { fetchMissing } = useFeeConfigValidation({ walletFileName })
 
   useEffect(() => {
@@ -405,21 +407,21 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
       .then((values) => {
         const consoleInfo = 'Fee values loaded successfully.'
         console.info(consoleInfo)
-        console.table(values)
         if (isDevMode) {
+          console.table(values)
           toast.success(`[DEV] ${consoleInfo}`, {
             id: 'fee-values-success',
           })
         }
       })
       .catch((error) => {
-        const consoleError = 'Error while loading fee values.'
-        console.error(consoleError, error)
-        if (isDevMode) {
-          toast.error(`[DEV] ${consoleError}`)
-        }
+        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+        // TODO: i18n
+        const errorMessage = t('Error while loading fee values.: {{ reason }}', { reason })
+        toast.error(errorMessage)
+        console.error(errorMessage)
       })
-  }, [fetchMissing])
+  }, [fetchMissing, t])
 
   return <></>
 }

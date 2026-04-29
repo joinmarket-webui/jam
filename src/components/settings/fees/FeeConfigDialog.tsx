@@ -2,7 +2,6 @@ import { useState, type ComponentProps, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
-import { cx } from 'class-variance-authority'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useTranslation, Trans } from 'react-i18next'
@@ -55,20 +54,22 @@ type FeeConfigDialogProps = WithRequiredProperty<
   'open' | 'onOpenChange'
 > & {
   walletFileName: WalletFileName
+  feeConfigValidation: ReturnType<typeof useFeeConfigValidation>
 }
 
-export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: FeeConfigDialogProps) => {
+export const FeeConfigDialog = ({
+  open,
+  onOpenChange,
+  walletFileName,
+  feeConfigValidation,
+  ...dialogProps
+}: FeeConfigDialogProps) => {
   const { t } = useTranslation()
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const [accordionValue, setAccordionValue] = useState<string[]>([])
   const [enableFormValidation, setEnableFormValidation] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const {
-    feeConfigValues,
-    refetchAll: refetchFeeConfigValues,
-    isLoading: isLoadingConfig,
-  } = useFeeConfigValidation({ walletFileName })
 
   const client = useApiClient()
 
@@ -76,15 +77,17 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
 
   const miningFeeFormInitialValues: MiningFeesFormValues = useMemo(() => {
     return {
-      txFeesFactorInPercent: factorToPercentageOrUndefined(feeConfigValues.txFeeFactor),
-      maxSweepFeeChangeInPercent: factorToPercentageOrUndefined(feeConfigValues.maxSweepFeeChangeFactor),
-      ...toTxFeeFormDefaultValues(feeConfigValues),
+      txFeesFactorInPercent: factorToPercentageOrUndefined(feeConfigValidation.feeConfigValues.txFeeFactor),
+      maxSweepFeeChangeInPercent: factorToPercentageOrUndefined(
+        feeConfigValidation.feeConfigValues.maxSweepFeeChangeFactor,
+      ),
+      ...toTxFeeFormDefaultValues(feeConfigValidation.feeConfigValues),
     }
-  }, [feeConfigValues])
+  }, [feeConfigValidation.feeConfigValues])
 
   const miningFeesForm = useForm<MiningFeesFormValues, unknown, MiningFeesFormValues>({
     mode: 'onChange',
-    disabled: isSubmitting || isLoadingConfig,
+    disabled: isSubmitting || feeConfigValidation.isLoading,
     values: miningFeeFormInitialValues,
     resolver: yupResolver(miningFeeFormSchema as yup.AnyObjectSchema),
   })
@@ -93,14 +96,14 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
 
   const collaboratorFeesFormInitialValues: CollaboratorFeesFormValues = useMemo(() => {
     return {
-      maxCjFeeAbs: feeConfigValues.maxCjAbsoluteFee,
-      maxCjFeeRelInPercent: factorToPercentageOrUndefined(feeConfigValues.maxCjRelativeFee),
+      maxCjFeeAbs: feeConfigValidation.feeConfigValues.maxCjAbsoluteFee,
+      maxCjFeeRelInPercent: factorToPercentageOrUndefined(feeConfigValidation.feeConfigValues.maxCjRelativeFee),
     }
-  }, [feeConfigValues])
+  }, [feeConfigValidation.feeConfigValues.maxCjAbsoluteFee, feeConfigValidation.feeConfigValues.maxCjRelativeFee])
 
   const collaboratorFeesForm = useForm<CollaboratorFeesFormValues, unknown, CollaboratorFeesFormValues>({
     mode: 'onChange',
-    disabled: isSubmitting || isLoadingConfig,
+    disabled: isSubmitting || feeConfigValidation.isLoading,
     values: collaboratorFeesFormInitialValues,
     resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema),
   })
@@ -157,8 +160,6 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
         })
       }
 
-      await refetchFeeConfigValues()
-
       toast.success(t('settings.fees.success_message'))
       onOpenChange(false)
     } catch (error: unknown) {
@@ -168,6 +169,16 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
+    }
+
+    try {
+      await feeConfigValidation.refetchAll()
+    } catch (error: unknown) {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      // TODO: i18n
+      const errorMessage = t('Error while reloading fee values.: {{ reason }}', { reason })
+      toast.error(errorMessage)
+      console.error(errorMessage)
     }
   }
 
@@ -223,17 +234,21 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
           <Accordion type="multiple" value={accordionValue} onValueChange={setAccordionValue}>
             <AccordionItem value="collaborator-fees">
               <AccordionTrigger
-                className={cx({
-                  'text-destructive': !collaboratorFeesForm.formState.isValid,
+                className={cn({
+                  'text-destructive': !collaboratorFeesForm.formState.isValid && !feeConfigValidation.isLoading,
+                  'animate-pulse': feeConfigValidation.isLoading,
                 })}
               >
                 <div className="flex items-center gap-2">
-                  {!collaboratorFeesForm.formState.isValid ? <AlertTriangleIcon /> : null}
+                  {!collaboratorFeesForm.formState.isValid && !feeConfigValidation.isLoading ? (
+                    <AlertTriangleIcon />
+                  ) : null}
+                  {feeConfigValidation.isLoading ? <Spinner className="motion-reduce:hidden" /> : null}
                   {t('settings.fees.title_max_cj_fee_settings')}
                 </div>
               </AccordionTrigger>
               <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
-                {isLoadingConfig ? (
+                {feeConfigValidation.isLoading ? (
                   <div className="m-2 flex items-center justify-center gap-2">
                     <Spinner className="motion-reduce:hidden" />
                     {t('global.loading')}
@@ -245,17 +260,19 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
             </AccordionItem>
             <AccordionItem value="mining-fees">
               <AccordionTrigger
-                className={cx({
-                  'text-destructive': !miningFeesForm.formState.isValid,
+                className={cn({
+                  'text-destructive': !miningFeesForm.formState.isValid && !feeConfigValidation.isLoading,
+                  'animate-pulse': feeConfigValidation.isLoading,
                 })}
               >
                 <div className="flex items-center gap-2">
-                  {!miningFeesForm.formState.isValid ? <AlertTriangleIcon /> : null}
+                  {!miningFeesForm.formState.isValid && !feeConfigValidation.isLoading ? <AlertTriangleIcon /> : null}
+                  {feeConfigValidation.isLoading ? <Spinner className="motion-reduce:hidden" /> : null}
                   {t('settings.fees.title_general_fee_settings')}
                 </div>
               </AccordionTrigger>
               <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
-                {isLoadingConfig ? (
+                {feeConfigValidation.isLoading ? (
                   <div className="m-2 flex items-center justify-center gap-2">
                     <Spinner className="motion-reduce:hidden" />
                     {t('global.loading')}
@@ -269,22 +286,26 @@ export const FeeConfigDialog = ({ open, onOpenChange, walletFileName, ...dialogP
         </div>
 
         <DialogFooter
-          className={cx({
+          className={cn({
             'border-t pt-4': accordionValue.length > 0,
           })}
         >
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting || isLoadingConfig}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting || feeConfigValidation.isLoading}
+          >
             {t('settings.fees.text_button_cancel')}
           </Button>
           <Button
             variant="outline"
             onClick={() => void handleResetFormValues()}
-            disabled={isSubmitting || isLoadingConfig}
+            disabled={isSubmitting || feeConfigValidation.isLoading}
           >
             {/* TODO: i18n */}
             Reset
           </Button>
-          <Button onClick={() => void handleSubmit()} disabled={isSubmitting || isLoadingConfig}>
+          <Button onClick={() => void handleSubmit()} disabled={isSubmitting || feeConfigValidation.isLoading}>
             {isSubmitting ? t('settings.fees.text_button_submitting') : t('settings.fees.text_button_submit')}
           </Button>
         </DialogFooter>
