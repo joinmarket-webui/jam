@@ -11,8 +11,7 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig(
-  // TODO(v2-cleanup): remove `build` ignore after v2 branch is merged; legacy `devel` (CRA) outputs `build/`
-  { ignores: ['dist', 'build', './.storybook/**', './storybook-static/**'] },
+  { ignores: ['dist', './.storybook/**', './storybook-static/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
