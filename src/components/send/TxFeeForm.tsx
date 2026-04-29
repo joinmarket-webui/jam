@@ -139,6 +139,7 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
                 disabled,
               })}
               defaultValue={defaultValues?.txFee?.txFeeUnit}
+              value={txFeeUnitWatch}
               onValueChange={(value) => {
                 setValue('txFee.txFeeUnit', value as TxFeeUnit, {
                   shouldValidate: true, // trigger validation
