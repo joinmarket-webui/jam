@@ -115,9 +115,9 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
                       valueAsNumber: true,
                     })}
                     type="number"
-                    min={MIN_TX_FEE_IN_SATS_PER_VBYTE}
+                    min={Math.floor(MIN_TX_FEE_IN_SATS_PER_VBYTE)}
                     max={MAX_TX_FEE_IN_SATS_PER_VBYTE}
-                    step={1}
+                    step="0.01"
                   />
                   <InputGroupAddon align="inline-start" className="mr-1 gap-0.5">
                     <CurrencySymbol currency="sats" />
