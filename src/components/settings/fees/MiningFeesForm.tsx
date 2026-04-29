@@ -4,9 +4,9 @@ import { FormProvider, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { JM_MAX_SWEEP_FEE_CHANGE_DEFAULT, JM_TX_FEES_FACTOR_DEFAULT } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
-import { TxFeeForm } from '../send/TxFeeForm'
-import { Field, FieldDescription, FieldLabel } from '../ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
+import { TxFeeForm } from '../../send/TxFeeForm'
+import { Field, FieldDescription, FieldLabel } from '../../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../../ui/input-group'
 import type { MiningFeesFormValues } from './MiningFeesForm.schema'
 
 interface MiningFeesFormProps {

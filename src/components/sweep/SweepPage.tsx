@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import * as yup from 'yup'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { SweepDestinationInputs } from '@/components/sweep/SweepDestinationInputs'
 import {
   buildSweepDestinationValues,
@@ -309,7 +309,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <FeeLimitDialog
+      <FeeConfigDialog
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
         walletFileName={walletFileName}
