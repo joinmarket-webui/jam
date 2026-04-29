@@ -3,6 +3,7 @@ import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
 
 interface FeeConfigTestComponentProps {
@@ -11,6 +12,8 @@ interface FeeConfigTestComponentProps {
 export const FeeConfigTestComponent = ({ walletFileName }: FeeConfigTestComponentProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [forceError, setForceError] = useState(false)
+
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
   return (
     <Card className="border-2 border-dashed border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
@@ -42,14 +45,13 @@ export const FeeConfigTestComponent = ({ walletFileName }: FeeConfigTestComponen
           </Button>
         </div>
 
-        {/* Force Error Display */}
         {forceError && <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mt-4" />}
 
-        {/* Fee Configuration Dialog */}
         <FeeConfigDialog
+          walletFileName={walletFileName}
+          feeConfigValidation={feeConfigValidation}
           open={showFeeConfigDialog}
           onOpenChange={setShowFeeConfigDialog}
-          walletFileName={walletFileName}
         />
       </CardContent>
     </Card>

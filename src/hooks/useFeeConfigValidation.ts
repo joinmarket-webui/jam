@@ -10,13 +10,17 @@ import type { WalletFileName } from '@/lib/utils'
 import { useJmConfig } from './useJmConfig'
 
 // Debug flag to force fee config missing error for testing
-const forceFeeConfigMissing = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
+const DEFAULT_FORCE_FEE_CONFIG_MISSING = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
 
 interface UseFeeConfigValidationProps {
   walletFileName: WalletFileName
+  forceFeeConfigMissing?: boolean
 }
 
-export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
+export const useFeeConfigValidation = ({
+  walletFileName,
+  forceFeeConfigMissing = DEFAULT_FORCE_FEE_CONFIG_MISSING,
+}: UseFeeConfigValidationProps) => {
   const {
     state: configState,
     refetch: refetchConfig,
@@ -69,7 +73,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
     }
 
     return isMaxFeesConfigMissing(feeConfigValues)
-  }, [feeConfigValues])
+  }, [feeConfigValues, forceFeeConfigMissing])
 
   return {
     feeConfigValues,

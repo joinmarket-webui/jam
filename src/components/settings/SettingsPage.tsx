@@ -30,6 +30,7 @@ import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useFeatures } from '@/hooks/useFeatures'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -52,6 +53,8 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode, addressChunkingEnabled, toggleAddressChunking } =
     useJamDisplayContext()
   const jamSettings = useStore(jamSettingsStore)
+
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showXpubsDialog, setShowXpubsDialog] = useState(false)
@@ -250,6 +253,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
 
       <FeeConfigDialog
         walletFileName={walletFileName}
+        feeConfigValidation={feeConfigValidation}
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
       />
