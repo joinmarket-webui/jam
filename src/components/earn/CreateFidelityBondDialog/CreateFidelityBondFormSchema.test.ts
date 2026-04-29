@@ -30,7 +30,7 @@ describe('createFidelityBondFormSchema', () => {
   it('accepts complete fidelity bond form values', async () => {
     await expect(
       validate({
-        lockdate: '2026-07' as fb.Lockdate,
+        lockdate: '2026-07',
         source: {
           fromJar: 0,
         },
@@ -61,7 +61,7 @@ describe('createFidelityBondFormSchema', () => {
   it('rejects lockdates outside the generated options', async () => {
     await expect(
       validate({
-        lockdate: '2025-01' as fb.Lockdate,
+        lockdate: '2025-01',
         source: {
           fromJar: 0,
         },
@@ -76,7 +76,7 @@ describe('createFidelityBondFormSchema', () => {
   it('rejects jar index values that are not in the available jar list', async () => {
     await expect(
       validate({
-        lockdate: '2026-07' as fb.Lockdate,
+        lockdate: '2026-07',
         source: {
           fromJar: 99,
         },
