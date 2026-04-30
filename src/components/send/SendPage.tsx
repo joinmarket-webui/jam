@@ -130,12 +130,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     return jars.find((it) => it.jarIndex === destinationJarIndex)
   }, [jars, sendFromValuesAwaitingConfirmation])
 
-  const {
-    feeConfigValues,
-    maxFeesConfigMissing,
-    isLoading: isLoadingFeeConfig,
-  } = useFeeConfigValidation({ walletFileName })
-
   const directSendMutation = useMutation({
     ...directsendMutation({ client }),
     retry: false,
@@ -377,7 +371,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         console.error('Error while sending non-collaborative transaction', error)
       }
     } else {
-      if (maxFeesConfigMissing) {
+      if (feeConfigValidation.maxFeesConfigMissing) {
         toast.error(t('send.taker_error_message_max_fees_config_missing'))
         setShowFeeConfigDialog(true)
         return
@@ -423,7 +417,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     void refetchWalletInfoRef.current()
   }
 
-  if (isLoadingFeeConfig) {
+  if (feeConfigValidation.isLoading) {
     return <PageLoading />
   }
 
@@ -483,7 +477,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             await onPaymentConfirmed(sendFromValuesAwaitingConfirmation)
           }}
           meta={{
-            feeConfigValues: feeConfigValues,
+            feeConfigValues: feeConfigValidation.feeConfigValues,
             availableUtxos: availableUtxosForPayment,
             sourceJar,
             destinationJar,
@@ -494,7 +488,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       <div className="mx-auto max-w-4xl space-y-3 p-4">
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
-        {maxFeesConfigMissing && (
+        {feeConfigValidation.maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
 
@@ -585,13 +579,13 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               onSubmit={onSubmit}
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
-              feeConfigValues={feeConfigValues}
+              feeConfigValues={feeConfigValidation.feeConfigValues}
               forceCoinJoinEnabled={collaborativeFlowActive}
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
-                maxFeesConfigMissing ||
+                feeConfigValidation.maxFeesConfigMissing ||
                 jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||
