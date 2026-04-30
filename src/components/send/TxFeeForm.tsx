@@ -69,12 +69,12 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
     formState: { errors, disabled, defaultValues },
   } = useFormContext<TxFeeFormValues>()
 
-  const txFeeUnitWatch = useWatch({ control, name: 'txFee.txFeeUnit' })
+  const txFeeUnitWatch = useWatch({ control, name: 'txFee.txFeeUnit', exact: true })
 
   return (
     <>
       <div className={cn('flex flex-col gap-4', className)}>
-        <Tabs value={txFeeUnitWatch}>
+        <Tabs value={txFeeUnitWatch ?? TX_FEE_UNITS.BLOCKS}>
           <TabsContent value={TX_FEE_UNITS.BLOCKS}>
             <div className="space-y-2">
               <Field data-invalid={errors.txFee?.txFeeInBlocks !== undefined}>
@@ -135,11 +135,16 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
         <div className="space-y-2">
           <Field data-invalid={errors.txFee?.txFeeUnit !== undefined}>
             <TxFeeUnitInput
-              {...register('txFee.txFeeUnit', {
-                disabled,
-              })}
+              {...{
+                ...register('txFee.txFeeUnit', {
+                  disabled,
+                }),
+                // workaround: overwriting `name` as it does not work with radix radio element
+                name: undefined,
+                // workaround: overwriting `value` to avoid nulls, e.g. on form reset
+                value: txFeeUnitWatch ?? TX_FEE_UNITS.BLOCKS,
+              }}
               defaultValue={defaultValues?.txFee?.txFeeUnit}
-              value={txFeeUnitWatch}
               onValueChange={(value) => {
                 setValue('txFee.txFeeUnit', value as TxFeeUnit, {
                   shouldValidate: true, // trigger validation
