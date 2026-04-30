@@ -1,24 +1,23 @@
-import type { OnChangeFn, Row, RowSelectionState } from '@tanstack/react-table'
+import type { ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Spinner } from '../ui/spinner'
-import { JarUtxosTable, type UtxoTableEntry } from '../wallet/JarUtxosTable'
+import { JarUtxosTable } from '../wallet/JarUtxosTable'
 
-export interface UtxoSelectionDialogProps {
+export type UtxoSelectionDialogProps = {
   open: boolean
   isSubmitting: boolean
   selectedCount: number
   filter: string
-  tableEntries: UtxoTableEntry[]
-  initialRowSelection: RowSelectionState
-  enableRowSelection?: boolean | ((row: Row<UtxoTableEntry>) => boolean)
   onOpenChange: (open: boolean) => void
   onFilterChange: (value: string) => void
-  onRowSelectionChange: OnChangeFn<RowSelectionState>
   onSubmit: () => Promise<void>
-}
+} & Pick<
+  ComponentProps<typeof JarUtxosTable>,
+  'tableEntries' | 'initialRowSelection' | 'enableRowSelection' | 'onRowSelectionChange'
+>
 
 export const UtxoSelectionDialog = ({
   open,
