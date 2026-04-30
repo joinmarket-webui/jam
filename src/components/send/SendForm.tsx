@@ -37,7 +37,13 @@ import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 import JarSelectorDialog from './JarSelectorDialog'
 import { SendCoinjoinPreconditionAlert } from './SendCoinjoinPreconditionAlert'
-import { createSendFormSchema, initialNumberOfCollaborators, toSendFormDefaultValues } from './SendForm.schema'
+import {
+  createSendFormSchema,
+  initialNumberOfCollaborators,
+  MAX_SEND_AMOUNT,
+  MIN_SEND_AMOUNT,
+  toSendFormDefaultValues,
+} from './SendForm.schema'
 import { TxFeeForm } from './TxFeeForm'
 import { estimateMaxCollaboratorFee } from './feeEstimate'
 import type { SendFormValues } from './types'
@@ -451,6 +457,8 @@ export function SendForm({
                     required: false,
                     disabled,
                   })}
+                  min={MIN_SEND_AMOUNT}
+                  max={MAX_SEND_AMOUNT}
                   type="number"
                   className="h-auto pl-9"
                   placeholder={t('send.placeholder_amount_input')}

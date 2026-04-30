@@ -106,3 +106,27 @@ export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds = Math.max(
  * the `/display` endpoint taking more than ~15s.
  */
 export const GAPLIMIT_WARN_THRESHOLD = 250
+
+export function totalCoinSupply(): AmountSats {
+  const SATS_PER_COIN = 100_000_000
+  const initialSubsidy = 50 * SATS_PER_COIN
+  const blockPerHalving = 210_000
+
+  let subsidy = initialSubsidy
+  let total = 0
+  let halving = 0
+
+  // Continue until subsidy becomes zero
+  while (subsidy > 0n) {
+    total += blockPerHalving * subsidy
+    // Prepare next halving: integer division by 2 (floor)
+    subsidy = subsidy / 2
+    halving += 1
+    // Safety: break if loop would be infinite (not needed here but good practice)
+    if (halving > 1000) break
+  }
+
+  return total
+}
+
+export const TOTAL_COIN_SUPPLY: AmountSats = totalCoinSupply()

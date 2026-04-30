@@ -1,10 +1,12 @@
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
+import { TOTAL_COIN_SUPPLY } from '@/constants/jam'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { pseudoRandomInteger } from '@/lib/utils'
+import type { AmountSats } from '@/types/global'
 import { toTxFeeFormDefaultValues, createTxFeeFormSchema } from './TxFeeForm.schema'
 import type { SendFormValues } from './types'
 
@@ -17,6 +19,10 @@ export const initialNumberOfCollaborators = (minValue: number): number => {
 }
 
 const MAX_NUM_COLLABORATORS = 99
+
+// min amount joinmarket is able to send (without errorsing, last check with v0.9.11 on 2026-04-26)
+export const MIN_SEND_AMOUNT: AmountSats = 292
+export const MAX_SEND_AMOUNT: AmountSats = TOTAL_COIN_SUPPLY
 
 const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   source: undefined,
@@ -96,12 +102,7 @@ export const createSendFormSchema = (
             isSweep: yup.boolean().default(false).required(),
             sweepAmount: yup.number().when('isSweep', {
               is: (val: boolean) => val === true,
-              then: (schema) =>
-                schema
-                  .integer()
-                  .min(1)
-                  .max(21_000_000 * 100_000_000)
-                  .required(),
+              then: (schema) => schema.integer().min(1).max(MAX_SEND_AMOUNT).required(),
               otherwise: (schema) =>
                 schema
                   .transform(() => null)
@@ -120,8 +121,8 @@ export const createSendFormSchema = (
                   .integer(t('send.feedback_invalid_amount'))
                   .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
                   .nonNullable(t('send.feedback_invalid_amount'))
-                  .min(1, t('send.feedback_invalid_amount'))
-                  .max(21_000_000 * 100_000_000, t('send.feedback_invalid_amount'))
+                  .min(MIN_SEND_AMOUNT, t('send.feedback_invalid_amount'))
+                  .max(MAX_SEND_AMOUNT, t('send.feedback_invalid_amount'))
                   .required(t('send.feedback_invalid_amount')),
             }),
           })
