@@ -232,10 +232,8 @@ export const JamWalletInfoContextProvider = ({
       }
 
       return await utxosQueryResult
-        .refetch({ cancelRefetch: true, throwOnError: true })
-        .then((utxos) =>
-          displayWalletQueryResult.refetch({ cancelRefetch: true, throwOnError: true }).then(() => utxos),
-        )
+        .refetch({ throwOnError: true })
+        .then((utxos) => displayWalletQueryResult.refetch({ throwOnError: true }).then(() => utxos))
         .then((utxos) => toBalanceSummary((utxos.data?.utxos || []) as Utxo[]))
     },
     retry: false,

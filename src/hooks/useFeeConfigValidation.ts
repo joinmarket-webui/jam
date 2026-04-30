@@ -1,17 +1,26 @@
 import { useCallback, useMemo, useState } from 'react'
 import { FEE_CONFIG_KEYS } from '@/constants/jm'
-import { isMaxFeesConfigMissing, type FeeConfigValues } from '@/lib/feeConfig'
+import {
+  isMaxFeesConfigMissing,
+  toJamFeeConfigValues,
+  type JamFeeConfigValues,
+  type JmRawFeeConfigValues,
+} from '@/lib/feeConfig'
 import type { WalletFileName } from '@/lib/utils'
 import { useJmConfig } from './useJmConfig'
 
-export type { FeeConfigValues } from '@/lib/feeConfig'
-export { isMaxFeesConfigMissing } from '@/lib/feeConfig'
+// Debug flag to force fee config missing error for testing
+const DEFAULT_FORCE_FEE_CONFIG_MISSING = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
 
 interface UseFeeConfigValidationProps {
   walletFileName: WalletFileName
+  forceFeeConfigMissing?: boolean
 }
 
-export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
+export const useFeeConfigValidation = ({
+  walletFileName,
+  forceFeeConfigMissing = DEFAULT_FORCE_FEE_CONFIG_MISSING,
+}: UseFeeConfigValidationProps) => {
   const {
     state: configState,
     refetch: refetchConfig,
@@ -19,10 +28,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
   } = useJmConfig({ walletFileName })
   const [isLoading, setIsLoading] = useState(false)
 
-  // Debug flag to force fee config missing error for testing
-  const forceFeeConfigMissing = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
-
-  const feeConfigValues = useMemo<FeeConfigValues>(() => {
+  const jmRawFeeConfigValues = useMemo<JmRawFeeConfigValues>(() => {
     const getConfigValue = (key: keyof typeof FEE_CONFIG_KEYS) => {
       const configKey = FEE_CONFIG_KEYS[key]
       return configState[configKey.section]?.[configKey.field] ?? undefined
@@ -36,6 +42,11 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
       max_sweep_fee_change: getConfigValue('max_sweep_fee_change'),
     }
   }, [configState])
+
+  const feeConfigValues = useMemo<JamFeeConfigValues>(
+    () => toJamFeeConfigValues(jmRawFeeConfigValues),
+    [jmRawFeeConfigValues],
+  )
 
   const refetchAll = useCallback(async () => {
     setIsLoading(true)
@@ -66,6 +77,7 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
 
   return {
     feeConfigValues,
+    jmRawFeeConfigValues,
     maxFeesConfigMissing,
     refetchAll,
     fetchMissing,

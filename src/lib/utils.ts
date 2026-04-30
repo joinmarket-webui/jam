@@ -141,8 +141,12 @@ export const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
 export const DUMMY_SEED_PHRASE: MnemonicPhrase =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
 
+export const percentageToFactorString = (val: number, precision = 6) => {
+  return (val / 100).toFixed(precision)
+}
+
 export const percentageToFactor = (val: number, precision = 6) => {
-  return Number((val / 100).toFixed(precision))
+  return Number(percentageToFactorString(val, precision))
 }
 
 export const isValidNumber = (val: unknown): val is number => {

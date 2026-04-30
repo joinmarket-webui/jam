@@ -4,15 +4,19 @@ import {
   docoinjoinMutation,
   stopcoinjoinOptions,
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { DirectSendRequest, DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type {
+  DirectSendRequest,
+  DirectSendResponse,
+  DoCoinjoinRequest,
+  ErrorMessage,
+} from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
-import { AlertTriangleIcon, HourglassIcon, ListFilterIcon } from 'lucide-react'
+import { AlertTriangleIcon, CheckCircle2Icon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
@@ -35,6 +39,7 @@ import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
+import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
@@ -42,7 +47,7 @@ import { Spinner } from '../ui/spinner'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
-import { buildCollaborativeSendRequest } from './collaborativeSend'
+import { buildCollaborativeSendRequest, buildNonCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
 
 interface SimpleAlert {
@@ -68,6 +73,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { refetch: refetchWalletInfo, waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { enabled: isDeveloperMode } = useDeveloperMode()
+
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName })
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [showAbortCoinjoinDialog, setShowAbortCoinjoinDialog] = useState(false)
@@ -75,6 +82,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
+  const [sourceJarIndex, setSourceJarIndex] = useState<JarIndex>()
   // TODO: "Lifecycle" or state management should be handled outside of this component
   const collaborativeLifecycleRef = useRef({
     awaitingCompletion: false,
@@ -102,17 +110,16 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     refetchWalletInfoRef.current = refetchWalletInfo
   }, [refetchWalletInfo])
 
-  const utxoSelectionDialog = useUtxoSelectionDialog({
-    walletFileName,
-    jars,
-    addressSummary,
-  })
-
   const sourceJar = useMemo(() => {
-    const sourceJarIndex = sendFromValuesAwaitingConfirmation?.source?.fromJar
     if (sourceJarIndex === undefined) return
     return jars.find((it) => it.jarIndex === sourceJarIndex)
-  }, [jars, sendFromValuesAwaitingConfirmation])
+  }, [jars, sourceJarIndex])
+
+  const utxoSelectionDialog = useUtxoSelectionDialog({
+    walletFileName,
+    sourceJar,
+    addressSummary,
+  })
 
   const availableUtxosForPayment = useMemo(() => {
     return (sourceJar?.utxos || []).filter((utxo) => !utxo.frozen).toSorted((a, b) => a.confirmations - b.confirmations)
@@ -123,12 +130,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     if (destinationJarIndex === undefined) return
     return jars.find((it) => it.jarIndex === destinationJarIndex)
   }, [jars, sendFromValuesAwaitingConfirmation])
-
-  const {
-    feeConfigValues,
-    maxFeesConfigMissing,
-    isLoading: isLoadingFeeConfig,
-  } = useFeeConfigValidation({ walletFileName })
 
   const directSendMutation = useMutation({
     ...directsendMutation({ client }),
@@ -315,24 +316,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
     mutationFn: withMutationDelay(
       async (data: SendFormValues) => {
-        if (data.amount === undefined) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
-        }
-        if (data.destination === undefined || !isValidBitcoinAddress(data.destination.address)) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
-        }
-        if (data.source?.fromJar === undefined) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
-        }
-        if (data.amount.isSweep === true && data.amount.amount !== undefined) {
-          throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given for sweep.')
-        }
-
-        const body = {
-          amount_sats: data.amount.isSweep === true ? 0 : data.amount.amount,
-          destination: data.destination.address,
-          mixdepth: data.source.fromJar,
-        }
+        const body: DirectSendRequest = buildNonCollaborativeSendRequest(data)
         const response = await directSendMutation.mutateAsync({
           path: {
             walletname: walletFileName,
@@ -380,7 +364,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data) => {
+  const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data: SendFormValues) => {
     if (data.isCoinJoin !== true) {
       try {
         await triggerNonCollaborativeTransaction.mutateAsync(data)
@@ -388,14 +372,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         console.error('Error while sending non-collaborative transaction', error)
       }
     } else {
-      if (maxFeesConfigMissing) {
+      if (feeConfigValidation.maxFeesConfigMissing) {
         toast.error(t('send.taker_error_message_max_fees_config_missing'))
         setShowFeeConfigDialog(true)
         return
       }
 
       try {
-        const body = buildCollaborativeSendRequest(data)
+        const body: DoCoinjoinRequest = buildCollaborativeSendRequest(data)
         setPaymentSuccessfulInfoAlert(undefined)
         collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
         await startCoinjoinMutationMutateAsync({
@@ -434,16 +418,17 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     void refetchWalletInfoRef.current()
   }
 
-  if (isLoadingFeeConfig) {
+  if (feeConfigValidation.isLoading) {
     return <PageLoading />
   }
 
   return (
     <>
-      <FeeLimitDialog
+      <FeeConfigDialog
+        walletFileName={walletFileName}
+        feeConfigValidation={feeConfigValidation}
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
-        walletFileName={walletFileName}
       />
       <Dialog open={showAbortCoinjoinDialog} onOpenChange={setShowAbortCoinjoinDialog}>
         <DialogContent>
@@ -493,7 +478,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             await onPaymentConfirmed(sendFromValuesAwaitingConfirmation)
           }}
           meta={{
-            feeConfigValues: feeConfigValues,
+            feeConfigValues: feeConfigValidation.feeConfigValues,
             availableUtxos: availableUtxosForPayment,
             sourceJar,
             destinationJar,
@@ -504,7 +489,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       <div className="mx-auto max-w-4xl space-y-3 p-4">
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
-        {maxFeesConfigMissing && (
+        {feeConfigValidation.maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
 
@@ -577,7 +562,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             )}
             {paymentSuccessfulInfoAlert && !coinjoinRunning && (
               <Alert variant={paymentSuccessfulInfoAlert.variant}>
-                <AlertTriangleIcon />
+                <CheckCircle2Icon />
                 <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
                 <AlertDescription className="ext-wrap slashed-zero">
                   {paymentSuccessfulInfoAlert.description}
@@ -595,22 +580,22 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               onSubmit={onSubmit}
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
-              feeConfigValues={feeConfigValues}
+              feeConfigValues={feeConfigValidation.feeConfigValues}
               forceCoinJoinEnabled={collaborativeFlowActive}
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
-                maxFeesConfigMissing ||
+                feeConfigValidation.maxFeesConfigMissing ||
                 jmSession?.maker_running ||
                 collaborativeFlowActive ||
                 jmSession?.rescanning ||
-                utxoSelectionDialog.isApplying ||
+                utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}
-              onSourceJarChange={utxoSelectionDialog.setSourceJarIndex}
+              onSourceJarChange={setSourceJarIndex}
               sourceJarLabelButton={
                 <Button
                   type="button"

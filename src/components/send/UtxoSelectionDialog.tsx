@@ -1,28 +1,27 @@
-import type { OnChangeFn, Row, RowSelectionState } from '@tanstack/react-table'
+import type { ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Spinner } from '../ui/spinner'
-import { JarUtxosTable, type UtxoTableEntry } from '../wallet/JarUtxosTable'
+import { JarUtxosTable } from '../wallet/JarUtxosTable'
 
-export interface UtxoSelectionDialogProps {
+export type UtxoSelectionDialogProps = {
   open: boolean
-  isApplying: boolean
+  isSubmitting: boolean
   selectedCount: number
   filter: string
-  tableEntries: UtxoTableEntry[]
-  initialRowSelection: RowSelectionState
-  enableRowSelection: boolean | ((row: Row<UtxoTableEntry>) => boolean)
   onOpenChange: (open: boolean) => void
   onFilterChange: (value: string) => void
-  onRowSelectionChange: OnChangeFn<RowSelectionState>
-  onApply: () => void
-}
+  onSubmit: () => Promise<void>
+} & Pick<
+  ComponentProps<typeof JarUtxosTable>,
+  'tableEntries' | 'initialRowSelection' | 'enableRowSelection' | 'onRowSelectionChange'
+>
 
 export const UtxoSelectionDialog = ({
   open,
-  isApplying,
+  isSubmitting,
   selectedCount,
   filter,
   tableEntries,
@@ -31,7 +30,7 @@ export const UtxoSelectionDialog = ({
   onOpenChange,
   onFilterChange,
   onRowSelectionChange,
-  onApply,
+  onSubmit,
 }: UtxoSelectionDialogProps) => {
   const { t } = useTranslation()
 
@@ -49,6 +48,7 @@ export const UtxoSelectionDialog = ({
           value={filter}
           onChange={(event) => onFilterChange(event.target.value)}
           placeholder={t('jar_details.utxo_list.placeholder_search')}
+          disabled={isSubmitting}
         />
         <div className="max-h-[55vh] overflow-hidden">
           <JarUtxosTable
@@ -62,11 +62,11 @@ export const UtxoSelectionDialog = ({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isApplying}>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             {t('modal.confirm_button_reject')}
           </Button>
-          <Button type="button" onClick={onApply} disabled={isApplying}>
-            {isApplying ? <Spinner /> : undefined}
+          <Button type="button" onClick={() => void onSubmit()} disabled={isSubmitting}>
+            {isSubmitting ? <Spinner /> : undefined}
             {t('modal.confirm_button_accept')}
           </Button>
         </DialogFooter>

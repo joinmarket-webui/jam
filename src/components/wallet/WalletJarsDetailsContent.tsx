@@ -134,6 +134,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
 
   // TODO: makerRunning, takerRunner, rescanRunning, etc.
   const operationsEnabled = enabled && !(walletInfoIsFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
+  const enableRowSelection = enabled && !(freezeUtxos.isPending || unfreezeUtxos.isPending)
 
   const onFreezeClick = async () => {
     const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
@@ -245,6 +246,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         tableEntries={tableEntries}
         pinnedEntries={[]}
         globalFilter={searchFilter}
+        enableRowSelection={enableRowSelection !== true ? false : undefined}
         onRowSelectionChange={setRowSelection}
       />
     </>

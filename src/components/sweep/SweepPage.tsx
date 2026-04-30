@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { SweepDestinationInputs } from '@/components/sweep/SweepDestinationInputs'
 import {
   buildSweepDestinationValues,
@@ -87,7 +87,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [localSchedule, setLocalSchedule] = useState<Schedule>()
   const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
 
-  const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName })
+
   const allUtxos = useMemo(() => {
     return walletInfo.jars.flatMap((jar) => jar.utxos)
   }, [walletInfo.jars])
@@ -258,7 +259,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }, [schedulerRunning, stopScheduleMutationIsSuccess, stopScheduleMutationReset])
 
   const isOperationDisabled =
-    maxFeesConfigMissing || collaborativeOperationRunning || jmSession?.rescanning || !preconditionSummary.isFulfilled
+    feeConfigValidation.maxFeesConfigMissing ||
+    collaborativeOperationRunning ||
+    jmSession?.rescanning ||
+    !preconditionSummary.isFulfilled
 
   const isStartDisabled =
     isOperationDisabled ||
@@ -314,16 +318,17 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     await stopScheduleMutationMutateAsync()
   }
 
-  if (isLoading || walletInfo.isLoading || jmSession === undefined) {
+  if (feeConfigValidation.isLoading || walletInfo.isLoading || jmSession === undefined) {
     return <PageLoading />
   }
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <FeeLimitDialog
+      <FeeConfigDialog
+        walletFileName={walletFileName}
+        feeConfigValidation={feeConfigValidation}
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
-        walletFileName={walletFileName}
       />
       <SweepStartConfirmDialog
         open={showScheduleConfirmDialog}
@@ -335,7 +340,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
 
-      {maxFeesConfigMissing && (
+      {feeConfigValidation.maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
       )}
 

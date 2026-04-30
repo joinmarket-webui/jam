@@ -30,15 +30,16 @@ import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useFeatures } from '@/hooks/useFeatures'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { Spinner } from '../ui/spinner'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
-import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem, SettingsLink, SettingSwitch } from './SettingsItem'
+import { FeeConfigDialog } from './fees/FeeConfigDialog'
 
 interface SettingPageProps {
   walletFileName: WalletFileName
@@ -53,9 +54,11 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
     useJamDisplayContext()
   const jamSettings = useStore(jamSettingsStore)
 
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName })
+
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showXpubsDialog, setShowXpubsDialog] = useState(false)
-  const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
+  const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isFeatureEnabled } = useFeatures()
 
@@ -125,7 +128,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <SettingItem
             icon={DollarSignIcon}
             title={t('settings.show_fee_config')}
-            action={() => setShowFeeLimitDialog(true)}
+            action={() => setShowFeeConfigDialog(true)}
           />
         </CardContent>
       </Card>
@@ -248,11 +251,11 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </>
       )}
 
-      <FeeLimitDialog
-        key={`fee-dialog-open-${showFeeLimitDialog}`}
+      <FeeConfigDialog
         walletFileName={walletFileName}
-        open={showFeeLimitDialog}
-        onOpenChange={setShowFeeLimitDialog}
+        feeConfigValidation={feeConfigValidation}
+        open={showFeeConfigDialog}
+        onOpenChange={setShowFeeConfigDialog}
       />
 
       {hashedPassword && (

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
+import { toJamFeeConfigValues, type JamFeeConfigValues } from '@/lib/feeConfig'
 import { estimateMaxCollaboratorFee } from './feeEstimate'
 
-const baseFeeConfig: FeeConfigValues = {
+const baseFeeConfig: JamFeeConfigValues = toJamFeeConfigValues({
   max_cj_fee_abs: '1500',
   max_cj_fee_rel: '0.005',
-}
+})
 
 describe('estimateMaxCollaboratorFee', () => {
   it('uses relative fee when it is larger than absolute', () => {

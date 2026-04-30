@@ -3,8 +3,8 @@ import { DialogTitle } from '@radix-ui/react-dialog'
 import { InfoIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { Jar } from '@/context/JamWalletInfoContext'
-import type { FeeConfigValues } from '@/hooks/useFeeConfigValidation'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { factorToPercentage } from '@/lib/utils'
 import type { WithRequiredProperty } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
@@ -15,11 +15,11 @@ import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { estimateMaxCollaboratorFee, type EstimateMaxCollaboratorFeeResult } from './feeEstimate'
+import { estimateMaxCollaboratorFee, useMiningFeeText, type EstimateMaxCollaboratorFeeResult } from './feeEstimate'
 import type { SendFormValues } from './types'
 
 const maxCollaboraterFee = (
-  feeConfigValues: FeeConfigValues,
+  feeConfigValues: JamFeeConfigValues,
   values: SendFormValues,
 ): EstimateMaxCollaboratorFeeResult | undefined => {
   if (!values.isCoinJoin || values.numCollaborators === undefined) {
@@ -38,7 +38,7 @@ type PaymentConfirmDialogProps = WithRequiredProperty<
   onConfirm: (values: SendFormValues) => Promise<void>
   values: SendFormValues
   meta: {
-    feeConfigValues?: FeeConfigValues
+    feeConfigValues: JamFeeConfigValues
     availableUtxos?: Utxo[]
     sourceJar: Jar
     destinationJar?: Jar
@@ -62,9 +62,20 @@ export default function PaymentConfirmDialog({
   const [isConfirming, setIsConfirming] = useState(false)
 
   const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (meta.feeConfigValues === undefined) return undefined
     return maxCollaboraterFee(meta.feeConfigValues, values)
   }, [values, meta.feeConfigValues])
+
+  const miningFeeText = useMiningFeeText({
+    feeConfigValues: {
+      txFeeFactor: meta.feeConfigValues.txFeeFactor || 0,
+      txFee: {
+        txFeeUnit: values.txFee.txFeeUnit,
+        txFeeInBlocks: values.txFee.txFeeInBlocks,
+        txFeeInSatsPerVbyte: values.txFee.txFeeInSatsPerVbyte,
+      },
+    },
+    t,
+  })
 
   const handleClose = () => {
     onOpenChange(false)
@@ -161,6 +172,15 @@ export default function PaymentConfirmDialog({
                   </TooltipContent>
                 </Tooltip>
               </div>
+            </>
+          )}
+
+          {miningFeeText && (
+            <>
+              <div className="col-span-1 font-semibold md:text-right">
+                {t('send.confirm_send_modal.label_miner_fee')}
+              </div>
+              <div className="col-span-4">{miningFeeText}</div>
             </>
           )}
         </div>

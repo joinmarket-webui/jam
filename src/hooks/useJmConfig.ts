@@ -18,7 +18,6 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
   const { mutateAsync: fetchConfigAsync } = useMutation({
     ...configgetMutation({
       client,
-      path: { walletname: walletFileName },
     }),
     retry: 3,
   })
