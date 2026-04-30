@@ -102,12 +102,13 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
 const AUTO_CHANGE_SELECTION_TOAST_ID = 'utxo.selection_changed_automatically'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const utxoTableColumns = (t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
+const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
   return [
     {
       id: 'select-col',
       header: ({ table }: HeaderContext<UtxoTableEntry, unknown>) => (
         <Checkbox
+          disabled={enableSelectAllToggle === false}
           checked={table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false}
           onCheckedChange={(checked) => {
             table.toggleAllRowsSelected(checked === true)
@@ -260,7 +261,7 @@ interface JarUtxosTableProps {
   tableEntries: UtxoTableEntry[]
   pinnedEntries: UtxoTableEntry[]
   initialRowSelection?: RowSelectionState
-  enableRowSelection?: boolean | ((row: Row<UtxoTableEntry>) => boolean)
+  enableRowSelection?: RowSelectionOptions<UtxoTableEntry>['enableRowSelection']
   onChange?: (table: TableType<UtxoTableEntry>) => void
   onRowSelectionChange?: OnChangeFn<RowSelectionState>
 }
@@ -279,8 +280,12 @@ export const JarUtxosTable = ({
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: ITEMS_PER_PAGE })
   const [isShowAll, setIsShowAll] = useState(false)
+  const enableSelectAllToggle = useMemo(
+    () => enableRowSelection !== undefined && enableRowSelection !== false,
+    [enableRowSelection],
+  )
 
-  const columns = useMemo(() => utxoTableColumns(t), [t])
+  const columns = useMemo(() => utxoTableColumns(enableSelectAllToggle, t), [enableSelectAllToggle, t])
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     minerFeeContribution: false,
