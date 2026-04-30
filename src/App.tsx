@@ -491,16 +491,16 @@ const WalletInfoAutoReload = () => {
     function refetchWalletInfoAfterBlockHeightIncrease() {
       if (currentBlockHeight === undefined) return
 
-      const blockHeightIncreased =
+      const blockHeightChanged =
         previousBlockHeightRef.current !== undefined && previousBlockHeightRef.current !== currentBlockHeight
       previousBlockHeightRef.current = currentBlockHeight
 
-      if (!blockHeightIncreased) {
-        console.debug('Abort refetching: Block height did not increase.')
+      if (!blockHeightChanged) {
+        console.debug('Abort refetching: Block height did not change.')
         return
       }
 
-      const delayBefore: Milliseconds = RELOAD_WALLET_INFO_DELAY.AFTER_BLOCK_HEIGHT_CHANGE
+      const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_BLOCK_HEIGHT_CHANGE
       console.debug('Trigger refetch looking for funds AFTER_BLOCK_HEIGHT_CHANGE with delay %d...', delayBefore)
 
       const abortCtrl = new AbortController()
