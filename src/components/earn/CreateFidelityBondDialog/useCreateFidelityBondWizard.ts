@@ -7,7 +7,7 @@ import {
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useForm, useWatch, type Resolver } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
@@ -51,7 +51,7 @@ export function useCreateFidelityBondWizard(
   const form = useForm<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>({
     mode: 'onChange',
     defaultValues: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES,
-    resolver: yupResolver(formSchema) as Resolver<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>,
+    resolver: yupResolver(formSchema),
   })
 
   const watchedLockdate = useWatch({ control: form.control, name: 'lockdate' })

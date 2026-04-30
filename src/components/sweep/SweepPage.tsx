@@ -4,7 +4,7 @@ import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/join
 import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
-import { useFieldArray, useForm, useWatch, type Resolver } from 'react-hook-form'
+import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -104,11 +104,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     defaultValues: {
       destinations: initialDestinations,
     },
-    resolver: yupResolver(schema, { context: { addressSummary: walletInfo.addressSummary } }) as Resolver<
-      SweepFormValues,
-      SweepResolverContext,
-      SweepFormValues
-    >,
+    resolver: yupResolver(schema, { context: { addressSummary: walletInfo.addressSummary } }),
   })
 
   const { fields, replace } = useFieldArray({
