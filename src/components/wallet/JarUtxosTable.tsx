@@ -123,8 +123,12 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
           disabled={!row.getCanSelect()}
           onCheckedChange={(checked) => {
             const address = row.original.utxo.address
-            const eligibleRows = table.getRowModel().rows.filter((it) => it.original.utxo.address === address)
-            eligibleRows.forEach((it) => it.getToggleSelectedHandler()(checked))
+            const eligibleRows = table
+              .getRowModel()
+              .rows.filter((it) => it.original.utxo.address === address)
+              .filter((it) => it.getIsSelected() !== checked)
+
+            eligibleRows.forEach((it) => it.toggleSelected())
 
             if (eligibleRows.length > 1) {
               if (checked) {
