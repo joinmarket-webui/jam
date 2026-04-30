@@ -1,4 +1,5 @@
 import type { AmountSats, Factor } from '@/types/global'
+import { isValidInteger, isValidNumber } from './utils'
 
 export interface JmRawFeeConfigValues {
   max_cj_fee_abs?: string
@@ -38,7 +39,7 @@ export const toJamFeeConfigValues = (values: JmRawFeeConfigValues): JamFeeConfig
   const txFeeFactor = Number.parseFloat(values.tx_fees_factor || '')
 
   const rawTxFeeValue = Number.parseInt(values.tx_fees || '', 10)
-  const txFeesInBlocksOrSatsPerKiloVByte = Number.isSafeInteger(rawTxFeeValue) ? rawTxFeeValue : undefined
+  const txFeesInBlocksOrSatsPerKiloVByte = isValidInteger(rawTxFeeValue) ? rawTxFeeValue : undefined
   const txFeeUnit =
     txFeesInBlocksOrSatsPerKiloVByte !== undefined && txFeesInBlocksOrSatsPerKiloVByte > 1_000
       ? TX_FEE_UNITS.SATS_PER_VBYTE
@@ -49,10 +50,10 @@ export const toJamFeeConfigValues = (values: JmRawFeeConfigValues): JamFeeConfig
     txFeeUnit === TX_FEE_UNITS.SATS_PER_VBYTE ? txFeesInBlocksOrSatsPerKiloVByte! / 1_000 : undefined
 
   return {
-    maxCjAbsoluteFee: Number.isSafeInteger(maxCjAbsoluteFee) ? maxCjAbsoluteFee : undefined,
-    maxCjRelativeFee: Number.isFinite(maxCjRelativeFee) ? maxCjRelativeFee : undefined,
-    txFeeFactor: Number.isFinite(txFeeFactor) ? txFeeFactor : undefined,
-    maxSweepFeeChangeFactor: Number.isFinite(maxSweepFeeChangeFactor) ? maxSweepFeeChangeFactor : undefined,
+    maxCjAbsoluteFee: isValidInteger(maxCjAbsoluteFee) ? maxCjAbsoluteFee : undefined,
+    maxCjRelativeFee: isValidNumber(maxCjRelativeFee) ? maxCjRelativeFee : undefined,
+    txFeeFactor: isValidNumber(txFeeFactor) ? txFeeFactor : undefined,
+    maxSweepFeeChangeFactor: isValidNumber(maxSweepFeeChangeFactor) ? maxSweepFeeChangeFactor : undefined,
     txFee: {
       txFeeUnit,
       txFeeInBlocks,

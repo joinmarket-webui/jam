@@ -16,12 +16,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
-import {
-  cn,
-  delayedPromise,
-  factorToPercentage,
-  type WalletFileName,
-} from '@/lib/utils'
+import { cn, delayedPromise, factorToPercentage, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
