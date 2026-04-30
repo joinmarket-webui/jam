@@ -11,7 +11,7 @@ export const buildDestinationErrors = (
 ): Array<string | undefined> => {
   const normalizedAddresses = addresses.map((address) => normalizeAddress(address))
   const counts = normalizedAddresses.reduce((acc, address) => {
-    if (address === '') {
+    if (address === '' || !isValidBitcoinAddress(address)) {
       return acc
     }
 
@@ -21,7 +21,7 @@ export const buildDestinationErrors = (
 
   return normalizedAddresses.map((address) => {
     if (address === '' || !isValidBitcoinAddress(address)) {
-      return t('scheduler.feedback_invalid_destination_address')
+      return undefined
     }
 
     const isReusedAddress = addressSummary[address]?.used === true

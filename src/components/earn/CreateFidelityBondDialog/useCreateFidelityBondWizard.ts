@@ -10,7 +10,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import * as yup from 'yup'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
@@ -52,11 +51,7 @@ export function useCreateFidelityBondWizard(
   const form = useForm<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>({
     mode: 'onChange',
     defaultValues: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES,
-    resolver: yupResolver(formSchema as yup.AnyObjectSchema) as Resolver<
-      CreateFidelityBondFormValues,
-      unknown,
-      CreateFidelityBondFormValues
-    >,
+    resolver: yupResolver(formSchema) as Resolver<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>,
   })
 
   const watchedLockdate = useWatch({ control: form.control, name: 'lockdate' })

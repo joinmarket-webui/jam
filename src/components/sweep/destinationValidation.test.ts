@@ -6,14 +6,10 @@ import { buildDestinationErrors } from './destinationValidation'
 const t = ((key: string) => key) as unknown as TFunction
 
 describe('buildDestinationErrors', () => {
-  it('reports invalid addresses', () => {
+  it('ignores invalid addresses for duplicate/reuse checks', () => {
     const errors = buildDestinationErrors(['invalid-address', '', 'also-invalid'], {}, t)
 
-    expect(errors).toEqual([
-      'scheduler.feedback_invalid_destination_address',
-      'scheduler.feedback_invalid_destination_address',
-      'scheduler.feedback_invalid_destination_address',
-    ])
+    expect(errors).toEqual([undefined, undefined, undefined])
   })
 
   it('reports duplicate addresses', () => {
@@ -41,10 +37,6 @@ describe('buildDestinationErrors', () => {
 
     const errors = buildDestinationErrors([usedAddress, freshAddress, freshAddress + 'x'], addressSummary, t)
 
-    expect(errors).toEqual([
-      'scheduler.feedback_reused_destination_address',
-      undefined,
-      'scheduler.feedback_invalid_destination_address',
-    ])
+    expect(errors).toEqual(['scheduler.feedback_reused_destination_address', undefined, undefined])
   })
 })

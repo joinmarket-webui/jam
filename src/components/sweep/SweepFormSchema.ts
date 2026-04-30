@@ -1,3 +1,4 @@
+import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
@@ -9,24 +10,41 @@ export type SweepFormValues = {
   }>
 }
 
+export type SweepResolverContext = {
+  addressSummary: AddressSummary
+}
+
 export const buildSweepDestinationValues = (count: number): SweepFormValues['destinations'] =>
   Array.from({ length: count }, () => ({ address: '' }))
 
 export const getSweepDestinationAddresses = (values: SweepFormValues): string[] =>
   normalizeDestinationAddresses(values.destinations.map((destination) => destination.address))
 
-const getDestinationIndex = (path?: string): number | undefined => {
-  const match = path?.match(/^destinations\[(\d+)\]\.address$/)
-  if (!match) return undefined
-  return Number.parseInt(match[1], 10)
+const buildDestinationErrorList = (
+  destinations: SweepFormValues['destinations'],
+  addressSummary: AddressSummary,
+  t: TFunction<'translation', undefined>,
+): yup.ValidationError | true => {
+  const errors = buildDestinationErrors(
+    destinations.map((destination) => destination.address),
+    addressSummary,
+    t,
+  )
+
+  const innerErrors = errors
+    .map((error, index) =>
+      error ? new yup.ValidationError(error, destinations[index]?.address, `destinations[${index}].address`) : null,
+    )
+    .filter((error): error is yup.ValidationError => error !== null)
+
+  if (innerErrors.length === 0) {
+    return true
+  }
+
+  return new yup.ValidationError(innerErrors)
 }
 
-const getRootDestinations = (context: yup.TestContext): SweepFormValues['destinations'] | undefined => {
-  const rootValue = context.from?.at(-1)?.value as Partial<SweepFormValues> | undefined
-  return rootValue?.destinations
-}
-
-export const sweepFormSchema = (addressSummary: AddressSummary, t: TFunction<'translation', undefined>) => {
+export const sweepFormSchema = (t: TFunction<'translation', undefined>): yup.ObjectSchema<SweepFormValues> => {
   const invalidDestinationAddressMessage = t('scheduler.feedback_invalid_destination_address')
 
   return yup
@@ -42,26 +60,23 @@ export const sweepFormSchema = (addressSummary: AddressSummary, t: TFunction<'tr
                   typeof originalValue === 'string' ? normalizeDestinationAddresses([originalValue])[0] : '',
                 )
                 .defined()
-                .test('valid-sweep-destination', invalidDestinationAddressMessage, function () {
-                  const destinations = getRootDestinations(this)
-                  const index = getDestinationIndex(this.path)
-
-                  if (!destinations || index === undefined) {
+                .test('valid-sweep-destination', invalidDestinationAddressMessage, function (value) {
+                  if (typeof value !== 'string' || value.trim() === '' || !isValidBitcoinAddress(value)) {
                     return this.createError({ message: invalidDestinationAddressMessage })
                   }
 
-                  const errors = buildDestinationErrors(
-                    destinations.map((destination) => destination.address),
-                    addressSummary,
-                    t,
-                  )
-                  const error = errors[index]
-
-                  return error === undefined || this.createError({ message: error })
+                  return true
                 }),
             })
             .required(),
         )
+        .test('unique-destination-addresses', function (value: SweepFormValues['destinations'] | undefined) {
+          const destinations = value ?? []
+          const context = this.options.context as SweepResolverContext | undefined
+          const addressSummary = context?.addressSummary ?? ({} as AddressSummary)
+
+          return buildDestinationErrorList(destinations, addressSummary, t)
+        })
         .required(),
     })
     .required()
