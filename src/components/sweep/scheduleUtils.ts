@@ -1,3 +1,4 @@
+import { isValidNumber } from '@/lib/utils'
 import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, JarIndex, Minutes } from '@/types/global'
 
@@ -70,7 +71,7 @@ export interface ScheduleProgressSummary {
 const MIN_STEP_WIDTH_PERCENT = 8
 
 const toNumberOrDefault = (value: unknown, fallback: number): number => {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+  return isValidNumber(value) ? value : fallback
 }
 
 const getScheduleEntryWaitMinutes = (entry: ScheduleEntry): number => {

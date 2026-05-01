@@ -20,7 +20,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { GAPLIMIT_WARN_THRESHOLD } from '@/constants/jam'
 import { JM_GAPLIMIT_DEFAULT } from '@/constants/jm'
-import { cn, DUMMY_SEED_PHRASE, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
+import { cn, DUMMY_SEED_PHRASE, isValidInteger, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
@@ -116,14 +116,14 @@ const importDetailsFormSchema = (t: TFunction) => {
         ),
       blockheight: yup
         .number()
-        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+        .transform((value) => (isValidInteger(value) ? value : null))
         .integer(invalidBlockheightMessage)
         .min(MIN_BLOCKHEIGHT_VALUE, invalidBlockheightMessage)
         .max(MAX_BLOCKHEIGHT_VALUE, invalidBlockheightMessage)
         .required(invalidBlockheightMessage),
       gaplimit: yup
         .number()
-        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+        .transform((value) => (isValidInteger(value) ? value : null))
         .integer(invalidGaplimitMessage)
         .min(MIN_GAPLIMIT_VALUE, invalidGaplimitMessage)
         .max(MAX_GAPLIMIT_VALUE, invalidGaplimitMessage)

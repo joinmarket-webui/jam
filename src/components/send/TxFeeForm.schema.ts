@@ -3,6 +3,7 @@ import * as yup from 'yup'
 import { type TxFeeUnit } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
+import { isValidInteger, isValidNumber } from '@/lib/utils'
 
 export const MIN_TX_FEE_IN_BLOCKS = 1
 export const MAX_TX_FEE_IN_BLOCKS = 1_000
@@ -52,7 +53,7 @@ export function createTxFeeFormSchema({
             then: (schema) =>
               schema
                 .integer(feedbackInvalidTxFeesBlocks)
-                .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+                .transform((value) => (isValidInteger(value) ? value : null))
                 .min(MIN_TX_FEE_IN_BLOCKS, feedbackInvalidTxFeesBlocks)
                 .max(MAX_TX_FEE_IN_BLOCKS, feedbackInvalidTxFeesBlocks)
                 .required(feedbackInvalidTxFeesBlocks),
@@ -66,7 +67,7 @@ export function createTxFeeFormSchema({
             is: (val: TxFeeUnit) => val === TX_FEE_UNITS.SATS_PER_VBYTE,
             then: (schema) =>
               schema
-                .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+                .transform((value) => (isValidNumber(value) ? value : null))
                 .min(MIN_TX_FEE_IN_SATS_PER_VBYTE, feedbackInvalidTxFeeInSatsPerVbyte)
                 .max(MAX_TX_FEE_IN_SATS_PER_VBYTE, feedbackInvalidTxFeeInSatsPerVbyte)
                 .required(feedbackInvalidTxFeeInSatsPerVbyte),

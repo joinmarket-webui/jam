@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
-import { cn, factorToPercentage } from '@/lib/utils'
+import { cn, factorToPercentage, isValidInteger, isValidNumber } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Card, CardContent, CardHeader } from '../ui/card'
@@ -60,7 +60,7 @@ const earnFormBaseSchema = (t: TFunction) => {
       offerAbsoluteFee: yup
         .number()
         .integer(t('earn.feedback_invalid_abs_fee'))
-        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+        .transform((value) => (isValidInteger(value) ? value : null))
         .when('offerType', {
           is: (val: OfferType) => val === OFFERTYPE_ABS,
           then: (schema) =>
@@ -71,7 +71,7 @@ const earnFormBaseSchema = (t: TFunction) => {
         }),
       offerRelativeFeeInPercent: yup
         .number()
-        .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+        .transform((value) => (isValidNumber(value) ? value : null))
         .when('offerType', {
           is: (val: OfferType) => val === OFFERTYPE_REL,
           then: (schema) =>
@@ -79,11 +79,7 @@ const earnFormBaseSchema = (t: TFunction) => {
               .min(factorToPercentage(JAM.OFFER_FEE_REL_MIN), invalidRelativeFeeMessage)
               .max(factorToPercentage(JAM.OFFER_FEE_REL_MAX), invalidRelativeFeeMessage)
               .required(invalidRelativeFeeMessage),
-          otherwise: (schema) =>
-            schema
-              .transform((value) => (Number.isFinite(value) ? Number(value) : null))
-              .nullable()
-              .optional(),
+          otherwise: (schema) => schema.nullable().optional(),
         }),
     })
     .required()
@@ -151,7 +147,7 @@ export function EarnForm({
         yup.object({
           offerMinAmount: yup
             .number()
-            .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+            .transform((value) => (isValidInteger(value) ? value : null))
             .integer(t('earn.feedback_invalid_min_amount'))
             .min(
               JAM.OFFER_MINSIZE_MIN,

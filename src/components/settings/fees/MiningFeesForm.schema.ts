@@ -6,7 +6,7 @@ import {
   MAX_SWEEP_FEE_CHANGE_MIN,
   MAX_SWEEP_FEE_CHANGE_MAX,
 } from '@/constants/jam'
-import { factorToPercentage } from '@/lib/utils'
+import { factorToPercentage, isValidNumber } from '@/lib/utils'
 import { createTxFeeFormSchema, type TxFeeFormValues } from '../../send/TxFeeForm.schema'
 
 export type MiningFeesFormValues = {
@@ -34,13 +34,13 @@ export function createMiningFeesFormSchema({
       .object({
         txFeesFactorInPercent: yup
           .number()
-          .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+          .transform((value) => (isValidNumber(value) ? value : null))
           .min(factorToPercentage(TX_FEES_FACTOR_MIN), txFeesFactorMessage)
           .max(factorToPercentage(TX_FEES_FACTOR_MAX), txFeesFactorMessage)
           .required(txFeesFactorMessage),
         maxSweepFeeChangeInPercent: yup
           .number()
-          .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+          .transform((value) => (isValidNumber(value) ? value : null))
           .min(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN), maxSweepFeeChangeMessage)
           .max(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX), maxSweepFeeChangeMessage)
           .required(maxSweepFeeChangeMessage),
