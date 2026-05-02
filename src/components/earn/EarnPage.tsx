@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -72,6 +72,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const makerRunning = jmSession?.maker_running === true
 
   const walletInfo = useJamWalletInfoContext()
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
   const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
   const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
@@ -79,7 +80,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [showEarnReport, setShowEarnReport] = useState(false)
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
-  const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
 
   const isCurrentOfferAvailable = jmSession?.offer_list && jmSession.offer_list.length > 0
 
@@ -178,7 +178,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
-      {/* Earn Report Button */}
       <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={() => setShowEarnReport(true)}>
           <FileTextIcon />
@@ -186,8 +185,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </Button>
       </div>
 
-      {/* Fee Config Error Alert */}
-      {maxFeesConfigMissing && (
+      {feeConfigValidation.maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
       )}
 
@@ -324,10 +322,11 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       {/* Fee Configuration Dialog */}
-      <FeeLimitDialog
+      <FeeConfigDialog
+        walletFileName={walletFileName}
+        feeConfigValidation={feeConfigValidation}
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
-        walletFileName={walletFileName}
       />
 
       {/* Create Fidelity Bond Dialog */}

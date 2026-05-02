@@ -1,5 +1,9 @@
+import '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
+
 export type Currency = 'sats' | 'btc'
 export type AmountSats = number
+export type Factor = number
 export type BitcoinAddress = string
 export type JarIndex = number
 
@@ -23,4 +27,15 @@ export type MM = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | 
 
 export type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
   [Property in Key]-?: Type[Property]
+}
+
+declare module '@tanstack/react-table' {
+  // see https://tanstack.com/table/v8/docs/api/core/column-def#meta
+  interface ColumnMeta<TData extends RowData, TValue> {
+    __tData?: TData
+    __tValue?: TValue
+    align?: 'left' | 'right' | 'center'
+    alphabetic?: boolean
+    numeric?: boolean
+  }
 }

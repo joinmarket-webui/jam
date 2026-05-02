@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { buildCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
 
@@ -10,6 +11,9 @@ const baseValues = (): SendFormValues => ({
   amount: { isSweep: false, amount: 100_000, sweepAmount: undefined },
   isCoinJoin: true,
   numCollaborators: 4,
+  txFee: {
+    txFeeUnit: 'blocks',
+  },
 })
 
 describe('buildCollaborativeSendRequest', () => {
@@ -37,13 +41,28 @@ describe('buildCollaborativeSendRequest', () => {
     expect(request.amount_sats).toBe(0)
   })
 
-  it('passes txfee when present', () => {
+  it('passes txfee when txFeeInBlocks is present', () => {
     const request = buildCollaborativeSendRequest({
       ...baseValues(),
-      txFee: { value: 3, unit: 'blocks' },
+      txFee: {
+        txFeeUnit: TX_FEE_UNITS.BLOCKS,
+        txFeeInBlocks: 3,
+      },
     })
 
     expect(request.txfee).toBe(3)
+  })
+
+  it('passes txfee when txFeeInSatsPerVbyte is present', () => {
+    const request = buildCollaborativeSendRequest({
+      ...baseValues(),
+      txFee: {
+        txFeeUnit: TX_FEE_UNITS.SATS_PER_VBYTE,
+        txFeeInSatsPerVbyte: 1 + 1 / 3,
+      },
+    })
+
+    expect(request.txfee).toBe(1_334)
   })
 
   it('throws for invalid destination address', () => {

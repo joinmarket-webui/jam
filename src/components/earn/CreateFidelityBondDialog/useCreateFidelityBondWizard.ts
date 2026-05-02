@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
 import {
   directsendMutation,
   freezeMutation,
@@ -6,8 +7,10 @@ import {
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import * as yup from 'yup'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
@@ -16,6 +19,11 @@ import * as fb from '@/lib/fidelityBondUtils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
+import {
+  CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES,
+  createFidelityBondFormSchema,
+  type CreateFidelityBondFormValues,
+} from './CreateFidelityBondFormSchema'
 import type { Step } from './types'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './types'
 
@@ -30,16 +38,41 @@ export function useCreateFidelityBondWizard(
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [step, setStep] = useState<Step>('select_date')
-  const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')
-  const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | undefined>()
-  const [selectedUtxos, setSelectedUtxos] = useState<Utxo[]>([])
   const [frozenUtxos, setFrozenUtxos] = useState<Utxo[]>([])
   const [utxoPage, setUtxoPage] = useState(0)
-  const [confirmationChecked, setConfirmationChecked] = useState(false)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
   const [error, setError] = useState<string | undefined>()
 
   const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
+  const jarIndexes = useMemo(() => walletInfo.jars.map((jar) => jar.jarIndex), [walletInfo.jars])
+  const formSchema = useMemo(
+    () => createFidelityBondFormSchema(lockdateOptions, jarIndexes, t),
+    [lockdateOptions, jarIndexes, t],
+  )
+  const form = useForm<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>({
+    mode: 'onChange',
+    defaultValues: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES,
+    resolver: yupResolver(formSchema as yup.AnyObjectSchema) as Resolver<
+      CreateFidelityBondFormValues,
+      unknown,
+      CreateFidelityBondFormValues
+    >,
+  })
+
+  const watchedLockdate = useWatch({ control: form.control, name: 'lockdate' })
+  const selectedLockdate = watchedLockdate ?? ''
+  const selectedJarIndex = useWatch({ control: form.control, name: 'source.fromJar' })
+  const selectedUtxoIds = useWatch({
+    control: form.control,
+    name: 'utxoIds',
+    defaultValue: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES.utxoIds,
+  })
+  const confirmationChecked = useWatch({
+    control: form.control,
+    name: 'confirmationAccepted',
+    defaultValue: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES.confirmationAccepted,
+  })
+
   const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
   const monthOptions = useMemo(() => getMonthOptions(), [])
 
@@ -54,6 +87,22 @@ export function useCreateFidelityBondWizard(
   const selectedMonth = selectedLockdate ? selectedLockdate.slice(5, 7) : ''
   const minYear = minLockdate ? Number.parseInt(minLockdate.slice(0, 4), 10) : 0
   const minMonth = minLockdate ? Number.parseInt(minLockdate.slice(5, 7), 10) : 1
+  const setSelectedLockdate = (lockdate: fb.Lockdate | '') => {
+    form.setValue('lockdate', lockdate || undefined, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+  }
+  const setSelectedJarIndex = (jarIndex: JarIndex | undefined) => {
+    form.setValue('source.fromJar', jarIndex, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+  }
+  const setSelectedUtxoIds = (utxoIds: string[]) => {
+    form.setValue('utxoIds', utxoIds, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+  }
+  const setConfirmationChecked = (checked: boolean) => {
+    form.setValue('confirmationAccepted', checked, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    })
+  }
 
   const existingFbLockdates = useMemo(() => {
     return walletInfo.fidelityBondSummary.fbOutputs
@@ -89,6 +138,14 @@ export function useCreateFidelityBondWizard(
         .toSorted((a, b) => b.value - a.value)
     )
   }, [selectedJar])
+
+  const selectedUtxos = useMemo(() => {
+    const availableUtxosById = new Map<string, Utxo>(availableUtxos.map((utxo) => [utxo.utxo, utxo]))
+    return selectedUtxoIds.flatMap((utxoId) => {
+      const utxo = availableUtxosById.get(utxoId)
+      return utxo === undefined ? [] : [utxo]
+    })
+  }, [availableUtxos, selectedUtxoIds])
 
   const utxosToFreeze = useMemo(() => {
     if (selectedJar === undefined) return []
@@ -145,12 +202,9 @@ export function useCreateFidelityBondWizard(
 
   const handleReset = () => {
     setStep('select_date')
-    setSelectedLockdate('')
-    setSelectedJarIndex(undefined)
-    setSelectedUtxos([])
+    form.reset(CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES)
     setFrozenUtxos([])
     setUtxoPage(0)
-    setConfirmationChecked(false)
     setTxResult(undefined)
     setError(undefined)
   }
@@ -171,10 +225,10 @@ export function useCreateFidelityBondWizard(
       case 'select_utxos':
         if (jarsWithUtxos.length === 1) {
           setSelectedJarIndex(undefined)
-          setSelectedUtxos([])
+          setSelectedUtxoIds([])
           setStep('select_date')
         } else {
-          setSelectedUtxos([])
+          setSelectedUtxoIds([])
           setStep('select_jar')
         }
         break
@@ -197,6 +251,7 @@ export function useCreateFidelityBondWizard(
     setError(undefined)
     switch (step) {
       case 'select_date':
+        if (!(await form.trigger('lockdate'))) return
         if (jarsWithUtxos.length === 1) {
           setSelectedJarIndex(jarsWithUtxos[0].jarIndex)
           setUtxoPage(0)
@@ -206,10 +261,12 @@ export function useCreateFidelityBondWizard(
         }
         break
       case 'select_jar':
+        if (!(await form.trigger('source.fromJar'))) return
         setUtxoPage(0)
         setStep('select_utxos')
         break
       case 'select_utxos':
+        if (!(await form.trigger('utxoIds'))) return
         if (utxosToFreeze.length > 0) {
           setStep('freeze_utxos')
         } else {
@@ -220,6 +277,7 @@ export function useCreateFidelityBondWizard(
         await handleFreezeUtxos()
         break
       case 'review':
+        if (!(await form.trigger())) return
         await handleCreateFidelityBond()
         break
     }
@@ -318,17 +376,14 @@ export function useCreateFidelityBondWizard(
 
   const toggleUtxoSelection = (utxo: Utxo) => {
     // TODO: select/deselect all utxos to the same address
-    setSelectedUtxos((current) => {
-      const isSelected = current.some((u) => u.utxo === utxo.utxo)
-      if (isSelected) {
-        return current.filter((u) => u.utxo !== utxo.utxo)
-      }
-      return [...current, utxo]
-    })
+    const isSelected = selectedUtxoIds.includes(utxo.utxo)
+    setSelectedUtxoIds(
+      isSelected ? selectedUtxoIds.filter((utxoId) => utxoId !== utxo.utxo) : [...selectedUtxoIds, utxo.utxo],
+    )
   }
 
-  const selectAllUtxos = () => setSelectedUtxos([...availableUtxos])
-  const deselectAllUtxos = () => setSelectedUtxos([])
+  const selectAllUtxos = () => setSelectedUtxoIds(availableUtxos.map((utxo) => utxo.utxo))
+  const deselectAllUtxos = () => setSelectedUtxoIds([])
 
   const selectedDateLabel = selectedLockdate
     ? new Date(fb.lockdate.toTimestamp(selectedLockdate)).toLocaleDateString(undefined, {

@@ -1,7 +1,7 @@
 import { useMemo, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from 'react'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { CancelledError, useMutation, useQuery } from '@tanstack/react-query'
 import { getAddressInfo } from 'bitcoin-address-validation'
 import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
 import { useQueryUtxos, type Utxo, type UtxoId } from '@/hooks/useQueryUtxos'
@@ -18,6 +18,7 @@ import {
   type AddressSummary,
   type FidelityBondSummary,
   type Jar,
+  type WalletRefetchOptions,
 } from './JamWalletInfoContext'
 
 const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
@@ -135,8 +136,6 @@ const combinedUtxosHash = (utxos: Utxo[]) => {
   return sha256(combinedUtxoIds)
 }
 
-type RefetchOptions = { force?: boolean; delayBefore?: Milliseconds }
-
 export const JamWalletInfoContextProvider = ({
   walletFileName,
   children,
@@ -224,10 +223,14 @@ export const JamWalletInfoContextProvider = ({
     scope: {
       id: ['wallet-refetch', walletFileName].join('-'),
     },
-    mutationFn: async (options?: { force?: boolean; delayBefore?: Milliseconds }) => {
+    mutationFn: async (options?: { force?: boolean; delayBefore?: Milliseconds; signal?: AbortSignal }) => {
       if (options?.delayBefore !== undefined && options.delayBefore > 0) {
         await delayedPromise(options.delayBefore)
+        if (options.signal?.aborted === true) {
+          throw new CancelledError()
+        }
       }
+
       return await utxosQueryResult
         .refetch({ throwOnError: true })
         .then((utxos) => displayWalletQueryResult.refetch({ throwOnError: true }).then(() => utxos))
@@ -279,7 +282,7 @@ const useWaitForUtxosToBeSpent = ({
   delay = WAIT_FOR_UTXOS_TO_BE_SPENT_DEFAUL_DELAY,
   resetOnErrors = true,
 }: {
-  refetch: (options?: RefetchOptions) => Promise<unknown>
+  refetch: (options?: WalletRefetchOptions) => Promise<unknown>
   walletFileName: WalletFileName
   utxos: Utxo[]
   delay?: number
@@ -288,8 +291,8 @@ const useWaitForUtxosToBeSpent = ({
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<UtxoId[]>([])
   const { error: waitForUtxosToBeSpentQueryError } = useQuery({
     queryKey: ['wait-for-utxos-to-be-spent', refetch, walletFileName, delay, ...waitForUtxosToBeSpent],
-    queryFn: async () => {
-      return await refetch({ delayBefore: delay })
+    queryFn: async ({ signal }) => {
+      return await refetch({ delayBefore: delay, signal })
     },
     enabled: waitForUtxosToBeSpent.length > 0,
     refetchInterval: 21, // refetch as soon as possible

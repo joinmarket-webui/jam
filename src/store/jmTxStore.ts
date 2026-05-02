@@ -26,7 +26,7 @@ interface JmTxStoreState {
 export const jmTxStore = createStore<JmTxStoreState>()(
   persist(
     (set, get) => ({
-      state: {} as JmTxInfos,
+      state: {},
       get: (txid) => get().state[txid]?.data,
       getAll: () => get().state,
       add: (data) =>
@@ -40,7 +40,7 @@ export const jmTxStore = createStore<JmTxStoreState>()(
           }
           return { state: copy }
         }),
-      clear: () => set({ state: {} as JmTxInfos }),
+      clear: () => set({ state: {} }),
     }),
     {
       name: 'jm-tx-store',

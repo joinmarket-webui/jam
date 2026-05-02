@@ -17,7 +17,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { WalletFileName } from '@/lib/utils'
-import type { Milliseconds, MnemonicPhrase, WithRequiredProperty } from '@/types/global'
+import type { Milliseconds, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
@@ -75,7 +75,7 @@ export const SeedPhraseDialog = ({
     gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
-    select: (data) => data.seedphrase.split(/\s+/) as MnemonicPhrase,
+    select: (data) => data.seedphrase.split(/\s+/),
   })
 
   useEffect(() => {

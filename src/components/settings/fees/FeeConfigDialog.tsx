@@ -2,8 +2,8 @@ import { useState, type ComponentProps, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
-import { cx } from 'class-variance-authority'
-import { useForm, type Resolver } from 'react-hook-form'
+import { AlertTriangleIcon } from 'lucide-react'
+import { useForm } from 'react-hook-form'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import * as yup from 'yup'
@@ -20,95 +20,90 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { FEE_CONFIG_KEYS, txFeeUnit, type FeeConfigName } from '@/constants/jm'
+import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { getErrorReason } from '@/lib/errorReason'
-import { cn, factorToPercentage, percentageToFactor } from '@/lib/utils'
+import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { cn, factorToPercentage, isValidInteger, isValidNumber, percentageToFactorString } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
-import { Spinner } from '../ui/spinner'
+import { toTxFeeFormDefaultValues } from '../../send/TxFeeForm.schema'
+import { Spinner } from '../../ui/spinner'
 import { CollaboratorFeesForm } from './CollaboratorFeesForm'
-import { collaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesFormSchema'
+import { createCollaboratorFeesFormSchema, type CollaboratorFeesFormValues } from './CollaboratorFeesForm.schema'
 import { MiningFeesForm } from './MiningFeesForm'
-import { miningFeesFormSchema, type MiningFeesFormValues } from './MiningFeesFormSchema'
+import { createMiningFeesFormSchema, type MiningFeesFormValues } from './MiningFeesForm.schema'
 
-type FeeLimitDialogProps = WithRequiredProperty<
+const factorToPercentageOrUndefined = (value: number | undefined) => {
+  return value !== undefined ? factorToPercentage(value) : undefined
+}
+
+const safePercentageToFactorStringOrUndefined = (value: number | undefined) => {
+  return isValidNumber(value) ? percentageToFactorString(value) : undefined
+}
+const safeIntegerOrUndefined = (value: number | undefined) => {
+  return isValidInteger(value) ? value : undefined
+}
+
+type FeeConfigDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
   'open' | 'onOpenChange'
 > & {
   walletFileName: WalletFileName
+  feeConfigValidation: ReturnType<typeof useFeeConfigValidation>
 }
 
-export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: FeeLimitDialogProps) => {
+export const FeeConfigDialog = ({
+  open,
+  onOpenChange,
+  walletFileName,
+  feeConfigValidation,
+  ...dialogProps
+}: FeeConfigDialogProps) => {
   const { t } = useTranslation()
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const [accordionValue, setAccordionValue] = useState<string[]>([])
   const [enableFormValidation, setEnableFormValidation] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const {
-    feeConfigValues,
-    refetchAll: refetchFeeConfigValues,
-    isLoading: isLoadingConfig,
-  } = useFeeConfigValidation({ walletFileName })
 
   const client = useApiClient()
 
-  const miningFeeFormSchema = useMemo(() => {
-    return miningFeesFormSchema(enableFormValidation, t)
-  }, [enableFormValidation, t])
+  const miningFeeFormSchema = useMemo(() => createMiningFeesFormSchema({ t }), [t])
 
   const miningFeeFormInitialValues: MiningFeesFormValues = useMemo(() => {
-    const txFeesValue = Number.parseInt(feeConfigValues?.tx_fees || '', 10)
-    const txFeesFactor = Number.parseFloat(feeConfigValues?.tx_fees_factor || '')
-    const maxSweepChangeFactor = Number.parseFloat(feeConfigValues?.max_sweep_fee_change || '')
-    const feeType = txFeesValue >= 1_001 ? txFeeUnit.SATS_PER_KILO_VBYTE : txFeeUnit.BLOCKS
     return {
-      feeType,
-      txFeesBlocks: feeType === txFeeUnit.BLOCKS ? txFeesValue : undefined,
-      txFeesSatsPerVbyte: feeType === txFeeUnit.SATS_PER_KILO_VBYTE ? txFeesValue / 1_000 : undefined,
-      txFeesFactorInPercent: Number.isFinite(txFeesFactor) ? factorToPercentage(txFeesFactor) : undefined,
-      maxSweepFeeChangeInPercent: Number.isFinite(maxSweepChangeFactor)
-        ? factorToPercentage(maxSweepChangeFactor)
-        : undefined,
+      txFeesFactorInPercent: factorToPercentageOrUndefined(feeConfigValidation.feeConfigValues.txFeeFactor),
+      maxSweepFeeChangeInPercent: factorToPercentageOrUndefined(
+        feeConfigValidation.feeConfigValues.maxSweepFeeChangeFactor,
+      ),
+      ...toTxFeeFormDefaultValues(feeConfigValidation.feeConfigValues),
     }
-  }, [feeConfigValues])
+  }, [feeConfigValidation.feeConfigValues])
 
   const miningFeesForm = useForm<MiningFeesFormValues, unknown, MiningFeesFormValues>({
     mode: 'onChange',
-    disabled: isSubmitting || isLoadingConfig,
+    disabled: isSubmitting || feeConfigValidation.isLoading,
     values: miningFeeFormInitialValues,
-    resolver: yupResolver(miningFeeFormSchema as yup.AnyObjectSchema) as Resolver<
-      MiningFeesFormValues,
-      unknown,
-      MiningFeesFormValues
-    >,
+    resolver: yupResolver(miningFeeFormSchema as yup.AnyObjectSchema),
   })
 
-  const collaboratorFormSchema = useMemo(() => {
-    return collaboratorFeesFormSchema(enableFormValidation, t)
-  }, [enableFormValidation, t])
+  const collaboratorFormSchema = useMemo(() => createCollaboratorFeesFormSchema({ t }), [t])
 
   const collaboratorFeesFormInitialValues: CollaboratorFeesFormValues = useMemo(() => {
-    const maxCjFeeAbsolute = Number.parseInt(feeConfigValues?.max_cj_fee_abs || '', 10)
-    const maxCjFeeRelative = Number.parseFloat(feeConfigValues?.max_cj_fee_rel || '')
     return {
-      maxCjFeeAbs: Number.isSafeInteger(maxCjFeeAbsolute) ? maxCjFeeAbsolute : undefined,
-      maxCjFeeRelInPercent: Number.isFinite(maxCjFeeRelative) ? factorToPercentage(maxCjFeeRelative) : undefined,
+      maxCjFeeAbs: feeConfigValidation.feeConfigValues.maxCjAbsoluteFee,
+      maxCjFeeRelInPercent: factorToPercentageOrUndefined(feeConfigValidation.feeConfigValues.maxCjRelativeFee),
     }
-  }, [feeConfigValues])
+  }, [feeConfigValidation.feeConfigValues.maxCjAbsoluteFee, feeConfigValidation.feeConfigValues.maxCjRelativeFee])
 
   const collaboratorFeesForm = useForm<CollaboratorFeesFormValues, unknown, CollaboratorFeesFormValues>({
     mode: 'onChange',
-    disabled: isSubmitting || isLoadingConfig,
+    disabled: isSubmitting || feeConfigValidation.isLoading,
     values: collaboratorFeesFormInitialValues,
-    resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema) as Resolver<
-      CollaboratorFeesFormValues,
-      unknown,
-      CollaboratorFeesFormValues
-    >,
+    resolver: yupResolver(collaboratorFormSchema as yup.AnyObjectSchema),
   })
 
   const setconfigMutation = useMutation(configsettingMutation({ client }))
@@ -117,39 +112,33 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
     setIsSubmitting(true)
 
     try {
-      // Trigger validation on both forms before submission
-      const collaboratorValid = await collaboratorFeesForm.trigger()
-      const miningValid = await miningFeesForm.trigger()
+      if (enableFormValidation) {
+        // Trigger validation on both nested forms before submission
+        const collaboratorValid = await collaboratorFeesForm.trigger()
+        const miningValid = await miningFeesForm.trigger()
 
-      if (!collaboratorValid || !miningValid) {
-        return
+        if (!collaboratorValid || !miningValid) {
+          return
+        }
       }
 
       const collaboratorData = collaboratorFeesForm.getValues()
       const miningData = miningFeesForm.getValues()
 
-      const maxCjFeeAbsoluteValue =
-        collaboratorData.maxCjFeeAbs !== undefined && Number.isSafeInteger(collaboratorData.maxCjFeeAbs)
-          ? String(collaboratorData.maxCjFeeAbs)
-          : ''
-      const maxCjFeeRelativeValue =
-        collaboratorData.maxCjFeeRelInPercent !== undefined && Number.isFinite(collaboratorData.maxCjFeeRelInPercent)
-          ? String(percentageToFactor(collaboratorData.maxCjFeeRelInPercent))
-          : ''
-      const txFeesBlocksValue = Number.isSafeInteger(miningData.txFeesBlocks) ? String(miningData.txFeesBlocks) : ''
-      const txFeesSatsPerKvByteValue =
-        miningData.txFeesSatsPerVbyte !== undefined && Number.isFinite(miningData.txFeesSatsPerVbyte)
-          ? String(Math.round(miningData.txFeesSatsPerVbyte * 1_000))
-          : ''
-      const txFeesValue = miningData.feeType === txFeeUnit.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
-      const txFeesFactorValue =
-        miningData.txFeesFactorInPercent !== undefined && Number.isFinite(miningData.txFeesFactorInPercent)
-          ? String(percentageToFactor(miningData.txFeesFactorInPercent))
-          : ''
+      const maxCjFeeAbsoluteValue = String(safeIntegerOrUndefined(collaboratorData.maxCjFeeAbs) ?? '')
+      const maxCjFeeRelativeValue = safePercentageToFactorStringOrUndefined(collaboratorData.maxCjFeeRelInPercent) ?? ''
+      const txFeesBlocksValue = String(safeIntegerOrUndefined(miningData.txFee.txFeeInBlocks) ?? '')
+
+      const txFeesFactorValue = safePercentageToFactorStringOrUndefined(miningData.txFeesFactorInPercent) ?? ''
       const maxSweepFeeChangeValue =
-        miningData.maxSweepFeeChangeInPercent !== undefined && Number.isFinite(miningData.maxSweepFeeChangeInPercent)
-          ? String(percentageToFactor(miningData.maxSweepFeeChangeInPercent))
+        safePercentageToFactorStringOrUndefined(miningData.maxSweepFeeChangeInPercent) ?? ''
+
+      const txFeesSatsPerKvByteValue =
+        miningData.txFee.txFeeInSatsPerVbyte !== undefined && isValidNumber(miningData.txFee.txFeeInSatsPerVbyte)
+          ? String(Math.ceil(miningData.txFee.txFeeInSatsPerVbyte * 1_000))
           : ''
+      const txFeesValue =
+        miningData.txFee.txFeeUnit === TX_FEE_UNITS.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
 
       const configUpdates: { key: FeeConfigName; value: string }[] = [
         { key: 'max_cj_fee_abs', value: maxCjFeeAbsoluteValue },
@@ -169,8 +158,6 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
         })
       }
 
-      await refetchFeeConfigValues()
-
       toast.success(t('settings.fees.success_message'))
       onOpenChange(false)
     } catch (error: unknown) {
@@ -180,6 +167,16 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
+    }
+
+    try {
+      await feeConfigValidation.refetchAll()
+    } catch (error: unknown) {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      // TODO: i18n
+      const errorMessage = t('Error while reloading fee values.: {{ reason }}', { reason })
+      toast.error(errorMessage)
+      console.error(errorMessage)
     }
   }
 
@@ -211,7 +208,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
             </Trans>
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-1 space-y-4">
+        <div className="space-y-4">
           {isDeveloperMode && (
             <>
               <div className="flex items-center gap-3">
@@ -235,14 +232,21 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
           <Accordion type="multiple" value={accordionValue} onValueChange={setAccordionValue}>
             <AccordionItem value="collaborator-fees">
               <AccordionTrigger
-                className={cx({
-                  'text-destructive border-red-300': !collaboratorFeesForm.formState.isValid,
+                className={cn({
+                  'text-destructive': !collaboratorFeesForm.formState.isValid && !feeConfigValidation.isLoading,
+                  'animate-pulse': feeConfigValidation.isLoading,
                 })}
               >
-                {t('settings.fees.title_max_cj_fee_settings')}
+                <div className="flex items-center gap-2">
+                  {!collaboratorFeesForm.formState.isValid && !feeConfigValidation.isLoading ? (
+                    <AlertTriangleIcon />
+                  ) : null}
+                  {feeConfigValidation.isLoading ? <Spinner className="motion-reduce:hidden" /> : null}
+                  {t('settings.fees.title_max_cj_fee_settings')}
+                </div>
               </AccordionTrigger>
               <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
-                {isLoadingConfig ? (
+                {feeConfigValidation.isLoading ? (
                   <div className="m-2 flex items-center justify-center gap-2">
                     <Spinner className="motion-reduce:hidden" />
                     {t('global.loading')}
@@ -254,14 +258,19 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
             </AccordionItem>
             <AccordionItem value="mining-fees">
               <AccordionTrigger
-                className={cx({
-                  'text-destructive border-red-300': !miningFeesForm.formState.isValid,
+                className={cn({
+                  'text-destructive': !miningFeesForm.formState.isValid && !feeConfigValidation.isLoading,
+                  'animate-pulse': feeConfigValidation.isLoading,
                 })}
               >
-                {t('settings.fees.title_general_fee_settings')}
+                <div className="flex items-center gap-2">
+                  {!miningFeesForm.formState.isValid && !feeConfigValidation.isLoading ? <AlertTriangleIcon /> : null}
+                  {feeConfigValidation.isLoading ? <Spinner className="motion-reduce:hidden" /> : null}
+                  {t('settings.fees.title_general_fee_settings')}
+                </div>
               </AccordionTrigger>
               <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
-                {isLoadingConfig ? (
+                {feeConfigValidation.isLoading ? (
                   <div className="m-2 flex items-center justify-center gap-2">
                     <Spinner className="motion-reduce:hidden" />
                     {t('global.loading')}
@@ -275,22 +284,26 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName, ...dialogPr
         </div>
 
         <DialogFooter
-          className={cx({
+          className={cn({
             'border-t pt-4': accordionValue.length > 0,
           })}
         >
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting || isLoadingConfig}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting || feeConfigValidation.isLoading}
+          >
             {t('settings.fees.text_button_cancel')}
           </Button>
           <Button
             variant="outline"
             onClick={() => void handleResetFormValues()}
-            disabled={isSubmitting || isLoadingConfig}
+            disabled={isSubmitting || feeConfigValidation.isLoading}
           >
             {/* TODO: i18n */}
             Reset
           </Button>
-          <Button onClick={() => void handleSubmit()} disabled={isSubmitting || isLoadingConfig}>
+          <Button onClick={() => void handleSubmit()} disabled={isSubmitting || feeConfigValidation.isLoading}>
             {isSubmitting ? t('settings.fees.text_button_submitting') : t('settings.fees.text_button_submit')}
           </Button>
         </DialogFooter>

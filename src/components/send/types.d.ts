@@ -1,10 +1,5 @@
 import type { AmountSats, BitcoinAddress, JarIndex } from '@/types/global'
-
-export type TxFeeValue = number
-export type TxFee = {
-  value?: TxFeeValue
-  unit?: TxFeeUnit
-}
+import type { TxFeeFormValues } from './TxFeeForm.schema'
 
 export type SourceValue = {
   fromJar: JarIndex
@@ -31,7 +26,7 @@ export interface SendFormValues {
   source: SourceValue
   destination: DestinationValue
   amount: AmountValue
-  txFee?: TxFee
   isCoinJoin: boolean
   numCollaborators?: number
+  txFee: TxFeeFormValues['txFee']
 }

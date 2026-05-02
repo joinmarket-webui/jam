@@ -56,8 +56,6 @@ const ITEMS_PER_PAGE = 25
 
 const columnHelper = createColumnHelper<EarnReportEntry>()
 
-type EarnReportColumnMeta = { align?: string; numeric?: boolean } | undefined
-
 interface EarnReportContentProps {
   className?: string
   enabled: boolean
@@ -95,22 +93,22 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
       columnHelper.accessor('earnedAmount', {
         header: () => <div className="flex items-center justify-end">{t('earn.report.heading_earned')}</div>,
         cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+        meta: { align: 'right', numeric: true },
       }),
       columnHelper.accessor('cjTotalAmount', {
         header: () => <div className="flex items-center justify-end">{t('earn.report.heading_cj_amount')}</div>,
         cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+        meta: { align: 'right', numeric: true },
       }),
       columnHelper.accessor('inputCount', {
         header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_count')}</div>,
         cell: (info) => <span>{info.getValue() as number}</span>,
-        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+        meta: { align: 'right', numeric: true },
       }),
       columnHelper.accessor('inputAmount', {
         header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_value')}</div>,
         cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true } as EarnReportColumnMeta,
+        meta: { align: 'right', numeric: true },
       }),
       columnHelper.accessor('notes', {
         header: () => t('earn.report.heading_notes'),
@@ -262,7 +260,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                       <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map((header) => {
                           const canSort = header.column.getCanSort()
-                          const alignRight = (header.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
+                          const alignRight = header.column.columnDef.meta?.align === 'right'
                           return (
                             <TableHead
                               key={header.id}
@@ -285,7 +283,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                     {visibleRows.map((row) => (
                       <TableRow key={row.id}>
                         {row.getVisibleCells().map((cell) => {
-                          const alignRight = (cell.column.columnDef.meta as EarnReportColumnMeta)?.align === 'right'
+                          const alignRight = cell.column.columnDef.meta?.align === 'right'
                           return (
                             <TableCell key={cell.id} className={alignRight ? 'text-right' : ''}>
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}

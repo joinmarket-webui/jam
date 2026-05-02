@@ -191,12 +191,8 @@ export const AccountXpubsDialog = ({
   const { t } = useTranslation()
 
   const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
-  const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
   const [timeLeft, setTimeLeft] = useState(autoCloseTimeout)
-
-  if (timeLeft <= 0 && passwordVerifiedAt !== undefined) {
-    setPasswordVerifiedAt(undefined)
-  }
+  const isPasswordVerified = passwordVerifiedAt !== undefined && timeLeft > 0
 
   const secondsLeft = Math.max(0, Math.round(timeLeft / 1_000))
 
@@ -206,10 +202,14 @@ export const AccountXpubsDialog = ({
   const queryClient = useQueryClient()
   const { jars } = useJars()
 
-  const seedQueryOptions = getseedOptions({
-    client,
-    path: { walletname: walletFileName },
-  })
+  const seedQueryOptions = useMemo(
+    () =>
+      getseedOptions({
+        client,
+        path: { walletname: walletFileName },
+      }),
+    [client, walletFileName],
+  )
 
   const {
     data: seedQueryData,
@@ -222,10 +222,10 @@ export const AccountXpubsDialog = ({
     gcTime: Number.POSITIVE_INFINITY,
     enabled: false,
     retry: false,
-    select: (data) => data.seedphrase.split(/\s+/) as MnemonicPhrase,
+    select: (data) => data.seedphrase.split(/\s+/),
   })
 
-  const accountXpubsQueryKey = [walletFileName, 'xpubs']
+  const accountXpubsQueryKey = useMemo(() => [walletFileName, 'xpubs'], [walletFileName])
 
   const accountXpubs = useQuery({
     queryKey: accountXpubsQueryKey,
@@ -256,13 +256,25 @@ export const AccountXpubsDialog = ({
 
     const xpubsDisplayedAt = Math.max(accountXpubs.dataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
-      setTimeLeft(Math.max(0, xpubsDisplayedAt + autoCloseTimeout - Date.now()))
+      const nextTimeLeft = Math.max(0, xpubsDisplayedAt + autoCloseTimeout - Date.now())
+      setTimeLeft(nextTimeLeft)
+      if (nextTimeLeft <= 0) {
+        clearInterval(interval)
+        setPasswordVerifiedAt(undefined)
+      }
     }, 333)
 
     return () => {
       clearInterval(interval)
     }
   }, [accountXpubs.dataUpdatedAt, passwordVerifiedAt, autoCloseTimeout])
+
+  useEffect(() => {
+    if (timeLeft > 0) return
+
+    queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
+    queryClient.removeQueries({ queryKey: accountXpubsQueryKey })
+  }, [queryClient, seedQueryOptions.queryKey, accountXpubsQueryKey, timeLeft])
 
   const handleClose = () => {
     onOpenChange(false)

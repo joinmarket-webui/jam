@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { FeeConfigTestComponent } from '@/components/dev/FeeConfigTestComponent'
-import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -29,7 +29,7 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
   const jmTxStoreState = useStore(jmTxStore, (state) => state.state)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
-  const feeConfig = useFeeConfigValidation({ walletFileName: walletFileName ?? 'None.jmdat' })
+  const feeConfigValidation = useFeeConfigValidation({ walletFileName: walletFileName ?? 'None.jmdat' })
 
   return (
     <div className="flex flex-col gap-4">
@@ -59,29 +59,30 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
         <pre className="text-xs">{JSON.stringify(jmTxStoreState, null, 2)}</pre>
       </div>
 
-      {feeConfig && walletFileName && (
+      {feeConfigValidation && walletFileName && (
         <div className="">
           <h3 className="text-xl font-semibold tracking-tight">Fees</h3>
 
-          <FeeLimitDialog
+          <FeeConfigDialog
+            walletFileName={walletFileName}
+            feeConfigValidation={feeConfigValidation}
             open={showFeeConfigDialog}
             onOpenChange={setShowFeeConfigDialog}
-            walletFileName={walletFileName}
           />
 
           <div className="overflow-scroll">
             <code className="light:text-red-700 text-red-800">feeConfig.feeConfigValues:</code>
-            <pre className="text-xs">{JSON.stringify(feeConfig.feeConfigValues, null, 2)}</pre>
+            <pre className="text-xs">{JSON.stringify(feeConfigValidation.feeConfigValues, null, 2)}</pre>
           </div>
           <div className="overflow-scroll">
             <code className="light:text-red-700 text-red-800">feeConfig.isLoading:</code>
-            <pre className="text-xs">{JSON.stringify(feeConfig.isLoading, null, 2)}</pre>
+            <pre className="text-xs">{JSON.stringify(feeConfigValidation.isLoading, null, 2)}</pre>
           </div>
           <div className="overflow-scroll">
             <code className="light:text-red-700 text-red-800">feeConfig.maxFeesConfigMissing:</code>
-            <pre className="text-xs">{JSON.stringify(feeConfig.maxFeesConfigMissing, null, 2)}</pre>
+            <pre className="text-xs">{JSON.stringify(feeConfigValidation.maxFeesConfigMissing, null, 2)}</pre>
           </div>
-          <Button onClick={() => void feeConfig.refetchAll()}>feeConfig.refetchAll()</Button>
+          <Button onClick={() => void feeConfigValidation.refetchAll()}>feeConfig.refetchAll()</Button>
 
           <FeeConfigTestComponent walletFileName={walletFileName} />
         </div>

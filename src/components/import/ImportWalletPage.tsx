@@ -179,10 +179,7 @@ const ImportWalletPage = () => {
       }
 
       try {
-        authState.hashed_password = await hashPassword(
-          walletDetails.password,
-          recoverWalletResponse.walletname as WalletFileName,
-        )
+        authState.hashed_password = await hashPassword(walletDetails.password, recoverWalletResponse.walletname)
       } catch (hashError: unknown) {
         console.warn('Failed to hash password after wallet import', hashError)
       }

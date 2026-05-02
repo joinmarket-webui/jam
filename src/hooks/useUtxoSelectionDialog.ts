@@ -11,17 +11,16 @@ import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { utxoTags } from '@/lib/tags'
 import type { WalletFileName } from '@/lib/utils'
-import type { JarIndex } from '@/types/global'
 
 const SEND_AUTO_SELECTION_TOAST_ID = 'send.utxo.selection_changed_automatically'
 
 interface UseUtxoSelectionDialogProps {
   walletFileName: WalletFileName
-  jars: Jar[]
+  sourceJar?: Jar
   addressSummary: AddressSummary
 }
 
-export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }: UseUtxoSelectionDialogProps) => {
+export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSummary }: UseUtxoSelectionDialogProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
 
@@ -29,12 +28,6 @@ export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }:
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [sourceJarIndex, setSourceJarIndex] = useState<JarIndex>()
-
-  const sourceJar = useMemo(() => {
-    if (sourceJarIndex === undefined) return
-    return jars.find((it) => it.jarIndex === sourceJarIndex)
-  }, [jars, sourceJarIndex])
 
   const tableEntries = useMemo(() => {
     return (sourceJar?.utxos || []).map((utxo) => ({
@@ -63,7 +56,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }:
     retry: false,
   })
 
-  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isApplying } = useMutation({
+  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isSubmitting } = useMutation({
     mutationFn: async ({ utxosToFreeze, utxosToUnfreeze }: { utxosToFreeze: Utxo[]; utxosToUnfreeze: Utxo[] }) => {
       const [freezeResult, unfreezeResult] = await Promise.all([
         Promise.allSettled(
@@ -106,7 +99,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }:
     setOpen(true)
   }
 
-  const onApplyUtxoSelection = async () => {
+  const onSubmit = async () => {
     if (!sourceJar) return
 
     const selectedUtxoIds = new Set(selectedUtxos.map((it) => it.utxo))
@@ -175,27 +168,25 @@ export const useUtxoSelectionDialog = ({ walletFileName, jars, addressSummary }:
 
   const dialogProps: UtxoSelectionDialogProps = {
     open,
-    isApplying,
+    isSubmitting,
     selectedCount: selectedUtxos.length,
     filter,
     tableEntries,
     initialRowSelection,
-    enableRowSelection: (row) => !fb.utxo.isFidelityBond(row.original.utxo),
+    enableRowSelection: isSubmitting ? false : undefined,
     onOpenChange: (nextOpen: boolean) => {
-      if (isApplying) return
+      if (isSubmitting) return
       setOpen(nextOpen)
     },
     onFilterChange: setFilter,
     onRowSelectionChange: setRowSelection,
-    onApply: () => void onApplyUtxoSelection(),
+    onSubmit,
   }
 
   return {
-    isApplying,
-    sourceJarIndex,
-    setSourceJarIndex,
+    isSubmitting,
     onOpenUtxoSelector,
-    utxoSelectorDisabled: isApplying || sourceJar === undefined || sourceJar.utxos.length === 0,
+    utxoSelectorDisabled: isSubmitting || sourceJar === undefined || sourceJar.utxos.length === 0,
     dialogProps,
   }
 }

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -48,10 +48,11 @@ import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
-import { useRescanStatus } from './context/JamSessionInfoContext'
+import { useJamSessionInfoContext, useRescanStatus } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { useJmWebsocket } from './hooks/useJmWebsocket'
+import { getErrorReason } from './lib/errorReason'
 import { jmSessionStore } from './store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from './store/jmTxStore'
 import type { Milliseconds } from './types/global'
@@ -193,7 +194,7 @@ function App() {
                 <JamWalletInfoContextProvider walletFileName={walletFileName!}>
                   {walletFileName && (
                     <>
-                      <WalletInfoAutoReload walletFileName={walletFileName} />
+                      <WalletInfoAutoReload />
                     </>
                   )}
                   <Outlet />
@@ -393,6 +394,7 @@ function HandleJmWebsocketMessages() {
 }
 
 function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName }) {
+  const { t } = useTranslation()
   const { fetchMissing } = useFeeConfigValidation({ walletFileName })
 
   useEffect(() => {
@@ -405,21 +407,21 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
       .then((values) => {
         const consoleInfo = 'Fee values loaded successfully.'
         console.info(consoleInfo)
-        console.table(values)
         if (isDevMode) {
+          console.table(values)
           toast.success(`[DEV] ${consoleInfo}`, {
             id: 'fee-values-success',
           })
         }
       })
       .catch((error) => {
-        const consoleError = 'Error while loading fee values.'
-        console.error(consoleError, error)
-        if (isDevMode) {
-          toast.error(`[DEV] ${consoleError}`)
-        }
+        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+        // TODO: i18n
+        const errorMessage = t('Error while loading fee values.: {{ reason }}', { reason })
+        toast.error(errorMessage)
+        console.error(errorMessage)
       })
-  }, [fetchMissing])
+  }, [fetchMissing, t])
 
   return <></>
 }
@@ -427,6 +429,7 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
 const RELOAD_WALLET_INFO_DELAY: {
   AFTER_RESCAN: Milliseconds
   AFTER_UTXO_CHANGE: Milliseconds
+  AFTER_BLOCK_HEIGHT_CHANGE: Milliseconds
 } = {
   // After rescanning, it is necessary to give the JM backend some time to synchronize.
   // A couple of seconds should be enough, however, this depends on the user hardware
@@ -436,8 +439,11 @@ const RELOAD_WALLET_INFO_DELAY: {
   // takes effect after rescanning the chain, which should happen quite infrequently.
   AFTER_RESCAN: 8_000,
 
-  // No delay is needed after utxo change (e.g. normal unlock of wallet)
-  AFTER_UTXO_CHANGE: 0,
+  // Small delay is sufficient after utxo change (e.g. normal unlock of wallet)
+  AFTER_UTXO_CHANGE: 210,
+
+  // Small delay is sufficient after block height change
+  AFTER_BLOCK_HEIGHT_CHANGE: 210,
 }
 
 /**
@@ -449,33 +455,80 @@ const RELOAD_WALLET_INFO_DELAY: {
  * This might change in the future but is okay for now - components can
  * always trigger a reload on demand and inform the user as they see fit.
  */
-const WalletInfoAutoReload = ({ walletFileName }: { walletFileName: WalletFileName }) => {
+const WalletInfoAutoReload = () => {
   const { rescanInfo: currentRescanInfo } = useRescanStatus()
+  const previousRescanningRef = useRef<boolean>(currentRescanInfo.rescanning)
+  const { blockHeight: currentBlockHeight } = useJamSessionInfoContext()
+  const previousBlockHeightRef = useRef<number | undefined>(currentBlockHeight)
+
   const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
-  const [previousRescanning, setPreviousRescanning] = useState<boolean>(currentRescanInfo.rescanning)
-  const [rescanningFinished, setRescanningFinished] = useState<boolean>(false)
 
-  if (previousRescanning !== currentRescanInfo.rescanning) {
-    setPreviousRescanning(currentRescanInfo.rescanning)
-    setRescanningFinished(previousRescanning === true && currentRescanInfo.rescanning === false)
-  }
+  useEffect(
+    function refetchWalletInfoAfterRescanFinished() {
+      const wasRescanning = previousRescanningRef.current
+      const isRescanning = currentRescanInfo.rescanning
+      previousRescanningRef.current = isRescanning
 
-  useQuery({
-    queryKey: [
-      'reload-wallet-after-rescan-or-utxo-change',
-      walletFileName,
-      refetchWalletBalance,
-      utxosHashHex,
-      rescanningFinished,
-    ],
-    queryFn: async () => {
-      const delayBefore: Milliseconds = rescanningFinished
-        ? RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
-        : RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
-      console.info('Trigger refetch looking for funds after rescan or utxo changes with delay %d...', delayBefore)
-      return await refetchWalletBalance({ delayBefore })
+      const rescanFinished = wasRescanning === true && isRescanning === false
+      if (!rescanFinished) {
+        console.debug('Abort refetching: Rescan did not finish yet.')
+        return
+      }
+
+      const delayBefore: Milliseconds = RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN
+      console.debug('Trigger refetch looking for funds AFTER_RESCAN with delay %d...', delayBefore)
+
+      const abortCtrl = new AbortController()
+      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
+        console.warn('Error while auto-reloading wallet info AFTER_RESCAN finished', error)
+      })
+      return () => abortCtrl.abort('useEffect(AFTER_RESCAN) ended')
     },
-  })
+    [refetchWalletBalance, currentRescanInfo.rescanning],
+  )
+
+  useEffect(
+    function refetchWalletInfoAfterBlockHeightIncrease() {
+      if (currentBlockHeight === undefined) return
+
+      const blockHeightChanged =
+        previousBlockHeightRef.current !== undefined && previousBlockHeightRef.current !== currentBlockHeight
+      previousBlockHeightRef.current = currentBlockHeight
+
+      if (!blockHeightChanged) {
+        console.debug('Abort refetching: Block height did not change.')
+        return
+      }
+
+      const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_BLOCK_HEIGHT_CHANGE
+      console.debug('Trigger refetch looking for funds AFTER_BLOCK_HEIGHT_CHANGE with delay %d...', delayBefore)
+
+      const abortCtrl = new AbortController()
+      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
+        console.warn('Error while auto-reloading wallet info AFTER_BLOCK_HEIGHT_CHANGE finished', error)
+      })
+      return () => abortCtrl.abort('useEffect(AFTER_BLOCK_HEIGHT_CHANGE) ended')
+    },
+    [refetchWalletBalance, currentBlockHeight],
+  )
+
+  useEffect(
+    function refetchWalletInfoAfterUtxoChange() {
+      const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
+      console.debug(
+        'Trigger refetch looking for funds AFTER_UTXO_CHANGE (%s) with delay %d...',
+        utxosHashHex,
+        delayBefore,
+      )
+
+      const abortCtrl = new AbortController()
+      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
+        console.error('Error while auto-reloading wallet info AFTER_UTXO_CHANGE finished', error)
+      })
+      return () => abortCtrl.abort('useEffect(AFTER_UTXO_CHANGE) ended')
+    },
+    [refetchWalletBalance, utxosHashHex],
+  )
 
   return <></>
 }
