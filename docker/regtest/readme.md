@@ -109,8 +109,8 @@ Use `:main` for latest unstable/unreleased changes and `:latest` for the latest 
 
 The second JoinMarket container is exposed on port `29080`.
 The third container is exposed on port `30080`.
-The first JoinMarket NG container is exposed on ports `31080` (API) and `31283` (websocket).
-The second JoinMarket NG container is exposed on ports `32080` (API) and `32283` (websocket).
+The first JoinMarket NG container is exposed on ports `31183` (API and websocket).
+The second JoinMarket NG container is exposed on ports `32183` (API and websocket).
 This is useful if you want to perform regression tests across mixed implementations.
 
 The setup includes both a reference directory node and a JoinMarket NG directory server. They implement the same onion directory protocol and run side-by-side for compatibility testing.

@@ -92,9 +92,7 @@ services:
       BITCOIN__RPC_PASSWORD: regtest
       BITCOIN__DESCRIPTOR_WALLET_NAME: jm_quaternary
     ports:
-      - '31080:28183'
-      - '31283:28283'
-      - '31183:28183' # exposed for "init setup" routine
+      - '31183:28183'
     volumes:
       - 'joinmarket4_datadir:/root/.joinmarket-ng'
       - 'initializer_datadir:/root/.regtest-initializer'
@@ -119,9 +117,7 @@ services:
       BITCOIN__RPC_PASSWORD: regtest
       BITCOIN__DESCRIPTOR_WALLET_NAME: jm_quinary
     ports:
-      - '32080:28183'
-      - '32283:28283'
-      - '32183:28183' # exposed for "init setup" routine
+      - '32183:28183'
     volumes:
       - 'joinmarket5_datadir:/root/.joinmarket-ng'
       - 'tor_datadir:/var/lib/tor:ro'

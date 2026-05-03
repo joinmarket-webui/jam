@@ -12,7 +12,10 @@ const {
   JAM_BACKEND = BACKEND_NATIVE,
   JMWALLETD_API_PORT = '28183',
   JMWALLETD_WEBSOCKET_PORT = '28283',
-  JMOBWATCH_PORT = '8080',
+  // - "joinmarket-clientserver" listens on `wss://${host}:${JMWALLETD_WEBSOCKET_PORT}`
+  // - "joinmarket-ng" listens on `wss://${host}:${JMWALLETD_WEBSOCKET_PORT}/api/v1/ws`
+  JMWALLETD_WEBSOCKET_API_PATH = '',
+  JMOBWATCH_PORT = '62601',
   JAM_API_PORT = undefined,
 } = process.env
 
@@ -74,6 +77,7 @@ const serverConfigNative = (): ServerOptions => {
         changeOrigin: true,
         secure: false,
         ws: true,
+        rewrite: (p) => p.replace(/^\/jmws/, JMWALLETD_WEBSOCKET_API_PATH),
       },
     },
   }
