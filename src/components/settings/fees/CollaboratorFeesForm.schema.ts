@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
 import { CJ_FEE_ABS_MAX, CJ_FEE_ABS_MIN, CJ_FEE_REL_MAX, CJ_FEE_REL_MIN } from '@/constants/jam'
-import { factorToPercentage, formatSats } from '@/lib/utils'
+import { factorToPercentage, formatSats, isValidInteger, isValidNumber } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 
 export type CollaboratorFeesFormValues = {
@@ -28,13 +28,13 @@ export function createCollaboratorFeesFormSchema({
       maxCjFeeAbs: yup
         .number()
         .integer(maxCjFeeAbsoluteMessage)
-        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+        .transform((value) => (isValidInteger(value) ? value : null))
         .min(CJ_FEE_ABS_MIN, maxCjFeeAbsoluteMessage)
         .max(CJ_FEE_ABS_MAX, maxCjFeeAbsoluteMessage)
         .required(maxCjFeeAbsoluteMessage),
       maxCjFeeRelInPercent: yup
         .number()
-        .transform((value) => (Number.isFinite(value) ? Number(value) : null))
+        .transform((value) => (isValidNumber(value) ? value : null))
         .min(factorToPercentage(CJ_FEE_REL_MIN), maxCjFeeRelativeMessage)
         .max(factorToPercentage(CJ_FEE_REL_MAX), maxCjFeeRelativeMessage)
         .required(maxCjFeeRelativeMessage),

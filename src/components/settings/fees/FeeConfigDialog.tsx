@@ -25,7 +25,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { getErrorReason } from '@/lib/errorReason'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
-import { cn, factorToPercentage, percentageToFactorString } from '@/lib/utils'
+import { cn, factorToPercentage, isValidInteger, isValidNumber, percentageToFactorString } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
@@ -41,12 +41,10 @@ const factorToPercentageOrUndefined = (value: number | undefined) => {
 }
 
 const safePercentageToFactorStringOrUndefined = (value: number | undefined) => {
-  const isSafe = value !== undefined && Number.isFinite(value)
-  return isSafe ? percentageToFactorString(value) : undefined
+  return isValidNumber(value) ? percentageToFactorString(value) : undefined
 }
 const safeIntegerOrUndefined = (value: number | undefined) => {
-  const isSafe = value !== undefined && Number.isSafeInteger(value)
-  return isSafe ? value : undefined
+  return isValidInteger(value) ? value : undefined
 }
 
 type FeeConfigDialogProps = WithRequiredProperty<
@@ -136,7 +134,7 @@ export const FeeConfigDialog = ({
         safePercentageToFactorStringOrUndefined(miningData.maxSweepFeeChangeInPercent) ?? ''
 
       const txFeesSatsPerKvByteValue =
-        miningData.txFee.txFeeInSatsPerVbyte !== undefined && Number.isFinite(miningData.txFee.txFeeInSatsPerVbyte)
+        miningData.txFee.txFeeInSatsPerVbyte !== undefined && isValidNumber(miningData.txFee.txFeeInSatsPerVbyte)
           ? String(Math.ceil(miningData.txFee.txFeeInSatsPerVbyte * 1_000))
           : ''
       const txFeesValue =

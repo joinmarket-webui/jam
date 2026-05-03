@@ -5,7 +5,7 @@ import { TOTAL_COIN_SUPPLY } from '@/constants/jam'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
-import { pseudoRandomInteger } from '@/lib/utils'
+import { isValidInteger, pseudoRandomInteger } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { toTxFeeFormDefaultValues, createTxFeeFormSchema } from './TxFeeForm.schema'
 import type { SendFormValues } from './types'
@@ -58,6 +58,10 @@ export const createSendFormSchema = (
   network: Network,
   t: TFunction,
 ) => {
+  const invalidNumberOfCollaboratorsMessage = t('send.error_invalid_num_collaborators', {
+    minNumCollaborators: minNumberOfCollaborators,
+    maxNumCollaborators: MAX_NUM_COLLABORATORS,
+  })
   return (
     yup
       .object({
@@ -119,7 +123,7 @@ export const createSendFormSchema = (
               otherwise: (schema) =>
                 schema
                   .integer(t('send.feedback_invalid_amount'))
-                  .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+                  .transform((value) => (isValidInteger(value) ? value : null))
                   .nonNullable(t('send.feedback_invalid_amount'))
                   .min(MIN_SEND_AMOUNT, t('send.feedback_invalid_amount'))
                   .max(MAX_SEND_AMOUNT, t('send.feedback_invalid_amount'))
@@ -134,26 +138,10 @@ export const createSendFormSchema = (
             schema
               .integer()
               .default(initialNumberOfCollaborators(minNumberOfCollaborators))
-              .min(
-                minNumberOfCollaborators,
-                t('send.error_invalid_num_collaborators', {
-                  minNumCollaborators: minNumberOfCollaborators,
-                  maxNumCollaborators: MAX_NUM_COLLABORATORS,
-                }),
-              )
-              .max(
-                MAX_NUM_COLLABORATORS,
-                t('send.error_invalid_num_collaborators', {
-                  minNumCollaborators: minNumberOfCollaborators,
-                  maxNumCollaborators: MAX_NUM_COLLABORATORS,
-                }),
-              )
-              .required(
-                t('send.error_invalid_num_collaborators', {
-                  minNumCollaborators: minNumberOfCollaborators,
-                  maxNumCollaborators: MAX_NUM_COLLABORATORS,
-                }),
-              ),
+              .transform((value) => (isValidInteger(value) ? value : null))
+              .min(minNumberOfCollaborators, invalidNumberOfCollaboratorsMessage)
+              .max(MAX_NUM_COLLABORATORS, invalidNumberOfCollaboratorsMessage)
+              .required(invalidNumberOfCollaboratorsMessage),
           otherwise: (schema) =>
             schema
               .transform(() => null)

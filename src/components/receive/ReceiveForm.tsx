@@ -7,7 +7,7 @@ import * as yup from 'yup'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { SelectableJar } from '@/components/ui/jam/SelectableJar'
 import { useWalletBalanceSummary, type Jar } from '@/context/JamWalletInfoContext'
-import { cn } from '@/lib/utils'
+import { cn, isValidInteger } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Field, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
@@ -48,7 +48,7 @@ const receiveFormSchema = (jars: Jar[], t: TFunction) => {
         .integer(t('receive.feedback_invalid_amount'))
         .min(1, t('receive.feedback_invalid_amount'))
         .max(21_000_000 * 100_000_000, t('receive.feedback_invalid_amount'))
-        .transform((value) => (Number.isSafeInteger(value) ? Number(value) : null))
+        .transform((value) => (isValidInteger(value) ? value : null))
         .nullable()
         .optional(),
     })
