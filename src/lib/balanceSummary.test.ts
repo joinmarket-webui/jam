@@ -11,6 +11,7 @@ describe('BalanceSummary', () => {
         {
           value: 1,
           mixdepth: 0,
+          confirmations: 1,
           frozen: false,
         } as Utxo,
         {
@@ -30,6 +31,7 @@ describe('BalanceSummary', () => {
         {
           value: 5,
           mixdepth: 0,
+          confirmations: 0,
           // unfrozen and expired
           frozen: false,
           locktime: '2009-01-01 00:00:00',
@@ -41,6 +43,7 @@ describe('BalanceSummary', () => {
 
     expect(balanceSummary.calculatedTotalBalanceInSats).toBe(11)
     expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(6)
+    expect(balanceSummary.calculatedConfirmedAvailableBalanceInSats).toBe(1)
     expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(5)
   })
 
@@ -50,10 +53,12 @@ describe('BalanceSummary', () => {
         {
           value: 111111111,
           mixdepth: 1,
+          confirmations: 1,
         } as Utxo,
         {
           value: 222222222,
           mixdepth: 2,
+          confirmations: 0,
         } as Utxo,
         {
           value: 11111111,
@@ -72,6 +77,7 @@ describe('BalanceSummary', () => {
 
     expect(balanceSummary.calculatedTotalBalanceInSats).toBe(677777777)
     expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(333333333)
+    expect(balanceSummary.calculatedConfirmedAvailableBalanceInSats).toBe(111111111)
     expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(344444444)
   })
 })

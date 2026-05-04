@@ -1,20 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { FileTextIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import { AlertTriangleIcon, FileTextIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
-import { Alert, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import * as JAM from '@/constants/jam'
+import { routes } from '@/constants/routes'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -64,6 +67,38 @@ interface EarnPageProps {
   walletFileName: WalletFileName
 }
 
+const UnconfirmedBalanceAlert = () => {
+  const { t } = useTranslation()
+
+  return (
+    <Alert variant="warning" className="mb-4">
+      <AlertTriangleIcon />
+      <AlertTitle>{t('earn.alert_unconfirmed_balance_title')}</AlertTitle>
+      <AlertDescription>{t('earn.alert_unconfirmed_balance_description')}</AlertDescription>
+    </Alert>
+  )
+}
+
+const NoSpendableBalanceAlert = () => {
+  const { t } = useTranslation()
+
+  return (
+    <Alert variant="warning" className="mb-4">
+      <AlertTriangleIcon />
+      <AlertTitle>{t('earn.alert_no_spendable_balance_title')}</AlertTitle>
+      <AlertDescription>
+        <Trans i18nKey="earn.alert_no_spendable_balance_description">
+          Fund your wallet on the
+          <Link to={routes.receive} className="font-semibold">
+            Receive page
+          </Link>
+          to start earning.
+        </Trans>
+      </AlertDescription>
+    </Alert>
+  )
+}
+
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
@@ -73,6 +108,15 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const walletInfo = useJamWalletInfoContext()
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
+  const maxConfirmedJarAvailableBalance = useMemo(() => {
+    return Math.max(0, ...walletInfo.jars.map((jar) => jar.balanceSummary.calculatedConfirmedAvailableBalanceInSats))
+  }, [walletInfo.jars])
+  const earnBalanceWarning =
+    !walletInfo.isFetching && maxConfirmedJarAvailableBalance < JAM.OFFER_MINSIZE_MIN
+      ? walletInfo.maxJarAvailableBalance >= JAM.OFFER_MINSIZE_MIN
+        ? 'unconfirmed'
+        : 'unavailable'
+      : null
 
   const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
   const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
@@ -243,11 +287,15 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         <CardContent>
           <p className="text-muted-foreground mb-4 text-sm">{t('earn.market_explainer')}</p>
 
+          {earnBalanceWarning === 'unconfirmed' && <UnconfirmedBalanceAlert />}
+          {earnBalanceWarning === 'unavailable' && <NoSpendableBalanceAlert />}
+
           <EarnForm
             onSubmit={onSubmit}
             isWaitingMakerStart={isWaitingMakerStart}
-            offerMinsizeMax={walletInfo.maxJarAvailableBalance}
+            offerMinsizeMax={maxConfirmedJarAvailableBalance}
             disabled={
+              earnBalanceWarning !== null ||
               walletInfo.isFetching ||
               isWaitingMakerStart ||
               isWaitingMakerStop ||

@@ -13,6 +13,10 @@ export type BalanceSummary = {
    */
   calculatedAvailableBalanceInSats: AmountSats
   /**
+   * @description Manually calculated confirmed available balance in sats.
+   */
+  calculatedConfirmedAvailableBalanceInSats: AmountSats
+  /**
    * @description Manually calculated frozen or locked balance in sats.
    */
   calculatedFrozenOrLockedBalanceInSats: AmountSats
@@ -29,10 +33,14 @@ export const toBalanceSummary = (utxos: Utxo[], now?: Milliseconds): BalanceSumm
   const walletTotalCalculated: AmountSats = utxos.reduce((acc, utxo) => acc + utxo.value, 0)
   const walletFrozenOrLockedCalculated: AmountSats = calculateFrozenOrLockedBalance(utxos, refTime)
   const walletAvailableCalculated = walletTotalCalculated - walletFrozenOrLockedCalculated
+  const walletConfirmedAvailableCalculated = utxos
+    .filter((utxo) => !utxo.frozen && !fb.utxo.isLocked(utxo, refTime) && utxo.confirmations > 0)
+    .reduce((acc, utxo) => acc + utxo.value, 0)
 
   return {
     calculatedTotalBalanceInSats: walletTotalCalculated,
     calculatedFrozenOrLockedBalanceInSats: walletFrozenOrLockedCalculated,
     calculatedAvailableBalanceInSats: walletAvailableCalculated,
+    calculatedConfirmedAvailableBalanceInSats: walletConfirmedAvailableCalculated,
   }
 }
