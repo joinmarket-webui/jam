@@ -18,6 +18,10 @@ export const statusBadgeVariants = cva(
           variant: 'default',
           className: 'border-transparent light:bg-green-700 bg-green-700 text-white/90',
         }),
+        'cj-change': badgeVariants({
+          variant: 'default',
+          className: 'border-transparent light:bg-emerald-600 bg-emerald-700/70 text-white/90',
+        }),
         'change-out': badgeVariants({
           variant: 'default',
           className: 'border-transparent light:bg-yellow-300 bg-yellow-400 text-black',

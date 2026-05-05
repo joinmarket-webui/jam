@@ -5,7 +5,17 @@ import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from './fidelityBondUtils'
 
-type JmPlainTagValue = 'new' | 'used' | 'reused' | 'cj-out' | 'non-cj-change' | 'change-out' | 'deposit'
+type JmPlainTagValue =
+  | 'new'
+  | 'used'
+  | 'reused'
+  | 'cj-out'
+  | 'cj-change'
+  | 'non-cj-change'
+  | 'change-out'
+  | 'deposit'
+  | 'used-empty'
+  | 'flagged'
 type AdditionalTagValue = 'locked' | 'pending' | 'frozen'
 type UtxoTagValue = JmPlainTagValue | AdditionalTagValue | 'bond' | string
 
@@ -16,9 +26,12 @@ const JM_PLAIN_STATUS_TAG_VARIANTS: { [key in JmPlainTagValue]: StatusBadgeVaria
   used: 'used',
   reused: 'reused',
   'cj-out': 'cj-out',
+  'cj-change': 'cj-change',
   'change-out': 'change-out',
   'non-cj-change': 'non-cj-change',
   deposit: 'deposit',
+  'used-empty': 'used',
+  flagged: 'reused',
 }
 
 const ADDITIONAL_STATUS_TAG_VARIANTS: { [key in AdditionalTagValue]: StatusBadgeVariant } = {

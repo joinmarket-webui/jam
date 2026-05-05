@@ -43,12 +43,19 @@ const createJamAuthenticationMiddleware = () => {
 
 export function unauthorizedResponseInterceptor(response: Response) {
   if (response.status === 401) {
-    const isAuthenticated = authStore.getState().state !== undefined
-    if (isAuthenticated) {
+    // "invalid_token" error handling:
+    // - joinmarket-clientserver (https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.12/src/jmclient/wallet_rpc.py#L285-L290)
+    // - joinmarket-ng (https://github.com/joinmarket-ng/joinmarket-ng/blob/0.28.1/jmwalletd/src/jmwalletd/app.py#L129)
+    // last checked 2026-05-02
+    const wwwAuthenticate = response.headers.get('WWW-Authenticate')
+    const isInvalidToken =
+      typeof wwwAuthenticate === 'string' && wwwAuthenticate.toLowerCase().includes('error="invalid_token"')
+    if (isInvalidToken) {
       authStore.getState().clear()
       queryClient.clear()
     }
   }
+
   return response
 }
 

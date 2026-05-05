@@ -1,6 +1,4 @@
-
 services:
-
   joinmarket:
     container_name: jm_regtest_joinmarket
     extends:
@@ -12,12 +10,12 @@ services:
       jm_rpc_user: joinmarket
       jm_rpc_password: joinmarket
     ports:
-      - "62601:62601"
-      - "28183:28183"
-      - "28283:28283"
+      - '62601:62601'
+      - '28183:28183'
+      - '28283:28283'
     volumes:
-      - "joinmarket_datadir:/root/.joinmarket"
-      - "initializer_datadir:/root/.regtest-initializer"
+      - 'joinmarket_datadir:/root/.joinmarket'
+      - 'initializer_datadir:/root/.regtest-initializer'
     depends_on:
       bitcoind:
         condition: service_healthy
@@ -25,6 +23,8 @@ services:
         condition: service_started
       irc:
         condition: service_started
+      tor:
+        condition: service_healthy
 
   joinmarket2:
     container_name: jm_regtest_joinmarket2
@@ -37,11 +37,12 @@ services:
       jm_rpc_wallet_file: jm_secondary
       jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
     ports:
-      - "29080:80"
-      - "29183:28183" # exposed for "init setup" routine
+      - '29080:80'
+      - '29183:28183' # exposed for "init setup" routine
     volumes:
-      - "joinmarket2_datadir:/root/.joinmarket"
-      - "bitcoin_datadir:/root/.bitcoin_data" # mount bitcoind dir to access .cookie file
+      - 'joinmarket2_datadir:/root/.joinmarket'
+      - 'bitcoin_datadir:/root/.bitcoin_data' # mount bitcoind dir to access .cookie file
+      - 'tor_datadir:/var/lib/tor:ro'
     depends_on:
       bitcoind:
         condition: service_healthy
@@ -49,6 +50,8 @@ services:
         condition: service_started
       irc:
         condition: service_started
+      tor:
+        condition: service_healthy
 
   joinmarket3:
     container_name: jm_regtest_joinmarket3
@@ -57,16 +60,17 @@ services:
       service: joinmarket_jam_standalone
     environment:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      WAIT_FOR_BITCOIND: "false"
+      WAIT_FOR_BITCOIND: 'false'
       jm_rpc_wallet_file: jm_tertiary
       jm_rpc_user: joinmarket3
       jm_rpc_password: joinmarket3
     ports:
-      - "30080:80"
-      - "30183:28183" # exposed for "init setup" routine
+      - '30080:80'
+      - '30183:28183' # exposed for "init setup" routine
     volumes:
-      - "joinmarket3_datadir:/root/.joinmarket"
-      - "initializer_datadir:/root/.regtest-initializer"
+      - 'joinmarket3_datadir:/root/.joinmarket'
+      - 'initializer_datadir:/root/.regtest-initializer'
+      - 'tor_datadir:/var/lib/tor:ro'
     depends_on:
       bitcoind:
         condition: service_healthy
@@ -74,6 +78,58 @@ services:
         condition: service_started
       irc:
         condition: service_started
+      tor:
+        condition: service_healthy
+
+  joinmarket4:
+    container_name: jm_regtest_joinmarket4
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_ng_native
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: regtest
+      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_quaternary
+    ports:
+      - '31183:28183'
+    volumes:
+      - 'joinmarket4_datadir:/root/.joinmarket-ng'
+      - 'initializer_datadir:/root/.regtest-initializer'
+      - 'tor_datadir:/var/lib/tor:ro'
+    depends_on:
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      joinmarket_ng_orderbook_watcher:
+        condition: service_healthy
+      tor:
+        condition: service_healthy
+
+  joinmarket5:
+    container_name: jm_regtest_joinmarket5
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_ng_peer
+    environment:
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: regtest
+      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_quinary
+    ports:
+      - '32183:28183'
+    volumes:
+      - 'joinmarket5_datadir:/root/.joinmarket-ng'
+      - 'tor_datadir:/var/lib/tor:ro'
+    depends_on:
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      joinmarket_ng_orderbook_watcher:
+        condition: service_healthy
+      tor:
+        condition: service_healthy
 
   joinmarket_directory_node:
     container_name: jm_regtest_joinmarket_directory_node
@@ -83,19 +139,115 @@ services:
     restart: unless-stopped
     environment:
       jm_hidden_service_dir: \/root\/.joinmarket\/hidden_service_dir
-      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      jm_directory_nodes: ${JM_REF_DIRECTORY_NODES:?You must set the reference directory node address in generated env file}
+      jm_socks5_host: localhost
+      jm_socks5_port: 9050
+      jm_tor_control_host: localhost
+      jm_tor_control_port: 9051
+      jm_daemon_host: 0.0.0.0
       jm_blockchain_source: regtest
       jm_network: testnet
     volumes:
-      - "joinmarket_directory_node_datadir:/root/.joinmarket"
-      - "./out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
+      - 'joinmarket_directory_node_datadir:/root/.joinmarket'
+      - './out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z'
     healthcheck:
-      test: ["CMD", "supervisorctl", "status"]
+      test: ['CMD', 'supervisorctl', 'status']
       interval: 10s
       timeout: 10s
       retries: 20
       start_period: 60s
       start_interval: 3s
+    depends_on:
+      tor:
+        condition: service_healthy
+    networks:
+      default:
+        ipv4_address: 172.30.0.20
+
+  joinmarket_ng_orderbook_watcher:
+    container_name: jm_regtest_joinmarket_ng_orderbook_watcher
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main
+    restart: unless-stopped
+    environment:
+      NETWORK_CONFIG__NETWORK: testnet
+      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
+      DIRECTORY_NODES: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      TOR__SOCKS_HOST: tor
+      TOR__SOCKS_PORT: 9050
+      LOGGING__LEVEL: DEBUG
+    expose:
+      - 8000
+    ports:
+      - '31800:8000'
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import socket; s = socket.create_connection(('127.0.0.1', 8000), 5); s.close()"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
+    depends_on:
+      joinmarket_ng_directory_node:
+        condition: service_healthy
+      tor:
+        condition: service_healthy
+
+  joinmarket_ng_directory_node:
+    container_name: jm_regtest_joinmarket_ng_directory_node
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main
+    restart: unless-stopped
+    environment:
+      NETWORK_CONFIG__NETWORK: testnet
+      DIRECTORY_SERVER__HOST: 0.0.0.0
+      DIRECTORY_SERVER__PORT: 5223
+      LOGGING__LEVEL: DEBUG
+    command: ['python', '-m', 'directory_server.main']
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import socket; s = socket.socket(); s.connect(('127.0.0.1', 5223)); s.close()"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
+    networks:
+      default:
+        ipv4_address: 172.30.0.21
+
+  tor:
+    depends_on:
+      tor_init:
+        condition: service_completed_successfully
+    container_name: jm_regtest_tor
+    image: ghcr.io/m0wer/docker-tor:latest
+    restart: unless-stopped
+    volumes:
+      - './tor/conf:/etc/tor:ro'
+      - 'tor_datadir:/var/lib/tor'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'test -f /var/lib/tor/ng-directory/hostname && test $(wc -c < /var/lib/tor/control_auth_cookie 2>/dev/null || echo 0) -eq 32',
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+      start_period: 120s
+
+  tor_init:
+    container_name: jm_regtest_tor_init
+    image: busybox:latest
+    restart: 'no'
+    command:
+      [
+        'sh',
+        '-c',
+        'mkdir -p /var/lib/tor/ref-directory /var/lib/tor/ng-directory && cp -f /source/ref/* /var/lib/tor/ref-directory/ && cp -f /source/ng/* /var/lib/tor/ng-directory/ && chown -R 1000:1000 /var/lib/tor && chmod 700 /var/lib/tor/ref-directory /var/lib/tor/ng-directory && chmod 600 /var/lib/tor/ref-directory/* /var/lib/tor/ng-directory/*',
+      ]
+    volumes:
+      - 'tor_datadir:/var/lib/tor'
+      - './out/hidden_service_dir:/source/ref:ro,z'
+      - './out/ng_directory_hidden_service:/source/ng:ro,z'
 
   irc:
     container_name: jm_regtest_irc
@@ -104,7 +256,7 @@ services:
     expose:
       - 6667
     volumes:
-      - "irc_datadir:/ircd"
+      - 'irc_datadir:/ircd'
 
   bitcoind:
     container_name: jm_regtest_bitcoind
@@ -149,12 +301,21 @@ services:
       - 28333 # ZMQ
       - 28334 # ZMQ
     ports:
-      - "17782:43782"
+      - '17782:43782'
     volumes:
-      - "bitcoin_datadir:/home/bitcoin/data"
-      - "bitcoin_wallet_datadir:/home/bitcoin/walletdata"
+      - 'bitcoin_datadir:/home/bitcoin/data'
+      - 'bitcoin_wallet_datadir:/home/bitcoin/walletdata'
     healthcheck:
-      test: [ "CMD", "/entrypoint.sh", "bitcoin-cli", "-chain=regtest", "-rpcport=43782", "-datadir=/home/bitcoin/data", "-getinfo" ]
+      test:
+        [
+          'CMD',
+          '/entrypoint.sh',
+          'bitcoin-cli',
+          '-chain=regtest',
+          '-rpcport=43782',
+          '-datadir=/home/bitcoin/data',
+          '-getinfo',
+        ]
       interval: 10s
       timeout: 10s
       retries: 20
@@ -162,22 +323,22 @@ services:
       start_interval: 3s
 
   bitcoind_regtest_initializer:
-      container_name: jm_regtest_bitcoind_initializer
-      build:
-        context: ./dockerfile-deps/bitcoin/regtest-initializer
-        dockerfile: Dockerfile
-      restart: on-failure
-      environment:
-        READY_FILE: /root/.regtest-initializer/btc_fully_synched
-        RPC_HOST: bitcoind
-        RPC_PORT: 43782
-        RPC_USER: regtest
-        RPC_PASSWORD: regtest
-      volumes:
-        - "initializer_datadir:/root/.regtest-initializer"
-      depends_on:
-        bitcoind:
-          condition: service_healthy
+    container_name: jm_regtest_bitcoind_initializer
+    build:
+      context: ./dockerfile-deps/bitcoin/regtest-initializer
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      RPC_HOST: bitcoind
+      RPC_PORT: 43782
+      RPC_USER: regtest
+      RPC_PASSWORD: regtest
+    volumes:
+      - 'initializer_datadir:/root/.regtest-initializer'
+    depends_on:
+      bitcoind:
+        condition: service_healthy
 
   nginx:
     container_name: jm_regtest_nginx_test_basepath
@@ -185,11 +346,11 @@ services:
     volumes:
       - ./dockerfile-deps/nginx:/etc/nginx/templates
     ports:
-      - "8000:80"
+      - '8000:80'
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     healthcheck:
-      test: ["CMD-SHELL", "wget --output-document /dev/null http://127.0.0.1:80/health || exit 1"]
+      test: ['CMD-SHELL', 'wget --output-document /dev/null http://127.0.0.1:80/health || exit 1']
       interval: 10s
       timeout: 10s
       retries: 20
@@ -212,7 +373,7 @@ services:
       BTCEXP_NO_RATES: 'true'
       BTCEXP_RPC_ALLOWALL: 'true'
     ports:
-      - "3002:3002"
+      - '3002:3002'
     depends_on:
       bitcoind:
         condition: service_healthy
@@ -224,5 +385,15 @@ volumes:
   joinmarket_datadir:
   joinmarket2_datadir:
   joinmarket3_datadir:
+  joinmarket4_datadir:
+  joinmarket5_datadir:
   joinmarket_directory_node_datadir:
+  tor_datadir:
   irc_datadir:
+
+networks:
+  default:
+    name: regtest_default
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

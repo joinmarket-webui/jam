@@ -8,6 +8,28 @@ A place to collect useful information for developers that doesn't really fit els
 
 For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
 
+## Running Jam Against JoinMarket-NG
+
+Jam v2 can talk directly to a separately running `jmwalletd` / orderbook watcher from `joinmarket-ng`. You do not need to run the Jam regtest compose or the reference implementation for this workflow.
+
+### Local dev against the Jam regtest jm-ng services
+
+If you are using Jam's own regtest environment, the initialized jm-ng services are exposed on specific host ports. In that case run:
+
+```bash
+npm run jm-ng:dev
+```
+
+If your separately running jm-ng services use different ports, you can override them directly:
+
+```bash
+JAM_BACKEND=joinmarket-ng \
+JMWALLETD_API_PORT=28183 \
+JMWALLETD_WEBSOCKET_PORT=28283 \
+JMOBWATCH_PORT=8080 \
+npm run dev
+```
+
 ## Linting
 
 We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).

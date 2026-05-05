@@ -587,9 +587,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               walletBalanceSummary={walletBalanceSummary}
               disabled={
                 feeConfigValidation.maxFeesConfigMissing ||
-                jmSession?.maker_running ||
+                jmSession?.maker_running === true ||
                 collaborativeFlowActive ||
-                jmSession?.rescanning ||
+                jmSession?.rescanning === true ||
                 utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
                 waitForUtxosToBeSpent.length > 0
