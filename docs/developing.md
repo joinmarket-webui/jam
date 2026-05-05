@@ -23,7 +23,7 @@ npm run jm-ng:dev
 If your separately running jm-ng services use different ports, you can override them directly:
 
 ```bash
-JAM_BACKEND=joinmarket-ng
+JAM_BACKEND=joinmarket-ng \
 JMWALLETD_API_PORT=28183 \
 JMWALLETD_WEBSOCKET_PORT=28283 \
 JMOBWATCH_PORT=8080 \
