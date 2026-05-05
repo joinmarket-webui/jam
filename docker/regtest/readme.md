@@ -2,7 +2,7 @@
 
 This setup will help you set up a regtest environment quickly.
 It starts multiple JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
-Communication between these containers is done via Tor (if internet connection is available) and IRC (locally running container).
+Communication between these containers is done via Tor and local directory servers.
 
 All containers will have a wallet named `Satoshi.jmdat` with password `test`.
 The second container has basic auth enabled (username `joinmarket` and password `joinmarket`).
@@ -22,8 +22,11 @@ npm run regtest:init
 # mine blocks in regtest periodically
 npm run regtest:mine
 
-# start jam in development mode
+# start jam in development mode against joinmarket-clientserver primary backend
 npm run dev
+
+# or start jam in development mode against the initialized jm-ng backend
+npm run jm-ng:dev
 
 [...]
 
@@ -51,7 +54,26 @@ Once the regtest environment is up and running you can start Jam with:
 
 ```sh
 npm run dev
+
+# optionally switch to the initialized jm-ng backend
+npm run jm-ng:dev
 ```
+
+Backend selection can also be controlled manually via environment variables:
+
+- `JAM_BACKEND=joinmarket-clientserver` with `JMWALLETD_API_PORT`, `JMWALLETD_WEBSOCKET_PORT`, and `JMOBWATCH_PORT`
+- `JAM_BACKEND=joinmarket-ng` with `JMWALLETD_API_PORT`, `JMWALLETD_WEBSOCKET_PORT`, and `JMOBWATCH_PORT`
+- `JAM_BACKEND=jam-standalone` with `JAM_API_PORT`
+
+### Orderbook Access
+
+There are two easy ways to access orderbook data in this setup:
+
+- Through Jam itself: start `npm run dev` or `npm run jm-ng:dev` and use the Orderbook page in the UI.
+- Through the NG orderbook watcher directly: `http://localhost:31800`.
+
+For API-level access, Jam proxies `/obwatch` based on `JMOBWATCH_PORT`.
+For example, with `npm run jm-ng:dev` it targets port `31800`.
 
 ### Stop
 
@@ -77,16 +99,30 @@ npm run regtest:mine
 
 ## Images
 
-The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is an adaption of [jam-standalone](https://github.com/joinmarket-webui/jam-docker/tree/master/standalone) with as little adaptations as possible.
-It will fetch the latest commit from the [`master` branch of the joinmarket-clientserver repo](https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master).
-Keep in mind: Building from `master` is not always reliable. This tradeoff is made to enable testing new features immediately by just rebuilding the images.
+This setup runs a mixed environment:
 
-The second JoinMarket container is based on `joinmarket-webui/jam-dev-standalone:master` which exposes an UI on port `29080`
-(username `joinmarket` and pass `joinmarket` for Basic Authentication).
-The third container is a copy of the second one exposed on port `30080` without authentication.
-This is useful if you want to perform regression tests.
+- `joinmarket`, `joinmarket2`, `joinmarket3`: `joinmarket-clientserver`
+- `joinmarket4`, `joinmarket5`: `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`
+- JoinMarket NG directory service: `ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main`
+- JoinMarket NG orderbook watcher: `ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main`
 
-One additional JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
+Use `:main` for latest unstable/unreleased changes and `:latest` for the latest tagged release.
+
+The second JoinMarket container is exposed on port `29080`.
+The third container is exposed on port `30080`.
+The first JoinMarket NG container is exposed on ports `31183` (API and websocket).
+The second JoinMarket NG container is exposed on ports `32183` (API and websocket).
+This is useful if you want to perform regression tests across mixed implementations.
+
+The setup includes both a reference directory node and a JoinMarket NG directory server. They implement the same onion directory protocol and run side-by-side for compatibility testing.
+All JoinMarket components (reference containers, JoinMarket NG containers, and orderbook watcher) are configured with both directory nodes via `JM_ALL_DIRECTORY_NODES`.
+
+All directory access is Tor-only in this setup:
+
+- An external Tor service (`jm_regtest_tor`) is started as part of the regtest stack.
+- Both directory implementations are exposed as `.onion` services by that Tor service.
+- All clients use those `.onion` addresses and route directory traffic through Tor SOCKS.
+- JoinMarket NG makers also use Tor control + cookie auth via mounted `/var/lib/tor/control_auth_cookie`.
 
 ### Build
 
@@ -95,7 +131,7 @@ One additional JoinMarket container acts as [Directory Node](https://github.com/
 npm run regtest:build
 ```
 
-In order to incorporate recent upstream changes (of the `master` branch), simply rebuild the setup from scratch.
+In order to incorporate recent upstream image changes, simply rebuild the setup from scratch.
 
 ```sh
 # download and recompile the images from scratch (without using docker cache)
@@ -114,7 +150,7 @@ npm run regtest:logs:jmwalletd
 ### Display running JoinMarket version
 
 ```sh
-docker exec -t jm_regtest_joinmarket git log --oneline -1
+curl --insecure --silent https://localhost:28183/api/v1/getinfo | jq
 ```
 
 ## Helper scripts
@@ -222,5 +258,5 @@ Successfully generated 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339
 
 ## Resources
 
-- [JoinMarket Server (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver)
-- [JoinMarket Server Testing Docs (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/TESTING.md)
+- [joinmarket-ng (GitHub)](https://github.com/joinmarket-ng/joinmarket-ng)
+- [joinmarket-clientserver (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver)

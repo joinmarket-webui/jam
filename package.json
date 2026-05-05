@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "VITE_JAM_DEV_MODE=true vite",
     "dev:secondary": "JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev",
+    "jm-ng:dev": "JAM_BACKEND=joinmarket-ng JMWALLETD_API_PORT=32183 JMWALLETD_WEBSOCKET_PORT=32183 JMOBWATCH_PORT=31800 npm run dev",
     "build": "tsc -b && vite build",
     "lint": "npm run lint:check",
     "lint:check": "eslint .",
