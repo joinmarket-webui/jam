@@ -104,7 +104,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     defaultValues: {
       destinations: initialDestinations,
     },
-    resolver: yupResolver(schema, { context: { addressSummary: walletInfo.addressSummary } }),
+    context: { addressSummary: walletInfo.addressSummary },
+    resolver: yupResolver(schema),
   })
 
   const { fields, replace } = useFieldArray({
