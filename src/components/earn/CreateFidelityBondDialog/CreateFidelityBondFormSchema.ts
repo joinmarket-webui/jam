@@ -27,7 +27,7 @@ export const createFidelityBondFormSchema = (
   lockdateOptions: Array<{ value: fb.Lockdate }>,
   jarIndexes: JarIndex[],
   t: TFunction<'translation', undefined>,
-) => {
+): yup.ObjectSchema<CreateFidelityBondFormValues> => {
   const requiredMessage = t('global.errors.reason_unknown')
   const invalidSourceJarFeedbackMessage = t('receive.feedback_invalid_source_jar', {
     /* TODO: i18n: provide dedicated fidelity-bond source-jar validation copy */

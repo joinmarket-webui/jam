@@ -12,7 +12,7 @@ const t = ((key: string) => key) as unknown as TFunction<'translation', undefine
 const validRegtestAddress = 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx'
 
 const validate = async (values: SweepFormValues, addressSummary = {} as AddressSummary) => {
-  return await sweepFormSchema(addressSummary, t).validate(values, { abortEarly: false })
+  return await sweepFormSchema(t).validate(values, { abortEarly: false, context: { addressSummary } })
 }
 
 describe('sweepFormSchema', () => {

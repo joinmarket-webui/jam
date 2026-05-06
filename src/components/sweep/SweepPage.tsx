@@ -4,10 +4,9 @@ import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/join
 import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
-import { useFieldArray, useForm, useWatch, type Resolver } from 'react-hook-form'
+import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import * as yup from 'yup'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
@@ -16,6 +15,7 @@ import {
   buildSweepDestinationValues,
   getSweepDestinationAddresses,
   sweepFormSchema,
+  type SweepResolverContext,
   type SweepFormValues,
 } from '@/components/sweep/SweepFormSchema'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
@@ -97,14 +97,15 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     return buildSweepPreconditionSummary(allUtxos)
   }, [allUtxos])
 
-  const schema = useMemo(() => sweepFormSchema(walletInfo.addressSummary, t), [walletInfo.addressSummary, t])
+  const schema = useMemo(() => sweepFormSchema(t), [t])
   const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
-  const form = useForm<SweepFormValues, unknown, SweepFormValues>({
+  const form = useForm<SweepFormValues, SweepResolverContext, SweepFormValues>({
     mode: 'onChange',
     defaultValues: {
       destinations: initialDestinations,
     },
-    resolver: yupResolver(schema as yup.AnyObjectSchema) as Resolver<SweepFormValues, unknown, SweepFormValues>,
+    context: { addressSummary: walletInfo.addressSummary },
+    resolver: yupResolver(schema),
   })
 
   const { fields, replace } = useFieldArray({
@@ -125,9 +126,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const hasDestinationErrors = !form.formState.isValid
   const allDestinationAddressesPresent = normalizedDestinationAddresses.every((address) => address !== '')
 
+  const destinationUsageKey = useMemo(() => {
+    return normalizedDestinationAddresses
+      .map((address) => (address && walletInfo.addressSummary[address]?.used ? '1' : '0'))
+      .join('')
+  }, [normalizedDestinationAddresses, walletInfo.addressSummary])
+
   useEffect(() => {
+    if (!normalizedDestinationAddresses.some((address) => address !== '')) return
     void trigger('destinations')
-  }, [trigger, schema])
+  }, [trigger, destinationUsageKey, normalizedDestinationAddresses])
 
   const getScheduleQuery = useQuery({
     queryKey: ['sweep-get-schedule', walletFileName],
