@@ -32,10 +32,10 @@ export const BetaWarningDialog = ({ jamVersion, joinmarketVersion, ...dialogProp
         </DialogHeader>
         <div className="items-end-safe text-sm">
           <span className="text-muted-foreground">JoinMarket: </span>
-          <span className="font-mono font-semibold">v{joinmarketVersion?.raw || '_unknown'}</span>
+          <span className="font-mono font-semibold select-all">v{joinmarketVersion?.raw || '_unknown'}</span>
           <br />
           <span className="text-muted-foreground">Jam: </span>
-          <span className="font-mono font-semibold">v{jamVersion.raw || '_unknown'}</span>
+          <span className="font-mono font-semibold select-all">v{jamVersion.raw || '_unknown'}</span>
         </div>
         <DialogFooter>
           <Button onClick={() => dialogProps.onOpenChange(false)}>{t('footer.warning_alert_button_ok')}</Button>
