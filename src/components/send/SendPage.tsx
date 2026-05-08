@@ -152,7 +152,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       setCollaborativeFlowError(undefined)
     },
     onSuccess: () => {
-      toast.success(t('send.alert_collaborative_started_title'))
+      toast.info(t('send.alert_collaborative_starting'))
     },
     onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
@@ -384,17 +384,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   })
 
   const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data: SendFormValues) => {
-    if (data.isCoinJoin !== true) {
-      try {
-        await triggerNonCollaborativeTransaction.mutateAsync(data)
-      } catch (error: unknown) {
-        console.error('Error while sending non-collaborative transaction', error)
-      }
-    } else {
+    if (data.isCoinJoin === true) {
       if (feeConfigValidation.maxFeesConfigMissing) {
         toast.error(t('send.taker_error_message_max_fees_config_missing'))
-        setShowFeeConfigDialog(true)
-        return
+        throw new Error(t('send.taker_error_message_max_fees_config_missing'))
       }
 
       try {
@@ -402,10 +395,21 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       } catch (error: unknown) {
         console.error('Error while sending collaborative transaction', error)
       }
+    } else {
+      try {
+        await triggerNonCollaborativeTransaction.mutateAsync(data)
+      } catch (error: unknown) {
+        console.error('Error while sending non-collaborative transaction', error)
+      }
     }
   }
 
   const onSubmit: SubmitHandler<SendFormValues> = (data) => {
+    if (data.isCoinJoin && feeConfigValidation.maxFeesConfigMissing) {
+      toast.error(t('send.taker_error_message_max_fees_config_missing'))
+      setShowFeeConfigDialog(true)
+      return
+    }
     setSendFromValuesAwaitingConfirmation(data)
     setShowPaymentConfirmDialog(true)
   }
@@ -419,7 +423,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     //void refetchWalletInfoRef.current()
   }
 
-  if (feeConfigValidation.isLoading) {
+  if (!jmSession) {
     return <PageLoading />
   }
 
@@ -593,7 +597,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
-                feeConfigValidation.maxFeesConfigMissing ||
                 jmSession?.maker_running === true ||
                 coinjoinRunning ||
                 isWaitingCoinjoinStart ||
