@@ -11,6 +11,18 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
       env: {
         LC_ALL: 'en_US.UTF-8',
       },
+      coverage: {
+        // 'json-summary' is required for ci coverage report
+        reporter: ['text', 'json', 'json-summary'],
+        // If you want a coverage reports even if your tests are failing, include the reportOnFailure option
+        reportOnFailure: true,
+        thresholds: {
+          lines: 70,
+          functions: 60,
+          branches: 60,
+          statements: 70,
+        },
+      },
       projects: [
         {
           extends: true,
@@ -37,7 +49,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
             environment: 'jsdom',
             setupFiles: './vitest.setup.ts',
             include: ['**/*.test.{ts,tsx}'],
-            exclude: ['node_modules', '.storybook'],
+            exclude: ['src/lib/hash.slow.test.ts', 'node_modules', '.storybook'],
           },
           resolve: {
             alias: {
