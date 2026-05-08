@@ -14,7 +14,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
       coverage: {
         // 'json-summary' is required for ci coverage report
         reporter: ['text', 'json', 'json-summary'],
-        // If you want a coverage reports even if your tests are failing, include the reportOnFailure option
+        // enable coverage reports even if tests are failing
         reportOnFailure: true,
         thresholds: {
           lines: 70,
