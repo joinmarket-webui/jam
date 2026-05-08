@@ -1,16 +1,15 @@
 import { useState, type ComponentProps } from 'react'
 import { BlocksIcon, BookOpenIcon, FileQuestionMarkIcon, ScrollTextIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useStore } from 'zustand'
 import { Button } from '@/components/ui/button'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { BetaWarningDialog } from './footer/BetaWarningDialog'
 
 type JmWebsocketInfo = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
 
 type AppFooterProps = Pick<ComponentProps<typeof BetaWarningDialog>, 'jamVersion' | 'joinmarketVersion'> & {
+  blockHeight?: number
   websocketInfo?: JmWebsocketInfo
   onClickCheatsheet: () => void
   onClickOrderbook: () => void
@@ -18,6 +17,7 @@ type AppFooterProps = Pick<ComponentProps<typeof BetaWarningDialog>, 'jamVersion
 }
 
 export function AppFooter({
+  blockHeight,
   websocketInfo,
   jamVersion,
   joinmarketVersion,
@@ -27,7 +27,6 @@ export function AppFooter({
 }: AppFooterProps) {
   const { t } = useTranslation()
 
-  const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isShowBetaWarning, setShowBetaWarning] = useState(false)
 
   return (
@@ -52,7 +51,7 @@ export function AppFooter({
             </Button>
           </Trans>
         </div>
-        <div className="flex flex-1 items-center justify-start gap-2 sm:justify-center" data-tour-id="footer-tools">
+        <div className="flex items-center justify-start gap-2 sm:justify-center" data-tour-id="footer-tools">
           <Button variant="outline" size="sm" onClick={onClickCheatsheet} title={t('footer.cheatsheet')}>
             <FileQuestionMarkIcon />
             <span className="hidden sm:inline-block">{t('footer.cheatsheet')}</span>
@@ -69,27 +68,28 @@ export function AppFooter({
           )}
         </div>
 
-        <div className="flex flex-1 items-center justify-end gap-4 text-xs">
-          {websocketInfo !== undefined && (
-            <div className="flex flex-col gap-1">
-              <JmWebsocketInfo isOpen={websocketInfo.isOpen} isAuthenticated={websocketInfo.isAuthenticated} />
-            </div>
-          )}
-          <div className="flex flex-col gap-1">
+        <div className="flex flex-1 items-center justify-end gap-4 text-xs break-normal">
+          <div className="flex flex-col items-end gap-0.25 text-end">
             {blockHeight && (
               <span className="flex items-center gap-1">
-                <BlocksIcon className="size-4" /> {blockHeight}
+                <BlocksIcon className="size-3" />
+                <span className="break-keep slashed-zero tabular-nums select-all">{blockHeight.toLocaleString()}</span>
               </span>
             )}
             <a
               href="https://github.com/joinmarket-webui/jam/tags"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-right underline opacity-80"
+              className="text-muted-foreground underline"
             >
               v{jamVersion?.raw}
             </a>
           </div>
+          {websocketInfo !== undefined && (
+            <div className="flex flex-col">
+              <JmWebsocketInfo isOpen={websocketInfo.isOpen} isAuthenticated={websocketInfo.isAuthenticated} />
+            </div>
+          )}
         </div>
       </footer>
     </>

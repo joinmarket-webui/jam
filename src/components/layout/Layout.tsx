@@ -90,6 +90,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
       <main className="flex-1">{children}</main>
       <AppFooter
         websocketInfo={websocket}
+        blockHeight={jmSession?.block_height}
         jamVersion={APP_DISPLAY_VERSION}
         joinmarketVersion={joinmarketVersion}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
