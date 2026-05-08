@@ -50,11 +50,13 @@ jobs:
         run: npm run format:check
 
       - name: Test
-        run: npm test -- --coverage.enabled --coverage.reporter=json --coverage.reporter=json-summary --coverage.reporter=text
+        run: npm test -- --coverage.enabled
 
       - name: Build
         run: npm run build
 
       - name: Upload coverage report
-        if: success()
+        # Set if: always() to also generate the report if tests are failing
+        # Only works if you set `reportOnFailure: true` in vite config
+        if: always() 
         uses:  davelosert/vitest-coverage-report-action@v2
