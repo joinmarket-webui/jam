@@ -1,4 +1,5 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 
 export interface RescanInfo {
   updatedAt: number
@@ -8,6 +9,7 @@ export interface RescanInfo {
 
 interface JamSessionInfoContextType {
   blockHeight?: number
+  takerRunning: SessionResponse['coinjoin_in_process']
   rescanInfo: RescanInfo
   setRescanInfo: Dispatch<SetStateAction<RescanInfo>>
 }

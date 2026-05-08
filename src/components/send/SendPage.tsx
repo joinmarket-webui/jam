@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   directsendMutation,
   docoinjoinMutation,
@@ -35,7 +35,7 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { getErrorReason } from '@/lib/errorReason'
 import { withMutationDelay } from '@/lib/queryClient'
-import type { WalletFileName } from '@/lib/utils'
+import { scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
@@ -60,6 +60,10 @@ type DirectSendResult = {
   request: DirectSendRequest
   response: DirectSendResponse
 }
+type CollaborativeSendResult = {
+  request: DoCoinjoinRequest
+  response: unknown
+}
 
 interface SendPageProps {
   walletFileName: WalletFileName
@@ -70,7 +74,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const client = useApiClient()
   const [formId, setFormId] = useState<number>(0)
   const { fetchIfMissing } = useJmConfig({ walletFileName })
-  const { refetch: refetchWalletInfo, waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
+  const { waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
@@ -79,23 +83,23 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [showAbortCoinjoinDialog, setShowAbortCoinjoinDialog] = useState(false)
   const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
-  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
+  const [nonCollaborativePaymentSuccessInfoAlert, setNonCollaborativePaymentSuccessInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
   const [sourceJarIndex, setSourceJarIndex] = useState<JarIndex>()
   // TODO: "Lifecycle" or state management should be handled outside of this component
-  const collaborativeLifecycleRef = useRef({
+  /*const collaborativeLifecycleRef = useRef({
     awaitingCompletion: false,
     wasRunning: false,
     utxoSnapshotAtStart: '',
   })
   const refetchWalletInfoRef = useRef(refetchWalletInfo)
-  const currentUtxoSnapshotRef = useRef('')
+  const currentUtxoSnapshotRef = useRef('')*/
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
-  const currentUtxoSnapshot = useMemo(() => {
+  /*const currentUtxoSnapshot = useMemo(() => {
     return jars
       .flatMap((jar) => jar.utxos.map((utxo) => utxo.utxo))
       .toSorted()
@@ -108,7 +112,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   useEffect(() => {
     refetchWalletInfoRef.current = refetchWalletInfo
-  }, [refetchWalletInfo])
+  }, [refetchWalletInfo])*/
 
   const sourceJar = useMemo(() => {
     if (sourceJarIndex === undefined) return
@@ -181,6 +185,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     onMutate: () => {
       setCollaborativeFlowError(undefined)
     },
+    onSuccess: () => {
+      toast.info(t('send.alert_collaborative_stopping'))
+    },
     onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('send.error_stopping_collaborative_transaction', { reason })
@@ -192,7 +199,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const coinjoinRunning = jmSession?.coinjoin_in_process === true
   const isWaitingCoinjoinStart = startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !coinjoinRunning)
   const isWaitingCoinjoinStop = stopCoinjoinMutationIsPending || (stopCoinjoinMutationIsSuccess && coinjoinRunning)
-  const collaborativeFlowActive = coinjoinRunning || isWaitingCoinjoinStart || isWaitingCoinjoinStop
 
   useRefreshSession({
     enabled: isWaitingCoinjoinStart || isWaitingCoinjoinStop,
@@ -200,20 +206,11 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     refetchDelay: 1_000,
   })
 
-  useEffect(() => {
-    if (!collaborativeFlowActive) {
-      return
-    }
-
-    void refetchWalletInfoRef.current()
-    const intervalId = window.setInterval(() => {
-      void refetchWalletInfoRef.current()
-    }, 3_000)
-
-    return () => {
-      window.clearInterval(intervalId)
-    }
-  }, [collaborativeFlowActive])
+  useRefreshSession({
+    enabled: coinjoinRunning,
+    refetchInterval: 5_000,
+    refetchDelay: 1_000,
+  })
 
   useEffect(() => {
     if (coinjoinRunning && startCoinjoinMutationIsSuccess) {
@@ -227,7 +224,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     }
   }, [coinjoinRunning, stopCoinjoinMutationIsSuccess, stopCoinjoinMutationReset])
 
-  useEffect(() => {
+  /*useEffect(() => {
     const state = collaborativeLifecycleRef.current
 
     if (!state.awaitingCompletion) {
@@ -287,30 +284,29 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     return () => {
       isCancelled = true
     }
-  }, [coinjoinRunning, t])
+  }, [coinjoinRunning, t])*/
 
   useEffect(() => {
-    let isCancelled = false
+    const abortCtrl = new AbortController()
 
     fetchIfMissing({ section: 'POLICY', field: 'minimum_makers' })
       .then((result) => {
-        if (isCancelled) return
+        if (abortCtrl.signal.aborted) return
 
         const parsedValue = Number.parseInt(result.value || '', 10)
-        if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+        if (!Number.isSafeInteger(parsedValue) || parsedValue < 1) {
           return
         }
         setMinimumCollaborators(parsedValue)
       })
       .catch((error: unknown) => {
-        if (isCancelled) return
+        if (abortCtrl.signal.aborted) return
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+        // TODO: i18n, add reason as param
         toast.error(`${t('send.error_loading_min_makers_failed')} ${reason}`)
       })
 
-    return () => {
-      isCancelled = true
-    }
+    return () => abortCtrl.abort()
   }, [fetchIfMissing, t])
 
   const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
@@ -332,7 +328,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       { throttle: 2_100 },
     ),
     onMutate: () => {
-      setPaymentSuccessfulInfoAlert(undefined)
+      setNonCollaborativePaymentSuccessInfoAlert(undefined)
+      scrollToTop()
     },
     onSuccess: (result: DirectSendResult, data: SendFormValues) => {
       const tx = result.response.txinfo as Required<JmTxInfo>
@@ -345,7 +342,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
       setWaitForUtxosToBeSpent(inputUtxoIds)
       setFormId((current) => current + 1)
-      setPaymentSuccessfulInfoAlert({
+      setNonCollaborativePaymentSuccessInfoAlert({
         variant: 'success',
         title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
         description: t('send.alert_payment_successful', {
@@ -364,6 +361,28 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
+  const triggerCollaborativeTransaction = useMutation<CollaborativeSendResult, ErrorMessage, SendFormValues, unknown>({
+    mutationFn: withMutationDelay(
+      async (data: SendFormValues) => {
+        const body: DoCoinjoinRequest = buildCollaborativeSendRequest(data)
+        const response = await startCoinjoinMutationMutateAsync({
+          path: { walletname: walletFileName },
+          body,
+        })
+
+        return {
+          request: body,
+          response,
+        }
+      },
+      { throttle: 2_100 },
+    ),
+    onMutate: () => {
+      setNonCollaborativePaymentSuccessInfoAlert(undefined)
+      scrollToTop()
+    },
+  })
+
   const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data: SendFormValues) => {
     if (data.isCoinJoin !== true) {
       try {
@@ -379,26 +398,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       }
 
       try {
-        const body: DoCoinjoinRequest = buildCollaborativeSendRequest(data)
-        setPaymentSuccessfulInfoAlert(undefined)
-        collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
-        await startCoinjoinMutationMutateAsync({
-          path: { walletname: walletFileName },
-          body,
-        })
-        collaborativeLifecycleRef.current.awaitingCompletion = true
-        collaborativeLifecycleRef.current.wasRunning = coinjoinRunning
-        setPaymentSuccessfulInfoAlert({
-          variant: 'success',
-          title: t('send.alert_collaborative_started_title'),
-          description: t('send.alert_collaborative_started_description'),
-        })
+        await triggerCollaborativeTransaction.mutateAsync(data)
       } catch (error: unknown) {
-        collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
-        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        const message = t('send.error_preparing_collaborative_transaction', { reason })
-        setCollaborativeFlowError(message)
-        toast.error(message)
+        console.error('Error while sending collaborative transaction', error)
       }
     }
   }
@@ -409,13 +411,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   const onAbortCoinjoin = async () => {
-    collaborativeLifecycleRef.current.awaitingCompletion = false
-    collaborativeLifecycleRef.current.wasRunning = false
-    collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
-    setPaymentSuccessfulInfoAlert(undefined)
+    //collaborativeLifecycleRef.current.awaitingCompletion = false
+    //collaborativeLifecycleRef.current.wasRunning = false
+    //collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutationMutateAsync()
-    void refetchWalletInfoRef.current()
+    //void refetchWalletInfoRef.current()
   }
 
   if (feeConfigValidation.isLoading) {
@@ -465,11 +466,13 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           title={t('send.confirm_send_modal.title')}
           subtitle={
             sendFromValuesAwaitingConfirmation.isCoinJoin === true ? (
-              <span className="light:text-green-600/80 text-green-700/80">
+              <span className="light:text-green-600/80 font-semibold text-green-700/80">
                 {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
               </span>
             ) : (
-              <span className="text-destructive">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</span>
+              <span className="text-destructive font-semibold">
+                {t('send.confirm_send_modal.text_collaborative_tx_disabled')}
+              </span>
             )
           }
           values={sendFromValuesAwaitingConfirmation}
@@ -500,11 +503,16 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertDescription>{collaborativeFlowError}</AlertDescription>
           </Alert>
         )}
-
         {isWaitingCoinjoinStart && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>{t('send.alert_collaborative_starting')}</AlertTitle>
+          </Alert>
+        )}
+        {isWaitingCoinjoinStop && (
+          <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+            <Spinner className="motion-reduce:hidden" />
+            <AlertTitle>{t('send.alert_collaborative_stopping')}</AlertTitle>
           </Alert>
         )}
 
@@ -560,12 +568,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
               </Alert>
             )}
-            {paymentSuccessfulInfoAlert && !coinjoinRunning && (
-              <Alert variant={paymentSuccessfulInfoAlert.variant}>
+            {nonCollaborativePaymentSuccessInfoAlert && (
+              <Alert variant={nonCollaborativePaymentSuccessInfoAlert.variant}>
                 <CheckCircle2Icon />
-                <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
+                <AlertTitle>{nonCollaborativePaymentSuccessInfoAlert.title}</AlertTitle>
                 <AlertDescription className="ext-wrap slashed-zero">
-                  {paymentSuccessfulInfoAlert.description}
+                  {nonCollaborativePaymentSuccessInfoAlert.description}
                 </AlertDescription>
               </Alert>
             )}
@@ -581,17 +589,19 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
               feeConfigValues={feeConfigValidation.feeConfigValues}
-              forceCoinJoinEnabled={collaborativeFlowActive}
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
                 feeConfigValidation.maxFeesConfigMissing ||
                 jmSession?.maker_running === true ||
-                collaborativeFlowActive ||
+                coinjoinRunning ||
+                isWaitingCoinjoinStart ||
+                isWaitingCoinjoinStop ||
                 jmSession?.rescanning === true ||
                 utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
+                triggerCollaborativeTransaction.isPending ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}

@@ -64,6 +64,7 @@ export const JamSessionInfoContextProvider = ({
 
   const value = {
     blockHeight: state?.block_height,
+    takerRunning: state?.coinjoin_in_process === true,
     rescanInfo,
     setRescanInfo,
   }
