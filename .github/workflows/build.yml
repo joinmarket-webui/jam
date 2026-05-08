@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup (Node.js ${{ matrix.node-version }})
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       
@@ -30,7 +30,7 @@ jobs:
         run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages['node_modules/@playwright/test'].version)")" >> $GITHUB_ENV
 
       - name: Cache Playwright
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: playwright-cache
         with:
           path: |
@@ -50,7 +50,11 @@ jobs:
         run: npm run format:check
 
       - name: Test
-        run: npm test
+        run: npm test -- --coverage.enabled --coverage.reporter=json --coverage.reporter=json-summary --coverage.reporter=text
 
       - name: Build
         run: npm run build
+
+      - name: Upload coverage report
+        if: success()
+        uses:  davelosert/vitest-coverage-report-action@v2

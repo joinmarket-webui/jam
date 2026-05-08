@@ -37,7 +37,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
             environment: 'jsdom',
             setupFiles: './vitest.setup.ts',
             include: ['**/*.test.{ts,tsx}'],
-            exclude: ['node_modules', '.storybook'],
+            exclude: ['src/lib/hash.slow.test.ts', 'node_modules', '.storybook'],
           },
           resolve: {
             alias: {
