@@ -372,8 +372,6 @@
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }} in transaction {{ txid }}.",
     "alert_collaborative_starting": "Starting collaborative transaction...",
     "alert_collaborative_stopping": "Aborting collaborative transaction...",
-    "alert_collaborative_started_title": "Collaborative transaction started",
-    "alert_collaborative_started_description": "JoinMarket accepted your request and is now coordinating the transaction.",
     "alert_collaborative_completed_title": "Collaborative transaction completed",
     "alert_collaborative_completed_description": "JoinMarket finished the collaborative transaction successfully.",
     "alert_collaborative_ended_title": "Collaborative flow ended",

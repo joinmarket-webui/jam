@@ -1,5 +1,5 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SendFormValues } from '@/components/send/types'
 
 export interface RescanInfo {
   updatedAt: number
@@ -7,11 +7,24 @@ export interface RescanInfo {
   progress?: number
 }
 
+export interface PaymentAttempt {
+  createdAt: number
+  data: SendFormValues
+  utxosHashHex: string
+}
+
+export interface TakerInfo {
+  currentPaymentAttempt?: PaymentAttempt
+  running: boolean
+}
+
 interface JamSessionInfoContextType {
   blockHeight?: number
-  takerRunning: SessionResponse['coinjoin_in_process']
+  takerInfo: TakerInfo
   rescanInfo: RescanInfo
   setRescanInfo: Dispatch<SetStateAction<RescanInfo>>
+  setCurrentPaymentAttempt: (val: PaymentAttempt) => void
+  clearCurrentPaymentAttempt: () => void
 }
 
 export const JamSessionInfoContext = createContext<JamSessionInfoContextType | undefined>(undefined)

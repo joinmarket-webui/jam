@@ -410,7 +410,7 @@ const RELOAD_WALLET_INFO_DELAY: {
 const WalletInfoAutoReload = () => {
   const {
     blockHeight: currentBlockHeight,
-    takerRunning: currentTakerRunning,
+    takerInfo: { running: currentTakerRunning },
     rescanInfo: currentRescanInfo,
   } = useJamSessionInfoContext()
   const previousRescanningRef = useRef<boolean>(currentRescanInfo.rescanning)

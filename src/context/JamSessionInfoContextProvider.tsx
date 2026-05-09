@@ -9,7 +9,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { JamSessionInfoContext } from './JamSessionInfoContext'
-import type { RescanInfo } from './JamSessionInfoContext'
+import type { PaymentAttempt, RescanInfo, TakerInfo } from './JamSessionInfoContext'
 
 interface JamSessionInfoContextProviderProps {
   walletFileName: WalletFileName
@@ -25,6 +25,16 @@ export const JamSessionInfoContextProvider = ({
     updatedAt: 0,
     rescanning: state?.rescanning === true,
   })
+  const [currentPaymentAttempt, setCurrentPaymentAttempt] = useState<PaymentAttempt>()
+
+  const takerInfo = useMemo<TakerInfo>(() => {
+    const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
+    const takerIsRunning = state?.coinjoin_in_process === true
+    return {
+      currentPaymentAttempt: isCoinJoin ? currentPaymentAttempt : undefined,
+      running: takerIsRunning,
+    }
+  }, [state?.coinjoin_in_process, currentPaymentAttempt])
 
   const getrescaninfoQueryOptions = useMemo(
     () =>
@@ -65,8 +75,11 @@ export const JamSessionInfoContextProvider = ({
   const value = {
     blockHeight: state?.block_height,
     takerRunning: state?.coinjoin_in_process === true,
+    takerInfo,
     rescanInfo,
     setRescanInfo,
+    setCurrentPaymentAttempt,
+    clearCurrentPaymentAttempt: () => setCurrentPaymentAttempt(undefined),
   }
 
   return <JamSessionInfoContext.Provider value={value}>{children}</JamSessionInfoContext.Provider>
