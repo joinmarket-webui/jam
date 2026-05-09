@@ -6,7 +6,6 @@ import {
   EyeOffIcon,
   SunIcon,
   MoonIcon,
-  DollarSignIcon,
   FileTextIcon,
   BookIcon,
   TerminalIcon,
@@ -16,6 +15,7 @@ import {
   FoldHorizontalIcon,
   UnfoldHorizontalIcon,
   KeyRoundIcon,
+  HandCoinsIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -126,7 +126,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </CardHeader>
         <CardContent>
           <SettingItem
-            icon={DollarSignIcon}
+            icon={HandCoinsIcon}
             title={t('settings.show_fee_config')}
             action={() => setShowFeeConfigDialog(true)}
           />

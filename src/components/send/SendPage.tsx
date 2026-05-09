@@ -75,7 +75,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const client = useApiClient()
   const [formId, setFormId] = useState<number>(0)
   const { fetchIfMissing } = useJmConfig({ walletFileName })
-  const { utxosHashHex, waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
+  const {
+    isFetching: walletInfoIsFetching,
+    utxosHashHex,
+    waitForUtxosToBeSpent,
+    setWaitForUtxosToBeSpent,
+  } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const {
     takerInfo: { running: takerRunning, currentPaymentAttempt: takerCurrentAttempt },
@@ -94,32 +99,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
   const [sourceJarIndex, setSourceJarIndex] = useState<JarIndex>()
-  // TODO: "Lifecycle" or state management should be handled outside of this component
-  /*const collaborativeLifecycleRef = useRef({
-    awaitingCompletion: false,
-    wasRunning: false,
-    utxoSnapshotAtStart: '',
-  })
-  const refetchWalletInfoRef = useRef(refetchWalletInfo)
-  const currentUtxoSnapshotRef = useRef('')*/
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
-  /*const currentUtxoSnapshot = useMemo(() => {
-    return jars
-      .flatMap((jar) => jar.utxos.map((utxo) => utxo.utxo))
-      .toSorted()
-      .join('|')
-  }, [jars])
-
-  useEffect(() => {
-    currentUtxoSnapshotRef.current = currentUtxoSnapshot
-  }, [currentUtxoSnapshot])
-
-  useEffect(() => {
-    refetchWalletInfoRef.current = refetchWalletInfo
-  }, [refetchWalletInfo])*/
 
   const sourceJar = useMemo(() => {
     if (sourceJarIndex === undefined) return
@@ -231,68 +214,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     }
   }, [takerRunning, stopCoinjoinMutationIsSuccess, stopCoinjoinMutationReset])
 
-  /*useEffect(() => {
-    const state = collaborativeLifecycleRef.current
-
-    if (!state.awaitingCompletion) {
-      return
-    }
-
-    if (coinjoinRunning) {
-      state.wasRunning = true
-      return
-    }
-
-    if (!state.wasRunning) {
-      return
-    }
-
-    state.awaitingCompletion = false
-    state.wasRunning = false
-    const utxoSnapshotAtStart = state.utxoSnapshotAtStart
-    let isCancelled = false
-
-    const verifyCollaborativeCompletion = async () => {
-      const deadline = Date.now() + 9_000
-      let hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
-
-      while (!hasNewTransaction && Date.now() < deadline) {
-        await refetchWalletInfoRef.current()
-        if (isCancelled) return
-
-        hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
-        if (hasNewTransaction || Date.now() >= deadline) break
-
-        await new Promise((resolve) => window.setTimeout(resolve, 1_000))
-      }
-
-      if (isCancelled) return
-
-      queueMicrotask(() => {
-        setPaymentSuccessfulInfoAlert({
-          variant: hasNewTransaction ? 'success' : 'warning',
-          title: hasNewTransaction
-            ? t('send.alert_collaborative_completed_title')
-            : t('send.alert_collaborative_ended_title'),
-          description: hasNewTransaction
-            ? t('send.alert_collaborative_completed_description')
-            : t('send.alert_collaborative_ended_description'),
-        })
-        if (hasNewTransaction) {
-          toast.success(t('send.alert_collaborative_completed_title'))
-        } else {
-          toast.warning(t('send.alert_collaborative_ended_title'))
-        }
-      })
-    }
-
-    void verifyCollaborativeCompletion()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [coinjoinRunning, t])*/
-
   useEffect(() => {
     const abortCtrl = new AbortController()
 
@@ -382,7 +303,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           response,
         }
       },
-      { throttle: 2_100 },
+      { throttle: 0 },
     ),
     onMutate: () => {
       setNonCollaborativePaymentSuccessInfoAlert(undefined)
@@ -534,23 +455,77 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         )}
 
-        {takerCurrentAttempt !== undefined && takerRunning === false && (
-          <>
-            We have a collaborative payment attempt, but taker is not running...
+        {
+          /*
+           * With backend "joinmarket-clientserver" there is no direct way of verifying
+           * that a collaborative send attempt was successful.
+           * We have to rely on local data `takerCurrentAttempt`
+           * (which might not be present, e.g. taker was started from a different session)
+           * for displaying success/error information.
+           * If data `takerCurrentAttempt` is not present, no message is shown
+           * when the taker service stops - this is not ideal, but okay.
+           */
+          takerCurrentAttempt !== undefined && !isWaitingCoinjoinStart && takerRunning === false && (
             <>
-              <Alert variant="destructive">
-                <AlertTriangleIcon />
-                <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
-                <AlertDescription>{t('send.alert_collaborative_ended_description')}</AlertDescription>
-              </Alert>
+              {walletInfoIsFetching ? (
+                <>
+                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                    <Spinner className="motion-reduce:hidden" />
+                    <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
+                  </Alert>
+                </>
+              ) : (
+                <>
+                  {takerCurrentAttempt.utxosHashHex === utxosHashHex ? (
+                    <Alert variant="warning">
+                      <AlertTriangleIcon />
+                      <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
+                      <AlertDescription className="flex flex-col gap-2">
+                        <div>{t('send.alert_collaborative_ended_description')}</div>
+                        <div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              clearCurrentPaymentAttempt()
+                            }}
+                          >
+                            {t('global.done')}
+                          </Button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <Alert variant="success">
+                      <AlertTriangleIcon />
+                      <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
+                      <AlertDescription className="flex flex-col gap-2">
+                        <div>{t('send.alert_collaborative_completed_description')}</div>
+                        <div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setFormId((current) => current + 1)
+                              clearCurrentPaymentAttempt()
+                            }}
+                          >
+                            {t('global.done')}
+                          </Button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </>
+              )}
             </>
-          </>
-        )}
+          )
+        }
         {takerRunning && (
           <Alert variant="warning">
             <HourglassIcon />
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
-            <AlertDescription className="mt-3">
+            <AlertDescription className="flex flex-col gap-2">
               {takerCurrentAttempt && (
                 <pre>
                   {JSON.stringify(
@@ -570,21 +545,23 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                   )}
                 </pre>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAbortCoinjoinDialog(true)}
-                disabled={isWaitingCoinjoinStop}
-              >
-                {isWaitingCoinjoinStop ? (
-                  <>
-                    <Spinner className="motion-reduce:hidden" />
-                    {t('global.abort')}
-                  </>
-                ) : (
-                  t('global.abort')
-                )}
-              </Button>
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAbortCoinjoinDialog(true)}
+                  disabled={isWaitingCoinjoinStop}
+                >
+                  {isWaitingCoinjoinStop ? (
+                    <>
+                      <Spinner className="motion-reduce:hidden" />
+                      {t('global.abort')}
+                    </>
+                  ) : (
+                    t('global.abort')
+                  )}
+                </Button>
+              </div>
             </AlertDescription>
           </Alert>
         )}
@@ -593,7 +570,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           <Alert variant="destructive">
             <AlertTriangleIcon />
             <AlertTitle>{/* TODO: i18n */}Error while sending non-collaborative transaction</AlertTitle>
-            <AlertDescription className="">
+            <AlertDescription>
               <p>
                 The exact reason is not entirely clear, only the following is known:{' '}
                 <span className="inline font-mono font-semibold">
@@ -621,7 +598,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               <Alert variant={nonCollaborativePaymentSuccessInfoAlert.variant}>
                 <CheckCircle2Icon />
                 <AlertTitle>{nonCollaborativePaymentSuccessInfoAlert.title}</AlertTitle>
-                <AlertDescription className="ext-wrap slashed-zero">
+                <AlertDescription className="text-wrap slashed-zero">
                   {nonCollaborativePaymentSuccessInfoAlert.description}
                 </AlertDescription>
               </Alert>
@@ -650,6 +627,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
                 triggerCollaborativeTransaction.isPending ||
+                takerCurrentAttempt !== undefined ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}

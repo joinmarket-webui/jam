@@ -495,11 +495,7 @@ const WalletInfoAutoReload = () => {
       }
 
       const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_TAKER_STOPPED
-      console.debug(
-        'Trigger refetch looking for funds AFTER_TAKER_STOPPED (%s) with delay %d...',
-        utxosHashHex,
-        delayBefore,
-      )
+      console.debug('Trigger refetch looking for funds AFTER_TAKER_STOPPED with delay %d...', delayBefore)
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
