@@ -83,7 +83,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const {
-    takerInfo: { running: takerRunning, currentPaymentAttempt: takerCurrentAttempt },
+    takerInfo: { running: takerRunning, currentPaymentAttempt },
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
   } = useJamSessionInfoContext()
@@ -350,12 +350,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   const onAbortCoinjoinConfirmed = async () => {
-    //collaborativeLifecycleRef.current.awaitingCompletion = false
-    //collaborativeLifecycleRef.current.wasRunning = false
-    //collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutationMutateAsync()
-    //void refetchWalletInfoRef.current()
   }
 
   if (!jmSession) {
@@ -465,80 +461,83 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
            * If data `takerCurrentAttempt` is not present, no message is shown
            * when the taker service stops - this is not ideal, but okay.
            */
-          takerCurrentAttempt !== undefined && !isWaitingCoinjoinStart && takerRunning === false && (
-            <>
-              {walletInfoIsFetching ? (
-                <>
-                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
-                    <Spinner className="motion-reduce:hidden" />
-                    <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
-                  </Alert>
-                </>
-              ) : (
-                <>
-                  {takerCurrentAttempt.utxosHashHex === utxosHashHex ? (
-                    <Alert variant="warning">
-                      <AlertTriangleIcon />
-                      <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
-                      <AlertDescription className="flex flex-col gap-2">
-                        <div>{t('send.alert_collaborative_ended_description')}</div>
-                        <div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              clearCurrentPaymentAttempt()
-                            }}
-                          >
-                            {t('global.done')}
-                          </Button>
-                        </div>
-                      </AlertDescription>
+          currentPaymentAttempt !== undefined &&
+            currentPaymentAttempt.data.isCoinJoin &&
+            !isWaitingCoinjoinStart &&
+            takerRunning === false && (
+              <>
+                {walletInfoIsFetching ? (
+                  <>
+                    <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                      <Spinner className="motion-reduce:hidden" />
+                      <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
                     </Alert>
-                  ) : (
-                    <Alert variant="success">
-                      <AlertTriangleIcon />
-                      <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
-                      <AlertDescription className="flex flex-col gap-2">
-                        <div>{t('send.alert_collaborative_completed_description')}</div>
-                        <div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setFormId((current) => current + 1)
-                              clearCurrentPaymentAttempt()
-                            }}
-                          >
-                            {t('global.done')}
-                          </Button>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </>
-              )}
-            </>
-          )
+                  </>
+                ) : (
+                  <>
+                    {currentPaymentAttempt.utxosHashHex === utxosHashHex ? (
+                      <Alert variant="warning">
+                        <AlertTriangleIcon />
+                        <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
+                        <AlertDescription className="flex flex-col gap-2">
+                          <div>{t('send.alert_collaborative_ended_description')}</div>
+                          <div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                clearCurrentPaymentAttempt()
+                              }}
+                            >
+                              {t('global.done')}
+                            </Button>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <Alert variant="success">
+                        <AlertTriangleIcon />
+                        <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
+                        <AlertDescription className="flex flex-col gap-2">
+                          <div>{t('send.alert_collaborative_completed_description')}</div>
+                          <div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setFormId((current) => current + 1)
+                                clearCurrentPaymentAttempt()
+                              }}
+                            >
+                              {t('global.done')}
+                            </Button>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </>
+                )}
+              </>
+            )
         }
         {takerRunning && (
           <Alert variant="warning">
             <HourglassIcon />
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
-              {takerCurrentAttempt && (
+              {currentPaymentAttempt && (
                 <pre>
                   {JSON.stringify(
                     {
-                      sourceJar: takerCurrentAttempt.data.source.fromJar,
-                      destinationJar: takerCurrentAttempt.data.destination.fromJar,
-                      destinationAddress: takerCurrentAttempt.data.destination.address,
-                      isSweep: takerCurrentAttempt.data.amount.isSweep === true,
+                      sourceJar: currentPaymentAttempt.data.source.fromJar,
+                      destinationJar: currentPaymentAttempt.data.destination.fromJar,
+                      destinationAddress: currentPaymentAttempt.data.destination.address,
+                      isSweep: currentPaymentAttempt.data.amount.isSweep === true,
                       amount:
-                        takerCurrentAttempt.data.amount.isSweep === true
-                          ? takerCurrentAttempt.data.amount.sweepAmount
-                          : takerCurrentAttempt.data.amount.amount,
-                      numCollaborators: takerCurrentAttempt.data.numCollaborators,
+                        currentPaymentAttempt.data.amount.isSweep === true
+                          ? currentPaymentAttempt.data.amount.sweepAmount
+                          : currentPaymentAttempt.data.amount.amount,
+                      numCollaborators: currentPaymentAttempt.data.numCollaborators,
                     },
                     null,
                     2,
@@ -627,7 +626,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
                 triggerCollaborativeTransaction.isPending ||
-                takerCurrentAttempt !== undefined ||
+                currentPaymentAttempt !== undefined ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}
