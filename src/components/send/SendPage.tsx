@@ -43,8 +43,8 @@ import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Spinner } from '../ui/spinner'
+import { PaymentAbortDialog } from './PaymentAbortDialog'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
@@ -366,33 +366,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
       />
-      <Dialog open={showAbortCoinjoinDialog} onOpenChange={setShowAbortCoinjoinDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('send.confirm_abort_modal.title')}</DialogTitle>
-            <DialogDescription>{t('send.confirm_abort_modal.text_body')}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAbortCoinjoinDialog(false)}>
-              {t('modal.confirm_button_reject')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => void onAbortCoinjoinConfirmed()}
-              disabled={stopCoinjoinMutationIsPending}
-            >
-              {stopCoinjoinMutationIsPending ? (
-                <>
-                  <Spinner className="motion-reduce:hidden" />
-                  {t('global.abort')}
-                </>
-              ) : (
-                t('global.abort')
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+      <PaymentAbortDialog
+        open={showAbortCoinjoinDialog}
+        onOpenChange={setShowAbortCoinjoinDialog}
+        isConfirming={stopCoinjoinMutationIsPending}
+        onConfirm={onAbortCoinjoinConfirmed}
+      />
+
       <UtxoSelectionDialog {...utxoSelectionDialog.dialogProps} />
       {sourceJar && sendFromValuesAwaitingConfirmation && (
         <PaymentConfirmDialog
@@ -520,7 +501,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               </>
             )
         }
-        {takerRunning && (
+        {takerRunning && !isWaitingCoinjoinStop && (
           <Alert variant="warning">
             <HourglassIcon />
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
@@ -551,14 +532,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                   onClick={() => setShowAbortCoinjoinDialog(true)}
                   disabled={isWaitingCoinjoinStop}
                 >
-                  {isWaitingCoinjoinStop ? (
-                    <>
-                      <Spinner className="motion-reduce:hidden" />
-                      {t('global.abort')}
-                    </>
-                  ) : (
-                    t('global.abort')
-                  )}
+                  {t('global.abort')}
                 </Button>
               </div>
             </AlertDescription>
@@ -605,7 +579,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </>
         )}
 
-        {/* Earn Form */}
         <Card>
           <CardContent>
             <SendForm
