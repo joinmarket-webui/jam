@@ -312,8 +312,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     onSuccess: (_result, data) => {
       setCurrentPaymentAttempt({
         createdAt: Date.now(),
-        data,
+        walletFileName,
         utxosHashHex,
+        data,
       })
     },
   })
