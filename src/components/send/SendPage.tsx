@@ -76,6 +76,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [formId, setFormId] = useState<number>(0)
   const { fetchIfMissing } = useJmConfig({ walletFileName })
   const {
+    isLoading: walletInfoIsLoading,
     isFetching: walletInfoIsFetching,
     utxosHashHex,
     waitForUtxosToBeSpent,
@@ -84,6 +85,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const {
     takerInfo: { running: takerRunning, currentPaymentAttempt },
+    rescanInfo,
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
   } = useJamSessionInfoContext()
@@ -358,7 +360,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     await stopCoinjoinMutationMutateAsync()
   }
 
-  if (!jmSession) {
+  if (!jmSession || walletInfoIsLoading) {
     return <PageLoading />
   }
 
@@ -400,7 +402,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         {feeConfigValidation.maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
-
+        {jmSession?.maker_running === true && (
+          <Alert variant="warning">
+            <HourglassIcon className="motion-safe:animate-pulse" />
+            <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
+          </Alert>
+        )}
         {collaborativeFlowError && (
           <Alert variant="destructive">
             <AlertTriangleIcon />
@@ -466,7 +473,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                       </Alert>
                     ) : (
                       <Alert variant="success">
-                        <AlertTriangleIcon />
+                        <CheckCircle2Icon />
                         <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
                         <AlertDescription className="flex flex-col gap-2">
                           <div>{t('send.alert_collaborative_completed_description')}</div>
@@ -582,9 +589,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               disabled={
                 jmSession?.maker_running === true ||
                 takerRunning ||
+                rescanInfo.rescanning ||
                 isWaitingCoinjoinStart ||
                 isWaitingCoinjoinStop ||
-                jmSession?.rescanning === true ||
                 utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
                 triggerCollaborativeTransaction.isPending ||

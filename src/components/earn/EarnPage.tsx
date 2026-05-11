@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangleIcon, FileTextIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import { AlertTriangleIcon, FileTextIcon, HourglassIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -214,7 +214,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
   }, [jmSession, makerRunning, stopMaker.isSuccess, t])
 
-  if (!jmSession) {
+  if (!jmSession || walletInfo.isLoading) {
     return <PageLoading />
   }
 
@@ -231,6 +231,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
       {feeConfigValidation.maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
+      )}
+
+      {jmSession.coinjoin_in_process === true && (
+        <Alert variant="warning">
+          <HourglassIcon className="motion-safe:animate-pulse" />
+          <AlertDescription>{t('send.text_coinjoin_already_running')}</AlertDescription>
+        </Alert>
       )}
 
       {jmSession.maker_running === true && (
