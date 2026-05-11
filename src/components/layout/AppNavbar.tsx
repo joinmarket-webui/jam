@@ -1,4 +1,3 @@
-import { type PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
@@ -15,24 +14,10 @@ import { routes } from '@/constants/routes'
 import type { RescanInfo } from '@/context/JamSessionInfoContext'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { WithActivityIndicator } from '../ui/jam/ActivityIndicator'
 import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-
-const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
-  return (
-    <span className="relative">
-      {children}
-      <span
-        className={cn('absolute -top-1 -right-2 text-[8px]', {
-          'light:text-green-600 text-green-300 motion-safe:animate-pulse': active,
-        })}
-      >
-        ●
-      </span>
-    </span>
-  )
-}
 
 type WalletPreviewProps = {
   isLoading?: boolean

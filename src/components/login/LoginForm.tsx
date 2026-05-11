@@ -13,6 +13,7 @@ import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { Field, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
+import { ActivityIndicator } from '../ui/jam/ActivityIndicator'
 
 const LoginFormSkeleton = () => {
   return (
@@ -120,9 +121,7 @@ export const LoginFormComponent = ({
                   {shortenStringMiddle(walletDisplayName(wallet), 32)}
                   {activeWallet === wallet ? (
                     <span className="text-muted-foreground/50 inline-flex items-center gap-1.5 py-1 text-xs">
-                      {(makerRunning || coinjoinInProgress) && (
-                        <span className="light:bg-green-600 h-2 w-2 rounded-full bg-green-300/90 motion-safe:animate-pulse" />
-                      )}
+                      <ActivityIndicator active={makerRunning || coinjoinInProgress} />
                       {t('wallets.wallet_preview.wallet_active')}
                     </span>
                   ) : undefined}
