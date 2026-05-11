@@ -319,7 +319,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const onPaymentValuesConfirmed: SubmitHandler<SendFormValues> = async (data: SendFormValues) => {
+  const onPaymentValuesConfirmed = async (data: SendFormValues) => {
+    setShowPaymentConfirmDialog(false)
+    setSendFromValuesAwaitingConfirmation(undefined)
+
     if (data.isCoinJoin === true) {
       if (feeConfigValidation.maxFeesConfigMissing) {
         toast.error(t('send.taker_error_message_max_fees_config_missing'))
@@ -380,23 +383,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         <PaymentConfirmDialog
           open={showPaymentConfirmDialog}
           onOpenChange={setShowPaymentConfirmDialog}
-          title={t('send.confirm_send_modal.title')}
-          subtitle={
-            sendFromValuesAwaitingConfirmation.isCoinJoin === true ? (
-              <span className="light:text-green-600/80 font-semibold text-green-700/80">
-                {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
-              </span>
-            ) : (
-              <span className="text-destructive font-semibold">
-                {t('send.confirm_send_modal.text_collaborative_tx_disabled')}
-              </span>
-            )
-          }
           values={sendFromValuesAwaitingConfirmation}
-          onConfirm={async () => {
-            setShowPaymentConfirmDialog(false)
-            await onPaymentValuesConfirmed(sendFromValuesAwaitingConfirmation)
-          }}
+          onConfirm={onPaymentValuesConfirmed}
           meta={{
             feeConfigValues: feeConfigValidation.feeConfigValues,
             availableUtxos: availableUtxosForPayment,
