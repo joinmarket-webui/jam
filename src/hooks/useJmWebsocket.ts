@@ -33,11 +33,17 @@ export type JmWebsocket = Omit<WebSocketHook, 'sendMessage' | 'sendJsonMessage'>
 }
 
 interface UseJmWebsocketProps {
+  config: {
+    enableHeartbeat: boolean
+    enableAuthentication: boolean
+  }
   options?: Pick<Options, 'onOpen' | 'onClose' | 'onMessage' | 'onError' | 'onReconnectStop'>
-  enableHeartbeat: boolean
 }
 
-export const useJmWebsocket = ({ enableHeartbeat, options }: UseJmWebsocketProps): JmWebsocket => {
+export const useJmWebsocket = ({
+  config: { enableHeartbeat, enableAuthentication },
+  options,
+}: UseJmWebsocketProps): JmWebsocket => {
   const authToken = useStore(authStore, (state) => state.state?.auth?.token)
 
   const [socketUrl] = useState(url)
@@ -84,18 +90,18 @@ export const useJmWebsocket = ({ enableHeartbeat, options }: UseJmWebsocketProps
   const isOpen = useMemo(() => websocket.readyState === ReadyState.OPEN, [websocket.readyState])
 
   useEffect(() => {
-    let timerId: NodeJS.Timeout
-    if (isOpen && authToken !== undefined) {
-      timerId = setTimeout(() => {
-        console.debug('Renewing websocket authentication...')
-        setAuthSentAt(Date.now())
-        sendMessage(authToken)
-      }, JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION)
+    if (!enableAuthentication || !isOpen || authToken === undefined) {
+      return
     }
-    return () => {
-      clearTimeout(timerId)
-    }
-  }, [sendMessage, authToken, isOpen])
+
+    const timerId: NodeJS.Timeout = setTimeout(() => {
+      console.debug('Renewing websocket authentication...')
+      setAuthSentAt(Date.now())
+      sendMessage(authToken)
+    }, JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION)
+
+    return () => clearTimeout(timerId)
+  }, [enableAuthentication, sendMessage, authToken, isOpen])
 
   useEffect(() => {
     let timerId: NodeJS.Timeout

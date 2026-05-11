@@ -12,9 +12,9 @@ import { APP_DISPLAY_VERSION, JAM_DEFAULT_THEME } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJmWebsocketContext } from '@/context/JmWebsocketContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useFeatures } from '@/hooks/useFeatures'
-import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -48,9 +48,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
 
   const sidebarContext = useSidebar()
 
-  const websocket = useJmWebsocket({
-    enableHeartbeat: true,
-  })
+  const { websocket } = useJmWebsocketContext()
 
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
