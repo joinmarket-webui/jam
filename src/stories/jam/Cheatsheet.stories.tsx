@@ -1,20 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { MemoryRouter } from 'react-router-dom'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 
 const meta: Meta<typeof Cheatsheet> = {
   title: 'Jam/Cheatsheet',
   component: Cheatsheet,
   tags: ['autodocs'],
-  decorators: [
-    (Story) => (
-      <MemoryRouter>
-        <div className="min-h-[640px]">
-          <Story />
-        </div>
-      </MemoryRouter>
-    ),
-  ],
+  parameters: {
+    layout: 'fullscreen',
+  },
 }
 export default meta
 
