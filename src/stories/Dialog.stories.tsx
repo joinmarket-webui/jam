@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,6 +20,24 @@ const meta: Meta<typeof Dialog> = {
 export default meta
 
 type Story = StoryObj<typeof Dialog>
+
+const DialogWithoutCloseButtonStory = () => {
+  const [open, setOpen] = useState(true)
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>No close button</DialogTitle>
+          <DialogDescription>Some flows own their close action through footer buttons.</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button onClick={() => setOpen(false)}>Continue</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export const Default: Story = {
   render: () => (
@@ -56,17 +75,5 @@ export const Open: Story = {
 }
 
 export const WithoutCloseButton: Story = {
-  render: () => (
-    <Dialog open>
-      <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>No close button</DialogTitle>
-          <DialogDescription>Some flows own their close action through footer buttons.</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button>Continue</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  ),
+  render: () => <DialogWithoutCloseButtonStory />,
 }

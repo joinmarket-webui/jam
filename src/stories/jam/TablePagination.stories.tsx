@@ -35,13 +35,15 @@ export const Interactive: Story = {
   render: () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(25)
+    const totalItems = 183
+    const totalPages = itemsPerPage === -1 ? 1 : Math.max(1, Math.ceil(totalItems / itemsPerPage))
 
     return (
       <TablePagination
         currentPage={currentPage}
-        totalPages={8}
+        totalPages={totalPages}
         itemsPerPage={itemsPerPage}
-        totalItems={183}
+        totalItems={totalItems}
         onPageChange={setCurrentPage}
         onItemsPerPageChange={(newItemsPerPage) => {
           setItemsPerPage(newItemsPerPage)

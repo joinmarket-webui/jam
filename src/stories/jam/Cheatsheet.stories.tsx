@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 
@@ -13,16 +14,19 @@ export default meta
 
 type Story = StoryObj<typeof Cheatsheet>
 
+const OpenCheatsheetStory = () => {
+  const [open, setOpen] = useState(true)
+
+  return <Cheatsheet open={open} onOpenChange={setOpen} />
+}
+
 export const Open: Story = {
-  args: {
-    open: true,
-    onOpenChange: () => undefined,
-  },
+  render: () => <OpenCheatsheetStory />,
 }
 
 export const Closed: Story = {
   args: {
-    ...Open.args,
     open: false,
+    onOpenChange: () => undefined,
   },
 }

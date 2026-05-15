@@ -40,5 +40,6 @@ export const Disabled: Story = {
     name: 'Archive',
     color: '#f39c12',
     disabled: true,
+    onClick: undefined,
   },
 }
