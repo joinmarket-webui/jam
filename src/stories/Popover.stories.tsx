@@ -26,8 +26,8 @@ export const Default: Story = {
             <p className="text-muted-foreground text-sm">Tune how quickly the transaction should confirm.</p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="fee-target">Blocks</Label>
-            <Input id="fee-target" defaultValue="6" />
+            <Label htmlFor="popover-fee-target-default">Blocks</Label>
+            <Input id="popover-fee-target-default" defaultValue="6" />
           </div>
         </div>
       </PopoverContent>

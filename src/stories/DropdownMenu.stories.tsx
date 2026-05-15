@@ -60,3 +60,20 @@ export const WithSelectionItems: Story = {
     </DropdownMenu>
   ),
 }
+
+export const WithDisabledItem: Story = {
+  render: () => (
+    <DropdownMenu defaultOpen>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">Wallet actions</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuLabel>Wallet actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Rename wallet</DropdownMenuItem>
+        <DropdownMenuItem disabled>Export backup</DropdownMenuItem>
+        <DropdownMenuItem variant="destructive">Delete wallet</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ),
+}

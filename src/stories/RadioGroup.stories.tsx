@@ -15,12 +15,12 @@ export const Default: Story = {
   render: () => (
     <RadioGroup defaultValue="absolute">
       <div className="flex items-center gap-2">
-        <RadioGroupItem id="absolute" value="absolute" />
-        <Label htmlFor="absolute">Absolute fee</Label>
+        <RadioGroupItem id="radio-absolute" value="absolute" />
+        <Label htmlFor="radio-absolute">Absolute fee</Label>
       </div>
       <div className="flex items-center gap-2">
-        <RadioGroupItem id="relative" value="relative" />
-        <Label htmlFor="relative">Relative fee</Label>
+        <RadioGroupItem id="radio-relative" value="relative" />
+        <Label htmlFor="radio-relative">Relative fee</Label>
       </div>
     </RadioGroup>
   ),
@@ -30,12 +30,12 @@ export const DisabledOption: Story = {
   render: () => (
     <RadioGroup defaultValue="one">
       <div className="flex items-center gap-2">
-        <RadioGroupItem id="jar-one" value="one" />
-        <Label htmlFor="jar-one">Jar 1</Label>
+        <RadioGroupItem id="radio-jar-one" value="one" />
+        <Label htmlFor="radio-jar-one">Jar 1</Label>
       </div>
       <div className="flex items-center gap-2">
-        <RadioGroupItem id="jar-two" value="two" disabled />
-        <Label htmlFor="jar-two" className="text-muted-foreground">
+        <RadioGroupItem id="radio-jar-two" value="two" disabled />
+        <Label htmlFor="radio-jar-two" className="text-muted-foreground">
           Jar 2 disabled
         </Label>
       </div>
@@ -47,8 +47,8 @@ export const Invalid: Story = {
   render: () => (
     <RadioGroup aria-invalid="true">
       <div className="flex items-center gap-2">
-        <RadioGroupItem id="invalid-option" value="invalid" aria-invalid="true" />
-        <Label htmlFor="invalid-option">Needs attention</Label>
+        <RadioGroupItem id="radio-invalid-option" value="invalid" aria-invalid="true" />
+        <Label htmlFor="radio-invalid-option">Needs attention</Label>
       </div>
     </RadioGroup>
   ),

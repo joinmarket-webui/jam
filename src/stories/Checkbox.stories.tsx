@@ -14,8 +14,8 @@ type Story = StoryObj<typeof Checkbox>
 export const Default: Story = {
   render: () => (
     <div className="flex items-center gap-2">
-      <Checkbox id="terms" />
-      <Label htmlFor="terms">Accept terms</Label>
+      <Checkbox id="checkbox-terms-default" />
+      <Label htmlFor="checkbox-terms-default">Accept terms</Label>
     </div>
   ),
 }
@@ -23,8 +23,8 @@ export const Default: Story = {
 export const Checked: Story = {
   render: () => (
     <div className="flex items-center gap-2">
-      <Checkbox id="checked" defaultChecked />
-      <Label htmlFor="checked">Selected option</Label>
+      <Checkbox id="checkbox-checked" defaultChecked />
+      <Label htmlFor="checkbox-checked">Selected option</Label>
     </div>
   ),
 }
@@ -32,8 +32,8 @@ export const Checked: Story = {
 export const Indeterminate: Story = {
   render: () => (
     <div className="flex items-center gap-2">
-      <Checkbox id="indeterminate" checked="indeterminate" />
-      <Label htmlFor="indeterminate">Partially selected</Label>
+      <Checkbox id="checkbox-indeterminate" checked="indeterminate" />
+      <Label htmlFor="checkbox-indeterminate">Partially selected</Label>
     </div>
   ),
 }
@@ -41,8 +41,8 @@ export const Indeterminate: Story = {
 export const Disabled: Story = {
   render: () => (
     <div className="flex items-center gap-2">
-      <Checkbox id="disabled" disabled />
-      <Label htmlFor="disabled" className="text-muted-foreground">
+      <Checkbox id="checkbox-disabled" disabled />
+      <Label htmlFor="checkbox-disabled" className="text-muted-foreground">
         Disabled option
       </Label>
     </div>
@@ -52,8 +52,8 @@ export const Disabled: Story = {
 export const Invalid: Story = {
   render: () => (
     <div className="flex items-center gap-2">
-      <Checkbox id="invalid" aria-invalid="true" />
-      <Label htmlFor="invalid">Needs attention</Label>
+      <Checkbox id="checkbox-invalid" aria-invalid="true" />
+      <Label htmlFor="checkbox-invalid">Needs attention</Label>
     </div>
   ),
 }

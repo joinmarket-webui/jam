@@ -22,7 +22,7 @@ export const WithPrefix: Story = {
   render: () => (
     <InputGroup className="max-w-sm">
       <InputGroupAddon>
-        <SearchIcon />
+        <SearchIcon aria-hidden="true" />
       </InputGroupAddon>
       <InputGroupInput placeholder="Search transactions..." />
     </InputGroup>
@@ -44,7 +44,7 @@ export const WithButton: Story = {
   render: () => (
     <InputGroup className="max-w-sm">
       <InputGroupAddon>
-        <BitcoinIcon />
+        <BitcoinIcon aria-hidden="true" />
       </InputGroupAddon>
       <InputGroupInput placeholder="Amount" />
       <InputGroupAddon align="inline-end">
