@@ -35,11 +35,11 @@ export const WithText: Story = {
 export const WithSeparator: Story = {
   render: () => (
     <ButtonGroup>
-      <Button variant="outline" size="icon-sm">
+      <Button variant="outline" size="icon-sm" aria-label="Decrease value">
         <MinusIcon />
       </Button>
       <ButtonGroupSeparator />
-      <Button variant="outline" size="icon-sm">
+      <Button variant="outline" size="icon-sm" aria-label="Increase value">
         <PlusIcon />
       </Button>
     </ButtonGroup>
