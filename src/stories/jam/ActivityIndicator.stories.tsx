@@ -24,5 +24,5 @@ export const Default: Story = {
 }
 
 export const ElementWithActivityIndicator: Story = {
-  render: () => <WithActivityIndicator>Acitivty Text</WithActivityIndicator>,
+  render: () => <WithActivityIndicator>Activity Text</WithActivityIndicator>,
 }
