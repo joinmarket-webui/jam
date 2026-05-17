@@ -84,7 +84,7 @@ export function AppFooter({
               </a>
             </div>
           </div>
-          <div className="order-last flex inline-block flex-1 text-xs sm:order-first">
+          <div className="order-last flex-1 text-xs sm:order-first">
             <Trans i18nKey="footer.warning">
               This is pre-alpha software.
               <Button
