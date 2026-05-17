@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Button } from '@/components/ui/button'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 
 const meta: Meta<typeof Cheatsheet> = {
   title: 'Jam/Cheatsheet',
   component: Cheatsheet,
   tags: ['autodocs'],
-  parameters: {
-    layout: 'fullscreen',
-  },
+  parameters: {},
 }
 export default meta
 
@@ -17,16 +16,14 @@ type Story = StoryObj<typeof Cheatsheet>
 const OpenCheatsheetStory = () => {
   const [open, setOpen] = useState(true)
 
-  return <Cheatsheet open={open} onOpenChange={setOpen} />
+  return (
+    <div className="h-screen">
+      <Button onClick={() => setOpen(true)}>Open</Button>
+      <Cheatsheet open={open} onOpenChange={setOpen} />
+    </div>
+  )
 }
 
 export const Open: Story = {
   render: () => <OpenCheatsheetStory />,
-}
-
-export const Closed: Story = {
-  args: {
-    open: false,
-    onOpenChange: () => undefined,
-  },
 }
