@@ -16,11 +16,37 @@ export const Default: Story = {
   render: () => (
     <AppFooter
       websocketInfo={{ isOpen: true, isAuthenticated: true }}
-      jamVersion={APP_DISPLAY_VERSION}
+      blockHeight={21_000_000}
+      jamVersion={parseSemanticVersion('1.2.3')}
       joinmarketVersion={parseSemanticVersion('0.9.12')}
       onClickCheatsheet={() => alert('Cheatsheet clicked!')}
       onClickOrderbook={() => alert('Orderbook clicked!')}
       onClickLogs={() => alert('Logs clicked!')}
+    />
+  ),
+}
+
+export const WithoutLogs: Story = {
+  render: () => (
+    <AppFooter
+      websocketInfo={{ isOpen: true, isAuthenticated: false }}
+      blockHeight={21_000_000}
+      jamVersion={APP_DISPLAY_VERSION}
+      joinmarketVersion={parseSemanticVersion('0.9.12')}
+      onClickCheatsheet={() => alert('Cheatsheet clicked!')}
+      onClickOrderbook={() => alert('Orderbook clicked!')}
+    />
+  ),
+}
+
+export const Minimal: Story = {
+  render: () => (
+    <AppFooter
+      websocketInfo={{ isOpen: false, isAuthenticated: false }}
+      blockHeight={21_000_000}
+      jamVersion={parseSemanticVersion('99.99.99-SNAPSHOT')}
+      onClickCheatsheet={() => alert('Cheatsheet clicked!')}
+      onClickOrderbook={() => alert('Orderbook clicked!')}
     />
   ),
 }
