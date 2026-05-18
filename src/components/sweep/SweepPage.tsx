@@ -315,12 +315,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     await stopScheduleMutationMutateAsync()
   }
 
-  if (feeConfigValidation.isLoading || walletInfo.isLoading || jmSession === undefined) {
+  if (!jmSession || feeConfigValidation.isLoading || walletInfo.isLoading) {
     return <PageLoading />
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-3 p-4">
+    <>
       <FeeConfigDialog
         walletFileName={walletFileName}
         feeConfigValidation={feeConfigValidation}
@@ -334,118 +334,119 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         disabled={isStartDisabled || isWaitingSchedulerStart}
         isStarting={isWaitingSchedulerStart}
       />
+      <div className="mx-auto max-w-4xl space-y-3 p-4">
+        <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
 
-      <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
+        {feeConfigValidation.maxFeesConfigMissing && (
+          <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
+        )}
 
-      {feeConfigValidation.maxFeesConfigMissing && (
-        <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
-      )}
+        {alertMessage && (
+          <Alert variant="destructive">
+            <AlertTitle>{t('global.error')}</AlertTitle>
+            <AlertDescription>{alertMessage}</AlertDescription>
+          </Alert>
+        )}
 
-      {alertMessage && (
-        <Alert variant="destructive">
-          <AlertTitle>{t('global.error')}</AlertTitle>
-          <AlertDescription>{alertMessage}</AlertDescription>
-        </Alert>
-      )}
+        {singleCoinJoinRunning && (
+          <Alert variant="warning">
+            <HourglassIcon className="motion-safe:animate-pulse" />
+            <AlertDescription>{t('send.text_coinjoin_already_running')}</AlertDescription>
+          </Alert>
+        )}
 
-      {singleCoinJoinRunning && (
-        <Alert variant="warning">
-          <HourglassIcon />
-          <AlertDescription>{t('send.text_coinjoin_already_running')}</AlertDescription>
-        </Alert>
-      )}
+        {makerRunning && (
+          <Alert variant="warning">
+            <HourglassIcon className="motion-safe:animate-pulse" />
+            <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
+          </Alert>
+        )}
 
-      {makerRunning && !schedulerRunning && (
-        <Alert variant="warning">
-          <HourglassIcon />
-          <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
-        </Alert>
-      )}
+        {isWaitingSchedulerStart && (
+          <Alert>
+            <Spinner className="motion-reduce:hidden" />
+            <AlertTitle>{t('scheduler.button_start')}</AlertTitle>
+          </Alert>
+        )}
 
-      {isWaitingSchedulerStart && (
-        <Alert>
-          <Spinner className="motion-reduce:hidden" />
-          <AlertTitle>{t('scheduler.button_start')}</AlertTitle>
-        </Alert>
-      )}
+        {isWaitingSchedulerStop && (
+          <Alert>
+            <Spinner className="motion-reduce:hidden" />
+            <AlertTitle>{t('scheduler.button_stop')}</AlertTitle>
+          </Alert>
+        )}
 
-      {isWaitingSchedulerStop && (
-        <Alert>
-          <Spinner className="motion-reduce:hidden" />
-          <AlertTitle>{t('scheduler.button_stop')}</AlertTitle>
-        </Alert>
-      )}
+        {schedulerRunning && currentSchedule && (
+          <SweepScheduleProgress schedule={currentSchedule} isStopping={isWaitingSchedulerStop} onStop={stopSchedule} />
+        )}
 
-      {schedulerRunning && currentSchedule && (
-        <SweepScheduleProgress schedule={currentSchedule} isStopping={isWaitingSchedulerStop} onStop={stopSchedule} />
-      )}
+        {!schedulerRunning && (
+          <>
+            <SweepPreconditionAlert summary={preconditionSummary} />
 
-      {!schedulerRunning && (
-        <>
-          <SweepPreconditionAlert summary={preconditionSummary} />
-
-          <Card>
-            <CardContent className="space-y-5">
-              <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
-                <div>
-                  <div className="font-medium">{t('scheduler.complete_wallet_title')}</div>
-                  <div className="text-muted-foreground text-sm">{t('scheduler.complete_wallet_subtitle')}</div>
+            <Card>
+              <CardContent className="space-y-5">
+                <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
+                  <div>
+                    <div className="font-medium">{t('scheduler.complete_wallet_title')}</div>
+                    <div className="text-muted-foreground text-sm">{t('scheduler.complete_wallet_subtitle')}</div>
+                  </div>
+                  <div className="font-semibold">
+                    <Balance valueString={String(walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats)} />
+                  </div>
                 </div>
-                <div className="font-semibold">
-                  <Balance valueString={String(walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats)} />
-                </div>
-              </div>
 
-              <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
+                <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
 
-              {showInsecureScheduleTestingToggle && (
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="switch-use-insecure-schedule-testing"
-                    checked={useInsecureTestingSettings}
-                    onCheckedChange={onInsecureTestingToggleChange}
-                    disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                  />
-                  <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-                    <div className="flex items-center gap-2 font-medium">
-                      Use insecure testing settings
-                      <DevBadge />
-                    </div>
-                    <div className="text-muted-foreground text-sm">
-                      This is completely insecure but makes testing the schedule much faster.
-                    </div>
-                  </Label>
-                </div>
-              )}
-
-              <SweepDestinationInputs
-                form={form}
-                fields={fields}
-                disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-              />
-
-              <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
-
-              <Button
-                type="button"
-                onClick={() => void onOpenScheduleConfirm()}
-                disabled={isStartDisabled}
-                size="xxl"
-                className="w-full"
-              >
-                {isWaitingSchedulerStart ? (
-                  <>
-                    <Spinner className="motion-reduce:hidden" />
-                    {t('scheduler.button_start')}
-                  </>
-                ) : (
-                  t('scheduler.button_start')
+                {showInsecureScheduleTestingToggle && (
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="switch-use-insecure-schedule-testing"
+                      checked={useInsecureTestingSettings}
+                      onCheckedChange={onInsecureTestingToggleChange}
+                      disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
+                    />
+                    <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
+                      <div className="flex items-center gap-2 font-medium">
+                        Use insecure testing settings
+                        <DevBadge />
+                      </div>
+                      <div className="text-muted-foreground text-sm">
+                        This is completely insecure but makes testing the schedule much faster.
+                      </div>
+                    </Label>
+                  </div>
                 )}
-              </Button>
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </div>
+
+                <SweepDestinationInputs
+                  form={form}
+                  fields={fields}
+                  disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
+                />
+
+                <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
+
+                <Button
+                  type="button"
+                  onClick={() => void onOpenScheduleConfirm()}
+                  disabled={isStartDisabled}
+                  size="xxl"
+                  className="w-full"
+                >
+                  {isWaitingSchedulerStart ? (
+                    <>
+                      <Spinner className="motion-reduce:hidden" />
+                      {t('scheduler.button_start')}
+                    </>
+                  ) : (
+                    t('scheduler.button_start')
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    </>
   )
 }

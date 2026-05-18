@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   directsendMutation,
   docoinjoinMutation,
@@ -21,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAddressSummary,
   useJamWalletInfoContext,
@@ -35,15 +36,15 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { getErrorReason } from '@/lib/errorReason'
 import { withMutationDelay } from '@/lib/queryClient'
-import type { WalletFileName } from '@/lib/utils'
+import { scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Spinner } from '../ui/spinner'
+import { PaymentAbortDialog } from './PaymentAbortDialog'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
@@ -60,6 +61,10 @@ type DirectSendResult = {
   request: DirectSendRequest
   response: DirectSendResponse
 }
+type CollaborativeSendResult = {
+  request: DoCoinjoinRequest
+  response: unknown
+}
 
 interface SendPageProps {
   walletFileName: WalletFileName
@@ -70,8 +75,21 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const client = useApiClient()
   const [formId, setFormId] = useState<number>(0)
   const { fetchIfMissing } = useJmConfig({ walletFileName })
-  const { refetch: refetchWalletInfo, waitForUtxosToBeSpent, setWaitForUtxosToBeSpent } = useJamWalletInfoContext()
+  const {
+    isLoading: walletInfoIsLoading,
+    isFetching: walletInfoIsFetching,
+    utxosHashHex,
+    waitForUtxosToBeSpent,
+    setWaitForUtxosToBeSpent,
+  } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const {
+    takerInfo: { running: takerRunning, currentPaymentAttempt },
+    rescanInfo,
+    setCurrentPaymentAttempt,
+    clearCurrentPaymentAttempt,
+  } = useJamSessionInfoContext()
+
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
@@ -79,36 +97,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
   const [showAbortCoinjoinDialog, setShowAbortCoinjoinDialog] = useState(false)
   const [sendFromValuesAwaitingConfirmation, setSendFromValuesAwaitingConfirmation] = useState<SendFormValues>()
-  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
+  const [nonCollaborativePaymentSuccessInfoAlert, setNonCollaborativePaymentSuccessInfoAlert] = useState<SimpleAlert>()
   const [minimumCollaborators, setMinimumCollaborators] = useState<number>()
   const [collaborativeFlowError, setCollaborativeFlowError] = useState<string>()
   const [sourceJarIndex, setSourceJarIndex] = useState<JarIndex>()
-  // TODO: "Lifecycle" or state management should be handled outside of this component
-  const collaborativeLifecycleRef = useRef({
-    awaitingCompletion: false,
-    wasRunning: false,
-    utxoSnapshotAtStart: '',
-  })
-  const refetchWalletInfoRef = useRef(refetchWalletInfo)
-  const currentUtxoSnapshotRef = useRef('')
 
   const { addressSummary } = useAddressSummary()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
-  const currentUtxoSnapshot = useMemo(() => {
-    return jars
-      .flatMap((jar) => jar.utxos.map((utxo) => utxo.utxo))
-      .toSorted()
-      .join('|')
-  }, [jars])
-
-  useEffect(() => {
-    currentUtxoSnapshotRef.current = currentUtxoSnapshot
-  }, [currentUtxoSnapshot])
-
-  useEffect(() => {
-    refetchWalletInfoRef.current = refetchWalletInfo
-  }, [refetchWalletInfo])
 
   const sourceJar = useMemo(() => {
     if (sourceJarIndex === undefined) return
@@ -148,7 +144,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       setCollaborativeFlowError(undefined)
     },
     onSuccess: () => {
-      toast.success(t('send.alert_collaborative_started_title'))
+      toast.info(t('send.alert_collaborative_starting'))
     },
     onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
@@ -181,6 +177,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     onMutate: () => {
       setCollaborativeFlowError(undefined)
     },
+    onSuccess: () => {
+      clearCurrentPaymentAttempt()
+      toast.info(t('send.alert_collaborative_stopping'))
+    },
     onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('send.error_stopping_collaborative_transaction', { reason })
@@ -189,10 +189,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const coinjoinRunning = jmSession?.coinjoin_in_process === true
-  const isWaitingCoinjoinStart = startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !coinjoinRunning)
-  const isWaitingCoinjoinStop = stopCoinjoinMutationIsPending || (stopCoinjoinMutationIsSuccess && coinjoinRunning)
-  const collaborativeFlowActive = coinjoinRunning || isWaitingCoinjoinStart || isWaitingCoinjoinStop
+  const isWaitingCoinjoinStart = startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !takerRunning)
+  const isWaitingCoinjoinStop = stopCoinjoinMutationIsPending || (stopCoinjoinMutationIsSuccess && takerRunning)
 
   useRefreshSession({
     enabled: isWaitingCoinjoinStart || isWaitingCoinjoinStop,
@@ -200,117 +198,45 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     refetchDelay: 1_000,
   })
 
-  useEffect(() => {
-    if (!collaborativeFlowActive) {
-      return
-    }
-
-    void refetchWalletInfoRef.current()
-    const intervalId = window.setInterval(() => {
-      void refetchWalletInfoRef.current()
-    }, 3_000)
-
-    return () => {
-      window.clearInterval(intervalId)
-    }
-  }, [collaborativeFlowActive])
+  useRefreshSession({
+    enabled: takerRunning,
+    refetchInterval: 5_000,
+    refetchDelay: 1_000,
+  })
 
   useEffect(() => {
-    if (coinjoinRunning && startCoinjoinMutationIsSuccess) {
+    if (takerRunning && startCoinjoinMutationIsSuccess) {
       startCoinjoinMutationReset()
     }
-  }, [coinjoinRunning, startCoinjoinMutationIsSuccess, startCoinjoinMutationReset])
+  }, [takerRunning, startCoinjoinMutationIsSuccess, startCoinjoinMutationReset])
 
   useEffect(() => {
-    if (!coinjoinRunning && stopCoinjoinMutationIsSuccess) {
+    if (!takerRunning && stopCoinjoinMutationIsSuccess) {
       stopCoinjoinMutationReset()
     }
-  }, [coinjoinRunning, stopCoinjoinMutationIsSuccess, stopCoinjoinMutationReset])
+  }, [takerRunning, stopCoinjoinMutationIsSuccess, stopCoinjoinMutationReset])
 
   useEffect(() => {
-    const state = collaborativeLifecycleRef.current
-
-    if (!state.awaitingCompletion) {
-      return
-    }
-
-    if (coinjoinRunning) {
-      state.wasRunning = true
-      return
-    }
-
-    if (!state.wasRunning) {
-      return
-    }
-
-    state.awaitingCompletion = false
-    state.wasRunning = false
-    const utxoSnapshotAtStart = state.utxoSnapshotAtStart
-    let isCancelled = false
-
-    const verifyCollaborativeCompletion = async () => {
-      const deadline = Date.now() + 9_000
-      let hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
-
-      while (!hasNewTransaction && Date.now() < deadline) {
-        await refetchWalletInfoRef.current()
-        if (isCancelled) return
-
-        hasNewTransaction = currentUtxoSnapshotRef.current !== utxoSnapshotAtStart
-        if (hasNewTransaction || Date.now() >= deadline) break
-
-        await new Promise((resolve) => window.setTimeout(resolve, 1_000))
-      }
-
-      if (isCancelled) return
-
-      queueMicrotask(() => {
-        setPaymentSuccessfulInfoAlert({
-          variant: hasNewTransaction ? 'success' : 'warning',
-          title: hasNewTransaction
-            ? t('send.alert_collaborative_completed_title')
-            : t('send.alert_collaborative_ended_title'),
-          description: hasNewTransaction
-            ? t('send.alert_collaborative_completed_description')
-            : t('send.alert_collaborative_ended_description'),
-        })
-        if (hasNewTransaction) {
-          toast.success(t('send.alert_collaborative_completed_title'))
-        } else {
-          toast.warning(t('send.alert_collaborative_ended_title'))
-        }
-      })
-    }
-
-    void verifyCollaborativeCompletion()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [coinjoinRunning, t])
-
-  useEffect(() => {
-    let isCancelled = false
+    const abortCtrl = new AbortController()
 
     fetchIfMissing({ section: 'POLICY', field: 'minimum_makers' })
       .then((result) => {
-        if (isCancelled) return
+        if (abortCtrl.signal.aborted) return
 
         const parsedValue = Number.parseInt(result.value || '', 10)
-        if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+        if (!Number.isSafeInteger(parsedValue) || parsedValue < 1) {
           return
         }
         setMinimumCollaborators(parsedValue)
       })
       .catch((error: unknown) => {
-        if (isCancelled) return
+        if (abortCtrl.signal.aborted) return
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+        // TODO: i18n, add reason as param
         toast.error(`${t('send.error_loading_min_makers_failed')} ${reason}`)
       })
 
-    return () => {
-      isCancelled = true
-    }
+    return () => abortCtrl.abort()
   }, [fetchIfMissing, t])
 
   const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
@@ -332,7 +258,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       { throttle: 2_100 },
     ),
     onMutate: () => {
-      setPaymentSuccessfulInfoAlert(undefined)
+      setNonCollaborativePaymentSuccessInfoAlert(undefined)
+      scrollToTop()
     },
     onSuccess: (result: DirectSendResult, data: SendFormValues) => {
       const tx = result.response.txinfo as Required<JmTxInfo>
@@ -345,7 +272,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
       setWaitForUtxosToBeSpent(inputUtxoIds)
       setFormId((current) => current + 1)
-      setPaymentSuccessfulInfoAlert({
+      setNonCollaborativePaymentSuccessInfoAlert({
         variant: 'success',
         title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
         description: t('send.alert_payment_successful', {
@@ -364,61 +291,76 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const onPaymentConfirmed: SubmitHandler<SendFormValues> = async (data: SendFormValues) => {
-    if (data.isCoinJoin !== true) {
+  const triggerCollaborativeTransaction = useMutation<CollaborativeSendResult, ErrorMessage, SendFormValues, unknown>({
+    mutationFn: withMutationDelay(
+      async (data: SendFormValues) => {
+        const body: DoCoinjoinRequest = buildCollaborativeSendRequest(data)
+        const response = await startCoinjoinMutationMutateAsync({
+          path: { walletname: walletFileName },
+          body,
+        })
+
+        return {
+          request: body,
+          response,
+        }
+      },
+      { throttle: 0 },
+    ),
+    onMutate: () => {
+      setNonCollaborativePaymentSuccessInfoAlert(undefined)
+      scrollToTop()
+    },
+    onSuccess: (_result, data) => {
+      setCurrentPaymentAttempt({
+        createdAt: Date.now(),
+        walletFileName,
+        utxosHashHex,
+        data,
+      })
+    },
+  })
+
+  const onPaymentValuesConfirmed = async (data: SendFormValues) => {
+    setShowPaymentConfirmDialog(false)
+    setSendFromValuesAwaitingConfirmation(undefined)
+
+    if (data.isCoinJoin === true) {
+      if (feeConfigValidation.maxFeesConfigMissing) {
+        toast.error(t('send.taker_error_message_max_fees_config_missing'))
+        throw new Error(t('send.taker_error_message_max_fees_config_missing'))
+      }
+
+      try {
+        await triggerCollaborativeTransaction.mutateAsync(data)
+      } catch (error: unknown) {
+        console.error('Error while sending collaborative transaction', error)
+      }
+    } else {
       try {
         await triggerNonCollaborativeTransaction.mutateAsync(data)
       } catch (error: unknown) {
         console.error('Error while sending non-collaborative transaction', error)
       }
-    } else {
-      if (feeConfigValidation.maxFeesConfigMissing) {
-        toast.error(t('send.taker_error_message_max_fees_config_missing'))
-        setShowFeeConfigDialog(true)
-        return
-      }
-
-      try {
-        const body: DoCoinjoinRequest = buildCollaborativeSendRequest(data)
-        setPaymentSuccessfulInfoAlert(undefined)
-        collaborativeLifecycleRef.current.utxoSnapshotAtStart = currentUtxoSnapshot
-        await startCoinjoinMutationMutateAsync({
-          path: { walletname: walletFileName },
-          body,
-        })
-        collaborativeLifecycleRef.current.awaitingCompletion = true
-        collaborativeLifecycleRef.current.wasRunning = coinjoinRunning
-        setPaymentSuccessfulInfoAlert({
-          variant: 'success',
-          title: t('send.alert_collaborative_started_title'),
-          description: t('send.alert_collaborative_started_description'),
-        })
-      } catch (error: unknown) {
-        collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
-        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        const message = t('send.error_preparing_collaborative_transaction', { reason })
-        setCollaborativeFlowError(message)
-        toast.error(message)
-      }
     }
   }
 
   const onSubmit: SubmitHandler<SendFormValues> = (data) => {
+    if (data.isCoinJoin && feeConfigValidation.maxFeesConfigMissing) {
+      toast.error(t('send.taker_error_message_max_fees_config_missing'))
+      setShowFeeConfigDialog(true)
+      return
+    }
     setSendFromValuesAwaitingConfirmation(data)
     setShowPaymentConfirmDialog(true)
   }
 
-  const onAbortCoinjoin = async () => {
-    collaborativeLifecycleRef.current.awaitingCompletion = false
-    collaborativeLifecycleRef.current.wasRunning = false
-    collaborativeLifecycleRef.current.utxoSnapshotAtStart = ''
-    setPaymentSuccessfulInfoAlert(undefined)
+  const onAbortCoinjoinConfirmed = async () => {
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutationMutateAsync()
-    void refetchWalletInfoRef.current()
   }
 
-  if (feeConfigValidation.isLoading) {
+  if (!jmSession || walletInfoIsLoading) {
     return <PageLoading />
   }
 
@@ -430,53 +372,21 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
       />
-      <Dialog open={showAbortCoinjoinDialog} onOpenChange={setShowAbortCoinjoinDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('send.confirm_abort_modal.title')}</DialogTitle>
-            <DialogDescription>{t('send.confirm_abort_modal.text_body')}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAbortCoinjoinDialog(false)}>
-              {t('modal.confirm_button_reject')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => void onAbortCoinjoin()}
-              disabled={stopCoinjoinMutationIsPending}
-            >
-              {stopCoinjoinMutationIsPending ? (
-                <>
-                  <Spinner className="motion-reduce:hidden" />
-                  {t('global.abort')}
-                </>
-              ) : (
-                t('global.abort')
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+      <PaymentAbortDialog
+        open={showAbortCoinjoinDialog}
+        onOpenChange={setShowAbortCoinjoinDialog}
+        isConfirming={stopCoinjoinMutationIsPending}
+        onConfirm={onAbortCoinjoinConfirmed}
+      />
+
       <UtxoSelectionDialog {...utxoSelectionDialog.dialogProps} />
       {sourceJar && sendFromValuesAwaitingConfirmation && (
         <PaymentConfirmDialog
           open={showPaymentConfirmDialog}
           onOpenChange={setShowPaymentConfirmDialog}
-          title={t('send.confirm_send_modal.title')}
-          subtitle={
-            sendFromValuesAwaitingConfirmation.isCoinJoin === true ? (
-              <span className="light:text-green-600/80 text-green-700/80">
-                {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
-              </span>
-            ) : (
-              <span className="text-destructive">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</span>
-            )
-          }
           values={sendFromValuesAwaitingConfirmation}
-          onConfirm={async () => {
-            setShowPaymentConfirmDialog(false)
-            await onPaymentConfirmed(sendFromValuesAwaitingConfirmation)
-          }}
+          onConfirm={onPaymentValuesConfirmed}
           meta={{
             feeConfigValues: feeConfigValidation.feeConfigValues,
             availableUtxos: availableUtxosForPayment,
@@ -492,7 +402,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         {feeConfigValidation.maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
-
+        {jmSession?.maker_running === true && (
+          <Alert variant="warning">
+            <HourglassIcon className="motion-safe:animate-pulse" />
+            <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
+          </Alert>
+        )}
         {collaborativeFlowError && (
           <Alert variant="destructive">
             <AlertTriangleIcon />
@@ -500,34 +415,122 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertDescription>{collaborativeFlowError}</AlertDescription>
           </Alert>
         )}
-
         {isWaitingCoinjoinStart && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>{t('send.alert_collaborative_starting')}</AlertTitle>
           </Alert>
         )}
+        {isWaitingCoinjoinStop && (
+          <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+            <Spinner className="motion-reduce:hidden" />
+            <AlertTitle>{t('send.alert_collaborative_stopping')}</AlertTitle>
+          </Alert>
+        )}
 
-        {coinjoinRunning && (
+        {
+          /*
+           * With backend "joinmarket-clientserver" there is no direct way of verifying
+           * that a collaborative send attempt was successful.
+           * We have to rely on local data `takerCurrentAttempt`
+           * (which might not be present, e.g. taker was started from a different session)
+           * for displaying success/error information.
+           * If data `takerCurrentAttempt` is not present, no message is shown
+           * when the taker service stops - this is not ideal, but okay.
+           */
+          currentPaymentAttempt !== undefined &&
+            currentPaymentAttempt.data.isCoinJoin &&
+            !isWaitingCoinjoinStart &&
+            takerRunning === false && (
+              <>
+                {walletInfoIsFetching ? (
+                  <>
+                    <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                      <Spinner className="motion-reduce:hidden" />
+                      <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
+                    </Alert>
+                  </>
+                ) : (
+                  <>
+                    {currentPaymentAttempt.utxosHashHex === utxosHashHex ? (
+                      <Alert variant="warning">
+                        <AlertTriangleIcon />
+                        <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
+                        <AlertDescription className="flex flex-col gap-2">
+                          <div>{t('send.alert_collaborative_ended_description')}</div>
+                          <div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                clearCurrentPaymentAttempt()
+                              }}
+                            >
+                              {t('global.done')}
+                            </Button>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <Alert variant="success">
+                        <CheckCircle2Icon />
+                        <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
+                        <AlertDescription className="flex flex-col gap-2">
+                          <div>{t('send.alert_collaborative_completed_description')}</div>
+                          <div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setFormId((current) => current + 1)
+                                clearCurrentPaymentAttempt()
+                              }}
+                            >
+                              {t('global.done')}
+                            </Button>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </>
+                )}
+              </>
+            )
+        }
+        {takerRunning && !isWaitingCoinjoinStop && (
           <Alert variant="warning">
             <HourglassIcon />
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
-            <AlertDescription className="mt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAbortCoinjoinDialog(true)}
-                disabled={isWaitingCoinjoinStop}
-              >
-                {isWaitingCoinjoinStop ? (
-                  <>
-                    <Spinner className="motion-reduce:hidden" />
-                    {t('global.abort')}
-                  </>
-                ) : (
-                  t('global.abort')
-                )}
-              </Button>
+            <AlertDescription className="flex flex-col gap-2">
+              {currentPaymentAttempt && (
+                <pre>
+                  {JSON.stringify(
+                    {
+                      sourceJar: currentPaymentAttempt.data.source.fromJar,
+                      destinationJar: currentPaymentAttempt.data.destination.fromJar,
+                      destinationAddress: currentPaymentAttempt.data.destination.address,
+                      isSweep: currentPaymentAttempt.data.amount.isSweep === true,
+                      amount:
+                        currentPaymentAttempt.data.amount.isSweep === true
+                          ? currentPaymentAttempt.data.amount.sweepAmount
+                          : currentPaymentAttempt.data.amount.amount,
+                      numCollaborators: currentPaymentAttempt.data.numCollaborators,
+                    },
+                    null,
+                    2,
+                  )}
+                </pre>
+              )}
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAbortCoinjoinDialog(true)}
+                  disabled={isWaitingCoinjoinStop}
+                >
+                  {t('global.abort')}
+                </Button>
+              </div>
             </AlertDescription>
           </Alert>
         )}
@@ -536,7 +539,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           <Alert variant="destructive">
             <AlertTriangleIcon />
             <AlertTitle>{/* TODO: i18n */}Error while sending non-collaborative transaction</AlertTitle>
-            <AlertDescription className="">
+            <AlertDescription>
               <p>
                 The exact reason is not entirely clear, only the following is known:{' '}
                 <span className="inline font-mono font-semibold">
@@ -560,19 +563,18 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
               </Alert>
             )}
-            {paymentSuccessfulInfoAlert && !coinjoinRunning && (
-              <Alert variant={paymentSuccessfulInfoAlert.variant}>
+            {nonCollaborativePaymentSuccessInfoAlert && (
+              <Alert variant={nonCollaborativePaymentSuccessInfoAlert.variant}>
                 <CheckCircle2Icon />
-                <AlertTitle>{paymentSuccessfulInfoAlert.title}</AlertTitle>
-                <AlertDescription className="ext-wrap slashed-zero">
-                  {paymentSuccessfulInfoAlert.description}
+                <AlertTitle>{nonCollaborativePaymentSuccessInfoAlert.title}</AlertTitle>
+                <AlertDescription className="text-wrap slashed-zero">
+                  {nonCollaborativePaymentSuccessInfoAlert.description}
                 </AlertDescription>
               </Alert>
             )}
           </>
         )}
 
-        {/* Earn Form */}
         <Card>
           <CardContent>
             <SendForm
@@ -581,17 +583,19 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
               feeConfigValues={feeConfigValidation.feeConfigValues}
-              forceCoinJoinEnabled={collaborativeFlowActive}
               jars={jars}
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
-                feeConfigValidation.maxFeesConfigMissing ||
                 jmSession?.maker_running === true ||
-                collaborativeFlowActive ||
-                jmSession?.rescanning === true ||
+                takerRunning ||
+                rescanInfo.rescanning ||
+                isWaitingCoinjoinStart ||
+                isWaitingCoinjoinStop ||
                 utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
+                triggerCollaborativeTransaction.isPending ||
+                currentPaymentAttempt !== undefined ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}

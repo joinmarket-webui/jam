@@ -1,4 +1,6 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
+import type { SendFormValues } from '@/components/send/types'
+import type { WalletFileName } from '@/lib/utils'
 
 export interface RescanInfo {
   updatedAt: number
@@ -6,10 +8,25 @@ export interface RescanInfo {
   progress?: number
 }
 
+export interface PaymentAttempt {
+  createdAt: number
+  utxosHashHex: string
+  walletFileName: WalletFileName
+  data: SendFormValues
+}
+
+export interface TakerInfo {
+  currentPaymentAttempt?: PaymentAttempt
+  running: boolean
+}
+
 interface JamSessionInfoContextType {
   blockHeight?: number
+  takerInfo: TakerInfo
   rescanInfo: RescanInfo
   setRescanInfo: Dispatch<SetStateAction<RescanInfo>>
+  setCurrentPaymentAttempt: (val: PaymentAttempt) => void
+  clearCurrentPaymentAttempt: () => void
 }
 
 export const JamSessionInfoContext = createContext<JamSessionInfoContextType | undefined>(undefined)

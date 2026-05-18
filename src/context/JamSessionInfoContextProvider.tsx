@@ -2,14 +2,35 @@ import type { PropsWithChildren } from 'react'
 import { useMemo, useState } from 'react'
 import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from 'zustand'
+import { createStore, useStore } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { JamSessionInfoContext } from './JamSessionInfoContext'
-import type { RescanInfo } from './JamSessionInfoContext'
+import type { PaymentAttempt, RescanInfo, TakerInfo } from './JamSessionInfoContext'
+
+interface PaymentAttemptStoreState {
+  state?: PaymentAttempt
+  update: (val: PaymentAttempt) => void
+  clear: () => void
+}
+
+const paymentAttemptStore = createStore<PaymentAttemptStoreState>()(
+  persist(
+    (set) => ({
+      state: undefined,
+      update: (val) => set(() => ({ state: val })),
+      clear: () => set({ state: undefined }),
+    }),
+    {
+      name: 'jam-payment-attempt-store',
+      storage: createJSONStorage(() => sessionStorage),
+    },
+  ),
+)
 
 interface JamSessionInfoContextProviderProps {
   walletFileName: WalletFileName
@@ -25,6 +46,22 @@ export const JamSessionInfoContextProvider = ({
     updatedAt: 0,
     rescanning: state?.rescanning === true,
   })
+
+  const {
+    state: currentPaymentAttempt,
+    update: setCurrentPaymentAttempt,
+    clear: clearCurrentPaymentAttempt,
+  } = useStore(paymentAttemptStore, (state) => state)
+
+  const takerInfo = useMemo<TakerInfo>(() => {
+    const isWalletPayment = currentPaymentAttempt?.walletFileName === walletFileName
+    const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
+    const takerIsRunning = state?.coinjoin_in_process === true
+    return {
+      currentPaymentAttempt: isWalletPayment && isCoinJoin ? currentPaymentAttempt : undefined,
+      running: takerIsRunning,
+    }
+  }, [state?.coinjoin_in_process, walletFileName, currentPaymentAttempt])
 
   const getrescaninfoQueryOptions = useMemo(
     () =>
@@ -64,8 +101,12 @@ export const JamSessionInfoContextProvider = ({
 
   const value = {
     blockHeight: state?.block_height,
+    takerRunning: state?.coinjoin_in_process === true,
+    takerInfo,
     rescanInfo,
     setRescanInfo,
+    setCurrentPaymentAttempt,
+    clearCurrentPaymentAttempt,
   }
 
   return <JamSessionInfoContext.Provider value={value}>{children}</JamSessionInfoContext.Provider>

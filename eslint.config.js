@@ -45,7 +45,6 @@ export default defineConfig(
     ignores: [
       './src/components/ui/*.tsx', // shadcn components
       './src/**/*.stories.tsx',
-      './src/components/settings/CollaboratorFeesForm.tsx', // TODO: remove
     ],
     files: ['./src/**/*.{ts,tsx}'],
     languageOptions: {
@@ -76,7 +75,6 @@ export default defineConfig(
     extends: [eslintPluginUnicorn.configs.recommended],
     ignores: [
       './src/components/ui/*.tsx', // shadcn components
-      './src/components/settings/CollaboratorFeesForm.tsx', // TODO: remove
     ],
     rules: {
       'unicorn/filename-case': ['off'],

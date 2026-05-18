@@ -53,7 +53,9 @@ export function useRefreshSession({
 
   useEffect(
     function refetchOnWalletLockOrUnlock() {
+      const abortCtrl = new AbortController()
       refetchSessionData().catch(() => {
+        if (abortCtrl.signal.aborted) return
         const isDevMode = jamSettingsStore.getState().state.developerMode
         if (isDevMode) {
           toast.error(`[DEV] Error while refreshing session data.`, {
@@ -61,6 +63,7 @@ export function useRefreshSession({
           })
         }
       })
+      return () => abortCtrl.abort()
     },
     [authState?.walletFileName, refetchSessionData],
   )

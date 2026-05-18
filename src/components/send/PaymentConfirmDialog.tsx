@@ -1,4 +1,4 @@
-import { useMemo, useState, type ComponentProps, type ReactNode } from 'react'
+import { useMemo, useState, type ComponentProps } from 'react'
 import { DialogTitle } from '@radix-ui/react-dialog'
 import { InfoIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -33,8 +33,6 @@ type PaymentConfirmDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
   'open' | 'onOpenChange'
 > & {
-  title: string
-  subtitle?: ReactNode | string
   onConfirm: (values: SendFormValues) => Promise<void>
   values: SendFormValues
   meta: {
@@ -49,8 +47,6 @@ type PaymentConfirmDialogProps = WithRequiredProperty<
 export default function PaymentConfirmDialog({
   open,
   onOpenChange,
-  title,
-  subtitle,
   onConfirm,
   values,
   meta,
@@ -94,8 +90,20 @@ export default function PaymentConfirmDialog({
     <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-center gap-2 font-semibold">{title}</DialogTitle>
-          <DialogDescription className="text-center">{subtitle}</DialogDescription>
+          <DialogTitle className="flex items-center justify-center gap-2 font-semibold">
+            {t('send.confirm_send_modal.title')}
+          </DialogTitle>
+          <DialogDescription className="text-center">
+            {values.isCoinJoin === true ? (
+              <span className="light:text-green-600/80 font-semibold text-green-700/80">
+                {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
+              </span>
+            ) : (
+              <span className="text-destructive font-semibold">
+                {t('send.confirm_send_modal.text_collaborative_tx_disabled')}
+              </span>
+            )}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 space-y-1 space-x-4 md:grid-cols-5">

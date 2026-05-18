@@ -48,7 +48,7 @@ import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
-import { useJamSessionInfoContext, useRescanStatus } from './context/JamSessionInfoContext'
+import { useJamSessionInfoContext } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { JmWebsocketContextProvider } from './context/JmWebsocketContextProvider'
@@ -378,6 +378,7 @@ const RELOAD_WALLET_INFO_DELAY: {
   AFTER_RESCAN: Milliseconds
   AFTER_UTXO_CHANGE: Milliseconds
   AFTER_BLOCK_HEIGHT_CHANGE: Milliseconds
+  AFTER_TAKER_STOPPED: Milliseconds
 } = {
   // After rescanning, it is necessary to give the JM backend some time to synchronize.
   // A couple of seconds should be enough, however, this depends on the user hardware
@@ -392,6 +393,9 @@ const RELOAD_WALLET_INFO_DELAY: {
 
   // Small delay is sufficient after block height change
   AFTER_BLOCK_HEIGHT_CHANGE: 210,
+
+  // Small delay is sufficient after block height change
+  AFTER_TAKER_STOPPED: 210,
 }
 
 /**
@@ -404,10 +408,14 @@ const RELOAD_WALLET_INFO_DELAY: {
  * always trigger a reload on demand and inform the user as they see fit.
  */
 const WalletInfoAutoReload = () => {
-  const { rescanInfo: currentRescanInfo } = useRescanStatus()
+  const {
+    blockHeight: currentBlockHeight,
+    takerInfo: { running: currentTakerRunning },
+    rescanInfo: currentRescanInfo,
+  } = useJamSessionInfoContext()
   const previousRescanningRef = useRef<boolean>(currentRescanInfo.rescanning)
-  const { blockHeight: currentBlockHeight } = useJamSessionInfoContext()
   const previousBlockHeightRef = useRef<number | undefined>(currentBlockHeight)
+  const previousTakerRunningRef = useRef<boolean>(currentTakerRunning)
 
   const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
 
@@ -476,6 +484,26 @@ const WalletInfoAutoReload = () => {
       return () => abortCtrl.abort('useEffect(AFTER_UTXO_CHANGE) ended')
     },
     [refetchWalletBalance, utxosHashHex],
+  )
+
+  useEffect(
+    function refetchWalletInfoAfterTakerStopped() {
+      const takerStopped = previousTakerRunningRef.current === true && currentTakerRunning === false
+      previousTakerRunningRef.current = currentTakerRunning
+      if (!takerStopped) {
+        return
+      }
+
+      const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_TAKER_STOPPED
+      console.debug('Trigger refetch looking for funds AFTER_TAKER_STOPPED with delay %d...', delayBefore)
+
+      const abortCtrl = new AbortController()
+      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
+        console.error('Error while auto-reloading wallet info AFTER_TAKER_STOPPED finished', error)
+      })
+      return () => abortCtrl.abort('useEffect(AFTER_TAKER_STOPPED) ended')
+    },
+    [refetchWalletBalance, currentTakerRunning],
   )
 
   return <></>
