@@ -1,0 +1,77 @@
+name: Storybook Pages
+
+on:
+  push:
+    branches: [devel]
+    paths:
+      - '.github/workflows/storybook-pages.yml'
+      - '.storybook/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+  pull_request:
+    branches: [devel]
+    paths:
+      - '.github/workflows/storybook-pages.yml'
+      - '.storybook/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: storybook-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['v24.11.1']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup (Node.js ${{ matrix.node-version }})
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install
+        run: npm clean-install --no-audit --no-fund
+
+      - name: Build Storybook
+        run: npm run storybook:build:pages
+
+      - name: Prepare Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/devel'
+        run: touch storybook-static/.nojekyll
+
+      - name: Configure Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/devel'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/devel'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: storybook-static
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/devel'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
