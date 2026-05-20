@@ -43,10 +43,10 @@ npm run storybook:up
 Build the static Storybook preview with:
 
 ```bash
-npm run storybook:build:pages
+npm run storybook:build
 ```
 
-The Storybook Pages workflow builds Storybook on pull requests and publishes the latest `devel` version through GitHub Pages once Pages is configured to use GitHub Actions as its source.
+The Storybook Pages workflow publishes the latest `devel` version through GitHub Pages once Pages is configured to use GitHub Actions as its source.
 
 Hosted preview:
 

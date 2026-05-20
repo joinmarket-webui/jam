@@ -24,7 +24,6 @@
     "preview": "vite preview",
     "storybook:up": "storybook dev -p 6006",
     "storybook:build": "storybook build",
-    "storybook:build:pages": "storybook build --output-dir storybook-static",
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:storybook": "vitest run --project storybook",
