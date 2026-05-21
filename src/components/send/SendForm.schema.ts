@@ -11,11 +11,9 @@ import { toTxFeeFormDefaultValues, createTxFeeFormSchema } from './TxFeeForm.sch
 import type { SendFormValues } from './types'
 
 export const initialNumberOfCollaborators = (minValue: number): number => {
-  if (minValue > 8) {
-    return minValue + pseudoRandomInteger(0, 2)
-  }
+  const baseValue = minValue > 8 ? minValue + pseudoRandomInteger(0, 2) : pseudoRandomInteger(8, 10)
 
-  return pseudoRandomInteger(8, 10)
+  return Math.min(baseValue, MAX_NUM_COLLABORATORS)
 }
 
 const MAX_NUM_COLLABORATORS = 99
