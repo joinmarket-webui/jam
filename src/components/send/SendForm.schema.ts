@@ -1,7 +1,7 @@
 import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
-import { TOTAL_COIN_SUPPLY } from '@/constants/jam'
+import { MAX_NUM_COLLABORATORS, TOTAL_COIN_SUPPLY } from '@/constants/jam'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
@@ -16,9 +16,7 @@ export const initialNumberOfCollaborators = (minValue: number): number => {
   return Math.min(baseValue, MAX_NUM_COLLABORATORS)
 }
 
-const MAX_NUM_COLLABORATORS = 99
-
-// min amount joinmarket is able to send (without errorsing, last check with v0.9.11 on 2026-04-26)
+// min amount joinmarket is able to send (without erroring, last check with v0.9.11 on 2026-04-26)
 export const MIN_SEND_AMOUNT: AmountSats = 292
 export const MAX_SEND_AMOUNT: AmountSats = TOTAL_COIN_SUPPLY
 

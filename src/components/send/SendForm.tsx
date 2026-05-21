@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
+import { MAX_NUM_COLLABORATORS } from '@/constants/jam'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
 import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -91,8 +92,6 @@ const AddressFromJarSelectorDialog = ({
 
 // set the default to one collaborator in dev mode
 const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
-
-const MAX_NUM_COLLABORATORS = 99
 
 // TODO: this value should be dynamic via jm backend settings
 const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
