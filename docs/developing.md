@@ -30,6 +30,30 @@ JMOBWATCH_PORT=8080 \
 npm run dev
 ```
 
+## Storybook
+
+Storybook is used to inspect reusable UI and Jam components in isolation without running a full wallet flow.
+
+Run it locally with:
+
+```bash
+npm run storybook:up
+```
+
+Build the static Storybook preview with:
+
+```bash
+npm run storybook:build
+```
+
+The Storybook Pages workflow publishes the latest `devel` version through GitHub Pages once Pages is configured to use GitHub Actions as its source.
+
+Hosted preview:
+
+```text
+https://joinmarket-webui.github.io/jam/
+```
+
 ## Linting
 
 We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).
