@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { POST_LOGIN_TOUR_DISMISSED_STORAGE_KEY, POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
-import { cn } from '@/lib/utils'
+import { clamp, cn } from '@/lib/utils'
 
 type TourStep = {
   selector: string
@@ -10,6 +10,7 @@ type TourStep = {
   description: string
 }
 
+// TODO: i18n
 const TOUR_STEPS: TourStep[] = [
   {
     selector: '[data-tour-id="wallet-preview"]',
@@ -51,8 +52,6 @@ const getTargetRect = (selector: string): DOMRect | null => {
 
   return rect
 }
-
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
 interface PostLoginOnboardingTourProps {
   enabled?: boolean

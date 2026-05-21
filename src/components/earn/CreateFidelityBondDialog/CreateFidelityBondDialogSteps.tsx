@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import * as fb from '@/lib/fidelityBondUtils'
-import { cn, formatSats } from '@/lib/utils'
+import { clamp, cn, formatSats } from '@/lib/utils'
 import type { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
 type Wizard = ReturnType<typeof useCreateFidelityBondWizard>
@@ -250,7 +250,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             {(() => {
               const perPage = 5
               const totalPages = Math.ceil(availableUtxos.length / perPage)
-              const page = Math.max(0, Math.min(utxoPage, totalPages - 1))
+              const page = clamp(utxoPage, 0, totalPages - 1)
               const paged = availableUtxos.slice(page * perPage, (page + 1) * perPage)
 
               return (

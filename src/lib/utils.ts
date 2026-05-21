@@ -204,13 +204,15 @@ export const delayedPromise = async (delay: Milliseconds | undefined = 210) => {
   await new Promise<void>((resolve) => setTimeout(resolve, delay))
 }
 
+export const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
+
 // not cryptographically random; returned number is in range [min, max] (both inclusive);
 export const pseudoRandomInteger = (min: number, max: number) => {
   return Math.round(pseudoRandomFloat(min, max))
 }
 // not cryptographically random; returned number is in range [min, max] (both inclusive);
 export const pseudoRandomFloat = (min: number, max: number) => {
-  return Math.max(min, Math.min(Math.random() * (max - min) + min, max))
+  return clamp(Math.random() * (max - min) + min, min, max)
 }
 
 /**
