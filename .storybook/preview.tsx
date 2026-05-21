@@ -5,6 +5,7 @@ import { ThemeProvider } from 'next-themes'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter } from 'react-router-dom'
 import { CoreTypes, GlobalTypes } from 'storybook/internal/csf'
+import { DEFAULT_VIEWPORT, MINIMAL_VIEWPORTS, INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { JamDisplayContextProvider } from '../src/context/JamDisplayContextProvider'
 import i18n from '../src/i18n/config'
 import '../src/index.css'
@@ -43,9 +44,16 @@ type GlobalContext = {
 
 const preview: Preview = {
   initialGlobals: {
+    viewport: { value: DEFAULT_VIEWPORT, isRotated: false },
     backgrounds: { value: 'dark' },
   },
   parameters: {
+    a11y: {
+      // 'todo' - show a11y violations in the test UI only
+      // 'error' - fail CI on a11y violations
+      // 'off' - skip a11y checks entirely
+      test: 'todo',
+    },
     backgrounds: {
       options: {
         dark: { name: 'Dark', value: '#181b20' },
@@ -58,11 +66,8 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
-    a11y: {
-      // 'todo' - show a11y violations in the test UI only
-      // 'error' - fail CI on a11y violations
-      // 'off' - skip a11y checks entirely
-      test: 'todo',
+    viewport: {
+      options: { ...MINIMAL_VIEWPORTS, ...INITIAL_VIEWPORTS },
     },
   },
 }
