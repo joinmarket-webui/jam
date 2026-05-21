@@ -25,7 +25,15 @@ import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
 import { withQueryDelay } from '@/lib/queryClient'
-import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer, pseudoRandomInteger, time } from '@/lib/utils'
+import {
+  cn,
+  factorToPercentage,
+  isAbsoluteOffer,
+  isRelativeOffer,
+  median,
+  pseudoRandomInteger,
+  time,
+} from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Balance } from '../ui/jam/Balance'
@@ -209,22 +217,13 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
     }
     const bondedMakers = [...counterpartyBonds.values()].filter((v) => v > 0).length
 
-    const median = (values: number[]) => {
-      if (values.length === 0) return 0
-      // eslint-disable-next-line unicorn/no-array-sort -- toSorted() not supported in target browsers
-      const sorted = [...values].sort((a, b) => a - b)
-      const mid = Math.floor(sorted.length / 2)
-      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
-    }
-
     const maxSizes = entries.map((offer) => Number(offer.maximumSize))
     const minSizes = entries.map((offer) => Number(offer.minimumSize))
 
     return {
-      medianAbsFee:
-        absoluteOffers.length > 0 ? Math.round(median(absoluteOffers.map((offer) => offer.fee.value))) : null,
-      medianRelFee: relativeOffers.length > 0 ? median(relativeOffers.map((offer) => offer.fee.value)) : null,
-      totalLiquidity: maxSizes.reduce((sum, v) => sum + v, 0),
+      medianAbsFee: median(absoluteOffers.map((offer) => offer.fee.value)),
+      medianRelFee: median(relativeOffers.map((offer) => offer.fee.value)),
+      totalLiquidity: maxSizes.reduce((sum, value) => sum + value, 0),
       minOfferSize: Math.min(...minSizes),
       maxOfferSize: Math.max(...maxSizes),
       bondedMakers,
@@ -389,7 +388,10 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                   {marketSummary.medianAbsFee !== null && (
                     <p className="flex items-center gap-1">
                       <span>{t('orderbook.market_summary_median_abs_fee_label')}:</span>
-                      <Balance valueString={String(marketSummary.medianAbsFee)} enableVisibilityToggle={false} />
+                      <Balance
+                        valueString={String(Math.round(marketSummary.medianAbsFee))}
+                        enableVisibilityToggle={false}
+                      />
                     </p>
                   )}
                   {marketSummary.medianRelFee !== null && (

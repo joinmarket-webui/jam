@@ -24,6 +24,8 @@ import {
   pseudoRandomFloat,
   time,
   shortenStringMiddle,
+  median,
+  clamp,
 } from './utils'
 import type { WalletFileName } from './utils'
 
@@ -634,6 +636,68 @@ describe('pseudoRandomNumbers', () => {
       // The result may be a decimal when decimal inputs are provided
       expect(typeof result).toBe('number')
     }
+  })
+})
+
+const __shuffle = (array: number[]) => {
+  const newArray = [...array]
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const rand = Math.floor(Math.random() * (i + 1))
+    ;[newArray[i], newArray[rand]] = [newArray[rand], newArray[i]]
+  }
+  return newArray
+}
+
+describe('median', () => {
+  it('should correctly calc median value of a number array', () => {
+    expect(median([])).toBe(null)
+    expect(median(__shuffle([42]))).toBe(42)
+    expect(median(__shuffle([1, 3]))).toBe(2)
+    expect(median(__shuffle([-1, 2, 3]))).toBe(2)
+    expect(median(__shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]))).toBe(5)
+    expect(median(__shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]))).toBe(4.5)
+    expect(median(__shuffle([-1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))).toBe(1)
+    expect(median(__shuffle([-1, 1, 1, 1, 1, 1, 2, 2, 2, 2]))).toBe(1)
+    expect(median(__shuffle([-3, 3, 3, 3, 1, 1, 1, 1, 1, 1]))).toBe(1)
+    expect(median(__shuffle([Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]))).toBe(null)
+    expect(median(__shuffle([Number.NaN, Number.NaN]))).toBe(null)
+    expect(median(__shuffle([Number.NaN, Number.NaN, Number.NaN]))).toBe(null)
+  })
+})
+
+describe('clamp', () => {
+  it('should correctly clamp values', () => {
+    expect(clamp(-1, 0, 2)).toBe(0)
+    expect(clamp(1, 0, 2)).toBe(1)
+    expect(clamp(3, 0, 2)).toBe(2)
+
+    expect(clamp(1.02, 1.01, 1.03)).toBe(1.02)
+
+    expect(clamp(100, 0, 99)).toBe(99)
+    expect(clamp(-1, 0, 99)).toBe(0)
+
+    for (let i = 0; i <= 99; i++) {
+      expect(clamp(i, 0, 99)).toBe(i)
+    }
+
+    expect(clamp(Number.NaN, 1, 2)).toBe(Number.NaN)
+    expect(clamp(1, Number.NaN, 2)).toBe(Number.NaN)
+    expect(clamp(1, 2, Number.NaN)).toBe(Number.NaN)
+    expect(clamp(Number.NaN, Number.NaN, Number.NaN)).toBe(Number.NaN)
+
+    expect(clamp(1, 2, 2)).toBe(2)
+    expect(clamp(1, 1, 2)).toBe(1)
+    expect(clamp(2, 1, 2)).toBe(2)
+    expect(clamp(2, 2, 2)).toBe(2)
+
+    expect(clamp(1, 2, 0)).toBe(0)
+    expect(clamp(1, 0, 2)).toBe(1)
+
+    expect(clamp(-1, 2, 0)).toBe(0)
+    expect(clamp(-1, 0, 2)).toBe(0)
+
+    expect(clamp(3, 2, 0)).toBe(0)
+    expect(clamp(3, 0, 2)).toBe(2)
   })
 })
 
