@@ -4,11 +4,23 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
+import { JAM_BACKEND } from '@/constants/jam'
 import { fetchLog } from '@/lib/api/jam'
 import { getErrorReason } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
 
-const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
+const LEGACY_JMWALLETD_LOG_FILE_NAMES = ['jmwalletd_stdout.log', 'jmwalletd/current'] as const
+const STANDALONE_NG_LOG_FILE_NAMES = ['jmwalletd/current', 'jmwalletd_stdout.log'] as const
+
+const getPreferredLogFileNames = () => {
+  // Standalone-NG emits logs via the rolling "jmwalletd/current" file first.
+  return JAM_BACKEND === 'jam-standalone-ng' ? STANDALONE_NG_LOG_FILE_NAMES : LEGACY_JMWALLETD_LOG_FILE_NAMES
+}
+
+type LogQueryData = {
+  fileName: string
+  content: string
+}
 
 interface SimpleAlert {
   variant: ComponentProps<typeof Alert>['variant']
@@ -23,15 +35,16 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
   const authState = useStore(authStore, (state) => state.state)
   const { t } = useTranslation()
   const token = authState?.auth?.token
+  const preferredLogFileNames = getPreferredLogFileNames()
 
   const {
     refetch: logQueryRefetch,
     isFetched: logQueryIsFetched,
     data: logQueryData,
     error: logQueryError,
-  } = useQuery<string>({
+  } = useQuery<LogQueryData>({
     // Keep query identity stable across token refreshes to avoid flashing back to "loading".
-    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME],
+    queryKey: ['logs', 'jmwalletd', preferredLogFileNames[0], ...preferredLogFileNames],
     enabled: enabled && token !== undefined,
     retry: false,
     refetchOnWindowFocus: false,
@@ -43,13 +56,24 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     },
     // Keep previous data during refetch to prevent content flicker on slower networks.
     placeholderData: (previousData) => previousData,
-    queryFn: ({ signal }) => {
-      if (token === undefined) return Promise.resolve('')
-      return fetchLog({
-        token,
-        fileName: JMWALLETD_LOG_FILE_NAME,
-        signal,
-      }).then((response) => response.text())
+    queryFn: async ({ signal }) => {
+      if (token === undefined) return { fileName: preferredLogFileNames[0], content: '' }
+
+      let lastNotFoundError: Error | undefined
+      for (const fileName of preferredLogFileNames) {
+        try {
+          const response = await fetchLog({ token, fileName, signal })
+          return { fileName, content: await response.text() }
+        } catch (error) {
+          if (error instanceof Error && error.message.includes('status 404')) {
+            lastNotFoundError = error
+            continue
+          }
+          throw error
+        }
+      }
+
+      throw lastNotFoundError ?? new Error('No supported jmwalletd log file found.')
     },
   })
 
@@ -90,5 +114,11 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     await logQueryRefetch()
   }, [logQueryRefetch, token, enabled])
 
-  return { alert, isInitialized, logFileContent: logQueryData, refresh, fileName: JMWALLETD_LOG_FILE_NAME }
+  return {
+    alert,
+    isInitialized,
+    logFileContent: logQueryData?.content,
+    refresh,
+    fileName: logQueryData?.fileName ?? preferredLogFileNames[0],
+  }
 }

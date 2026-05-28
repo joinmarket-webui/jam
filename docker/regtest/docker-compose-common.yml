@@ -62,6 +62,14 @@ services:
       start_period: 60s
       start_interval: 3s
 
+  joinmarket_jam_standalone_ng:
+    build:
+      context: ./dockerfile-deps/joinmarket/webui-standalone-ng
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - 80 # nginx
+
   joinmarket_ng_native:
     image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main
     restart: unless-stopped

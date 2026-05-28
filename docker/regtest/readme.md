@@ -28,6 +28,9 @@ npm run dev
 # or start jam in development mode against the initialized jm-ng backend
 npm run jm-ng:dev
 
+# or start jam in development mode against standalone-ng
+npm run jm-standalone-ng:dev
+
 [...]
 
 # stop the regtest environment
@@ -50,7 +53,8 @@ npm run regtest:up
 npm run regtest:init
 ```
 
-Once the regtest environment is up and running you can start Jam with:
+The third JoinMarket container is exposed on port `30080`.
+The sixth JoinMarket container (standalone-ng) is exposed on port `34080`.
 
 ```sh
 npm run dev
@@ -64,6 +68,7 @@ Backend selection can also be controlled manually via environment variables:
 - `JAM_BACKEND=joinmarket-clientserver` with `JMWALLETD_API_PORT`, `JMWALLETD_WEBSOCKET_PORT`, and `JMOBWATCH_PORT`
 - `JAM_BACKEND=joinmarket-ng` with `JMWALLETD_API_PORT`, `JMWALLETD_WEBSOCKET_PORT`, and `JMOBWATCH_PORT`
 - `JAM_BACKEND=jam-standalone` with `JAM_API_PORT`
+- `JAM_BACKEND=jam-standalone-ng` with `JAM_API_PORT`
 
 ### Orderbook Access
 
@@ -103,6 +108,7 @@ This setup runs a mixed environment:
 
 - `joinmarket`, `joinmarket2`, `joinmarket3`: `joinmarket-clientserver`
 - `joinmarket4`, `joinmarket5`: `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`
+- `joinmarket6`: `ghcr.io/joinmarket-webui/jam-dev-standalone-ng:kishore-standalone-ng`
 - JoinMarket NG directory service: `ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main`
 - JoinMarket NG orderbook watcher: `ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main`
 
