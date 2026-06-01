@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeTag, statusTags } from './tags'
+import type { AddressSummary } from '@/context/JamWalletInfoContext'
+import type { Utxo } from '@/hooks/useQueryUtxos'
+import { normalizeTag, statusTags, utxoTags } from './tags'
+
+const t = (key: string) => `translated:${key}`
 
 describe('tags', () => {
   describe('normalizeTag', () => {
@@ -50,6 +54,48 @@ describe('tags', () => {
           displayValue: '2099-12-01',
           value: '2099-12-01',
           variant: 'default',
+        },
+      ])
+    })
+  })
+  describe('utxoTags', () => {
+    it('should derive status and label tags for normal UTXOs', () => {
+      expect(
+        utxoTags(
+          { address: 'bcrt1address', label: 'savings' } as Utxo,
+          { bcrt1address: { status: 'cj-out' } } as unknown as AddressSummary,
+          t,
+        ),
+      ).toStrictEqual([
+        {
+          displayValue: 'cj-out',
+          value: 'cj-out',
+          variant: 'cj-out',
+        },
+        {
+          displayValue: 'savings',
+          value: 'savings',
+          variant: 'default',
+        },
+      ])
+    })
+
+    it('should prefer fidelity-bond tag and ignore raw status for locked UTXOs', () => {
+      expect(
+        utxoTags(
+          {
+            address: 'bcrt1bond',
+            locktime: '2099-12',
+            path: "m/84'/1'/0'/0/2:4102444800",
+          } as Utxo,
+          { bcrt1bond: { status: 'reused [FROZEN]' } } as unknown as AddressSummary,
+          t,
+        ),
+      ).toStrictEqual([
+        {
+          displayValue: 'translated:jar_details.utxo_list.utxo_tag_fb',
+          value: 'bond',
+          variant: 'fidelity-bond',
         },
       ])
     })
