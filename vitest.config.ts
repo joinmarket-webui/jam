@@ -17,10 +17,10 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
         // enable coverage reports even if tests are failing
         reportOnFailure: true,
         thresholds: {
-          lines: 70,
-          functions: 60,
-          branches: 60,
-          statements: 70,
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
         },
       },
       projects: [
