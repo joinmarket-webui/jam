@@ -119,9 +119,9 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.2.0",
-    "@vitest/browser": "4.0.18",
-    "@vitest/browser-playwright": "4.0.18",
-    "@vitest/coverage-v8": "4.0.18",
+    "@vitest/browser": "4.1.6",
+    "@vitest/browser-playwright": "4.1.6",
+    "@vitest/coverage-v8": "4.1.6",
     "conventional-changelog": "7.2.0",
     "eslint": "9.39.4",
     "eslint-plugin-compat": "7.0.2",
@@ -139,7 +139,7 @@
     "typescript": "6.0.3",
     "typescript-eslint": "8.59.3",
     "vite": "7.3.3",
-    "vitest": "4.0.18"
+    "vitest": "4.1.6"
   },
   "overrides": {
     "storybook": "$storybook",
