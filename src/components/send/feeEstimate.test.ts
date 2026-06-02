@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react'
+import type { TFunction } from 'i18next'
 import { describe, expect, it } from 'vitest'
 import { TX_FEE_UNITS, toJamFeeConfigValues, type JamFeeConfigValues } from '@/lib/feeConfig'
 import { estimateMaxCollaboratorFee, useMiningFeeText } from './feeEstimate'
@@ -8,7 +9,8 @@ const baseFeeConfig: JamFeeConfigValues = toJamFeeConfigValues({
   max_cj_fee_rel: '0.005',
 })
 
-const t = (key: string, values?: Record<string, unknown>) => `${key}:${JSON.stringify(values ?? {})}`
+const t = ((key: string, values?: Record<string, unknown>) =>
+  `${key}:${JSON.stringify(values ?? {})}`) as unknown as TFunction<'translation', undefined>
 
 describe('estimateMaxCollaboratorFee', () => {
   it('uses relative fee when it is larger than absolute', () => {

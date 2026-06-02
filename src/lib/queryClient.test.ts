@@ -13,9 +13,10 @@ describe('queryClient', () => {
 
   it('should cap retry delay at 30 seconds', () => {
     const retryDelay = queryClient.getDefaultOptions().queries?.retryDelay
+    const getRetryDelay = retryDelay as (failureCount: number, error: Error) => number
 
-    expect(retryDelay?.(0, new Error('first'))).toBe(1_000)
-    expect(retryDelay?.(10, new Error('later'))).toBe(30_000)
+    expect(getRetryDelay(0, new Error('first'))).toBe(1_000)
+    expect(getRetryDelay(10, new Error('later'))).toBe(30_000)
   })
 })
 
@@ -33,19 +34,29 @@ describe('withQueryDelay', () => {
   })
 
   it('should wrap query functions without changing their result', async () => {
-    const queryFn = vi.fn(() => 'ok') as QueryFunction<string, readonly ['wallet']>
+    const queryFn = vi.fn(() => Promise.resolve('ok')) as unknown as QueryFunction<string, readonly ['wallet']>
     const wrapped = withQueryDelay(queryFn, {})!
 
     await expect(
-      wrapped({ queryKey: ['wallet'], signal: new AbortController().signal, meta: undefined }),
+      wrapped({
+        client: queryClient,
+        queryKey: ['wallet'],
+        signal: new AbortController().signal,
+        meta: undefined,
+      }),
     ).resolves.toBe('ok')
     expect(queryFn).toHaveBeenCalledTimes(1)
   })
 
   it('should apply before, after, and throttle delays', async () => {
-    const queryFn = vi.fn(() => 'delayed') as QueryFunction<string, readonly ['wallet']>
+    const queryFn = vi.fn(() => Promise.resolve('delayed')) as unknown as QueryFunction<string, readonly ['wallet']>
     const wrapped = withQueryDelay(queryFn, { delayBefore: 100, delayAfter: 50, throttle: 200 })!
-    const result = wrapped({ queryKey: ['wallet'], signal: new AbortController().signal, meta: undefined })
+    const result = wrapped({
+      client: queryClient,
+      queryKey: ['wallet'],
+      signal: new AbortController().signal,
+      meta: undefined,
+    })
 
     await vi.advanceTimersByTimeAsync(99)
     expect(queryFn).not.toHaveBeenCalled()
@@ -62,10 +73,14 @@ describe('withQueryDelay', () => {
 
 describe('withMutationDelay', () => {
   it('should wrap mutation functions without changing their result', async () => {
-    const mutationFn = vi.fn((value: number) => value + 1) as MutationFunction<number, number>
+    const mutationFn = vi.fn((value: number) => Promise.resolve(value + 1)) as unknown as MutationFunction<
+      number,
+      number
+    >
     const wrapped = withMutationDelay(mutationFn, {})
+    const context = { client: queryClient, meta: undefined }
 
-    await expect(wrapped(41, {})).resolves.toBe(42)
-    expect(mutationFn).toHaveBeenCalledWith(41, {})
+    await expect(wrapped(41, context)).resolves.toBe(42)
+    expect(mutationFn).toHaveBeenCalledWith(41, context)
   })
 })

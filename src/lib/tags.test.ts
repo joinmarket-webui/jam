@@ -1,9 +1,10 @@
+import type { TFunction } from 'i18next'
 import { describe, it, expect } from 'vitest'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { normalizeTag, statusTags, utxoTags } from './tags'
 
-const t = (key: string) => `translated:${key}`
+const t = ((key: string) => `translated:${key}`) as unknown as TFunction<'translation', undefined>
 
 describe('tags', () => {
   describe('normalizeTag', () => {
@@ -87,7 +88,7 @@ describe('tags', () => {
             address: 'bcrt1bond',
             locktime: '2099-12',
             path: "m/84'/1'/0'/0/2:4102444800",
-          } as Utxo,
+          } as unknown as Utxo,
           { bcrt1bond: { status: 'reused [FROZEN]' } } as unknown as AddressSummary,
           t,
         ),

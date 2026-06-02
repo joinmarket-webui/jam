@@ -12,6 +12,16 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
         LC_ALL: 'en_US.UTF-8',
       },
       coverage: {
+        include: ['src/lib/**/*.{ts,tsx}', 'src/constants/**/*.{ts,tsx}', 'src/components/ui/**/*.{ts,tsx}'],
+        exclude: [
+          '**/*.test.{ts,tsx}',
+          '**/*.stories.{ts,tsx}',
+          'src/components/ui/QrScannerDialog.tsx',
+          'src/components/ui/sidebar.tsx',
+          'src/components/ui/use-sidebar.tsx',
+          'src/constants/onboarding.ts',
+          'src/lib/api/**',
+        ],
         // 'json-summary' is required for ci coverage report
         reporter: ['text', 'json', 'json-summary'],
         // enable coverage reports even if tests are failing
