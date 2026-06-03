@@ -379,6 +379,7 @@ describe('scrollToTop', () => {
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
     vi.useRealTimers()
   })

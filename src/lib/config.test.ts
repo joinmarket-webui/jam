@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
 import { authStore } from '@/store/authStore'
 import { buildAuthHeader, buildAuthHeaderMap, createApiClient, unauthorizedResponseInterceptor } from './config'
 import { queryClient } from './queryClient'
@@ -107,9 +107,10 @@ describe('createApiClient', () => {
 })
 
 describe('unauthorizedResponseInterceptor', () => {
-  const queryClientClearSpy = vi.spyOn(queryClient, 'clear')
+  let queryClientClearSpy: MockInstance<typeof queryClient.clear>
 
   beforeEach(() => {
+    queryClientClearSpy = vi.spyOn(queryClient, 'clear')
     mocks.createClient.mockReturnValue(createMockClient())
     mocks.requestUse.mockReset()
     mocks.responseUse.mockReset()
@@ -120,6 +121,10 @@ describe('unauthorizedResponseInterceptor', () => {
       auth: { token: 'tok', refresh_token: 'ref' },
     })
     queryClientClearSpy.mockReset()
+  })
+
+  afterEach(() => {
+    queryClientClearSpy.mockRestore()
   })
 
   it('should clear auth on invalid-token 401', () => {

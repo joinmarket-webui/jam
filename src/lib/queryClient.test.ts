@@ -23,9 +23,11 @@ describe('queryClient', () => {
 describe('withQueryDelay', () => {
   beforeEach(() => {
     vi.useFakeTimers()
+    vi.spyOn(globalThis.performance, 'now').mockImplementation(() => Date.now())
   })
 
   afterEach(() => {
+    vi.restoreAllMocks()
     vi.useRealTimers()
   })
 
