@@ -69,6 +69,7 @@ services:
     restart: unless-stopped
     expose:
       - 80 # nginx
+      - 28183 # jmwalletd api
 
   joinmarket_ng_native:
     image: ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main

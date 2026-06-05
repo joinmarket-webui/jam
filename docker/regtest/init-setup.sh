@@ -28,6 +28,9 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket4 --unmatured --blocks 50
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket5 --unmatured --blocks 50
 
+# fund wallet in senary container (JoinMarket standalone-ng).
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket6 --unmatured --blocks 50
+
 # fund addresses of seed 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 # this is useful if you "import an existing wallet" and verify rescanning the chain works as expected.
 dummy_wallet_address1='bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk' # 1st address of jar A (m/84'/1'/0'/0/0)
@@ -93,3 +96,6 @@ start_maker "https://localhost:31183" "Satoshi.jmdat" "test"
 
 msg "Attempt to start maker service for wallet $wallet_name in quinary container.."
 start_maker "https://localhost:32183" "Satoshi.jmdat" "test"
+
+msg "Attempt to start maker service for wallet $wallet_name in senary container.."
+start_maker "https://localhost:34183" "Satoshi.jmdat" "test"

@@ -6,19 +6,16 @@ import { type ServerOptions, type UserConfig, defineConfig } from 'vite'
 const BACKEND_JOINMARKET_CLIENTSERVER_NATIVE = 'joinmarket-clientserver'
 const BACKEND_JOINMARKET_NG_NATIVE = 'joinmarket-ng'
 const BACKEND_JAM_STANDALONE = 'jam-standalone'
-const BACKEND_JAM_STANDALONE_NG = 'jam-standalone-ng'
 
 type SupportedBackend =
   | typeof BACKEND_JOINMARKET_CLIENTSERVER_NATIVE
   | typeof BACKEND_JOINMARKET_NG_NATIVE
   | typeof BACKEND_JAM_STANDALONE
-  | typeof BACKEND_JAM_STANDALONE_NG
 
 const SUPPORTED_BACKENDS: SupportedBackend[] = [
   BACKEND_JOINMARKET_CLIENTSERVER_NATIVE,
   BACKEND_JOINMARKET_NG_NATIVE,
   BACKEND_JAM_STANDALONE,
-  BACKEND_JAM_STANDALONE_NG,
 ]
 
 function isSupportedBackend(val: unknown): val is SupportedBackend {
@@ -68,10 +65,6 @@ export default defineConfig((config): UserConfig => {
 
   return {
     plugins: [react(), tailwindcss()],
-    define: {
-      // Expose backend selection to the client for standalone log ordering.
-      'import.meta.env.VITE_JAM_BACKEND': JSON.stringify(JAM_BACKEND),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
@@ -107,15 +100,6 @@ const createServer = (backend: SupportedBackend): ServerOptions => {
         throw new Error('Unsupported port: Please specify a valid JAM_API_PORT')
       }
       return createServerConfigJamStandalone({
-        ...createJamStandloneConfigEnvironmentVariables(Number(JAM_API_PORT)),
-        ...process.env,
-      })
-    }
-    case BACKEND_JAM_STANDALONE_NG: {
-      if (JAM_API_PORT === undefined) {
-        throw new Error('Unsupported port: Please specify a valid JAM_API_PORT')
-      }
-      return createServerConfigJamStandaloneNg({
         ...createJamStandloneConfigEnvironmentVariables(Number(JAM_API_PORT)),
         ...process.env,
       })
@@ -213,37 +197,6 @@ const createServerConfigJamStandalone = (config: BackendConfigEnvironmentVariabl
     throw new Error('Unsupported port: Please specify a valid JAM_API_PORT')
   }
 
-  return {
-    proxy: {
-      '/api': {
-        target: `http://127.0.0.1:${config.JMWALLETD_API_PORT}`,
-        changeOrigin: true,
-        secure: false,
-      },
-      '/obwatch': {
-        target: `http://127.0.0.1:${config.JMOBWATCH_PORT}`,
-        changeOrigin: true,
-        secure: false,
-      },
-      '/jmws': {
-        target: `http://127.0.0.1:${config.JMWALLETD_WEBSOCKET_PORT}`,
-        changeOrigin: true,
-        secure: false,
-        ws: true,
-      },
-      '/jam': {
-        target: `http://127.0.0.1:${config.JAM_API_PORT}`,
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  }
-}
-
-/**
- * Server config for "jam-standalone-ng" (Jam Docker image for joinmarket-ng).
- */
-const createServerConfigJamStandaloneNg = (config: BackendConfigEnvironmentVariables): ServerOptions => {
   return {
     proxy: {
       '/api': {

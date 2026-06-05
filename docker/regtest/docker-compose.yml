@@ -147,6 +147,7 @@ services:
       NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
     ports:
       - '34080:80'
+      - '34183:28183' # exposed for "init setup" routine
     volumes:
       - 'joinmarket6_ng_datadir:/root/.joinmarket-ng'
     depends_on:
