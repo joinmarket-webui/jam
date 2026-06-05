@@ -52,6 +52,7 @@ npm run regtest:up
 # (optional) fund wallets and start maker in secondary and tertiary containers
 npm run regtest:init
 ```
+
 Once the regtest environment is up and running you can start Jam with:
 
 ```sh
