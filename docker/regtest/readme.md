@@ -52,9 +52,7 @@ npm run regtest:up
 # (optional) fund wallets and start maker in secondary and tertiary containers
 npm run regtest:init
 ```
-
-The third JoinMarket container is exposed on port `30080`.
-The sixth JoinMarket container (standalone-ng) is exposed on port `34080`.
+Once the regtest environment is up and running you can start Jam with:
 
 ```sh
 npm run dev
@@ -68,7 +66,6 @@ Backend selection can also be controlled manually via environment variables:
 - `JAM_BACKEND=joinmarket-clientserver` with `JMWALLETD_API_PORT`, `JMWALLETD_WEBSOCKET_PORT`, and `JMOBWATCH_PORT`
 - `JAM_BACKEND=joinmarket-ng` with `JMWALLETD_API_PORT`, `JMWALLETD_WEBSOCKET_PORT`, and `JMOBWATCH_PORT`
 - `JAM_BACKEND=jam-standalone` with `JAM_API_PORT`
-- `JAM_BACKEND=jam-standalone-ng` with `JAM_API_PORT`
 
 ### Orderbook Access
 
