@@ -204,13 +204,35 @@ export const delayedPromise = async (delay: Milliseconds | undefined = 210) => {
   await new Promise<void>((resolve) => setTimeout(resolve, delay))
 }
 
+/**
+ * When the clamp function is called, the following steps are taken:
+ *
+ * - If any argument is NaN, return NaN.
+ * - Let max be %Math_max%(value, lower).
+ * - Let min be %Math_min%(max, upper).
+ * - Return min.
+ */
+export const clamp = (value: number, lower: number, upper: number) => {
+  if (Number.isNaN(value) || Number.isNaN(lower) || Number.isNaN(upper)) return Number.NaN
+  return Math.min(Math.max(value, lower), upper)
+}
+
 // not cryptographically random; returned number is in range [min, max] (both inclusive);
 export const pseudoRandomInteger = (min: number, max: number) => {
   return Math.round(pseudoRandomFloat(min, max))
 }
 // not cryptographically random; returned number is in range [min, max] (both inclusive);
 export const pseudoRandomFloat = (min: number, max: number) => {
-  return Math.max(min, Math.min(Math.random() * (max - min) + min, max))
+  return clamp(Math.random() * (max - min) + min, min, max)
+}
+
+export const median = (values: number[]): number | null => {
+  if (values.length === 0) return null
+  // eslint-disable-next-line unicorn/no-array-sort -- toSorted() not supported in target browsers
+  const sorted = [...values].sort((a, b) => a - b)
+  const middleIndex = Math.floor(sorted.length / 2)
+  const median = sorted.length % 2 !== 0 ? sorted[middleIndex] : (sorted[middleIndex - 1] + sorted[middleIndex]) / 2
+  return Number.isFinite(median) ? median : null
 }
 
 /**
