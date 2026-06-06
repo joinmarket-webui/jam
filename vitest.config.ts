@@ -40,6 +40,10 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
               instances: [{ browser: 'chromium' }],
             },
             setupFiles: ['.storybook/vitest.setup.ts'],
+            // Set `isolate` to `false` to prevent frequent storybook errors.
+            // ("Failed to fetch dynamically imported module" and "Cannot connect to the iframe")
+            // See: https://storybook.js.org/docs/writing-tests/integrations/vitest-addon/index#why-do-my-tests-fail-in-ci-with-failed-to-fetch-dynamically-imported-module-or-cannot-connect-to-the-iframe
+            isolate: false,
           },
         },
         {
