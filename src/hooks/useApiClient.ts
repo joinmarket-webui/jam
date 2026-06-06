@@ -2,4 +2,4 @@ import { createApiClient } from '@/lib/config'
 
 const client = createApiClient()
 
-export const useApiClient = () => client
+export const useApiClient: () => ReturnType<typeof createApiClient> = () => client
