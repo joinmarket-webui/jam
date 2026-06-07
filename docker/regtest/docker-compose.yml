@@ -146,8 +146,7 @@ services:
       NETWORK_CONFIG__NETWORK: testnet
       NETWORK_CONFIG__BITCOIN_NETWORK: regtest
       NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
-      TAKER__MINIMUM_MAKERS: 1 # necessary to do coinjoins with this regtest setup
-      TAKER__BONDLESS_REQUIRE_ZERO_FEE: 'false' # allow bondless makers to charge fees in regtest
+      TAKER__MINIMUM_MAKERS: 2 # necessary to do coinjoins with this regtest setup
       TAKER__MAKER_TIMEOUT_SEC: 30 # easier testing of maker timeouts on regtest
     ports:
       - '34080:80'

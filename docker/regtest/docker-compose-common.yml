@@ -92,7 +92,7 @@ services:
       TOR__CONTROL_HOST: tor
       TOR__CONTROL_PORT: 9051
       TOR__COOKIE_PATH: /var/lib/tor/control_auth_cookie
-      TAKER__MINIMUM_MAKERS: 1 # necessary to do coinjoins with this regtest setup
+      TAKER__MINIMUM_MAKERS: 2 # necessary to do coinjoins with this regtest setup
       TAKER__MAKER_TIMEOUT_SEC: 30 # easier testing of maker timeouts on regtest
     expose:
       - 8000 # obwatch
@@ -133,7 +133,7 @@ services:
       TOR__CONTROL_HOST: tor
       TOR__CONTROL_PORT: 9051
       TOR__COOKIE_PATH: /var/lib/tor/control_auth_cookie
-      TAKER__MINIMUM_MAKERS: 1 # necessary to do coinjoins with this regtest setup
+      TAKER__MINIMUM_MAKERS: 2 # necessary to do coinjoins with this regtest setup
     expose:
       - 8000 # obwatch
       - 28183 # jmwalletd api
