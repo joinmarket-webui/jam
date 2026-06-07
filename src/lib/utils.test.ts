@@ -2,10 +2,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import {
   cn,
+  debounce,
   walletDisplayName,
+  walletDisplayNameToFileName,
+  sortWallets,
+  noop,
   setIntervalDebounced,
   satsToBtc,
   tryBtcToSat,
+  percentageToFactorString,
   percentageToFactor,
   isValidNumber,
   isValidInteger,
@@ -22,6 +27,7 @@ import {
   delayedPromise,
   pseudoRandomInteger,
   pseudoRandomFloat,
+  scrollToTop,
   time,
   shortenStringMiddle,
   median,
@@ -71,6 +77,37 @@ describe('walletDisplayName', () => {
 
   it('should use the correct wallet file extension', () => {
     expect(JM_WALLET_FILE_EXTENSION).toBe('.jmdat')
+  })
+
+  it('should derive wallet file names from display names', () => {
+    expect(walletDisplayNameToFileName('cold-storage')).toBe('cold-storage.jmdat')
+  })
+})
+
+describe('sortWallets', () => {
+  it('should sort wallet names alphabetically without mutating input', () => {
+    const wallets: WalletFileName[] = ['zeta.jmdat', 'alpha.jmdat', 'beta.jmdat']
+
+    expect(sortWallets(wallets)).toEqual(['alpha.jmdat', 'beta.jmdat', 'zeta.jmdat'])
+    expect(wallets).toEqual(['zeta.jmdat', 'alpha.jmdat', 'beta.jmdat'])
+  })
+
+  it('should pin the active wallet before sorted inactive wallets', () => {
+    expect(sortWallets(['zeta.jmdat', 'alpha.jmdat', 'beta.jmdat'], 'beta.jmdat')).toEqual([
+      'beta.jmdat',
+      'alpha.jmdat',
+      'zeta.jmdat',
+    ])
+  })
+
+  it('should ignore active wallets that are not present', () => {
+    expect(sortWallets(['zeta.jmdat', 'alpha.jmdat'], 'missing.jmdat')).toEqual(['alpha.jmdat', 'zeta.jmdat'])
+  })
+})
+
+describe('noop', () => {
+  it('should resolve without a value', async () => {
+    await expect(noop()).resolves.toBeUndefined()
   })
 })
 
@@ -150,6 +187,44 @@ describe('setIntervalDebounced', () => {
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(callback).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('debounce', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.resetAllMocks()
+    vi.useRealTimers()
+  })
+
+  it('should delay callback execution and resolve with its result', async () => {
+    const callback = vi.fn((value: number) => value * 2)
+    const debounced = debounce(callback, 100)
+    const result = debounced(21)
+
+    expect(callback).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(100)
+
+    await expect(result).resolves.toBe(42)
+    expect(callback).toHaveBeenCalledWith(21)
+  })
+
+  it('should cancel earlier pending callback calls', async () => {
+    const callback = vi.fn((value: string) => value)
+    const debounced = debounce(callback, 100)
+
+    void debounced('first')
+    const result = debounced('second')
+
+    await vi.advanceTimersByTimeAsync(100)
+
+    await expect(result).resolves.toBe('second')
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenCalledWith('second')
   })
 })
 
@@ -275,6 +350,11 @@ describe('UNKNOWN_VERSION', () => {
 })
 
 describe('percentageToFactor', () => {
+  it('should expose the formatted factor string', () => {
+    expect(percentageToFactorString(12.345678)).toBe('0.123457')
+    expect(percentageToFactorString(33.333333, 2)).toBe('0.33')
+  })
+
   it('should correctly convert percentage to factor', () => {
     expect(percentageToFactor(100)).toBe(1)
     expect(percentageToFactor(50)).toBe(0.5)
@@ -292,6 +372,31 @@ describe('percentageToFactor', () => {
   it('should use default precision of 6', () => {
     expect(percentageToFactor(12.345678)).toBe(0.123457)
     expect(percentageToFactor(0.001)).toBe(0.00001)
+  })
+})
+
+describe('scrollToTop', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+    vi.useRealTimers()
+  })
+
+  it('should scroll the window to the top after a short delay', async () => {
+    const scrollTo = vi.fn()
+    vi.stubGlobal('scrollTo', scrollTo)
+
+    scrollToTop({ behavior: 'auto' })
+
+    expect(scrollTo).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(21)
+
+    expect(scrollTo).toHaveBeenCalledWith({ behavior: 'auto', top: 0, left: 0 })
   })
 })
 
