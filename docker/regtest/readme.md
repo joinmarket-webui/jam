@@ -25,11 +25,11 @@ npm run regtest:mine
 # start jam in development mode against joinmarket-clientserver primary backend
 npm run dev
 
-# or start jam in development mode against the initialized jm-ng backend
-npm run jm-ng:dev
+# or start jam in development mode against the initialized joinmarket-ng backend
+npm run dev:ng:native
 
-# or start jam in development mode against standalone-ng
-npm run jm-standalone-ng:dev
+# or start jam in development mode against jam-standalone with joinmarket-ng backend
+npm run dev:ng:jam-standalone
 
 [...]
 
@@ -58,8 +58,8 @@ Once the regtest environment is up and running you can start Jam with:
 ```sh
 npm run dev
 
-# optionally switch to the initialized jm-ng backend
-npm run jm-ng:dev
+# optionally switch to the initialized joinmarket-ng backend
+npm run dev:ng:native
 ```
 
 Backend selection can also be controlled manually via environment variables:
@@ -72,11 +72,11 @@ Backend selection can also be controlled manually via environment variables:
 
 There are two easy ways to access orderbook data in this setup:
 
-- Through Jam itself: start `npm run dev` or `npm run jm-ng:dev` and use the Orderbook page in the UI.
+- Through Jam itself: start `npm run dev` or `npm run dev:ng:native` and use the Orderbook page in the UI.
 - Through the NG orderbook watcher directly: `http://localhost:31800`.
 
 For API-level access, Jam proxies `/obwatch` based on `JMOBWATCH_PORT`.
-For example, with `npm run jm-ng:dev` it targets port `31800`.
+For example, with `npm run dev:ng:native` it targets port `31800`.
 
 ### Stop
 

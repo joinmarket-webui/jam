@@ -12,15 +12,15 @@ For a complete development environment you need a local JoinMarket instance that
 
 Jam v2 can talk directly to a separately running `jmwalletd` / orderbook watcher from `joinmarket-ng`. You do not need to run the Jam regtest compose or the reference implementation for this workflow.
 
-### Local dev against the Jam regtest jm-ng services
+### Local dev against the Jam regtest joinmarket-ng services
 
-If you are using Jam's own regtest environment, the initialized jm-ng services are exposed on specific host ports. In that case run:
+If you are using Jam's own regtest environment, the initialized joinmarket-ng services are exposed on specific host ports. In that case run:
 
 ```bash
-npm run jm-ng:dev
+npm run dev:ng:native
 ```
 
-If your separately running jm-ng services use different ports, you can override them directly:
+If your separately running joinmarket-ng services use different ports, you can override them directly:
 
 ```bash
 JAM_BACKEND=joinmarket-ng \
