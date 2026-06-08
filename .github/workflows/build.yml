@@ -58,5 +58,5 @@ jobs:
       - name: Upload coverage report
         # Set if: always() to also generate the report if tests are failing
         # Only works if you set `reportOnFailure: true` in vite config
-        if: always() 
-        uses:  davelosert/vitest-coverage-report-action@v2
+        if: ${{ always() && hashFiles('coverage/coverage-summary.json') != '' }}
+        uses: davelosert/vitest-coverage-report-action@v2
