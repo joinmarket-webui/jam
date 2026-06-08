@@ -9,7 +9,7 @@ import type { AmountSats, BitcoinAddress } from '@/types/global'
 const DEFAULT_ERROR_CORRECTION: QRCode.QRCodeErrorCorrectionLevel = 'high'
 const DEFAULT_IMAGE_MEDIA_TYPE: QRCode.QRCodeDataURLType = 'image/png'
 
-interface BitcoinQRProps {
+interface BitcoinAddressQrCodeProps {
   className?: string
   width: number
   address: BitcoinAddress
@@ -18,14 +18,14 @@ interface BitcoinQRProps {
   type?: QRCode.QRCodeDataURLType
 }
 
-export const BitcoinQR = ({
+export const BitcoinAddressQrCode = ({
   className,
   width,
   address,
   amount,
   errorCorrectionLevel = DEFAULT_ERROR_CORRECTION,
   type = DEFAULT_IMAGE_MEDIA_TYPE,
-}: BitcoinQRProps) => {
+}: BitcoinAddressQrCodeProps) => {
   const { t } = useTranslation()
   const [data, setData] = useState<string>()
   const [imageDataUrl, setImageDataUrl] = useState<string>()
