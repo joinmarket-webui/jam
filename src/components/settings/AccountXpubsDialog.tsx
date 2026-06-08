@@ -3,7 +3,7 @@ import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/re
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'
-import { AlertTriangleIcon, ClockIcon, CopyIcon, CheckIcon, AlertCircleIcon } from 'lucide-react'
+import { AlertTriangleIcon, ClockIcon, CopyIcon, CheckIcon, AlertCircleIcon, HatGlassesIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -27,10 +27,12 @@ import type { JarIndex, Milliseconds, MnemonicPhrase, WithRequiredProperty } fro
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
+import { BitcoinXpubQrCode } from '../ui/jam/BitcoinQrCode'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { Spinner } from '../ui/spinner'
 import { PasswordVerificationForm } from '../utils/PasswordVerificationForm'
 
+const QRCODE_WIDTH = 320
 const HD_PATH_PURPOSE: number = 84
 
 type Xpub = {
@@ -94,6 +96,71 @@ async function deriveAccountXpubsFromSeed(
   })
 }
 
+interface AccountXpubItemProps {
+  xpub: Xpub
+  accountNameAndLabel: string
+}
+
+const AccountXpubItem = ({ xpub, accountNameAndLabel }: AccountXpubItemProps) => {
+  const { t } = useTranslation()
+  const [showQrCode, setShowQrCode] = useState(false)
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="bg-muted flex w-full items-center gap-2 rounded-md p-2">
+        <div className="flex-1 font-mono text-xs break-all select-all">{xpub.xpub}</div>
+        <CopyButton
+          className={buttonVariants({
+            size: 'icon',
+            variant: 'ghost',
+            className: 'shrink-0',
+          })}
+          value={xpub.xpub}
+          text={<CopyIcon className="h-3 w-3" />}
+          successText={<CheckIcon className="h-3 w-3 text-green-500" />}
+          title={t('settings.xpubs_modal.button_copy_title', {
+            account: accountNameAndLabel,
+          })}
+          aria-label={t('settings.xpubs_modal.button_copy_title', {
+            account: accountNameAndLabel,
+          })}
+          onSuccess={() =>
+            toast.success(
+              t('settings.xpubs_modal.alert_success_account_xpub_copied_message', {
+                account: accountNameAndLabel,
+              }),
+            )
+          }
+          onError={(error) =>
+            toast.error(
+              t('global.errors.error_copy_to_clipboard_failed', {
+                reason: (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown'),
+              }),
+            )
+          }
+        />
+      </div>
+      {showQrCode ? (
+        <BitcoinXpubQrCode xpub={xpub.xpub} width={QRCODE_WIDTH} className="animate-in fade-in duration-1000" />
+      ) : (
+        <div
+          className={cn('flex items-center justify-center border')}
+          style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
+        >
+          <Button variant="outline" size="lg" onClick={() => setShowQrCode(true)}>
+            <HatGlassesIcon />
+            {
+              /*TODO: i18n*/ t('settings.account.xpubs.button_reveal_xpub_qrcode', {
+                defaultValue: 'Reveal xpub QR-Code',
+              })
+            }
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface AccountXpubsAccordionProps {
   values: AccountXpubInfo[]
 }
@@ -126,42 +193,7 @@ export const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) =>
               </Label>
               {account.xpubs.map((xpub, index) => {
                 const accountNameAndLabel = `${account.accountName} (${accountLabel})`
-                return (
-                  <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
-                    <div className="flex-1 font-mono text-xs break-all select-all">{xpub.xpub}</div>
-                    <CopyButton
-                      className={buttonVariants({
-                        size: 'icon',
-                        variant: 'ghost',
-                        className: 'shrink-0',
-                      })}
-                      value={xpub.xpub}
-                      text={<CopyIcon className="h-3 w-3" />}
-                      successText={<CheckIcon className="h-3 w-3 text-green-500" />}
-                      title={t('settings.xpubs_modal.button_copy_title', {
-                        account: accountNameAndLabel,
-                      })}
-                      aria-label={t('settings.xpubs_modal.button_copy_title', {
-                        account: accountNameAndLabel,
-                      })}
-                      onSuccess={() =>
-                        toast.success(
-                          t('settings.xpubs_modal.alert_success_account_xpub_copied_message', {
-                            account: accountNameAndLabel,
-                          }),
-                        )
-                      }
-                      onError={(error) =>
-                        toast.error(
-                          t('global.errors.error_copy_to_clipboard_failed', {
-                            reason:
-                              (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown'),
-                          }),
-                        )
-                      }
-                    />
-                  </div>
-                )
+                return <AccountXpubItem key={index} xpub={xpub} accountNameAndLabel={accountNameAndLabel} />
               })}
             </AccordionContent>
           </AccordionItem>

@@ -139,9 +139,11 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 disabled={getAddressMutation.isPending}
               >
                 <HatGlassesIcon />
-                {t('receive.button_reveal_address', {
-                  defaultValue: 'Reveal address',
-                })}
+                {
+                  /*TODO: i18n*/ t('receive.button_reveal_address', {
+                    defaultValue: 'Reveal address',
+                  })
+                }
               </Button>
             </div>
           ) : (
