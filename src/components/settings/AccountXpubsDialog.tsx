@@ -98,7 +98,7 @@ interface AccountXpubsAccordionProps {
   values: AccountXpubInfo[]
 }
 
-const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
+export const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
   const { t } = useTranslation()
   return (
     <Accordion type="single" collapsible className="w-full">

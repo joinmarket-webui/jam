@@ -13,7 +13,7 @@ type Story = StoryObj<typeof Avatar>
 export const WithImage: Story = {
   render: (args) => (
     <Avatar {...args}>
-      <AvatarImage src="https://i.pravatar.cc/100" alt="Avatar" />
+      <AvatarImage src="/favicon.svg" alt="Avatar" />
       <AvatarFallback>AB</AvatarFallback>
     </Avatar>
   ),

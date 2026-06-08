@@ -11,7 +11,9 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig(
-  { ignores: ['dist', './.storybook/**', './storybook-static/**'] },
+  {
+    ignores: ['dist', './.storybook/**', './storybook-static/**', 'public/mockServiceWorker.js'],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
