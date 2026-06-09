@@ -23,6 +23,7 @@ initialize({
   serviceWorker: {
     url: mswServiceWorkerUrl,
   },
+  quiet: true,
 })
 
 const locales = [
