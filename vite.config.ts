@@ -71,7 +71,7 @@ export default defineConfig((config): UserConfig => {
       {
         name: 'delete-service-worker',
         async writeBundle() {
-          await fs.rm('dist/mockServiceWorker.js', { recursive: true })
+          await fs.rm('dist/mockServiceWorker.js', { force: true })
         },
       },
     ],
