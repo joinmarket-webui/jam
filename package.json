@@ -27,6 +27,7 @@
     "storybook": "npm run storybook:up",
     "storybook:up": "storybook dev -p 6006",
     "storybook:build": "storybook build",
+    "storybook:serve-static": "cd storybook-static/ && python3 -m http.server",
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:storybook": "vitest run --project storybook",
