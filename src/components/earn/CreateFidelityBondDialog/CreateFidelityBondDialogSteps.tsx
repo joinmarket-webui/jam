@@ -11,11 +11,11 @@ import {
 } from 'lucide-react'
 import { Trans } from 'react-i18next'
 import { toast } from 'sonner'
-import { BitcoinQR } from '@/components/receive/BitcoinQR'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
+import { BitcoinAddressQrCode } from '@/components/ui/jam/BitcoinQrCode'
 import { CopyButton } from '@/components/ui/jam/CopyButton'
 import { Label } from '@/components/ui/label'
 import {
@@ -435,7 +435,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             address && (
               <div className="space-y-4">
                 <div className="dark:bg-muted/30 flex justify-center rounded-lg bg-white p-4">
-                  <BitcoinQR address={address} amount={totalAmount} width={200} />
+                  <BitcoinAddressQrCode address={address} amount={totalAmount} width={200} />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">{t('earn.fidelity_bond.review_inputs.label_address')}</Label>

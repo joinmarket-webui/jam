@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { type ServerOptions, type UserConfig, defineConfig } from 'vite'
 
@@ -64,7 +65,16 @@ export default defineConfig((config): UserConfig => {
   const buildOrPreview = config.command === 'build' || config.isPreview === true
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss({ optimize: buildOrPreview }),
+      {
+        name: 'delete-service-worker',
+        async writeBundle() {
+          await fs.rm('dist/mockServiceWorker.js', { recursive: true })
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

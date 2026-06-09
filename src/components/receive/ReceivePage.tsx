@@ -20,8 +20,8 @@ import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
+import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
 import { CopyButton } from '../ui/jam/CopyButton'
-import { BitcoinQR } from './BitcoinQR'
 import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320
@@ -121,7 +121,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
           {getAddressMutation.isPending ? (
             <Skeleton style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }} />
           ) : getAddressMutation.data?.address ? (
-            <BitcoinQR
+            <BitcoinAddressQrCode
               className="animate-in fade-in duration-1000"
               address={getAddressMutation.data.address}
               amount={amount}
@@ -139,9 +139,11 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 disabled={getAddressMutation.isPending}
               >
                 <HatGlassesIcon />
-                {t('receive.button_reveal_address', {
-                  defaultValue: 'Reveal address',
-                })}
+                {
+                  /*TODO: i18n*/ t('receive.button_reveal_address', {
+                    defaultValue: 'Reveal address',
+                  })
+                }
               </Button>
             </div>
           ) : (

@@ -1,14 +1,22 @@
 import { Suspense, useEffect } from 'react'
 import type { Preview } from '@storybook/react-vite'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { initialize, mswLoader } from 'msw-storybook-addon'
 import { ThemeProvider } from 'next-themes'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter } from 'react-router-dom'
 import { CoreTypes, GlobalTypes } from 'storybook/internal/csf'
 import { DEFAULT_VIEWPORT, MINIMAL_VIEWPORTS, INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { JamDisplayContextProvider } from '../src/context/JamDisplayContextProvider'
+import { JamWalletInfoContextProvider } from '../src/context/JamWalletInfoContextProvider'
 import i18n from '../src/i18n/config'
 import '../src/index.css'
+import mswHandlers from './msw-handlers'
+
+// Initialize MSW (https://github.com/mswjs/msw-storybook-addon)
+initialize({
+  onUnhandledRequest: 'bypass',
+})
 
 const locales = [
   { value: 'en', title: 'en' },
@@ -69,7 +77,12 @@ const preview: Preview = {
     viewport: {
       options: { ...MINIMAL_VIEWPORTS, ...INITIAL_VIEWPORTS },
     },
+    msw: {
+      handlers: mswHandlers,
+    },
   },
+  // Provide the MSW addon loader globally
+  loaders: [mswLoader],
 }
 
 const withTheme = (Story: React.ComponentType, context: GlobalContext) => {
@@ -114,7 +127,7 @@ export const withQueryClient = (Story: React.ComponentType) => {
   )
 }
 
-export const withJamDisplayContent = (Story: React.ComponentType) => {
+export const withJamDisplayContext = (Story: React.ComponentType) => {
   return (
     <JamDisplayContextProvider>
       <Story />
@@ -122,7 +135,22 @@ export const withJamDisplayContent = (Story: React.ComponentType) => {
   )
 }
 
+export const withJamWalletInfoContext = (Story: React.ComponentType) => {
+  return (
+    <JamWalletInfoContextProvider walletFileName={'Satoshi.jmdat'}>
+      <Story />
+    </JamWalletInfoContextProvider>
+  )
+}
+
 // export decorators for storybook to wrap your stories in
-export const decorators = [withTheme, withMemoryRouter, withI18next, withQueryClient, withJamDisplayContent]
+export const decorators = [
+  withTheme,
+  withMemoryRouter,
+  withI18next,
+  withJamWalletInfoContext,
+  withQueryClient,
+  withJamDisplayContext,
+]
 
 export default preview
