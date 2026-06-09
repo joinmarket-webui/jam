@@ -1,7 +1,7 @@
 name: Build Storybook
 
 on:
-  push:
+  pull_request:
     branches:
       - devel
   workflow_dispatch:
@@ -26,4 +26,4 @@ jobs:
         run: npm clean-install --no-audit --no-fund
 
       - name: Build Storybook
-        run: npm run storybook:Build
+        run: npm run storybook:build
