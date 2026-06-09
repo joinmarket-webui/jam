@@ -35,7 +35,7 @@ jobs:
         run: npm clean-install --no-audit --no-fund
 
       - name: Build Storybook
-        run: npm run storybook:build
+        run: npm run storybook:build-gh-pages
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
