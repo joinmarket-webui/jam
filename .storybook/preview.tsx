@@ -1,3 +1,4 @@
+/// <reference types="vite/types/importMeta.d.ts" />
 import { Suspense, useEffect } from 'react'
 import type { Preview } from '@storybook/react-vite'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
@@ -13,9 +14,15 @@ import i18n from '../src/i18n/config'
 import '../src/index.css'
 import mswHandlers from './msw-handlers'
 
+// needed if you want to use msw on a subpath (e.g. github pages /<repo>)
+const mswServiceWorkerUrl = import.meta.env.STORYBOOK_MSW_SERVICE_WORKER_URL ?? '/mockServiceWorker.js'
+
 // Initialize MSW (https://github.com/mswjs/msw-storybook-addon)
 initialize({
   onUnhandledRequest: 'bypass',
+  serviceWorker: {
+    url: mswServiceWorkerUrl,
+  },
 })
 
 const locales = [
