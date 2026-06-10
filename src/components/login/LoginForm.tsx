@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import type { TFunction } from 'i18next'
 import { EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react'
 import { useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -38,7 +37,7 @@ interface LoginFormValues {
   password: string
 }
 
-const loginFormSchema = (wallets: WalletFileName[], _t: TFunction) => {
+const loginFormSchema = (wallets: WalletFileName[]) => {
   return yup
     .object({
       walletFileName: yup.string<WalletFileName>().oneOf(wallets).required(),
@@ -73,8 +72,8 @@ export const LoginFormComponent = ({
   const [showPassword, setShowPassword] = useState(false)
 
   const schema = useMemo(() => {
-    return loginFormSchema(wallets, t)
-  }, [wallets, t])
+    return loginFormSchema(wallets)
+  }, [wallets])
 
   const {
     control,
