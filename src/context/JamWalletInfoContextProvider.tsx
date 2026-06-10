@@ -264,8 +264,6 @@ export const JamWalletInfoContextProvider = ({
     isFetching: refetchIsPending || utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,
     error: utxosQueryResult.error || displayWalletQueryResult.error,
     refetch: refetchMutateAsync,
-    utxosQueryResult: utxosQueryResult,
-    displayWalletQueryResult: displayWalletQueryResult,
   }
 
   return <JamWalletInfoContext.Provider value={value}>{children}</JamWalletInfoContext.Provider>
