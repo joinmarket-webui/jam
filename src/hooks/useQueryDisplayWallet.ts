@@ -29,11 +29,10 @@ export function useQueryDisplayWallet({
 
   const displaywalletQueryOptions = displaywalletOptions({
     client,
-    path: { walletname: walletFileName || '' },
-    query: {
-      // cache busting: reload whenever local utxos change
-      '#cb': utxosHashHex,
-    } as never,
+    path: { walletname: walletFileName },
+    meta: {
+      cacheBuster: utxosHashHex,
+    },
   })
 
   const queryResult = useQuery({
