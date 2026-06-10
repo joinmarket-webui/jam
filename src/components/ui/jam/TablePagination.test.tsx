@@ -1,0 +1,101 @@
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
+import '@/i18n/config'
+import { TablePagination } from './TablePagination'
+
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
+    configurable: true,
+    value: vi.fn(() => false),
+  })
+  Object.defineProperty(HTMLElement.prototype, 'releasePointerCapture', {
+    configurable: true,
+    value: vi.fn(),
+  })
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: vi.fn(),
+  })
+})
+
+describe('<TablePagination />', () => {
+  it('renders the current range and calls page navigation handlers', async () => {
+    const onPageChange = vi.fn()
+
+    render(
+      <TablePagination
+        currentPage={2}
+        totalPages={5}
+        itemsPerPage={25}
+        totalItems={125}
+        onPageChange={onPageChange}
+        onItemsPerPageChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('26-50 of 125')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '2' })).toHaveAttribute('aria-current', 'page')
+
+    await userEvent.click(screen.getByRole('button', { name: 'First' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Previous' }))
+    await userEvent.click(screen.getByRole('button', { name: '3' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Last' }))
+
+    expect(onPageChange.mock.calls.map(([page]) => page as number)).toEqual([1, 1, 3, 3, 5])
+  })
+
+  it('handles empty and show-all states', () => {
+    const { rerender } = render(
+      <TablePagination
+        currentPage={1}
+        totalPages={1}
+        totalItems={0}
+        onPageChange={vi.fn()}
+        onItemsPerPageChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.queryByText(/of/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'First' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Last' })).toBeDisabled()
+
+    rerender(
+      <TablePagination
+        currentPage={1}
+        totalPages={1}
+        itemsPerPage={-1}
+        totalItems={42}
+        allowShowAll={false}
+        pageSizes={[10]}
+        onPageChange={vi.fn()}
+        onItemsPerPageChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('1-42 of 42')).toBeInTheDocument()
+  })
+
+  it('notifies when the page size changes', async () => {
+    const onItemsPerPageChange = vi.fn()
+
+    render(
+      <TablePagination
+        currentPage={1}
+        totalPages={3}
+        itemsPerPage={25}
+        totalItems={75}
+        onPageChange={vi.fn()}
+        onItemsPerPageChange={onItemsPerPageChange}
+      />,
+    )
+
+    await userEvent.click(screen.getByRole('combobox'))
+    await userEvent.click(await screen.findByRole('option', { name: '50' }))
+
+    expect(onItemsPerPageChange).toHaveBeenCalledWith(50)
+  })
+})
