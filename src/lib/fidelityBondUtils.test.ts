@@ -4,7 +4,7 @@ import * as fb from './fidelityBondUtils'
 
 const makeUtxo = (id: string, address = '', frozen = false) =>
   ({
-    address: address,
+    address,
     path: '',
     label: '',
     value: 0,
@@ -13,7 +13,7 @@ const makeUtxo = (id: string, address = '', frozen = false) =>
     external: false,
     mixdepth: 0,
     confirmations: 0,
-    frozen: frozen,
+    frozen,
     utxo: id,
   }) as Utxo
 
@@ -150,7 +150,7 @@ describe('utils', () => {
       expect(fb.utxo.isInList(makeUtxo('foo:4'), utxosToFreeze)).toBe(true)
     })
 
-    it('should check wheter all utxos are frozen', () => {
+    it('should check whether all utxos are frozen', () => {
       let utxos = [
         makeUtxo('foo:0', '', true),
         makeUtxo('foo:1', '', true),
