@@ -12,7 +12,7 @@ import tseslint from 'typescript-eslint'
 
 export default defineConfig(
   {
-    ignores: ['dist', './.storybook/**', './storybook-static/**', 'public/mockServiceWorker.js'],
+    ignores: ['dist', './.storybook/**', './storybook-static/**', 'public/mockServiceWorker.js', 'dev-dist'],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

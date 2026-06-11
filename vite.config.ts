@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { type ServerOptions, type UserConfig, defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 const BACKEND_JOINMARKET_CLIENTSERVER_NATIVE = 'joinmarket-clientserver'
 const BACKEND_JOINMARKET_NG_NATIVE = 'joinmarket-ng'
@@ -68,6 +69,14 @@ export default defineConfig((config): UserConfig => {
     plugins: [
       react(),
       tailwindcss({ optimize: buildOrPreview }),
+      VitePWA({
+        registerType: 'prompt',
+        injectRegister: 'script-defer',
+        manifest: false,
+        devOptions: {
+          enabled: process.env.VITE_JAM_DEV_MODE === 'true',
+        },
+      }),
       {
         name: 'delete-service-worker',
         async writeBundle() {

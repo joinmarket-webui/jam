@@ -24,6 +24,7 @@
     "format:write": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format": "npm run lint:fix && npm run format:write",
     "preview": "vite preview",
+    "serve": "cd dist/ && python3 -m http.server",
     "storybook": "npm run storybook:up",
     "storybook:up": "storybook dev -p 6006",
     "storybook:build": "storybook build --disable-telemetry",
@@ -151,6 +152,7 @@
     "typescript": "6.0.3",
     "typescript-eslint": "8.61.1",
     "vite": "8.0.16",
+    "vite-plugin-pwa": "1.3.0",
     "vitest": "4.1.9"
   },
   "overrides": {

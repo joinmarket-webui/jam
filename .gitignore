@@ -30,3 +30,4 @@ dist-ssr
 *storybook.log
 storybook-static/
 coverage/
+dev-dist/

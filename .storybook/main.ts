@@ -10,6 +10,12 @@ const config: StorybookConfig = {
   core: {
     disableTelemetry: true,
     enableCrashReports: false,
+    builder: {
+      name: '@storybook/builder-vite',
+      options: {
+        viteConfigPath: 'vite-storybook.config.ts',
+      },
+    },
   },
 }
 export default config
