@@ -3,26 +3,27 @@ services:
     container_name: jm_regtest_joinmarket
     extends:
       file: docker-compose-common.yml
-      service: joinmarket_native
+      service: joinmarket_ng_native
     environment:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      jm_rpc_wallet_file: jm_primary
-      jm_rpc_user: joinmarket
-      jm_rpc_password: joinmarket
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: regtest
+      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_primary
     ports:
-      - '62601:62601'
-      - '28183:28183'
-      - '28283:28283'
+      - '62601:8000'   # obwatch
+      - '28183:28183'  # jmwalletd api
+      - '28283:28283'  # jmwalletd websocket
     volumes:
-      - 'joinmarket_datadir:/root/.joinmarket'
+      - 'joinmarket_datadir:/root/.joinmarket-ng'
       - 'initializer_datadir:/root/.regtest-initializer'
+      - 'tor_datadir:/var/lib/tor:ro'
     depends_on:
       bitcoind:
         condition: service_healthy
       bitcoind_regtest_initializer:
         condition: service_started
-      irc:
-        condition: service_started
+      joinmarket_ng_orderbook_watcher:
+        condition: service_healthy
       tor:
         condition: service_healthy
 
@@ -30,47 +31,47 @@ services:
     container_name: jm_regtest_joinmarket2
     extends:
       file: docker-compose-common.yml
-      service: joinmarket_jam_standalone
+      service: joinmarket_jam_standalone_ng
     environment:
-      APP_USER: joinmarket
-      APP_PASSWORD: joinmarket
-      jm_rpc_wallet_file: jm_secondary
-      jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
+      ENSURE_WALLET: 'true'
+      BITCOIN__RPC_URL: http://bitcoind:43782
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: regtest
+      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_secondary
+      LOGGING__LEVEL: DEBUG
+      NETWORK_CONFIG__NETWORK: testnet
+      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
+      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      TAKER__MINIMUM_MAKERS: 2 # necessary to do coinjoins with this regtest setup
+      TAKER__MAKER_TIMEOUT_SEC: 30 # easier testing of maker timeouts on regtest
     ports:
-      - '29080:80'
-      - '29183:28183' # exposed for "init setup" routine
+      - '29080:80'     
+      - '29183:28183'  # exposed for "init setup" routine
     volumes:
-      - 'joinmarket2_datadir:/root/.joinmarket'
-      - 'bitcoin_datadir:/root/.bitcoin_data' # mount bitcoind dir to access .cookie file
-      - 'tor_datadir:/var/lib/tor:ro'
+      - 'joinmarket2_datadir:/root/.joinmarket-ng'
     depends_on:
       bitcoind:
         condition: service_healthy
       bitcoind_regtest_initializer:
         condition: service_started
-      irc:
-        condition: service_started
-      tor:
-        condition: service_healthy
 
   joinmarket3:
     container_name: jm_regtest_joinmarket3
     extends:
       file: docker-compose-common.yml
-      service: joinmarket_jam_standalone
+      service: joinmarket_native
     environment:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      WAIT_FOR_BITCOIND: 'false'
       jm_rpc_wallet_file: jm_tertiary
       jm_rpc_user: joinmarket3
       jm_rpc_password: joinmarket3
     ports:
-      - '30080:80'
-      - '30183:28183' # exposed for "init setup" routine
+      - '30601:62601'  # obwatch
+      - '30183:28183'  # jmwalletd api
+      - '30283:28283'  # jmwalletd websocket
     volumes:
       - 'joinmarket3_datadir:/root/.joinmarket'
       - 'initializer_datadir:/root/.regtest-initializer'
-      - 'tor_datadir:/var/lib/tor:ro'
     depends_on:
       bitcoind:
         condition: service_healthy
@@ -85,25 +86,26 @@ services:
     container_name: jm_regtest_joinmarket4
     extends:
       file: docker-compose-common.yml
-      service: joinmarket_ng_native
+      service: joinmarket_jam_standalone
     environment:
-      READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: regtest
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_quaternary
+      APP_USER: joinmarket
+      APP_PASSWORD: joinmarket
+      jm_rpc_wallet_file: jm_quaternary
+      jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
     ports:
-      - '31183:28183'
+      - '31080:80'
+      - '31183:28183'  # exposed for "init setup" routine
     volumes:
-      - 'joinmarket4_datadir:/root/.joinmarket-ng'
-      - 'initializer_datadir:/root/.regtest-initializer'
+      - 'joinmarket4_datadir:/root/.joinmarket'
+      - 'bitcoin_datadir:/root/.bitcoin_data' # mount bitcoind dir to access .cookie file
       - 'tor_datadir:/var/lib/tor:ro'
     depends_on:
       bitcoind:
         condition: service_healthy
       bitcoind_regtest_initializer:
         condition: service_started
-      joinmarket_ng_orderbook_watcher:
-        condition: service_healthy
+      irc:
+        condition: service_started
       tor:
         condition: service_healthy
 
@@ -130,34 +132,6 @@ services:
         condition: service_healthy
       tor:
         condition: service_healthy
-
-  joinmarket6:
-    container_name: jm_regtest_joinmarket6
-    extends:
-      file: docker-compose-common.yml
-      service: joinmarket_jam_standalone_ng
-    environment:
-      ENSURE_WALLET: 'true'
-      BITCOIN__RPC_URL: http://bitcoind:43782
-      BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: regtest
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_senary
-      LOGGING__LEVEL: DEBUG
-      NETWORK_CONFIG__NETWORK: testnet
-      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
-      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
-      TAKER__MINIMUM_MAKERS: 2 # necessary to do coinjoins with this regtest setup
-      TAKER__MAKER_TIMEOUT_SEC: 30 # easier testing of maker timeouts on regtest
-    ports:
-      - '34080:80'
-      - '34183:28183' # exposed for "init setup" routine
-    volumes:
-      - 'joinmarket6_ng_datadir:/root/.joinmarket-ng'
-    depends_on:
-      bitcoind:
-        condition: service_healthy
-      bitcoind_regtest_initializer:
-        condition: service_started
 
   joinmarket_directory_node:
     container_name: jm_regtest_joinmarket_directory_node
@@ -413,7 +387,6 @@ volumes:
   joinmarket_datadir:
   joinmarket2_datadir:
   joinmarket3_datadir:
-  joinmarket6_ng_datadir:
   joinmarket4_datadir:
   joinmarket5_datadir:
   joinmarket_directory_node_datadir:
