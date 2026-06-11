@@ -107,7 +107,6 @@ parse_params() {
   [ "$container" == "jm_regtest_joinmarket3" ] || 
   [ "$container" == "jm_regtest_joinmarket4" ] ||
   [ "$container" == "jm_regtest_joinmarket5" ] ||
-  [ "$container" == "jm_regtest_joinmarket6" ] ||
   die "Invalid parameter: 'container' must be a known container name"
 
   [ "$container" == "jm_regtest_joinmarket" ] && base_url='https://localhost:28183'
@@ -115,7 +114,6 @@ parse_params() {
   [ "$container" == "jm_regtest_joinmarket3" ] && base_url='https://localhost:30183'
   [ "$container" == "jm_regtest_joinmarket4" ] && base_url='https://localhost:31183'
   [ "$container" == "jm_regtest_joinmarket5" ] && base_url='https://localhost:32183'
-  [ "$container" == "jm_regtest_joinmarket6" ] && base_url='https://localhost:34183'
 
   return 0
 }
