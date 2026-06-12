@@ -12,10 +12,10 @@
   },
   "scripts": {
     "dev": "npm run dev:ng:native",
-    "dev:clientserver:native": "JAM_BACKEND=joinmarket-clientserver VITE_JAM_DEV_MODE=true vite",
-    "dev:clientserver:jam-standalone": "JAM_BACKEND=jam-standalone JAM_API_PORT=31080 VITE_JAM_DEV_MODE=true vite",
-    "dev:ng:native": "JAM_BACKEND=joinmarket-ng VITE_JAM_DEV_MODE=true vite",
+    "dev:ng:native": "JAM_BACKEND=joinmarket-ng JMOBWATCH_PORT=62601 VITE_JAM_DEV_MODE=true vite",
     "dev:ng:jam-standalone": "JAM_BACKEND=jam-standalone JAM_API_PORT=29080 VITE_JAM_DEV_MODE=true vite",
+    "dev:clientserver:native": "JAM_BACKEND=joinmarket-clientserver JMWALLETD_API_PORT=30183 JMWALLETD_WEBSOCKET_PORT=30283 JMOBWATCH_PORT=30601 VITE_JAM_DEV_MODE=true vite",
+    "dev:clientserver:jam-standalone": "JAM_BACKEND=jam-standalone JAM_API_PORT=31080 VITE_JAM_DEV_MODE=true vite",
     "build": "tsc -b && vite build",
     "lint": "npm run lint:check",
     "lint:check": "eslint .",
