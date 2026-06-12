@@ -1,0 +1,175 @@
+import { render, screen, waitFor } from '@testing-library/react'
+import { Network } from 'bitcoin-address-validation'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
+import type { Utxo } from '@/hooks/useQueryUtxos'
+import { useJamWalletInfoContext } from './JamWalletInfoContext'
+import { JamWalletInfoContextProvider } from './JamWalletInfoContextProvider'
+
+const mocks = vi.hoisted(() => ({
+  utxos: [] as Utxo[],
+  walletInfo: undefined as WalletInfoApiObject | undefined,
+  utxosRefetch: vi.fn(),
+  displayWalletRefetch: vi.fn(),
+  waitQueryError: null as Error | null,
+}))
+
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>()
+  return {
+    ...actual,
+    useMutation: vi.fn(
+      (options: { mutationFn?: (variables?: { delayBefore?: number; signal?: AbortSignal }) => Promise<unknown> }) => ({
+        isPending: false,
+        mutateAsync: options.mutationFn,
+      }),
+    ),
+    useQuery: vi.fn(() => ({
+      error: mocks.waitQueryError,
+    })),
+  }
+})
+
+vi.mock('@/hooks/useQueryUtxos', () => ({
+  useQueryUtxos: () => ({
+    utxos: mocks.utxos,
+    queryResult: {
+      data: { utxos: mocks.utxos },
+      error: null,
+      isFetching: false,
+      isLoading: false,
+      refetch: mocks.utxosRefetch,
+    },
+  }),
+}))
+
+vi.mock('@/hooks/useQueryDisplayWallet', () => ({
+  useQueryDisplayWallet: () => ({
+    walletInfo: mocks.walletInfo,
+    queryResult: {
+      data: { walletinfo: mocks.walletInfo },
+      error: null,
+      isFetching: false,
+      isLoading: false,
+      refetch: mocks.displayWalletRefetch,
+    },
+  }),
+}))
+
+const txid = (char: string) => char.repeat(64)
+const address = 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx'
+
+const utxo = (overrides: Partial<Utxo>): Utxo => ({
+  utxo: `${txid('a')}:0`,
+  address,
+  path: "m/84'/1'/0'/0/0",
+  label: '',
+  value: 100_000,
+  tries: 0,
+  tries_remaining: 3,
+  external: false,
+  mixdepth: 0,
+  confirmations: 6,
+  frozen: false,
+  locktime: undefined,
+  ...overrides,
+})
+
+const walletInfo = (): WalletInfoApiObject => ({
+  accounts: [
+    {
+      account: '0',
+      branches: [
+        {
+          branch: "external addresses\tm/84'/1'/0'/0",
+          entries: [
+            {
+              address,
+              hd_path: "m/84'/1'/0'/0/0",
+              status: 'new',
+              label: '',
+              balance: 0,
+              used_count: 0,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+})
+
+const CaptureWalletInfo = ({
+  onContext,
+}: {
+  onContext: (context: ReturnType<typeof useJamWalletInfoContext>) => void
+}) => {
+  const context = useJamWalletInfoContext()
+  onContext(context)
+  return <div>{context.walletName}</div>
+}
+
+describe('<JamWalletInfoContextProvider />', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.waitQueryError = null
+    mocks.utxos = [
+      utxo({ utxo: `${txid('a')}:0`, value: 50_000, mixdepth: 0 }),
+      utxo({ utxo: `${txid('b')}:1`, value: 75_000, mixdepth: 7, label: 'unknown jar' }),
+      utxo({
+        utxo: `${txid('c')}:2`,
+        value: 150_000,
+        mixdepth: 0,
+        locktime: '2999-01-01 00:00:00',
+        path: "m/84'/1'/0'/0/2:32503680000",
+      }),
+    ]
+    mocks.walletInfo = walletInfo()
+    mocks.utxosRefetch.mockResolvedValue({ data: { utxos: [utxo({ value: 25_000 })] } })
+    mocks.displayWalletRefetch.mockResolvedValue({ data: { walletinfo: walletInfo() } })
+  })
+
+  it('combines wallet display data with utxos into jar, address, and account summaries', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(screen.getByText('testing')).toBeInTheDocument()
+    expect(context?.walletName).toBe('testing')
+    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4, 7])
+    expect(context?.jars.find((jar) => jar.jarIndex === 7)?.name).toBe('Jar #7')
+    expect(context?.fidelityBondSummary.fbOutputs.map((entry) => entry.utxo)).toEqual([`${txid('c')}:2`])
+    expect(context?.accountSummary[0].branches[0]).toMatchObject({
+      type: 'external addresses',
+      derivation: "m/84'/1'/0'/0",
+    })
+    expect(context?.addressSummary[address]).toMatchObject({
+      jarIndex: 0,
+      used: false,
+      status: 'new',
+    })
+    expect(context?.detectedNetwork).toBe(Network.regtest)
+    expect(context?.isLoading).toBe(false)
+    expect(context?.isFetching).toBe(false)
+    expect(context?.error).toBeNull()
+  })
+
+  it('refetches utxos before refreshing display wallet data', async () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    const balanceSummary = await context?.refetch()
+
+    await waitFor(() => expect(mocks.utxosRefetch).toHaveBeenCalledWith({ throwOnError: true }))
+    expect(mocks.displayWalletRefetch).toHaveBeenCalledWith({ throwOnError: true })
+    expect(balanceSummary?.calculatedTotalBalanceInSats).toBe(25_000)
+  })
+})
