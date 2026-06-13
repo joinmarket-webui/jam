@@ -16,6 +16,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
         reporter: ['text', 'json', 'json-summary'],
         // enable coverage reports even if tests are failing
         reportOnFailure: true,
+        include: ['src/**/*.{ts,tsx}'],
         thresholds: {
           lines: 70,
           functions: 60,
