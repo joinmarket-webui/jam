@@ -1,5 +1,5 @@
 import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
@@ -150,11 +150,9 @@ describe('ReceivePage', () => {
   })
 
   it('reveals a fresh address and refreshes it on demand', async () => {
-    const user = userEvent.setup()
-
     render(<ReceivePage walletFileName="wallet.jmdat" />)
 
-    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+    fireEvent.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
 
     await waitFor(() => expect(screen.getByText('qr:bc1qexample:none')).toBeInTheDocument())
     expect(getaddress).toHaveBeenCalledWith(
@@ -164,7 +162,7 @@ describe('ReceivePage', () => {
       }),
     )
 
-    await user.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
+    fireEvent.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
     expect(mocks.getAddress).toHaveBeenCalledTimes(2)
   })
 

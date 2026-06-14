@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Utxo } from '@/hooks/useQueryUtxos'
@@ -70,8 +70,7 @@ describe('JarUtxosTable', () => {
     mocks.toastWarning.mockReset()
   })
 
-  it('renders UTXO rows, sorting, tags, and expanded details', async () => {
-    const user = userEvent.setup()
+  it('renders UTXO rows, sorting, tags, and expanded details', () => {
     const onChange = vi.fn()
 
     render(
@@ -88,10 +87,10 @@ describe('JarUtxosTable', () => {
     expect(screen.getByText('bond')).toBeInTheDocument()
     expect(onChange).toHaveBeenCalled()
 
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_balance'))
+    fireEvent.click(screen.getByText('jar_details.utxo_list.column_title_balance'))
     expect(screen.getAllByText('20000')[0]).toBeInTheDocument()
 
-    await user.click(screen.getAllByRole('button', { name: 'jar_details.utxo_list.row_button_details' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'jar_details.utxo_list.row_button_details' })[0])
     expect(screen.getByText(/"utxo": "txid-c:2"/u)).toBeInTheDocument()
   })
 
