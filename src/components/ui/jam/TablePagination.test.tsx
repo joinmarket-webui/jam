@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import '@/i18n/config'
@@ -20,7 +20,7 @@ beforeAll(() => {
 })
 
 describe('<TablePagination />', () => {
-  it('renders the current range and calls page navigation handlers', async () => {
+  it('renders the current range and calls page navigation handlers', () => {
     const onPageChange = vi.fn()
 
     render(
@@ -37,11 +37,11 @@ describe('<TablePagination />', () => {
     expect(screen.getByText('26-50 of 125')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '2' })).toHaveAttribute('aria-current', 'page')
 
-    await userEvent.click(screen.getByRole('button', { name: 'First' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Previous' }))
-    await userEvent.click(screen.getByRole('button', { name: '3' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Next' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Last' }))
+    fireEvent.click(screen.getByRole('button', { name: 'First' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Previous' }))
+    fireEvent.click(screen.getByRole('button', { name: '3' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Last' }))
 
     expect(onPageChange.mock.calls.map(([page]) => page as number)).toEqual([1, 1, 3, 3, 5])
   })
