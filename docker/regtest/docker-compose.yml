@@ -10,7 +10,6 @@ services:
       BITCOIN__RPC_PASSWORD: regtest
       BITCOIN__DESCRIPTOR_WALLET_NAME: jm_primary
     ports:
-      - '62601:8000'   # obwatch
       - '28183:28183'  # jmwalletd api
       - '28283:28283'  # jmwalletd websocket
     volumes:
