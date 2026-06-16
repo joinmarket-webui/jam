@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import useWebSocket, { ReadyState } from 'react-use-websocket'
+import { ReadyState } from 'react-use-websocket'
 import type { Options, WebSocketHook } from 'react-use-websocket/dist/lib/types'
+/* workaround for vite 8: see https://github.com/robtaussig/react-use-websocket/issues/280 (last checked 2026-06-16) */
+import { useWebSocket } from 'react-use-websocket/dist/lib/use-websocket'
 import { useStore } from 'zustand'
 import {
   JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION,
