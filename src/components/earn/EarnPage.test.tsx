@@ -233,7 +233,7 @@ const expiredBond = {
   tries_remaining: 3,
   utxo: 'bond-tx:0',
   value: 50_000,
-} as FidelityBondUtxo
+} as unknown as FidelityBondUtxo
 
 const setSession = (overrides: Record<string, unknown> = {}) => {
   jmSessionStore.setState({

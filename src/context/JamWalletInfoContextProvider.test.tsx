@@ -90,7 +90,13 @@ const walletInfo = (): WalletInfoApiObject => ({
               label: '',
               balance: 0,
               used_count: 0,
-            },
+            } as unknown as NonNullable<
+              NonNullable<
+                NonNullable<
+                  NonNullable<NonNullable<WalletDisplayResponse['walletinfo']>['accounts']>[number]['branches']
+                >[number]['entries']
+              >
+            >[number],
           ],
         },
       ],

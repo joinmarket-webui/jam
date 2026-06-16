@@ -4,7 +4,17 @@ import { describe, expect, it, vi } from 'vitest'
 import '@/i18n/config'
 import { CreateWalletForm } from './CreateWalletForm'
 
-const renderCreateWalletForm = ({ wallets = ['existing.jmdat'], onSubmit = vi.fn(), disabled = false } = {}) => {
+type RenderCreateWalletFormOptions = {
+  wallets?: string[]
+  onSubmit?: ReturnType<typeof vi.fn>
+  disabled?: boolean
+}
+
+const renderCreateWalletForm = ({
+  wallets = ['existing.jmdat'],
+  onSubmit = vi.fn(),
+  disabled = false,
+}: RenderCreateWalletFormOptions = {}) => {
   render(
     <CreateWalletForm
       wallets={wallets}

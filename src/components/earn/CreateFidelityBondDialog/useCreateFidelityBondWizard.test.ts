@@ -83,7 +83,7 @@ const jar = (jarIndex: number, utxos: Utxo[]): Jar =>
     color: '#808080',
     balanceSummary: {},
     utxos,
-  }) as Jar
+  }) as unknown as Jar
 
 const lockdateFromWizard = (wizard: ReturnType<typeof useCreateFidelityBondWizard>) => {
   const lockdate = wizard.clampLockdate('1900-01')

@@ -20,7 +20,7 @@ describe('jmTxStore', () => {
     expect(jmTxStore.getState().getAll().abc.insertedAt).toBe(Date.UTC(2026, 0, 1))
 
     vi.setSystemTime(new Date('2026-01-02T00:00:00Z'))
-    jmTxStore.getState().add({ ...tx('abc'), outs: [] })
+    jmTxStore.getState().add({ ...tx('abc'), outs: [] } as JmTxInfo)
 
     expect(jmTxStore.getState().getAll().abc.insertedAt).toBe(Date.UTC(2026, 0, 1))
     expect(jmTxStore.getState().getAll().abc.updatedAt).toBe(Date.UTC(2026, 0, 2))

@@ -152,7 +152,7 @@ describe('storybook stories', () => {
         module as { default?: { args?: Record<string, unknown>; component?: ComponentType<Record<string, unknown>> } }
       ).default
 
-      for (const [name, story] of Object.entries(module)) {
+      for (const [name, story] of Object.entries(module as Record<string, unknown>)) {
         if (name === 'default') {
           continue
         }

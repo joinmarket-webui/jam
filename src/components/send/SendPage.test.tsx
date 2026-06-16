@@ -253,7 +253,7 @@ const utxo = {
   tries_remaining: 3,
   utxo: 'source-tx:0',
   value: 20_000,
-} as Utxo
+} as unknown as Utxo
 
 const jars: Jar[] = [
   {
@@ -325,6 +325,7 @@ describe('SendPage', () => {
         maker_running: false,
         session: true,
         wallet_name: 'wallet.jmdat',
+        rescanning: false,
       },
     })
     jmTxStore.getState().clear()

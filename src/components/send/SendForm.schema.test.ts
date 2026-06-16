@@ -41,7 +41,7 @@ const addressSummary = {
     jarIndex: 0,
     used: false,
   },
-} as AddressSummary
+} as unknown as AddressSummary
 
 const validFormValues = {
   source: { fromJar: 0 },

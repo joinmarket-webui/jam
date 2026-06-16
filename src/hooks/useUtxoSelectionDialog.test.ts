@@ -68,7 +68,7 @@ const utxo = (overrides: Partial<Utxo>): Utxo => ({
 const addressSummary: AddressSummary = {
   bcrt1qaddressa: { status: 'cj-out' },
   bcrt1qaddressb: { status: 'change-out' },
-} as AddressSummary
+} as unknown as AddressSummary
 
 const sourceJar = {
   jarIndex: 0,
@@ -86,7 +86,7 @@ const sourceJar = {
       path: "m/84'/1'/0'/0/9:32503680000",
     }),
   ],
-} as Jar
+} as unknown as Jar
 
 describe('useUtxoSelectionDialog', () => {
   beforeEach(() => {

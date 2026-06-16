@@ -1,8 +1,9 @@
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SendFormValues } from '@/components/send/types'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { useJamSessionInfoContext } from './JamSessionInfoContext'
+import { useJamSessionInfoContext, type PaymentAttempt } from './JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './JamSessionInfoContextProvider'
 
 const mocks = vi.hoisted(() => ({
@@ -32,7 +33,7 @@ vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
 }))
 
-const paymentAttempt = {
+const paymentAttempt: PaymentAttempt = {
   createdAt: 1,
   utxosHashHex: 'hash',
   walletFileName: 'wallet.jmdat',
@@ -67,7 +68,7 @@ describe('<JamSessionInfoContextProvider />', () => {
       block_height: 123,
       coinjoin_in_process: true,
       rescanning: false,
-    })
+    } as SessionResponse)
   })
 
   it('provides session state and payment attempt helpers', () => {
@@ -95,7 +96,7 @@ describe('<JamSessionInfoContextProvider />', () => {
       block_height: 123,
       coinjoin_in_process: false,
       rescanning: true,
-    })
+    } as SessionResponse)
 
     render(
       <JamSessionInfoContextProvider walletFileName="wallet.jmdat">
