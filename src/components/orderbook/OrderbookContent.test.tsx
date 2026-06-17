@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import { OrderbookContent } from './OrderbookContent'
 import type { OrderTableEntry } from './OrderbookTable'
 
@@ -234,6 +235,7 @@ describe('OrderbookContent', () => {
     await screen.findByText('orderbook.label_pin_to_top_own_orders')
     await user.click(screen.getAllByRole('switch')[1])
     expect(screen.getByText(/table:2:selected:1:pinned:1/)).toBeInTheDocument()
+    await flushActUpdates()
   })
 
   it('filters table rows and reloads the orderbook', async () => {
@@ -248,6 +250,7 @@ describe('OrderbookContent', () => {
 
     await user.click(screen.getByRole('button', { name: /orderbook.button_reload_title/ }))
     expect(mocks.orderbookRefetch).toHaveBeenCalledTimes(1)
+    await flushActUpdates()
   })
 
   it('shows loading, empty, and error states', async () => {
@@ -268,6 +271,7 @@ describe('OrderbookContent', () => {
 
     await user.click(screen.getByRole('button', { name: /global.retry/ }))
     expect(mocks.orderbookRefetch).toHaveBeenCalledTimes(1)
+    await flushActUpdates()
   })
 
   it('can add demo entries in developer mode', async () => {
@@ -279,5 +283,6 @@ describe('OrderbookContent', () => {
     await user.click(screen.getByRole('button', { name: /Add Demo Entry/ }))
 
     expect(screen.getByText(/table:3/)).toBeInTheDocument()
+    await flushActUpdates()
   })
 })

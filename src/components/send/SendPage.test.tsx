@@ -7,6 +7,7 @@ import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore } from '@/store/jmTxStore'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import { SendPage } from './SendPage'
 import type { SendFormValues } from './types'
 
@@ -336,12 +337,13 @@ describe('SendPage', () => {
     jmTxStore.getState().clear()
   })
 
-  it('shows loading until session and wallet data are ready', () => {
+  it('shows loading until session and wallet data are ready', async () => {
     jmSessionStore.setState({ state: undefined })
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('page-loading')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
   it('confirms a direct send and stores the transaction result', async () => {
@@ -496,7 +498,7 @@ describe('SendPage', () => {
     expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
   })
 
-  it('shows the maker running warning', () => {
+  it('shows the maker running warning', async () => {
     jmSessionStore.setState({
       state: {
         coinjoin_in_process: false,
@@ -511,24 +513,27 @@ describe('SendPage', () => {
 
     expect(screen.getByText('send.text_maker_running')).toBeInTheDocument()
     expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
-  it('shows the waiting-for-utxos alert and disables the form', () => {
+  it('shows the waiting-for-utxos alert and disables the form', async () => {
     mocks.waitForUtxosToBeSpent = ['spent-tx:0']
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('Waiting for utxos to be marked as spent...')).toBeInTheDocument()
     expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
-  it('shows the collaborative awaiting completion alert while wallet info is fetching', () => {
+  it('shows the collaborative awaiting completion alert while wallet info is fetching', async () => {
     mocks.currentPaymentAttemptPresent = true
     mocks.walletInfoIsFetching = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('send.alert_collaborative_awaiting_completion')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
   it('shows the collaborative ended alert when utxos are unchanged and clears the attempt', async () => {

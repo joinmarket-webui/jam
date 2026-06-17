@@ -5,6 +5,17 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
 
+// Stories are rendered without a real i18next instance; mock the hooks so they
+// resolve to keys instead of logging "You will need to pass in an i18next instance".
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en', changeLanguage: vi.fn() },
+  }),
+  Trans: ({ i18nKey, children }: { i18nKey?: string; children?: React.ReactNode }) => children ?? i18nKey ?? null,
+  initReactI18next: { type: '3rdParty', init: vi.fn() },
+}))
+
 vi.mock('@joinmarket-webui/joinmarket-api-ts', () => ({
   createClient: vi.fn(() => ({
     interceptors: {

@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import '@testing-library/jest-dom/vitest'
 import { render as reactRender, screen, type RenderOptions } from '@testing-library/react'
 import user from '@testing-library/user-event'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
 import { Balance } from './Balance'
 
@@ -19,8 +19,11 @@ const render = (ui: React.ReactNode, options?: Omit<RenderOptions, 'queries'>) =
 
 describe('<Balance />', () => {
   it('should render invalid param as given', () => {
+    // the component intentionally warns for invalid input; silence it here
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     render(<Balance valueString={'NaN'} convertToUnit="btc" showBalance={true} />)
     expect(screen.getByText(`NaN`)).toBeInTheDocument()
+    warnSpy.mockRestore()
   })
 
   it('should render balance in BTC', () => {

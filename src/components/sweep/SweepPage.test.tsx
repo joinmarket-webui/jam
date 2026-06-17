@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Jar, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import type { SweepFormValues } from './SweepFormSchema'
 import { SweepPage } from './SweepPage'
 import type { Schedule } from './scheduleUtils'
@@ -482,7 +483,7 @@ describe('SweepPage', () => {
       expect(callArgument.body.tumbler_options).toBeDefined()
     })
 
-    it('falls back to any new address when no default-jar new address exists', () => {
+    it('falls back to any new address when no default-jar new address exists', async () => {
       mocks.walletInfo = makeWalletInfo({
         addressSummary: {
           [VALID_DESTINATIONS[1]]: {
@@ -498,17 +499,19 @@ describe('SweepPage', () => {
       fireEvent.click(screen.getByRole('switch'))
 
       expect(screen.getByRole('switch')).toBeChecked()
+      await flushActUpdates()
     })
 
-    it('uses an empty address when no new address is available', () => {
+    it('uses an empty address when no new address is available', async () => {
       render(<SweepPage walletFileName="wallet.jmdat" />)
 
       fireEvent.click(screen.getByRole('switch'))
 
       expect(screen.getByRole('switch')).toBeChecked()
+      await flushActUpdates()
     })
 
-    it('restores production destinations when toggled off', () => {
+    it('restores production destinations when toggled off', async () => {
       render(<SweepPage walletFileName="wallet.jmdat" />)
 
       const toggle = screen.getByRole('switch')
@@ -516,6 +519,7 @@ describe('SweepPage', () => {
       expect(toggle).toBeChecked()
       fireEvent.click(toggle)
       expect(toggle).not.toBeChecked()
+      await flushActUpdates()
     })
   })
 })

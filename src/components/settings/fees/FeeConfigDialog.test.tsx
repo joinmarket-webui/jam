@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import { FeeConfigDialog } from './FeeConfigDialog'
 
 type ChildrenProps = { children: ReactNode }
@@ -120,7 +121,7 @@ describe('FeeConfigDialog', () => {
     vi.clearAllMocks()
   })
 
-  it('renders correctly', () => {
+  it('renders correctly', async () => {
     renderDialog(makeValidValidation())
 
     expect(screen.getByText('settings.fees.title')).toBeInTheDocument()
@@ -128,14 +129,16 @@ describe('FeeConfigDialog', () => {
     expect(screen.getByText('settings.fees.title_general_fee_settings')).toBeInTheDocument()
     expect(screen.getByText('settings.fees.text_button_cancel')).toBeInTheDocument()
     expect(screen.getByText('settings.fees.text_button_submit')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
-  it('renders nothing when closed', () => {
+  it('renders nothing when closed', async () => {
     renderDialog(makeValidValidation(), vi.fn(), false)
     expect(screen.queryByText('settings.fees.title')).not.toBeInTheDocument()
+    await flushActUpdates()
   })
 
-  it('can open accordions', () => {
+  it('can open accordions', async () => {
     renderDialog(makeValidValidation())
 
     fireEvent.click(screen.getByText('settings.fees.title_max_cj_fee_settings'))
@@ -143,6 +146,7 @@ describe('FeeConfigDialog', () => {
 
     fireEvent.click(screen.getByText('settings.fees.title_general_fee_settings'))
     expect(screen.getByTestId('mining-form')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
   it('shows loading spinners and disables buttons when loading', () => {
@@ -169,7 +173,7 @@ describe('FeeConfigDialog', () => {
     })
   })
 
-  it('renders developer mode controls when enabled and can toggle validation', () => {
+  it('renders developer mode controls when enabled and can toggle validation', async () => {
     h.developerModeEnabled = true
     renderDialog(makeValidValidation())
 
@@ -178,14 +182,16 @@ describe('FeeConfigDialog', () => {
     expect(screen.getByTestId('dev-badge')).toBeInTheDocument()
 
     fireEvent.click(switchElement as Element)
+    await flushActUpdates()
   })
 
-  it('calls onOpenChange when cancel is clicked', () => {
+  it('calls onOpenChange when cancel is clicked', async () => {
     const onOpenChange = vi.fn()
     renderDialog(makeValidValidation(), onOpenChange)
 
     fireEvent.click(screen.getByText('settings.fees.text_button_cancel'))
     expect(onOpenChange).toHaveBeenCalledWith(false)
+    await flushActUpdates()
   })
 
   it('resets form values when reset is clicked', async () => {
@@ -281,6 +287,7 @@ describe('FeeConfigDialog', () => {
   })
 
   it('shows an error toast when the mutation fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     h.mutateAsync = vi.fn().mockRejectedValue(new Error('boom'))
     const refetchAll = vi.fn().mockResolvedValue(undefined)
     renderDialog(makeValidValidation({ refetchAll }))
@@ -290,9 +297,11 @@ describe('FeeConfigDialog', () => {
     await waitFor(() => {
       expect(h.toastError).toHaveBeenCalledWith('settings.fees.error_saving_fee_config_failed')
     })
+    errorSpy.mockRestore()
   })
 
   it('shows an error toast when refetch fails after a successful save', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     h.mutateAsync = vi.fn().mockResolvedValue({})
     const refetchAll = vi.fn().mockRejectedValue(new Error('refetch boom'))
     renderDialog(makeValidValidation({ refetchAll }))
@@ -305,12 +314,14 @@ describe('FeeConfigDialog', () => {
     await waitFor(() => {
       expect(h.toastError).toHaveBeenCalled()
     })
+    errorSpy.mockRestore()
   })
 
-  it('applies footer border styling when an accordion is open', () => {
+  it('applies footer border styling when an accordion is open', async () => {
     renderDialog(makeValidValidation())
 
     fireEvent.click(screen.getByText('settings.fees.title_max_cj_fee_settings'))
     expect(screen.getByTestId('collaborator-form')).toBeInTheDocument()
+    await flushActUpdates()
   })
 })

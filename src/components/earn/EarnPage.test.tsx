@@ -387,11 +387,13 @@ describe('EarnPage', () => {
   })
 
   it('shows an error toast when starting the maker fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const user = userEvent.setup()
     mocks.startMaker.mockRejectedValue(new Error('start boom'))
     render(<EarnPage walletFileName="wallet.jmdat" />)
     await user.click(screen.getByText('submit-earn'))
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalled())
+    errorSpy.mockRestore()
   })
 
   it('shows an error toast when stopping the maker fails', async () => {
