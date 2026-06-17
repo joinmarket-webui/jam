@@ -8,9 +8,9 @@ const DEFAULT_BASIC_AUTH = {
   password: 'joinmarket',
 }
 
-const LINK_JM_REGTEST_JOINMARKET2 = 'http://localhost:29080'
-const LINK_JM_REGTEST_JOINMARKET2_AUTH = DEFAULT_BASIC_AUTH
-const LINK_JM_REGTEST_JOINMARKET3 = 'http://localhost:30080'
+const LINK_JM_REGTEST_JOINMARKET2 = 'http://localhost:29080' // ng standalone
+const LINK_JM_REGTEST_JOINMARKET4 = 'http://localhost:31080' // legacy standalone (basic auth)
+const LINK_JM_REGTEST_JOINMARKET4_AUTH = DEFAULT_BASIC_AUTH
 const LINK_JM_REGTEST_EXPLORER = 'http://localhost:3002'
 const LINK_JM_REGTEST_EXPLORER_AUTH = DEFAULT_BASIC_AUTH
 const LINK_JM_REGTEST_RPC_TERMINAL = `${LINK_JM_REGTEST_EXPLORER}/rpc-terminal`
@@ -41,30 +41,70 @@ export default function DevSetupPage() {
       <div className="flex flex-col gap-3">
         <div className="mb-4">
           <h5 className="text-xl font-bold">Jam Instances</h5>
-          <div>
-            <div className="flex items-center gap-2">
-              <WalletIcon className="h-4 w-4" />
-              <a href={LINK_JM_REGTEST_JOINMARKET2} target="_blank" rel="noopener noreferrer" className="underline">
-                jm_regtest_joinmarket2 ({LINK_JM_REGTEST_JOINMARKET2})
-              </a>
-              <Badge>secondary</Badge>
+          <div className="flex flex-col gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <WalletIcon className="h-4 w-4" />
+                <span className="font-mono">jm_regtest_joinmarket</span>
+                <Badge>primary · ng native</Badge>
+              </div>
+              <div className="text-muted-foreground my-1 ms-5 text-sm">
+                API - <span className="font-mono">https://localhost:28183</span>
+                <br />
+                Used by <span className="font-mono">npm run dev</span> and{' '}
+                <span className="font-mono">npm run dev:ng:native</span>.
+              </div>
             </div>
 
-            <div className="my-2 ms-5">
-              Basic Authentication
-              <br />
-              <small>
-                User: <span className="font-mono">{LINK_JM_REGTEST_JOINMARKET2_AUTH.user}</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <WalletIcon className="h-4 w-4" />
+                <a href={LINK_JM_REGTEST_JOINMARKET2} target="_blank" rel="noopener noreferrer" className="underline">
+                  jm_regtest_joinmarket2 ({LINK_JM_REGTEST_JOINMARKET2})
+                </a>
+                <Badge>secondary · ng standalone</Badge>
+              </div>
+              <div className="text-muted-foreground my-1 ms-5 text-sm">
+                No authentication required.
                 <br />
-                Password: <span className="font-mono">{LINK_JM_REGTEST_JOINMARKET2_AUTH.password}</span>
-              </small>
+                Used by <span className="font-mono">npm run dev:ng:jam-standalone</span>.
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <WalletIcon className="h-4 w-4" />
-              <a href={LINK_JM_REGTEST_JOINMARKET3} target="_blank" rel="noopener noreferrer" className="underline">
-                jm_regtest_joinmarket3 ({LINK_JM_REGTEST_JOINMARKET3})
-              </a>
-              <Badge>tertiary</Badge>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <WalletIcon className="h-4 w-4" />
+                <span className="font-mono">jm_regtest_joinmarket3</span>
+                <Badge>tertiary · clientserver native</Badge>
+              </div>
+              <div className="text-muted-foreground my-1 ms-5 text-sm">
+                API - <span className="font-mono">https://localhost:30183</span>
+                <br />
+                Used by <span className="font-mono">npm run dev:clientserver:native</span>.
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <WalletIcon className="h-4 w-4" />
+                <a href={LINK_JM_REGTEST_JOINMARKET4} target="_blank" rel="noopener noreferrer" className="underline">
+                  jm_regtest_joinmarket4 ({LINK_JM_REGTEST_JOINMARKET4})
+                </a>
+                <Badge>quaternary · clientserver standalone</Badge>
+              </div>
+              <div className="my-2 ms-5">
+                Basic Authentication
+                <br />
+                <small>
+                  User: <span className="font-mono">{LINK_JM_REGTEST_JOINMARKET4_AUTH.user}</span>
+                  <br />
+                  Password: <span className="font-mono">{LINK_JM_REGTEST_JOINMARKET4_AUTH.password}</span>
+                </small>
+                <br />
+                <span className="text-muted-foreground text-sm">
+                  Used by <span className="font-mono">npm run dev:clientserver:jam-standalone</span>.
+                </span>
+              </div>
             </div>
           </div>
         </div>

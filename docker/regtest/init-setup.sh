@@ -15,21 +15,20 @@ set -Eeuo pipefail
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
-# fund wallet in primary JoinMarket container
+# fund wallet in primary JoinMarket NG container
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --unmatured --blocks 3
 
-# fund wallet in secondary and tertiary JoinMarket container.
-# these will get more coins than the primary one in order to have enough liquidity
-# to run the scheduler (scheduled sweep) successfully multiple times.
+# fund wallet in ng standalone secondary container
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 50
+
+# fund wallet in legacy clientserver native tertiary container
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket3 --unmatured --blocks 50
 
-# fund wallet in quaternary and quinary JoinMarket NG containers.
+# fund wallet in legacy clientserver jam-standalone quaternary container
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket4 --unmatured --blocks 50
-. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket5 --unmatured --blocks 50
 
-# fund wallet in senary container (JoinMarket standalone-ng).
-. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket6 --unmatured --blocks 50
+# fund wallet in ng peer quinary container
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket5 --unmatured --blocks 50
 
 # fund addresses of seed 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 # this is useful if you "import an existing wallet" and verify rescanning the chain works as expected.
@@ -85,17 +84,14 @@ start_maker() {
     fi
 }
 
-msg "Attempt to start maker service for wallet $wallet_name in secondary container.."
+msg "Attempt to start maker service for wallet $wallet_name in ng standalone container.."
 start_maker "https://localhost:29183" "Satoshi.jmdat" "test"
 
-msg "Attempt to start maker service for wallet $wallet_name in tertiary container.."
+msg "Attempt to start maker service for wallet $wallet_name in legacy native container.."
 start_maker "https://localhost:30183" "Satoshi.jmdat" "test"
 
-msg "Attempt to start maker service for wallet $wallet_name in quaternary container.."
+msg "Attempt to start maker service for wallet $wallet_name in legacy standalone container.."
 start_maker "https://localhost:31183" "Satoshi.jmdat" "test"
 
-msg "Attempt to start maker service for wallet $wallet_name in quinary container.."
+msg "Attempt to start maker service for wallet $wallet_name in ng peer container.."
 start_maker "https://localhost:32183" "Satoshi.jmdat" "test"
-
-msg "Attempt to start maker service for wallet $wallet_name in senary container.."
-start_maker "https://localhost:34183" "Satoshi.jmdat" "test"

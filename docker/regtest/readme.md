@@ -5,7 +5,7 @@ It starts multiple JoinMarket containers, hence not only API calls but also actu
 Communication between these containers is done via Tor and local directory servers.
 
 All containers will have a wallet named `Satoshi.jmdat` with password `test`.
-The second container has basic auth enabled (username `joinmarket` and password `joinmarket`).
+The fourth container (`joinmarket4`) has basic auth enabled (username `joinmarket` and password `joinmarket`).
 
 ## Common flow
 
@@ -22,11 +22,11 @@ npm run regtest:init
 # mine blocks in regtest periodically
 npm run regtest:mine
 
-# start jam in development mode against joinmarket-clientserver primary backend
+# start jam in development mode against joinmarket-ng primary backend (default)
 npm run dev
 
-# or start jam in development mode against the initialized joinmarket-ng backend
-npm run dev:ng:native
+# or start jam in development mode against joinmarket-clientserver native backend
+npm run dev:clientserver:native
 
 # or start jam in development mode against jam-standalone with joinmarket-ng backend
 npm run dev:ng:jam-standalone
@@ -58,8 +58,8 @@ Once the regtest environment is up and running you can start Jam with:
 ```sh
 npm run dev
 
-# optionally switch to the initialized joinmarket-ng backend
-npm run dev:ng:native
+# optionally switch to the legacy joinmarket-clientserver native backend
+npm run dev:clientserver:native
 ```
 
 Backend selection can also be controlled manually via environment variables:
@@ -104,18 +104,28 @@ npm run regtest:mine
 
 This setup runs a mixed environment:
 
-- `joinmarket`, `joinmarket2`, `joinmarket3`: `joinmarket-clientserver`
-- `joinmarket4`, `joinmarket5`: `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`
-- `joinmarket6`: `ghcr.io/joinmarket-webui/jam-dev-standalone-ng:kishore-standalone-ng`
-- JoinMarket NG directory service: `ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main`
-- JoinMarket NG orderbook watcher: `ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main`
+| Container            | Role                                 | Image                                                        |
+| -------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| `joinmarket`         | primary · ng native                  | `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`         |
+| `joinmarket2`        | secondary · ng standalone            | `ghcr.io/joinmarket-webui/jam-dev-standalone-ng:master`      |
+| `joinmarket3`        | tertiary · clientserver native       | local build (`joinmarket-clientserver`)                      |
+| `joinmarket4`        | quaternary · clientserver standalone | local build (`joinmarket-clientserver`)                      |
+| `joinmarket5`        | quinary · ng peer                    | `ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:main`         |
+| NG directory         | —                                    | `ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main`  |
+| NG orderbook watcher | —                                    | `ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main` |
 
 Use `:main` for latest unstable/unreleased changes and `:latest` for the latest tagged release.
 
-The second JoinMarket container is exposed on port `29080`.
-The third container is exposed on port `30080`.
-The first JoinMarket NG container is exposed on ports `31183` (API and websocket).
-The second JoinMarket NG container is exposed on ports `32183` (API and websocket).
+Port mapping overview:
+
+| Container                               | Ports                                          |
+| --------------------------------------- | ---------------------------------------------- |
+| `joinmarket` (ng native)                | `28183` (API), `28283` (WS), `62601` (obwatch) |
+| `joinmarket2` (ng standalone)           | `29080` (UI), `29183` (API)                    |
+| `joinmarket3` (clientserver native)     | `30183` (API), `30283` (WS), `30601` (obwatch) |
+| `joinmarket4` (clientserver standalone) | `31080` (UI, basic auth), `31183` (API)        |
+| `joinmarket5` (ng peer)                 | `32183` (API)                                  |
+
 This is useful if you want to perform regression tests across mixed implementations.
 
 The setup includes both a reference directory node and a JoinMarket NG directory server. They implement the same onion directory protocol and run side-by-side for compatibility testing.

@@ -80,10 +80,6 @@ export default defineConfig((config): UserConfig => {
         '@': path.resolve(__dirname, './src'),
       },
     },
-    esbuild: {
-      drop: buildOrPreview ? ['debugger'] : [],
-      pure: buildOrPreview ? ['console.debug'] : [],
-    },
     server: {
       ...server,
       open: true,
