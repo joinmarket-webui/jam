@@ -350,4 +350,61 @@ describe('EarnPage', () => {
     await user.click(screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_renew/u }))
     expect(screen.getByText('renew-bond-dialog:true')).toBeInTheDocument()
   })
+
+  it('shows the coinjoin-in-progress alert', () => {
+    setSession({ coinjoin_in_process: true })
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
+  })
+
+  it('shows the waiting-to-stop alert', () => {
+    setSession({ maker_running: true })
+    mocks.stopMutationState.isSuccess = true
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('Waiting for maker to stop...')).toBeInTheDocument()
+  })
+
+  it('shows the loading-offer alert while the maker runs without an offer', () => {
+    setSession({ maker_running: true, offer_list: [] })
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('earn.alert_loading_offer')).toBeInTheDocument()
+  })
+
+  it('warns when the spendable balance is only unconfirmed', () => {
+    mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
+    mocks.walletInfo.maxJarAvailableBalance = 100_000_000
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('earn.alert_unconfirmed_balance_title')).toBeInTheDocument()
+  })
+
+  it('warns when there is no spendable balance at all', () => {
+    mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
+    mocks.walletInfo.maxJarAvailableBalance = 0
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('earn.alert_no_spendable_balance_title')).toBeInTheDocument()
+  })
+
+  it('shows an error toast when starting the maker fails', async () => {
+    const user = userEvent.setup()
+    mocks.startMaker.mockRejectedValue(new Error('start boom'))
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    await user.click(screen.getByText('submit-earn'))
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalled())
+  })
+
+  it('shows an error toast when stopping the maker fails', async () => {
+    const user = userEvent.setup()
+    setSession({ maker_running: true, offer_list: [{ cjfee: '250', minsize: '5000', ordertype: 'sw0absoffer' }] })
+    mocks.stopMakerRefetch.mockRejectedValue(new Error('stop boom'))
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    await user.click(screen.getByRole('button', { name: 'earn.button_stop' }))
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalled())
+  })
+
+  it('announces success once the maker is running after a successful start', () => {
+    setSession({ maker_running: true })
+    mocks.startMutationState.isSuccess = true
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('earn.alert_running', expect.anything())
+  })
 })

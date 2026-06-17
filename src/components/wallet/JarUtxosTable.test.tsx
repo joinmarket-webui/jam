@@ -64,6 +64,11 @@ const frozenEntry: UtxoTableEntry = {
   tags: [{ displayValue: 'bond', value: 'bond', variant: 'fidelity-bond' }],
 }
 
+const findFirstDataRowCheckbox = () => {
+  const firstDataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('10000'))!
+  return within(firstDataRow).getByRole('checkbox')
+}
+
 describe('JarUtxosTable', () => {
   beforeEach(() => {
     mocks.toastDismiss.mockReset()
@@ -122,5 +127,57 @@ describe('JarUtxosTable', () => {
 
     expect(screen.getByText('global.table.pagination.items_per_page.label')).toBeInTheDocument()
     expect(screen.queryByRole('checkbox')).toBeDisabled()
+  })
+
+  it('deselects related UTXOs from the same address', async () => {
+    const user = userEvent.setup()
+    render(<JarUtxosTable tableEntries={[firstEntry, secondEntry]} pinnedEntries={[]} />)
+
+    await user.click(findFirstDataRowCheckbox()) // select (auto-selects the sibling)
+    mocks.toastWarning.mockClear()
+    await user.click(findFirstDataRowCheckbox()) // deselect both
+
+    expect(mocks.toastWarning).toHaveBeenCalledOnce()
+    const [, options] = mocks.toastWarning.mock.calls[0]
+    expect(options.description).toContain('Automatically deselected 1 more UTXOs')
+  })
+
+  it('dismisses the toast for a single unique-address selection', async () => {
+    const user = userEvent.setup()
+    const uniqueEntry: UtxoTableEntry = {
+      utxo: makeUtxo({ address: 'bc1qunique', utxo: 'txid-d:0', value: 7_000 }),
+      tags: [],
+    }
+    render(<JarUtxosTable tableEntries={[firstEntry, secondEntry, uniqueEntry]} pinnedEntries={[]} />)
+
+    const rows = screen.getAllByRole('row')
+    const uniqueRow = rows.find((row) => within(row).queryByText('7000'))!
+    await user.click(within(uniqueRow).getByRole('checkbox'))
+
+    expect(mocks.toastWarning).not.toHaveBeenCalled()
+    expect(mocks.toastDismiss).toHaveBeenCalled()
+  })
+
+  it('toggles all rows via the header checkbox', async () => {
+    const user = userEvent.setup()
+    render(<JarUtxosTable tableEntries={[firstEntry, secondEntry]} pinnedEntries={[]} />)
+
+    const headerCheckbox = screen.getAllByRole('checkbox')[0]
+    await user.click(headerCheckbox)
+
+    expect(mocks.toastDismiss).toHaveBeenCalled()
+  })
+
+  it('sorts by the address and confirmations columns', () => {
+    render(<JarUtxosTable tableEntries={[firstEntry, secondEntry, frozenEntry]} pinnedEntries={[]} />)
+
+    fireEvent.click(screen.getByText('jar_details.utxo_list.column_title_address'))
+    fireEvent.click(screen.getByText('jar_details.utxo_list.column_title_confirmations'))
+    // toggle the balance column through its sort states
+    const balanceHeader = screen.getByText('jar_details.utxo_list.column_title_balance')
+    fireEvent.click(balanceHeader)
+    fireEvent.click(balanceHeader)
+
+    expect(screen.getByText('bc1qfrozen')).toBeInTheDocument()
   })
 })

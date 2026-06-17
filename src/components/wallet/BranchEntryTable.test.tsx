@@ -89,4 +89,32 @@ describe('BranchEntryTable', () => {
     expect(screen.getByText('bc1qbranch-b')).toBeInTheDocument()
     expect(screen.getByText('1-1 of 1')).toBeInTheDocument()
   })
+
+  it('sorts by the address column and the derivation index column', async () => {
+    const user = userEvent.setup()
+    render(<BranchEntryTable tableEntries={[firstEntry, secondEntry]} selectedEntries={[]} pinnedEntries={[]} />)
+
+    await user.click(screen.getByText('jar_details.utxo_list.column_title_address'))
+    expect(screen.getByText('bc1qbranch-a')).toBeInTheDocument()
+
+    // the derivation-index column has an empty header; click it via the column header role
+    const headers = screen.getAllByRole('columnheader')
+    await user.click(headers[0])
+    expect(screen.getByText('bc1qbranch-b')).toBeInTheDocument()
+  })
+
+  it('applies sorting tie-breaks for equal balances and addresses', async () => {
+    const user = userEvent.setup()
+    const tieA = makeEntry({ address: 'bc1qsame', balance: 5_000, derivationIndex: 2 })
+    const tieB = makeEntry({ address: 'bc1qsame', balance: 5_000, derivationIndex: 5 })
+
+    render(<BranchEntryTable tableEntries={[tieB, tieA]} selectedEntries={[]} pinnedEntries={[]} />)
+
+    // balance column: equal balances fall back to derivationIndex
+    await user.click(screen.getByText('jar_details.utxo_list.column_title_balance'))
+    // address column: equal addresses fall back to derivationIndex
+    await user.click(screen.getByText('jar_details.utxo_list.column_title_address'))
+
+    expect(screen.getAllByText('bc1qsame')).toHaveLength(2)
+  })
 })
