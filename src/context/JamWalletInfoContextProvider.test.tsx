@@ -163,6 +163,99 @@ describe('<JamWalletInfoContextProvider />', () => {
     expect(context?.error).toBeNull()
   })
 
+  it('handles malformed accounts, missing branches, and entries without a status', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.walletInfo = {
+      accounts: [
+        { account: undefined, branches: [] },
+        { account: '0', branches: undefined },
+        {
+          account: '1',
+          branches: [
+            {
+              branch: "external addresses\tm/84'/1'/1'/0",
+              entries: [
+                { address, hd_path: "m/84'/1'/1'/0/0", status: undefined, label: '', balance: 0, used_count: 0 },
+                { address: '', hd_path: "m/84'/1'/1'/0/1", status: 'new', label: '', balance: 0, used_count: 0 },
+              ],
+            },
+          ],
+        },
+      ],
+    } as unknown as WalletInfoApiObject
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    // entry without a status and entry without an address are both skipped
+    expect(context?.addressSummary[address]).toBeUndefined()
+  })
+
+  it('sorts multiple fidelity bonds by lock state and value', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.utxos = [
+      utxo({
+        utxo: `${txid('d')}:0`,
+        value: 100_000,
+        locktime: '2999-01-01 00:00:00',
+        path: "m/84'/1'/0'/0/0:32503680000",
+      }),
+      utxo({
+        utxo: `${txid('e')}:1`,
+        value: 300_000,
+        locktime: '2999-01-01 00:00:00',
+        path: "m/84'/1'/0'/0/1:32503680000",
+      }),
+      utxo({
+        utxo: `${txid('f')}:2`,
+        value: 200_000,
+        locktime: '2000-01-01 00:00:00',
+        path: "m/84'/1'/0'/0/2:946684800",
+      }),
+    ]
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    const fbUtxos = context?.fidelityBondSummary.fbOutputs.map((entry) => entry.utxo)
+    // both locked bonds come before the expired one; higher value wins among locked
+    expect(fbUtxos).toHaveLength(3)
+    expect(fbUtxos?.slice(0, 2)).toEqual([`${txid('e')}:1`, `${txid('d')}:0`])
+  })
+
+  it('detects the network from a utxo sample when no address info is available', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.walletInfo = undefined
+    mocks.utxos = [utxo({ utxo: `${txid('a')}:0`, external: false })]
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.detectedNetwork).toBe(Network.regtest)
+  })
+
+  it('applies a delay before refetching when requested', async () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    await context?.refetch({ delayBefore: 1 })
+    expect(mocks.utxosRefetch).toHaveBeenCalledWith({ throwOnError: true })
+  })
+
   it('refetches utxos before refreshing display wallet data', async () => {
     let context: ReturnType<typeof useJamWalletInfoContext> | undefined
 
