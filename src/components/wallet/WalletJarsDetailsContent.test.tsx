@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AccountSummary, AddressSummary, Jar } from '@/context/JamWalletInfoContext'
@@ -6,6 +6,19 @@ import type { Utxo } from '@/hooks/useQueryUtxos'
 import { WalletJarsDetailsContent } from './WalletJarsDetailsContent'
 
 const walletInfoRefetch = vi.hoisted(() => vi.fn())
+const toastMocks = vi.hoisted(() => ({ success: vi.fn(), warning: vi.fn() }))
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: (message: string) => {
+      toastMocks.success(message)
+    },
+    warning: (message: string) => {
+      toastMocks.warning(message)
+    },
+    dismiss: () => {},
+  },
+}))
 
 vi.mock('react-i18next', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -75,6 +88,18 @@ const jars: Jar[] = [
     name: 'One',
     utxos: [makeUtxo({ address: 'bc1qwallet-b', label: '', utxo: 'wallet-tx-b:1', value: 5_000 })],
   },
+  {
+    balanceSummary: {
+      calculatedAvailableBalanceInSats: 8_000,
+      calculatedConfirmedAvailableBalanceInSats: 8_000,
+      calculatedFrozenOrLockedBalanceInSats: 8_000,
+      calculatedTotalBalanceInSats: 8_000,
+    },
+    color: '#5ba93b',
+    jarIndex: 2,
+    name: 'Two',
+    utxos: [makeUtxo({ address: 'bc1qwallet-c', frozen: true, label: '', utxo: 'wallet-tx-c:2', value: 8_000 })],
+  },
 ]
 
 const addressSummary: AddressSummary = {
@@ -119,6 +144,8 @@ describe('WalletJarsDetailsContent', () => {
   beforeEach(() => {
     walletInfoRefetch.mockReset()
     walletInfoRefetch.mockResolvedValue({})
+    toastMocks.success.mockReset()
+    toastMocks.warning.mockReset()
   })
 
   it('renders selected jar UTXOs and debug details', async () => {
@@ -155,5 +182,40 @@ describe('WalletJarsDetailsContent', () => {
 
     await user.keyboard('{ArrowRight}')
     expect(screen.getByText('bc1qwallet-a')).toBeInTheDocument()
+  })
+
+  it('shows the reused-address alert for a reused jar', () => {
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={0} />)
+    expect(screen.getByText(/jar_details\.utxo_list\.alert_reused_address/u)).toBeInTheDocument()
+  })
+
+  it('refreshes wallet info from the utxos tab', async () => {
+    const user = userEvent.setup()
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} />)
+    await user.click(screen.getByRole('button', { name: 'global.refresh' }))
+    expect(walletInfoRefetch).toHaveBeenCalled()
+  })
+
+  it('freezes the selected (unfrozen) utxos', async () => {
+    const user = userEvent.setup()
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} />)
+
+    const dataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('bc1qwallet-b'))!
+    await user.click(within(dataRow).getByRole('checkbox'))
+
+    await user.click(screen.getByRole('button', { name: 'jar_details.utxo_list.button_freeze' }))
+    await waitFor(() => expect(toastMocks.success).toHaveBeenCalled())
+    expect(walletInfoRefetch).toHaveBeenCalled()
+  })
+
+  it('unfreezes the selected (frozen) utxos', async () => {
+    const user = userEvent.setup()
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={2} />)
+
+    const dataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('bc1qwallet-c'))!
+    await user.click(within(dataRow).getByRole('checkbox'))
+
+    await user.click(screen.getByRole('button', { name: 'jar_details.utxo_list.button_unfreeze' }))
+    await waitFor(() => expect(toastMocks.success).toHaveBeenCalled())
   })
 })
