@@ -68,11 +68,18 @@ describe('useJmWebsocket', () => {
     expect(result.current.isOpen).toBe(true)
     expect(result.current.isAuthenticated).toBe(false)
 
-    await act(() => vi.advanceTimersByTime(20))
+    // advanceTimersByTimeAsync flushes microtasks (and the React effects they
+    // trigger) between timers, so the chained auth -> authenticated timers are
+    // scheduled deterministically rather than racing the next advance.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(20)
+    })
 
     expect(mocks.sendMessage).toHaveBeenCalledWith('access-token')
 
-    await act(() => vi.advanceTimersByTime(10))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10)
+    })
 
     expect(result.current.isAuthenticated).toBe(true)
   })
@@ -84,7 +91,9 @@ describe('useJmWebsocket', () => {
       }),
     )
 
-    await act(() => vi.advanceTimersByTime(100))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100)
+    })
 
     expect(mocks.sendMessage).not.toHaveBeenCalled()
   })
@@ -96,10 +105,20 @@ describe('useJmWebsocket', () => {
       }),
     )
 
-    await act(() => vi.advanceTimersByTime(20))
-    await act(() => vi.advanceTimersByTime(10))
-    await act(() => vi.advanceTimersByTime(30))
-    await act(() => vi.advanceTimersByTime(30))
+    // flush each chained timer (auth -> authenticated -> heartbeat interval ->
+    // delayed heartbeat send) with the async variant to avoid CI timing races.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(20)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30)
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30)
+    })
 
     expect(mocks.sendMessage).toHaveBeenCalledTimes(2)
     expect(mocks.sendMessage).toHaveBeenLastCalledWith('access-token')
