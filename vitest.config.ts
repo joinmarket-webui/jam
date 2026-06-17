@@ -18,10 +18,10 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
         reportOnFailure: true,
         include: ['src/**/*.{ts,tsx}'],
         thresholds: {
-          lines: 70,
-          functions: 60,
-          branches: 60,
-          statements: 70,
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
         },
       },
       projects: [
