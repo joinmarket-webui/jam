@@ -159,6 +159,11 @@ const selectMonth = (value: string) => {
   act(() => handler?.(value))
 }
 
+const selectYear = (value: string) => {
+  const handler = h.selectHandlers.at(-1)
+  act(() => handler?.(value))
+}
+
 const goToConfirm = () => {
   selectMonth('06')
   fireEvent.click(screen.getByText('earn.fidelity_bond.select_date.text_primary_button'))
@@ -184,6 +189,20 @@ describe('RenewBondDialog', () => {
   it('selecting a month enables the next button and shows the chosen date', () => {
     renderDialog()
     selectMonth('06')
+    expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
+  })
+
+  it('selecting a year computes a clamped lock date', () => {
+    renderDialog()
+    selectYear('2027')
+    expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
+  })
+
+  it('selecting an early month bumps the year forward', () => {
+    renderDialog()
+    // a month earlier than the minimum month forces year = minYear + 1
+    selectMonth('06')
+    selectYear('2026')
     expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
   })
 
