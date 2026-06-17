@@ -156,6 +156,7 @@ export const BranchEntryTable = ({
     bottom: [],
   })
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table's useReactTable() is not React Compiler compatible
   const table = useReactTable<BranchEntryTableRow>({
     data: tableEntries,
     columns,

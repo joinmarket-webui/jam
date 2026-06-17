@@ -301,6 +301,7 @@ export const JarUtxosTable = ({
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection ?? {})
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table's useReactTable() is not React Compiler compatible
   const table = useReactTable<UtxoTableEntry>({
     data: tableEntries,
     columns,
