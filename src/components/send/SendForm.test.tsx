@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import { SendForm } from './SendForm'
 
 const h = vi.hoisted(() => ({
@@ -158,13 +159,14 @@ describe('SendForm', () => {
     expect(screen.getByText('send.label_amount_input')).toBeInTheDocument()
   })
 
-  it('selects a source jar', () => {
+  it('selects a source jar', async () => {
     renderForm()
     fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
     expect(screen.getByRole('button', { name: 'Jar 0' })).toBeInTheDocument()
+    await flushActUpdates()
   })
 
-  it('enables sweep, then clears it, then reselecting the jar resets sweep', () => {
+  it('enables sweep, then clears it, then reselecting the jar resets sweep', async () => {
     renderForm()
     fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
 
@@ -176,6 +178,7 @@ describe('SendForm', () => {
 
     fireEvent.click(document.querySelector('#btn-sweep-trigger')!)
     fireEvent.click(document.querySelector('#btn-sweep-clear-trigger')!)
+    await flushActUpdates()
   })
 
   it('applies a scanned bip21 result', async () => {
@@ -183,6 +186,7 @@ describe('SendForm', () => {
     fireEvent.click(document.querySelector('#show-qr-scanner-trigger')!)
     fireEvent.click(await screen.findByTestId('qr-scan'))
     expect(screen.getByText('note')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
   it('selects a destination address from the jar selector', async () => {
@@ -203,13 +207,14 @@ describe('SendForm', () => {
     await waitFor(() => expect(h.toastError).toHaveBeenCalledWith('receive.error_loading_address_failed'))
   })
 
-  it('applies a pasted bip21 uri', () => {
+  it('applies a pasted bip21 uri', async () => {
     renderForm()
     const input = document.querySelector('#send-destination') as HTMLInputElement
     fireEvent.paste(input, {
       clipboardData: { getData: () => 'bitcoin:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq?amount=0.5' },
     })
     expect(h.toastSuccess).toHaveBeenCalledWith('send.qr_scan_bip21_applied')
+    await flushActUpdates()
   })
 
   it('ignores a non-bitcoin paste', () => {
@@ -230,7 +235,7 @@ describe('SendForm', () => {
     expect(submit).toBeDisabled()
   })
 
-  it('submits the form', () => {
+  it('submits the form', async () => {
     const onSubmit = vi.fn()
     render(
       <SendForm
@@ -243,12 +248,14 @@ describe('SendForm', () => {
       />,
     )
     fireEvent.submit(document.querySelector('form')!)
+    await flushActUpdates()
   })
 
-  it('shows a network badge for a non-mainnet destination address', () => {
+  it('shows a network badge for a non-mainnet destination address', async () => {
     renderForm()
     const input = document.querySelector('#send-destination') as HTMLInputElement
     fireEvent.change(input, { target: { value: 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx' } })
     expect(screen.getByText('testnet')).toBeInTheDocument()
+    await flushActUpdates()
   })
 })

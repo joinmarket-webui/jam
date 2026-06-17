@@ -35,7 +35,11 @@ describe('useJmConfig', () => {
   it('fetches missing config values and stores them', async () => {
     const { result } = renderHook(() => useJmConfig({ walletFileName: 'wallet.jmdat' }))
 
-    await expect(result.current.refetch(txFeesKey)).resolves.toEqual({ key: txFeesKey, value: '3' })
+    // refetch updates the config store, which re-renders the hook wrapper; wrap
+    // it in act so that state update is flushed inside act(...)
+    await act(async () => {
+      await expect(result.current.refetch(txFeesKey)).resolves.toEqual({ key: txFeesKey, value: '3' })
+    })
 
     expect(mocks.fetchConfig).toHaveBeenCalledWith({
       path: { walletname: 'wallet.jmdat' },

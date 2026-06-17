@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LogViewer } from './LogViewer'
@@ -98,7 +98,9 @@ describe('LogViewer', () => {
     const scrollTo = vi.fn()
     log!.scrollTo = scrollTo
 
-    log!.dispatchEvent(new Event('scroll', { bubbles: true }))
+    act(() => {
+      log!.dispatchEvent(new Event('scroll', { bubbles: true }))
+    })
 
     const card = screen.getByText('jmwalletd.log').closest<HTMLElement>('[data-slot="card"]')!
     await user.click(within(card).getByTitle('Scroll to bottom'))

@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import { ReceivePage } from './ReceivePage'
 
 const mocks = vi.hoisted(() => ({
@@ -164,6 +165,7 @@ describe('ReceivePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
     expect(mocks.getAddress).toHaveBeenCalledTimes(2)
+    await flushActUpdates()
   })
 
   it('uses receive form changes for the next address request and sharing', async () => {

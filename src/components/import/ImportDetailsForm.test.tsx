@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import { ImportDetailsForm } from './ImportDetailsForm'
 
 vi.mock('react-i18next', () => ({
@@ -77,17 +78,19 @@ const typeMnemonic = (value: string) => {
 }
 
 describe('ImportDetailsForm', () => {
-  it('renders the mnemonic, blockheight and gaplimit fields', () => {
+  it('renders the mnemonic, blockheight and gaplimit fields', async () => {
     render(<ImportDetailsForm onSubmit={vi.fn()} />)
     expect(screen.getByText('import_wallet.import_details.label_menmonic_phrase')).toBeInTheDocument()
     expect(document.querySelector('#blockheight')).toBeInTheDocument()
     expect(document.querySelector('#gaplimit')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
-  it('shows a success alert when the mnemonic is a valid BIP-39 phrase', () => {
+  it('shows a success alert when the mnemonic is a valid BIP-39 phrase', async () => {
     render(<ImportDetailsForm onSubmit={vi.fn()} />)
     typeMnemonic(VALID_MNEMONIC)
     expect(screen.getByText('Mnemonic phrase is valid')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
   it('warns and does not submit when the mnemonic is not recognized', async () => {
@@ -111,7 +114,7 @@ describe('ImportDetailsForm', () => {
     await waitFor(() => expect(onSubmit).toHaveBeenCalled())
   })
 
-  it('shows a high-gaplimit warning above the threshold', () => {
+  it('shows a high-gaplimit warning above the threshold', async () => {
     render(
       <ImportDetailsForm
         onSubmit={vi.fn()}
@@ -119,11 +122,13 @@ describe('ImportDetailsForm', () => {
       />,
     )
     expect(screen.getByText('import_wallet.import_details.alert_high_gaplimit_value')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
-  it('renders a disabled submit button when disabled', () => {
+  it('renders a disabled submit button when disabled', async () => {
     render(<ImportDetailsForm onSubmit={vi.fn()} disabled />)
     const submit = document.querySelector('button[type="submit"]')
     expect(submit).toBeDisabled()
+    await flushActUpdates()
   })
 })

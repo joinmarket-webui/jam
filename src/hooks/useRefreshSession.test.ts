@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import { useRefreshSession } from './useRefreshSession'
 
 const mocks = vi.hoisted(() => ({
@@ -66,7 +67,7 @@ describe('useRefreshSession', () => {
     await waitFor(() => expect(jmSessionStore.getState().state).toBe(sessionData))
   })
 
-  it('refetches when the active wallet changes', () => {
+  it('refetches when the active wallet changes', async () => {
     const { rerender } = renderHook(() => useRefreshSession({ enabled: true, refetchInterval: 5_000 }))
 
     expect(mocks.refetchSessionData).toHaveBeenCalledTimes(1)
@@ -75,6 +76,7 @@ describe('useRefreshSession', () => {
     rerender()
 
     expect(mocks.refetchSessionData).toHaveBeenCalledTimes(2)
+    await flushActUpdates()
   })
 
   it('shows a developer-mode toast when refetch fails', async () => {
