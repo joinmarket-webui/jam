@@ -73,6 +73,15 @@ describe('xpubs', () => {
     ).toBe(vector0)
   })
 
+  it('throws for an unknown target format', () => {
+    const vector0 = BIP32_TEST_VECTOR_1[0]
+    expect(() => convertExtendedPublicKey(vector0, 'notaformat' as never)).toThrow(/Invalid target format/)
+  })
+
+  it('throws a descriptive error for an invalid extended public key', () => {
+    expect(() => convertExtendedPublicKey('not-a-valid-xpub', 'zpub')).toThrow(/Invalid extended public key/)
+  })
+
   it('convert xpub to zpub from dummy seed phrase', () => {
     const seed = mnemonicToSeedSync(DUMMY_SEED_PHRASE.join(' '))
     const root = HDKey.fromMasterSeed(seed)
