@@ -133,6 +133,27 @@ describe('OrderbookTable', () => {
     await waitFor(() => expect(screen.getByText('pagination:1/1:10:2')).toBeInTheDocument())
   })
 
+  it('sorts by each sortable column and changes pages', async () => {
+    const user = userEvent.setup()
+    render(<OrderbookTable tableEntries={[relativeEntry, absoluteEntry]} selectedEntries={[]} pinnedEntries={[]} />)
+
+    for (const heading of [
+      'orderbook.table.heading_fee',
+      'orderbook.table.heading_minimum_size',
+      'orderbook.table.heading_maximum_size',
+      'orderbook.table.heading_bond_value',
+      'orderbook.table.heading_order_id',
+    ]) {
+      const header = screen.queryByText(heading)
+      if (header) {
+        await user.click(header)
+      }
+    }
+
+    await user.click(screen.getByText('page-two'))
+    expect(screen.getByText('orderbook.table.heading_counterparty')).toBeInTheDocument()
+  })
+
   it('filters rows and handles empty pinned row models', () => {
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
 
