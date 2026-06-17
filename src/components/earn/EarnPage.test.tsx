@@ -68,7 +68,9 @@ vi.mock('@tanstack/react-query', () => ({
           return result
         } catch (error) {
           options.onError?.(error)
-          throw error
+          // do not rethrow: the component fires these mutations without catching,
+          // and the UI is driven entirely by the onError handler above
+          return undefined
         }
       },
       reset: vi.fn(),
