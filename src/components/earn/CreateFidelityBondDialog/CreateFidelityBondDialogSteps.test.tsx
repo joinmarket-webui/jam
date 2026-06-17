@@ -147,4 +147,72 @@ describe('CreateFidelityBondDialogSteps', () => {
     expect(screen.getByText('earn.fidelity_bond.create_fidelity_bond.success_text')).toBeInTheDocument()
     expect(screen.getByText('1234abcd')).toBeInTheDocument()
   })
+
+  it('warns about a duplicate lock date on the select_date step', () => {
+    const wizard = getBaseWizard()
+    wizard.hasDuplicateLockdate = true
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+    expect(screen.getByTestId('trans-earn.fidelity_bond.select_date.warning_fb_with_same_expiry')).toBeInTheDocument()
+  })
+
+  it('highlights the selected jar and shows the no-jars alert state', () => {
+    const wizard = getBaseWizard()
+    wizard.step = 'select_jar'
+    wizard.selectedJarIndex = 1
+    wizard.jarsWithUtxos = [
+      {
+        jarIndex: 0,
+        name: 'Jar 0',
+        color: '#000',
+        balanceSummary: { calculatedAvailableBalanceInSats: 5000 },
+        utxos: [],
+      },
+      {
+        jarIndex: 1,
+        name: 'Jar 1',
+        color: '#111',
+        balanceSummary: { calculatedAvailableBalanceInSats: 9000 },
+        utxos: [],
+      },
+    ] as unknown as Wizard['jarsWithUtxos']
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+    expect(screen.getByText('Jar 0')).toBeInTheDocument()
+    expect(screen.getByText('Jar 1')).toBeInTheDocument()
+  })
+
+  it('renders select_utxos with a selected utxo, pagination, and the all-funds warning', () => {
+    const wizard = getBaseWizard()
+    wizard.step = 'select_utxos'
+    const utxos = Array.from({ length: 7 }, (_, index) => ({
+      utxo: `tx${index}:0`,
+      value: 1000 + index,
+      confirmations: index,
+    }))
+    wizard.availableUtxos = utxos as unknown as Wizard['availableUtxos']
+    wizard.selectedUtxos = [utxos[0]] as unknown as Wizard['selectedUtxos']
+    wizard.isUsingAllFunds = true
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+
+    expect(screen.getByText('earn.fidelity_bond.select_utxos.label_total_selected')).toBeInTheDocument()
+    expect(screen.getByTestId('trans-earn.fidelity_bond.alert_all_funds_in_use')).toBeInTheDocument()
+    // 7 utxos / 5 per page -> pagination shows page indicator
+    expect(screen.getByText('1 / 2')).toBeInTheDocument()
+  })
+
+  it('shows the loading state while the timelock address is fetched on review', () => {
+    const wizard = getBaseWizard()
+    wizard.step = 'review'
+    wizard.timelockAddressQuery = { isLoading: true } as unknown as Wizard['timelockAddressQuery']
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+    expect(screen.getByText('earn.fidelity_bond.text_loading')).toBeInTheDocument()
+  })
+
+  it('shows the unfreeze hint on the success step when there are frozen utxos', () => {
+    const wizard = getBaseWizard()
+    wizard.step = 'success'
+    wizard.txResult = null
+    wizard.frozenUtxos = [{ utxo: 'tx1:0', value: 1000 }] as unknown as Wizard['frozenUtxos']
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+    expect(screen.getByText('earn.fidelity_bond.create_fidelity_bond.label_utxos_to_unfreeze')).toBeInTheDocument()
+  })
 })
