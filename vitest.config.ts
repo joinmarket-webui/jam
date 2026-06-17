@@ -2,7 +2,7 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import path from 'node:path'
 import { mergeConfig } from 'vite'
-import { ConfigEnv, defineConfig, type ViteUserConfig } from 'vitest/config'
+import { ConfigEnv, coverageConfigDefaults, defineConfig, type ViteUserConfig } from 'vitest/config'
 import viteConfig from './vite.config'
 
 export default defineConfig((args: ConfigEnv): ViteUserConfig => {
@@ -17,6 +17,16 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
         // enable coverage reports even if tests are failing
         reportOnFailure: true,
         include: ['src/**/*.{ts,tsx}'],
+        exclude: [
+          ...coverageConfigDefaults.exclude,
+          // type declarations carry no runtime code
+          '**/*.d.ts',
+          // pure re-export barrel
+          'src/components/earn/CreateFidelityBondDialog/index.ts',
+          // test-only helpers and config
+          'src/test/**',
+          'src/i18n/testConfig.ts',
+        ],
         thresholds: {
           lines: 80,
           functions: 80,
@@ -40,6 +50,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
               provider: playwright({}),
               instances: [{ browser: 'chromium' }],
             },
+            setupFiles: ['.storybook/vitest.setup.ts'],
             // Set `isolate` to `false` to prevent frequent storybook errors.
             // ("Failed to fetch dynamically imported module" and "Cannot connect to the iframe")
             // See: https://storybook.js.org/docs/writing-tests/integrations/vitest-addon/index#why-do-my-tests-fail-in-ci-with-failed-to-fetch-dynamically-imported-module-or-cannot-connect-to-the-iframe

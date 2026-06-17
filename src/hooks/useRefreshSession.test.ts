@@ -1,10 +1,9 @@
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { flushActUpdates } from '@/test/flushActUpdates'
 import { useRefreshSession } from './useRefreshSession'
 
 const mocks = vi.hoisted(() => ({
@@ -67,16 +66,18 @@ describe('useRefreshSession', () => {
     await waitFor(() => expect(jmSessionStore.getState().state).toBe(sessionData))
   })
 
-  it('refetches when the active wallet changes', async () => {
+  it('refetches when the active wallet changes', () => {
     const { rerender } = renderHook(() => useRefreshSession({ enabled: true, refetchInterval: 5_000 }))
 
     expect(mocks.refetchSessionData).toHaveBeenCalledTimes(1)
 
-    authStore.getState().update({ walletFileName: 'second-wallet.jmdat' })
+    // the store update re-renders the hook, so it must run inside act(...)
+    act(() => {
+      authStore.getState().update({ walletFileName: 'second-wallet.jmdat' })
+    })
     rerender()
 
     expect(mocks.refetchSessionData).toHaveBeenCalledTimes(2)
-    await flushActUpdates()
   })
 
   it('shows a developer-mode toast when refetch fails', async () => {
