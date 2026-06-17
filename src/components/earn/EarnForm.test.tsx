@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { EarnForm } from './EarnForm'
@@ -90,8 +90,13 @@ describe('EarnForm', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  it('renders waiting and debug state', () => {
-    render(<EarnForm debug disabled isWaitingMakerStart={true} offerMinsizeMax={100_000_000} onSubmit={vi.fn()} />)
+  it('renders waiting and debug state', async () => {
+    // wrap in async act so react-hook-form's deferred mount validation settles
+    // inside act (otherwise it updates formState after the test → act warning)
+    await act(async () => {
+      render(<EarnForm debug disabled isWaitingMakerStart={true} offerMinsizeMax={100_000_000} onSubmit={vi.fn()} />)
+      await Promise.resolve()
+    })
 
     expect(screen.getByRole('button', { name: /earn.text_starting/ })).toBeDisabled()
     expect(screen.getByText('dev-badge')).toBeInTheDocument()

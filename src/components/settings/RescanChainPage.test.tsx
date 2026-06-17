@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { RescanInfo } from '@/context/JamSessionInfoContext'
 import type { WalletFileName } from '@/lib/utils'
@@ -75,34 +75,43 @@ vi.mock('@/components/ui/card', () => ({
 
 const walletFileName = 'wallet.jmdat' as WalletFileName
 
+// react-hook-form runs validation after mount; flushing inside async act keeps
+// that deferred state update from triggering a "not wrapped in act" warning.
+const renderPage = async () => {
+  await act(async () => {
+    render(<RescanChainPage walletFileName={walletFileName} />)
+    await Promise.resolve()
+  })
+}
+
 describe('RescanChainPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     rescanInfo = { updatedAt: 0, rescanning: false, progress: undefined }
   })
 
-  it('renders the form and navigates back', () => {
-    render(<RescanChainPage walletFileName={walletFileName} />)
+  it('renders the form and navigates back', async () => {
+    await renderPage()
 
     expect(screen.getByText('rescan_chain.title')).toBeInTheDocument()
     fireEvent.click(screen.getByTitle('global.back'))
     expect(navigateMock).toHaveBeenCalled()
   })
 
-  it('shows the in-progress alert without progress', () => {
+  it('shows the in-progress alert without progress', async () => {
     rescanInfo = { updatedAt: 0, rescanning: true, progress: undefined }
-    render(<RescanChainPage walletFileName={walletFileName} />)
+    await renderPage()
     expect(screen.getByText('app.alert_rescan_in_progress')).toBeInTheDocument()
   })
 
-  it('shows the in-progress alert with progress', () => {
+  it('shows the in-progress alert with progress', async () => {
     rescanInfo = { updatedAt: 0, rescanning: true, progress: 42 }
-    render(<RescanChainPage walletFileName={walletFileName} />)
+    await renderPage()
     expect(screen.getByText(/app.alert_rescan_in_progress_with_progress/)).toBeInTheDocument()
   })
 
   it('submits a valid block height through the mutation', async () => {
-    render(<RescanChainPage walletFileName={walletFileName} />)
+    await renderPage()
     const input = screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')
     fireEvent.change(input, { target: { value: '700000' } })
     fireEvent.submit(input.closest('form')!)
@@ -111,21 +120,21 @@ describe('RescanChainPage', () => {
   })
 
   it('mutationFn calls the rescan API and returns data', async () => {
-    render(<RescanChainPage walletFileName={walletFileName} />)
+    await renderPage()
     await expect(mutationConfig.mutationFn(700000)).resolves.toBe('ok')
     expect(rescanblockchainMock).toHaveBeenCalled()
   })
 
-  it('onSuccess shows a toast and updates rescan info', () => {
-    render(<RescanChainPage walletFileName={walletFileName} />)
+  it('onSuccess shows a toast and updates rescan info', async () => {
+    await renderPage()
     mutationConfig.onSuccess()
     expect(toastSuccess).toHaveBeenCalled()
     expect(setRescanInfo).toHaveBeenCalledWith(expect.objectContaining({ rescanning: true }))
   })
 
-  it('onError shows an error toast and resets rescan info', () => {
+  it('onError shows an error toast and resets rescan info', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    render(<RescanChainPage walletFileName={walletFileName} />)
+    await renderPage()
     mutationConfig.onError(new Error('boom'))
     expect(toastError).toHaveBeenCalled()
     expect(setRescanInfo).toHaveBeenCalledWith(expect.objectContaining({ rescanning: false }))
