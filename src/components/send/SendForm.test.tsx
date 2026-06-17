@@ -244,4 +244,11 @@ describe('SendForm', () => {
     )
     fireEvent.submit(document.querySelector('form')!)
   })
+
+  it('shows a network badge for a non-mainnet destination address', () => {
+    renderForm()
+    const input = document.querySelector('#send-destination') as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx' } })
+    expect(screen.getByText('testnet')).toBeInTheDocument()
+  })
 })
