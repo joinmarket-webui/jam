@@ -12,6 +12,7 @@ import type { SendFormValues } from './types'
 
 const mocks = vi.hoisted(() => ({
   clearCurrentPaymentAttempt: vi.fn(),
+  currentPaymentAttemptPresent: false,
   directSend: vi.fn(),
   fetchIfMissing: vi.fn(),
   feeConfigMissing: false,
@@ -111,7 +112,10 @@ vi.mock('@/hooks/useApiClient', () => ({
 vi.mock('@/hooks/useFeeConfigValidation', () => ({
   useFeeConfigValidation: () => ({
     feeConfigValues: mocks.getFeeConfigValues(),
-    maxFeesConfigMissing: mocks.feeConfigMissing,
+    // getter so a captured reference reflects later toggles of mocks.feeConfigMissing
+    get maxFeesConfigMissing() {
+      return mocks.feeConfigMissing
+    },
   }),
 }))
 
@@ -153,7 +157,7 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     rescanInfo: { rescanning: false },
     setCurrentPaymentAttempt: mocks.setCurrentPaymentAttempt,
     takerInfo: {
-      currentPaymentAttempt: mocks.takerRunning ? collaborativeValues : undefined,
+      currentPaymentAttempt: mocks.takerRunning || mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
       running: mocks.takerRunning,
     },
   }),
@@ -193,7 +197,7 @@ vi.mock('./PaymentConfirmDialog', () => ({
   }) => (
     <div>
       payment-confirm:{String(open)}
-      {open ? <button onClick={() => void onConfirm(values)}>confirm-payment</button> : null}
+      {open ? <button onClick={() => void onConfirm(values).catch(() => {})}>confirm-payment</button> : null}
     </div>
   ),
 }))
@@ -294,6 +298,7 @@ const collaborativeValues = {
 describe('SendPage', () => {
   beforeEach(() => {
     mocks.clearCurrentPaymentAttempt.mockReset()
+    mocks.currentPaymentAttemptPresent = false
     mocks.directSend.mockReset()
     mocks.fetchIfMissing.mockReset()
     mocks.fetchIfMissing.mockResolvedValue({ value: '4' })
@@ -388,5 +393,180 @@ describe('SendPage', () => {
 
     await user.click(screen.getByText('confirm-abort'))
     expect(mocks.stopCoinjoinRefetch).toHaveBeenCalledWith({ throwOnError: true })
+  })
+
+  it('confirms and starts a collaborative transaction', async () => {
+    const user = userEvent.setup()
+    mocks.startCoinjoin.mockResolvedValue({})
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('submit-coinjoin'))
+    await user.click(screen.getByText('confirm-payment'))
+
+    await waitFor(() => expect(mocks.startCoinjoin).toHaveBeenCalled())
+    expect(mocks.setCurrentPaymentAttempt).toHaveBeenCalled()
+  })
+
+  it('rejects confirmed CoinJoin when max fees config goes missing after submit', async () => {
+    const user = userEvent.setup()
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('submit-coinjoin'))
+    mocks.feeConfigMissing = true
+    await user.click(screen.getByText('confirm-payment'))
+
+    expect(mocks.startCoinjoin).not.toHaveBeenCalled()
+    expect(mocks.toastError).toHaveBeenCalledWith('send.taker_error_message_max_fees_config_missing')
+  })
+
+  it('handles errors thrown by the collaborative transaction', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const user = userEvent.setup()
+    mocks.startCoinjoin.mockRejectedValue({ message: 'coinjoin boom' })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('submit-coinjoin'))
+    await user.click(screen.getByText('confirm-payment'))
+
+    await waitFor(() => expect(screen.getByText(/send.error_starting_collaborative_transaction/u)).toBeInTheDocument())
+    expect(mocks.setCurrentPaymentAttempt).not.toHaveBeenCalled()
+    consoleError.mockRestore()
+  })
+
+  it('handles errors thrown by the direct transaction', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const user = userEvent.setup()
+    mocks.directSend.mockRejectedValue({ message: 'direct boom' })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('submit-direct'))
+    await user.click(screen.getByText('confirm-payment'))
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith(expect.stringContaining('direct boom')))
+    consoleError.mockRestore()
+  })
+
+  it('succeeds without a matching output or input outpoints', async () => {
+    const user = userEvent.setup()
+    mocks.directSend.mockResolvedValue({
+      txinfo: {
+        inputs: [{ outpoint: undefined }, undefined],
+        outputs: [{ address: 'bc1qother', value_sats: 5 }],
+        txid: 'txid-no-match',
+      },
+    })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('submit-direct'))
+    await user.click(screen.getByText('confirm-payment'))
+
+    await waitFor(() => expect(mocks.directSend).toHaveBeenCalled())
+    expect(mocks.setWaitForUtxosToBeSpent).toHaveBeenCalledWith([])
+  })
+
+  it('succeeds when txinfo has no inputs array', async () => {
+    const user = userEvent.setup()
+    mocks.directSend.mockResolvedValue({
+      txinfo: {
+        outputs: [{ address: directValues.destination.address, value_sats: 1_000 }],
+        txid: 'txid-no-inputs',
+      },
+    })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('submit-direct'))
+    await user.click(screen.getByText('confirm-payment'))
+
+    await waitFor(() => expect(mocks.setWaitForUtxosToBeSpent).toHaveBeenCalledWith([]))
+  })
+
+  it('shows the fee config error alert and opens the dialog', async () => {
+    const user = userEvent.setup()
+    mocks.feeConfigMissing = true
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('open-fee-config'))
+    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+  })
+
+  it('shows the maker running warning', () => {
+    jmSessionStore.setState({
+      state: {
+        coinjoin_in_process: false,
+        maker_running: true,
+        session: true,
+        wallet_name: 'wallet.jmdat',
+        rescanning: false,
+      },
+    })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.text_maker_running')).toBeInTheDocument()
+    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+  })
+
+  it('shows the waiting-for-utxos alert and disables the form', () => {
+    mocks.waitForUtxosToBeSpent = ['spent-tx:0']
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('Waiting for utxos to be marked as spent...')).toBeInTheDocument()
+    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+  })
+
+  it('shows the collaborative awaiting completion alert while wallet info is fetching', () => {
+    mocks.currentPaymentAttemptPresent = true
+    mocks.walletInfoIsFetching = true
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.alert_collaborative_awaiting_completion')).toBeInTheDocument()
+  })
+
+  it('shows the collaborative ended alert when utxos are unchanged and clears the attempt', async () => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.alert_collaborative_ended_title')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
+  })
+
+  it('handles errors loading minimum makers config', async () => {
+    mocks.fetchIfMissing.mockRejectedValue({ message: 'config boom' })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await waitFor(() =>
+      expect(mocks.toastError).toHaveBeenCalledWith(expect.stringContaining('send.error_loading_min_makers_failed')),
+    )
+  })
+
+  it('ignores an invalid minimum makers config value', async () => {
+    mocks.fetchIfMissing.mockResolvedValue({ value: '0' })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await waitFor(() => expect(mocks.fetchIfMissing).toHaveBeenCalled())
+    expect(mocks.toastError).not.toHaveBeenCalled()
+  })
+
+  it('ignores a missing minimum makers config value', async () => {
+    mocks.fetchIfMissing.mockResolvedValue({ value: undefined })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await waitFor(() => expect(mocks.fetchIfMissing).toHaveBeenCalled())
+    expect(mocks.toastError).not.toHaveBeenCalled()
   })
 })

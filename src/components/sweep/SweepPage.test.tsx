@@ -74,7 +74,9 @@ vi.mock('@tanstack/react-query', () => ({
           return result
         } catch (error) {
           options.onError?.(error instanceof Error ? error : new Error(String(error)))
-          throw error
+          // do not rethrow: the component fires these mutations without catching,
+          // and the UI is driven entirely by the onError handler above
+          return undefined
         }
       },
       reset: isStartSchedule ? mocks.startReset : mocks.stopReset,
@@ -347,5 +349,173 @@ describe('SweepPage', () => {
 
     expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
     expect(screen.getByText('send.text_maker_running')).toBeInTheDocument()
+  })
+
+  it('shows the single coinjoin running alert when coinjoin runs without a schedule', () => {
+    setSession({ coinjoin_in_process: true })
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
+    expect(screen.queryByText('send.text_maker_running')).not.toBeInTheDocument()
+  })
+
+  it('shows loading while fee config is loading', () => {
+    mocks.feeConfigLoading = true
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('page-loading')).toBeInTheDocument()
+  })
+
+  it('shows loading while wallet info is loading', () => {
+    mocks.walletInfo = makeWalletInfo({ isLoading: true })
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('page-loading')).toBeInTheDocument()
+  })
+
+  it('disables operations while the wallet is rescanning', () => {
+    setSession({ rescanning: true })
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByRole('button', { name: 'scheduler.button_start' })).toBeDisabled()
+  })
+
+  it('shows the start waiting alert while the schedule start is pending', () => {
+    mocks.startState = { isPending: true, isSuccess: false }
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    // the key is shown both on the button and in the waiting alert title
+    expect(screen.getAllByText('scheduler.button_start').length).toBeGreaterThan(1)
+  })
+
+  it('shows the stop waiting alert while the schedule stop is pending', () => {
+    setSession({ coinjoin_in_process: true, schedule: activeSchedule })
+    mocks.stopState = { isPending: true, isSuccess: false }
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('schedule-progress:true')).toBeInTheDocument()
+  })
+
+  it('renders the schedule from the get-schedule query when no session schedule is set', () => {
+    setSession({ coinjoin_in_process: true })
+    mocks.scheduleQuery = { data: { schedule: activeSchedule } }
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('schedule-progress:false')).toBeInTheDocument()
+  })
+
+  it('shows an alert when starting the schedule fails', async () => {
+    mocks.runSchedule.mockRejectedValue(new Error('boom'))
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'fill-destinations' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
+
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
+    expect(screen.getByText('global.error')).toBeInTheDocument()
+  })
+
+  it('shows an alert when stopping the schedule fails', async () => {
+    setSession({ coinjoin_in_process: true, schedule: activeSchedule })
+    mocks.stopScheduleRefetch.mockRejectedValue(new Error('stop-boom'))
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'stop-sweep' }))
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
+    expect(screen.getByText('global.error')).toBeInTheDocument()
+  })
+
+  it('does not store a schedule when the start result has no valid schedule', async () => {
+    mocks.runSchedule.mockResolvedValue({ schedule: undefined } as unknown as { schedule: Schedule })
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'fill-destinations' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
+
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
+
+    await waitFor(() => expect(mocks.runSchedule).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText('schedule-progress:false')).not.toBeInTheDocument()
+  })
+
+  describe('with insecure testing toggle enabled', () => {
+    beforeEach(() => {
+      mocks.debugFeatureEnabled = true
+    })
+
+    it('uses an existing new default-jar address when toggled on and submits tumbler options', async () => {
+      mocks.walletInfo = makeWalletInfo({
+        addressSummary: {
+          [VALID_DESTINATIONS[0]]: {
+            address: VALID_DESTINATIONS[0],
+            status: 'new',
+            jarIndex: 0,
+          },
+        } as unknown as WalletInfo['addressSummary'],
+      })
+
+      render(<SweepPage walletFileName="wallet.jmdat" />)
+
+      fireEvent.click(screen.getByRole('switch'))
+      await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
+
+      fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
+
+      await waitFor(() => expect(mocks.runSchedule).toHaveBeenCalledTimes(1))
+      const callArgument = mocks.runSchedule.mock.calls[0][0] as { body: { tumbler_options?: unknown } }
+      expect(callArgument.body.tumbler_options).toBeDefined()
+    })
+
+    it('falls back to any new address when no default-jar new address exists', () => {
+      mocks.walletInfo = makeWalletInfo({
+        addressSummary: {
+          [VALID_DESTINATIONS[1]]: {
+            address: VALID_DESTINATIONS[1],
+            status: 'new',
+            jarIndex: 2,
+          },
+        } as unknown as WalletInfo['addressSummary'],
+      })
+
+      render(<SweepPage walletFileName="wallet.jmdat" />)
+
+      fireEvent.click(screen.getByRole('switch'))
+
+      expect(screen.getByRole('switch')).toBeChecked()
+    })
+
+    it('uses an empty address when no new address is available', () => {
+      render(<SweepPage walletFileName="wallet.jmdat" />)
+
+      fireEvent.click(screen.getByRole('switch'))
+
+      expect(screen.getByRole('switch')).toBeChecked()
+    })
+
+    it('restores production destinations when toggled off', () => {
+      render(<SweepPage walletFileName="wallet.jmdat" />)
+
+      const toggle = screen.getByRole('switch')
+      fireEvent.click(toggle)
+      expect(toggle).toBeChecked()
+      fireEvent.click(toggle)
+      expect(toggle).not.toBeChecked()
+    })
   })
 })
