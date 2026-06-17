@@ -224,33 +224,37 @@ describe('OrderbookContent', () => {
     const user = userEvent.setup()
 
     render(<OrderbookContent enabled />)
+    await flushActUpdates()
 
     expect(screen.getByText(/orderbook.text_orderbook_summary/)).toBeInTheDocument()
     expect(screen.getByText('orderbook.market_summary_title')).toBeInTheDocument()
     expect(screen.getByText(/table:2:selected:0:pinned:0/)).toBeInTheDocument()
 
     await user.click(screen.getByLabelText('orderbook.label_highlight_own_orders'))
+    await flushActUpdates()
     expect(screen.getByText(/table:2:selected:1:pinned:0/)).toBeInTheDocument()
 
     await screen.findByText('orderbook.label_pin_to_top_own_orders')
     await user.click(screen.getAllByRole('switch')[1])
-    expect(screen.getByText(/table:2:selected:1:pinned:1/)).toBeInTheDocument()
     await flushActUpdates()
+    expect(screen.getByText(/table:2:selected:1:pinned:1/)).toBeInTheDocument()
   })
 
   it('filters table rows and reloads the orderbook', async () => {
     const user = userEvent.setup()
 
     render(<OrderbookContent enabled />)
+    await flushActUpdates()
 
     await user.type(screen.getByPlaceholderText('orderbook.placeholder_search'), 'maker-b')
+    await flushActUpdates()
 
     expect(screen.getByText(/orderbook.text_orderbook_summary_filtered/)).toBeInTheDocument()
     expect(screen.getByText(/filter:maker-b/)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /orderbook.button_reload_title/ }))
-    expect(mocks.orderbookRefetch).toHaveBeenCalledTimes(1)
     await flushActUpdates()
+    expect(mocks.orderbookRefetch).toHaveBeenCalledTimes(1)
   })
 
   it('shows loading, empty, and error states', async () => {
@@ -258,20 +262,23 @@ describe('OrderbookContent', () => {
 
     mocks.orderbookQuery.isLoading = true
     const { rerender } = render(<OrderbookContent enabled />)
+    await flushActUpdates()
     expect(screen.getByText('global.loading')).toBeInTheDocument()
 
     mocks.orderbookQuery.isLoading = false
     mocks.orderbookQuery.data = { fidelitybonds: [], offers: [] }
     rerender(<OrderbookContent enabled />)
+    await flushActUpdates()
     expect(screen.getByText('orderbook.alert_empty_orderbook')).toBeInTheDocument()
 
     mocks.orderbookQuery.error = new Error('boom')
     rerender(<OrderbookContent enabled />)
+    await flushActUpdates()
     expect(screen.getByText(/orderbook.error_loading_orderbook_failed/)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /global.retry/ }))
-    expect(mocks.orderbookRefetch).toHaveBeenCalledTimes(1)
     await flushActUpdates()
+    expect(mocks.orderbookRefetch).toHaveBeenCalledTimes(1)
   })
 
   it('can add demo entries in developer mode', async () => {
@@ -279,10 +286,11 @@ describe('OrderbookContent', () => {
     mocks.developerMode = true
 
     render(<OrderbookContent enabled />)
+    await flushActUpdates()
 
     await user.click(screen.getByRole('button', { name: /Add Demo Entry/ }))
+    await flushActUpdates()
 
     expect(screen.getByText(/table:3/)).toBeInTheDocument()
-    await flushActUpdates()
   })
 })

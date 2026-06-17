@@ -12,6 +12,8 @@ import { act } from '@testing-library/react'
  */
 export const flushActUpdates = async (): Promise<void> => {
   await act(async () => {
-    await Promise.resolve()
+    // a macrotask drains both the microtask queue and any timer/0ms-deferred
+    // updates (e.g. Radix UI providers) so they settle inside act(...)
+    await new Promise((resolve) => setTimeout(resolve, 0))
   })
 }
