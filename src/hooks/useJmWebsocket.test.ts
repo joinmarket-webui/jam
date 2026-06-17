@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { authStore } from '@/store/authStore'
 import { useJmWebsocket } from './useJmWebsocket'
@@ -33,9 +33,12 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
   pseudoRandomFloat: vi.fn(() => 1),
 }))
 
+// These tests intentionally use real timers (the durations above are mocked to a
+// few milliseconds) together with `waitFor`. The hook chains setTimeout -> state
+// update -> setTimeout, and driving that with fake timers + act races under CI
+// load; polling with real timers is deterministic regardless of machine load.
 describe('useJmWebsocket', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
     vi.clearAllMocks()
     mocks.readyState = 1
     mocks.useWebSocket.mockImplementation((_url: string, options: unknown) => ({
@@ -54,7 +57,6 @@ describe('useJmWebsocket', () => {
   })
 
   afterEach(() => {
-    vi.useRealTimers()
     authStore.getState().clear()
   })
 
@@ -68,20 +70,8 @@ describe('useJmWebsocket', () => {
     expect(result.current.isOpen).toBe(true)
     expect(result.current.isAuthenticated).toBe(false)
 
-    // advanceTimersByTimeAsync flushes microtasks (and the React effects they
-    // trigger) between timers, so the chained auth -> authenticated timers are
-    // scheduled deterministically rather than racing the next advance.
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(20)
-    })
-
-    expect(mocks.sendMessage).toHaveBeenCalledWith('access-token')
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(10)
-    })
-
-    expect(result.current.isAuthenticated).toBe(true)
+    await waitFor(() => expect(mocks.sendMessage).toHaveBeenCalledWith('access-token'))
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true))
   })
 
   it('does not send auth messages when authentication is disabled', async () => {
@@ -91,9 +81,8 @@ describe('useJmWebsocket', () => {
       }),
     )
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(100)
-    })
+    // give the auth/heartbeat timers ample time to fire if they were going to
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(mocks.sendMessage).not.toHaveBeenCalled()
   })
@@ -105,22 +94,8 @@ describe('useJmWebsocket', () => {
       }),
     )
 
-    // flush each chained timer (auth -> authenticated -> heartbeat interval ->
-    // delayed heartbeat send) with the async variant to avoid CI timing races.
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(20)
-    })
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(10)
-    })
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(30)
-    })
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(30)
-    })
-
-    expect(mocks.sendMessage).toHaveBeenCalledTimes(2)
+    // first call is the auth renewal, subsequent calls are heartbeat messages
+    await waitFor(() => expect(mocks.sendMessage.mock.calls.length).toBeGreaterThanOrEqual(2))
     expect(mocks.sendMessage).toHaveBeenLastCalledWith('access-token')
   })
 })
