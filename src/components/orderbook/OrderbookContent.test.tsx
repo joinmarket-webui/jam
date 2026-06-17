@@ -137,7 +137,7 @@ vi.mock('./OrderbookTable', () => ({
     selectedEntries: OrderTableEntry[]
     tableEntries: OrderTableEntry[]
   }) => {
-    const lastModelKeyRef = useRef<string>()
+    const lastModelKeyRef = useRef<string | undefined>(undefined)
     const modelKey = `${globalFilter}:${tableEntries.map((entry) => entry.counterparty).join(',')}`
 
     useEffect(() => {
@@ -203,7 +203,16 @@ describe('OrderbookContent', () => {
     }
     mocks.orderbookRefetch.mockReset()
     mocks.refreshRefetch.mockReset()
-    jmSessionStore.setState({ state: { nickname: 'maker-a' } })
+    jmSessionStore.setState({
+      state: {
+        session: true,
+        maker_running: false,
+        coinjoin_in_process: false,
+        wallet_name: 'wallet.jmdat',
+        rescanning: false,
+        nickname: 'maker-a',
+      },
+    })
   })
 
   afterEach(() => {

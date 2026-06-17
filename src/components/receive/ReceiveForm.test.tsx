@@ -62,7 +62,7 @@ const jars = [
       calculatedFrozenOrLockedBalanceInSats: 2_000,
     },
   },
-] as Jar[]
+] as unknown as Jar[]
 
 describe('ReceiveForm', () => {
   it('submits selected jar and amount changes', async () => {

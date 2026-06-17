@@ -210,7 +210,7 @@ describe('CreateFidelityBondDialogSteps', () => {
   it('shows the unfreeze hint on the success step when there are frozen utxos', () => {
     const wizard = getBaseWizard()
     wizard.step = 'success'
-    wizard.txResult = null
+    wizard.txResult = undefined
     wizard.frozenUtxos = [{ utxo: 'tx1:0', value: 1000 }] as unknown as Wizard['frozenUtxos']
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
     expect(screen.getByText('earn.fidelity_bond.create_fidelity_bond.label_utxos_to_unfreeze')).toBeInTheDocument()

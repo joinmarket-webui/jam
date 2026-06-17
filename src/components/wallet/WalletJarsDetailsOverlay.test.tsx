@@ -53,7 +53,7 @@ vi.mock('@/components/ui/dialog', () => ({
   Dialog: ({ children, open, onOpenChange }: DialogProps) =>
     open ? (
       <div data-testid="dialog">
-        <button onClick={() => onOpenChange(false)}>Close</button>
+        <button onClick={() => onOpenChange?.(false)}>Close</button>
         {children}
       </div>
     ) : null,
@@ -64,9 +64,13 @@ vi.mock('@/components/ui/dialog', () => ({
 
 describe('WalletJarsDetailsOverlay', () => {
   it('renders dialog content when open', () => {
-    // @ts-expect-error test
     render(
-      <WalletJarsDetailsOverlay open={true} onOpenChange={vi.fn()} walletFileName="test-wallet" selectedJarIndex={2} />,
+      <WalletJarsDetailsOverlay
+        open={true}
+        onOpenChange={vi.fn()}
+        walletFileName="test-wallet.jmdat"
+        selectedJarIndex={2}
+      />,
     )
 
     expect(screen.getByTestId('page-title')).toHaveTextContent('Wallet Jars Details')
@@ -75,14 +79,13 @@ describe('WalletJarsDetailsOverlay', () => {
     expect(content).toBeInTheDocument()
     expect(content).toHaveAttribute('data-enabled', 'true')
     expect(content).toHaveAttribute('data-debug', 'true')
-    expect(content).toHaveAttribute('data-wallet', 'test-wallet')
+    expect(content).toHaveAttribute('data-wallet', 'test-wallet.jmdat')
     expect(content).toHaveAttribute('data-index', '2')
   })
 
   it('calls onOpenChange when closed', () => {
     const onOpenChange = vi.fn()
-    // @ts-expect-error test
-    render(<WalletJarsDetailsOverlay open={true} onOpenChange={onOpenChange} walletFileName="test-wallet" />)
+    render(<WalletJarsDetailsOverlay open={true} onOpenChange={onOpenChange} walletFileName="test-wallet.jmdat" />)
 
     const closeButton = screen.getByText('Close')
     fireEvent.click(closeButton)
@@ -91,8 +94,7 @@ describe('WalletJarsDetailsOverlay', () => {
   })
 
   it('does not render when closed', () => {
-    // @ts-expect-error test
-    render(<WalletJarsDetailsOverlay open={false} onOpenChange={vi.fn()} walletFileName="test-wallet" />)
+    render(<WalletJarsDetailsOverlay open={false} onOpenChange={vi.fn()} walletFileName="test-wallet.jmdat" />)
     expect(screen.queryByTestId('dialog')).not.toBeInTheDocument()
   })
 })

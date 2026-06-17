@@ -178,7 +178,7 @@ describe('MoveToJarDialog', () => {
     fireEvent.click(screen.getByText('earn.fidelity_bond.move.text_button_submit'))
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.move.success_text')).toBeInTheDocument())
-    const calls = h.mutateAsync.mock.calls as Array<[{ body?: { freeze?: boolean } }]>
+    const calls = h.mutateAsync.mock.calls as unknown as Array<[{ body?: { freeze?: boolean } }]>
     expect(calls.some((call) => call[0]?.body?.freeze === false)).toBe(true)
   })
 

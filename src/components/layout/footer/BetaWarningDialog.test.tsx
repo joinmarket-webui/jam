@@ -33,8 +33,8 @@ describe('BetaWarningDialog', () => {
       <BetaWarningDialog
         open={true}
         onOpenChange={vi.fn()}
-        jamVersion={{ raw: '1.0.0', major: 1, minor: 0, patch: 0, prerelease: [] }}
-        joinmarketVersion={{ raw: '0.9.3', major: 0, minor: 9, patch: 3, prerelease: [] }}
+        jamVersion={{ raw: '1.0.0', major: 1, minor: 0, patch: 0 }}
+        joinmarketVersion={{ raw: '0.9.3', major: 0, minor: 9, patch: 3 }}
       />,
     )
 
@@ -50,7 +50,7 @@ describe('BetaWarningDialog', () => {
       <BetaWarningDialog
         open={true}
         onOpenChange={vi.fn()}
-        jamVersion={{ raw: '1.0.0', major: 1, minor: 0, patch: 0, prerelease: [] }}
+        jamVersion={{ raw: '1.0.0', major: 1, minor: 0, patch: 0 }}
       />,
     )
 

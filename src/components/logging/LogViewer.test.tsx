@@ -100,7 +100,7 @@ describe('LogViewer', () => {
 
     log!.dispatchEvent(new Event('scroll', { bubbles: true }))
 
-    const card = screen.getByText('jmwalletd.log').closest('[data-slot="card"]')!
+    const card = screen.getByText('jmwalletd.log').closest<HTMLElement>('[data-slot="card"]')!
     await user.click(within(card).getByTitle('Scroll to bottom'))
 
     expect(scrollTo).toHaveBeenCalledWith({

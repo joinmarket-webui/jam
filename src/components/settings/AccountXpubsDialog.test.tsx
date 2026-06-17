@@ -118,7 +118,7 @@ vi.mock('@/components/ui/dialog', () => ({
   Dialog: ({ children, open, onOpenChange }: DialogProps) =>
     open ? (
       <div data-testid="dialog">
-        <button onClick={() => onOpenChange(false)}>Close</button>
+        <button onClick={() => onOpenChange?.(false)}>Close</button>
         {children}
       </div>
     ) : null,

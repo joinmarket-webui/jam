@@ -96,7 +96,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
           calculatedFrozenOrLockedBalanceInSats: 0,
         },
       },
-    ] as Jar[],
+    ] as unknown as Jar[],
   }),
 }))
 

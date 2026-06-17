@@ -8,7 +8,7 @@ type ChildrenProps = { children?: ReactNode }
 type ValueProps = { value: string }
 
 const h = vi.hoisted(() => ({
-  queryReturn: { data: { address: 'bc1timelock' }, isLoading: false, isError: false },
+  queryReturn: { data: undefined as { address: string } | undefined, isLoading: false, isError: false },
   mutateAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'abcd1234' } }),
   isPending: false,
   refetch: vi.fn(),
@@ -245,7 +245,7 @@ describe('RenewBondDialog', () => {
     fireEvent.click(screen.getByText('earn.fidelity_bond.renew.text_button_submit'))
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.renew.success_text')).toBeInTheDocument())
-    const calls = h.mutateAsync.mock.calls as Array<[{ body?: { freeze?: boolean } }]>
+    const calls = h.mutateAsync.mock.calls as unknown as Array<[{ body?: { freeze?: boolean } }]>
     expect(calls.some((call) => call[0]?.body?.freeze === false)).toBe(true)
   })
 

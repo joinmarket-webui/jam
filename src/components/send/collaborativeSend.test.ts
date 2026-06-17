@@ -88,7 +88,7 @@ describe('buildCollaborativeSendRequest', () => {
       buildCollaborativeSendRequest({
         ...baseValues(),
         source: { fromJar: undefined },
-      } as SendFormValues),
+      } as unknown as SendFormValues),
     ).toThrowError('Invalid source jar.')
 
     expect(() =>
@@ -187,7 +187,7 @@ describe('buildNonCollaborativeSendRequest', () => {
         ...baseValues(),
         isCoinJoin: false,
         amount: undefined,
-      } as SendFormValues),
+      } as unknown as SendFormValues),
     ).toThrowError('Invalid amount given.')
 
     expect(() =>
@@ -203,7 +203,7 @@ describe('buildNonCollaborativeSendRequest', () => {
         ...baseValues(),
         isCoinJoin: false,
         source: { fromJar: undefined },
-      } as SendFormValues),
+      } as unknown as SendFormValues),
     ).toThrowError('Invalid source jar given.')
 
     expect(() =>
@@ -215,7 +215,7 @@ describe('buildNonCollaborativeSendRequest', () => {
           amount: 100_000,
           sweepAmount: 500_000,
         },
-      } as SendFormValues),
+      } as unknown as SendFormValues),
     ).toThrowError('Invalid amount given for sweep.')
   })
 })

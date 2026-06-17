@@ -117,10 +117,12 @@ describe('LoginPage', () => {
     authStore.getState().clear()
     jmSessionStore.setState({
       state: {
+        session: true,
+        rescanning: false,
         wallet_name: 'active.jmdat',
         maker_running: true,
         coinjoin_in_process: false,
-        schedule: ['pending coinjoin'],
+        schedule: [['pending coinjoin']],
       },
     })
   })

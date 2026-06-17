@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
     alert: undefined as { variant: 'destructive' | 'warning'; message: string } | undefined,
     fileName: 'jmwalletd_stdout.log',
     isInitialized: true,
-    logFileContent: 'log body',
+    logFileContent: undefined as string | undefined,
     refresh: vi.fn(),
   },
 }))

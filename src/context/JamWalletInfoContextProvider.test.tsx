@@ -75,34 +75,31 @@ const utxo = (overrides: Partial<Utxo>): Utxo => ({
   ...overrides,
 })
 
-const walletInfo = (): WalletInfoApiObject => ({
-  accounts: [
-    {
-      account: '0',
-      branches: [
-        {
-          branch: "external addresses\tm/84'/1'/0'/0",
-          entries: [
-            {
-              address,
-              hd_path: "m/84'/1'/0'/0/0",
-              status: 'new',
-              label: '',
-              balance: 0,
-              used_count: 0,
-            } as unknown as NonNullable<
-              NonNullable<
-                NonNullable<
-                  NonNullable<NonNullable<WalletDisplayResponse['walletinfo']>['accounts']>[number]['branches']
-                >[number]['entries']
-              >
-            >[number],
-          ],
-        },
-      ],
-    },
-  ],
-})
+const walletInfo = (): WalletInfoApiObject =>
+  ({
+    wallet_name: 'testing.jmdat',
+    total_balance: '0',
+    accounts: [
+      {
+        account: '0',
+        branches: [
+          {
+            branch: "external addresses\tm/84'/1'/0'/0",
+            entries: [
+              {
+                address,
+                hd_path: "m/84'/1'/0'/0/0",
+                status: 'new',
+                label: '',
+                balance: 0,
+                used_count: 0,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  }) as unknown as WalletInfoApiObject
 
 const CaptureWalletInfo = ({
   onContext,

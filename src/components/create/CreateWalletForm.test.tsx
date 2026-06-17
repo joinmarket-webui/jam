@@ -1,8 +1,11 @@
+import type { ComponentProps } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import '@/i18n/config'
 import { CreateWalletForm } from './CreateWalletForm'
+
+type CreateWalletFormProps = ComponentProps<typeof CreateWalletForm>
 
 type RenderCreateWalletFormOptions = {
   wallets?: string[]
@@ -17,8 +20,8 @@ const renderCreateWalletForm = ({
 }: RenderCreateWalletFormOptions = {}) => {
   render(
     <CreateWalletForm
-      wallets={wallets}
-      onSubmit={onSubmit}
+      wallets={wallets as CreateWalletFormProps['wallets']}
+      onSubmit={onSubmit as unknown as CreateWalletFormProps['onSubmit']}
       disabled={disabled}
       submitButtonText={({ isSubmitting }) => (isSubmitting ? 'Creating' : 'Create')}
     />,
