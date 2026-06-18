@@ -1,8 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import '@/i18n/config'
 import { TablePagination } from './TablePagination'
+
+const prototypeMethods = ['hasPointerCapture', 'releasePointerCapture', 'scrollIntoView'] as const
+const originalPrototypeDescriptors = Object.fromEntries(
+  prototypeMethods.map((method) => [method, Object.getOwnPropertyDescriptor(HTMLElement.prototype, method)]),
+) as Record<(typeof prototypeMethods)[number], PropertyDescriptor | undefined>
 
 beforeAll(() => {
   Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
@@ -17,6 +22,17 @@ beforeAll(() => {
     configurable: true,
     value: vi.fn(),
   })
+})
+
+afterAll(() => {
+  for (const method of prototypeMethods) {
+    const descriptor = originalPrototypeDescriptors[method]
+    if (descriptor) {
+      Object.defineProperty(HTMLElement.prototype, method, descriptor)
+    } else {
+      Reflect.deleteProperty(HTMLElement.prototype, method)
+    }
+  }
 })
 
 describe('<TablePagination />', () => {
