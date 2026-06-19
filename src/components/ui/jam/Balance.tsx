@@ -67,7 +67,12 @@ const BitcoinBalance = ({
   ...props
 }: BitcoinBalanceProps) => {
   const numberString = formatBtc(satsToBtc(String(value)))
-  const [rawIntegerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
+  // Normalise locale-specific decimal separators (e.g. "," in it-IT) to "."
+  const normalizedString = numberString.replace(
+    /^([^.,]*)[.,](\d+)$/,
+    (_m, intPart, fracPart) => `${intPart}.${fracPart}`
+  )
+  const [rawIntegerPart, fractionalPart] = normalizedString.split(DECIMAL_POINT_CHAR)
 
   const fractionPartArray = [...fractionalPart]
   const sign = ['-', '+'].includes(rawIntegerPart[0]) ? rawIntegerPart[0] : undefined
