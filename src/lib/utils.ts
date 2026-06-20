@@ -165,6 +165,45 @@ export const formatBtc = (value: number) => {
   })
 }
 
+export interface BtcParts {
+  /** The sign character ('-') or undefined for positive */
+  sign: string | undefined
+  /** Integer digits without grouping (e.g. "12345") */
+  integerPart: string
+  /** Fraction digits (e.g. "67890123") */
+  fractionalPart: string
+  /** Full locale-formatted string for display attributes */
+  formatted: string
+}
+
+/**
+ * Decompose a BTC value into semantic parts using Intl.NumberFormat.formatToParts().
+ * Handles all locales including it-IT (12.345,67890123) and ar-EG (١٢٬٣٤٥٫٦٧٨٩٠١٢٣).
+ */
+export const getBtcParts = (value: number): BtcParts => {
+  const parts = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 8,
+    maximumFractionDigits: 8,
+    roundingMode: 'trunc',
+  }).formatToParts(value)
+
+  const sign = parts.find((p) => p.type === 'minusSign')?.value
+
+  const integerPart = parts
+    .filter((p) => p.type === 'integer')
+    .map((p) => p.value)
+    .join('') || '0'
+
+  const fractionalPart = parts
+    .filter((p) => p.type === 'fraction')
+    .map((p) => p.value)
+    .join('')
+
+  const formatted = parts.map((p) => p.value).join('')
+
+  return { sign, integerPart, fractionalPart, formatted }
+}
+
 export const formatSats = (value: number) => {
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 0,
