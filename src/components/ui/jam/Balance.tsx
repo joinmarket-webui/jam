@@ -67,10 +67,16 @@ const BitcoinBalance = ({
   ...props
 }: BitcoinBalanceProps) => {
   const numberString = formatBtc(satsToBtc(String(value)))
-  // Normalise locale-specific decimal separators (e.g. "," in it-IT) to "."
+  // Normalise locale-specific decimal separators to "." and strip
+  // thousands separators (e.g. it-IT "12.345,67890123" → "12345.67890123").
   const normalizedString = numberString.replace(
-    /^([^.,]*)[.,](\d+)$/,
-    (_m, intPart, fracPart) => `${intPart}.${fracPart}`
+    /^([\d.,]*[.,])?([^.,]*)[.,](\d+)$|^([^.,]+)$/,
+    (_m, _preamble, intPart, fracPart, _whole) => {
+      if (intPart !== undefined) {
+        return `${intPart.replace(/[.,]/g, "")}.${fracPart}`
+      }
+      return _m  // no decimal separator, leave as-is
+    }
   )
   const [rawIntegerPart, fractionalPart] = normalizedString.split(DECIMAL_POINT_CHAR)
 
