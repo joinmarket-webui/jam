@@ -118,15 +118,18 @@ export const CreateStepConfirm = ({
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Field data-invalid={errors.revealSensitiveInfo !== undefined} orientation="horizontal">
+          <Field data-invalid={errors.revealSensitiveInfo !== undefined} orientation="horizontal" className="items-start">
             <Switch
+              className="mt-0.5 shrink-0"
               id="switch-reveal-seed"
               checked={revealSensitiveInfo}
               onCheckedChange={(checked) =>
                 setValue('revealSensitiveInfo', checked, { shouldValidate: true, shouldTouch: true })
               }
             />
-            <FieldLabel htmlFor="switch-reveal-seed">{t('create_wallet.confirmation_toggle_reveal_info')}</FieldLabel>
+            <FieldLabel htmlFor="switch-reveal-seed" className="min-w-0 flex-1">
+              {t('create_wallet.confirmation_toggle_reveal_info')}
+            </FieldLabel>
           </Field>
           {errors.revealSensitiveInfo?.message && (
             <div className="text-destructive text-xs">{errors.revealSensitiveInfo.message}</div>
@@ -134,15 +137,16 @@ export const CreateStepConfirm = ({
         </div>
 
         <div className="space-y-2">
-          <Field data-invalid={errors.backupConfirmed !== undefined} orientation="horizontal">
+          <Field data-invalid={errors.backupConfirmed !== undefined} orientation="horizontal" className="items-start">
             <Switch
+              className="mt-0.5 shrink-0"
               id="switch-confirm-backup"
               required={true}
               disabled={!touchedFields.revealSensitiveInfo}
               checked={backupConfirmed}
               onCheckedChange={(checked) => setValue('backupConfirmed', checked, { shouldValidate: true })}
             />
-            <FieldLabel htmlFor="switch-confirm-backup">
+            <FieldLabel htmlFor="switch-confirm-backup" className="min-w-0 flex-1">
               {t('create_wallet.confirmation_toggle_info_written_down')}
             </FieldLabel>
           </Field>

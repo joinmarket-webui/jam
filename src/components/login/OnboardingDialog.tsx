@@ -113,7 +113,9 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
               </div>
 
               <div className="space-y-2 rounded-lg border p-4">
-                <Badge variant="destructive">{t('onboarding.splashscreen_warning_title')}</Badge>
+                <Badge className="max-w-full whitespace-normal" variant="destructive">
+                  {t('onboarding.splashscreen_warning_title')}
+                </Badge>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   <Trans
                     i18nKey="onboarding.splashscreen_warning_text"
