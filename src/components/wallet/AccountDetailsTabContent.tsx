@@ -94,9 +94,9 @@ export const AccountDetailsTabContent = ({ value }: AccountDetailsTabContentProp
         return (
           <AccordionItem key={index} value={String(index)}>
             <AccordionTrigger className="group/account-branch-accordion-trigger items-center px-4 no-underline!">
-              <div className="flex flex-col gap-0.25">
+              <div className="flex min-w-0 flex-col gap-0.25">
                 <span className="group-hover/account-branch-accordion-trigger:underline">{typeTitle}</span>
-                <span className="text-muted-foreground font-mono select-all">{branch.derivation}</span>
+                <span className="text-muted-foreground font-mono break-all select-all">{branch.derivation}</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="p-4 pt-2">

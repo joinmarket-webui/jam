@@ -23,22 +23,22 @@ export const SettingItem = ({
 }: SettingsItemProps) => {
   const content = (
     <div
-      className={cx('flex items-center justify-between py-2', {
+      className={cx('flex min-w-0 items-center justify-between gap-2 py-2', {
         'hover:bg-muted/50 -mx-2 cursor-pointer rounded-md px-2': !disabled,
         'cursor-not-allowed opacity-60': disabled,
       })}
       onClick={!disabled && action ? () => void action() : undefined}
     >
-      <div className="flex items-center gap-2">
-        <div className="bg-muted/50 flex h-7 w-7 items-center justify-center rounded-lg border">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="bg-muted/50 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border">
           {Icon && <Icon className="text-muted-foreground h-4 w-4 align-middle" />}
           {renderIcon?.({ className: 'text-muted-foreground h-4 w-4 align-middle' })}
         </div>
-        <div>
-          <p className="text-sm font-medium">{title}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-medium break-words">{title}</p>
         </div>
       </div>
-      {children}
+      {children !== undefined && <div className="shrink-0">{children}</div>}
     </div>
   )
 

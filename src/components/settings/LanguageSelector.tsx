@@ -16,9 +16,9 @@ export const LanguageSelector = () => {
   }
 
   return (
-    <div className="flex items-center justify-between py-2">
-      <div className="flex items-center gap-2">
-        <div className="bg-muted/50 flex h-7 w-7 items-center justify-center rounded-lg border">
+    <div className="flex flex-col items-stretch justify-between gap-2 py-2 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="bg-muted/50 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border">
           <GlobeIcon className="text-muted-foreground h-3 w-3" />
         </div>
         <div>
@@ -27,7 +27,7 @@ export const LanguageSelector = () => {
       </div>
 
       <Select value={i18n.resolvedLanguage} onValueChange={(value) => void handleLanguageChange(value)}>
-        <SelectTrigger className="h-7 w-38 text-xs" aria-label="Select language">
+        <SelectTrigger className="h-7 w-full text-xs sm:w-38" aria-label="Select language">
           <SelectValue placeholder={getCurrentLanguageDescription()} />
         </SelectTrigger>
         <SelectContent>

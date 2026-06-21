@@ -32,15 +32,15 @@ function ErrorView({ title, subtitle, reason, stacktrace }: ErrorViewProps) {
 
       <div className="my-4">
         <h6 className="font-semibold">{t('error_page.heading_reason')}</h6>
-        <Alert variant="destructive" className="overflow-scroll">
-          <AlertDescription className="flex items-center justify-between">{reason}</AlertDescription>
+        <Alert variant="destructive" className="overflow-x-auto">
+          <AlertDescription className="min-w-0 break-words">{reason}</AlertDescription>
         </Alert>
       </div>
 
       {stacktrace && (
         <div className="my-4">
           <h6 className="font-semibold">{t('error_page.heading_stacktrace')}</h6>
-          <pre className="overflow-scroll rounded-lg border p-2">
+          <pre className="max-w-full overflow-x-auto rounded-lg border p-2">
             <code>{stacktrace}</code>
           </pre>
         </div>
