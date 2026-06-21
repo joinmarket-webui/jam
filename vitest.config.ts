@@ -2,7 +2,7 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import path from 'node:path'
 import { mergeConfig } from 'vite'
-import { ConfigEnv, defineConfig, type ViteUserConfig } from 'vitest/config'
+import { ConfigEnv, coverageConfigDefaults, defineConfig, type ViteUserConfig } from 'vitest/config'
 import viteConfig from './vite.config'
 
 export default defineConfig((args: ConfigEnv): ViteUserConfig => {
@@ -16,11 +16,22 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
         reporter: ['text', 'json', 'json-summary'],
         // enable coverage reports even if tests are failing
         reportOnFailure: true,
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: [
+          ...coverageConfigDefaults.exclude,
+          // type declarations carry no runtime code
+          '**/*.d.ts',
+          // pure re-export barrel
+          'src/components/earn/CreateFidelityBondDialog/index.ts',
+          // test-only helpers and config
+          'src/test/**',
+          'src/i18n/testConfig.ts',
+        ],
         thresholds: {
-          lines: 70,
-          functions: 60,
-          branches: 60,
-          statements: 70,
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
         },
       },
       projects: [
