@@ -299,7 +299,7 @@ export function SendForm({
         <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
           <div className="space-y-2">
             <Field className="space-y-4" data-invalid={errors.source !== undefined}>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
                 {sourceJarLabelButton && <>{sourceJarLabelButton}</>}
               </div>
@@ -351,7 +351,7 @@ export function SendForm({
                 )}
               </FieldLabel>
               <ButtonGroup
-                className={cn({
+                className={cn('w-full', {
                   hidden: destinationJar !== undefined,
                 })}
               >
@@ -391,7 +391,7 @@ export function SendForm({
                 </Button>
               </ButtonGroup>
               <ButtonGroup
-                className={cn({
+                className={cn('w-full', {
                   hidden: destinationJar === undefined,
                 })}
               >
@@ -401,7 +401,7 @@ export function SendForm({
                       id="send-destination-address-from-jar"
                       className={cn(
                         inputVariants(),
-                        'flex items-center justify-between gap-2',
+                        'flex min-w-0 items-center justify-between gap-2',
                         'bg-input/50 dark:bg-input/80 h-auto',
                       )}
                     >
@@ -447,7 +447,7 @@ export function SendForm({
               <FieldLabel htmlFor="send-amount">{t('send.label_amount_input')}</FieldLabel>
 
               <ButtonGroup
-                className={cn('relative', {
+                className={cn('relative w-full', {
                   hidden: isSweep === true,
                 })}
               >
@@ -489,7 +489,7 @@ export function SendForm({
               </ButtonGroup>
 
               <ButtonGroup
-                className={cn({
+                className={cn('w-full', {
                   hidden: isSweep !== true,
                 })}
               >
@@ -497,7 +497,7 @@ export function SendForm({
                   id="send-amount-sweep-from-jar"
                   className={cn(
                     inputVariants(),
-                    'flex items-center justify-between gap-2',
+                    'flex min-w-0 items-center justify-between gap-2',
                     'bg-input/50 dark:bg-input/80 h-auto',
                   )}
                   aria-disabled

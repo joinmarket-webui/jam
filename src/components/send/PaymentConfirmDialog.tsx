@@ -90,7 +90,7 @@ export default function PaymentConfirmDialog({
     <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-center gap-2 font-semibold">
+          <DialogTitle className="flex flex-wrap items-center justify-center gap-2 text-center font-semibold">
             {t('send.confirm_send_modal.title')}
           </DialogTitle>
           <DialogDescription className="text-center">
@@ -106,7 +106,7 @@ export default function PaymentConfirmDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 space-y-1 space-x-4 md:grid-cols-5">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-1 md:grid-cols-5">
           <div className="col-span-1 font-semibold md:text-right">{t('send.confirm_send_modal.label_source_jar')}</div>
           <div className="col-span-4">
             {meta.sourceJar.name} <span className="text-muted-foreground text-xs">#{meta.sourceJar.jarIndex}</span>
@@ -132,7 +132,7 @@ export default function PaymentConfirmDialog({
           </div>
 
           <div className="col-span-1 font-semibold md:text-right">{t('send.confirm_send_modal.label_amount')}</div>
-          <div className="col-span-4 flex items-center gap-1">
+          <div className="col-span-4 flex flex-wrap items-center gap-1">
             {values.amount?.isSweep ? (
               <>
                 <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
@@ -165,7 +165,7 @@ export default function PaymentConfirmDialog({
                 {t('send.confirm_send_modal.label_estimated_max_collaborator_fee')}
               </div>
 
-              <div className="col-span-4 flex items-center gap-1">
+              <div className="col-span-4 flex flex-wrap items-center gap-1">
                 &le;
                 <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} showBalance={true} />
                 <span className="text-muted-foreground text-xs">
