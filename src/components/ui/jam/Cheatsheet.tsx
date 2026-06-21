@@ -63,7 +63,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
           isClosing ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >
-        <div className="flex-shrink-0 p-6">
+        <div className="flex-shrink-0 p-4 sm:p-6">
           <div className="flex items-center justify-between gap-2">
             <PageTitle title={t('cheatsheet.title')} />
             <Button onClick={handleClose} variant="ghost" size="icon" title={t('global.close')}>
@@ -104,7 +104,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
           </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-10">
+        <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 sm:pb-10">
           <div className="flex flex-col gap-4 sm:gap-6">
             <ListItem
               number={1}

@@ -52,13 +52,13 @@ const QrCodeComponent = ({
 
   return (
     <div
-      className={cn('group/qrcode relative flex items-center justify-center', className)}
-      style={{ height: width, width: width }}
+      className={cn('group/qrcode relative flex aspect-square w-full items-center justify-center', className)}
+      style={{ maxWidth: width }}
     >
       {imageDataUrl && (
         <>
           <img
-            className={cn('transition-all duration-500', {
+            className={cn('h-full w-full transition-all duration-500', {
               'group-hover/qrcode:blur-[2px]': children !== undefined,
             })}
             src={imageDataUrl}

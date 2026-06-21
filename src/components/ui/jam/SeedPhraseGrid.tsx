@@ -12,8 +12,8 @@ export const SeedPhraseGrid = ({ value, className, masked, maskedText }: SeedPhr
   return (
     <div className={cn('grid grid-cols-2 gap-2 font-mono', className, 'select-none')}>
       {value.map((word, index) => (
-        <div key={index} className="bg-background flex min-w-32 items-center gap-2 rounded-lg border p-2">
-          <span className="text-muted-foreground/60 inline-block min-w-8 ps-1 text-right tabular-nums">
+        <div key={index} className="bg-background flex min-w-0 items-center gap-2 rounded-lg border p-2">
+          <span className="text-muted-foreground/60 inline-block min-w-8 shrink-0 ps-1 text-right tabular-nums">
             {index + 1}.
           </span>
           <MaskedText masked={masked} maskedText={maskedText}>

@@ -17,7 +17,7 @@ type PlainAddressProps = {
 const PlainAddress = ({ value, className, chunked }: PlainAddressProps) => {
   const chunks = chunked ? value.match(/.{1,4}/g) : [value]
   return (
-    <span className={cn(styles.bitcoinAddress, chunked === true ? styles.chunked : undefined, className)}>
+    <span className={cn('min-w-0', styles.bitcoinAddress, chunked === true ? styles.chunked : undefined, className)}>
       {chunks?.map((it, index) => (
         <span key={index}>{it}</span>
       ))}
@@ -30,7 +30,7 @@ type CopyableAddressProps = PlainAddressProps
 const CopyableAddress = (props: CopyableAddressProps) => {
   const { t } = useTranslation()
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <PlainAddress {...props} />
       <CopyButton
         value={props.value}
