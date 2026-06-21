@@ -188,7 +188,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-4">
           {/* Stats row */}
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {(
               [
                 { label: t('earn.report.stats.earned_total'), value: earnedTotal },

@@ -358,7 +358,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               return (
                 <FidelityBondCard value={it} key={it.utxo}>
                   {actionsEnabled && (
-                    <div className="flex w-full flex-row gap-2">
+                    <div className="flex w-full flex-col gap-2 sm:flex-row">
                       <Button variant="secondary" className="flex-1" onClick={() => setMoveToJarUtxo(it)}>
                         <UnlockIcon />
                         {t('earn.fidelity_bond.existing.button_spend')}

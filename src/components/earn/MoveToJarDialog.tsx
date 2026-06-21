@@ -248,8 +248,8 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
                       )}
                       onClick={() => setSelectedJarIndex(jar.jarIndex)}
                     >
-                      <CardContent className="flex items-center justify-between p-4">
-                        <div className="flex items-center gap-4">
+                      <CardContent className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                        <div className="flex min-w-0 items-center gap-4">
                           <div
                             className="h-10 w-10 rounded-full shadow-sm"
                             style={{ backgroundColor: jar.color, opacity: 0.8 }}
@@ -274,7 +274,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
           {step === 'confirm' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-muted-foreground mb-1 text-xs">
                     {t('earn.fidelity_bond.review_inputs.label_jar')}
