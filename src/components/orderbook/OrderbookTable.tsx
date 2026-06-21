@@ -254,14 +254,14 @@ export const OrderbookTable = ({
 
   useEffect(() => {
     table.resetRowPinning(true)
-    table.getRowModel().rows.forEach((row) => {
+    table.getPrePaginationRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
   }, [table, pinnedEntries])
 
   useEffect(() => {
     table.resetRowSelection(true)
-    table.getRowModel().rows.forEach((row) => {
+    table.getPrePaginationRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
   }, [table, highlightedEntries])
