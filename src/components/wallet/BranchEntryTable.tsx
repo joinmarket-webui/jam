@@ -131,7 +131,7 @@ export const BranchEntryTable = ({
         cell: (info) => (
           <div className="flex items-center gap-2">
             {info.row.original.tags.map((it, index) => {
-              const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value}`
+              const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value.replaceAll(':', '_')}`
               const tooltip = t(tooltipKey)
               const hasTooltip = tooltip !== tooltipKey
               return (
