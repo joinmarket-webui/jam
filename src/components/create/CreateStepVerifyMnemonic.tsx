@@ -103,7 +103,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
           'border-green-300/50 bg-green-600/5': allSelected && isCorrect,
         })}
       >
-        <div className="grid grid-cols-3 gap-1.5 select-none">
+        <div className="grid grid-cols-2 gap-1.5 select-none sm:grid-cols-3">
           {!isCorrect &&
             mnemonicPhrase.map((_, index) => {
               const word = selectedWords[index]
@@ -112,10 +112,13 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
               return (
                 <div
                   key={index}
-                  className={cn('flex items-center gap-0.5 rounded-md px-0.5 py-1.5 font-mono text-xs transition-all', {
-                    'bg-primary/10 text-primary border-primary/20 border': isFilled,
-                    'border-muted bg-muted/30 border border-dashed': !isFilled,
-                  })}
+                  className={cn(
+                    'flex min-w-0 items-center gap-0.5 rounded-md px-0.5 py-1.5 font-mono text-xs transition-all',
+                    {
+                      'bg-primary/10 text-primary border-primary/20 border': isFilled,
+                      'border-muted bg-muted/30 border border-dashed': !isFilled,
+                    },
+                  )}
                 >
                   <span
                     className={cn('min-w-8 text-right tabular-nums', {
@@ -126,7 +129,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
                     {index + 1}.
                   </span>
                   {isFilled ? (
-                    <span>{isHidden ? <MaskedText masked /> : word}</span>
+                    <span className="min-w-0 truncate">{isHidden ? <MaskedText masked /> : word}</span>
                   ) : (
                     <span className="text-muted-foreground/30">···</span>
                   )}
@@ -143,7 +146,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
       </div>
 
       {!allSelected && (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {shuffledWords.map((word, index) => {
             const isPicked = pickedIndicesSet.has(index)
             const isWrong = wrongButtonIndex === index
@@ -154,7 +157,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
                 size="lg"
                 variant={isWrong ? 'destructive' : isPicked ? 'outline' : 'secondary'}
                 disabled={isPicked || wrongButtonIndex !== undefined}
-                className={cn('font-mono text-sm transition-all', {
+                className={cn('min-w-0 px-2 font-mono text-sm transition-all', {
                   'pointer-events-none opacity-25': isPicked,
                   'animate-shake': isWrong,
                 })}
