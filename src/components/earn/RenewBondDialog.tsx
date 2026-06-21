@@ -224,7 +224,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-h-[90dvh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('earn.fidelity_bond.renew.title')}</DialogTitle>
           <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>

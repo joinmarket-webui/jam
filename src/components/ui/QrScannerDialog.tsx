@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from 'react'
-import { Html5Qrcode } from 'html5-qrcode'
+import { Html5Qrcode, type Html5QrcodeCameraScanConfig } from 'html5-qrcode'
 import { ClipboardPasteIcon, ImageUpIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -16,7 +16,13 @@ import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { WithRequiredProperty } from '@/types/global'
 
 const QR_READER_ELEMENT_ID = 'qr-scanner-reader'
-const SCAN_CONFIG = { fps: 10, qrbox: { width: 250, height: 250 } }
+const SCAN_CONFIG = {
+  fps: 10,
+  qrbox: (viewfinderWidth, viewfinderHeight) => {
+    const edgeLength = Math.max(1, Math.floor(Math.min(250, viewfinderWidth * 0.8, viewfinderHeight * 0.8)))
+    return { width: edgeLength, height: edgeLength }
+  },
+} satisfies Html5QrcodeCameraScanConfig
 
 type QrScannerDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
