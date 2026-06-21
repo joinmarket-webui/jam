@@ -38,8 +38,8 @@ const WalletPreview = ({
   const walletNameTitle = shortenStringMiddle(walletName ?? '...', 12)
 
   return (
-    <div className="flex flex-1 items-center">
-      <Link to={routes.home} className="flex items-center gap-2" data-tour-id="wallet-preview">
+    <div className="flex min-w-0 flex-1 items-center">
+      <Link to={routes.home} className="flex min-w-0 items-center gap-2" data-tour-id="wallet-preview">
         <div className="flex h-8 w-8 items-center">
           {isLoading || isReloading ? (
             <Spinner className="text-muted-foreground size-6 motion-reduce:hidden" strokeWidth={3} />
@@ -47,7 +47,7 @@ const WalletPreview = ({
             <WalletIcon strokeWidth={1} />
           )}
         </div>
-        <div className="flex flex-col gap-0.25 leading-none">
+        <div className="flex min-w-0 flex-col gap-0.25 leading-none">
           <div className="flex items-center gap-2">
             <div
               className="font-semibold tracking-tight"
@@ -57,7 +57,7 @@ const WalletPreview = ({
             </div>
             {isDevMode() && <DevBadge />}
           </div>
-          <div className="flex min-h-5 min-w-[150px] items-center">
+          <div className="flex min-h-5 min-w-0 items-center sm:min-w-[150px]">
             {rescanInfo?.rescanning === true ? (
               <div className="cursor-wait motion-safe:animate-pulse">
                 {rescanInfo.progress !== undefined
@@ -145,7 +145,7 @@ export function AppNavbar({
   })
 
   return (
-    <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
+    <header className="light:bg-gray-100 light:text-black flex min-w-0 items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
       <WalletPreview
         isLoading={isLoading}
         isReloading={isReloading}

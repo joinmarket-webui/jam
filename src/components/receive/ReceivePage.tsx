@@ -157,7 +157,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
           {getAddressMutation.isPending ? (
             <div className="flex flex-col items-center space-y-2">
-              <Skeleton className="mt-0.5 h-5 w-[24rem]" />
+              <Skeleton className="mt-0.5 h-5 w-full max-w-96" />
               <Skeleton className="h-6 w-[84px]" />
             </div>
           ) : (
