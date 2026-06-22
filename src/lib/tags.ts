@@ -89,10 +89,11 @@ export const utxoTags = (utxo: Utxo, addressSummary: AddressSummary, t: TFunctio
   __statusTags.forEach((it) => tags.push(it))
 
   if (utxo.label) {
+    const isJmLabel = utxo.label.startsWith('jm:')
     tags.push({
       value: utxo.label,
       displayValue: utxo.label,
-      variant: UTXO_STATUS_TAG_VARIANTS[utxo.label] || 'default',
+      variant: isJmLabel ? UTXO_STATUS_TAG_VARIANTS[utxo.label] || 'default' : 'default',
     })
   }
   return tags
