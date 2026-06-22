@@ -44,6 +44,7 @@ export const UTXO_STATUS_TAG_VARIANTS: { [key in UtxoTagValue]: StatusBadgeVaria
   ...JM_PLAIN_STATUS_TAG_VARIANTS,
   ...ADDITIONAL_STATUS_TAG_VARIANTS,
   bond: 'fidelity-bond',
+  'jm:autofrozen:reuse': 'reused',
 }
 
 export type UtxoTag = { value: UtxoTagValue; displayValue: string; variant: StatusBadgeVariant }
@@ -88,7 +89,11 @@ export const utxoTags = (utxo: Utxo, addressSummary: AddressSummary, t: TFunctio
   __statusTags.forEach((it) => tags.push(it))
 
   if (utxo.label) {
-    tags.push({ value: utxo.label, displayValue: utxo.label, variant: 'default' })
+    tags.push({
+      value: utxo.label,
+      displayValue: utxo.label,
+      variant: UTXO_STATUS_TAG_VARIANTS[utxo.label] || 'default',
+    })
   }
   return tags
 }
