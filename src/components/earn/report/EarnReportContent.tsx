@@ -119,6 +119,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     [t],
   )
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table exposes non-memoizable helpers by design.
   const table = useReactTable<EarnReportEntry>({
     data: allEntries,
     columns,

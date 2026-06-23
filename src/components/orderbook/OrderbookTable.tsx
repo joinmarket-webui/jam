@@ -223,6 +223,7 @@ export const OrderbookTable = ({
     bottom: [],
   })
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table exposes non-memoizable helpers by design.
   const table = useReactTable<OrderTableEntry>({
     data: tableEntries,
     columns,
