@@ -22,7 +22,11 @@ export const isRelativeOffer = (offertype: OfferType) => offertype.includes('rel
 // can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
 export const isAbsoluteOffer = (offertype: OfferType) => offertype.includes('absoffer')
 
-export type WalletFileName = `${string}.jmdat`
+export type WalletFileName = `${string}${typeof JM_WALLET_FILE_EXTENSION}`
+
+export function isWalletFileName(val: unknown): val is WalletFileName {
+  return typeof val === 'string' && val.endsWith(JM_WALLET_FILE_EXTENSION)
+}
 
 /**
  * Formats a wallet name by removing the .jmdat extension

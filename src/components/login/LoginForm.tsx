@@ -61,7 +61,7 @@ export const LoginFormComponent = ({
   className,
   wallets,
   activeWallet,
-  preselectedWallet = activeWallet,
+  preselectedWallet = activeWallet ?? (wallets.length === 1 ? wallets[0] : undefined),
   makerRunning,
   coinjoinInProgress,
   onSubmit,
@@ -85,7 +85,7 @@ export const LoginFormComponent = ({
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
     defaultValues: {
-      walletFileName: preselectedWallet ?? (wallets.length === 1 ? wallets[0] : undefined),
+      walletFileName: preselectedWallet,
     },
     resolver: yupResolver(schema),
   })
