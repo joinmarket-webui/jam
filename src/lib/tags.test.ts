@@ -81,6 +81,26 @@ describe('tags', () => {
       ])
     })
 
+    it('should not apply status styling to free-form labels', () => {
+      expect(utxoTags({ address: 'bcrt1address', label: 'deposit' } as Utxo, {}, t)).toStrictEqual([
+        {
+          displayValue: 'deposit',
+          value: 'deposit',
+          variant: 'default',
+        },
+      ])
+    })
+
+    it('should apply reused styling to the JoinMarket autofrozen reuse label', () => {
+      expect(utxoTags({ address: 'bcrt1address', label: 'jm:autofrozen:reuse' } as Utxo, {}, t)).toStrictEqual([
+        {
+          displayValue: 'jm:autofrozen:reuse',
+          value: 'jm:autofrozen:reuse',
+          variant: 'reused',
+        },
+      ])
+    })
+
     it('should prefer fidelity-bond tag and ignore raw status for locked UTXOs', () => {
       expect(
         utxoTags(

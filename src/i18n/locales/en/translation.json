@@ -871,6 +871,7 @@
       "utxo_tag_tooltip_locked": "Time-locked by the Bitcoin protocol",
       "utxo_tag_tooltip_pending": "Part of a pending transaction",
       "utxo_tag_tooltip_bond": "Fidelity bond",
+      "utxo_tag_tooltip_jm_autofrozen_reuse": "Automatically frozen due to address reuse detected",
       "column_title_balance": "Value",
       "column_title_address": "Address",
       "column_title_confirmations": "Confs.",
