@@ -150,7 +150,11 @@ export const ImportStepConfirm = ({
         </div>
 
         <div className="space-y-2">
-          <Field data-invalid={errors.revealSensitiveInfo !== undefined} orientation="horizontal" className="items-start">
+          <Field
+            data-invalid={errors.revealSensitiveInfo !== undefined}
+            orientation="horizontal"
+            className="items-start"
+          >
             <Switch
               className="mt-0.5 shrink-0"
               id="switch-reveal-seed"
