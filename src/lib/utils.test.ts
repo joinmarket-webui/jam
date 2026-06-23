@@ -37,7 +37,7 @@ import {
 import type { WalletFileName } from './utils'
 
 const withRuntimeLocale = (locale: string, callback: () => void) => {
-  const toLocaleStringMock = vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
+  const numberToLocaleStringMock = vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
     this: number,
     locales,
     options,
@@ -48,7 +48,7 @@ const withRuntimeLocale = (locale: string, callback: () => void) => {
   try {
     callback()
   } finally {
-    toLocaleStringMock.mockRestore()
+    numberToLocaleStringMock.mockRestore()
   }
 }
 

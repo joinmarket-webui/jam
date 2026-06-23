@@ -157,12 +157,14 @@ export const isValidInteger = (val: unknown): val is number => {
   return Number.isSafeInteger(val)
 }
 
+const BTC_NUMBER_FORMAT_OPTIONS: Intl.NumberFormatOptions = {
+  minimumFractionDigits: 8,
+  maximumFractionDigits: 8,
+  roundingMode: 'trunc',
+}
+
 export const formatBtc = (value: number) => {
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 8,
-    maximumFractionDigits: 8,
-    roundingMode: 'trunc',
-  })
+  return value.toLocaleString(undefined, BTC_NUMBER_FORMAT_OPTIONS)
 }
 
 export interface BtcParts {
@@ -181,11 +183,7 @@ export interface BtcParts {
  * Handles all locales including it-IT (12.345,67890123) and ar-EG (١٢٬٣٤٥٫٦٧٨٩٠١٢٣).
  */
 export const getBtcParts = (value: number): BtcParts => {
-  const parts = new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 8,
-    maximumFractionDigits: 8,
-    roundingMode: 'trunc',
-  }).formatToParts(value)
+  const parts = new Intl.NumberFormat(undefined, BTC_NUMBER_FORMAT_OPTIONS).formatToParts(value)
 
   const sign = parts.find((p) => p.type === 'minusSign')?.value
 
