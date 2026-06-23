@@ -579,6 +579,14 @@ describe('formatSats', () => {
       expect(formatBtc(21000000)).toBe('2,10,00,000.00000000')
       expect(formatSats(2100000000000000)).toBe('2,10,00,00,00,00,00,000')
     })
+    withRuntimeLocale('it-IT', () => {
+      expect(formatBtc(21000000)).toBe('21.000.000,00000000')
+      expect(formatSats(2100000000000000)).toBe('2.100.000.000.000.000')
+    })
+    withRuntimeLocale('ar-EG', () => {
+      expect(formatBtc(21000000)).toBe('٢١٬٠٠٠٬٠٠٠٫٠٠٠٠٠٠٠٠')
+      expect(formatSats(2100000000000000)).toBe('٢٬١٠٠٬٠٠٠٬٠٠٠٬٠٠٠٬٠٠٠')
+    })
   })
 })
 
