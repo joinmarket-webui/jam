@@ -189,10 +189,11 @@ export const getBtcParts = (value: number): BtcParts => {
 
   const sign = parts.find((p) => p.type === 'minusSign')?.value
 
-  const integerPart = parts
-    .filter((p) => p.type === 'integer')
-    .map((p) => p.value)
-    .join('') || '0'
+  const integerPart =
+    parts
+      .filter((p) => p.type === 'integer')
+      .map((p) => p.value)
+      .join('') || '0'
 
   const fractionalPart = parts
     .filter((p) => p.type === 'fraction')
