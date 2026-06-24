@@ -156,7 +156,6 @@ export const BranchEntryTable = ({
     bottom: [],
   })
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table exposes non-memoizable helpers by design.
   const table = useReactTable<BranchEntryTableRow>({
     data: tableEntries,
     columns,

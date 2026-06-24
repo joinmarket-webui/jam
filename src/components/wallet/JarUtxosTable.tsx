@@ -301,7 +301,6 @@ export const JarUtxosTable = ({
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection ?? {})
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table exposes non-memoizable helpers by design.
   const table = useReactTable<UtxoTableEntry>({
     data: tableEntries,
     columns,
