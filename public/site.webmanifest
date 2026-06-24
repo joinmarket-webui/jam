@@ -1,6 +1,13 @@
 {
-    "name": "JoinMarket",
-    "short_name": "JoinMarket",
+    "name": "Jam for JoinMarket",
+    "short_name": "Jam",
+    "description": "Your sats. Your privacy. Your profit.",
+    "display": "standalone",
+    "orientation": "any",
+    "lang": "en",
+    "start_url": "/",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -13,7 +20,26 @@
             "type": "image/png"
         }
     ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
-    "display": "standalone"
+    "screenshots": [
+        {
+            "src": "/screenshot-dark.png",
+            "sizes": "912x898",
+            "type": "image/png",
+            "label": "Home screen showing main wallet view and navigation in dark mode"
+        },
+        {
+            "src": "/screenshot-dark.png",
+            "sizes": "912x898",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Home screen showing main wallet view and navigation in dark mode (wide)"
+        },
+        {
+            "src": "/screenshot-light.png",
+            "sizes": "912x898",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Home screen showing main wallet view and navigation in light mode (wide)"
+        }
+    ]
 }
