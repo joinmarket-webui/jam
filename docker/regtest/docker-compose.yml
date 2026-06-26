@@ -6,8 +6,8 @@ services:
       service: joinmarket_ng_native
     environment:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: regtest
+      BITCOIN__RPC_USER: joinmarket
+      BITCOIN__RPC_PASSWORD: joinmarket
       BITCOIN__DESCRIPTOR_WALLET_NAME: jm_primary
     ports:
       - '28183:28183'  # jmwalletd api
@@ -34,8 +34,8 @@ services:
     environment:
       ENSURE_WALLET: 'true'
       BITCOIN__RPC_URL: http://bitcoind:43782
-      BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: regtest
+      BITCOIN__RPC_USER: joinmarket2
+      BITCOIN__RPC_PASSWORD: joinmarket2
       BITCOIN__DESCRIPTOR_WALLET_NAME: jm_secondary
       LOGGING__LEVEL: DEBUG
       NETWORK_CONFIG__NETWORK: testnet
@@ -87,8 +87,8 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone
     environment:
-      APP_USER: joinmarket
-      APP_PASSWORD: joinmarket
+      APP_USER: regtest
+      APP_PASSWORD: regtest
       jm_rpc_wallet_file: jm_quaternary
       jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
     ports:
