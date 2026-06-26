@@ -95,7 +95,7 @@ export default function PaymentConfirmDialog({
           </DialogTitle>
           <DialogDescription className="text-center">
             {values.isCoinJoin === true ? (
-              <span className="light:text-green-600/80 font-semibold text-green-700/80">
+              <span className="text-brand-success/80 font-semibold">
                 {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
               </span>
             ) : (

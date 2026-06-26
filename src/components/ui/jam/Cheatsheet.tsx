@@ -59,7 +59,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs">
       <div className="fixed inset-0 z-0" onClick={handleClose} />
       <div
-        className={`bg-background relative z-10 flex max-h-[95vh] w-full max-w-[640px] flex-col rounded-t-2xl shadow-2xl transition-transform duration-200 ease-out dark:bg-[#181b20] ${
+        className={`bg-background dark:bg-brand-shell relative z-10 flex max-h-[95vh] w-full max-w-[640px] flex-col rounded-t-2xl shadow-2xl transition-transform duration-200 ease-out ${
           isClosing ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >

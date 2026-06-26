@@ -145,7 +145,7 @@ export function AppNavbar({
   })
 
   return (
-    <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
+    <header className="bg-brand-nav text-brand-nav-foreground flex items-center justify-between px-4 py-2 transition-colors duration-300">
       <WalletPreview
         isLoading={isLoading}
         isReloading={isReloading}
@@ -185,7 +185,7 @@ export function AppNavbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="light:text-green-600 text-green-300"
+                className="text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(rescanningRoute)}
@@ -201,7 +201,7 @@ export function AppNavbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="light:text-green-600 text-green-300"
+                className="text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(joiningRoute)}
