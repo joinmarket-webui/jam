@@ -262,7 +262,7 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: polarlightning/bitcoind:28.0@sha256:ff435d758c89f01823924e057d5d5e4206d350ae69dff5e0dc1bbc9c6a36d010
+    image: polarlightning/bitcoind:30.0@sha256:6b15e7efb79995a18441806f509e40316428a901f1cdc5c54cd25b03ac513cb9
     command:
       # rpcauth (user=regtest; password=regtest)
       # rpcauth (user=joinmarket; password=joinmarket)
