@@ -134,8 +134,8 @@ services:
       tor:
         condition: service_healthy
 
-  joinmarket_directory_node:
-    container_name: jm_regtest_joinmarket_directory_node
+  joinmarket_clientserver_directory_node:
+    container_name: jm_regtest_joinmarket_clientserver_directory_node
     build:
       context: ./dockerfile-deps/joinmarket/directory_node
       dockerfile: Dockerfile
@@ -151,7 +151,7 @@ services:
       jm_blockchain_source: regtest
       jm_network: testnet
     volumes:
-      - 'joinmarket_directory_node_datadir:/root/.joinmarket'
+      - 'joinmarket_clientserver_directory_node_datadir:/root/.joinmarket'
       - './out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z'
     healthcheck:
       test: ['CMD', 'supervisorctl', 'status']
@@ -390,7 +390,7 @@ volumes:
   joinmarket3_datadir:
   joinmarket4_datadir:
   joinmarket5_datadir:
-  joinmarket_directory_node_datadir:
+  joinmarket_clientserver_directory_node_datadir:
   tor_datadir:
   irc_datadir:
 

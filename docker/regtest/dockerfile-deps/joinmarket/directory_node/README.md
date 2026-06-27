@@ -9,7 +9,7 @@ and provide the correct onion hostname via `directory_nodes` yourself!
 e.g. in a docker-compose setup:
 
 ```yml
-  joinmarket_directory_node:
+  joinmarket_clientserver_directory_node:
     [...]
     environment:
       jm_hidden_service_dir: \/root\/.joinmarket\/hidden_service_dir
