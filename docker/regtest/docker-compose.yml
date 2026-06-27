@@ -64,6 +64,7 @@ services:
       jm_rpc_wallet_file: jm_tertiary
       jm_rpc_user: joinmarket3
       jm_rpc_password: joinmarket3
+      CREATE_WALLET_PARAMS_DESCRIPTORS: 'true'
     ports:
       - '30601:62601'  # obwatch
       - '30183:28183'  # jmwalletd api
@@ -91,6 +92,7 @@ services:
       APP_PASSWORD: regtest
       jm_rpc_wallet_file: jm_quaternary
       jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
+      CREATE_WALLET_PARAMS_DESCRIPTORS: 'true'
     ports:
       - '31080:80'
       - '31183:28183'  # exposed for "init setup" routine
