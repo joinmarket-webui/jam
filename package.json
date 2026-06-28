@@ -1,6 +1,6 @@
 {
   "name": "jam",
-  "version": "2.0.0-SNAPSHOT",
+  "version": "2.0.0-beta.0",
   "private": true,
   "description": "Your sats. Your privacy. Your profit.",
   "repository": "git@github.com:joinmarket-webui/jam.git",
