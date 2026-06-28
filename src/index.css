@@ -48,6 +48,11 @@
   --color-brand-nav-foreground: var(--brand-nav-foreground);
   --color-brand-nav-hover: var(--brand-nav-hover);
   --color-brand-success: var(--brand-success);
+  --color-brand-success-foreground: var(--brand-success-foreground);
+  --color-brand-warning: var(--brand-warning);
+  --color-brand-warning-foreground: var(--brand-warning-foreground);
+  --color-brand-info: var(--brand-info);
+  --color-brand-info-foreground: var(--brand-info-foreground);
 }
 
 :root {
@@ -89,6 +94,11 @@
   --brand-nav-foreground: #24190f;
   --brand-nav-hover: #f4e5c4;
   --brand-success: #2f7d45;
+  --brand-success-foreground: #fffaf0;
+  --brand-warning: #e2b86a;
+  --brand-warning-foreground: #24190f;
+  --brand-info: #3b5ba9;
+  --brand-info-foreground: #fffaf0;
 }
 
 [data-theme='dark'] {
@@ -129,6 +139,11 @@
   --brand-nav-foreground: #f6f1e8;
   --brand-nav-hover: #343138;
   --brand-success: #8fdaa0;
+  --brand-success-foreground: #181b20;
+  --brand-warning: #e2b86a;
+  --brand-warning-foreground: #181b20;
+  --brand-info: #7893d1;
+  --brand-info-foreground: #181b20;
 }
 
 @layer base {
