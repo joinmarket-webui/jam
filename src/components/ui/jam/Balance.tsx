@@ -39,7 +39,7 @@ const ElementWithSymbols = ({
       className={cn(
         'balance-hook inline-flex items-center',
         {
-          'light:text-blue-500/80 text-blue-500/80': frozen,
+          'text-brand-info': frozen,
         },
         className,
       )}

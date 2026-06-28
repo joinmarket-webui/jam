@@ -113,7 +113,7 @@ export const ImportStepConfirm = ({
             <AccordionItem value="options">
               <AccordionTrigger
                 className={cn({
-                  'light:text-yellow-800 text-yellow-200/90': showGaplimitWarning,
+                  'text-brand-warning light:text-brand-warning-foreground': showGaplimitWarning,
                 })}
               >
                 <div className="flex items-center gap-2">

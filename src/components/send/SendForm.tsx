@@ -668,15 +668,15 @@ export function SendForm({
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">isValid:</code>
+                  <code className="text-destructive">isValid:</code>
                   <pre className="text-xs">{JSON.stringify(isValid, null, 2)}</pre>
                 </div>
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">values:</code>
+                  <code className="text-destructive">values:</code>
                   <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
                 </div>
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">errors:</code>
+                  <code className="text-destructive">errors:</code>
                   <pre className="text-xs">{JSON.stringify(errors.source?.message, null, 2)}</pre>
                   <pre className="text-xs">{JSON.stringify(errors.source?.fromJar?.message, null, 2)}</pre>
 
@@ -689,7 +689,7 @@ export function SendForm({
                   <pre className="text-xs">{JSON.stringify(errors.amount?.isSweep?.message, null, 2)}</pre>
                 </div>
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">schema:</code>
+                  <code className="text-destructive">schema:</code>
                   <pre className="text-xs">{JSON.stringify(schema, null, 2)}</pre>
                 </div>
               </CardContent>

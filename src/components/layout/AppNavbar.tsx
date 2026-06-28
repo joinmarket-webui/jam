@@ -69,7 +69,7 @@ const WalletPreview = ({
             ) : (
               <>
                 {isLoading ? (
-                  <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
+                  <Skeleton className="bg-muted h-4 w-full" />
                 ) : (
                   <Balance valueString={String(totalBalance)} />
                 )}
@@ -172,7 +172,7 @@ export function AppNavbar({
         <Link to={rescanningRoute ? '#' : routes.earn} className="text-muted-foreground hover:text-foreground relative">
           <WithActivityIndicator active={makerRunning}>{t('navbar.tab_earn')}</WithActivityIndicator>
         </Link>
-        <span className="text-gray-400 dark:text-gray-600">|</span>
+        <span className="text-border">|</span>
         <Link
           to={rescanningRoute ? '#' : routes.sweep}
           className="text-muted-foreground hover:text-foreground relative"
