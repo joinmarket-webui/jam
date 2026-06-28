@@ -8,8 +8,6 @@ services:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
       BITCOIN__RPC_USER: joinmarket
       BITCOIN__RPC_PASSWORD: joinmarket
-      # TODO: it seems this wallet is not created? check with `npm run regtest:listwallets`
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_primary
     ports:
       - '28183:28183'  # jmwalletd api
       - '28283:28283'  # jmwalletd websocket
@@ -33,11 +31,10 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone_ng
     environment:
-      ENSURE_WALLET: 'true'
+      ENSURE_WALLET: 'false'
       BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: joinmarket2
       BITCOIN__RPC_PASSWORD: joinmarket2
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_secondary
       LOGGING__LEVEL: DEBUG
       NETWORK_CONFIG__NETWORK: testnet
       NETWORK_CONFIG__BITCOIN_NETWORK: regtest
@@ -119,7 +116,6 @@ services:
     environment:
       BITCOIN__RPC_USER: regtest
       BITCOIN__RPC_PASSWORD: regtest
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_quinary
     ports:
       - '32183:28183'
     volumes:
