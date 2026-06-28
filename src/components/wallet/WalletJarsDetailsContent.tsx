@@ -206,10 +206,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
       </div>
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            disabled={!operationsEnabled || walletInfoIsFetching}
-            onClick={() => void walletInfoRefetch()}
-          >
+          <Button disabled={!operationsEnabled || walletInfoIsFetching} onClick={() => void walletInfoRefetch()}>
             <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': walletInfoIsFetching })} />
             {t('global.refresh')}
           </Button>
