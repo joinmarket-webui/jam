@@ -351,7 +351,7 @@ export function SendForm({
                 )}
               </FieldLabel>
               <ButtonGroup
-                className={cn({
+                className={cn('w-full', {
                   hidden: destinationJar !== undefined,
                 })}
               >
@@ -361,7 +361,6 @@ export function SendForm({
                     required: destinationJar === undefined,
                     disabled,
                   })}
-                  className="h-auto"
                   type="text"
                   placeholder={t('send.placeholder_recipient')}
                   onPaste={handleAddressPaste}
@@ -391,7 +390,7 @@ export function SendForm({
                 </Button>
               </ButtonGroup>
               <ButtonGroup
-                className={cn({
+                className={cn('w-full', {
                   hidden: destinationJar === undefined,
                 })}
               >
@@ -402,7 +401,7 @@ export function SendForm({
                       className={cn(
                         inputVariants(),
                         'flex items-center justify-between gap-2',
-                        'bg-input/50 dark:bg-input/80 h-auto',
+                        'bg-input/50 dark:bg-input/80 h-auto min-h-10',
                       )}
                     >
                       <Address value={values.destination.address} copyable={true} />
@@ -416,7 +415,6 @@ export function SendForm({
                       type="button"
                       variant="outline"
                       size="lg"
-                      className="h-auto"
                       disabled={disabled}
                       onClick={() => {
                         setValue('destination.address', '', { shouldValidate: true })
@@ -447,7 +445,7 @@ export function SendForm({
               <FieldLabel htmlFor="send-amount">{t('send.label_amount_input')}</FieldLabel>
 
               <ButtonGroup
-                className={cn('relative', {
+                className={cn('relative w-full', {
                   hidden: isSweep === true,
                 })}
               >
@@ -460,7 +458,7 @@ export function SendForm({
                   min={MIN_SEND_AMOUNT}
                   max={MAX_SEND_AMOUNT}
                   type="number"
-                  className="h-auto pl-9"
+                  className="pl-9"
                   placeholder={t('send.placeholder_amount_input')}
                 />
                 <div className="absolute top-1/2 left-0 flex -translate-y-1/2 items-center px-3">
@@ -489,7 +487,7 @@ export function SendForm({
               </ButtonGroup>
 
               <ButtonGroup
-                className={cn({
+                className={cn('w-full', {
                   hidden: isSweep !== true,
                 })}
               >
@@ -498,7 +496,7 @@ export function SendForm({
                   className={cn(
                     inputVariants(),
                     'flex items-center justify-between gap-2',
-                    'bg-input/50 dark:bg-input/80 h-auto',
+                    'bg-input/50 dark:bg-input/80 h-auto min-h-10',
                   )}
                   aria-disabled
                 >
@@ -516,7 +514,6 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
-                  className="h-auto"
                   disabled={disabled}
                   onClick={() => {
                     setValue('amount.isSweep', false, { shouldValidate: true })
