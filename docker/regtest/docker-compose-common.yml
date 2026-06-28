@@ -12,10 +12,6 @@ services:
       jm_rpc_host: bitcoind
       jm_rpc_port: 43782
       jm_directory_nodes: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
-      jm_socks5_host: tor
-      jm_socks5_port: 9050
-      jm_tor_control_host: tor
-      jm_tor_control_port: 9051
       jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
       jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
       jm_maker_timeout_sec: 30 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
@@ -45,10 +41,6 @@ services:
       jm_rpc_host: bitcoind
       jm_rpc_port: 43782
       jm_directory_nodes: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
-      jm_socks5_host: tor
-      jm_socks5_port: 9050
-      jm_tor_control_host: tor
-      jm_tor_control_port: 9051
       jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
       jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
     expose:

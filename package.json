@@ -48,9 +48,11 @@
     "regtest:logs:ng:directory_node": "docker logs -f jm_regtest_joinmarket_ng_directory_node",
     "regtest:logs:clientserver:directory_node": "docker exec -t jm_regtest_joinmarket_clientserver_directory_node tail -f /var/log/jam/directory_node_stdout.log -n 200",
     "regtest:logs:clientserver:native:jmwalletd": "docker exec -t jm_regtest_joinmarket3 tail -f /var/log/jam/jmwalletd_stdout.log",
+    "regtest:logs:clientserver:native:tor": "docker exec -t jm_regtest_joinmarket3 tail -f /var/log/jam/tor_stdout.log",
     "regtest:logs:clientserver:native:schedule": "docker exec -t jm_regtest_joinmarket3 tail -f /root/.joinmarket/logs/TUMBLE.schedule",
     "regtest:init": "./docker/regtest/init-setup.sh",
-    "regtest:mine": "watch -n 11 ./docker/regtest/mine-block.sh"
+    "regtest:mine": "watch -n 11 ./docker/regtest/mine-block.sh",
+    "regtest:listwallets": "docker exec -t jm_regtest_bitcoind bitcoin-cli -datadir=/home/bitcoin/data -regtest -rpcport=43782 listwallets"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

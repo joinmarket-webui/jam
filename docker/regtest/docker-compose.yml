@@ -8,6 +8,7 @@ services:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
       BITCOIN__RPC_USER: joinmarket
       BITCOIN__RPC_PASSWORD: joinmarket
+      # TODO: it seems this wallet is not created? check with `npm run regtest:listwallets`
       BITCOIN__DESCRIPTOR_WALLET_NAME: jm_primary
     ports:
       - '28183:28183'  # jmwalletd api
@@ -64,7 +65,7 @@ services:
       jm_rpc_wallet_file: jm_tertiary
       jm_rpc_user: joinmarket3
       jm_rpc_password: joinmarket3
-      CREATE_WALLET_PARAMS_DESCRIPTORS: 'true'
+      CREATE_WALLET_PARAMS_DESCRIPTORS: 'false'
     ports:
       - '30601:62601'  # obwatch
       - '30183:28183'  # jmwalletd api
@@ -88,11 +89,11 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone
     environment:
-      APP_USER: regtest
-      APP_PASSWORD: regtest
+      APP_USER: joinmarket
+      APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_quaternary
       jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
-      CREATE_WALLET_PARAMS_DESCRIPTORS: 'true'
+      CREATE_WALLET_PARAMS_DESCRIPTORS: 'false'
     ports:
       - '31080:80'
       - '31183:28183'  # exposed for "init setup" routine
@@ -143,11 +144,6 @@ services:
     environment:
       jm_hidden_service_dir: \/root\/.joinmarket\/hidden_service_dir
       jm_directory_nodes: ${JM_REF_DIRECTORY_NODES:?You must set the reference directory node address in generated env file}
-      jm_socks5_host: localhost
-      jm_socks5_port: 9050
-      jm_tor_control_host: localhost
-      jm_tor_control_port: 9051
-      jm_daemon_host: 0.0.0.0
       jm_blockchain_source: regtest
       jm_network: testnet
     volumes:
@@ -163,9 +159,6 @@ services:
     depends_on:
       tor:
         condition: service_healthy
-    networks:
-      default:
-        ipv4_address: 172.30.0.20
 
   joinmarket_ng_orderbook_watcher:
     container_name: jm_regtest_joinmarket_ng_orderbook_watcher
@@ -245,11 +238,10 @@ services:
       [
         'sh',
         '-c',
-        'mkdir -p /var/lib/tor/ref-directory /var/lib/tor/ng-directory && cp -f /source/ref/* /var/lib/tor/ref-directory/ && cp -f /source/ng/* /var/lib/tor/ng-directory/ && chown -R 1000:1000 /var/lib/tor && chmod 700 /var/lib/tor/ref-directory /var/lib/tor/ng-directory && chmod 600 /var/lib/tor/ref-directory/* /var/lib/tor/ng-directory/*',
+        'mkdir -p /var/lib/tor/ng-directory && cp -f /source/ng/* /var/lib/tor/ng-directory/ && chown -R 1000:1000 /var/lib/tor && chmod 700 /var/lib/tor/ng-directory && chmod 600 /var/lib/tor/ng-directory/*',
       ]
     volumes:
       - 'tor_datadir:/var/lib/tor'
-      - './out/hidden_service_dir:/source/ref:ro,z'
       - './out/ng_directory_hidden_service:/source/ng:ro,z'
 
   irc:
@@ -264,7 +256,7 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: polarlightning/bitcoind:30.0@sha256:6b15e7efb79995a18441806f509e40316428a901f1cdc5c54cd25b03ac513cb9
+    image: polarlightning/bitcoind:29.0@sha256:4521294ac25fdbf1492a8cc5ea987463a5f244b82546d29bbe8451db39f36f3a
     command:
       # rpcauth (user=regtest; password=regtest)
       # rpcauth (user=joinmarket; password=joinmarket)
