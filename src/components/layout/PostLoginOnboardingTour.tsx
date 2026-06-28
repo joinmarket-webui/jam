@@ -192,20 +192,18 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
           <p className="text-sm leading-relaxed">{currentStep.description}</p>
         </CardContent>
         <CardFooter className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={closeTour}>
+          <Button variant="ghost" onClick={closeTour}>
             Skip tour
           </Button>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              size="sm"
               onClick={() => setStepIndex((current) => Math.max(0, current - 1))}
               disabled={stepIndex === 0}
             >
               Back
             </Button>
             <Button
-              size="sm"
               onClick={() => {
                 if (isLastStep) {
                   closeTour()

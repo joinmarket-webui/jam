@@ -181,10 +181,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           )}
 
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-4 flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-center">
             <Button
               variant="outline"
-              size="sm"
+              className="w-full sm:w-auto"
               onClick={() => void fetchNewAddress()}
               disabled={getAddressMutation.isPending}
             >
@@ -202,10 +202,12 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </Button>
 
             <CopyButton
-              className={buttonVariants({
-                size: 'sm',
-                variant: 'outline',
-              })}
+              className={cn(
+                buttonVariants({
+                  variant: 'outline',
+                }),
+                'w-full sm:w-auto',
+              )}
               disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
               value={getAddressMutation.data?.address ?? ''}
               text={
@@ -227,7 +229,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             {'share' in navigator && (
               <Button
                 variant="outline"
-                size="sm"
+                className="w-full sm:w-auto"
                 onClick={() => void shareAddress(getAddressMutation.data!.address)}
                 disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
               >

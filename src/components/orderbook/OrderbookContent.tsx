@@ -272,7 +272,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           {showDemoButton && (
             <Button
               className="text-xs"
@@ -291,7 +291,6 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
             <Button
               variant="outline"
               className="rounded-r-none"
-              size="sm"
               onClick={() => void handleReload()}
               disabled={isFetching}
             >
@@ -301,7 +300,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isFetching}>
+                <Button variant="outline" disabled={isFetching}>
                   <ChevronDownIcon />
                 </Button>
               </DropdownMenuTrigger>
@@ -319,7 +318,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
             placeholder={t('orderbook.placeholder_search')}
             value={searchInputRaw}
             onChange={(event) => setSearchInputRaw(event.target.value)}
-            className="w-64"
+            className="w-full sm:w-64"
             disabled={isFetching}
           />
         </div>

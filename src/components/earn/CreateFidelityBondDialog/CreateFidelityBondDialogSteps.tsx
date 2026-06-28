@@ -237,11 +237,11 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={selectAllUtxos} className="shadow-sm">
+            <Button variant="outline" onClick={selectAllUtxos} className="shadow-sm">
               <CheckIcon className="mr-1 h-3.5 w-3.5" />
               {t('earn.fidelity_bond.select_utxos.button_select_all')}
             </Button>
-            <Button variant="outline" size="sm" onClick={deselectAllUtxos} className="shadow-sm">
+            <Button variant="outline" onClick={deselectAllUtxos} className="shadow-sm">
               {t('earn.fidelity_bond.select_utxos.button_deselect_all')}
             </Button>
           </div>

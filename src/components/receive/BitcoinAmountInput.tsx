@@ -50,7 +50,7 @@ export const BitcoinAmountInput = ({
             {...inputProps}
           />
         </div>
-        <Button variant="outline" size="sm" className="py-4 whitespace-nowrap" onClick={toggleCurrencyUnit}>
+        <Button variant="outline" size="lg" className="whitespace-nowrap" onClick={toggleCurrencyUnit}>
           {currency === 'sats' ? 'BTC' : 'Sats'}
           <ArrowUpDownIcon />
         </Button>

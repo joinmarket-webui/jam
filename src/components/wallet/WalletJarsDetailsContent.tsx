@@ -205,9 +205,8 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         </div>
       </div>
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
-            size="sm"
             disabled={!operationsEnabled || walletInfoIsFetching}
             onClick={() => void walletInfoRefetch()}
           >
@@ -216,7 +215,6 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
           </Button>
           <ButtonGroup>
             <Button
-              size="sm"
               variant={selectedUtxos.length === 0 ? 'outline' : undefined}
               disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosFrozen}
               onClick={() => void onFreezeClick()}
@@ -225,7 +223,6 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
               {t('jar_details.utxo_list.button_freeze')}
             </Button>
             <Button
-              size="sm"
               variant={selectedUtxos.length === 0 ? 'outline' : undefined}
               disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosUnfrozen}
               onClick={() => void onUnfreezeClick()}
@@ -239,7 +236,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
           placeholder={t('jar_details.utxo_list.placeholder_search')}
           value={searchFilter}
           onChange={(event_) => setSearchFilter(event_.target.value)}
-          className="max-w-xs"
+          className="w-full max-w-xs"
         />
       </div>
       <JarUtxosTable

@@ -94,7 +94,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
               {t('global.errors.error_loading_wallet_failed', {
                 reason: error.message || t('global.errors.reason_unknown'),
               })}
-              <Button variant="outline" size="sm" onClick={() => void refetchWalletData()}>
+              <Button variant="outline" onClick={() => void refetchWalletData()}>
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
                 {t('global.retry')}
               </Button>
@@ -146,7 +146,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
           </div>
         </div>
         <div className="flex w-full max-w-xl justify-end">
-          <Button variant="ghost" size="xs" onClick={() => void refetchWalletData()}>
+          <Button variant="ghost" onClick={() => void refetchWalletData()}>
             <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
             {t('global.refresh')}
           </Button>
