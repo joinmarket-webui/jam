@@ -44,10 +44,7 @@ export interface ScheduleProgressEntry {
 }
 
 export type ScheduleCurrentStateType =
-  | 'waiting_before_next'
-  | 'creating_and_broadcasting'
-  | 'waiting_for_confirmation'
-  | 'transaction_confirmed'
+  'waiting_before_next' | 'creating_and_broadcasting' | 'waiting_for_confirmation' | 'transaction_confirmed'
 
 export interface ScheduleCurrentState {
   type: ScheduleCurrentStateType
