@@ -69,7 +69,7 @@ const WalletPreview = ({
             ) : (
               <>
                 {isLoading ? (
-                  <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
+                  <Skeleton className="bg-muted h-4 w-full" />
                 ) : (
                   <Balance valueString={String(totalBalance)} />
                 )}
@@ -145,7 +145,7 @@ export function AppNavbar({
   })
 
   return (
-    <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
+    <header className="bg-brand-nav text-brand-nav-foreground flex items-center justify-between px-4 py-2 transition-colors duration-300">
       <WalletPreview
         isLoading={isLoading}
         isReloading={isReloading}
@@ -172,7 +172,7 @@ export function AppNavbar({
         <Link to={rescanningRoute ? '#' : routes.earn} className="text-muted-foreground hover:text-foreground relative">
           <WithActivityIndicator active={makerRunning}>{t('navbar.tab_earn')}</WithActivityIndicator>
         </Link>
-        <span className="text-gray-400 dark:text-gray-600">|</span>
+        <span className="text-border">|</span>
         <Link
           to={rescanningRoute ? '#' : routes.sweep}
           className="text-muted-foreground hover:text-foreground relative"
@@ -185,7 +185,7 @@ export function AppNavbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="light:text-green-600 text-green-300"
+                className="text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(rescanningRoute)}
@@ -201,7 +201,7 @@ export function AppNavbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="light:text-green-600 text-green-300"
+                className="text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(joiningRoute)}

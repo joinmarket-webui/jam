@@ -310,11 +310,11 @@ export function EarnForm({
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">isValid:</code>
+              <code className="text-destructive">isValid:</code>
               <pre className="text-xs">{JSON.stringify(isValid, null, 2)}</pre>
             </div>
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">values:</code>
+              <code className="text-destructive">values:</code>
               <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
             </div>
           </CardContent>

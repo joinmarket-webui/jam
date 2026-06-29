@@ -64,8 +64,8 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
       <TableRow
         key={row.id}
         className={cn({
-          'light:bg-blue-500/30! bg-blue-900/50!': row.original.utxo.frozen === true,
-          'light:bg-yellow-500/30! bg-yellow-950!': row.getIsSelected(),
+          'bg-brand-info/20!': row.original.utxo.frozen === true,
+          'bg-brand-warning/25!': row.getIsSelected(),
         })}
       >
         {row.getVisibleCells().map((cell) => {

@@ -253,7 +253,8 @@ export const ImportDetailsForm = ({
           <AccordionTrigger
             className={cn({
               'text-destructive': hasImportDetailsSectionErrors,
-              'light:text-yellow-800 text-yellow-200/90': !hasImportDetailsSectionErrors && showGaplimitWarning,
+              'text-brand-warning light:text-brand-warning-foreground':
+                !hasImportDetailsSectionErrors && showGaplimitWarning,
             })}
           >
             <div className="flex items-center gap-2">

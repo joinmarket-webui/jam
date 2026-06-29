@@ -361,7 +361,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-4">
+            <div className="border-brand-success/20 bg-brand-success/10 rounded-lg border p-4">
               <p className="mb-3 text-sm font-medium">
                 {t('earn.fidelity_bond.freeze_utxos.label_selected_utxos', { count: selectedUtxos.length })}
               </p>
@@ -376,7 +376,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </div>
 
             {utxosToFreeze.length > 0 && (
-              <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 p-4">
+              <div className="border-brand-warning/20 bg-brand-warning/10 rounded-lg border p-4">
                 <p className="mb-1 text-sm font-medium">
                   {t('earn.fidelity_bond.freeze_utxos.label_utxos_to_freeze', { count: utxosToFreeze.length })}
                 </p>
@@ -445,7 +445,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                       key="copy-address-review"
                       value={address}
                       text={<CopyIcon className="h-4 w-4" />}
-                      successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                      successText={<CheckIcon className="text-brand-success h-4 w-4" />}
                       className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
                       onSuccess={() => toast.success(t('receive.text_copy_address'))}
                       onError={() => toast.error(t('receive.error_copy_address_failed'))}
@@ -503,8 +503,8 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
       return (
         <div className="space-y-6">
           <div className="flex flex-col items-center py-6">
-            <div className="rounded-full bg-green-500/10 p-4">
-              <CheckCircle2Icon className="h-16 w-16 text-green-500" />
+            <div className="bg-brand-success/10 rounded-full p-4">
+              <CheckCircle2Icon className="text-brand-success h-16 w-16" />
             </div>
             <p className="mt-4 text-xl font-bold">{t('earn.fidelity_bond.create_fidelity_bond.success_text')}</p>
             <p className="text-muted-foreground mt-2 text-sm">
@@ -531,7 +531,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                     key="copy-address-success"
                     value={address}
                     text={<CopyIcon className="h-4 w-4" />}
-                    successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                    successText={<CheckIcon className="text-brand-success h-4 w-4" />}
                     className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
                     onSuccess={() => toast.success(t('receive.text_copy_address'))}
                     onError={() => toast.error(t('receive.error_copy_address_failed'))}
@@ -553,7 +553,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                     key="copy-txid"
                     value={txResult.txinfo.txid}
                     text={<CopyIcon className="h-4 w-4" />}
-                    successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                    successText={<CheckIcon className="text-brand-success h-4 w-4" />}
                     className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
                     onSuccess={() =>
                       toast.success(t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id'))

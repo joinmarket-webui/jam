@@ -10,7 +10,7 @@ type JmWebsocketIconProps = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'> & {
 
 const JmWebsocketIcon = ({ className, isOpen, isAuthenticated }: JmWebsocketIconProps) => {
   if (isAuthenticated) {
-    return <MonitorCheckIcon className={cn('light:text-green-600 text-green-300', className)} />
+    return <MonitorCheckIcon className={cn('text-brand-success', className)} />
   }
   if (isOpen) {
     return <MonitorUpIcon className={cn('text-foreground', className)} />

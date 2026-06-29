@@ -35,7 +35,7 @@ const CopyableAddress = (props: CopyableAddressProps) => {
       <CopyButton
         value={props.value}
         text={<CopyIcon />}
-        successText={<CheckIcon className="text-green-500" />}
+        successText={<CheckIcon className="text-brand-success" />}
         className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
         onSuccess={() => toast.success(t(/*TODO: i18n - distinct key */ 'receive.text_copy_address'))}
         onError={() => toast.error(/*TODO: i18n - distinct key */ t('receive.error_copy_address_failed'))}
