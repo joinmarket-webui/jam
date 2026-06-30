@@ -182,8 +182,7 @@ type LoginFormLoadingProps = {
 }
 
 type LoginFormProps =
-  | (LoginFormLoadingProps & Partial<LoginFormComponentProps>)
-  | ({ loading?: false } & LoginFormComponentProps)
+  (LoginFormLoadingProps & Partial<LoginFormComponentProps>) | ({ loading?: false } & LoginFormComponentProps)
 
 function isLoginFormLoadingGuard(val: LoginFormProps): val is LoginFormLoadingProps {
   return (val as LoginFormLoadingProps).loading === true
