@@ -1,0 +1,142 @@
+import type { ReactNode } from 'react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+import type { Jar } from '@/context/JamWalletInfoContext'
+import type { WalletFileName } from '@/lib/utils'
+import MainWalletPage from './MainWalletPage'
+
+const navigateMock = vi.fn()
+const refetch = vi.fn()
+const toggleDisplayMode = vi.fn()
+
+let walletInfo: { isLoading: boolean; isFetching: boolean; error: { message: string } | null; refetch: () => void }
+let jars: Jar[]
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) => key + (options ? ' ' + JSON.stringify(options) : ''),
+  }),
+}))
+
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => navigateMock,
+}))
+
+vi.mock('@/context/JamDisplayContext', () => ({
+  useJamDisplayContext: () => ({ toggleDisplayMode }),
+}))
+
+vi.mock('@/context/JamWalletInfoContext', () => ({
+  useJamWalletInfoContext: () => walletInfo,
+  useWalletBalanceSummary: () => ({ walletBalanceSummary: { calculatedTotalBalanceInSats: 5000 } }),
+  useJars: () => ({ jars }),
+}))
+
+vi.mock('@/lib/utils', () => ({
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
+  shortenStringMiddle: (s: string) => s,
+  walletDisplayName: (s: string) => s,
+}))
+
+vi.mock('@/components/ui/jam/ClickableJar', () => ({
+  ClickableJar: ({ name, onClick }: { name: string; onClick: () => void }) => <button onClick={onClick}>{name}</button>,
+}))
+
+vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
+  WalletJarsDetailsOverlay: ({ open }: { open: boolean }) => (
+    <div data-testid="overlay">{open ? 'open' : 'closed'}</div>
+  ),
+}))
+
+vi.mock('./ui/jam/Balance', () => ({
+  Balance: ({ valueString, onClick }: { valueString: string; onClick?: () => void }) => (
+    <span onClick={onClick}>{valueString}</span>
+  ),
+}))
+
+vi.mock('./ui/spinner', () => ({
+  Spinner: () => <div data-testid="spinner" />,
+}))
+
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  TooltipTrigger: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  TooltipContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+}))
+
+vi.mock('@/components/ui/alert', () => ({
+  Alert: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  AlertDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+}))
+
+vi.mock('@/components/ui/button', () => ({
+  Button: ({ children, onClick }: { children?: ReactNode; onClick?: () => void }) => (
+    <button onClick={onClick}>{children}</button>
+  ),
+}))
+
+const walletFileName = 'wallet.jmdat' as WalletFileName
+
+const makeJar = (jarIndex: number, name: string): Jar =>
+  ({
+    jarIndex,
+    name,
+    color: '#000',
+    balanceSummary: {
+      calculatedTotalBalanceInSats: 100,
+      calculatedAvailableBalanceInSats: 100,
+      calculatedFrozenOrLockedBalanceInSats: 0,
+    },
+  }) as unknown as Jar
+
+describe('MainWalletPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    walletInfo = { isLoading: false, isFetching: false, error: null, refetch }
+    jars = [makeJar(0, 'Jar 0'), makeJar(1, 'Jar 1')]
+  })
+
+  it('shows a loading spinner while loading', () => {
+    walletInfo = { ...walletInfo, isLoading: true }
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    expect(screen.getAllByTestId('spinner').length).toBeGreaterThan(0)
+  })
+
+  it('renders balance and jars, and opens the jar overlay on click', () => {
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    expect(screen.getByText('5000')).toBeInTheDocument()
+    expect(screen.getByTestId('overlay')).toHaveTextContent('closed')
+
+    fireEvent.click(screen.getByText('Jar 0'))
+    expect(screen.getByTestId('overlay')).toHaveTextContent('open')
+  })
+
+  it('navigates to deposit and withdraw routes', () => {
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    fireEvent.click(screen.getByText('current_wallet.button_deposit'))
+    fireEvent.click(screen.getByText('current_wallet.button_withdraw'))
+    expect(navigateMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('shows an error alert with a retry button', () => {
+    walletInfo = { ...walletInfo, error: { message: 'load failed' } }
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    expect(screen.getByText(/error_loading_wallet_failed/)).toBeInTheDocument()
+    fireEvent.click(screen.getByText('global.retry'))
+    expect(refetch).toHaveBeenCalled()
+  })
+
+  it('shows a jars spinner while fetching and refreshes on click', () => {
+    walletInfo = { ...walletInfo, isFetching: true }
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    expect(screen.getByTestId('spinner')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('global.refresh'))
+    expect(refetch).toHaveBeenCalled()
+  })
+
+  it('toggles display mode when clicking the balance', () => {
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    fireEvent.click(screen.getByText('5000'))
+    expect(toggleDisplayMode).toHaveBeenCalled()
+  })
+})

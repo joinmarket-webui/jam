@@ -112,7 +112,7 @@ export const SeedPhraseDialog = ({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangleIcon className="h-5 w-5 text-yellow-500" />
+                <AlertTriangleIcon className="text-brand-warning h-5 w-5" />
                 {t('settings.seed_modal.verification.title')}
               </DialogTitle>
               <DialogDescription>{t('settings.seed_modal.verification.subtitle')}</DialogDescription>

@@ -87,7 +87,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
           <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
             <div
               className={cn('h-full rounded-full transition-all duration-300 ease-out', {
-                'bg-green-300/50': isCorrect,
+                'bg-brand-success/40': isCorrect,
                 'bg-primary': !isCorrect,
               })}
               style={{ width: `${(progress / total) * 100}%` }}
@@ -100,7 +100,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
         className={cn('rounded-lg border-2 border-dashed p-2.5 transition-colors', {
           'border-destructive/50': wrongButtonIndex !== undefined,
           'border-muted-foreground/20': wrongButtonIndex === undefined,
-          'border-green-300/50 bg-green-600/5': allSelected && isCorrect,
+          'border-brand-success/50 bg-brand-success/10': allSelected && isCorrect,
         })}
       >
         <div className="grid grid-cols-2 gap-1.5 select-none sm:grid-cols-3">
@@ -138,7 +138,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
             })}
         </div>
         {allSelected && isCorrect && (
-          <div className="flex h-full items-center justify-center gap-1.5 text-sm font-medium text-green-300">
+          <div className="text-brand-success flex h-full items-center justify-center gap-1.5 text-sm font-medium">
             <CheckCircle2Icon className="size-4" />
             {t('create_wallet.verify_mnemonic.feedback_mnemonic_confirmed')}
           </div>

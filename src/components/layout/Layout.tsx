@@ -72,7 +72,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   }, [])
 
   return (
-    <div className="light:bg-white light:text-black flex min-h-dvh min-w-0 flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
+    <div className="bg-brand-shell text-brand-shell-foreground flex min-h-screen flex-1 flex-col transition-colors duration-300">
       <AppNavbar
         theme={resolvedTheme}
         isLoading={isLoading}

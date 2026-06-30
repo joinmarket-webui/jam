@@ -389,15 +389,15 @@ export const WalletJarsDetailsContent = ({
         {debug && (
           <TabsContent value="dev">
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">activeJar:</code>
+              <code className="text-destructive">activeJar:</code>
               <pre className="text-xs">{JSON.stringify(activeJar, null, 2)}</pre>
             </div>
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">activeAccountMeta:</code>
+              <code className="text-destructive">activeAccountMeta:</code>
               <pre className="text-xs">{JSON.stringify(activeAccountMeta, null, 2)}</pre>
             </div>
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">addressSummary:</code>
+              <code className="text-destructive">addressSummary:</code>
               <pre className="text-xs">{JSON.stringify(addressSummary, null, 2)}</pre>
             </div>
           </TabsContent>

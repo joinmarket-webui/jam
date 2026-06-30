@@ -9,7 +9,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
-import { sortWallets } from '@/lib/utils'
+import { isWalletFileName, sortWallets } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -46,10 +46,8 @@ const LoginPage = () => {
     }),
   })
 
-  const activeWalletOrNull =
-    jmSession?.wallet_name !== undefined && jmSession.wallet_name !== 'None'
-      ? (jmSession?.wallet_name as WalletFileName)
-      : null
+  const activeWalletOrNull: WalletFileName | null =
+    jmSession?.session === true && isWalletFileName(jmSession.wallet_name) ? jmSession.wallet_name : null
   const wallets = sortWallets((listWalletsData?.wallets || []) as WalletFileName[], activeWalletOrNull)
 
   const unlockWallet = useMutation({

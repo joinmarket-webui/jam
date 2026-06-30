@@ -254,14 +254,14 @@ export const OrderbookTable = ({
 
   useEffect(() => {
     table.resetRowPinning(true)
-    table.getRowModel().rows.forEach((row) => {
+    table.getPrePaginationRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
   }, [table, pinnedEntries])
 
   useEffect(() => {
     table.resetRowSelection(true)
-    table.getRowModel().rows.forEach((row) => {
+    table.getPrePaginationRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
   }, [table, highlightedEntries])
@@ -330,7 +330,7 @@ export const OrderbookTable = ({
           </TableHeader>
           <TableBody className=":bg-foreground [&>tr:nth-child(odd)]:bg-foreground/10 [&>tr]:hover:bg-foreground/20!">
             {tableTopRows().map((row) => (
-              <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
+              <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                 {row.getVisibleCells().map((cell) => {
                   const alignCenter = cell.column.columnDef.meta?.align === 'center'
                   const alignRight = cell.column.columnDef.meta?.align === 'right'
@@ -350,7 +350,7 @@ export const OrderbookTable = ({
             ))}
             {table.getCenterRows().map((row) => {
               return (
-                <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
+                <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                   {row.getVisibleCells().map((cell) => {
                     const alignCenter = cell.column.columnDef.meta?.align === 'center'
                     const alignRight = cell.column.columnDef.meta?.align === 'right'

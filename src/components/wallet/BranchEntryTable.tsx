@@ -131,7 +131,7 @@ export const BranchEntryTable = ({
         cell: (info) => (
           <div className="flex items-center gap-2">
             {info.row.original.tags.map((it, index) => {
-              const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value}`
+              const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value.replaceAll(':', '_')}`
               const tooltip = t(tooltipKey)
               const hasTooltip = tooltip !== tooltipKey
               return (
@@ -263,7 +263,7 @@ export const BranchEntryTable = ({
           </TableHeader>
           <TableBody className=":bg-foreground [&>tr:nth-child(odd)]:bg-foreground/10 [&>tr]:hover:bg-foreground/20!">
             {tableTopRows().map((row) => (
-              <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
+              <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                 {row.getVisibleCells().map((cell) => {
                   const alignCenter = cell.column.columnDef.meta?.align === 'center'
                   const alignRight = cell.column.columnDef.meta?.align === 'right'
@@ -283,7 +283,7 @@ export const BranchEntryTable = ({
             ))}
             {table.getCenterRows().map((row) => {
               return (
-                <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
+                <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                   {row.getVisibleCells().map((cell) => {
                     const alignCenter = cell.column.columnDef.meta?.align === 'center'
                     const alignRight = cell.column.columnDef.meta?.align === 'right'

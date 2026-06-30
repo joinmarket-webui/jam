@@ -126,10 +126,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
         }
         const nextCursor = nextMatchIndex + queryLength
         fragments.push(
-          <mark
-            key={`${line}-${nextMatchIndex}`}
-            className="light:bg-yellow-400/80 rounded bg-yellow-500/40 px-0.5 text-current"
-          >
+          <mark key={`${line}-${nextMatchIndex}`} className="bg-brand-warning/40 rounded px-0.5 text-current">
             {line.slice(nextMatchIndex, nextCursor)}
           </mark>,
         )

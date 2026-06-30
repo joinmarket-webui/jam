@@ -6,9 +6,8 @@ services:
       service: joinmarket_ng_native
     environment:
       READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: regtest
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_primary
+      BITCOIN__RPC_USER: joinmarket
+      BITCOIN__RPC_PASSWORD: joinmarket
     ports:
       - '28183:28183'  # jmwalletd api
       - '28283:28283'  # jmwalletd websocket
@@ -32,11 +31,10 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone_ng
     environment:
-      ENSURE_WALLET: 'true'
+      ENSURE_WALLET: 'false'
       BITCOIN__RPC_URL: http://bitcoind:43782
-      BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: regtest
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_secondary
+      BITCOIN__RPC_USER: joinmarket2
+      BITCOIN__RPC_PASSWORD: joinmarket2
       LOGGING__LEVEL: DEBUG
       NETWORK_CONFIG__NETWORK: testnet
       NETWORK_CONFIG__BITCOIN_NETWORK: regtest
@@ -64,6 +62,7 @@ services:
       jm_rpc_wallet_file: jm_tertiary
       jm_rpc_user: joinmarket3
       jm_rpc_password: joinmarket3
+      CREATE_WALLET_PARAMS_DESCRIPTORS: 'false'
     ports:
       - '30601:62601'  # obwatch
       - '30183:28183'  # jmwalletd api
@@ -91,6 +90,7 @@ services:
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_quaternary
       jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
+      CREATE_WALLET_PARAMS_DESCRIPTORS: 'false'
     ports:
       - '31080:80'
       - '31183:28183'  # exposed for "init setup" routine
@@ -116,7 +116,6 @@ services:
     environment:
       BITCOIN__RPC_USER: regtest
       BITCOIN__RPC_PASSWORD: regtest
-      BITCOIN__DESCRIPTOR_WALLET_NAME: jm_quinary
     ports:
       - '32183:28183'
     volumes:
@@ -132,8 +131,8 @@ services:
       tor:
         condition: service_healthy
 
-  joinmarket_directory_node:
-    container_name: jm_regtest_joinmarket_directory_node
+  joinmarket_clientserver_directory_node:
+    container_name: jm_regtest_joinmarket_clientserver_directory_node
     build:
       context: ./dockerfile-deps/joinmarket/directory_node
       dockerfile: Dockerfile
@@ -141,15 +140,10 @@ services:
     environment:
       jm_hidden_service_dir: \/root\/.joinmarket\/hidden_service_dir
       jm_directory_nodes: ${JM_REF_DIRECTORY_NODES:?You must set the reference directory node address in generated env file}
-      jm_socks5_host: localhost
-      jm_socks5_port: 9050
-      jm_tor_control_host: localhost
-      jm_tor_control_port: 9051
-      jm_daemon_host: 0.0.0.0
       jm_blockchain_source: regtest
       jm_network: testnet
     volumes:
-      - 'joinmarket_directory_node_datadir:/root/.joinmarket'
+      - 'joinmarket_clientserver_directory_node_datadir:/root/.joinmarket'
       - './out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z'
     healthcheck:
       test: ['CMD', 'supervisorctl', 'status']
@@ -161,9 +155,6 @@ services:
     depends_on:
       tor:
         condition: service_healthy
-    networks:
-      default:
-        ipv4_address: 172.30.0.20
 
   joinmarket_ng_orderbook_watcher:
     container_name: jm_regtest_joinmarket_ng_orderbook_watcher
@@ -243,11 +234,10 @@ services:
       [
         'sh',
         '-c',
-        'mkdir -p /var/lib/tor/ref-directory /var/lib/tor/ng-directory && cp -f /source/ref/* /var/lib/tor/ref-directory/ && cp -f /source/ng/* /var/lib/tor/ng-directory/ && chown -R 1000:1000 /var/lib/tor && chmod 700 /var/lib/tor/ref-directory /var/lib/tor/ng-directory && chmod 600 /var/lib/tor/ref-directory/* /var/lib/tor/ng-directory/*',
+        'mkdir -p /var/lib/tor/ng-directory && cp -f /source/ng/* /var/lib/tor/ng-directory/ && chown -R 1000:1000 /var/lib/tor && chmod 700 /var/lib/tor/ng-directory && chmod 600 /var/lib/tor/ng-directory/*',
       ]
     volumes:
       - 'tor_datadir:/var/lib/tor'
-      - './out/hidden_service_dir:/source/ref:ro,z'
       - './out/ng_directory_hidden_service:/source/ng:ro,z'
 
   irc:
@@ -262,7 +252,7 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: polarlightning/bitcoind:28.0@sha256:ff435d758c89f01823924e057d5d5e4206d350ae69dff5e0dc1bbc9c6a36d010
+    image: polarlightning/bitcoind:29.0@sha256:4521294ac25fdbf1492a8cc5ea987463a5f244b82546d29bbe8451db39f36f3a
     command:
       # rpcauth (user=regtest; password=regtest)
       # rpcauth (user=joinmarket; password=joinmarket)
@@ -388,7 +378,7 @@ volumes:
   joinmarket3_datadir:
   joinmarket4_datadir:
   joinmarket5_datadir:
-  joinmarket_directory_node_datadir:
+  joinmarket_clientserver_directory_node_datadir:
   tor_datadir:
   irc_datadir:
 

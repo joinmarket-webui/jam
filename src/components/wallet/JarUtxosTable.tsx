@@ -64,8 +64,8 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
       <TableRow
         key={row.id}
         className={cn({
-          'light:bg-blue-500/30! bg-blue-900/50!': row.original.utxo.frozen === true,
-          'light:bg-yellow-500/30! bg-yellow-950!': row.getIsSelected(),
+          'bg-brand-info/20!': row.original.utxo.frozen === true,
+          'bg-brand-warning/25!': row.getIsSelected(),
         })}
       >
         {row.getVisibleCells().map((cell) => {
@@ -207,7 +207,7 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
       cell: (info) => (
         <div className="flex items-center gap-2">
           {info.row.original.tags.map((it, index) => {
-            const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value}`
+            const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value.replaceAll(':', '_')}`
             const tooltip = t(tooltipKey)
             const hasTooltip = tooltip !== tooltipKey
             return (

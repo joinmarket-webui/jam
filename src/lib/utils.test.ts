@@ -18,6 +18,7 @@ import {
   parseSemanticVersion,
   UNKNOWN_VERSION,
   formatBtc,
+  getBtcParts,
   formatSats,
   BTC,
   SATS,
@@ -36,7 +37,7 @@ import {
 import type { WalletFileName } from './utils'
 
 const withRuntimeLocale = (locale: string, callback: () => void) => {
-  const toLocaleStringMock = vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
+  const numberToLocaleStringMock = vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
     this: number,
     locales,
     options,
@@ -47,7 +48,7 @@ const withRuntimeLocale = (locale: string, callback: () => void) => {
   try {
     callback()
   } finally {
-    toLocaleStringMock.mockRestore()
+    numberToLocaleStringMock.mockRestore()
   }
 }
 
@@ -513,6 +514,42 @@ describe('formatBtc', () => {
   })
 })
 
+describe('getBtcParts', () => {
+  it('should decompose a BTC value into semantic parts', () => {
+    const parts = getBtcParts(1.5)
+    expect(parts.integerPart).toBe('1')
+    expect(parts.fractionalPart).toBe('50000000')
+    expect(parts.sign).toBeUndefined()
+    expect(parts.formatted).toBe('1.50000000')
+  })
+
+  it('should handle negative values', () => {
+    const parts = getBtcParts(-0.12345678)
+    expect(parts.sign).toBe('-')
+    expect(parts.integerPart).toBe('0')
+    expect(parts.fractionalPart).toBe('12345678')
+  })
+
+  it('should handle zero', () => {
+    const parts = getBtcParts(0)
+    expect(parts.integerPart).toBe('0')
+    expect(parts.fractionalPart).toBe('00000000')
+    expect(parts.sign).toBeUndefined()
+  })
+
+  it('should handle large values with grouping', () => {
+    const parts = getBtcParts(21000000)
+    expect(parts.integerPart).toBe('21000000')
+    expect(parts.fractionalPart).toBe('00000000')
+  })
+
+  it('should handle very small values', () => {
+    const parts = getBtcParts(0.00000001)
+    expect(parts.integerPart).toBe('0')
+    expect(parts.fractionalPart).toBe('00000001')
+  })
+})
+
 describe('formatSats', () => {
   it('should format satoshi values with locale-specific thousands separators', () => {
     expect(formatSats(1000)).toBe('1,000')
@@ -541,6 +578,14 @@ describe('formatSats', () => {
     withRuntimeLocale('en-IN', () => {
       expect(formatBtc(21000000)).toBe('2,10,00,000.00000000')
       expect(formatSats(2100000000000000)).toBe('2,10,00,00,00,00,00,000')
+    })
+    withRuntimeLocale('it-IT', () => {
+      expect(formatBtc(21000000)).toBe('21.000.000,00000000')
+      expect(formatSats(2100000000000000)).toBe('2.100.000.000.000.000')
+    })
+    withRuntimeLocale('ar-EG', () => {
+      expect(formatBtc(21000000)).toBe('٢١٬٠٠٠٬٠٠٠٫٠٠٠٠٠٠٠٠')
+      expect(formatSats(2100000000000000)).toBe('٢٬١٠٠٬٠٠٠٬٠٠٠٬٠٠٠٬٠٠٠')
     })
   })
 })

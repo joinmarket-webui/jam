@@ -93,7 +93,7 @@ if [ "${ENSURE_WALLET}" = "true" ]; then
         \"method\":\"createwallet\",\
         \"params\":{\
             \"wallet_name\":\"${wallet_name}\",\
-            \"descriptors\":false,\
+            \"descriptors\":$( [[ "${CREATE_WALLET_PARAMS_DESCRIPTORS,,}" == "false" ]] && echo false || echo true ),\
             \"load_on_startup\":true\
         }\
     }"

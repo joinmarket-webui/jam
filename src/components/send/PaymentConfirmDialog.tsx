@@ -95,7 +95,7 @@ export default function PaymentConfirmDialog({
           </DialogTitle>
           <DialogDescription className="text-center">
             {values.isCoinJoin === true ? (
-              <span className="light:text-green-600/80 font-semibold text-green-700/80">
+              <span className="text-brand-success/80 font-semibold">
                 {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
               </span>
             ) : (
@@ -200,11 +200,11 @@ export default function PaymentConfirmDialog({
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               <div className="overflow-scroll">
-                <code className="light:text-red-700 text-red-800">values:</code>
+                <code className="text-destructive">values:</code>
                 <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
               </div>
               <div className="overflow-scroll">
-                <code className="light:text-red-700 text-red-800">meta:</code>
+                <code className="text-destructive">meta:</code>
                 <pre className="text-xs">{JSON.stringify(meta, null, 2)}</pre>
               </div>
             </CardContent>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type MouseEvent, type MouseEventHandler, 
 import { SnowflakeIcon } from 'lucide-react'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { cn, satsToBtc, tryBtcToSat, isValidNumber, formatBtc, formatSats } from '@/lib/utils'
+import { cn, satsToBtc, tryBtcToSat, isValidNumber, getBtcParts, formatSats } from '@/lib/utils'
 import type { AmountSats, Currency } from '@/types/global'
 import styles from './Balance.module.css'
 
@@ -39,7 +39,7 @@ const ElementWithSymbols = ({
       className={cn(
         'balance-hook inline-flex items-center',
         {
-          'light:text-blue-500/80 text-blue-500/80': frozen,
+          'text-brand-info': frozen,
         },
         className,
       )}
@@ -66,12 +66,10 @@ const BitcoinBalance = ({
   highlightSignificantDigits = true,
   ...props
 }: BitcoinBalanceProps) => {
-  const numberString = formatBtc(satsToBtc(String(value)))
-  const [rawIntegerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
+  const btcValue = satsToBtc(String(value))
+  const { sign, integerPart, fractionalPart, formatted } = getBtcParts(btcValue)
 
   const fractionPartArray = [...fractionalPart]
-  const sign = ['-', '+'].includes(rawIntegerPart[0]) ? rawIntegerPart[0] : undefined
-  const integerPart = sign !== undefined ? rawIntegerPart.slice(1) : rawIntegerPart
   const integerPartIsZero = integerPart === '0'
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
@@ -86,7 +84,7 @@ const BitcoinBalance = ({
         data-integer-part-is-zero={integerPartIsZero}
         data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
         data-raw-value={value}
-        data-formatted-value={numberString}
+        data-formatted-value={formatted}
       >
         {sign && <span>{sign}</span>}
         <span className={styles.integerPart}>{integerPart}</span>

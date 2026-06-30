@@ -117,7 +117,7 @@ const AccountXpubItem = ({ xpub, accountNameAndLabel }: AccountXpubItemProps) =>
           })}
           value={xpub.xpub}
           text={<CopyIcon className="h-3 w-3" />}
-          successText={<CheckIcon className="h-3 w-3 text-green-500" />}
+          successText={<CheckIcon className="text-brand-success h-3 w-3" />}
           title={t('settings.xpubs_modal.button_copy_title', {
             account: accountNameAndLabel,
           })}
@@ -323,7 +323,7 @@ export const AccountXpubsDialog = ({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangleIcon className="h-5 w-5 text-yellow-500" />
+                <AlertTriangleIcon className="text-brand-warning h-5 w-5" />
                 {t('settings.xpubs_modal.verification.title')}
               </DialogTitle>
               <DialogDescription>{t('settings.xpubs_modal.verification.subtitle')}</DialogDescription>
