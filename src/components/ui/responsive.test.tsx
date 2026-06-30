@@ -75,7 +75,7 @@ describe('responsive UI contracts', () => {
   })
 
   it('lets button groups and seed entries shrink within narrow containers', () => {
-    const { container } = render(
+    render(
       <>
         <ButtonGroup data-testid="button-group">
           <input aria-label="Amount" />
@@ -87,7 +87,12 @@ describe('responsive UI contracts', () => {
 
     expect(screen.getByTestId('button-group')).toHaveClass('max-w-full', '[&>input]:min-w-0')
     expect(screen.getByLabelText('Amount')).toBeInTheDocument()
-    expect(container.querySelectorAll('.min-w-0')).toHaveLength(2)
+    const seedWords = ['abandon', 'ability']
+    seedWords.forEach((word) => {
+      const wordElement = screen.getByText(word)
+      expect(wordElement).toHaveClass('min-w-0', 'truncate')
+      expect(wordElement.closest('div')).toHaveClass('min-w-0', 'overflow-hidden')
+    })
   })
 
   it('hides first and last pagination controls on phone widths', () => {

@@ -138,6 +138,8 @@ describe('OrderbookTable', () => {
     render(<OrderbookTable tableEntries={[relativeEntry, absoluteEntry]} selectedEntries={[]} pinnedEntries={[]} />)
 
     for (const heading of [
+      'orderbook.table.heading_counterparty',
+      'orderbook.table.heading_type',
       'orderbook.table.heading_fee',
       'orderbook.table.heading_minimum_size',
       'orderbook.table.heading_maximum_size',
@@ -147,11 +149,58 @@ describe('OrderbookTable', () => {
       const header = screen.queryByText(heading)
       if (header) {
         await user.click(header)
+        await user.click(header)
       }
     }
 
     await user.click(screen.getByText('page-two'))
     expect(screen.getByText('orderbook.table.heading_counterparty')).toBeInTheDocument()
+  })
+
+  it('keeps the normal scrollable table on mobile-sized layouts', async () => {
+    const user = userEvent.setup()
+    const firstEntry = makeEntry({
+      bondValue: {
+        amount: 0,
+        displayValue: '7',
+        value: 7,
+      },
+      counterparty: 'same-maker',
+      fee: {
+        displayValue: '100',
+        value: 100,
+      },
+      orderId: '2',
+    })
+    const secondEntry = makeEntry({
+      counterparty: 'same-maker',
+      fee: {
+        displayValue: '900',
+        value: 900,
+      },
+      orderId: '1',
+    })
+
+    render(<OrderbookTable tableEntries={[firstEntry, secondEntry]} selectedEntries={[]} pinnedEntries={[]} />)
+
+    expect(screen.getByRole('table')).toHaveClass('min-w-[42rem]')
+    expect(screen.getByText('orderbook.table.heading_minimum_size')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.table.heading_maximum_size')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.table.heading_bond_value')).toBeInTheDocument()
+    expect(screen.queryByText('orderbook.table.heading_miner_fee_contribution')).not.toBeInTheDocument()
+
+    await user.click(screen.getByText('orderbook.table.heading_counterparty'))
+    await user.click(screen.getByText('orderbook.table.heading_fee'))
+    await user.click(screen.getByText('orderbook.table.heading_fee'))
+  })
+
+  it('handles showing all rows when the filtered table is empty', async () => {
+    const user = userEvent.setup()
+
+    render(<OrderbookTable tableEntries={[]} selectedEntries={[]} pinnedEntries={[]} />)
+
+    await user.click(screen.getByText('show-all'))
+    await waitFor(() => expect(screen.getByText('pagination:1/0:-1:0')).toBeInTheDocument())
   })
 
   it('filters rows and handles empty pinned row models', () => {
