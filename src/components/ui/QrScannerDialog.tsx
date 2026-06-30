@@ -184,7 +184,7 @@ export default function QrScannerDialog({ open, onOpenChange, onScan, ...dialogP
           }}
         />
 
-        <DialogFooter className="sm:justify-center">
+        <DialogFooter className="sm:justify-center [&>[data-slot=button]]:min-h-10">
           <Button className="flex-1" variant="outline" onClick={() => void handlePaste()}>
             <ClipboardPasteIcon />
             {t('send.qr_paste_button')}

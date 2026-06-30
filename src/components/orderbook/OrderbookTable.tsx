@@ -29,6 +29,23 @@ import type { AmountSats } from '@/types/global'
 import { SortIcon } from '../ui/jam/SortIcon'
 
 const ITEMS_PER_PAGE = 25
+const MOBILE_ORDERBOOK_COLUMNS: VisibilityState = {
+  bondValue: false,
+  maximumSize: false,
+  minerFeeContribution: false,
+  minimumSize: false,
+}
+const DESKTOP_ORDERBOOK_COLUMNS: VisibilityState = {
+  bondValue: true,
+  maximumSize: true,
+  minerFeeContribution: false,
+  minimumSize: true,
+}
+
+const getResponsiveColumnVisibility = () => {
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  return isMobile ? MOBILE_ORDERBOOK_COLUMNS : DESKTOP_ORDERBOOK_COLUMNS
+}
 
 export interface OrderTableEntry {
   counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
@@ -101,7 +118,11 @@ export const OrderbookTable = ({
           const bid = Number(b.original.orderId)
           return aid - bid
         },
-        cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
+        cell: (info) => (
+          <span className="block max-w-28 truncate font-mono text-xs select-all sm:max-w-none sm:text-sm">
+            {info.getValue()}
+          </span>
+        ),
         meta: {
           alphabetic: true,
         },
@@ -214,9 +235,7 @@ export const OrderbookTable = ({
     ],
     [t],
   )
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    minerFeeContribution: false,
-  })
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => getResponsiveColumnVisibility())
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [rowPinning, setRowPinning] = useState<RowPinningState>({
     top: [],
@@ -272,6 +291,23 @@ export const OrderbookTable = ({
     }
   }, [isShowAll, tableEntries.length, table])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia('(max-width: 767px)')
+    const handleMediaChange = () => {
+      setColumnVisibility((current) => ({
+        ...current,
+        ...getResponsiveColumnVisibility(),
+      }))
+    }
+
+    handleMediaChange()
+    mediaQuery.addEventListener('change', handleMediaChange)
+
+    return () => mediaQuery.removeEventListener('change', handleMediaChange)
+  }, [])
+
   const tableTopRows = () => {
     try {
       // pinned offers might not be included in the table data,
@@ -290,9 +326,51 @@ export const OrderbookTable = ({
   }, [table, onChange])
 
   return (
-    <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
-      <div className="flex-1 overflow-auto">
-        <Table>
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2 md:hidden">
+        {[...tableTopRows(), ...table.getCenterRows()].map((row) => {
+          const entry = row.original
+
+          return (
+            <div
+              key={row.id}
+              className={cn('bg-foreground/10 rounded-lg border p-3', {
+                'light:bg-yellow-500/30! bg-yellow-950!': row.getIsSelected(),
+              })}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-muted-foreground text-xs">{t('orderbook.table.heading_counterparty')}</div>
+                  <div className="truncate font-mono text-sm select-all">{entry.counterparty}</div>
+                </div>
+                <Badge className="shrink-0" variant={entry.type.badgeColor}>
+                  {entry.type.displayValue}
+                </Badge>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-muted-foreground text-xs">{t('orderbook.table.heading_order_id')}</div>
+                  <div>{entry.orderId}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-muted-foreground text-xs">{t('orderbook.table.heading_fee')}</div>
+                  <div className="font-mono">
+                    {entry.fee.displayValue.includes('%') ? (
+                      entry.fee.displayValue
+                    ) : (
+                      <Balance valueString={entry.fee.displayValue} />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="hidden min-h-0 flex-1 overflow-auto md:block">
+        <Table className="min-w-full text-xs md:min-w-[42rem] md:text-sm">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

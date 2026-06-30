@@ -211,11 +211,16 @@ export default function PaymentConfirmDialog({
           </Card>
         )}
 
-        <DialogFooter className="sm:justify-center">
-          <Button className="flex-1" variant="outline" onClick={handleClose}>
+        <DialogFooter className="gap-3 sm:justify-center">
+          <Button className="min-h-12 flex-1 text-base" variant="outline" size="xxl" onClick={handleClose}>
             {t('modal.confirm_button_reject')}
           </Button>
-          <Button className="flex-1" onClick={() => void confirm()} disabled={isConfirming}>
+          <Button
+            className="min-h-12 flex-1 text-base"
+            size="xxl"
+            onClick={() => void confirm()}
+            disabled={isConfirming}
+          >
             {isConfirming ? (
               <>
                 <Spinner className="motion-reduce:hidden" />

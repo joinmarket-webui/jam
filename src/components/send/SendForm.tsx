@@ -303,7 +303,7 @@ export function SendForm({
                 <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
                 {sourceJarLabelButton && <>{sourceJarLabelButton}</>}
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 {jars.map((jar, index) => (
                   <SelectableJar
                     key={index}
@@ -372,6 +372,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="shrink-0"
                   disabled={disabled}
                   onClick={() => setShowQrScannerDialog(true)}
                 >
@@ -383,6 +384,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="shrink-0"
                   disabled={disabled}
                   onClick={() => setShowAddressFromJarSelectorDialog(true)}
                 >
@@ -390,8 +392,8 @@ export function SendForm({
                   <span className="sr-only">{/* TODO: i18n */} Choose Jar</span>
                 </Button>
               </ButtonGroup>
-              <ButtonGroup
-                className={cn('w-full', {
+              <div
+                className={cn('flex w-full flex-col gap-2 sm:flex-row sm:items-stretch', {
                   hidden: destinationJar === undefined,
                 })}
               >
@@ -401,12 +403,12 @@ export function SendForm({
                       id="send-destination-address-from-jar"
                       className={cn(
                         inputVariants(),
-                        'flex min-w-0 items-center justify-between gap-2',
+                        'flex min-h-8 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
                         'bg-input/50 dark:bg-input/80 h-auto',
                       )}
                     >
-                      <Address value={values.destination.address} copyable={true} />
-                      <Badge className="text-sm" variant="default">
+                      <Address value={values.destination.address} copyable={true} className="text-xs sm:text-sm" />
+                      <Badge className="shrink-0 text-sm" variant="default">
                         {destinationJar.name} <span className="text-xs">#{destinationJar.jarIndex}</span>
                       </Badge>
                     </div>
@@ -416,7 +418,7 @@ export function SendForm({
                       type="button"
                       variant="outline"
                       size="lg"
-                      className="h-auto"
+                      className="h-auto w-full sm:w-auto"
                       disabled={disabled}
                       onClick={() => {
                         setValue('destination.address', '', { shouldValidate: true })
@@ -427,7 +429,7 @@ export function SendForm({
                     </Button>
                   </>
                 )}
-              </ButtonGroup>
+              </div>
             </Field>
 
             {errors.destination?.address?.message && (
@@ -471,6 +473,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="shrink-0"
                   disabled={
                     disabled ||
                     sourceJar === undefined ||
@@ -488,8 +491,8 @@ export function SendForm({
                 </Button>
               </ButtonGroup>
 
-              <ButtonGroup
-                className={cn('w-full', {
+              <div
+                className={cn('flex w-full flex-col gap-2 sm:flex-row sm:items-stretch', {
                   hidden: isSweep !== true,
                 })}
               >
@@ -497,7 +500,7 @@ export function SendForm({
                   id="send-amount-sweep-from-jar"
                   className={cn(
                     inputVariants(),
-                    'flex min-w-0 items-center justify-between gap-2',
+                    'flex min-h-8 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
                     'bg-input/50 dark:bg-input/80 h-auto',
                   )}
                   aria-disabled
@@ -506,7 +509,7 @@ export function SendForm({
                     <Balance valueString={values.amount.sweepAmount.toFixed(0)} />
                   )}
 
-                  <Badge className="text-sm" variant="default">
+                  <Badge className="shrink-0 text-sm" variant="default">
                     {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
                   </Badge>
                 </div>
@@ -516,7 +519,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
-                  className="h-auto"
+                  className="h-auto w-full sm:w-auto"
                   disabled={disabled}
                   onClick={() => {
                     setValue('amount.isSweep', false, { shouldValidate: true })
@@ -526,7 +529,7 @@ export function SendForm({
                 >
                   <XIcon /> {t('send.button_clear_sweep')}
                 </Button>
-              </ButtonGroup>
+              </div>
             </Field>
             {errors.amount?.amount?.message && (
               <div className="text-destructive text-xs">{errors.amount.amount.message}</div>
