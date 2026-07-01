@@ -172,6 +172,9 @@ describe('SendForm', () => {
 
     fireEvent.click(document.querySelector('#btn-sweep-trigger')!)
     expect(document.querySelector('#btn-sweep-clear-trigger')).toBeInTheDocument()
+    expect(
+      document.querySelector('#send-amount-sweep-from-jar')?.closest('[data-slot="button-group"]'),
+    ).toBeInTheDocument()
 
     // reselect the same jar while sweep is active -> hits the sweep-reset branch
     fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
@@ -194,6 +197,9 @@ describe('SendForm', () => {
     fireEvent.click(document.querySelector('#show-address-from-jar-selector-trigger')!)
     fireEvent.click(await screen.findByTestId('jar-confirm'))
     await waitFor(() => expect(screen.getByTestId('address')).toBeInTheDocument())
+    expect(
+      document.querySelector('#send-destination-address-from-jar')?.closest('[data-slot="button-group"]'),
+    ).toBeInTheDocument()
   })
 
   it('shows an error when the jar selector address lookup fails', async () => {

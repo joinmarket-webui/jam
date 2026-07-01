@@ -55,6 +55,9 @@ type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog
   onConfirm: (jar: JarIndex, address: AddressInfo) => void
 }
 
+const responsiveSelectionButtonGroupClass =
+  'w-full flex-col gap-2 sm:flex-row sm:items-stretch [&>*]:rounded-md [&>*]:border sm:[&>*:not(:first-child)]:rounded-l-none sm:[&>*:not(:first-child)]:border-l-0 sm:[&>*:not(:last-child)]:rounded-r-none'
+
 const AddressFromJarSelectorDialog = ({
   walletFileName,
   onError,
@@ -392,8 +395,8 @@ export function SendForm({
                   <span className="sr-only">{/* TODO: i18n */} Choose Jar</span>
                 </Button>
               </ButtonGroup>
-              <div
-                className={cn('flex w-full flex-col gap-2 sm:flex-row sm:items-stretch', {
+              <ButtonGroup
+                className={cn(responsiveSelectionButtonGroupClass, {
                   hidden: destinationJar === undefined,
                 })}
               >
@@ -429,7 +432,7 @@ export function SendForm({
                     </Button>
                   </>
                 )}
-              </div>
+              </ButtonGroup>
             </Field>
 
             {errors.destination?.address?.message && (
@@ -491,8 +494,8 @@ export function SendForm({
                 </Button>
               </ButtonGroup>
 
-              <div
-                className={cn('flex w-full flex-col gap-2 sm:flex-row sm:items-stretch', {
+              <ButtonGroup
+                className={cn(responsiveSelectionButtonGroupClass, {
                   hidden: isSweep !== true,
                 })}
               >
@@ -529,7 +532,7 @@ export function SendForm({
                 >
                   <XIcon /> {t('send.button_clear_sweep')}
                 </Button>
-              </div>
+              </ButtonGroup>
             </Field>
             {errors.amount?.amount?.message && (
               <div className="text-destructive text-xs">{errors.amount.amount.message}</div>
