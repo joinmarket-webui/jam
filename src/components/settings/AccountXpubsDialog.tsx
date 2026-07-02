@@ -23,6 +23,7 @@ import { deriveAccountXpub } from '@/lib/bip32'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
+import { getErrorReason } from '@/lib/errorReason'
 import type { JarIndex, Milliseconds, MnemonicPhrase, WithRequiredProperty } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
@@ -382,7 +383,7 @@ export const AccountXpubsDialog = ({
                 <Alert variant="destructive">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
-                  <AlertDescription>{seedQueryError.message || t('global.errors.reason_unknown')}</AlertDescription>
+                  <AlertDescription>{getErrorReason(seedQueryError, t('global.errors.reason_unknown'))}</AlertDescription>
                 </Alert>
               )}
               {!accountXpubs.isFetching && accountXpubs.error && (

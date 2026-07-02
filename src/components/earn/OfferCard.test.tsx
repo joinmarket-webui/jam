@@ -64,7 +64,7 @@ describe('OfferCard', () => {
   })
 
   it('renders without txfee', () => {
-    const offer = { ...baseOffer, ordertype: 'sw0abso', txfee: undefined }
+    const offer = { ...baseOffer, ordertype: 'sw0abso', txfee: undefined as any }
     render(<OfferCard value={offer} nickname="JMBot" />)
 
     expect(screen.queryByText('earn.current.text_txfee')).not.toBeInTheDocument()

@@ -306,7 +306,7 @@ function RefreshApiToken() {
           clearAuthAndQueryCache()
 
           if (isDevMode) {
-            const message = response.error?.message || response.error?.error_description || 'Unknown error.'
+            const message = getErrorReason(response.error, 'Unknown error.')
             toast.error(`[DEV] Error while renewing auth token: ${message}`, {
               id: 'token-renew-error',
             })

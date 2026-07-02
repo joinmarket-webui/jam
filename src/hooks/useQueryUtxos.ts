@@ -20,7 +20,7 @@ export type UtxoId = `${TxId}:${Vout}`
 
 type UtxoBase = Required<UtxoApiObject>
 // @apiNote: Although marked as optional, all fields are always present, hence `Required<UtxoApiObject>`
-export type Utxo = UtxoBase & {
+export type Utxo = Omit<UtxoBase, 'utxo' | 'locktime'> & {
   utxo: UtxoId // @implNote: more precise type def than plain `string`
   locktime: Locktime | undefined
 }

@@ -104,7 +104,7 @@ const jars: Jar[] = [
 
 const addressSummary: AddressSummary = {
   'bc1qwallet-a': {
-    __raw: {},
+    __raw: {} as any,
     address: 'bc1qwallet-a',
     info: undefined,
     jarIndex: 0,
@@ -112,7 +112,7 @@ const addressSummary: AddressSummary = {
     used: true,
   },
   'bc1qwallet-b': {
-    __raw: {},
+    __raw: {} as any,
     address: 'bc1qwallet-b',
     info: undefined,
     jarIndex: 1,
@@ -123,7 +123,7 @@ const addressSummary: AddressSummary = {
 
 const accountSummary: AccountSummary = {
   0: {
-    __raw: {},
+    __raw: {} as any,
     branches: [],
     jarIndex: 0,
   },
