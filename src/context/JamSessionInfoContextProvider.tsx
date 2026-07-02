@@ -95,12 +95,12 @@ export const JamSessionInfoContextProvider = ({
     setRescanInfo({
       updatedAt: getrescaninfoQuery.dataUpdatedAt,
       rescanning: isRescanning,
-      progress: rescanningFinished ? 1 : getrescaninfoQuery.data.progress,
+      progress: rescanningFinished ? 1 : (getrescaninfoQuery.data.progress ?? undefined),
     })
   }
 
   const value = {
-    blockHeight: state?.block_height,
+    blockHeight: state?.block_height ?? undefined,
     takerRunning: state?.coinjoin_in_process === true,
     takerInfo,
     rescanInfo,

@@ -47,7 +47,9 @@ const LoginPage = () => {
   })
 
   const activeWalletOrNull: WalletFileName | null =
-    jmSession?.session === true && isWalletFileName(jmSession.wallet_name) ? jmSession.wallet_name : null
+    jmSession?.session === true && jmSession.wallet_name && isWalletFileName(jmSession.wallet_name)
+      ? jmSession.wallet_name
+      : null
   const wallets = sortWallets((listWalletsData?.wallets || []) as WalletFileName[], activeWalletOrNull)
 
   const unlockWallet = useMutation({

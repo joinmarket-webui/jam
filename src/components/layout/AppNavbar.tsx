@@ -60,7 +60,7 @@ const WalletPreview = ({
           <div className="flex min-h-5 min-w-[150px] items-center">
             {rescanInfo?.rescanning === true ? (
               <div className="cursor-wait motion-safe:animate-pulse">
-                {rescanInfo.progress !== undefined
+                {rescanInfo.progress != null
                   ? t('navbar.text_rescan_in_progress_with_progress', {
                       progress: Math.floor(rescanInfo.progress * 100),
                     })

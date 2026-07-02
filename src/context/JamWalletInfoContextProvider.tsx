@@ -22,7 +22,7 @@ import {
 } from './JamWalletInfoContext'
 
 const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
-  return walletInfo.accounts.reduce((acc, __raw) => {
+  return (walletInfo.accounts ?? []).reduce((acc, __raw) => {
     if (__raw.account === undefined) {
       return acc
     }

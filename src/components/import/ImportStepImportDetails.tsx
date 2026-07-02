@@ -15,7 +15,7 @@ type ImportStepImportDetailsProps = ComponentProps<typeof ImportDetailsForm> & {
 
 export const ImportStepImportDetails = ({ sessionInfo, onBack, ...importFormProps }: ImportStepImportDetailsProps) => {
   const { t } = useTranslation()
-  const isSessionActive = sessionInfo?.session === true
+  const isSessionActive = sessionInfo?.session === true && !!sessionInfo.wallet_name
   const isRescanActive = sessionInfo?.rescanning === true
   const showForm = !isSessionActive && !isRescanActive
   return (
