@@ -29,7 +29,7 @@ const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
     const branches = (__raw.branches || [])
       .filter((it) => it.branch !== undefined)
       .map((it) => {
-        const [type, derivation] = it.branch!.split('\t')
+        const [type, derivation] = it.branch.split('\t')
         return {
           type,
           derivation,
