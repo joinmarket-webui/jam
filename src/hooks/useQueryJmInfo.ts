@@ -1,12 +1,12 @@
 import { versionOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { ErrorMessage, VersionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { VersionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useApiClient } from '@/hooks/useApiClient'
 import { parseSemanticVersion, type SemanticVersion } from '@/lib/utils'
 
 type UseQueryJmInfoResult = {
   version: SemanticVersion | undefined
-  queryResult: UseQueryResult<VersionResponse, ErrorMessage>
+  queryResult: UseQueryResult<VersionResponse, unknown>
 }
 
 export function useQueryJmInfo(): UseQueryJmInfoResult {

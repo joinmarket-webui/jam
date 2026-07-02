@@ -1,5 +1,5 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
-import type { ErrorMessage, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { WalletDisplayResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { Network, type AddressInfo } from 'bitcoin-address-validation'
 import type { FidelityBondUtxo, Utxo, UtxoId } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
@@ -95,7 +95,7 @@ interface JamWalletInfoContextType {
 
   isLoading: boolean
   isFetching: boolean
-  error: Error | ErrorMessage | null
+  error: unknown | null
   refetch: (options?: WalletRefetchOptions) => Promise<BalanceSummary>
 }
 

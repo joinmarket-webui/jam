@@ -1,5 +1,5 @@
 import { displaywalletOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { DisplaywalletResponse, ErrorMessage, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { DisplaywalletResponse, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { isDevMode } from '@/constants/debugFeatures'
@@ -12,7 +12,7 @@ export type WalletInfoApiObject = NonNullable<WalletDisplayResponse['walletinfo'
 
 export type UseQueryDisplayWalletResult = {
   walletInfo: WalletInfoApiObject | undefined
-  queryResult: UseQueryResult<DisplaywalletResponse, ErrorMessage>
+  queryResult: UseQueryResult<DisplaywalletResponse, unknown>
 }
 
 interface UseQueryDisplayWalletProps {

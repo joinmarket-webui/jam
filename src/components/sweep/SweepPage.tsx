@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import { getschedule, type ErrorMessage } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { getschedule } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
@@ -192,7 +192,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       }
       setShowScheduleConfirmDialog(false)
     },
-    onError: (error: ErrorMessage) => {
+    onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
       setAlertMessage(message)
