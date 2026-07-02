@@ -68,7 +68,9 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             <Label className="font-semibold">{t('earn.current.text_cjfee')}</Label>
             <span className="text-sm">
               {isRelativeOffer(String(value?.ordertype || '')) ? (
-                <span className="select-all">{factorToPercentage(Number.parseFloat(String(value?.cjfee || '')) || 0)}%</span>
+                <span className="select-all">
+                  {factorToPercentage(Number.parseFloat(String(value?.cjfee || '')) || 0)}%
+                </span>
               ) : (
                 <Balance valueString={String(value?.cjfee || '0')} />
               )}

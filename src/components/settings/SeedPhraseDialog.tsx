@@ -16,9 +16,9 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import type { Milliseconds, WithRequiredProperty } from '@/types/global'
-import { getErrorReason } from '@/lib/errorReason'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
@@ -161,7 +161,9 @@ export const SeedPhraseDialog = ({
                 <Alert variant="destructive">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
-                  <AlertDescription>{getErrorReason(seedQueryError, t('global.errors.reason_unknown'))}</AlertDescription>
+                  <AlertDescription>
+                    {getErrorReason(seedQueryError, t('global.errors.reason_unknown'))}
+                  </AlertDescription>
                 </Alert>
               )}
 

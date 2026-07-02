@@ -16,10 +16,9 @@ export function useQueryYieldgenReport({ enabled = true }: { enabled?: boolean }
       try {
         const response = await yieldgenreport({ client, signal })
 
-        // joinmarket-ng returns { yigen_data: string[] }
-        const lines: string[] = response.data?.yigen_data ?? []
+        const data = response.data
+        const lines = Array.isArray(data) ? data : (data?.yigen_data ?? [])
 
-        // API returns string[] (CSV lines with header)
         return yieldgenReportToEarnReportEntries(lines)
       } catch (error: unknown) {
         // 404 is returned until the maker is started at least once

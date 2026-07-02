@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { runscheduleMutation, stopcoinjoinOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import { getschedule } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import {
+  tumblerplanMutation,
+  tumblerstartMutation,
+  tumblerstatusOptions,
+  tumblerstopMutation,
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
@@ -22,7 +27,7 @@ import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAler
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
-import { isScheduleValue, type Schedule } from '@/components/sweep/scheduleUtils'
+import { isScheduleValue, type Schedule, type ScheduleEntry } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -74,6 +79,33 @@ const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string
   return Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new')?.address ?? ''
 }
 
+const isPhaseComplete = (phase: TumblerPhaseResponse): boolean => {
+  const status = phase.status.toLowerCase()
+  return status === 'completed' || status === 'complete' || status === 'succeeded' || status === 'success'
+}
+
+const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry[6] => {
+  if (isPhaseComplete(phase)) {
+    return 1
+  }
+  return phase.txid ?? 0
+}
+
+const toSchedule = (plan: TumblerPlanResponse): Schedule => {
+  return plan.phases.map(
+    (phase) =>
+      [
+        phase.mixdepth ?? 0,
+        phase.amount_fraction ?? 0,
+        phase.counterparty_count ?? 0,
+        phase.destination ?? 'INTERNAL',
+        (phase.wait_seconds ?? 0) / 60,
+        0,
+        toScheduleStateFlag(phase),
+      ] as ScheduleEntry,
+  )
+}
+
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
@@ -84,7 +116,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState(false)
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
-  const [localSchedule, setLocalSchedule] = useState<Schedule>()
   const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
@@ -138,41 +169,30 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }, [trigger, destinationUsageKey, normalizedDestinationAddresses])
 
   const getScheduleQuery = useQuery({
-    queryKey: ['sweep-get-schedule', walletFileName],
-    retry: false,
+    ...tumblerstatusOptions({
+      client,
+      path: { walletname: walletFileName },
+    }),
     enabled: jmSession?.coinjoin_in_process === true,
     refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
     refetchIntervalInBackground: true,
-    queryFn: async ({ signal }) => {
-      const result = await getschedule({
-        client,
-        signal,
-        path: { walletname: walletFileName },
-        throwOnError: false,
-      })
-
-      if (result.error !== undefined) {
-        if (result.response.status === 404) {
-          return null
-        }
-        throw new Error(getErrorReason(result.error, 'Failed to load schedule'))
+    retry: false,
+    select: (data: TumblerPlanResponse): { schedule: Schedule } | null => {
+      if (data.status.toLowerCase() === 'pending') {
+        return null
       }
 
-      return result.data
+      return { schedule: toSchedule(data) }
     },
   })
 
-  const stopScheduleQueryOptions = stopcoinjoinOptions({
-    client,
-    path: { walletname: walletFileName },
-  })
-
-  const stopScheduleQuery = useQuery({
-    ...stopScheduleQueryOptions,
-    enabled: false,
+  const createTumblerPlanMutation = useMutation({
+    ...tumblerplanMutation({ client }),
     retry: false,
-    staleTime: 1,
-    gcTime: 1,
+  })
+  const startTumblerPlanMutation = useMutation({
+    ...tumblerstartMutation({ client }),
+    retry: false,
   })
 
   const {
@@ -181,15 +201,28 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     reset: startScheduleMutationReset,
     mutateAsync: startScheduleMutationMutateAsync,
   } = useMutation({
-    ...runscheduleMutation({ client }),
+    mutationFn: async (args: {
+      path: { walletname: WalletFileName }
+      body: { destinations: string[]; parameters?: typeof INSECURE_SCHEDULE_TUMBLER_OPTIONS }
+    }) => {
+      await createTumblerPlanMutation.mutateAsync({
+        path: args.path,
+        body: {
+          destinations: args.body.destinations,
+          parameters: args.body.parameters,
+          force: true,
+        },
+      })
+
+      return await startTumblerPlanMutation.mutateAsync({
+        path: args.path,
+      })
+    },
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
     },
-    onSuccess: (result) => {
-      if (isScheduleValue(result.schedule)) {
-        setLocalSchedule(result.schedule)
-      }
+    onSuccess: () => {
       setShowScheduleConfirmDialog(false)
     },
     onError: (error: unknown) => {
@@ -206,17 +239,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     mutateAsync: stopScheduleMutationMutateAsync,
     reset: stopScheduleMutationReset,
   } = useMutation({
-    mutationFn: async () => {
-      return await stopScheduleQuery.refetch({ throwOnError: true })
-    },
+    ...tumblerstopMutation({ client }),
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
     },
-    onSuccess: () => {
-      setLocalSchedule(undefined)
-    },
-    onError: (error: unknown) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
       setAlertMessage(message)
@@ -224,9 +252,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
   })
 
-  const sessionSchedule = isScheduleValue(jmSession?.schedule) ? jmSession.schedule : undefined
-  const queriedSchedule = isScheduleValue(getScheduleQuery.data?.schedule) ? getScheduleQuery.data.schedule : undefined
-  const currentSchedule = sessionSchedule ?? queriedSchedule ?? localSchedule
+  const currentSchedule = isScheduleValue(getScheduleQuery.data?.schedule) ? getScheduleQuery.data.schedule : undefined
 
   const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
   const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true && !schedulerRunning
@@ -288,9 +314,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
     await form.handleSubmit(async (values) => {
       const body = {
-        destination_addresses: getSweepDestinationAddresses(values),
+        destinations: getSweepDestinationAddresses(values),
         ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
-          ? { tumbler_options: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
+          ? { parameters: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
           : {}),
       }
 
@@ -312,7 +338,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }
 
   const stopSchedule = async () => {
-    await stopScheduleMutationMutateAsync()
+    await stopScheduleMutationMutateAsync({
+      path: { walletname: walletFileName },
+    })
   }
 
   if (!jmSession || feeConfigValidation.isLoading || walletInfo.isLoading) {
