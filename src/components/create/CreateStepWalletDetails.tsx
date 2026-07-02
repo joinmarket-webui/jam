@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/constants/routes'

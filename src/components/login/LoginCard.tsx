@@ -1,5 +1,5 @@
 import { useState, type ComponentProps } from 'react'
-import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { ErrorMessage } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'

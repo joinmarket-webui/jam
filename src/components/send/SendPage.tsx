@@ -3,13 +3,13 @@ import {
   directsendMutation,
   docoinjoinMutation,
   stopcoinjoinOptions,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type {
   DirectSendRequest,
   DirectSendResponse,
   DoCoinjoinRequest,
   ErrorMessage,
-} from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckCircle2Icon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'

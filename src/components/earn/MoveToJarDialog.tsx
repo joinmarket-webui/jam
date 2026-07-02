@@ -3,8 +3,8 @@ import {
   directsendMutation,
   freezeMutation,
   getaddressOptions,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   AlertTriangleIcon,

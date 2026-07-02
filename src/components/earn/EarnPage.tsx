@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, FileTextIcon, HourglassIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'

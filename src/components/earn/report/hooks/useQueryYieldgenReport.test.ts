@@ -18,11 +18,11 @@ vi.mock('@tanstack/react-query', () => ({
   },
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   yieldgenreportQueryKey: () => ['yieldgenreport'],
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
   yieldgenreport: () => yieldgenreportMock(),
 }))
 

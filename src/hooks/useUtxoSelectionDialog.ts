@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { freezeMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { freezeMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import type { RowSelectionState } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'

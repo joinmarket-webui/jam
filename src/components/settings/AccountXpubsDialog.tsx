@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type ComponentProps } from 'react'
-import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { getseedOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'

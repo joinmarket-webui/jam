@@ -1,4 +1,4 @@
-import type { DirectSendRequest, DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { DirectSendRequest, DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { isValidInteger, isValidNumber } from '@/lib/utils'

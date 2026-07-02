@@ -82,11 +82,11 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({ mutateAsync }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   lockwalletOptions: () => ({ queryKey: ['lock'] }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
   token: vi.fn().mockResolvedValue({ data: { token: 't', refresh_token: 'r' } }),
 }))
 

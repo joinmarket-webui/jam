@@ -28,7 +28,7 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({ mutateAsync: h.mutateAsync, isPending: h.isPending }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   directsendMutation: vi.fn(() => ({})),
   freezeMutation: vi.fn(() => ({})),
   gettimelockaddressOptions: vi.fn(() => ({ queryKey: ['mock'], queryFn: vi.fn() })),

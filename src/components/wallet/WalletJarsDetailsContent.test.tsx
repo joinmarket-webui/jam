@@ -27,7 +27,7 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   freezeMutation: vi.fn(() => ({ mutationFn: vi.fn() })),
 }))
 

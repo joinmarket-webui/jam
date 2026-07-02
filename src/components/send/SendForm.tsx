@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { getAddressInfo, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import { AlertTriangleIcon, BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'

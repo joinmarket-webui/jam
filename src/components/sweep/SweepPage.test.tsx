@@ -38,12 +38,12 @@ const mocks = vi.hoisted(() => ({
   walletInfo: undefined as WalletInfo | undefined,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   runscheduleMutation: vi.fn(() => ({ mutationFn: mocks.runSchedule })),
   stopcoinjoinOptions: vi.fn(() => ({ queryKey: ['stopcoinjoin'], queryFn: vi.fn() })),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
   getschedule: vi.fn(() => Promise.resolve({ data: mocks.getScheduleResult })),
 }))
 
