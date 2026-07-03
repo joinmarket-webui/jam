@@ -12,7 +12,7 @@ import type { SidebarContextProps } from '@/components/ui/use-sidebar'
 import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import type { RescanInfo } from '@/context/JamSessionInfoContext'
-import { cn, shortenStringMiddle } from '@/lib/utils'
+import { cn, isValidNumber, shortenStringMiddle } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { WithActivityIndicator } from '../ui/jam/ActivityIndicator'
 import { Balance } from '../ui/jam/Balance'
@@ -60,7 +60,7 @@ const WalletPreview = ({
           <div className="flex min-h-5 min-w-[150px] items-center">
             {rescanInfo?.rescanning === true ? (
               <div className="cursor-wait motion-safe:animate-pulse">
-                {rescanInfo.progress != null
+                {isValidNumber(rescanInfo.progress)
                   ? t('navbar.text_rescan_in_progress_with_progress', {
                       progress: Math.floor(rescanInfo.progress * 100),
                     })
