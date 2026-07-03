@@ -18,6 +18,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import {
@@ -41,6 +42,7 @@ import * as fb from '@/lib/fidelityBondUtils'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { Address } from '../ui/jam/Address'
+import { getJarBgClass } from '../ui/jam/jarColors'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './CreateFidelityBondDialog/types'
 
 type Step = 'select_date' | 'confirm' | 'sending' | 'success'
@@ -330,9 +332,9 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                  <p className="font-semibold">
-                    {t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: utxo.mixdepth })}
-                  </p>
+                  <Badge className={getJarBgClass(utxo.mixdepth)}>
+                    {sourceJar?.name ?? t('earn.fidelity_bond.review_inputs.label_jar')} <span>#{utxo.mixdepth}</span>
+                  </Badge>
                 </div>
               </div>
 

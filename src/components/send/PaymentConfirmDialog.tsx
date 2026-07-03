@@ -2,6 +2,8 @@ import { useMemo, useState, type ComponentProps } from 'react'
 import { DialogTitle } from '@radix-ui/react-dialog'
 import { InfoIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
+import { Badge } from '@/components/ui/badge'
+import { getJarBgClass } from '@/components/ui/jam/jarColors'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
@@ -109,17 +111,20 @@ export default function PaymentConfirmDialog({
         <div className="grid grid-cols-1 space-y-1 space-x-4 md:grid-cols-5">
           <div className="col-span-1 font-semibold md:text-right">{t('send.confirm_send_modal.label_source_jar')}</div>
           <div className="col-span-4">
-            {meta.sourceJar.name} <span className="text-muted-foreground text-xs">#{meta.sourceJar.jarIndex}</span>
+            <Badge className={getJarBgClass(meta.sourceJar.jarIndex)}>
+              {meta.sourceJar.name} <span>#{meta.sourceJar.jarIndex}</span>
+            </Badge>
           </div>
 
           <div className="col-span-1 font-semibold md:text-right">{t('send.confirm_send_modal.label_recipient')}</div>
           <div className="col-span-4 flex flex-col">
             {meta.destinationJar !== undefined ? (
               <>
-                <span>
-                  {meta.destinationJar.name}{' '}
-                  <span className="text-muted-foreground text-xs">#{meta.destinationJar.jarIndex}</span>
-                </span>
+                <div>
+                  <Badge className={getJarBgClass(meta.destinationJar.jarIndex)}>
+                    {meta.destinationJar.name} <span>#{meta.destinationJar.jarIndex}</span>
+                  </Badge>
+                </div>
                 <Address
                   className="text-muted-foreground text-xs"
                   value={values.destination?.address ?? ''}

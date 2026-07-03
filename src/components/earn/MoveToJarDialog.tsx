@@ -18,6 +18,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
@@ -40,6 +41,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { Address } from '../ui/jam/Address'
+import { getJarBgClass } from '../ui/jam/jarColors'
 
 type Step = 'select_jar' | 'confirm' | 'sending' | 'success'
 
@@ -62,6 +64,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const [error, setError] = useState<string | undefined>()
 
   const sourceJar = walletInfo.jars.find((jar) => jar.jarIndex === utxo.mixdepth)
+  const destinationJar = walletInfo.jars.find((jar) => jar.jarIndex === selectedJarIndex)
 
   // All jars except the FB's source jar are valid destinations
   const destinationJars = useMemo(() => {
@@ -279,15 +282,16 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
                   <p className="text-muted-foreground mb-1 text-xs">
                     {t('earn.fidelity_bond.review_inputs.label_jar')}
                   </p>
-                  <p className="font-semibold">
-                    {t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: utxo.mixdepth })}
-                  </p>
+                  <Badge className={getJarBgClass(utxo.mixdepth)}>
+                    {sourceJar?.name ?? t('earn.fidelity_bond.review_inputs.label_jar')} <span>#{utxo.mixdepth}</span>
+                  </Badge>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.move.label_destination')}</p>
-                  <p className="font-semibold">
-                    {t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: selectedJarIndex })}
-                  </p>
+                  <Badge className={getJarBgClass(selectedJarIndex)}>
+                    {destinationJar?.name ?? t('earn.fidelity_bond.review_inputs.label_jar')}{' '}
+                    <span>#{selectedJarIndex}</span>
+                  </Badge>
                 </div>
               </div>
 
