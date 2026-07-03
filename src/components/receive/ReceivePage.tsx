@@ -22,6 +22,7 @@ import { buttonVariants } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
 import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
 import { CopyButton } from '../ui/jam/CopyButton'
+import { getJarBgClass } from '../ui/jam/jarColors'
 import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320
@@ -92,6 +93,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     if (getAddressMutation.data?.sourceJarIndex === undefined) return
     return jars[getAddressMutation.data.sourceJarIndex]
   }, [jars, getAddressMutation.data])
+  const displayedJar = sourceJar ?? selectedSourceJar
 
   const shareAddress = async (bitcoinAddress: BitcoinAddress) => {
     if ('share' in navigator) {
@@ -167,16 +169,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
                 )}
               </div>
-              <Badge
-                className="min-h-6 text-sm"
-                style={
-                  (sourceJar ?? selectedSourceJar)
-                    ? {
-                        backgroundColor: (sourceJar ?? selectedSourceJar)?.color,
-                      }
-                    : undefined
-                }
-              >
+              <Badge className={cn('min-h-6 text-sm', getJarBgClass(displayedJar?.jarIndex))}>
                 {sourceJar ? (
                   <>
                     {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
