@@ -167,7 +167,16 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
                 )}
               </div>
-              <Badge className="min-h-6 text-sm" variant={sourceJar ? 'default' : 'secondary'}>
+              <Badge
+                className="min-h-6 text-sm"
+                style={
+                  (sourceJar ?? selectedSourceJar)
+                    ? {
+                        backgroundColor: (sourceJar ?? selectedSourceJar)?.color,
+                      }
+                    : undefined
+                }
+              >
                 {sourceJar ? (
                   <>
                     {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>

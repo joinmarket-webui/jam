@@ -406,7 +406,12 @@ export function SendForm({
                       )}
                     >
                       <Address value={values.destination.address} copyable={true} />
-                      <Badge className="text-sm" variant="default">
+                      <Badge
+                        className="text-sm"
+                        style={{
+                          backgroundColor: destinationJar.color,
+                        }}
+                      >
                         {destinationJar.name} <span className="text-xs">#{destinationJar.jarIndex}</span>
                       </Badge>
                     </div>
@@ -506,7 +511,16 @@ export function SendForm({
                     <Balance valueString={values.amount.sweepAmount.toFixed(0)} />
                   )}
 
-                  <Badge className="text-sm" variant="default">
+                  <Badge
+                    className="text-sm"
+                    style={
+                      sourceJar
+                        ? {
+                            backgroundColor: sourceJar.color,
+                          }
+                        : undefined
+                    }
+                  >
                     {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
                   </Badge>
                 </div>
