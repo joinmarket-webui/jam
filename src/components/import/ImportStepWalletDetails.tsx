@@ -13,7 +13,7 @@ type ImportStepWalletDetailsProps = ComponentProps<typeof CreateWalletForm> & {
 }
 
 export const ImportStepWalletDetails = ({ sessionInfo, ...createFormProps }: ImportStepWalletDetailsProps) => {
-  const isSessionActive = sessionInfo?.session === true && !!sessionInfo.wallet_name
+  const isSessionActive = sessionInfo?.session === true
   const isRescanActive = sessionInfo?.rescanning === true
   const showForm = !isSessionActive && !isRescanActive
   return (
