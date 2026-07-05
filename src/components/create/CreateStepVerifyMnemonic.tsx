@@ -129,7 +129,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
                     {index + 1}.
                   </span>
                   {isFilled ? (
-                    <span className="min-w-0 truncate">{isHidden ? <MaskedText masked /> : word}</span>
+                    <span className="min-w-0">{isHidden ? <MaskedText masked /> : word}</span>
                   ) : (
                     <span className="text-muted-foreground/30">···</span>
                   )}
@@ -170,24 +170,21 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
         </div>
       )}
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         <Button
           type="button"
-          variant="outline"
-          className={cn('flex-1', {
-            hidden: isCorrect,
-          })}
+          className="w-full"
           size="xxl"
-          onClick={onBack}
-          disabled={isCorrect || verifyMutation.isPending}
+          disabled={!isCorrect || verifyMutation.isPending}
+          onClick={() => verifyMutation.mutate({ mustBeCorrect: true })}
         >
-          <ChevronLeftIcon />
-          {t('create_wallet.back_button')}
+          {verifyMutation.isPending && <Spinner className="motion-reduce:hidden" />}
+          {t('create_wallet.confirmation_button_fund_wallet')}
         </Button>
         {skipWalletBackupVerification && !isCorrect && (
           <Button
             type="button"
-            className="flex-1"
+            className="w-full"
             variant="secondary"
             size="xxl"
             disabled={verifyMutation.isPending}
@@ -198,13 +195,15 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
         )}
         <Button
           type="button"
-          className="flex-1"
-          size="xxl"
-          disabled={!isCorrect || verifyMutation.isPending}
-          onClick={() => verifyMutation.mutate({ mustBeCorrect: true })}
+          variant="ghost"
+          className={cn({
+            hidden: isCorrect,
+          })}
+          onClick={onBack}
+          disabled={isCorrect || verifyMutation.isPending}
         >
-          {verifyMutation.isPending && <Spinner className="motion-reduce:hidden" />}
-          {t('create_wallet.confirmation_button_fund_wallet')}
+          <ChevronLeftIcon />
+          {t('create_wallet.back_button')}
         </Button>
       </div>
     </div>
