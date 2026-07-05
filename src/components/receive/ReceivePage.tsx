@@ -169,7 +169,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
                 )}
               </div>
-              <Badge className={cn('min-h-6 text-sm', getJarBgClass(displayedJar?.jarIndex))}>
+              <Badge
+                className={cn('min-h-6 text-sm', getJarBgClass(displayedJar?.jarIndex))}
+                variant={displayedJar ? 'default' : 'secondary'}
+              >
                 {sourceJar ? (
                   <>
                     {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>

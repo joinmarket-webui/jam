@@ -1,6 +1,6 @@
 import type { JarIndex } from '@/types/global'
 
-const JAR_BG_CLASSES: Record<number, string> = {
+const JAR_BG_CLASSES: Record<JarIndex, string> = {
   0: 'bg-jar0',
   1: 'bg-jar1',
   2: 'bg-jar2',
