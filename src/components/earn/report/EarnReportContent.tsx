@@ -180,7 +180,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   const earned24Hours = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_A_DAY)), [allEntries, now])
 
   return (
-    <div className={cn('mx-auto flex-1 space-y-3', className)}>
+    <div className={cn('mx-auto min-w-0 flex-1 space-y-3', className)}>
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
           <Spinner />
@@ -188,7 +188,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-4">
           {/* Stats row */}
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {(
               [
                 { label: t('earn.report.stats.earned_total'), value: earnedTotal },
@@ -212,8 +212,8 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
           <EarnReportChart entries={allEntries} />
 
           {/* Toolbar: search + refresh */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[12rem] flex-1">
               <SearchIcon className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
               <Input
                 placeholder={t('earn.report.placeholder_search')}

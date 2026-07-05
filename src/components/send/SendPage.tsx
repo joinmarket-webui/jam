@@ -503,7 +503,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
               {currentPaymentAttempt && (
-                <pre>
+                <pre className="max-w-full overflow-x-auto">
                   {JSON.stringify(
                     {
                       sourceJar: currentPaymentAttempt.data.source.fromJar,
