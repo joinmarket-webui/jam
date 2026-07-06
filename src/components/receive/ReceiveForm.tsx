@@ -6,7 +6,9 @@ import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { SelectableJar } from '@/components/ui/jam/SelectableJar'
+import { TOTAL_COIN_SUPPLY } from '@/constants/jam'
 import { useWalletBalanceSummary, type Jar } from '@/context/JamWalletInfoContext'
+import { sourceJarField } from '@/lib/formValidation'
 import { cn, isValidInteger } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Field, FieldLabel } from '../ui/field'
@@ -34,20 +36,16 @@ const receiveFormSchema = (jars: Jar[], t: TFunction) => {
     .object({
       source: yup
         .object({
-          fromJar: yup
-            .number()
-            .integer(invalidSourceJarFeedbackMessage)
-            .required(invalidSourceJarFeedbackMessage)
-            .test('valid-source-jar-index-test', invalidSourceJarFeedbackMessage, (value) =>
-              jars.some((it) => it.jarIndex === value),
-            ),
+          fromJar: sourceJarField(invalidSourceJarFeedbackMessage, (jarIndex) =>
+            jars.some((it) => it.jarIndex === jarIndex),
+          ),
         })
         .required(),
       amount: yup
         .number()
         .integer(t('receive.feedback_invalid_amount'))
         .min(1, t('receive.feedback_invalid_amount'))
-        .max(21_000_000 * 100_000_000, t('receive.feedback_invalid_amount'))
+        .max(TOTAL_COIN_SUPPLY, t('receive.feedback_invalid_amount'))
         .transform((value) => (isValidInteger(value) ? value : null))
         .nullable()
         .optional(),

@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
 import * as fb from '@/lib/fidelityBondUtils'
+import { sourceJarField } from '@/lib/formValidation'
 import type { JarIndex } from '@/types/global'
 
 export type SourceValue = {
@@ -40,15 +41,7 @@ export const createFidelityBondFormSchema = (
       lockdate: yup.string<fb.Lockdate>().oneOf(validLockdates, requiredMessage).required(requiredMessage),
       source: yup
         .object({
-          fromJar: yup
-            .number<JarIndex>()
-            .integer(invalidSourceJarFeedbackMessage)
-            .required(invalidSourceJarFeedbackMessage)
-            .test(
-              'valid-source-jar-index-test',
-              invalidSourceJarFeedbackMessage,
-              (value) => typeof value === 'number' && jarIndexes.includes(value),
-            ),
+          fromJar: sourceJarField(invalidSourceJarFeedbackMessage, (jarIndex) => jarIndexes.includes(jarIndex)),
         })
         .required(),
       utxoIds: yup.array().of(yup.string().required(requiredMessage)).min(1, requiredMessage).required(requiredMessage),
