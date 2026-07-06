@@ -15,7 +15,7 @@ export const EarnReportOverlay = ({ open, onOpenChange, ...dialogProps }: EarnRe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
-      <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
+      <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-dvh max-h-dvh! max-w-screen! flex-col overflow-hidden rounded-none border-none">
         <DialogHeader>
           <DialogTitle>
             <PageTitle title={t('earn.report.title')} />

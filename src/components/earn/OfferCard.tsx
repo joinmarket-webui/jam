@@ -15,7 +15,11 @@ type Offer = NonNullable<SessionResponse['offer_list']>[number]
 const OfferTypeBadge = ({ value }: { value: Offer }) => {
   const { t } = useTranslation()
   const text = renderOfferText(value, t)
-  return <Badge variant={text ? 'default' : 'outline'}>{text}</Badge>
+  return (
+    <Badge className="max-w-full truncate" variant={text ? 'default' : 'outline'}>
+      {text}
+    </Badge>
+  )
 }
 
 const renderOfferText = (value: Offer, t: TFunction<'translation', undefined>) => {
@@ -52,19 +56,19 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
         </CardAction>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">
-        <div className="flex items-center gap-4">
-          <FingerprintIcon />
-          <div className="flex flex-col">
+        <div className="flex min-w-0 items-start gap-4">
+          <FingerprintIcon className="mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
             <Label className="font-semibold">{t('earn.current.text_offer_id')}</Label>
-            <span className="text-md font-mono select-all">
+            <span className="text-md block font-mono break-all select-all">
               {nickname}:{value?.oid}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <HandCoinsIcon />
-          <div className="flex flex-col">
+        <div className="flex min-w-0 items-start gap-4">
+          <HandCoinsIcon className="mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
             <Label className="font-semibold">{t('earn.current.text_cjfee')}</Label>
             <span className="text-sm">
               {isRelativeOffer(value?.ordertype || '') ? (
@@ -75,18 +79,18 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Minimize2Icon />
-          <div className="flex flex-col">
+        <div className="flex min-w-0 items-start gap-4">
+          <Minimize2Icon className="mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
             <Label className="font-semibold">{t('earn.current.text_minsize')}</Label>
             <span className="text-sm">
               <Balance valueString={String(value?.minsize || '0')} />
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Maximize2Icon />
-          <div className="flex flex-col">
+        <div className="flex min-w-0 items-start gap-4">
+          <Maximize2Icon className="mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
             <Label className="font-semibold">{t('earn.current.text_maxsize')}</Label>
             <span className="text-sm">
               <Balance valueString={String(value?.maxsize || '0')} />

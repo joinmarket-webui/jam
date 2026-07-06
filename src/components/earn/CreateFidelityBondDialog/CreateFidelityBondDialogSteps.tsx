@@ -92,7 +92,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="lockdate-month" className="text-sm font-medium">
                 {t('earn.fidelity_bond.select_date.form_label_month')}
@@ -190,8 +190,8 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                   )}
                   onClick={() => setSelectedJarIndex(jar.jarIndex)}
                 >
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-4">
+                  <CardContent className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
+                    <div className="flex min-w-0 items-center gap-4">
                       <div
                         className="h-10 w-10 rounded-full shadow-sm"
                         style={{ backgroundColor: jar.color, opacity: 0.8 }}
@@ -205,7 +205,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="shrink-0 text-left sm:text-right">
                       <p className="font-mono font-semibold">
                         {formatSats(jar.balanceSummary.calculatedAvailableBalanceInSats)}
                       </p>
@@ -328,9 +328,11 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
 
           {selectedUtxos.length > 0 && (
             <div className="border-t pt-4">
-              <div className="bg-muted/50 flex items-center justify-between rounded-lg p-3">
-                <span className="font-medium">{t('earn.fidelity_bond.select_utxos.label_total_selected')}</span>
-                <span className="font-mono text-lg font-bold">{formatSats(totalAmount)}</span>
+              <div className="bg-muted/50 flex flex-wrap items-center justify-between gap-2 rounded-lg p-3">
+                <span className="min-w-0 font-medium break-words">
+                  {t('earn.fidelity_bond.select_utxos.label_total_selected')}
+                </span>
+                <span className="shrink-0 font-mono text-lg font-bold">{formatSats(totalAmount)}</span>
               </div>
             </div>
           )}
@@ -407,7 +409,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
       return (
         <div className="space-y-6">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-muted-foreground mb-1 text-xs">
                   {t('earn.fidelity_bond.review_inputs.label_lock_date')}

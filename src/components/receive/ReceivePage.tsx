@@ -121,7 +121,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       <Card>
         <CardContent className="flex w-full flex-col items-center justify-center gap-2">
           {getAddressMutation.isPending ? (
-            <Skeleton style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }} />
+            <Skeleton className="aspect-square w-full max-w-80" />
           ) : getAddressMutation.data?.address ? (
             <BitcoinAddressQrCode
               className="animate-in fade-in duration-1000"
@@ -130,10 +130,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               width={QRCODE_WIDTH}
             />
           ) : getAddressMutation.isIdle ? (
-            <div
-              className={cn('flex items-center justify-center border')}
-              style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
-            >
+            <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
               <Button
                 variant="outline"
                 size="lg"
@@ -150,8 +147,9 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           ) : (
             <div
-              className={cn('text-destructive flex items-center justify-center border text-sm')}
-              style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
+              className={cn(
+                'text-destructive flex aspect-square w-full max-w-80 items-center justify-center border text-sm',
+              )}
             >
               {t('receive.error_loading_address_failed')}
             </div>
@@ -159,7 +157,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
           {getAddressMutation.isPending ? (
             <div className="flex flex-col items-center space-y-2">
-              <Skeleton className="mt-0.5 h-5 w-[24rem]" />
+              <Skeleton className="mt-0.5 h-5 w-full max-w-96" />
               <Skeleton className="h-6 w-[84px]" />
             </div>
           ) : (
@@ -186,7 +184,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           )}
 
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
