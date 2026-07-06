@@ -461,7 +461,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                           <div>
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => {
                                 clearCurrentPaymentAttempt()
                               }}
@@ -480,7 +479,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                           <div>
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => {
                                 setFormId((current) => current + 1)
                                 clearCurrentPaymentAttempt()
@@ -524,7 +522,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               <div>
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => setShowAbortCoinjoinDialog(true)}
                   disabled={isWaitingCoinjoinStop}
                 >
@@ -603,7 +600,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               sourceJarLabelButton={
                 <Button
                   type="button"
-                  size="sm"
                   variant="outline"
                   disabled={utxoSelectionDialog.utxoSelectorDisabled}
                   onClick={utxoSelectionDialog.onOpenUtxoSelector}

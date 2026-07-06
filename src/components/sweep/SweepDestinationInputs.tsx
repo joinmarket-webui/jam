@@ -72,11 +72,11 @@ export const SweepDestinationInputs = ({ form, fields, disabled }: SweepDestinat
                 <FieldLabel htmlFor={`sweep-destination-${index}`}>
                   {t('scheduler.label_destination_input', { destination: index + 1 })}
                 </FieldLabel>
-                <ButtonGroup>
+                <ButtonGroup className="w-full">
                   <Input
                     id={`sweep-destination-${index}`}
                     {...register(`destinations.${index}.address`)}
-                    className="h-auto font-mono"
+                    className="font-mono"
                     placeholder={t('scheduler.placeholder_destination_input')}
                     disabled={disabled}
                     autoComplete="off"

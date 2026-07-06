@@ -17,7 +17,7 @@ export const FeeConfigErrorAlert = ({ onOpenFeeConfig, className }: FeeConfigErr
       <AlertDescription className="flex flex-col gap-2">
         <div>{t('send.taker_error_message_max_fees_config_missing')}</div>
         <div>
-          <Button variant="outline" size="sm" onClick={onOpenFeeConfig}>
+          <Button variant="outline" onClick={onOpenFeeConfig}>
             <HandCoinsIcon />
             {t('settings.show_fee_config')}
           </Button>
