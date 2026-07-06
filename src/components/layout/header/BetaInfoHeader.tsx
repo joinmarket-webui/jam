@@ -15,7 +15,7 @@ export default function BetaInfoHeader() {
           className="group border-brand-warning-foreground/30 hover:bg-brand-warning-foreground/10 inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 font-semibold transition-colors"
         >
           Report a bug
-          <ArrowUpRightIcon className="size-3 transition-transform group-hover:-translate-y-px group-hover:translate-x-px" />
+          <ArrowUpRightIcon className="size-3 transition-transform group-hover:translate-x-px group-hover:-translate-y-px" />
         </a>
       </div>
     </header>
