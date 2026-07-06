@@ -9,37 +9,37 @@ export const statusBadgeVariants = cva(
         default: badgeVariants({ variant: 'default' }),
         new: badgeVariants({
           variant: 'default',
-          className: 'border-green-900/50 light:border-transparent light:bg-green-900/60 bg-green-900/30 text-white/90',
+          className: 'bg-brand-success text-brand-success-foreground border-transparent',
         }),
         deposit: badgeVariants({ variant: 'default' }),
         used: badgeVariants({ variant: 'secondary' }),
         reused: badgeVariants({ variant: 'destructive', className: 'light:bg-destructive/70' }),
         'cj-out': badgeVariants({
           variant: 'default',
-          className: 'border-transparent light:bg-green-700 bg-green-700 text-white/90',
+          className: 'bg-brand-success text-brand-success-foreground border-transparent',
         }),
         'cj-change': badgeVariants({
           variant: 'default',
-          className: 'border-transparent light:bg-emerald-600 bg-emerald-700/70 text-white/90',
+          className: 'bg-brand-success/80 text-brand-success-foreground border-transparent',
         }),
         'change-out': badgeVariants({
           variant: 'default',
-          className: 'border-transparent light:bg-yellow-300 bg-yellow-400 text-black',
+          className: 'bg-brand-warning text-brand-warning-foreground border-transparent',
         }),
         'non-cj-change': badgeVariants({
           variant: 'default',
-          className: 'border-transparent light:bg-orange-600/70 bg-orange-500/70 text-white',
+          className: 'bg-brand-date text-white border-transparent',
         }),
         // TODO: style and verify "fidelity-bond, locked, pending and frozen" status tags
         'fidelity-bond': badgeVariants({ variant: 'outline' }),
         locked: badgeVariants({ variant: 'outline' }),
         pending: badgeVariants({
           variant: 'default',
-          className: 'border-transparent light:bg-yellow-100/90 bg-yellow-100/90 text-black',
+          className: 'bg-brand-warning/30 text-brand-warning-foreground border-transparent',
         }),
         frozen: badgeVariants({
           variant: 'outline',
-          className: 'border-blue-600/40 light:border-transparent light:bg-blue-900/90 bg-blue-900/50 text-white',
+          className: 'bg-brand-info text-brand-info-foreground border-transparent',
         }),
       },
     },

@@ -241,7 +241,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
 
   if (error) {
     return (
-      <div className={cn('mx-auto space-y-3', className)}>
+      <div className={cn('w-full min-w-0 space-y-3', className)}>
         <div className="flex flex-col items-start gap-2">
           <Alert variant="destructive">
             <AlertCircleIcon />
@@ -262,9 +262,9 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   }
 
   return (
-    <div className={cn('mx-auto flex-1 space-y-3', className)}>
-      <div className="flex flex-col items-start justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+    <div className={cn('flex min-h-0 w-full min-w-0 flex-1 flex-col space-y-3', className)}>
+      <div className="flex w-full flex-col items-start justify-center gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
           <p className="text-muted-foreground text-sm">
             {searchInputRaw === ''
               ? t('orderbook.text_orderbook_summary', summary)
@@ -272,35 +272,36 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           </p>
         </div>
 
-        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           {showDemoButton && (
             <Button
-              className="text-xs"
+              className="w-full min-w-0 justify-center overflow-hidden text-xs sm:w-auto"
               variant="outline"
               size="sm"
               onClick={__dev_generateDemoReportEntryButton}
               disabled={isFetching}
             >
               <PlusIcon className="size-3" />
-              Add Demo Entry
-              <DevBadge />
+              <span className="truncate">Add Demo Entry</span>
+              <DevBadge className="shrink-0" />
             </Button>
           )}
 
-          <ButtonGroup>
+          <ButtonGroup className="w-full min-w-0 sm:w-auto">
             <Button
               variant="outline"
-              className="rounded-r-none"
+              className="min-w-0 flex-1 justify-center rounded-r-none sm:flex-none"
+              size="sm"
               onClick={() => void handleReload()}
               disabled={isFetching}
             >
               <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
-              {t('orderbook.button_reload_title')}
+              <span className="truncate">{t('orderbook.button_reload_title')}</span>
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={isFetching}>
+                <Button className="shrink-0" variant="outline" size="sm" disabled={isFetching}>
                   <ChevronDownIcon />
                 </Button>
               </DropdownMenuTrigger>
@@ -318,7 +319,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
             placeholder={t('orderbook.placeholder_search')}
             value={searchInputRaw}
             onChange={(event) => setSearchInputRaw(event.target.value)}
-            className="w-full sm:w-64"
+            className="w-full min-w-0 sm:w-64"
             disabled={isFetching}
           />
         </div>
@@ -327,14 +328,15 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       {/* Controls */}
       {nickname && (
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             <Switch
+              className="mt-0.5 shrink-0"
               id="highlight-my-offers"
               checked={isHighlightMyOffers}
               onCheckedChange={(checked) => setHighlightMyOffers(checked)}
               disabled={isFetching}
             />
-            <Label htmlFor="highlight-my-offers" className="flex flex-col items-start gap-0">
+            <Label htmlFor="highlight-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
               <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
               {myOffers.length === 0 ? (
                 <div className="text-muted-foreground text-sm">{t('orderbook.text_highlight_own_orders_subtitle')}</div>
@@ -343,8 +345,9 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           </div>
 
           {myOffers.length > 0 && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-4">
               <Switch
+                className="mt-0.5 shrink-0"
                 id="pin-my-offers"
                 checked={isPinMyOffers}
                 onCheckedChange={(checked) => {
@@ -355,7 +358,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                 }}
                 disabled={isFetching}
               />
-              <Label htmlFor="pin-my-offers" className="flex flex-col items-start gap-0">
+              <Label htmlFor="pin-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
                 <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
                 <div className="text-muted-foreground text-sm">
                   {t('orderbook.text_pin_to_top_own_orders_subtitle')}
@@ -367,12 +370,12 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       )}
 
       {marketSummary && (
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">{t('orderbook.market_summary_title')}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <Tabs defaultValue="summary">
+            <Tabs defaultValue="summary" className="min-w-0">
               <TabsList>
                 <TabsTrigger value="summary" className="cursor-pointer">
                   {t('orderbook.tab_summary')}
@@ -382,10 +385,10 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="summary">
+              <TabsContent value="summary" className="min-w-0 overflow-hidden">
                 <div className="text-muted-foreground grid gap-1 text-sm sm:grid-cols-2">
                   {marketSummary.medianAbsFee !== null && (
-                    <p className="flex items-center gap-1">
+                    <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
                       <span>{t('orderbook.market_summary_median_abs_fee_label')}:</span>
                       <Balance
                         valueString={String(Math.round(marketSummary.medianAbsFee))}
@@ -394,23 +397,23 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                     </p>
                   )}
                   {marketSummary.medianRelFee !== null && (
-                    <p>
+                    <p className="break-words">
                       {t('orderbook.market_summary_median_rel_fee', {
                         value: factorToPercentage(marketSummary.medianRelFee).toFixed(4),
                       })}
                     </p>
                   )}
-                  <p className="flex items-center gap-1">
+                  <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
                     <span>{t('orderbook.market_summary_total_liquidity_label')}:</span>
                     <Balance valueString={String(marketSummary.totalLiquidity)} enableVisibilityToggle={false} />
                   </p>
-                  <p className="flex items-center gap-1">
+                  <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
                     <span>{t('orderbook.market_summary_offer_min_size_label')}:</span>
                     <Balance valueString={String(marketSummary.minOfferSize)} enableVisibilityToggle={false} />
                     <span>–</span>
                     <Balance valueString={String(marketSummary.maxOfferSize)} enableVisibilityToggle={false} />
                   </p>
-                  <p>
+                  <p className="break-words">
                     {t('orderbook.market_summary_bonded_makers', {
                       bonded: marketSummary.bondedMakers,
                       unbonded: marketSummary.unbondedMakers,

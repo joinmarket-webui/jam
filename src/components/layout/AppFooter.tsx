@@ -40,21 +40,39 @@ export function AppFooter({
       <footer>
         <div className="flex flex-col items-center justify-between gap-8 px-4 py-12 sm:flex-row sm:gap-2 sm:p-4">
           <div
-            className="flex flex-col justify-start gap-2 sm:flex-row sm:items-center sm:justify-center"
+            className="flex w-full flex-col justify-start gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-center"
             data-tour-id="footer-tools"
           >
-            <Button variant="outline" size="sm" onClick={onClickCheatsheet} title={t('footer.cheatsheet')}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={onClickCheatsheet}
+              title={t('footer.cheatsheet')}
+            >
               <FileQuestionMarkIcon />
-              <span className="">{t('footer.cheatsheet')}</span>
+              <span>{t('footer.cheatsheet')}</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={onClickOrderbook} title={t('footer.orderbook')}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={onClickOrderbook}
+              title={t('footer.orderbook')}
+            >
               <BookOpenIcon />
-              <span className="">{t('footer.orderbook')}</span>
+              <span>{t('footer.orderbook')}</span>
             </Button>
             {onClickLogs && (
-              <Button variant="outline" size="sm" onClick={onClickLogs} title={t('footer.logs')}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+                onClick={onClickLogs}
+                title={t('footer.logs')}
+              >
                 <ScrollTextIcon />
-                <span className="">{t('footer.logs')}</span>
+                <span>{t('footer.logs')}</span>
               </Button>
             )}
           </div>
@@ -84,7 +102,7 @@ export function AppFooter({
               </a>
             </div>
           </div>
-          <div className="order-last flex-1 text-xs sm:order-first">
+          <div className="order-last min-w-0 flex-1 text-center text-xs break-words sm:order-first sm:text-left">
             <Trans i18nKey="footer.warning">
               This is pre-alpha software.
               <Button

@@ -90,12 +90,12 @@ export default function PaymentConfirmDialog({
     <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-center gap-2 font-semibold">
+          <DialogTitle className="flex flex-wrap items-center justify-center gap-2 text-center font-semibold">
             {t('send.confirm_send_modal.title')}
           </DialogTitle>
           <DialogDescription className="text-center">
             {values.isCoinJoin === true ? (
-              <span className="light:text-green-600/80 font-semibold text-green-700/80">
+              <span className="text-brand-success/80 font-semibold">
                 {t('send.confirm_send_modal.text_collaborative_tx_enabled')}
               </span>
             ) : (
@@ -106,7 +106,7 @@ export default function PaymentConfirmDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 space-y-1 space-x-4 md:grid-cols-5">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-1 md:grid-cols-5">
           <div className="col-span-1 font-semibold md:text-right">{t('send.confirm_send_modal.label_source_jar')}</div>
           <div className="col-span-4">
             {meta.sourceJar.name} <span className="text-muted-foreground text-xs">#{meta.sourceJar.jarIndex}</span>
@@ -132,7 +132,7 @@ export default function PaymentConfirmDialog({
           </div>
 
           <div className="col-span-1 font-semibold md:text-right">{t('send.confirm_send_modal.label_amount')}</div>
-          <div className="col-span-4 flex items-center gap-1">
+          <div className="col-span-4 flex flex-wrap items-center gap-1">
             {values.amount?.isSweep ? (
               <>
                 <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
@@ -165,7 +165,7 @@ export default function PaymentConfirmDialog({
                 {t('send.confirm_send_modal.label_estimated_max_collaborator_fee')}
               </div>
 
-              <div className="col-span-4 flex items-center gap-1">
+              <div className="col-span-4 flex flex-wrap items-center gap-1">
                 &le;
                 <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} showBalance={true} />
                 <span className="text-muted-foreground text-xs">
@@ -200,22 +200,27 @@ export default function PaymentConfirmDialog({
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               <div className="overflow-scroll">
-                <code className="light:text-red-700 text-red-800">values:</code>
+                <code className="text-destructive">values:</code>
                 <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
               </div>
               <div className="overflow-scroll">
-                <code className="light:text-red-700 text-red-800">meta:</code>
+                <code className="text-destructive">meta:</code>
                 <pre className="text-xs">{JSON.stringify(meta, null, 2)}</pre>
               </div>
             </CardContent>
           </Card>
         )}
 
-        <DialogFooter className="sm:justify-center">
-          <Button className="flex-1" variant="outline" onClick={handleClose}>
+        <DialogFooter className="gap-3 sm:justify-center">
+          <Button className="min-h-12 flex-1 text-base" variant="outline" size="xxl" onClick={handleClose}>
             {t('modal.confirm_button_reject')}
           </Button>
-          <Button className="flex-1" onClick={() => void confirm()} disabled={isConfirming}>
+          <Button
+            className="min-h-12 flex-1 text-base"
+            size="xxl"
+            onClick={() => void confirm()}
+            disabled={isConfirming}
+          >
             {isConfirming ? (
               <>
                 <Spinner className="motion-reduce:hidden" />

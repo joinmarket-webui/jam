@@ -59,11 +59,11 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs">
       <div className="fixed inset-0 z-0" onClick={handleClose} />
       <div
-        className={`bg-background relative z-10 flex max-h-[95vh] w-full max-w-[640px] flex-col rounded-t-2xl shadow-2xl transition-transform duration-200 ease-out dark:bg-[#181b20] ${
+        className={`bg-background dark:bg-brand-shell relative z-10 flex max-h-[95vh] w-full max-w-[640px] flex-col rounded-t-2xl shadow-2xl transition-transform duration-200 ease-out ${
           isClosing ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >
-        <div className="flex-shrink-0 p-6">
+        <div className="flex-shrink-0 p-4 sm:p-6">
           <div className="flex items-center justify-between gap-2">
             <PageTitle title={t('cheatsheet.title')} />
             <Button onClick={handleClose} variant="ghost" size="icon" title={t('global.close')}>
@@ -104,7 +104,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
           </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-10">
+        <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 sm:pb-10">
           <div className="flex flex-col gap-4 sm:gap-6">
             <ListItem
               number={1}

@@ -181,7 +181,10 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
         />
       )}
 
-      <Card className={cn('absolute max-w-[calc(100vw-2rem)] shadow-2xl')} style={tooltipStyles}>
+      <Card
+        className={cn('absolute max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto shadow-2xl')}
+        style={tooltipStyles}
+      >
         <CardHeader className="space-y-1">
           <CardTitle className="text-lg">{currentStep.title}</CardTitle>
           <CardDescription>
@@ -191,19 +194,21 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
         <CardContent>
           <p className="text-sm leading-relaxed">{currentStep.description}</p>
         </CardContent>
-        <CardFooter className="flex items-center justify-between">
-          <Button variant="ghost" onClick={closeTour}>
+        <CardFooter className="flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={closeTour}>
             Skip tour
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setStepIndex((current) => Math.max(0, current - 1))}
               disabled={stepIndex === 0}
             >
               Back
             </Button>
             <Button
+              size="sm"
               onClick={() => {
                 if (isLastStep) {
                   closeTour()

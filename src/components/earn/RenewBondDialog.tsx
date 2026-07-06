@@ -224,7 +224,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-h-[90dvh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('earn.fidelity_bond.renew.title')}</DialogTitle>
           <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>
@@ -256,7 +256,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                 <p className="font-mono text-lg font-bold">{formatSats(utxo.value)}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="renew-lockdate-month" className="text-sm font-medium">
                     {t('earn.fidelity_bond.select_date.form_label_month')}
@@ -321,7 +321,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
           {step === 'confirm' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">
                     {t('earn.fidelity_bond.review_inputs.label_lock_date')}
@@ -402,8 +402,8 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           {step === 'success' && (
             <div className="space-y-6">
               <div className="flex flex-col items-center py-6">
-                <div className="rounded-full bg-green-500/10 p-4">
-                  <CheckCircle2Icon className="h-16 w-16 text-green-500" />
+                <div className="bg-brand-success/10 rounded-full p-4">
+                  <CheckCircle2Icon className="text-brand-success h-16 w-16" />
                 </div>
                 <p className="mt-4 text-xl font-bold">{t('earn.fidelity_bond.renew.success_text')}</p>
               </div>
@@ -421,7 +421,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                       key="copy-address-renew"
                       value={destinationAddress}
                       text={<CopyIcon className="h-4 w-4" />}
-                      successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                      successText={<CheckIcon className="text-brand-success h-4 w-4" />}
                       className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
                       onSuccess={() => toast.success(t('receive.text_copy_address'))}
                       onError={() => toast.error(t('global.errors.reason_unknown'))}
@@ -443,7 +443,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                       key="copy-txid-renew"
                       value={txResult.txinfo.txid}
                       text={<CopyIcon className="h-4 w-4" />}
-                      successText={<CheckIcon className="h-4 w-4 text-green-500" />}
+                      successText={<CheckIcon className="text-brand-success h-4 w-4" />}
                       className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
                       onSuccess={() =>
                         toast.success(t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id'))

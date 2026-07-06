@@ -51,7 +51,7 @@ export function Jar({
           <Balance valueString={String(availableBalance)} />
         </div>
         <div
-          className={cn('light:text-blue-500/80 flex min-w-[110px] items-center justify-center gap-1 text-xs', {
+          className={cn('text-brand-info flex min-w-[110px] items-center justify-center gap-1 text-xs', {
             hidden: frozenOrLockedBalance <= 0,
           })}
         >

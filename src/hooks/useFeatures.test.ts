@@ -6,8 +6,7 @@ import { useFeatures } from './useFeatures'
 const mocks = vi.hoisted(() => ({
   developerMode: false,
   queryData: undefined as
-    | { features?: Record<string, boolean> | Array<{ name: string; enabled: boolean }> }
-    | undefined,
+    { features?: Record<string, boolean> | Array<{ name: string; enabled: boolean }> } | undefined,
 }))
 
 vi.mock('@tanstack/react-query', () => ({

@@ -1,9 +1,9 @@
 :root {
-  --jam-balance-deemphasize-color: #9eacba;
+  --jam-balance-deemphasize-color: var(--muted-foreground);
 }
 
 :root[data-theme='dark'] {
-  --jam-balance-deemphasize-color: #555c62;
+  --jam-balance-deemphasize-color: var(--muted-foreground);
 }
 
 .hideSymbol {

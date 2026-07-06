@@ -119,7 +119,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       <Card>
         <CardContent className="flex w-full flex-col items-center justify-center gap-2">
           {getAddressMutation.isPending ? (
-            <Skeleton style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }} />
+            <Skeleton className="aspect-square w-full max-w-80" />
           ) : getAddressMutation.data?.address ? (
             <BitcoinAddressQrCode
               className="animate-in fade-in duration-1000"
@@ -128,10 +128,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               width={QRCODE_WIDTH}
             />
           ) : getAddressMutation.isIdle ? (
-            <div
-              className={cn('flex items-center justify-center border')}
-              style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
-            >
+            <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
               <Button
                 variant="outline"
                 size="lg"
@@ -148,8 +145,9 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           ) : (
             <div
-              className={cn('text-destructive flex items-center justify-center border text-sm')}
-              style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
+              className={cn(
+                'text-destructive flex aspect-square w-full max-w-80 items-center justify-center border text-sm',
+              )}
             >
               {t('receive.error_loading_address_failed')}
             </div>
@@ -157,7 +155,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
           {getAddressMutation.isPending ? (
             <div className="flex flex-col items-center space-y-2">
-              <Skeleton className="mt-0.5 h-5 w-[24rem]" />
+              <Skeleton className="mt-0.5 h-5 w-full max-w-96" />
               <Skeleton className="h-6 w-[84px]" />
             </div>
           ) : (
@@ -181,10 +179,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </div>
           )}
 
-          <div className="mt-4 flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-center">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <Button
               variant="outline"
-              className="w-full sm:w-auto"
+              size="sm"
               onClick={() => void fetchNewAddress()}
               disabled={getAddressMutation.isPending}
             >
@@ -202,12 +200,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             </Button>
 
             <CopyButton
-              className={cn(
-                buttonVariants({
-                  variant: 'outline',
-                }),
-                'w-full sm:w-auto',
-              )}
+              className={buttonVariants({
+                size: 'sm',
+                variant: 'outline',
+              })}
               disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
               value={getAddressMutation.data?.address ?? ''}
               text={
@@ -229,7 +225,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             {'share' in navigator && (
               <Button
                 variant="outline"
-                className="w-full sm:w-auto"
+                size="sm"
                 onClick={() => void shareAddress(getAddressMutation.data!.address)}
                 disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
               >

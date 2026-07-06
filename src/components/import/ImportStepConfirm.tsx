@@ -113,7 +113,7 @@ export const ImportStepConfirm = ({
             <AccordionItem value="options">
               <AccordionTrigger
                 className={cn({
-                  'light:text-yellow-800 text-yellow-200/90': showGaplimitWarning,
+                  'text-brand-warning light:text-brand-warning-foreground': showGaplimitWarning,
                 })}
               >
                 <div className="flex items-center gap-2">
@@ -150,15 +150,22 @@ export const ImportStepConfirm = ({
         </div>
 
         <div className="space-y-2">
-          <Field data-invalid={errors.revealSensitiveInfo !== undefined} orientation="horizontal">
+          <Field
+            data-invalid={errors.revealSensitiveInfo !== undefined}
+            orientation="horizontal"
+            className="items-start"
+          >
             <Switch
+              className="mt-0.5 shrink-0"
               id="switch-reveal-seed"
               checked={revealSensitiveInfo}
               onCheckedChange={(checked) =>
                 setValue('revealSensitiveInfo', checked, { shouldValidate: true, shouldTouch: true })
               }
             />
-            <FieldLabel htmlFor="switch-reveal-seed">{t('create_wallet.confirmation_toggle_reveal_info')}</FieldLabel>
+            <FieldLabel htmlFor="switch-reveal-seed" className="min-w-0 flex-1">
+              {t('create_wallet.confirmation_toggle_reveal_info')}
+            </FieldLabel>
           </Field>
           {errors.revealSensitiveInfo?.message && (
             <div className="text-destructive text-xs">{errors.revealSensitiveInfo.message}</div>

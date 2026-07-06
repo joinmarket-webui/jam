@@ -17,7 +17,7 @@ type PlainAddressProps = {
 const PlainAddress = ({ value, className, chunked }: PlainAddressProps) => {
   const chunks = chunked ? value.match(/.{1,4}/g) : [value]
   return (
-    <span className={cn(styles.bitcoinAddress, chunked === true ? styles.chunked : undefined, className)}>
+    <span className={cn('min-w-0', styles.bitcoinAddress, chunked === true ? styles.chunked : undefined, className)}>
       {chunks?.map((it, index) => (
         <span key={index}>{it}</span>
       ))}
@@ -30,12 +30,12 @@ type CopyableAddressProps = PlainAddressProps
 const CopyableAddress = (props: CopyableAddressProps) => {
   const { t } = useTranslation()
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <PlainAddress {...props} />
       <CopyButton
         value={props.value}
         text={<CopyIcon />}
-        successText={<CheckIcon className="text-green-500" />}
+        successText={<CheckIcon className="text-brand-success" />}
         className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
         onSuccess={() => toast.success(t(/*TODO: i18n - distinct key */ 'receive.text_copy_address'))}
         onError={() => toast.error(/*TODO: i18n - distinct key */ t('receive.error_copy_address_failed'))}

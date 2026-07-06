@@ -214,9 +214,7 @@ export const OrderbookTable = ({
     ],
     [t],
   )
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-    minerFeeContribution: false,
-  })
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ minerFeeContribution: false })
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [rowPinning, setRowPinning] = useState<RowPinningState>({
     top: [],
@@ -290,9 +288,9 @@ export const OrderbookTable = ({
   }, [table, onChange])
 
   return (
-    <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
-      <div className="flex-1 overflow-auto">
-        <Table>
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
+      <div className="min-h-0 flex-1 overflow-auto">
+        <Table className="min-w-[42rem] text-sm">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -330,7 +328,7 @@ export const OrderbookTable = ({
           </TableHeader>
           <TableBody className=":bg-foreground [&>tr:nth-child(odd)]:bg-foreground/10 [&>tr]:hover:bg-foreground/20!">
             {tableTopRows().map((row) => (
-              <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
+              <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                 {row.getVisibleCells().map((cell) => {
                   const alignCenter = cell.column.columnDef.meta?.align === 'center'
                   const alignRight = cell.column.columnDef.meta?.align === 'right'
@@ -350,7 +348,7 @@ export const OrderbookTable = ({
             ))}
             {table.getCenterRows().map((row) => {
               return (
-                <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
+                <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                   {row.getVisibleCells().map((cell) => {
                     const alignCenter = cell.column.columnDef.meta?.align === 'center'
                     const alignRight = cell.column.columnDef.meta?.align === 'right'

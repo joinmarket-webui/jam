@@ -42,7 +42,7 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
             t('earn.fidelity_bond.existing.title_active')
           )}
         </CardTitle>
-        <CardDescription className="text-xs">
+        <CardDescription className="min-w-0 text-xs break-all">
           <Tooltip>
             <TooltipTrigger asChild>
               <code>{value.path}</code>
@@ -54,29 +54,29 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
           </Tooltip>
         </CardDescription>
         <CardAction>
-          <div className="flex items-center gap-2">
-            <CoinsIcon />
-            <div>
+          <div className="flex min-w-0 items-center gap-2">
+            <CoinsIcon className="shrink-0" />
+            <div className="min-w-0">
               <Balance valueString={String(value.value)} />
             </div>
           </div>
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex items-center gap-4">
-          <ClockIcon />
-          <div className="flex flex-col">
+        <div className="flex items-start gap-4">
+          <ClockIcon className="mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
             <span className="text-muted-foreground text-sm font-semibold">
               {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
             </span>
-            <span className="text-md font-mono">
+            <span className="text-md block font-mono break-words">
               {value.locktime} ({humanReadableLockDuration})
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <CopyIcon />
-          <div className="flex flex-col">
+        <div className="flex items-start gap-4">
+          <CopyIcon className="mt-0.5 shrink-0" />
+          <div className="min-w-0 flex-1">
             <span className="text-muted-foreground text-sm font-semibold">
               {t('earn.fidelity_bond.existing.label_address')}
             </span>

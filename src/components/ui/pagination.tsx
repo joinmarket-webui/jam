@@ -66,7 +66,7 @@ function PaginationFirst({ className, ...props }: React.ComponentProps<typeof Pa
       aria-label={t('global.table.pagination.page_selector.label_first')}
       title={t('global.table.pagination.page_selector.label_first')}
       size="default"
-      className={cn('gap-1 px-2.5 md:pr-2.5', className)}
+      className={cn('hidden gap-1 px-2.5 sm:inline-flex md:pr-2.5', className)}
       {...props}
     >
       <ChevronsLeftIcon />
@@ -82,7 +82,7 @@ function PaginationLast({ className, ...props }: React.ComponentProps<typeof Pag
       aria-label={t('global.table.pagination.page_selector.label_last')}
       title={t('global.table.pagination.page_selector.label_last')}
       size="default"
-      className={cn('gap-1 px-2.5 md:pr-2.5', className)}
+      className={cn('hidden gap-1 px-2.5 sm:inline-flex md:pr-2.5', className)}
       {...props}
     >
       <span className="hidden md:block">{t('global.table.pagination.page_selector.label_last')}</span>

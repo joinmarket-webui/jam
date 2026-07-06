@@ -358,7 +358,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               return (
                 <FidelityBondCard value={it} key={it.utxo}>
                   {actionsEnabled && (
-                    <div className="flex w-full flex-row gap-2">
+                    <div className="flex w-full flex-col gap-2 sm:flex-row">
                       <Button variant="secondary" className="flex-1" onClick={() => setMoveToJarUtxo(it)}>
                         <UnlockIcon />
                         {t('earn.fidelity_bond.existing.button_spend')}
@@ -418,11 +418,11 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">walletInfo.fidelityBondSummary.fbOutputs:</code>
+              <code className="text-destructive">walletInfo.fidelityBondSummary.fbOutputs:</code>
               <pre className="text-xs">{JSON.stringify(walletInfo.fidelityBondSummary.fbOutputs, null, 2)}</pre>
             </div>
             <div className="mt-8 overflow-scroll">
-              <code className="light:text-red-700 text-red-800">jmSessionState.offer_list:</code>
+              <code className="text-destructive">jmSessionState.offer_list:</code>
               <pre className="text-xs">{JSON.stringify(jmSession.offer_list, null, 2)}</pre>
             </div>
           </CardContent>

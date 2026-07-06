@@ -117,7 +117,7 @@ const AccountXpubItem = ({ xpub, accountNameAndLabel }: AccountXpubItemProps) =>
           })}
           value={xpub.xpub}
           text={<CopyIcon className="h-3 w-3" />}
-          successText={<CheckIcon className="h-3 w-3 text-green-500" />}
+          successText={<CheckIcon className="text-brand-success h-3 w-3" />}
           title={t('settings.xpubs_modal.button_copy_title', {
             account: accountNameAndLabel,
           })}
@@ -143,10 +143,7 @@ const AccountXpubItem = ({ xpub, accountNameAndLabel }: AccountXpubItemProps) =>
       {showQrCode ? (
         <BitcoinXpubQrCode xpub={xpub.xpub} width={QRCODE_WIDTH} className="animate-in fade-in duration-1000" />
       ) : (
-        <div
-          className={cn('flex items-center justify-center border')}
-          style={{ height: QRCODE_WIDTH, width: QRCODE_WIDTH }}
-        >
+        <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
           <Button variant="outline" size="lg" onClick={() => setShowQrCode(true)}>
             <HatGlassesIcon />
             {
@@ -175,15 +172,15 @@ export const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) =>
         })
         return (
           <AccordionItem key={index} value={String(account.accountIndex)}>
-            <AccordionTrigger className="group/xpub-accordion-trigger px-4 no-underline!">
-              <span className="flex-1 flex-col group-hover/xpub-accordion-trigger:underline">
+            <AccordionTrigger className="group/xpub-accordion-trigger flex-wrap px-4 no-underline!">
+              <span className="min-w-0 flex-1 flex-col break-words group-hover/xpub-accordion-trigger:underline">
                 {account.accountName}
               </span>
-              <span className="text-muted-foreground font-mono">{accountLabel}</span>
+              <span className="text-muted-foreground shrink-0 font-mono">{accountLabel}</span>
             </AccordionTrigger>
             <AccordionContent className="flex flex-col gap-1 p-4 pt-2">
               <Label className="text-muted-foreground text-sm">
-                <div className="flex flex-1 items-end gap-2">
+                <div className="flex min-w-0 flex-1 flex-wrap items-end gap-2">
                   {/* TODO: i18n */}Extended Public Key
                   <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
                 </div>
@@ -326,7 +323,7 @@ export const AccountXpubsDialog = ({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangleIcon className="h-5 w-5 text-yellow-500" />
+                <AlertTriangleIcon className="text-brand-warning h-5 w-5" />
                 {t('settings.xpubs_modal.verification.title')}
               </DialogTitle>
               <DialogDescription>{t('settings.xpubs_modal.verification.subtitle')}</DialogDescription>

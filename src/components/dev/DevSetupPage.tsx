@@ -43,8 +43,8 @@ export default function DevSetupPage() {
           <h5 className="text-xl font-bold">Jam Instances</h5>
           <div className="flex flex-col gap-2">
             <div>
-              <div className="flex items-center gap-2">
-                <WalletIcon className="h-4 w-4" />
+              <div className="flex flex-wrap items-center gap-2">
+                <WalletIcon className="h-4 w-4 shrink-0" />
                 <span className="font-mono">jm_regtest_joinmarket</span>
                 <Badge>primary · ng native</Badge>
               </div>
@@ -57,9 +57,14 @@ export default function DevSetupPage() {
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <WalletIcon className="h-4 w-4" />
-                <a href={LINK_JM_REGTEST_JOINMARKET2} target="_blank" rel="noopener noreferrer" className="underline">
+              <div className="flex flex-wrap items-center gap-2">
+                <WalletIcon className="h-4 w-4 shrink-0" />
+                <a
+                  href={LINK_JM_REGTEST_JOINMARKET2}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="min-w-0 break-all underline"
+                >
                   jm_regtest_joinmarket2 ({LINK_JM_REGTEST_JOINMARKET2})
                 </a>
                 <Badge>secondary · ng standalone</Badge>
@@ -72,8 +77,8 @@ export default function DevSetupPage() {
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <WalletIcon className="h-4 w-4" />
+              <div className="flex flex-wrap items-center gap-2">
+                <WalletIcon className="h-4 w-4 shrink-0" />
                 <span className="font-mono">jm_regtest_joinmarket3</span>
                 <Badge>tertiary · clientserver native</Badge>
               </div>
@@ -85,9 +90,14 @@ export default function DevSetupPage() {
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
-                <WalletIcon className="h-4 w-4" />
-                <a href={LINK_JM_REGTEST_JOINMARKET4} target="_blank" rel="noopener noreferrer" className="underline">
+              <div className="flex flex-wrap items-center gap-2">
+                <WalletIcon className="h-4 w-4 shrink-0" />
+                <a
+                  href={LINK_JM_REGTEST_JOINMARKET4}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="min-w-0 break-all underline"
+                >
                   jm_regtest_joinmarket4 ({LINK_JM_REGTEST_JOINMARKET4})
                 </a>
                 <Badge>quaternary · clientserver standalone</Badge>
@@ -115,10 +125,15 @@ export default function DevSetupPage() {
           <h5 className="text-xl font-bold">Block Explorer</h5>
           <div>
             {' '}
-            <div className="flex items-center gap-2">
-              <BlocksIcon className="h-4 w-4" />
+            <div className="flex flex-wrap items-center gap-2">
+              <BlocksIcon className="h-4 w-4 shrink-0" />
 
-              <a href={LINK_JM_REGTEST_EXPLORER} target="_blank" rel="noopener noreferrer" className="underline">
+              <a
+                href={LINK_JM_REGTEST_EXPLORER}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-w-0 break-all underline"
+              >
                 jm_regtest_explorer ({LINK_JM_REGTEST_EXPLORER})
               </a>
             </div>
@@ -133,16 +148,23 @@ export default function DevSetupPage() {
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <TerminalIcon className="h-4 w-4" />
+            <div className="flex flex-wrap items-center gap-2">
+              <TerminalIcon className="h-4 w-4 shrink-0" />
 
-              <a href={LINK_JM_REGTEST_RPC_TERMINAL} target="_blank" rel="noopener noreferrer" className="underline">
+              <a
+                href={LINK_JM_REGTEST_RPC_TERMINAL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-w-0 break-all underline"
+              >
                 Regtest RPC Terminal ({LINK_JM_REGTEST_RPC_TERMINAL})
               </a>
             </div>
             <div className="my-2 ms-5">
               Mine a block, e.g.:
-              <pre>generatetoaddress 1 bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx</pre>
+              <pre className="max-w-full overflow-x-auto">
+                generatetoaddress 1 bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx
+              </pre>
             </div>
           </div>
         </div>

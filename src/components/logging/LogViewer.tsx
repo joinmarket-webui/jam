@@ -126,10 +126,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
         }
         const nextCursor = nextMatchIndex + queryLength
         fragments.push(
-          <mark
-            key={`${line}-${nextMatchIndex}`}
-            className="light:bg-yellow-400/80 rounded bg-yellow-500/40 px-0.5 text-current"
-          >
+          <mark key={`${line}-${nextMatchIndex}`} className="bg-brand-warning/40 rounded px-0.5 text-current">
             {line.slice(nextMatchIndex, nextCursor)}
           </mark>,
         )
@@ -149,8 +146,8 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
       <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="font-mono break-all select-all">{fileName}</CardTitle>
         {/* Search + action buttons */}
-        <div className="flex items-center justify-end gap-2">
-          <div className="relative max-w-[360px] min-w-[220px] flex-1">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap">
+          <div className="relative min-w-0 flex-1 sm:max-w-[360px] sm:min-w-[220px]">
             <SearchIcon className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
             <Input
               value={searchValue}
@@ -180,7 +177,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
             title={t('global.download')}
           >
             <DownloadIcon className="group/download" />
-            {t('global.download')}
+            <span className="hidden sm:inline">{t('global.download')}</span>
           </Button>
           <Button
             variant="outline"
@@ -189,7 +186,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
             title={t('global.refresh')}
           >
             <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
-            {t('global.refresh')}
+            <span className="hidden sm:inline">{t('global.refresh')}</span>
           </Button>
         </div>
       </CardHeader>

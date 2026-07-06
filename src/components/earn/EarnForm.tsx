@@ -90,8 +90,8 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
   const id = useId()
 
   return (
-    <RadioGroup className="flex items-center justify-center" {...props}>
-      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
+    <RadioGroup className="flex flex-col items-stretch justify-center gap-2 sm:flex-row sm:items-center" {...props}>
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px] sm:max-w-50">
         <RadioGroupItem
           value={OFFERTYPE_ABS}
           id={`${id}-sw0absoffer`}
@@ -104,7 +104,7 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
           </Label>
         </div>
       </div>
-      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px] sm:max-w-50">
         <RadioGroupItem
           value={OFFERTYPE_REL}
           id={`${id}-sw0reloffer`}
@@ -310,11 +310,11 @@ export function EarnForm({
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">isValid:</code>
+              <code className="text-destructive">isValid:</code>
               <pre className="text-xs">{JSON.stringify(isValid, null, 2)}</pre>
             </div>
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">values:</code>
+              <code className="text-destructive">values:</code>
               <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
             </div>
           </CardContent>

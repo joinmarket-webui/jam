@@ -9,9 +9,9 @@ const alertVariants = cva(
       variant: {
         default: 'bg-card text-card-foreground',
         success:
-          'text-green-200/90 light:text-green-800 light:border-green-800 light:bg-green-100/50 border-green-200/90 bg-green-900/10 *:data-[slot=alert-description]:text-green-200/90 *:data-[slot=alert-description]:light:text-green-800',
+          'border-brand-success/40 bg-brand-success/10 text-brand-success *:data-[slot=alert-description]:text-brand-success',
         warning:
-          'text-yellow-200/90 light:text-yellow-800 light:border-yellow-800 light:bg-yellow-100/40 border-yellow-200/90 bg-yellow-900/10 *:data-[slot=alert-description]:text-yellow-200/90 *:data-[slot=alert-description]:light:text-yellow-800',
+          'border-brand-warning/40 bg-brand-warning/10 text-brand-warning *:data-[slot=alert-description]:text-brand-warning',
         destructive:
           'border-destructive/90 text-destructive bg-destructive/5 *:data-[slot=alert-description]:text-destructive/90',
       },
@@ -31,7 +31,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="alert-title"
       className={cn(
-        '[&_a]:hover:text-foreground font-medium group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3',
+        '[&_a]:hover:text-foreground min-w-0 font-medium break-words group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3',
         className,
       )}
       {...props}
@@ -44,7 +44,7 @@ function AlertDescription({ className, ...props }: React.ComponentProps<'div'>) 
     <div
       data-slot="alert-description"
       className={cn(
-        'text-muted-foreground [&_a]:hover:text-foreground text-sm text-balance md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4',
+        'text-muted-foreground [&_a]:hover:text-foreground min-w-0 text-sm text-balance break-words md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4',
         className,
       )}
       {...props}

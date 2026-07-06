@@ -55,6 +55,9 @@ type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog
   onConfirm: (jar: JarIndex, address: AddressInfo) => void
 }
 
+const responsiveSelectionButtonGroupClass =
+  'w-full flex-col gap-2 sm:flex-row sm:items-stretch [&>*]:rounded-md [&>*]:border sm:[&>*:not(:first-child)]:rounded-l-none sm:[&>*:not(:first-child)]:border-l-0 sm:[&>*:not(:last-child)]:rounded-r-none'
+
 const AddressFromJarSelectorDialog = ({
   walletFileName,
   onError,
@@ -299,11 +302,11 @@ export function SendForm({
         <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
           <div className="space-y-2">
             <Field className="space-y-4" data-invalid={errors.source !== undefined}>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
                 {sourceJarLabelButton && <>{sourceJarLabelButton}</>}
               </div>
-              <div className="grid grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 {jars.map((jar, index) => (
                   <SelectableJar
                     key={index}
@@ -371,6 +374,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="shrink-0"
                   disabled={disabled}
                   onClick={() => setShowQrScannerDialog(true)}
                 >
@@ -382,6 +386,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="shrink-0"
                   disabled={disabled}
                   onClick={() => setShowAddressFromJarSelectorDialog(true)}
                 >
@@ -390,7 +395,7 @@ export function SendForm({
                 </Button>
               </ButtonGroup>
               <ButtonGroup
-                className={cn('w-full', {
+                className={cn(responsiveSelectionButtonGroupClass, {
                   hidden: destinationJar === undefined,
                 })}
               >
@@ -400,12 +405,12 @@ export function SendForm({
                       id="send-destination-address-from-jar"
                       className={cn(
                         inputVariants(),
-                        'flex items-center justify-between gap-2',
-                        'bg-input/50 dark:bg-input/80 h-auto min-h-10',
+                        'flex min-h-10 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
+                        'bg-input/50 dark:bg-input/80 h-auto',
                       )}
                     >
-                      <Address value={values.destination.address} copyable={true} />
-                      <Badge className="text-sm" variant="default">
+                      <Address value={values.destination.address} copyable={true} className="text-xs sm:text-sm" />
+                      <Badge className="shrink-0 text-sm" variant="default">
                         {destinationJar.name} <span className="text-xs">#{destinationJar.jarIndex}</span>
                       </Badge>
                     </div>
@@ -415,6 +420,7 @@ export function SendForm({
                       type="button"
                       variant="outline"
                       size="lg"
+                      className="h-auto w-full sm:w-auto"
                       disabled={disabled}
                       onClick={() => {
                         setValue('destination.address', '', { shouldValidate: true })
@@ -469,6 +475,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="shrink-0"
                   disabled={
                     disabled ||
                     sourceJar === undefined ||
@@ -487,7 +494,7 @@ export function SendForm({
               </ButtonGroup>
 
               <ButtonGroup
-                className={cn('w-full', {
+                className={cn(responsiveSelectionButtonGroupClass, {
                   hidden: isSweep !== true,
                 })}
               >
@@ -495,8 +502,8 @@ export function SendForm({
                   id="send-amount-sweep-from-jar"
                   className={cn(
                     inputVariants(),
-                    'flex items-center justify-between gap-2',
-                    'bg-input/50 dark:bg-input/80 h-auto min-h-10',
+                    'flex min-h-10 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
+                    'bg-input/50 dark:bg-input/80 h-auto',
                   )}
                   aria-disabled
                 >
@@ -504,7 +511,7 @@ export function SendForm({
                     <Balance valueString={values.amount.sweepAmount.toFixed(0)} />
                   )}
 
-                  <Badge className="text-sm" variant="default">
+                  <Badge className="shrink-0 text-sm" variant="default">
                     {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
                   </Badge>
                 </div>
@@ -514,6 +521,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
+                  className="h-auto w-full sm:w-auto"
                   disabled={disabled}
                   onClick={() => {
                     setValue('amount.isSweep', false, { shouldValidate: true })
@@ -665,15 +673,15 @@ export function SendForm({
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">isValid:</code>
+                  <code className="text-destructive">isValid:</code>
                   <pre className="text-xs">{JSON.stringify(isValid, null, 2)}</pre>
                 </div>
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">values:</code>
+                  <code className="text-destructive">values:</code>
                   <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
                 </div>
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">errors:</code>
+                  <code className="text-destructive">errors:</code>
                   <pre className="text-xs">{JSON.stringify(errors.source?.message, null, 2)}</pre>
                   <pre className="text-xs">{JSON.stringify(errors.source?.fromJar?.message, null, 2)}</pre>
 
@@ -686,7 +694,7 @@ export function SendForm({
                   <pre className="text-xs">{JSON.stringify(errors.amount?.isSweep?.message, null, 2)}</pre>
                 </div>
                 <div className="overflow-scroll">
-                  <code className="light:text-red-700 text-red-800">schema:</code>
+                  <code className="text-destructive">schema:</code>
                   <pre className="text-xs">{JSON.stringify(schema, null, 2)}</pre>
                 </div>
               </CardContent>

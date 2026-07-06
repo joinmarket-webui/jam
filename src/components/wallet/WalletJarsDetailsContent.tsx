@@ -206,12 +206,17 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
       </div>
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div className="flex flex-wrap items-center gap-2">
-          <Button disabled={!operationsEnabled || walletInfoIsFetching} onClick={() => void walletInfoRefetch()}>
+          <Button
+            size="sm"
+            disabled={!operationsEnabled || walletInfoIsFetching}
+            onClick={() => void walletInfoRefetch()}
+          >
             <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': walletInfoIsFetching })} />
             {t('global.refresh')}
           </Button>
           <ButtonGroup>
             <Button
+              size="sm"
               variant={selectedUtxos.length === 0 ? 'outline' : undefined}
               disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosFrozen}
               onClick={() => void onFreezeClick()}
@@ -220,6 +225,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
               {t('jar_details.utxo_list.button_freeze')}
             </Button>
             <Button
+              size="sm"
               variant={selectedUtxos.length === 0 ? 'outline' : undefined}
               disabled={!operationsEnabled || selectedUtxos.length === 0 || allSelectedUtxosUnfrozen}
               onClick={() => void onUnfreezeClick()}
@@ -233,7 +239,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
           placeholder={t('jar_details.utxo_list.placeholder_search')}
           value={searchFilter}
           onChange={(event_) => setSearchFilter(event_.target.value)}
-          className="w-full max-w-xs"
+          className="w-full sm:max-w-xs"
         />
       </div>
       <JarUtxosTable
@@ -383,15 +389,15 @@ export const WalletJarsDetailsContent = ({
         {debug && (
           <TabsContent value="dev">
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">activeJar:</code>
+              <code className="text-destructive">activeJar:</code>
               <pre className="text-xs">{JSON.stringify(activeJar, null, 2)}</pre>
             </div>
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">activeAccountMeta:</code>
+              <code className="text-destructive">activeAccountMeta:</code>
               <pre className="text-xs">{JSON.stringify(activeAccountMeta, null, 2)}</pre>
             </div>
             <div className="overflow-scroll">
-              <code className="light:text-red-700 text-red-800">addressSummary:</code>
+              <code className="text-destructive">addressSummary:</code>
               <pre className="text-xs">{JSON.stringify(addressSummary, null, 2)}</pre>
             </div>
           </TabsContent>
