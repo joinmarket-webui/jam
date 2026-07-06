@@ -57,7 +57,19 @@ export const destinationAddressField = ({
 }) =>
   yup
     .string()
+    .trim()
     .required(messages.invalid)
     .test('valid-address-test', messages.invalid, (value) => isValidAddress(value))
-    .test('network-mismatch-test', messages.networkMismatch, (value) => isAddressOnNetwork(value, network))
-    .test('reused-address-test', messages.reused, (value) => !isReusedAddress(value, addressSummary))
+    // The network and reuse checks only run once the address itself is valid, so an invalid
+    // address surfaces a single, correct error instead of also reporting a network mismatch.
+    .test(
+      'network-mismatch-test',
+      messages.networkMismatch,
+      (value) => !isValidAddress(value) || isAddressOnNetwork(value, network),
+    )
+    .test(
+      'reused-address-test',
+      messages.reused,
+      (value) =>
+        !isValidAddress(value) || !isAddressOnNetwork(value, network) || !isReusedAddress(value, addressSummary),
+    )

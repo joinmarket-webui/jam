@@ -83,8 +83,21 @@ describe('destinationAddressField', () => {
     expect(schema.isValidSync(mainnetAddress)).toBe(true)
   })
 
+  it('trims surrounding whitespace before validating', () => {
+    expect(schema.isValidSync(`  ${mainnetAddress}  `)).toBe(true)
+  })
+
   it('rejects an invalid address with the invalid message', () => {
     expect(() => schema.validateSync('not-an-address')).toThrow('invalid')
+  })
+
+  it('reports only the invalid error for an invalid address (no cascading network/reuse errors)', () => {
+    expect.assertions(1)
+    try {
+      schema.validateSync('not-an-address', { abortEarly: false })
+    } catch (error) {
+      expect((error as { errors: string[] }).errors).toEqual(['invalid'])
+    }
   })
 
   it('rejects an address from the wrong network', () => {
