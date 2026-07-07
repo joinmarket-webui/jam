@@ -31,6 +31,7 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone_ng
     environment:
+      ENSURE_WALLET: 'false'
       BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: joinmarket2
       BITCOIN__RPC_PASSWORD: joinmarket2
@@ -89,6 +90,7 @@ services:
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_quaternary
       jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
+      CREATE_WALLET_PARAMS_DESCRIPTORS: 'false'
     ports:
       - '31080:80'
       - '31183:28183'  # exposed for "init setup" routine

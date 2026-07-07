@@ -77,6 +77,7 @@ services:
       NETWORK_CONFIG__NETWORK: testnet
       NETWORK_CONFIG__BITCOIN_NETWORK: regtest
       NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      DIRECTORY_NODES: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
       OBWATCH_URL: http://joinmarket_ng_orderbook_watcher:8000
       TOR__SOCKS_HOST: tor
       TOR__SOCKS_PORT: 9050
@@ -117,6 +118,7 @@ services:
       NETWORK_CONFIG__NETWORK: testnet
       NETWORK_CONFIG__BITCOIN_NETWORK: regtest
       NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
+      DIRECTORY_NODES: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
       OBWATCH_URL: http://joinmarket_ng_orderbook_watcher:8000
       TOR__SOCKS_HOST: tor
       TOR__SOCKS_PORT: 9050
