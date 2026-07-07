@@ -365,6 +365,7 @@
     "alert_stopping": "Der Service stoppt. ",
     "alert_running": "Sats anbieten, um Sats zu verdienen...",
     "alert_coinjoin_in_progress": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",
+    "alert_no_spendable_balance_description": "<0>Befülle deine Wallet</0>, um mit dem Verdienen zu beginnen.",
     "button_settings": "Angebots Optionen",
     "radio_abs_offer_label": "Absolutes Angebot",
     "radio_rel_offer_label": "Relatives Angebot",

@@ -229,6 +229,7 @@
     "alert_stopping": "Le service s'arrête.",
     "alert_running": "Le service est en cours d'exécution.",
     "alert_coinjoin_in_progress": "Une transaction collaborative est actuellement en cours.",
+    "alert_no_spendable_balance_description": "<0>Approvisionnez votre portefeuille</0> pour commencer à générer.",
     "toggle_rel_offer": "Offre relative",
     "label_rel_fee": "Frais relatifs  {{ fee }}",
     "description_rel_fee": "En pourcentage des montants, vous aidez les autres à améliorer leur vie privée.",

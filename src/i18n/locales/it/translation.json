@@ -317,6 +317,7 @@
     "alert_stopping": "Il servizio si sta fermando.",
     "alert_running": "Offrendo sats per guadagnare più sats...",
     "alert_coinjoin_in_progress": "È attualmente in corso una transazione collaborativa.",
+    "alert_no_spendable_balance_description": "<0>Deposita nel tuo wallet</0> per iniziare a guadagnare.",
     "button_settings": "Opzioni dell'offerta",
     "radio_abs_offer_label": "Offerta assoluta",
     "radio_rel_offer_label": "Offerta relativa",
