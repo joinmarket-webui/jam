@@ -10,7 +10,7 @@ export function RootLayout({ children }: PropsWithChildren<unknown>) {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       {displayBetaHeader ? <BetaInfoHeader /> : <></>}
-      <main className="flex flex-1 flex-col overflow-y-scroll">{children}</main>
+      <main className="flex flex-1 flex-col overflow-auto">{children}</main>
     </div>
   )
 }
