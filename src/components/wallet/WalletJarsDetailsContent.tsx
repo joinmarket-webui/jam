@@ -205,7 +205,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
         </div>
       </div>
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
             disabled={!operationsEnabled || walletInfoIsFetching}
@@ -239,7 +239,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
           placeholder={t('jar_details.utxo_list.placeholder_search')}
           value={searchFilter}
           onChange={(event_) => setSearchFilter(event_.target.value)}
-          className="max-w-xs"
+          className="w-full sm:max-w-xs"
         />
       </div>
       <JarUtxosTable

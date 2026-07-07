@@ -1,6 +1,6 @@
-import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
+import { isReusedAddress, isValidAddress } from '@/lib/formValidation'
 
 const normalizeAddress = (value: string): string => value.trim()
 
@@ -11,7 +11,7 @@ export const buildDestinationErrors = (
 ): Array<string | undefined> => {
   const normalizedAddresses = addresses.map((address) => normalizeAddress(address))
   const counts = normalizedAddresses.reduce((acc, address) => {
-    if (address === '' || !isValidBitcoinAddress(address)) {
+    if (!isValidAddress(address)) {
       return acc
     }
 
@@ -20,14 +20,13 @@ export const buildDestinationErrors = (
   }, new Map<string, number>())
 
   return normalizedAddresses.map((address) => {
-    if (address === '' || !isValidBitcoinAddress(address)) {
+    if (!isValidAddress(address)) {
       return undefined
     }
 
-    const isReusedAddress = addressSummary[address]?.used === true
     const isDuplicateAddress = (counts.get(address) ?? 0) > 1
 
-    if (isReusedAddress || isDuplicateAddress) {
+    if (isReusedAddress(address, addressSummary) || isDuplicateAddress) {
       return t('scheduler.feedback_reused_destination_address')
     }
 

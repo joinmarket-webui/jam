@@ -45,6 +45,7 @@ import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore, useDeveloperMode } from '@/store/jamSettingsStore'
 import { EarnReportPage } from './components/earn/report/EarnReportPage'
+import { RootLayout } from './components/layout/RootLayout'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
@@ -153,7 +154,15 @@ function App() {
 
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route id="base" element={<Outlet />} errorElement={<ErrorPage />}>
+      <Route
+        id="base"
+        element={
+          <RootLayout>
+            <Outlet />
+          </RootLayout>
+        }
+        errorElement={<ErrorPage />}
+      >
         <Route path={routes.login} element={authenticated ? <Navigate to={routes.home} replace /> : <LoginPage />} />
         <Route
           path={routes.createWallet}

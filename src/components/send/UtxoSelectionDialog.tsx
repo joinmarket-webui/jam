@@ -50,7 +50,7 @@ export const UtxoSelectionDialog = ({
           placeholder={t('jar_details.utxo_list.placeholder_search')}
           disabled={isSubmitting}
         />
-        <div className="max-h-[55vh] overflow-hidden">
+        <div className="max-h-[55dvh] min-h-0 overflow-hidden">
           <JarUtxosTable
             globalFilter={filter}
             tableEntries={tableEntries}

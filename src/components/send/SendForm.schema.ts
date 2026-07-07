@@ -1,10 +1,11 @@
-import { getAddressInfo, validate as isValidBitcoinAddress, Network } from 'bitcoin-address-validation'
+import { Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
 import { MAX_NUM_COLLABORATORS, TOTAL_COIN_SUPPLY } from '@/constants/jam'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
+import { destinationAddressField, sourceJarField } from '@/lib/formValidation'
 import { isValidInteger, pseudoRandomInteger } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { toTxFeeFormDefaultValues, createTxFeeFormSchema } from './TxFeeForm.schema'
@@ -63,37 +64,25 @@ export const createSendFormSchema = (
       .object({
         source: yup
           .object({
-            fromJar: yup
-              .number()
-              .integer(t('send.feedback_invalid_source_jar'))
-              .required(t('send.feedback_invalid_source_jar'))
-              .test(
-                'valid-source-jar-index-test',
-                t('send.feedback_invalid_source_jar'),
-                (value) =>
-                  (jars.find((it) => it.jarIndex === value)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
-              ),
+            fromJar: sourceJarField(
+              t('send.feedback_invalid_source_jar'),
+              (jarIndex) =>
+                (jars.find((it) => it.jarIndex === jarIndex)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
+            ),
           })
           .required(),
         destination: yup
           .object({
             fromJar: yup.number().optional(),
-            address: yup
-              .string()
-              .required(t('send.feedback_invalid_destination_address'))
-              .test('valid-address-test', t('send.feedback_invalid_destination_address'), (value) => {
-                return isValidBitcoinAddress(value)
-              })
-              .test('network-mismatch-test', t('send.feedback_destination_network_mismatch'), (value) => {
-                try {
-                  return getAddressInfo(value).network === network
-                } catch (_ignoredOnPurpose) {
-                  return false
-                }
-              })
-              .test('reused-address-test', t('send.feedback_reused_address'), (value) => {
-                return addressSummary[value]?.used !== true
-              }),
+            address: destinationAddressField({
+              network,
+              addressSummary,
+              messages: {
+                invalid: t('send.feedback_invalid_destination_address'),
+                networkMismatch: t('send.feedback_destination_network_mismatch'),
+                reused: t('send.feedback_reused_address'),
+              },
+            }),
           })
           .required(),
         amount: yup

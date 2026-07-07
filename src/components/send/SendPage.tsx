@@ -460,7 +460,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                           <div>
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => {
                                 clearCurrentPaymentAttempt()
                               }}
@@ -479,7 +478,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                           <div>
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => {
                                 setFormId((current) => current + 1)
                                 clearCurrentPaymentAttempt()
@@ -502,7 +500,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
               {currentPaymentAttempt && (
-                <pre>
+                <pre className="max-w-full overflow-x-auto">
                   {JSON.stringify(
                     {
                       sourceJar: currentPaymentAttempt.data.source.fromJar,
@@ -523,7 +521,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               <div>
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => setShowAbortCoinjoinDialog(true)}
                   disabled={isWaitingCoinjoinStop}
                 >
@@ -602,7 +599,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               sourceJarLabelButton={
                 <Button
                   type="button"
-                  size="sm"
                   variant="outline"
                   disabled={utxoSelectionDialog.utxoSelectorDisabled}
                   onClick={utxoSelectionDialog.onOpenUtxoSelector}

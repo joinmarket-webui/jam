@@ -68,7 +68,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                 {t('global.loading')}
               </div>
             ) : (
-              <div className="flex items-center text-4xl tracking-wider">
+              <div className="flex items-center text-3xl tracking-wider sm:text-4xl">
                 <Balance
                   onClick={() => toggleDisplayMode()}
                   valueString={String(walletBalanceSummary.calculatedTotalBalanceInSats)}
@@ -77,7 +77,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
               </div>
             )}
           </div>
-          <div className="mt-2 flex w-full justify-center gap-4" data-tour-id="wallet-actions">
+          <div className="mt-2 flex w-full justify-center gap-2 sm:gap-4" data-tour-id="wallet-actions">
             <Button size="xxl" className="flex-1" variant="default" onClick={() => void navigate(routes.receive)}>
               <DownloadIcon />
               {t('current_wallet.button_deposit')}
@@ -95,7 +95,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
               {t('global.errors.error_loading_wallet_failed', {
                 reason: getErrorReason(error, t('global.errors.reason_unknown')),
               })}
-              <Button variant="outline" size="sm" onClick={() => void refetchWalletData()}>
+              <Button variant="outline" onClick={() => void refetchWalletData()}>
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
                 {t('global.retry')}
               </Button>
@@ -147,7 +147,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
           </div>
         </div>
         <div className="flex w-full max-w-xl justify-end">
-          <Button variant="ghost" size="xs" onClick={() => void refetchWalletData()}>
+          <Button variant="ghost" onClick={() => void refetchWalletData()}>
             <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
             {t('global.refresh')}
           </Button>

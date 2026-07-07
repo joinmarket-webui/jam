@@ -156,8 +156,13 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => void navigate(routes.settings)} title={t('global.back')}>
+      <div className="flex min-w-0 items-start gap-2 sm:items-center sm:gap-4">
+        <Button
+          variant="ghost"
+          className="shrink-0"
+          onClick={() => void navigate(routes.settings)}
+          title={t('global.back')}
+        >
           <ArrowLeftIcon />
           <span className="sr-only">{t('global.back')}</span>
         </Button>
@@ -173,9 +178,9 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
           />
           {rescanInfo.rescanning && (
             <div className="bg-muted/50 mt-4 animate-pulse rounded-lg p-3 duration-100">
-              <div className="flex items-center gap-2">
-                <RefreshCwIcon className="h-4 w-4 animate-spin motion-reduce:hidden" />
-                <span className="text-sm">
+              <div className="flex min-w-0 items-start gap-2">
+                <RefreshCwIcon className="mt-0.5 h-4 w-4 shrink-0 animate-spin motion-reduce:hidden" />
+                <span className="min-w-0 text-sm break-words">
                   {rescanInfo?.progress === undefined
                     ? t('app.alert_rescan_in_progress')
                     : t('app.alert_rescan_in_progress_with_progress', {

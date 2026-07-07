@@ -41,7 +41,7 @@ const CreateWalletCard = ({ icon: Icon, title, children }: PropsWithChildren<{ i
         <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
           <Icon className="text-primary" />
         </div>
-        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+        <CardTitle className="text-center text-xl font-bold break-words">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">{children}</CardContent>
     </Card>

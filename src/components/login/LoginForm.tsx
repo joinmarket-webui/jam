@@ -116,10 +116,10 @@ export const LoginFormComponent = ({
             </SelectTrigger>
             <SelectContent>
               {wallets?.map((wallet) => (
-                <SelectItem key={wallet} value={wallet} className="text-base">
-                  {shortenStringMiddle(walletDisplayName(wallet), 32)}
+                <SelectItem key={wallet} value={wallet} className="min-w-0 text-base">
+                  <span className="min-w-0 flex-1 truncate">{shortenStringMiddle(walletDisplayName(wallet), 32)}</span>
                   {activeWallet === wallet ? (
-                    <span className="text-muted-foreground/50 inline-flex items-center gap-1.5 py-1 text-xs">
+                    <span className="text-muted-foreground/50 inline-flex shrink-0 items-center gap-1.5 py-1 text-xs">
                       <ActivityIndicator active={makerRunning || coinjoinInProgress} />
                       {t('wallets.wallet_preview.wallet_active')}
                     </span>

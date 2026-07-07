@@ -1,7 +1,7 @@
-import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
+import { isValidAddress } from '@/lib/formValidation'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
 export type SweepFormValues = {
@@ -65,7 +65,7 @@ export const sweepFormSchema = (t: TFunction<'translation', undefined>): yup.Obj
                 )
                 .defined()
                 .test('valid-sweep-destination', invalidDestinationAddressMessage, function (value) {
-                  if (typeof value !== 'string' || value.trim() === '' || !isValidBitcoinAddress(value)) {
+                  if (!isValidAddress(value)) {
                     return this.createError({ message: invalidDestinationAddressMessage })
                   }
 

@@ -414,12 +414,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
             <Card>
               <CardContent className="space-y-5">
-                <div className="bg-muted/50 flex items-center justify-between rounded-lg border px-4 py-3">
-                  <div>
+                <div className="bg-muted/50 flex flex-col items-start justify-between gap-2 rounded-lg border px-4 py-3 sm:flex-row sm:items-center">
+                  <div className="min-w-0">
                     <div className="font-medium">{t('scheduler.complete_wallet_title')}</div>
                     <div className="text-muted-foreground text-sm">{t('scheduler.complete_wallet_subtitle')}</div>
                   </div>
-                  <div className="font-semibold">
+                  <div className="shrink-0 font-semibold">
                     <Balance valueString={String(walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats)} />
                   </div>
                 </div>

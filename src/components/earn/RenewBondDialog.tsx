@@ -224,7 +224,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-h-[90dvh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('earn.fidelity_bond.renew.title')}</DialogTitle>
           <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>
@@ -256,7 +256,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                 <p className="font-mono text-lg font-bold">{formatSats(utxo.value)}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="renew-lockdate-month" className="text-sm font-medium">
                     {t('earn.fidelity_bond.select_date.form_label_month')}
@@ -321,7 +321,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
           {step === 'confirm' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">
                     {t('earn.fidelity_bond.review_inputs.label_lock_date')}

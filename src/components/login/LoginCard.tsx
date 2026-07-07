@@ -88,13 +88,13 @@ export const LoginCard = ({
               </Button>
             )}
           </div>
-          <CardTitle className="text-2xl font-bold">{t('login.title')}</CardTitle>
+          <CardTitle className="text-center text-2xl font-bold break-words">{t('login.title')}</CardTitle>
           {listWalletsLoading ? (
             <>
               <Skeleton className="h-4 w-full" />
             </>
           ) : wallets && wallets.length > 0 ? (
-            <CardDescription>{t('login.subtitle')}</CardDescription>
+            <CardDescription className="text-center">{t('login.subtitle')}</CardDescription>
           ) : undefined}
           {enableOnboardingDialog ? (
             <Button variant="link" size="sm" className="h-auto px-0" onClick={() => setShowOnboarding(true)}>
@@ -107,7 +107,7 @@ export const LoginCard = ({
           {listWalletsError ? (
             <>
               <WalletLoadErrorAlert reason={getErrorReason(listWalletsError, t('global.errors.reason_unknown'))} />
-              <Button variant="ghost" size="sm" onClick={() => void onReloadClick()} disabled={listWalletsFetching}>
+              <Button variant="ghost" onClick={() => void onReloadClick()} disabled={listWalletsFetching}>
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
                 {t('global.retry')}
               </Button>
