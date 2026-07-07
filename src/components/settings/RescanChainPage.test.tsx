@@ -105,7 +105,7 @@ describe('RescanChainPage', () => {
   })
 
   it('shows the in-progress alert with progress', async () => {
-    rescanInfo = { updatedAt: 0, rescanning: true, progress: 0.4221, progressInPercentage: 42.2 }
+    rescanInfo = { updatedAt: 0, rescanning: true, progress: 0.4221, progressInPercentage: '42.2' }
     await renderPage()
     expect(screen.getByText(/app.alert_rescan_in_progress_with_progress/)).toBeInTheDocument()
   })

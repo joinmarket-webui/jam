@@ -97,7 +97,7 @@ export const JamSessionInfoContextProvider = ({
       updatedAt: getrescaninfoQuery.dataUpdatedAt,
       rescanning: isRescanning,
       progress: progress,
-      progressInPercentage: progress === undefined ? undefined : factorToPercentage(progress, progress === 1 ? 0 : 1),
+      progressInPercentage: progress === undefined ? undefined : factorToPercentage(progress).toFixed(1),
     })
   }
 

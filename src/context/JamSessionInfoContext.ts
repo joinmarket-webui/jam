@@ -7,7 +7,7 @@ export interface RescanInfo {
   updatedAt: number
   rescanning: boolean
   progress?: Factor
-  progressInPercentage?: number
+  progressInPercentage?: string
 }
 
 export interface PaymentAttempt {
