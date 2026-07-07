@@ -107,7 +107,7 @@ export const LoginCard = ({
           {listWalletsError ? (
             <>
               <WalletLoadErrorAlert reason={listWalletsError.message} />
-              <Button variant="ghost" size="sm" onClick={() => void onReloadClick()} disabled={listWalletsFetching}>
+              <Button variant="ghost" onClick={() => void onReloadClick()} disabled={listWalletsFetching}>
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
                 {t('global.retry')}
               </Button>

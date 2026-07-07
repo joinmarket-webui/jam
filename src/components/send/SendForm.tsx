@@ -365,7 +365,6 @@ export function SendForm({
                     required: destinationJar === undefined,
                     disabled,
                   })}
-                  className="h-auto"
                   type="text"
                   placeholder={t('send.placeholder_recipient')}
                   onPaste={handleAddressPaste}
@@ -407,7 +406,7 @@ export function SendForm({
                       id="send-destination-address-from-jar"
                       className={cn(
                         inputVariants(),
-                        'flex min-h-8 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
+                        'flex min-h-10 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
                         'bg-input/50 dark:bg-input/80 h-auto',
                       )}
                     >
@@ -466,7 +465,7 @@ export function SendForm({
                   min={MIN_SEND_AMOUNT}
                   max={MAX_SEND_AMOUNT}
                   type="number"
-                  className="h-auto pl-9"
+                  className="pl-9"
                   placeholder={t('send.placeholder_amount_input')}
                 />
                 <div className="absolute top-1/2 left-0 flex -translate-y-1/2 items-center px-3">
@@ -504,7 +503,7 @@ export function SendForm({
                   id="send-amount-sweep-from-jar"
                   className={cn(
                     inputVariants(),
-                    'flex min-h-8 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
+                    'flex min-h-10 min-w-0 flex-col items-start justify-center gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2',
                     'bg-input/50 dark:bg-input/80 h-auto',
                   )}
                   aria-disabled

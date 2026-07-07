@@ -223,7 +223,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
       <div className="flex justify-end">
-        <Button variant="outline" size="sm" onClick={() => setShowEarnReport(true)}>
+        <Button variant="outline" onClick={() => setShowEarnReport(true)}>
           <FileTextIcon />
           {t('earn.button_show_report')}
         </Button>
