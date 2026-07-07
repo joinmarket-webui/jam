@@ -59,6 +59,16 @@ services:
       context: ./dockerfile-deps/joinmarket/webui-standalone-ng
       dockerfile: Dockerfile
     restart: unless-stopped
+    environment:
+      JMWALLETD_HOST: 0.0.0.0
+      BITCOIN__BACKEND_TYPE: descriptor_wallet
+      BITCOIN__RPC_URL: http://bitcoind:43782
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: tegtest
+      LOGGING__LEVEL: DEBUG
+      NETWORK_CONFIG__NETWORK: testnet
+      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
+      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
     expose:
       - 80 # nginx
       - 28183 # jmwalletd api
@@ -69,7 +79,6 @@ services:
     environment:
       JOINMARKET_DATA_DIR: /root/.joinmarket-ng
       JMWALLETD_HOST: 0.0.0.0
-      JMWALLETD_NO_TLS: ${JMWALLETD_NO_TLS:-false}
       BITCOIN__BACKEND_TYPE: descriptor_wallet
       BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: regtest
@@ -88,7 +97,6 @@ services:
     expose:
       - 8000 # obwatch
       - 28183 # jmwalletd api
-      - 28283 # jmwalletd websocket
     healthcheck:
       test:
         [
@@ -109,7 +117,6 @@ services:
     environment:
       JOINMARKET_DATA_DIR: /root/.joinmarket-ng
       JMWALLETD_HOST: 0.0.0.0
-      JMWALLETD_NO_TLS: ${JMWALLETD_NO_TLS:-false}
       BITCOIN__BACKEND_TYPE: descriptor_wallet
       BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: regtest
@@ -127,7 +134,6 @@ services:
     expose:
       - 8000 # obwatch
       - 28183 # jmwalletd api
-      - 28283 # jmwalletd websocket
     healthcheck:
       test:
         [

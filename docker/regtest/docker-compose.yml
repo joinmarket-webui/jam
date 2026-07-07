@@ -9,8 +9,7 @@ services:
       BITCOIN__RPC_USER: joinmarket
       BITCOIN__RPC_PASSWORD: joinmarket
     ports:
-      - '28183:28183'  # jmwalletd api
-      - '28283:28283'  # jmwalletd websocket
+      - '28183:28183' # jmwalletd api (exposed for "init setup" routine)
     volumes:
       - 'joinmarket_datadir:/root/.joinmarket-ng'
       - 'initializer_datadir:/root/.regtest-initializer'
@@ -31,18 +30,13 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone_ng
     environment:
-      BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: joinmarket2
       BITCOIN__RPC_PASSWORD: joinmarket2
-      LOGGING__LEVEL: DEBUG
-      NETWORK_CONFIG__NETWORK: testnet
-      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
-      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?You must set the directory node addresses in generated env file}
       TAKER__MINIMUM_MAKERS: 2 # necessary to do coinjoins with this regtest setup
       TAKER__MAKER_TIMEOUT_SEC: 30 # easier testing of maker timeouts on regtest
     ports:
       - '29080:80'     
-      - '29183:28183'  # exposed for "init setup" routine
+      - '29183:28183' # jmwalletd api (exposed for "init setup" routine)
     volumes:
       - 'joinmarket2_datadir:/root/.joinmarket-ng'
     depends_on:
@@ -63,9 +57,9 @@ services:
       jm_rpc_password: joinmarket3
       CREATE_WALLET_PARAMS_DESCRIPTORS: 'false'
     ports:
-      - '30601:62601'  # obwatch
-      - '30183:28183'  # jmwalletd api
-      - '30283:28283'  # jmwalletd websocket
+      - '30601:62601' # obwatch
+      - '30183:28183' # jmwalletd api (exposed for "init setup" routine)
+      - '30283:28283' # jmwalletd websocket
     volumes:
       - 'joinmarket3_datadir:/root/.joinmarket'
       - 'initializer_datadir:/root/.regtest-initializer'
@@ -91,7 +85,7 @@ services:
       jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
     ports:
       - '31080:80'
-      - '31183:28183'  # exposed for "init setup" routine
+      - '31183:28183' # jmwalletd api (exposed for "init setup" routine)
     volumes:
       - 'joinmarket4_datadir:/root/.joinmarket'
       - 'bitcoin_datadir:/root/.bitcoin_data' # mount bitcoind dir to access .cookie file
@@ -111,11 +105,8 @@ services:
     extends:
       file: docker-compose-common.yml
       service: joinmarket_ng_peer
-    environment:
-      BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: regtest
     ports:
-      - '32183:28183'
+      - '32183:28183' # jmwalletd api (exposed for "init setup" routine)
     volumes:
       - 'joinmarket5_datadir:/root/.joinmarket-ng'
       - 'tor_datadir:/var/lib/tor:ro'
