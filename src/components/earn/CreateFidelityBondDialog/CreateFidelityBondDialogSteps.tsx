@@ -13,12 +13,12 @@ import { Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { getJarBadgeVariant } from '@/components/ui/badge-variants'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
 import { BitcoinAddressQrCode } from '@/components/ui/jam/BitcoinQrCode'
 import { CopyButton } from '@/components/ui/jam/CopyButton'
-import { getJarBgClass } from '@/components/ui/jam/jarColors'
 import { Label } from '@/components/ui/label'
 import {
   Pagination,
@@ -418,7 +418,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               </div>
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                <Badge className={getJarBgClass(selectedJarIndex)}>
+                <Badge variant={getJarBadgeVariant(selectedJarIndex)}>
                   {selectedJar ? (
                     <>
                       {selectedJar.name} <span>#{selectedJar.jarIndex}</span>

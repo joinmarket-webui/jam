@@ -18,11 +18,11 @@ import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
+import { getJarBadgeVariant } from '../ui/badge-variants'
 import { buttonVariants } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
 import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
 import { CopyButton } from '../ui/jam/CopyButton'
-import { getJarBgClass } from '../ui/jam/jarColors'
 import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320
@@ -168,8 +168,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 )}
               </div>
               <Badge
-                className={cn('min-h-6 text-sm', getJarBgClass(displayedJar?.jarIndex))}
-                variant={displayedJar ? 'default' : 'secondary'}
+                className="min-h-6 text-sm"
+                variant={displayedJar ? getJarBadgeVariant(displayedJar.jarIndex) : 'secondary'}
               >
                 {sourceJar ? (
                   <>

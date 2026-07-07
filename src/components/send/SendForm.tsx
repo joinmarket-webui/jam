@@ -23,6 +23,7 @@ import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Badge } from '../ui/badge'
+import { getJarBadgeVariant } from '../ui/badge-variants'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
@@ -33,7 +34,6 @@ import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { SelectableJar } from '../ui/jam/SelectableJar'
-import { getJarBgClass } from '../ui/jam/jarColors'
 import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
@@ -412,7 +412,7 @@ export function SendForm({
                       )}
                     >
                       <Address value={values.destination.address} copyable={true} className="text-xs sm:text-sm" />
-                      <Badge className={cn('shrink-0 text-sm', getJarBgClass(destinationJar.jarIndex))}>
+                      <Badge className="shrink-0 text-sm" variant={getJarBadgeVariant(destinationJar.jarIndex)}>
                         {destinationJar.name} <span className="text-xs">#{destinationJar.jarIndex}</span>
                       </Badge>
                     </div>
@@ -513,7 +513,7 @@ export function SendForm({
                     <Balance valueString={values.amount.sweepAmount.toFixed(0)} />
                   )}
 
-                  <Badge className={cn('shrink-0 text-sm', getJarBgClass(sourceJar?.jarIndex))}>
+                  <Badge className="shrink-0 text-sm" variant={getJarBadgeVariant(sourceJar?.jarIndex)}>
                     {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
                   </Badge>
                 </div>

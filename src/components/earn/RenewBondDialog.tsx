@@ -41,8 +41,8 @@ import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
+import { getJarBadgeVariant } from '../ui/badge-variants'
 import { Address } from '../ui/jam/Address'
-import { getJarBgClass } from '../ui/jam/jarColors'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './CreateFidelityBondDialog/types'
 
 type Step = 'select_date' | 'confirm' | 'sending' | 'success'
@@ -332,7 +332,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                  <Badge className={getJarBgClass(utxo.mixdepth)}>
+                  <Badge variant={getJarBadgeVariant(utxo.mixdepth)}>
                     {sourceJar?.name ?? t('earn.fidelity_bond.review_inputs.label_jar')} <span>#{utxo.mixdepth}</span>
                   </Badge>
                 </div>
