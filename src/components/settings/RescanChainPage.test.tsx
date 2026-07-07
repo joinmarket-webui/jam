@@ -87,7 +87,7 @@ const renderPage = async () => {
 describe('RescanChainPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    rescanInfo = { updatedAt: 0, rescanning: false, progress: undefined }
+    rescanInfo = { updatedAt: 0, rescanning: false, progress: undefined, progressInPercentage: undefined }
   })
 
   it('renders the form and navigates back', async () => {
@@ -105,7 +105,7 @@ describe('RescanChainPage', () => {
   })
 
   it('shows the in-progress alert with progress', async () => {
-    rescanInfo = { updatedAt: 0, rescanning: true, progress: 42 }
+    rescanInfo = { updatedAt: 0, rescanning: true, progress: 0.4221, progressInPercentage: '42.2' }
     await renderPage()
     expect(screen.getByText(/app.alert_rescan_in_progress_with_progress/)).toBeInTheDocument()
   })
@@ -113,15 +113,15 @@ describe('RescanChainPage', () => {
   it('submits a valid block height through the mutation', async () => {
     await renderPage()
     const input = screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')
-    fireEvent.change(input, { target: { value: '700000' } })
+    fireEvent.change(input, { target: { value: String(700_000) } })
     fireEvent.submit(input.closest('form')!)
 
-    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(700000))
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(700_000))
   })
 
   it('mutationFn calls the rescan API and returns data', async () => {
     await renderPage()
-    await expect(mutationConfig.mutationFn(700000)).resolves.toBe('ok')
+    await expect(mutationConfig.mutationFn(700_000)).resolves.toBe('ok')
     expect(rescanblockchainMock).toHaveBeenCalled()
   })
 

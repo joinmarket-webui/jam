@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
-import type { Milliseconds, MnemonicPhrase } from '@/types/global'
+import type { Factor, Milliseconds, MnemonicPhrase } from '@/types/global'
 
 const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
 
@@ -145,14 +145,6 @@ export const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
 export const DUMMY_SEED_PHRASE: MnemonicPhrase =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
 
-export const percentageToFactorString = (val: number, precision = 6) => {
-  return (val / 100).toFixed(precision)
-}
-
-export const percentageToFactor = (val: number, precision = 6) => {
-  return Number(percentageToFactorString(val, precision))
-}
-
 export const isValidNumber = (val: unknown): val is number => {
   return Number.isFinite(val)
 }
@@ -215,11 +207,19 @@ export const formatSats = (value: number) => {
   })
 }
 
-export const factorToPercentage = (val: number, precision = 6) => {
+export const factorToPercentage = (val: Factor, precision = 6) => {
   // Value cannot just be multiplied
   // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
+}
+
+export const percentageToFactorString = (val: number, precision = 6) => {
+  return (val / 100).toFixed(precision)
+}
+
+export const percentageToFactor = (val: number, precision = 6): Factor => {
+  return Number(percentageToFactorString(val, precision))
 }
 
 export type SemanticVersion = { major: number; minor: number; patch: number; raw?: string }

@@ -1,11 +1,13 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
 import type { SendFormValues } from '@/components/send/types'
 import type { WalletFileName } from '@/lib/utils'
+import type { Factor } from '@/types/global'
 
 export interface RescanInfo {
   updatedAt: number
   rescanning: boolean
-  progress?: number
+  progress?: Factor
+  progressInPercentage?: string
 }
 
 export interface PaymentAttempt {
