@@ -23,6 +23,7 @@ import { buttonVariants } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
 import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
 import { CopyButton } from '../ui/jam/CopyButton'
+import { MaskedText } from '../ui/jam/MaskedText'
 import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320
@@ -117,7 +118,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
 
       <Card>
-        <CardContent className="space-y-6 sm:space-y-2">
+        <CardContent className="space-y-6 sm:space-y-4">
           <div className="flex flex-col flex-wrap items-center justify-center gap-2">
             {getAddressMutation.isPending ? (
               <Skeleton className="aspect-square w-full max-w-80" />
@@ -157,16 +158,20 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
           <div className="flex flex-wrap items-center justify-center gap-2">
             {getAddressMutation.isPending ? (
-              <div className="flex w-full flex-col items-center space-y-2">
-                <Skeleton className="mt-0.5 h-5 w-full max-w-96" />
+              <div className="flex flex-col items-center space-y-2 text-center">
+                <MaskedText
+                  className="flex min-h-[64px] items-center text-xl"
+                  masked
+                  maskedText={<Address value={`=${'loading'.repeat(6)}=`} copyable={false} />}
+                />
                 <Skeleton className="h-6 w-[84px]" />
               </div>
             ) : (
               <div className="animate-in fade-in space-y-2 text-center duration-1000">
                 {!getAddressMutation.data?.address ? (
-                  <div className="min-h-5" />
+                  <div className="min-h-[64px]" />
                 ) : (
-                  <Address value={getAddressMutation.data.address} className="min-h-5 text-sm" copyable={true} />
+                  <Address value={getAddressMutation.data.address} className="min-h-[64px] text-xl" copyable={true} />
                 )}
                 <Badge
                   className="min-h-6 text-sm"
@@ -187,12 +192,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
           </div>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void fetchNewAddress()}
-              disabled={getAddressMutation.isPending}
-            >
+            <Button variant="outline" onClick={() => void fetchNewAddress()} disabled={getAddressMutation.isPending}>
               {getAddressMutation.isPending ? (
                 <>
                   <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
@@ -208,7 +208,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
             <CopyButton
               className={buttonVariants({
-                size: 'sm',
                 variant: 'outline',
               })}
               disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
@@ -232,7 +231,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             {'share' in navigator && (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => void shareAddress(getAddressMutation.data!.address)}
                 disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
               >
