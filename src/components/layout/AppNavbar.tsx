@@ -259,12 +259,13 @@ export function AppNavbar({
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void logoutMutation.mutateAsync({ navigate })}
-                aria-label={/* TODO: i18n */ 'Logout'}
+                aria-label={t('navbar.button_logout')}
+                disabled={logoutMutation.isPending}
               >
-                <LogOutIcon />
+                {logoutMutation.isPending ? <Spinner /> : <LogOutIcon />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{/* TODO: i18n */ 'Logout'}</TooltipContent>
+            <TooltipContent>{t('navbar.button_logout')}</TooltipContent>
           </Tooltip>
         )}
         {sidebarTrigger}

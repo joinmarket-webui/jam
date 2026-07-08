@@ -29,7 +29,7 @@ vi.mock('@/components/ui/jam/Balance', () => ({
 }))
 
 const LOCK_WALLET_LABEL = 'settings.button_lock_wallet'
-const LOGOUT_LABEL = 'Logout'
+const LOGOUT_LABEL = 'navbar.button_logout'
 
 const defaults: ComponentProps<typeof AppNavbar> = {
   theme: 'dark',
