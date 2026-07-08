@@ -3,7 +3,6 @@
     "loading": "正在加載",
     "button_copy_text": "複製",
     "button_copy_text_confirmed": "已複製",
-    "next": "繼續",
     "back": "返回",
     "close": "關閉",
     "abort": "終止",
@@ -15,7 +14,6 @@
           "text_option_show_all": "所有"
         },
         "page_selector": {
-          "label_current": "頁面",
           "label_first": "首",
           "label_previous": "前",
           "label_next": "後",
@@ -30,19 +28,16 @@
     }
   },
   "app": {
-    "alert_no_connection": "與後端無連結：{{ connectionError }}",
     "alert_rescan_in_progress": "正在進行重新掃描..."
   },
   "navbar": {
     "title": "Jam",
     "text_rescan_in_progress": "正在重新掃描...",
-    "button_create_wallet": "創建錢包",
     "tab_send": "發送",
     "tab_receive": "接收",
     "tab_earn": "收益",
     "tab_sweep": "掃空",
     "joining_in_progress": "Jamming",
-    "menu_mobile": "菜單",
     "menu_mobile_settings": "設置",
     "button_logout": "登出"
   },
@@ -91,27 +86,19 @@
     "report_bug": "請在 <2>GitHub 上打開一個問題</2>，以便在即將發佈的版本中審查和解決此錯誤。"
   },
   "wallets": {
-    "title": "你的錢包",
     "subtitle_no_wallets": "看起來你目前還沒有任何錢包。",
-    "text_loading": "正在加載錢包",
     "button_new_wallet": "創建新錢包",
     "button_import_wallet": "導入現有的錢包",
     "alert_wallet_open": "只允許一個活躍錢包。如果你想打開另一個錢包，請先鎖上 '{{ currentWalletName }}'。",
     "error_loading_failed": "加載錢包失敗。",
     "wallet_preview": {
-      "alert_wallet_already_unlocked": "{{ walletName }} 已經解鎖了。",
-      "alert_other_wallet_unlocked": "{{ walletName }} 正在被使用，請先把它鎖上。",
       "alert_wallet_locked_successfully": "{{ walletName }} 已成功鎖上。",
-      "alert_wallet_already_locked": "{{ walletName }} 已經被鎖上了。",
       "wallet_active": "活躍",
-      "wallet_inactive": "不活躍",
       "placeholder_password": "密碼",
-      "button_open": "打開",
       "button_lock": "鎖上",
       "button_unlock": "解鎖",
       "button_locking": "正在上鎖",
       "button_unlocking": "正在解鎖",
-      "feedback_missing_password": "請設置錢包密碼。",
       "modal_lock_wallet_title": "鎖上錢包",
       "modal_lock_wallet_maker_running_text": "收益處於活躍狀態。錢包上鎖將停止服務。",
       "modal_lock_wallet_coinjoin_in_progress_text": "協作式交易正在進行中。錢包上鎖將停止服務。",
@@ -123,7 +110,6 @@
     "title_wallet_created": "錢包已成功創建！",
     "subtitle_wallet_created": "請寫下你的種子詞和密碼！沒有這些信息，你將無法訪問和恢復你的錢包！",
     "alert_other_wallet_unlocked": "目前 <1>{{ walletName }}</1> 正處於活躍狀態。你必須先把它鎖上。<3>返回</3>。",
-    "feedback_valid": "看起來不錯！",
     "label_wallet_name": "錢包名稱",
     "placeholder_wallet_name": "你的錢包...",
     "feedback_invalid_wallet_name": "請給錢包取個名稱。",
@@ -135,24 +121,17 @@
     "feedback_invalid_password_confirm": "輸入的密碼不匹配。",
     "button_create": "創建",
     "button_creating": "正在創建...",
-    "error_creating_failed": "創建錢包時出錯了。原因：{{ reason }}",
-    "alert_confirmation_failed": "錢包確認失敗。",
     "confirmation_label_wallet_name": "錢包名稱",
     "confirmation_label_password": "密碼",
     "confirmation_toggle_reveal_info": "顯示敏感信息",
     "confirmation_toggle_info_written_down": "我已經寫下了以上的信息。",
     "confirmation_button_fund_wallet": "充值錢包",
-    "confirm_backup_title": "確認種子詞備份",
-    "confirm_backup_subtitle": "按順序輸入每個單詞。",
     "feedback_seed_confirmed": "種子詞已確認。",
     "back_button": "返回",
-    "skip_button": "跳過",
     "next_button": "繼續",
-    "placeholder_seed_word_input": "單詞",
     "hint_duration_text": "請耐心等待，這可能需要幾分鐘。"
   },
   "import_wallet": {
-    "alert_other_wallet_unlocked": "目前 <1>{{ walletName }}</1> 正處於活躍狀態。你必須先把它鎖上。<3>返回</3>。",
     "alert_rescan_in_progress": "目前正在重新掃描時間鏈。請等過程完成，然後重新嘗試。<1>返回</1>。",
     "wallet_details": {
       "title": "導入錢包",
@@ -182,13 +161,9 @@
     "error_importing_failed": "導入錢包時出錯了。原因：{{ reason }}"
   },
   "current_wallet": {
-    "text_loading": "正在加載",
-    "text_rescan_in_progress": "正在進行重新掃描...",
     "button_deposit": "接收",
     "button_withdraw": "發送",
-    "error_loading_failed": "加載錢包失敗。",
     "jar_tooltip": "進去看看",
-    "jar_tooltip_empty_jar_0": "接收",
     "jars_title": "錢包分佈",
     "jars_title_popover": "罐子用於將你的聰分配至多個互相隔絕的部份中。這樣有助於隱私。",
     "account_heading_external_addresses": "用於存款的外部地址",
@@ -206,25 +181,18 @@
     "use_btc": "以比特幣為單位",
     "use_dark_theme": "切換深色主題",
     "use_light_theme": "切換淺色主題",
-    "text_help_translate": "找不到你的語言？幫我們做翻譯！",
     "show_seed": "顯示種子詞",
-    "hide_seed": "隱藏種子詞",
     "reveal_seed": "顯示種子詞",
     "show_logs": "顯示日誌",
     "show_fee_config": "調整費用限制",
     "button_lock_wallet": "鎖上錢包",
-    "button_locking_wallet": "正在上鎖...",
     "button_switch_wallet": "切換錢包",
     "button_create_wallet": "創建錢包",
-    "error_loading_seed_failed": "無法檢索種子詞",
     "seed_modal_info_text": "請寫下你的種子詞和密碼！沒有這些信息，你將無法訪問和恢復你的錢包！",
     "documentation": "文檔",
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "confirm_locking_modal_title": "鎖上錢包",
-    "confirm_locking_modal_body_earn": "收益處於活躍狀態。錢包上鎖將停止服務。你可以關閉瀏覽器窗口並讓它在背景中運行。",
-    "confirm_locking_modal_body_jam": "協作式交易正在進行中。錢包上鎖將停止服務。你可以關閉瀏覽器窗口並讓它在背景中運行。",
     "fees": {
       "title": "費用限制",
       "description": "根據你的需求調整挖礦費和協作方費用。這些設置將在 JoinMarket 重啟時重置，例如系統重啟時。有關更多信息，<1>請查看關於費用的文檔</1>。",
@@ -232,7 +200,6 @@
       "description_general_fee_settings": "挖礦費關聯交易優先級並取決於內存池狀況。",
       "radio_tx_fees_blocks": "區塊目標",
       "radio_tx_fees_satspervbyte": "聰/字節",
-      "label_tx_fees": "交易基本費用",
       "description_tx_fees_blocks": "使用區塊目標時，Jam 將使用 Bitcoin Core 的費用估計機制來根據內存池狀況動態設置基本費用。默認：3。",
       "description_tx_fees_satspervbyte": "設置聰/字節的基本費用將覆蓋區塊目標設置。檢查你的內存池來相應地設置此費用。",
       "feedback_invalid_tx_fees_blocks": "請提供一個有效的區塊目標，從{{ min }}到{{ max }}。",
@@ -252,7 +219,6 @@
       "text_button_cancel": "取消",
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
-      "error_loading_fee_config_failed": "加載費用設置時出錯了。",
       "error_saving_fee_config_failed": "保存費用配置值時出錯了。原因：{{ reason }}"
     }
   },
@@ -261,7 +227,6 @@
     "error_loading_logs_failed": "無法檢索日誌文件。"
   },
   "send": {
-    "loading": "正在加載",
     "title": "發送",
     "subtitle": "使用協作式交易來提高安全性和隱秘性。",
     "label_num_collaborators": "協作方數量：{{ numCollaborators }}",
@@ -269,7 +234,6 @@
     "description_num_collaborators": "更高的數量會提高隱秘性，但同時也會增加交易費用。",
     "error_invalid_num_collaborators": "請使用{{ minNumCollaborators }}到{{ maxNumCollaborators }}個協作方。",
     "taker_error_message_max_fees_config_missing": "必須在你的 joinmarket.cfg 中先設置配置變量 'max_cj_fee_rel' 和 'max_cj_fee_abs' 才能發送協作式交易。請考慮手動將它們添加到你的配置中。",
-    "direct_payment_error_message_bad_request": "請仔細檢查你的輸入。",
     "error_loading_min_makers_failed": "加載配置值 'minimum_makers' 失敗了。",
     "alert_payment_successful": "付款成功：在交易 {{ txid }} 中發送了 {{ amount }} 聰到 {{ address }}。",
     "text_maker_running": "收益處於活躍狀態。停止服務以發送協作式交易。",
@@ -291,20 +255,8 @@
     "text_sending": "正在發送",
     "button_sweep": "掃空",
     "button_clear_sweep": "清除",
-    "button_sweep_amount_breakdown": "這是如何計算的？",
-    "sweep_amount_breakdown_total_balance": "總餘額",
-    "sweep_amount_breakdown_frozen_balance": "已凍結或已鎖定的餘額",
-    "sweep_amount_breakdown_estimated_amount": "預計要發送的金額",
-    "sweep_amount_breakdown_explanation": "掃空交易將消耗一個混合深度的所有 UTXO，除了<1>已凍結</1>或<3>時間鎖定</3>的比特幣之外，不會留下任何比特幣。挖礦費和協作方費用將從金額中扣除，以保持零找零。確切的交易金額可能與實際發送的金額有所偏差。有關更多詳細信息，請參閱 <5>JoinMarket 文檔</5>。",
     "fee_breakdown": {
-      "title": "協作方費用：{{ maxCollaboratorFee }}",
-      "subtitle": "根據金額、協作方數量和<1>預計限制</1>，你可以查看即將進行的協作交易的最高協作方費用。",
-      "alert_collaborator_fee_note": "該值<strong>不包括常規<1>挖礦費用</1><strong>。",
-      "absolute_limit": "絕對費用限制",
-      "relative_limit": "相對費用限制",
-      "fee_card_subtitle": "<1>{{ maxFee }}</1> * {{ numCollaborators }}",
-      "placeholder_config_value_not_present": "未定義",
-      "placeholder_amount_missing_amount": "輸入金額..."
+      "title": "協作方費用：{{ maxCollaboratorFee }}"
     },
     "confirm_send_modal": {
       "title": "確認付款",
@@ -313,7 +265,6 @@
       "text_sweep_info_popover": "確切的交易金額只能在執行交易時通過 JoinMarket 計算。",
       "label_recipient": "收款方",
       "label_source_jar": "來源",
-      "text_source_jar": "罐子 {{ jarId }}",
       "label_num_collaborators": "協作方",
       "text_collaborative_tx_enabled": "改善隱私的付款",
       "text_collaborative_tx_disabled": "無隱私改善的付款",
@@ -333,8 +284,6 @@
       "hint_missing_utxos": "要執行協作式交易你的來源罐子裡必須具有至少{{ minConfirmations }}次確認的 UTXO。$t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "協作式交易要求你的 UTXO 具有至少{{ minConfirmations }}次確認。$t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "連續過多次未能為該罐子獲得承諾。出於安全原因，罐子裡需要有新的 UTXO 才能重試。請參閱<1>文檔</1>了解更多。",
-      "hint_missing_retries_detail_one": "以下的 UTXO 因已被過多次使用不成功而無法重新使用：<1></1>",
-      "hint_missing_retries_detail_other": "以下的{{ count }}個 UTXOs 因已被過多次使用不成功而無法重新使用：<1></1>",
       "nested_hint_wait_for_block": "選擇另一個罐子作為來源或者再等一個區塊。",
       "nested_hint_wait_for_block_other": "選擇另一個罐子作為來源或者再等{{ count }}個區塊。",
       "nested_hint_fund_jar": "選擇另一個罐子作為來源或者充值這個罐子並再等一個區塊。",
@@ -360,14 +309,10 @@
     "subtitle": "通過向市場提供流動性，你幫助自己和他人改善隱私。你始終保持對你的資金的掌控，資金永遠不會離開你的錢包。",
     "market_explainer": "你可以選擇要為你的報價收取多少費用。請注意你將在開發市場上參與和競爭 — 無法保證其他市場參與者會接受你的報價。被選中進行協作式交易可能需要一些時間。低費用會增加你的機會。",
     "alert_empty_report": "報告是空的。",
-    "text_report_length": "正在顯示{{ linesWithoutHeader }}個條目中的{{ visibleLines }}",
-    "error_loading_report_failed": "加載收入報告失敗。",
     "alert_starting": "服務正在開始。",
     "alert_stopping": "服務正在停止。",
     "alert_running": "正在提供流動性並以此賺取收益...",
-    "alert_coinjoin_in_progress": "協作式交易正在進行中。",
     "alert_no_spendable_balance_description": "<0>充值你的錢包</0>以開始收益。",
-    "button_settings": "報價選項",
     "radio_abs_offer_label": "絕對報價",
     "radio_rel_offer_label": "相對報價",
     "label_rel_fee": "相對費用{{ fee }}",
@@ -383,7 +328,6 @@
     "text_starting": "正在開始",
     "text_stopping": "正在停止",
     "button_show_report": "顯示收入報告",
-    "button_show_orderbook": "顯示訂單簿",
     "current": {
       "text_offer": "報價",
       "text_cjfee": "費用",
@@ -399,7 +343,6 @@
       "text_report_summary_other": "{{ count }}個條目",
       "text_report_summary_filtered_one": "找到了{{ count }}個條目",
       "text_report_summary_filtered_other": "找到了{{ count }}個條目",
-      "label_search": "搜索",
       "placeholder_search": "搜索",
       "heading_timestamp": "時間戳",
       "heading_cj_amount": "交易金額",
@@ -429,57 +372,37 @@
         "description": "保證金到期日期："
       },
       "select_jar": {
-        "text_primary_button": "繼續",
-        "text_secondary_button": "取消",
         "description": "選擇保證金資金來源的罐子。"
       },
       "select_utxos": {
-        "text_primary_button": "繼續",
-        "text_primary_button_unsafe": "選擇可能隱私性較弱的 UTXOs",
-        "text_secondary_button": "取消",
         "description": "從罐子 {{ jar }} 選擇單一或多個 UTXOs 以用於保證金。",
         "utxo_card": {
-          "confirmations": "{{ confs }}次確認",
-          "label_frozen": "已凍結",
-          "label_locked": "已鎖定",
-          "label_cj_out": "混幣輸出"
+          "confirmations": "{{ confs }}次確認"
         }
       },
       "freeze_utxos": {
         "text_primary_button": "凍結 UTXOs",
         "text_primary_button_all_frozen": "回顧保證金配置",
-        "text_primary_button_error": "重新嘗試",
-        "text_secondary_button": "取消",
-        "description_selected_utxos": "已選定的 UTXOs：",
-        "description_unselected_utxos": "以下的 UTXOs 不會用於保證金：",
         "description_selected_utxos_to_freeze": "它們將會被凍結於罐子 {{ jar }}。你可以在創建保證金之後隨時將它們解凍。"
       },
       "review_inputs": {
         "text_primary_button": "創建保證金",
-        "text_primary_button_unsafe": "用可能隱私性較弱的 UTXOs 創建保證金",
-        "text_primary_button_error": "重新嘗試",
-        "text_secondary_button": "取消",
-        "description": "你如下配置了保證金：",
         "label_lock_date": "鎖定至",
         "label_jar": "來源",
         "label_jar_n": "罐子 {{ jar }}",
         "label_amount": "將鎖定的金額",
-        "label_address": "資金將被時間鎖定並發送至",
-        "label_selected_utxos": "將被時間鎖定的 UTXOs："
+        "label_address": "資金將被時間鎖定並發送至"
       },
       "create_fidelity_bond": {
         "success_text": "保證金已創建！",
         "text_primary_button": "完成",
         "text_primary_button_unfreeze": "解凍 UTXOs",
-        "text_primary_button_error": "重新開始",
-        "text_secondary_button": "完成",
         "label_lock_date": "鎖定至",
         "label_address": "時間鎖地址",
         "text_copy_transaction_id": "交易 ID 已複製",
         "label_utxos_to_unfreeze": "你是否想要解凍之前凍結的 UTXOs？"
       },
       "unfreeze_utxos": {
-        "text_primary_button": "完成",
         "done": "UTXOs 已解凍"
       },
       "confirm_modal": {
@@ -487,11 +410,7 @@
         "body": "在保證金到期之前將無法移動時間鎖定的資金。到期日期是於 {{date}} 的 {{ humanReadableDuration }}。"
       },
       "title": "配置保證金",
-      "title_fidelity_bond_exists": "配置額外的保證金",
       "subtitle": "你的聰將被比特幣協議所時間鎖定。在保證金到期之前將無法移動資金。",
-      "subtitle_fidelity_bond_exists": "如果存在多個保證金，只有<0>價值最高</0>的會被使用。",
-      "text_maker_running": "收益處於活躍狀態。停止服務以創建保證金。",
-      "text_coinjoin_already_running": "協作式交易正在進行中。",
       "create_form": {
         "confirmation_toggle_title": "我已經仔細檢查了我的輸入",
         "confirmation_toggle_subtitle": "我了解鎖定的資金在給定的期限內將無法使用",
@@ -513,7 +432,6 @@
         "text_button_cancel": "取消",
         "text_button_submit": "解鎖資金",
         "text_button_done": "完成",
-        "error_fidelity_bond_still_locked": "該保證金仍然處於鎖定狀態。",
         "error_loading_address": "無法獲取新地址。",
         "error_freezing_utxos": "無法凍結 UTXOs。",
         "error_unfreezing_fidelity_bond": "解凍到期的保證金時出錯了。",
@@ -565,9 +483,7 @@
     "error_loading_orderbook_failed": "加載訂單簿時出錯了。有可能你的本地設置不支持獲取訂單簿。原因：{{ reason }}",
     "text_offer_type_absolute": "絕對",
     "text_offer_type_relative": "相對",
-    "label_search": "搜索",
     "placeholder_search": "搜索",
-    "text_orderbook_filter_count": "{{ filterCount }}個條目符合給定的搜索條件",
     "label_highlight_own_orders": "強調我的報價",
     "table": {
       "heading_type": "種類",
@@ -598,24 +514,15 @@
     "progress_tldr_seconds": "在<3>{{ seconds }}</3>的範圍內預定了<1>{{ length }}</1>個交易。",
     "progress_tldr_hours": "在<3>{{ hours }}</3>小時的範圍內預定了<1>{{ length }}</1>個交易。",
     "progress_description": "此估計是最低等待時間。不計因網路通信或交易確認而造成的其他耽延。",
-    "progress_current_state": "正在等待處理<3>{{ total }}</3>個交易中的第<1>{{ current }}</1>個交易...",
     "progress_done": "所有交易都已成功完成。調度程序即將停止。",
     "precondition": {
       "hint_missing_utxos": "要運行調度程序你需要具有至少{{ minConfirmations }}次確認的 UTXOs。$t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "調度程序要求你的 UTXOs 具有至少{{ minConfirmations }}次確認。$t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "連續過多次未能為該罐子獲得承諾。出於安全原因，罐子裡需要有新的 UTXO 才能重試。請參閱<1>文檔</1>瞭解更多。",
-      "hint_missing_retries_detail_one": "以下的 UTXO 因已過多次使用不成功而無法重新使用：<1></1>",
-      "hint_missing_retries_detail_other": "以下的{{ count }}個 UTXOs 因已被過多次使用不成功而無法重新使用：<1></1>",
       "nested_hint_wait_for_block": "等待一個區塊。",
       "nested_hint_wait_for_block_other": "等待{{ count }}個區塊。",
       "nested_hint_fund_wallet": "充值你的錢包並等待一個區塊。",
       "nested_hint_fund_wallet_other": "充值你的錢包並等待{{ count }}個區塊。"
-    },
-    "success": {
-      "title": "成功！",
-      "subtitle": "成功完成了一個預定的交易。",
-      "subtitle_other": "成功完成了{{ count }}個預定的交易。",
-      "text_button_submit": "繼續"
     }
   },
   "modal": {
@@ -630,32 +537,14 @@
       "title_one": "罐子 {{ jar }} 內的{{ count }}個 UTXO",
       "title_other": "罐子 {{ jar }} 內的{{ count }}個 UTXOs",
       "text_balance_sum_total": "<0></0> 總額",
-      "text_balance_sum_selected": "<0></0> 所選",
       "button_freeze": "凍結",
       "button_unfreeze": "解凍",
-      "button_freeze_loading": "正在凍結...",
-      "button_unfreeze_loading": "正在解凍...",
-      "utxo_tooltip_locktime": "鎖定至 {{ locktime }}",
-      "utxo_tag_frozen": "已凍結",
       "utxo_tag_fb": "保證金",
       "column_title_balance": "價值",
       "column_title_address": "地址",
       "column_title_confirmations": "確認",
       "column_title_label_and_status": "標籤",
-      "row_button_details": "詳情",
-      "utxo_detail_label_id": "UTXO Id",
-      "utxo_detail_label_address": "地址",
-      "utxo_detail_label_path": "路徑",
-      "utxo_detail_label_label": "地址標籤",
-      "utxo_detail_label_value": "價值",
-      "utxo_detail_label_tries": "嘗試",
-      "utxo_detail_label_tries_remaining": "剩餘嘗試",
-      "utxo_detail_label_jar": "罐子",
-      "utxo_detail_label_is_external": "是外部",
-      "utxo_detail_label_confirmations": "確認",
-      "utxo_detail_label_is_frozen": "已凍結",
-      "utxo_detail_label_locktime": "鎖定時間",
-      "utxo_detail_label_status": "地址狀態"
+      "row_button_details": "詳情"
     }
   }
 }

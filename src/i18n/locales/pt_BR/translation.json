@@ -3,7 +3,6 @@
     "loading": "Carregando",
     "button_copy_text": "Copiar",
     "button_copy_text_confirmed": "Copiado",
-    "next": "Próximo",
     "back": "Voltar",
     "close": "Fechado",
     "abort": "Abortar",
@@ -14,7 +13,6 @@
           "text_option_show_all": "Mostrar Todos"
         },
         "page_selector": {
-          "label_current": "Página",
           "label_first": "Primeiro",
           "label_previous": "Anterior",
           "label_next": "Próximo",
@@ -28,18 +26,13 @@
       "reason_unknown": "Razão desconhecida."
     }
   },
-  "app": {
-    "alert_no_connection": "Sem conexão com o backend: {{ connectionError }}"
-  },
   "navbar": {
     "title": "Jam",
-    "button_create_wallet": "Criar Carteira",
     "tab_send": "Enviar",
     "tab_receive": "Receber",
     "tab_earn": "Lucrar",
     "tab_sweep": "Limpar",
     "joining_in_progress": "Misturando",
-    "menu_mobile": "Menu",
     "menu_mobile_settings": "Configurações",
     "button_logout": "Sair"
   },
@@ -88,26 +81,18 @@
     "report_bug": "Por favor <2>abra uma issue no GitHub</2> para este erro ser avaliado e resolvido na próxima versão."
   },
   "wallets": {
-    "title": "Suas Carteiras",
     "subtitle_no_wallets": "Parece que você ainda não tem uma carteira.",
-    "text_loading": "Carregando carteiras",
     "button_new_wallet": "Crie uma carteira nova",
     "alert_wallet_open": "Só pode haver uma carteira ativa. Se você deseja abrir outra carteira, tranque '{{ currentWalletName }}' primeiro.",
     "error_loading_failed": "Falha no carregamento das carteiras.",
     "wallet_preview": {
-      "alert_wallet_already_unlocked": "{{ walletName }} já está trancada.",
-      "alert_other_wallet_unlocked": "{{ walletName }} está em uso, por favor, tranque-a primeiro.",
       "alert_wallet_locked_successfully": "{{ walletName }} trancada com sucesso.",
-      "alert_wallet_already_locked": "{{ walletName }} já está trancada.",
       "wallet_active": "Ativa",
-      "wallet_inactive": "Inativa",
       "placeholder_password": "Senha",
-      "button_open": "Abrir",
       "button_lock": "Trancar",
       "button_unlock": "Destrancar",
       "button_locking": "Trancando",
       "button_unlocking": "Destrancando",
-      "feedback_missing_password": "Por favor defina uma senha para a carteira.",
       "modal_lock_wallet_title": "Trancar Carteira",
       "modal_lock_wallet_maker_running_text": "'Lucrar' está ativo. Tranque a carteira para parar o serviço.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Uma transação colaborativa está em andamento. Bloquear a carteira interromperá o serviço.",
@@ -119,7 +104,6 @@
     "title_wallet_created": "Carteira criada com sucesso!",
     "subtitle_wallet_created": "Por favor, anote sua seed e senha! Sem esta informação não conseguirá acessar e recuperar a sua carteira!",
     "alert_other_wallet_unlocked": "Atualmente <1>{{ walletName }}</1> está ativa. Você precisa trancá-la primeiro. <3>Voltar</3>.",
-    "feedback_valid": "Tudo certo!",
     "label_wallet_name": "Nome da carteira",
     "placeholder_wallet_name": "Sua Carteira...",
     "feedback_invalid_wallet_name": "Por favor, defina o nome da carteira.",
@@ -131,28 +115,20 @@
     "feedback_invalid_password_confirm": "As senhas não são iguais.",
     "button_create": "Criar",
     "button_creating": "Criando",
-    "alert_confirmation_failed": "Erro na confirmação da carteira.",
     "confirmation_label_wallet_name": "Nome da Carteira",
     "confirmation_label_password": "Senha",
     "confirmation_toggle_reveal_info": "Revelar informações confidenciais",
     "confirmation_toggle_info_written_down": "Eu anotei as informações acima.",
     "confirmation_button_fund_wallet": "Adicionar Fundos a Carteira",
-    "confirm_backup_title": "Confirme o backup das seeds",
-    "confirm_backup_subtitle": "Digite cada palavra em ordem sequencial.",
     "feedback_seed_confirmed": "Seeds confirmadas.",
     "back_button": "Voltar",
-    "skip_button": "Pular",
     "next_button": "Próximo",
-    "placeholder_seed_word_input": "Palavra",
     "hint_duration_text": "Por favor, aguarde, isso pode levar alguns minutos."
   },
   "current_wallet": {
-    "text_loading": "Carregando",
     "button_deposit": "Recebido",
     "button_withdraw": "Enviar",
-    "error_loading_failed": "Falha ao carregar carteira.",
     "jar_tooltip": "Olhar dentro",
-    "jar_tooltip_empty_jar_0": "Receber",
     "jars_title": "Distribuição das carteiras",
     "jars_title_popover": "Os frascos são usados para separar seus sats em vários baldes desconectados uns dos outros, o que ajuda na privacidade.",
     "account_heading_external_addresses": "Endereços externos para depósitos",
@@ -170,32 +146,24 @@
     "use_btc": "Exibir quantidade em bitcoin",
     "use_dark_theme": "Mudar para modo escudo",
     "use_light_theme": "Mudar para modo claro",
-    "text_help_translate": "Sentindo falta do seu idioma? Ajude-nos!",
     "show_seed": "Mostrar seed",
-    "hide_seed": "Esconder seed",
     "reveal_seed": "Revelar seed",
     "show_logs": "Mostrar logs",
     "show_fee_config": "Ajustar os limites de taxas",
     "button_lock_wallet": "Trancar carteira",
-    "button_locking_wallet": "Trancando...",
     "button_switch_wallet": "Trocar carteira",
     "button_create_wallet": "Criar nova carteira",
-    "error_loading_seed_failed": "Não foi possível recuperar a seed.",
     "seed_modal_info_text": "Por favor, anote sua seed e senha! Sem esta informação não conseguirá acessar e recuperar a sua carteira!",
     "documentation": "Documentação",
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "confirm_locking_modal_title": "Trancar Carteira",
-    "confirm_locking_modal_body_earn": "'Lucrar' está ativo. Bloquear a carteira interromperá o serviço. Você pode fechar a janela do navegador para deixá-lo rodar em segundo plano.",
-    "confirm_locking_modal_body_jam": "Uma transação colaborativa está sendo executada. Bloquear a carteira interromperá o serviço. Você pode fechar a janela do navegador para deixá-lo rodar em segundo plano.",
     "fees": {
       "title": "Limites de taxas",
       "description": "Ajuste as taxas de mineração e de colaboração de acordo com suas necessidades. As taxas de mineração estão relacionadas à prioridade da transação e dependem das condições do mempool. As taxas do colaboração estão relacionadas ao preço da liquidez e dependem das condições do mercado. As taxas totais pagas por cada transação dependem da quantidade de colaboradores. Mais colaboradores aumentam a privacidade, mas também as taxas. Essas configurações serão redefinidas para os valores padrão quando o serviço do JoinMarket for reiniciado, por exemplo, em uma reinicialização do sistema. Para mais informações, <1>consulte a documentação sobre taxas</1>.",
       "title_general_fee_settings": "Taxas de mineração",
       "radio_tx_fees_blocks": "Bloco alvo",
       "radio_tx_fees_satspervbyte": "sats/vByte",
-      "label_tx_fees": "Taxa básica de transação",
       "description_tx_fees_blocks": "Ao usar a configuração de bloco alvo, o Jam usará o mecanismo de estimativa de taxa do Bitcoin Core para definir a taxa básica dinamicamente, dependendo da atividade da mempool. Padrão: 3.",
       "description_tx_fees_satspervbyte": "Definir a taxa básica em sats/vByte substituirá a configuração de bloco alvo. Verifique sua mempool para definir essa taxa de acordo.",
       "feedback_invalid_tx_fees_blocks": "Forneça um bloco alvo válido entre {{ min }} e {{ max }}.",
@@ -214,7 +182,6 @@
       "text_button_cancel": "Cancelar",
       "text_button_submit": "Salvar",
       "text_button_submitting": "Salvando...",
-      "error_loading_fee_config_failed": "Erro ao carregar valores de configuração de taxa. ",
       "error_saving_fee_config_failed": "Erro ao salvar valores de configuração de taxa. Motivo: {{ reason }}"
     }
   },
@@ -223,7 +190,6 @@
     "error_loading_logs_failed": "Não foi possível recuperar o arquivo de log."
   },
   "send": {
-    "loading": "Carregando",
     "title": "Enviar",
     "subtitle": "Use uma transação colaborativa para maior segurança e privacidade.",
     "label_num_collaborators": "Número de colaboradores: {{ numCollaborators }}",
@@ -231,7 +197,6 @@
     "description_num_collaborators": "Um número maior é melhor para privacidade, mas também aumenta a taxa de transação.",
     "error_invalid_num_collaborators": "Por favor, use entre {{ minNumCollaborators }} e {{ maxNumCollaborators }} colaboradores.",
     "taker_error_message_max_fees_config_missing": "Variáveis de configuração 'max_cj_fee_rel' e 'max_cj_fee_abs' devem ser definidas em seu joinmarket.cfg para enviar transações colaborativas. Considere adicioná-las à sua configuração manualmente.",
-    "direct_payment_error_message_bad_request": "Por favor, verifique seus dados com cuidado.",
     "error_loading_min_makers_failed": "Falha ao carregar valor de configuração 'minimum_makers'.",
     "alert_payment_successful": "Pagamento bem-sucedido: {{ amount }} sats enviados para {{ address }} na transação {{ txid }}.",
     "text_maker_running": "'Lucrar' está ativo. Pare o serviço para enviar transações colaborativas.",
@@ -253,11 +218,6 @@
     "text_sending": "Enviando",
     "button_sweep": "Limpar",
     "button_clear_sweep": "Limpar",
-    "button_sweep_amount_breakdown": "Como isso é calculado?",
-    "sweep_amount_breakdown_total_balance": "Saldo total",
-    "sweep_amount_breakdown_frozen_balance": "Congelar ou trancar saldo",
-    "sweep_amount_breakdown_estimated_amount": "Valor estimado a ser enviado",
-    "sweep_amount_breakdown_explanation": "Uma transação de limpeza consumirá todos os UTXOs, não deixando moedas para trás, exceto aquelas que foram <1>congeladas</1> ou <3>bloqueadas por um tempo</3>. As taxas de transação onchain e as taxas do mercado serão deduzidas do valor para zerar o troco. O valor exato da transação só pode ser calculado pelo JoinMarket no momento em que a transação é feita. Portanto, o valor estimado mostrado pode divergir do valor realmente enviado. Consulte a <5>documentação do JoinMarket</5> para saber mais.",
     "confirm_send_modal": {
       "title": "Confirmar pagamento",
       "label_amount": "Quantidade",
@@ -265,7 +225,6 @@
       "text_sweep_info_popover": "O valor exato da transação só pode ser calculado pelo JoinMarket no momento em que a transação é feita.",
       "label_recipient": "Recebedor",
       "label_source_jar": "Enviar de",
-      "text_source_jar": "Frasco {{ jarId }}",
       "label_num_collaborators": "Colaboradores",
       "text_collaborative_tx_enabled": "Pagamento com melhoria de privacidade",
       "text_collaborative_tx_disabled": "Pagamento sem melhoria de privacidade",
@@ -285,8 +244,6 @@
       "hint_missing_utxos": "Para executar uma transação colaborativa, você precisa de UTXOs com {{ minConfirmations }} ou mais confirmações no frasco de origem. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Uma transação colaborativa requer que seus UTXOs tenham {{ minConfirmations }} ou mais confirmações. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Falha ao fornecer compromissos muitas vezes seguidas para este frasco. Por motivos de segurança, você precisa de um novo UTXO no frasco para tentar novamente. Consulte <1>a documentação</1> para obter mais informações.",
-      "hint_missing_retries_detail_one": "O seguinte UTXO foi usado sem sucesso muitas vezes e não pode ser reutilizado: <1></1>",
-      "hint_missing_retries_detail_other": "Os {{ count }} UTXOs foram usados sem sucesso muitas vezes e não podem ser reutilizados: <1></1>",
       "nested_hint_wait_for_block": "Selecione outro frasco para enviar ou aguarde mais um bloco.",
       "nested_hint_wait_for_block_other": "Selecione outro frasco para enviar ou aguarde mais {{ count }} blocos.",
       "nested_hint_fund_jar": "Selecione outro frasco para enviar ou financiar. Aguarde mais um bloco.",
@@ -312,14 +269,10 @@
     "subtitle": "Ao oferecer liquidez ao mercado, você melhora a sua privacidade e a dos outros. Seus sats sempre permanecem sob seu controle e nunca saem de sua carteira.",
     "market_explainer": "Você pode escolher quanto quer cobrar pela sua oferta. Lembre-se que você participa e compete em um mercado aberto - não há garantia de que outros participantes do mercado aceitarão sua oferta. Ser escolhido para uma transação colaborativa pode levar algum tempo. Taxas baixas aumentam suas chances.",
     "alert_empty_report": "O relatório está vazio.",
-    "text_report_length": "Mostrando {{ visibleLines }} de {{ linesWithoutHeader }} registros",
-    "error_loading_report_failed": "Falha ao carregar o relatório de ganhos.",
     "alert_starting": "O serviço está começando.",
     "alert_stopping": "O serviço está parando.",
     "alert_running": "Oferecendo sats para ganhar mais sats...",
-    "alert_coinjoin_in_progress": "Uma transação colaborativa está em andamento.",
     "alert_no_spendable_balance_description": "<0>Financie sua carteira</0> para começar a lucrar.",
-    "button_settings": "Opções de oferta",
     "radio_abs_offer_label": "Oferta absoluta",
     "radio_rel_offer_label": "Oferta relativa",
     "label_rel_fee": "Taxa relativa {{ fee }}",
@@ -335,7 +288,6 @@
     "text_starting": "Iniciando",
     "text_stopping": "Parando",
     "button_show_report": "Mostrar relatório de ganhos",
-    "button_show_orderbook": "Mostrar livro de ordens",
     "current": {
       "text_offer": "Oferta",
       "text_cjfee": "Taxa",
@@ -351,7 +303,6 @@
       "text_report_summary_other": "{{ count }} registros",
       "text_report_summary_filtered_one": "encontrado {{ count }} registro",
       "text_report_summary_filtered_other": "encontrado {{ count }} registros",
-      "label_search": "Pesquisar",
       "placeholder_search": "Pesquisa",
       "heading_timestamp": "Data/Hora",
       "heading_cj_amount": "Valor da transação",
@@ -380,57 +331,37 @@
         "description": "Data de vencimento do título de fidelidade:"
       },
       "select_jar": {
-        "text_primary_button": "Próximo",
-        "text_secondary_button": "Cancelar",
         "description": "Selecione um frasco para financiar o título de fidelidade."
       },
       "select_utxos": {
-        "text_primary_button": "Próximo",
-        "text_primary_button_unsafe": "Selecione potencialmente os UTXOs menos privados",
-        "text_secondary_button": "Cancelar",
         "description": "Selecione um ou mais UTXOs do frasco {{ jar }} para usar no título de fidelidade.",
         "utxo_card": {
-          "confirmations": "{{ confs }} Confirmações",
-          "label_frozen": "congelado",
-          "label_locked": "trancado",
-          "label_cj_out": "cj-out"
+          "confirmations": "{{ confs }} Confirmações"
         }
       },
       "freeze_utxos": {
         "text_primary_button": "UTXOs congelador",
         "text_primary_button_all_frozen": "Revise a configuração dos títulos",
-        "text_primary_button_error": "Tente novamente",
-        "text_secondary_button": "Cancelar",
-        "description_selected_utxos": "UTXOs selecionados:",
-        "description_unselected_utxos": "Os seguintes UTXOs não serão usados para o título de fidelidade:",
         "description_selected_utxos_to_freeze": "Eles serão congelados para permanecer no frasco {{ jar }}. Você pode descongelá-los a qualquer momento depois de criar o título."
       },
       "review_inputs": {
         "text_primary_button": "Criar título de fidelidade",
-        "text_primary_button_unsafe": "Crie um título de fidelidade com UTXOs potencialmente menos privados",
-        "text_primary_button_error": "Tente novamente",
-        "text_secondary_button": "Cancelar",
-        "description": "Você configurou o título de fidelidade da seguinte maneira:",
         "label_lock_date": "Trancado até",
         "label_jar": "Financiado por",
         "label_jar_n": "Frasco {{ jar }}",
         "label_amount": "Valor a ser bloqueado",
-        "label_address": "Os fundos serão bloqueados no tempo e enviados para",
-        "label_selected_utxos": "UTXOs que serão bloqueadas no tempo:"
+        "label_address": "Os fundos serão bloqueados no tempo e enviados para"
       },
       "create_fidelity_bond": {
         "success_text": "Título de fidelidade criado!",
         "text_primary_button": "Pronto",
         "text_primary_button_unfreeze": "Descongelar UTXOs",
-        "text_primary_button_error": "Começar novamente",
-        "text_secondary_button": "Pronto",
         "label_lock_date": "Trancado até",
         "label_address": "Endereços trancados no tempo",
         "text_copy_transaction_id": "ID da transação copiado",
         "label_utxos_to_unfreeze": "Deseja descongelar os UTXOs que foram congelados anteriormente?"
       },
       "unfreeze_utxos": {
-        "text_primary_button": "Pronto",
         "done": "UTXOs descongelados"
       },
       "confirm_modal": {
@@ -438,11 +369,7 @@
         "body": "Será impossível gastar os fundos bloqueados no tempo até que o título de fidelidade expire. A data de expiração é {{ humanReadableDuration }} em {{date}}."
       },
       "title": "Configurar título de fidelidade",
-      "title_fidelity_bond_exists": "Configurar título adicional",
       "subtitle": "Seus sats serão bloqueados no tempo pelo protocolo Bitcoin. É impossível movê-los antes que o título expire.",
-      "subtitle_fidelity_bond_exists": "Se existir mais de um título de fidelidade, apenas o <0>o mais valioso</0> será usado.",
-      "text_maker_running": "'Lucrar' está ativo. Interrompa o serviço para criar um Título de Fidelidade.",
-      "text_coinjoin_already_running": "Uma transação colaborativa está em andamento.",
       "create_form": {
         "confirmation_toggle_title": "Eu revisei minhas entradas cuidadosamente",
         "confirmation_toggle_subtitle": "Entendo que os fundos bloqueados ficarão inacessíveis durante o período determinado",
@@ -464,7 +391,6 @@
         "text_button_cancel": "Cancelar",
         "text_button_submit": "Desbloquear fundos",
         "text_button_done": "Pronto",
-        "error_fidelity_bond_still_locked": "O título de fidelidade fornecido ainda está bloqueado.",
         "error_loading_address": "Não foi possível obter novo endereço.",
         "error_freezing_utxos": "Não foi possível congelar UTXOs.",
         "error_unfreezing_fidelity_bond": "Erro ao descongelar o título de fidelidade expirado.",
@@ -516,9 +442,7 @@
     "error_loading_orderbook_failed": "Erro ao carregar o livro de ordens. Sua configuração local atual não suporta a busca do livro de ordens. Motivo: {{ reason }}",
     "text_offer_type_absolute": "absoluto",
     "text_offer_type_relative": "relativo",
-    "label_search": "Pesquisa",
     "placeholder_search": "Pesquisar",
-    "text_orderbook_filter_count": "{{ filterCount }} registros correspondem aos critérios de pesquisa fornecidos",
     "label_highlight_own_orders": "Destacar minhas ofertas",
     "table": {
       "heading_type": "Tipo",
@@ -549,24 +473,15 @@
     "progress_tldr_seconds": "<1>{{ length }}</1> transações agendadas em <3>{{ seconds }}</3> segundos.",
     "progress_tldr_hours": "<1>{{ length }}</1> transações agendadas em <3>{{ hours }}</3> horas.",
     "progress_description": "Esta estimativa é o tempo mínimo de espera. Atrasos adicionais devido a comunicação de rede ou confirmação de transação não são considerados.",
-    "progress_current_state": "Aguardando o processamento da transação <1>{{ current  }}</1> de <3>{{ total }}</3>...",
     "progress_done": "Todas as transações foram concluídas com sucesso. O agendador irá parar em breve.",
     "precondition": {
       "hint_missing_utxos": "Para executar o agendador você precisa de UTXOs com {{ minConfirmations }} ou mais confirmações. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "O agendador exige que seus UTXOs tenham {{ minConfirmations }} ou mais confirmações. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Falha ao fornecer compromissos muitas vezes. Por motivos de segurança, você precisa de um novo UTXO no frasco para tentar novamente. Consulte <1>a documentação</1> para obter mais informações.",
-      "hint_missing_retries_detail_one": "O seguinte UTXO foi usado sem sucesso muitas vezes e não pode ser reutilizado: <1></1>",
-      "hint_missing_retries_detail_other": "Os {{ count }} UTXOs seguintes foram usados sem sucesso muitas vezes e não podem ser reutilizados: <1></1>",
       "nested_hint_wait_for_block": "Aguarde mais um bloco.",
       "nested_hint_wait_for_block_other": "Aguarde mais {{ count }} blocos.",
       "nested_hint_fund_wallet": "Financie sua carteira e aguarde mais um bloco.",
       "nested_hint_fund_wallet_other": "Financie sua carteira e aguarde mais {{ count }} blocos."
-    },
-    "success": {
-      "title": "Sucesso!",
-      "subtitle": "Concluído com sucesso uma única transação agendada.",
-      "subtitle_other": "{{ count }} transações programadas concluídas com sucesso.",
-      "text_button_submit": "Continuar"
     }
   },
   "modal": {
@@ -581,32 +496,14 @@
       "title_one": "{{ count }} UTXO no frasco {{ jar }}",
       "title_other": "{{ count }} UTXOs no frasco {{ jar }}",
       "text_balance_sum_total": "<0></0> total",
-      "text_balance_sum_selected": "<0></0> selecionados",
       "button_freeze": "Congelados",
       "button_unfreeze": "Descongelados",
-      "button_freeze_loading": "Congelando...",
-      "button_unfreeze_loading": "Descongelando...",
-      "utxo_tooltip_locktime": "trancados até {{ locktime }}",
-      "utxo_tag_frozen": "congelado",
       "utxo_tag_fb": "título",
       "column_title_balance": "Valor",
       "column_title_address": "Endereço",
       "column_title_confirmations": "Conf.",
       "column_title_label_and_status": "Tags",
-      "row_button_details": "Detalhes",
-      "utxo_detail_label_id": "Id do UTXO",
-      "utxo_detail_label_address": "Endereço",
-      "utxo_detail_label_path": "Caminho",
-      "utxo_detail_label_label": "Etiqueta do Endereço",
-      "utxo_detail_label_value": "Valor",
-      "utxo_detail_label_tries": "Tentativas",
-      "utxo_detail_label_tries_remaining": "Tentativas restantes",
-      "utxo_detail_label_jar": "Frasco",
-      "utxo_detail_label_is_external": "É externo",
-      "utxo_detail_label_confirmations": "Confirmações",
-      "utxo_detail_label_is_frozen": "Está congelado",
-      "utxo_detail_label_locktime": "Tranca",
-      "utxo_detail_label_status": "Status do Endereço"
+      "row_button_details": "Detalhes"
     }
   }
 }

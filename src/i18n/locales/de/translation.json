@@ -3,7 +3,6 @@
     "loading": "Laden",
     "button_copy_text": "Kopieren",
     "button_copy_text_confirmed": "Kopiert",
-    "next": "Weiter",
     "back": "Zurück",
     "close": "Schließen",
     "abort": "Abbrechen",
@@ -15,7 +14,6 @@
           "text_option_show_all": "Alle"
         },
         "page_selector": {
-          "label_current": "Seite",
           "label_first": "Erste",
           "label_previous": "Vorherige",
           "label_next": "Nächster",
@@ -30,19 +28,16 @@
     }
   },
   "app": {
-    "alert_no_connection": "Keine Verbindung zum Backend: {{ connectionError }}",
     "alert_rescan_in_progress": "Erneuter Scan läuft..."
   },
   "navbar": {
     "title": "Jam",
     "text_rescan_in_progress": "Scanne erneut...",
-    "button_create_wallet": "Wallet erstellen",
     "tab_send": "Senden",
     "tab_receive": "Empfangen",
     "tab_earn": "Verdienen",
     "tab_sweep": "Sweepen",
     "joining_in_progress": "Jamming",
-    "menu_mobile": "Menü",
     "menu_mobile_settings": "Einstellungen",
     "button_logout": "Abmelden"
   },
@@ -91,27 +86,19 @@
     "report_bug": "Melde diesen <2>Fehler auf GitHub</2>, damit er in einer zukünftigen Version behoben werden kann."
   },
   "wallets": {
-    "title": "Deine Wallets",
     "subtitle_no_wallets": "Es sieht so aus, als hättest du noch keine Wallet angelegt. ",
-    "text_loading": "Wallets laden",
     "button_new_wallet": "Neue Wallet erstellen",
     "button_import_wallet": "Bestehende Wallet importieren",
     "alert_wallet_open": "Es kann immer nur eine Wallet aktiv sein. Wenn du eine andere öffnen willst, sperre zuerst '{{ currentWalletName }}'.",
     "error_loading_failed": "Laden der Wallets fehlgeschlagen",
     "wallet_preview": {
-      "alert_wallet_already_unlocked": "{{ walletName }} ist bereits entsperrt.",
-      "alert_other_wallet_unlocked": "{{ walletName }} ist derzeit in Verwendung, bitte sperre diese Wallet zuerst.",
       "alert_wallet_locked_successfully": "{{ walletName }} erfolgreich gesperrt. ",
-      "alert_wallet_already_locked": "{{ walletName }} bereits entsperrt.",
       "wallet_active": "Aktiv",
-      "wallet_inactive": "Inaktiv",
       "placeholder_password": "Passwort",
-      "button_open": "Öffnen",
       "button_lock": "Sperren",
       "button_unlock": "Entsperren",
       "button_locking": "Sperren",
       "button_unlocking": "Entsperren",
-      "feedback_missing_password": "Bitte wähle ein Passwort für diese Wallet.",
       "modal_lock_wallet_title": "Wallet sperren",
       "modal_lock_wallet_maker_running_text": "Earn Modus aktiv. Das Sperren der Wallet wird diesen Service stoppen. ",
       "modal_lock_wallet_coinjoin_in_progress_text": "Eine gemeinschaftliche Transaktion ist derzeit im Gange. Das Sperren der Wallet stoppt diese. ",
@@ -123,7 +110,6 @@
     "title_wallet_created": "Wallet erfolgreich erstellt!",
     "subtitle_wallet_created": "Bitte schreibe dir deine Seed Phrase und dein Passwort auf! Ohne diese Information wirst du nicht in der Lage sein, auf deine Wallet zuzugreifen oder sie wiederherzustellen. ",
     "alert_other_wallet_unlocked": "Derzeit ist <1>{{ walletName }}</1>aktiv. Du musst sie zuerst sperren. <3>Einen Schritt zurück</3>.",
-    "feedback_valid": "Alles klar!",
     "label_wallet_name": "Wallet Name",
     "placeholder_wallet_name": "Deine Wallet...",
     "feedback_invalid_wallet_name": "Bitte benenne deine Wallet.",
@@ -135,24 +121,17 @@
     "feedback_invalid_password_confirm": "Die eingegebenen Passwörter stimmen nicht überein.",
     "button_create": "Erstellen",
     "button_creating": "Erstelle...",
-    "error_creating_failed": "Fehler beim erstellen der Wallet. Begründung: {{ reason }}",
-    "alert_confirmation_failed": "Wallet Bestätigung fehlgeschlagen. ",
     "confirmation_label_wallet_name": "Wallet Name",
     "confirmation_label_password": "Passwort",
     "confirmation_toggle_reveal_info": "Sensible Informationen anzeigen",
     "confirmation_toggle_info_written_down": "Ich habe die Informationen aufgeschrieben.",
     "confirmation_button_fund_wallet": "Wallet aufladen",
-    "confirm_backup_title": "Seed Phrase Backup bestätigen",
-    "confirm_backup_subtitle": "Wörter in richtiger Reihenfolge eingeben. ",
     "feedback_seed_confirmed": "Seed Wörter korrekt. ",
     "back_button": "Zurück",
-    "skip_button": "Überspringen",
     "next_button": "Weiter",
-    "placeholder_seed_word_input": "Wort",
     "hint_duration_text": "Bitte habe etwas Geduld, dieser Vorgang kann ein paar Minuten dauern. "
   },
   "import_wallet": {
-    "alert_other_wallet_unlocked": "Derzeit ist <1>{{ walletName }}</1>aktiv. Du musst sie zuerst sperren. <3>Einen Schritt zurück</3>.",
     "alert_rescan_in_progress": "Erneuter Scan der Timechain läuft derzeit. Bitte warte bis dieser Prozess abgeschlossen ist und versuche es dann erneut.<1>Einen Schritt zurück</1>.",
     "wallet_details": {
       "title": "Wallet importieren",
@@ -182,13 +161,9 @@
     "error_importing_failed": "Fehler beim Importieren der Wallet. Begründung: {{ reason }}"
   },
   "current_wallet": {
-    "text_loading": "Lade",
-    "text_rescan_in_progress": "Ein erneuter Scan wird derzeit ausgeführt...",
     "button_deposit": "Empfangen",
     "button_withdraw": "Senden",
-    "error_loading_failed": "Laden der Wallet fehlgeschlagen.",
     "jar_tooltip": "Inhalt anzeigen",
-    "jar_tooltip_empty_jar_0": "Empfangen",
     "jars_title": "Wallet Verteilung",
     "jars_title_popover": "Gläser werden genutzt, um Sats in mehrere, voneinander getrennte Bereiche zu unterteilen, was die Privatsphäre verbessert. ",
     "account_heading_external_addresses": "Externe Adressen für Einlagen",
@@ -206,25 +181,18 @@
     "use_btc": "Guthaben in bitcoin anzeigen",
     "use_dark_theme": "Zum Dark Theme wechseln",
     "use_light_theme": "Zum Light Theme wechseln",
-    "text_help_translate": "Fehlt deine Sprache? Hilf uns beim Übersetzen! ",
     "show_seed": "Seed Phrase anzeigen",
-    "hide_seed": "Seed Phrase verbergen",
     "reveal_seed": "Seed Phrase einblenden",
     "show_logs": "Logs anzeigen",
     "show_fee_config": "Fee Limit festlegen",
     "button_lock_wallet": "Wallet sperren",
-    "button_locking_wallet": "Sperren...",
     "button_switch_wallet": "Wallet wechseln",
     "button_create_wallet": "Neue Wallet erstellen",
-    "error_loading_seed_failed": "Seed Phrase konnte nicht abgerufen werden",
     "seed_modal_info_text": "Bitte schreib dir deine Seed Phrase und dein Passwort auf! Ohne diese Informationen kannst du deine Wallet nicht öffnen oder wiederherstellen.",
     "documentation": "Dokumentation",
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "confirm_locking_modal_title": "Wallet sperren",
-    "confirm_locking_modal_body_earn": "Earn Modus aktiv. Das Sperren der Wallet wird diesen Modus beenden. Du kannst das Browserfenster schließen und Jam im Hintergrund weiterlaufen lassen. ",
-    "confirm_locking_modal_body_jam": "Eine gemeinschaftliche Transaktion ist derzeit im Gange. Das Sperren der Wallet wird diese beenden. Du kannst das Browserfenster schließen und Jam im Hintergrund weiterlaufen lassen. ",
     "fees": {
       "title": "Fee Limits",
       "description": "Verändere die Mining- und Collaborator-Fees deinen Ansprüchen entsprechend. Die Einstellung wird zurückgesetzt, wenn der Joinmarket Service oder dein System neu gestartet wird. Mehr Informationen zu den Fees befinden sich in <1>der Dokumentation</1>.",
@@ -232,7 +200,6 @@
       "description_general_fee_settings": "Die Mining-Fees haben einen Einfluss auf die Transaktionspriorität und hängen von der Auslastung des Mempools ab.",
       "radio_tx_fees_blocks": "Block-Target",
       "radio_tx_fees_satspervbyte": "sats/vByte",
-      "label_tx_fees": "Transaction base fee",
       "description_tx_fees_blocks": "Bei der Block-Target-Einstellung wird die Gebührenschätzung von Bitcoin Core verwendet und die Base Fee der Aktivität im Mempool entsprechend angepasst. Standard: 3.",
       "description_tx_fees_satspervbyte": "Bei Angaben der Base Fee in sats/vByte, wird die Einstellung für das Block-Target überschrieben. Passe diese Einstellung der Auslastung des Mempools entsprechend an. ",
       "feedback_invalid_tx_fees_blocks": "Bitte gib ein gültiges Block-Target zwischen {{ min }} und {{ max }} an.",
@@ -252,7 +219,6 @@
       "text_button_cancel": "Abbrechen",
       "text_button_submit": "Speichern",
       "text_button_submitting": "Speichern...",
-      "error_loading_fee_config_failed": "Fehler beim Laden der Konfigurationswerte.",
       "error_saving_fee_config_failed": "Fehler beim Speichern der Konfiguration. Begründung: {{ reason }}"
     }
   },
@@ -261,7 +227,6 @@
     "error_loading_logs_failed": "Log Datei konnte nicht geladen werden. "
   },
   "send": {
-    "loading": "Laden",
     "title": "Senden",
     "subtitle": "Erstelle gemeinschaftliche Transaktionen, kurz Coinjoins, um deine Sicherheit und Privatsphäre zu verbessern. ",
     "label_num_collaborators": "Anzahl der Transaktionspartner: {{ numCollaborators }}",
@@ -269,7 +234,6 @@
     "description_num_collaborators": "Eine höhere Anzahl ist besser für die Privatsphäre, steigert aber die Transaktionskosten. ",
     "error_invalid_num_collaborators": "Bitte wähle zwischen {{ minNumCollaborators }} und {{ maxNumCollaborators }} Transaktionspartnern.",
     "taker_error_message_max_fees_config_missing": "Die Parameter 'max_cj_fee_rel' und 'max_cj_fee_abs' müssen in der joinmarket.cfg Datei verändert werden. Falls nötig, kannst du diese Einstellungen direkt in deiner Konfigurationsdatei vornehmen.",
-    "direct_payment_error_message_bad_request": "Bitte überprüfe deine Eingaben genau. ",
     "error_loading_min_makers_failed": "Laden der Konfigurationseinstellung 'minimum_makers' fehlgeschlagen.",
     "alert_payment_successful": "Zahlung erfolgreich: {{ amount }} Sats an die Adresse {{ address }} in der Transaction {{ txid }} versendet.",
     "text_maker_running": "Der Earn Modus ist aktiv. Stoppe diesen Service, um gemeinschaftliche Transaktionen durchzuführen. ",
@@ -291,20 +255,8 @@
     "text_sending": "Senden...",
     "button_sweep": "Sweep",
     "button_clear_sweep": "Löschen",
-    "button_sweep_amount_breakdown": "Wie wird diese Zahl berechnet?",
-    "sweep_amount_breakdown_total_balance": "Gesamtguthaben",
-    "sweep_amount_breakdown_frozen_balance": "Eingefrorenes oder gesperrtes Guthaben",
-    "sweep_amount_breakdown_estimated_amount": "Geschätzter zu versendender Betrag",
-    "sweep_amount_breakdown_explanation": "Eine Sweep-Transaktion wird alle deine UTXOs bis auf <1>eingefrorene</1>oder <3>zeitlich gesperrte</3> nützen. Onchain- und Marketmaker-Fees werden von der Gesamtmenge abgezogen, sodass kein Wechselgeld zurückbleibt. Der exakte Transaktionsbetrag kann nur von JoinMarket zum Transaktionszeitpunkt berechnet werden. Die geschätzte Transaktionsmenge kann sich also von der tatsächlichen unterscheiden. Bitte schau in <5>die JM Dokumentation</5>für mehr Details. ",
     "fee_breakdown": {
-      "title": "Collaborator-Fees: {{ maxCollaboratorFee }}",
-      "subtitle": "Abhängig von dem Transaktionsbetrag, der Anzahl deiner Partner und den <1>gewählten Limits</1>, findest du hier eine Schätzung der maximalen Collaborator-Fees für deine Transaktion. ",
-      "alert_collaborator_fee_note": "Dieser Wert <strong>beinhaltet keine regulären <1>Mining-Fees</1><strong>.",
-      "absolute_limit": "Absolutes Fee Limit",
-      "relative_limit": "Relatives Fee Limit",
-      "fee_card_subtitle": "<1>{{ maxFee }}</1> * {{ numCollaborators }}",
-      "placeholder_config_value_not_present": "Undefiniert",
-      "placeholder_amount_missing_amount": "Betrag eingeben..."
+      "title": "Collaborator-Fees: {{ maxCollaboratorFee }}"
     },
     "confirm_send_modal": {
       "title": "Zahlung freigeben",
@@ -313,7 +265,6 @@
       "text_sweep_info_popover": "Der exakte Transaktionsbetrag kann nur von JoinMarket zum Transaktionszeitpunkt berechnet werden.",
       "label_recipient": "Empfänger",
       "label_source_jar": "Senden von",
-      "text_source_jar": "Glas {{ jarId }}",
       "label_num_collaborators": "Transaktionspartner",
       "text_collaborative_tx_enabled": "Zahlung mit verbesserter Privatsphäre",
       "text_collaborative_tx_disabled": "Zahlung ohne verbesserte Privatsphäre",
@@ -333,8 +284,6 @@
       "hint_missing_utxos": "Damit gemeinschaftliche Transaktionen durchgeführt werden können, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen im Ursprungsglas. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Eine gemeinschaftliche Transaktion erfordert UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Zu viele Versuche, die notwendigen Verpflichtungen für dieses Glas zu beschaffen, scheiterten. Für einen neuen Versuch brauchst du einen frischen UTXO im Glas. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
-      "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos eingesetzt und kann nicht wiederverwendet werden: <1></1>",
-      "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos eingesetzt und können nicht wiederverwendet werden: <1></1> ",
       "nested_hint_wait_for_block": "Wähle ein anderes Glas für die Transaktion oder warte einen oder mehr Blöcke. ",
       "nested_hint_wait_for_block_other": "Wähle ein anderes Glas für die Transaktion oder warte auf {{ count }} mehr Blöcke.",
       "nested_hint_fund_jar": "Wähle ein anderes Glas für die Transaktion oder warte auf einen weiteren Block. ",
@@ -360,14 +309,10 @@
     "subtitle": "Indem du dem Markt Liquidität anbietest, verbesserst du die Privatsphäre von dir und anderen. Deine Sats bleiben immer unter deiner Kontrolle und verlassen nie deine Wallet",
     "market_explainer": "Du kannst wählen, wie viel du für dein Angebot verlangen willst. Beachte, dass du an einem offenen Markt teilnimmst und mit anderen konkurrierst - es gibt keine Garantie, dass andere auf dein Angebot eingehen werden. Es kann einige Zeit dauern, bis du für eine gemeinsame Transaktion ausgewählt wirst. Niedrige Gebühren erhöhen deine Chance.",
     "alert_empty_report": "Der Bericht ist leer.",
-    "text_report_length": "Es werden {{ visibleLines }} von {{ linesWithoutHeader }} Einträgen angezeigt",
-    "error_loading_report_failed": "Laden vom Verdienstbericht fehlgeschlagen. ",
     "alert_starting": "Der Service startet.",
     "alert_stopping": "Der Service stoppt. ",
     "alert_running": "Sats anbieten, um Sats zu verdienen...",
-    "alert_coinjoin_in_progress": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",
     "alert_no_spendable_balance_description": "<0>Befülle deine Wallet</0>, um mit dem Verdienen zu beginnen.",
-    "button_settings": "Angebots Optionen",
     "radio_abs_offer_label": "Absolutes Angebot",
     "radio_rel_offer_label": "Relatives Angebot",
     "label_rel_fee": "Relative Fee {{ fee }}",
@@ -383,7 +328,6 @@
     "text_starting": "Starte",
     "text_stopping": "Stoppe",
     "button_show_report": "Verdienstreport anzeigen",
-    "button_show_orderbook": "Orderbook anzeigen",
     "current": {
       "text_offer": "Angebot",
       "text_cjfee": "Gebühr",
@@ -399,7 +343,6 @@
       "text_report_summary_other": "{{ count }} Einträge",
       "text_report_summary_filtered_one": "{{ count }} Einträg gefunden",
       "text_report_summary_filtered_other": "{{ count }} Einträge gefunden",
-      "label_search": "Suche",
       "placeholder_search": "Suche",
       "heading_timestamp": "Timestamp",
       "heading_cj_amount": "Transaktionsbetrag",
@@ -429,57 +372,37 @@
         "description": "Fidelity Bond Auslaufdatum:"
       },
       "select_jar": {
-        "text_primary_button": "Weiter",
-        "text_secondary_button": "Abbrechen",
         "description": "Glas für Fidelity Bond Finanzierung auswählen"
       },
       "select_utxos": {
-        "text_primary_button": "Weiter",
-        "text_primary_button_unsafe": "Wähle potenziell weniger private UTXOs",
-        "text_secondary_button": "Abbrechen",
         "description": "Wähle einen oder mehr UTXOs vom Glas {{ jar }} für den Fidelity Bond.",
         "utxo_card": {
-          "confirmations": "{{ confs }} Bestätigungen",
-          "label_frozen": "eingefroren",
-          "label_locked": "gesperrt",
-          "label_cj_out": "cj-out"
+          "confirmations": "{{ confs }} Bestätigungen"
         }
       },
       "freeze_utxos": {
         "text_primary_button": "UTXOs einfrieren",
         "text_primary_button_all_frozen": "Überprüfe die Bond Konfiguration",
-        "text_primary_button_error": "Erneut versuchen",
-        "text_secondary_button": "Abbrechen",
-        "description_selected_utxos": "Ausgewählte UTXOs:",
-        "description_unselected_utxos": "Die folgenden UTXOs werden nicht für den Fidelity Bond verwendet:",
         "description_selected_utxos_to_freeze": "Sie werden gefroren im Glas {{ jar }} zurückbleiben. Du kannst sie zu jederzeit nach Erstellen des Fidelity Bonds auftauen. "
       },
       "review_inputs": {
         "text_primary_button": "Erstelle Fidelity Bond",
-        "text_primary_button_unsafe": "Erstelle Fidelity Bond mit potenziell weniger privaten UTXOs",
-        "text_primary_button_error": "Erneut versuchen",
-        "text_secondary_button": "Abbrechen",
-        "description": "So hast du den Fidelity Bond konfiguriert:",
         "label_lock_date": "Gesperrt bis",
         "label_jar": "Finanziert aus",
         "label_jar_n": "Glas {{ jar }}",
         "label_amount": "Betrag, der gesperrt wird",
-        "label_address": "Gelder werden zeitlich gesperrt und versendet an",
-        "label_selected_utxos": "UTXOs, die zeitlich gesperrt werden:"
+        "label_address": "Gelder werden zeitlich gesperrt und versendet an"
       },
       "create_fidelity_bond": {
         "success_text": "Fidelity Bond erstellt!",
         "text_primary_button": "Erledigt",
         "text_primary_button_unfreeze": "UTXOs auftauen",
-        "text_primary_button_error": "Von Vorn beginnen",
-        "text_secondary_button": "Erledigt",
         "label_lock_date": "Gesperrt bis",
         "label_address": "Zeitlich gesperrte Adresse",
         "text_copy_transaction_id": "Transaktions-ID kopiert",
         "label_utxos_to_unfreeze": "Willst du die vorher eingefrorenen UTXOs wieder auftauen? "
       },
       "unfreeze_utxos": {
-        "text_primary_button": "Erledigt",
         "done": "UTXOs aufgetaut"
       },
       "confirm_modal": {
@@ -487,11 +410,7 @@
         "body": "Es ist nicht möglich, Gelder auszugeben, die zeitlich gesperrt wurden, bis der Fidelity Bond endet. Das Ablaufdatum ist in {{ humanReadableDuration }} am {{date}}."
       },
       "title": "Fidelity Bond konfigurieren",
-      "title_fidelity_bond_exists": "Weiteren Bond konfigurieren",
       "subtitle": "Deine Sats werden vom Bitcoin Protokoll zeitlich gesperrt. Es ist unmöglich, sie vor dem Ablaufdatum des Bonds auszugeben.  ",
-      "subtitle_fidelity_bond_exists": "Wenn mehr als ein Fidelity Bond existiert, wird nur <0>der wertvollste</0> verwendet werden.  ",
-      "text_maker_running": "Der Earn Modus ist momentan aktiv. Stoppe den Service, um einen Fidelity Bond zu erstellen. ",
-      "text_coinjoin_already_running": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",
       "create_form": {
         "confirmation_toggle_title": "Ich habe meine Eingaben sorgfältig überprüft",
         "confirmation_toggle_subtitle": "Ich verstehe, dass gesperrte Gelder für den Zeitraum der Sperre nicht ausgegeben werden können",
@@ -513,7 +432,6 @@
         "text_button_cancel": "Abbrechen",
         "text_button_submit": "Gelder entsperren",
         "text_button_done": "Erledigt",
-        "error_fidelity_bond_still_locked": "Der ausgewählte Fidelity Bond ist noch immer gesperrt.",
         "error_loading_address": "Neue Adresse konnte nicht generiert werden.",
         "error_freezing_utxos": "Die UTXOs konnten nicht eingefroren werden. ",
         "error_unfreezing_fidelity_bond": "Fehler beim Auftauen des abgelaufenen Fidelity Bonds. ",
@@ -565,9 +483,7 @@
     "error_loading_orderbook_failed": "Fehler beim Laden des Orderbooks. Dein derzeitiges lokales Setup unterstützt dies womöglich nicht. Grund: {{ reason }}",
     "text_offer_type_absolute": "absolut",
     "text_offer_type_relative": "relativ",
-    "label_search": "Suche",
     "placeholder_search": "Suche",
-    "text_orderbook_filter_count": "{{ filterCount }} Einträge gleichen deinen angegebenen Suchkriterien",
     "label_highlight_own_orders": "Meine Angebote hervorheben",
     "table": {
       "heading_type": "Typ",
@@ -598,24 +514,15 @@
     "progress_tldr_seconds": "<1>{{ length }}</1> Transaktionen in <3>{{ seconds }}</3> Sekunden geplant.",
     "progress_tldr_hours": "<1>{{ length }}</1> Transaktionen in <3>{{ hours }}</3> Stunden geplant.",
     "progress_description": "Die Schätzung ist als minimale Wartezeit zu verstehen. Verzögerungen aufgrund von Netzwerkfehlern oder Transaktionsbestätigungen sind nicht eingerechnet. ",
-    "progress_current_state": "Warten auf Durchführung von Transaktion <1>{{ current }}</1> von <3>{{ total }}</3> ...",
     "progress_done": "Alle Transaktionen erfolgreich durchgeführt. Der Scheduler wird in Kürze stoppen. ",
     "precondition": {
       "hint_missing_utxos": "Um den Scheduler zu starten, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Um den Scheduler zu starten, brauchen deine UTXOs {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_retries": "Zu viele Versuche, Commitments für dieses Glas zu beschaffen, sind fehlgeschlagen. Aus Sicherheitsgründen brauchst du einen frischen UTXO, um es erneut zu probieren. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
-      "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos verwendet und kann nicht wiederverwendet werden: <1></1>",
-      "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos verwendet und können nicht wiederverwendet werden: <1></1> ",
       "nested_hint_wait_for_block": "Warte auf einen weiteren Block. ",
       "nested_hint_wait_for_block_other": "Warte auf {{ count }} weitere Blöcke.",
       "nested_hint_fund_wallet": "Lade deine Wallet auf und warte auf einen zusätzlichen Block.",
       "nested_hint_fund_wallet_other": "Lade deine Wallet auf und warte auf {{ count }} weitere Blöcke."
-    },
-    "success": {
-      "title": "Erfolgreich!",
-      "subtitle": "Eine geplante Transaktion wurde erfolgreich durchgeführt. ",
-      "subtitle_other": "{{ count }} erfolgreich durchgeführte geplante Transaktionen.",
-      "text_button_submit": "Fortfahren"
     }
   },
   "modal": {
@@ -630,32 +537,14 @@
       "title_one": "{{ count }} UTXO im Glas {{ jar }}",
       "title_other": "{{ count }} UTXOs im Glas {{ jar }}",
       "text_balance_sum_total": "<0></0> gesamt",
-      "text_balance_sum_selected": "<0></0> ausgewählt",
       "button_freeze": "Einfrieren",
       "button_unfreeze": "Auftauen",
-      "button_freeze_loading": "Einfrieren...",
-      "button_unfreeze_loading": "Auftauen...",
-      "utxo_tooltip_locktime": "gesperrt bis {{ locktime }}",
-      "utxo_tag_frozen": "eingefroren",
       "utxo_tag_fb": "Bond",
       "column_title_balance": "Wert",
       "column_title_address": "Adresse",
       "column_title_confirmations": "Confs.",
       "column_title_label_and_status": "Tags",
-      "row_button_details": "Details",
-      "utxo_detail_label_id": "UTXO Id",
-      "utxo_detail_label_address": "Adresse",
-      "utxo_detail_label_path": "Pfad",
-      "utxo_detail_label_label": "Beschreibung der Adresse",
-      "utxo_detail_label_value": "Wert",
-      "utxo_detail_label_tries": "Versuche",
-      "utxo_detail_label_tries_remaining": "verbleibende Versuche",
-      "utxo_detail_label_jar": "Glas",
-      "utxo_detail_label_is_external": "extern",
-      "utxo_detail_label_confirmations": "Confirmations",
-      "utxo_detail_label_is_frozen": "eingefroren",
-      "utxo_detail_label_locktime": "Locktime",
-      "utxo_detail_label_status": "Status der Adresse"
+      "row_button_details": "Details"
     }
   }
 }

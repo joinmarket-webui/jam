@@ -3,7 +3,6 @@
     "loading": "Загрузка",
     "button_copy_text": "Копировать",
     "button_copy_text_confirmed": "Скопировано",
-    "next": "Вперед",
     "back": "Назад",
     "close": "Закрыть",
     "abort": "Прервать",
@@ -16,7 +15,6 @@
           "text_option_show_all": "Все"
         },
         "page_selector": {
-          "label_current": "Страница",
           "label_first": "Первая",
           "label_previous": "Пред",
           "label_next": "След",
@@ -31,21 +29,16 @@
     }
   },
   "app": {
-    "alert_no_connection": "Нет соединения с сервисом: {{ connectionError }}",
-    "alert_no_connection_details": "Убедитесь, что сервис запущен и <1>ознакомьтесь с доп информацией</1>.",
     "alert_rescan_in_progress": "Повторное сканирование в процессе"
   },
   "navbar": {
     "title": "Jam",
     "text_rescan_in_progress": "Повторное сканирование",
-    "button_create_wallet": "Создать кошелек",
-    "button_import_wallet": "Импортировать кошелек",
     "tab_send": "Отправить",
     "tab_receive": "Получить",
     "tab_earn": "Заработать",
     "tab_sweep": "Перенести",
     "joining_in_progress": "Перемешивание",
-    "menu_mobile": "Меню",
     "menu_mobile_settings": "Настройки",
     "button_logout": "Выйти"
   },
@@ -95,29 +88,19 @@
     "report_bug": "Пожалуйста, если вам нетрудно, <2>откройте issue на GitHub</2> для исправления ошибки в следующих версиях."
   },
   "wallets": {
-    "title": "Ваши кошельки",
     "subtitle_no_wallets": "Похоже, у вас пока нет кошелька.",
-    "text_loading": "Загружаю кошельки",
     "button_new_wallet": "Создать новый кошелек",
     "button_import_wallet": "Импортировать кошелек",
     "alert_wallet_open": "Только один кошелек может быть активным. Если нужно открыть другой кошелек, сначала заблокируйте '{{ currentWalletName }}'.",
     "error_loading_failed": "Ошибка загрузки кошельков.",
     "wallet_preview": {
-      "alert_wallet_already_unlocked": "{{ walletName }} уже разблокирован.",
-      "alert_other_wallet_unlocked": "{{ walletName }} сейчас используется, сначала заблокируйте его.",
       "alert_wallet_locked_successfully": "{{ walletName }} заблокирован.",
-      "alert_wallet_already_locked": "{{ walletName }} уже заблокирован.",
       "wallet_active": "Активен",
-      "wallet_inactive": "Неактивен",
-      "wallet_locked": "Заблокирован",
-      "wallet_unlocked": "Разблокирован",
       "placeholder_password": "Пароль",
-      "button_open": "Открыть",
       "button_lock": "Блок",
       "button_unlock": "Разблокировать",
       "button_locking": "Блокирую",
       "button_unlocking": "Разблокирую",
-      "feedback_missing_password": "установите пароль кошелька.",
       "modal_lock_wallet_title": "Заблокировать кошелек",
       "modal_lock_wallet_maker_running_text": "Заработок активен. Блокировка кошелька остановит процесс.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Совместная Транзакция в процессе выполнения. Блокировка кошелька остановит процесс.",
@@ -129,8 +112,6 @@
     "title_wallet_created": "Кошелек создан!",
     "subtitle_wallet_created": "Пожалуйста, запишите вашу сид-фразу и пароль! Без этой информации вы не сможете получить доступ и восстановить свой кошелек!",
     "alert_other_wallet_unlocked": "Сейчас <1>{{ walletName }}</1> активен. Необходимо его заблокировать. <3>Назад</3>.",
-    "alert_rescan_in_progress": "В настоящее время выполняется повторное сканирование блокчейна. Пожалуйста, дождитесь завершения процесса и повторите попытку. <1>Назад</1>.",
-    "feedback_valid": "Норм!",
     "label_wallet_name": "Имя кошелька",
     "placeholder_wallet_name": "Ваш кошелек",
     "feedback_invalid_wallet_name": "Пожалуйста, выберите допустимое имя кошелька: используйте только буквы, цифры, подчеркивания и дефисы.",
@@ -143,24 +124,17 @@
     "feedback_invalid_password_confirm": "Указанные пароли не совпадают.",
     "button_create": "Создать",
     "button_creating": "Создание",
-    "error_creating_failed": "Ошибка при создании кошелька. Причина: {{ reason }}",
-    "alert_confirmation_failed": "Подтверждение кошелька не удалось.",
     "confirmation_label_wallet_name": "Имя кошелька",
     "confirmation_label_password": "Пароль",
     "confirmation_toggle_reveal_info": "Раскрыть конфиденциальную информацию",
     "confirmation_toggle_info_written_down": "Я записал информацию выше.",
     "confirmation_button_fund_wallet": "Пополнить кошелек",
-    "confirm_backup_title": "Подтвердите резервную копию сид фразы",
-    "confirm_backup_subtitle": "Введите каждое слово в последовательном порядке.",
     "feedback_seed_confirmed": "Подтверждена исходная фраза.",
     "back_button": "Назад",
-    "skip_button": "Пропустить",
     "next_button": "След",
-    "placeholder_seed_word_input": "Слово",
     "hint_duration_text": "Пожалуйста, проявите терпение, это может занять несколько минут."
   },
   "import_wallet": {
-    "alert_other_wallet_unlocked": "Сейчас <1>{{ walletName }}</1> активен. Необходимо его заблокировать. <3>Назад</3>.",
     "alert_rescan_in_progress": "В настоящее время выполняется повторное сканирование блокчейна. Пожалуйста, дождитесь завершения процесса и повторите попытку. <1>Назад</1>.",
     "wallet_details": {
       "title": "Импорт кошелька",
@@ -188,20 +162,14 @@
       "text_button_submitting": "Отправка"
     },
     "success": {
-      "title": "Кошелек успешно импортирован!",
-      "subtitle": "Процесс повторного сканирования начал поиск ваших средств. Пожалуйста, будьте терпеливы, это может занять некоторое время.",
-      "text_button_submit": "Далее"
+      "title": "Кошелек успешно импортирован!"
     },
     "error_importing_failed": "Ошибка при импорте кошелька. Причина: {{ reason }}"
   },
   "current_wallet": {
-    "text_loading": "Загрузка",
-    "text_rescan_in_progress": "Повторное сканирование в процессе",
     "button_deposit": "Получить",
     "button_withdraw": "Отправить",
-    "error_loading_failed": "Загрузка кошелька не удалась.",
     "jar_tooltip": "Заглянуть",
-    "jar_tooltip_empty_jar_0": "Получить",
     "jars_title": "Распределение кошельков",
     "jars_title_popover": "Банки используются для разделения ваших сатоши на несколько сегментов, которые не связаны друг с другом, что способствует конфиденциальности.",
     "account_heading_external_addresses": "Внешние адреса для депозитов",
@@ -219,24 +187,17 @@
     "use_btc": "Отображение сумм в bitcoin",
     "use_dark_theme": "Переключиться на тёмную тему",
     "use_light_theme": "Переключиться на светлую тему",
-    "text_help_translate": "Не нашли свой язык? Помогите нам с переводом!",
     "show_seed": "Показать сид-фразу",
-    "hide_seed": "Скрыть сид-фразу",
     "reveal_seed": "Раскрыть сид-фразу",
     "show_logs": "Показать журнал",
     "show_fee_config": "Изменить лимиты комиссий",
     "button_lock_wallet": "Блокировка кошелька",
-    "button_locking_wallet": "Блокировка",
     "button_switch_wallet": "Сменить кошелек",
-    "error_loading_seed_failed": "Не удалось получить исходную фразу.",
     "seed_modal_info_text": "Пожалуйста, запишите вашу сид-фразу и пароль! Без этой информации вы не сможете получить доступ и восстановить свой кошелек!",
     "documentation": "Документация",
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "confirm_locking_modal_title": "Блокировка кошелька",
-    "confirm_locking_modal_body_earn": "Заработок активен. Блокировка кошелька остановит службу. Вы можете закрыть окно браузера, чтобы она работала в фоновом режиме.",
-    "confirm_locking_modal_body_jam": "Выполняется Совместная Транзакция. Блокировка кошелька остановит службу. Вы можете закрыть окно браузера, чтобы она работала в фоновом режиме.",
     "rescan_chain": "Повторное сканирование блокчейна",
     "fees": {
       "title": "Лимиты комиссий",
@@ -245,7 +206,6 @@
       "description_general_fee_settings": "Комиссии за майнинг зависят от приоритета транзакции и условий мемпула.",
       "radio_tx_fees_blocks": "Целевой блок",
       "radio_tx_fees_satspervbyte": "sats/vByte",
-      "label_tx_fees": "Базовая комиссия за транзакцию",
       "description_tx_fees_blocks": "Установка базовой комиссии в sats/vByte переопределит настройку целевого блока. Проверьте свой mempool, чтобы установить эту комиссию соответствующим образом. При использовании настройки цели блока Jam будет использовать механизм оценки комиссии Bitcoin Core для динамической установки базовой комиссии в зависимости от активности мемпула. По умолчанию: 3.",
       "description_tx_fees_satspervbyte": "Установка базовой комиссии в sats/vByte переопределит настройку цели блока. Проверьте свой mempool, чтобы установить эту комиссию соответствующим образом.",
       "feedback_invalid_tx_fees_blocks": "Пожалуйста, укажите допустимую цель блока между {{ min }} и {{ max }}.",
@@ -268,7 +228,6 @@
       "text_button_cancel": "Отмена",
       "text_button_submit": "Сохранить",
       "text_button_submitting": "Отправка",
-      "error_loading_fee_config_failed": "Ошибка при загрузке значений конфигурации комиссии.",
       "error_saving_fee_config_failed": "Ошибка при сохранении значений конфигурации комиссии. Причина: {{ reason }}"
     }
   },
@@ -287,7 +246,6 @@
     "error_loading_logs_failed": "Не удалось получить лог файл."
   },
   "send": {
-    "loading": "Загрузка",
     "title": "Отправить",
     "subtitle": "Используйте Совместную Транзакцию для повышения безопасности и конфиденциальности.",
     "label_num_collaborators": "Количество соавторов: {{ numCollaborators }}",
@@ -295,7 +253,6 @@
     "description_num_collaborators": "Большее число лучше для конфиденциальности, но также увеличивает комиссию за транзакцию.",
     "error_invalid_num_collaborators": "Пожалуйста, используйте значение между {{ minNumCollaborators }} и {{ maxNumCollaborators }} соавторов.",
     "taker_error_message_max_fees_config_missing": "Переменные конфигурации 'max_cj_fee_rel' и 'max_cj_fee_abs' должны быть установлены в joinmarket.cfg для отправки Совместных Транзакций. Рассмотрите возможность добавления их в конфигурацию вручную.",
-    "direct_payment_error_message_bad_request": "Пожалуйста, внимательно проверьте введенные вами данные.",
     "error_loading_min_makers_failed": "Загрузка значения конфигурации «minimum_makers» не удалась.",
     "alert_payment_successful": "Платеж успешен: отправлено {{ amount }} sats получателю {{ address }} в транзакции {{ txid }}.",
     "text_maker_running": "Заработок активен. Остановите службу, чтобы отправлять Совместные Транзакции.",
@@ -320,20 +277,8 @@
     "text_sending": "Отправка",
     "button_sweep": "Перенос",
     "button_clear_sweep": "Перенести",
-    "button_sweep_amount_breakdown": "Как это рассчитывается?",
-    "sweep_amount_breakdown_total_balance": "Общий баланс",
-    "sweep_amount_breakdown_frozen_balance": "Замороженный или заблокированный баланс",
-    "sweep_amount_breakdown_estimated_amount": "Предполагаемая сумма к отправке",
-    "sweep_amount_breakdown_explanation": "Транзакция Переноса переводит все доступные все средства из кошелька, не оставляя никаких монет, за исключением тех, которые были <1>заморожены</1> или <3>заблокированы по времени</3>. Комиссия за майнинг и Комиссия за участие будут вычтены из суммы, чтобы остаток был нулевым. Точная сумма транзакции может быть рассчитана JoinMarket только в момент совершения транзакции. Поэтому показанная предполагаемая сумма может отличаться от фактически отправленной суммы. Более подробную информацию см. в <5>документации JoinMarket</5>.",
     "fee_breakdown": {
-      "title": "Плата за сотрудничество: {{ maxCollaboratorFee }}",
-      "subtitle": "В зависимости от суммы, количества соавторов и <1>установленных лимитов</1> вы можете увидеть максимальные комиссии соавторов за предстоящую Совместную Транзакцию.",
-      "alert_collaborator_fee_note": "Эта стоимость <strong>не включает в себя регулярные <1>сборы за майнинг</1><strong>.",
-      "absolute_limit": "Абсолютный лимит комиссии",
-      "relative_limit": "Относительный предел комиссии",
-      "fee_card_subtitle": "<1>{{ maxFee }}</1> * {{ numCollaborators }}",
-      "placeholder_config_value_not_present": "Неопределенный",
-      "placeholder_amount_missing_amount": "Введите сумму"
+      "title": "Плата за сотрудничество: {{ maxCollaboratorFee }}"
     },
     "confirm_send_modal": {
       "title": "Подтвердить платеж",
@@ -342,7 +287,6 @@
       "text_sweep_info_popover": "Точная сумма транзакции может быть рассчитана JoinMarket только на момент совершения транзакции.",
       "label_recipient": "Получатель",
       "label_source_jar": "Отправить из",
-      "text_source_jar": "Банка {{ jarId }}",
       "label_num_collaborators": "Соавторы",
       "text_collaborative_tx_enabled": "Совместная Транзакция",
       "text_collaborative_tx_disabled": "Обычный (прямой) платеж",
@@ -352,13 +296,7 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "Оценка высокого приоритета (следующий блок)",
-      "text_miner_fee_in_targeted_blocks_other": "Использование оценки для включения в следующие {{ count }} блоков",
-      "label_eligible_utxos": "Доступные UTXOs",
-      "description_eligible_utxos": "В транзакцию будут включены один или несколько из следующих UTXO: ",
-      "label_selected_utxos_one": "Выбранный UTXO",
-      "label_selected_utxos_other": "Выбранные UTXOs",
-      "description_selected_utxos_one": "В транзакцию будет включен следующий UTXO: ",
-      "description_selected_utxos_other": "В транзакцию будут включены следующие UTXO: "
+      "text_miner_fee_in_targeted_blocks_other": "Использование оценки для включения в следующие {{ count }} блоков"
     },
     "confirm_abort_modal": {
       "title": "Прервать транзакцию",
@@ -368,8 +306,6 @@
       "hint_missing_utxos": "Для выполнения Совместной Транзакции вам понадобятся UTXO с {{ minConfirmations }} или большим количеством подтверждений в исходном jar-файле. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Совместная Транзакция требует, чтобы ваши UTXO имели {{ minConfirmations }} или более подтверждений. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Не удалось получить обязательства по источнику для этой банки слишком много раз подряд. По соображениям безопасности вам нужен свежий UTXO в банке, чтобы повторить попытку. Подробнее см. в <1>документации</1>.",
-      "hint_missing_retries_detail_one": "Следующий UTXO был использован безуспешно слишком много раз и не может быть использован повторно: <1></1>",
-      "hint_missing_retries_detail_other": "Следующие {{count}} UTXO были использованы безуспешно слишком много раз и не могут быть использованы повторно: <1></1>",
       "nested_hint_wait_for_block": "Выберите другую банку для отправки или подождите еще один блок.",
       "nested_hint_wait_for_block_other": "Выберите другую банку для отправки или подождите еще {{count}} блоков.",
       "nested_hint_fund_jar": "Выберите другую банку для отправки или пополните эту банку и подождите один блок.",
@@ -397,14 +333,10 @@
     "subtitle": "Предлагая ликвидность рынку, вы улучшаете конфиденциальность себя и других. Ваши монеты всегда остаются под вашим контролем и никогда не покидают ваш кошелек.",
     "market_explainer": "Вы можете выбрать, сколько вы хотите взимать за свое предложение. Обратите внимание, что вы участвуете и конкурируете на открытом рынке — нет гарантии, что другие участники рынка примут ваше предложение. Выбор для Совместной Транзакции может занять некоторое время. Низкие сборы увеличивают ваши шансы.",
     "alert_empty_report": "Отчет пуст.",
-    "text_report_length": "Показано {{ visibleLines }} из {{ linesWithoutHeader }} записей",
-    "error_loading_report_failed": "Не удалось загрузить отчет о доходах.",
     "alert_starting": "Старт службы",
     "alert_stopping": "Остановка службы",
     "alert_running": "Предлагаем sats, чтобы заработать больше sats",
-    "alert_coinjoin_in_progress": "В настоящее время выполняется Совместная Транзакция.",
     "alert_no_spendable_balance_description": "<0>Пополните свой кошелек</0>, чтобы начать зарабатывать.",
-    "button_settings": "Параметры Вашего предложения",
     "radio_abs_offer_label": "Абсолютная комиссия",
     "radio_rel_offer_label": "Относительная комиссия",
     "label_rel_fee": "Относительная комиссия {{ fee }}",
@@ -423,7 +355,6 @@
     "text_starting": "Начинаем",
     "text_stopping": "Останавливаем",
     "button_show_report": "Показать отчет",
-    "button_show_orderbook": "Показать ордербук",
     "current": {
       "text_offer": "Предложение",
       "text_cjfee": "Комиссия",
@@ -439,7 +370,6 @@
       "text_report_summary_other": "{{ count }} записей",
       "text_report_summary_filtered_one": "найдена {{ count }} запись",
       "text_report_summary_filtered_other": "найдено {{ count }} записей",
-      "label_search": "Поиск",
       "placeholder_search": "Поиск",
       "heading_timestamp": "Дата\\Время",
       "heading_cj_amount": "Сумма транзакции",
@@ -477,58 +407,38 @@
         "warning_fb_with_same_expiry": "<strong>Внимание</strong>: Fidelity Bond с тем же сроком блокировки уже существует."
       },
       "select_jar": {
-        "text_primary_button": "След",
-        "text_secondary_button": "Отмена",
         "description": "Выберите банку, из которой вы будете финансировать Fidelity Bond."
       },
       "select_utxos": {
-        "text_primary_button": "След",
-        "text_primary_button_unsafe": "Выберите потенциально менее приватные UTXOs",
-        "text_secondary_button": "Отмена",
         "description": "Выберите один или несколько UTXO из Банки {{ jar }} для использования в качестве Fidelity Bond.",
         "utxo_card": {
-          "confirmations": "{{ confs }} Подтверждений",
-          "label_frozen": "заморожен",
-          "label_locked": "заблокирован",
-          "label_cj_out": "cj-out"
+          "confirmations": "{{ confs }} Подтверждений"
         }
       },
       "freeze_utxos": {
         "text_primary_button": "Заморозить UTXOs",
         "text_primary_button_all_frozen": "Обзор конфигурации",
-        "text_primary_button_error": "Попробуйте еще раз",
-        "text_secondary_button": "Отмена",
-        "description_selected_utxos": "Выбранные UTXOs:",
-        "description_unselected_utxos": "Следующие UTXO не будут использоваться для Fidelity Bond:",
         "description_selected_utxos_to_freeze": "Они будут заморожены, чтобы остаться в банке {{ jar }}. Вы можете разморозить их в любое время после создания Fidelity Bond."
       },
       "review_inputs": {
         "text_primary_button": "Создать Fidelity Bond",
-        "text_primary_button_unsafe": "Создать Fidelity Bond с потенциально менее приватными UTXOs",
-        "text_primary_button_error": "Попробуйте еще раз",
-        "text_secondary_button": "Отмена",
-        "description": "Вы настроили Fidelity Bond следующим образом:",
         "label_lock_date": "Блокировка до",
         "label_jar": "Финансируется из",
         "label_jar_n": "Банка {{ jar }}",
         "label_amount": "Сумма, подлежащая блокировке",
-        "label_address": "Средства будут заблокированы по времени и отправлены",
-        "label_selected_utxos": "UTXOs которые будут заблокированы по времени:"
+        "label_address": "Средства будут заблокированы по времени и отправлены"
       },
       "create_fidelity_bond": {
         "title": "Создать Fidelity Bond",
         "success_text": "Fidelity Bond создан!",
         "text_primary_button": "Завершить",
         "text_primary_button_unfreeze": "Разморозить UTXOs",
-        "text_primary_button_error": "Начать снова",
-        "text_secondary_button": "Завершить",
         "label_lock_date": "Заблокировано до",
         "label_address": "Адрес с ограничением по времени",
         "text_copy_transaction_id": "ID транзакции скопирован",
         "label_utxos_to_unfreeze": "Хотите ли вы разморозить UTXO, которые были заморожены ранее?"
       },
       "unfreeze_utxos": {
-        "text_primary_button": "Завершить",
         "done": "UTXOs разморожены"
       },
       "confirm_modal": {
@@ -536,11 +446,7 @@
         "body": "Пока не истечет срок действия Fidelity Bond, потратить заблокированные по времени средства будет невозможно. Дата истечения срока действия — {{humanReadableDuration}} {{date}}."
       },
       "title": "Настроить Fidelity Bond",
-      "title_fidelity_bond_exists": "Настроить дополнительный Fidelity Bond",
       "subtitle": "Ваши монеты будут временно заблокированы протоколом Bitcoin. Их невозможно переместить до истечения срока действия Fidelity Bond.",
-      "subtitle_fidelity_bond_exists": "Если существует более одного Fidelity Bond, будет использована только <0>самый ценный</0>.",
-      "text_maker_running": "Заработок активен. Остановите службу, чтобы создать Fidelity Bond.",
-      "text_coinjoin_already_running": "В настоящее время выполняется Совместная Транзакция.",
       "create_form": {
         "confirmation_toggle_title": "Я внимательно рассмотрел свои данные.",
         "confirmation_toggle_subtitle": "Я понимаю, что заблокированные средства будут недоступны в течение указанного периода времени.",
@@ -574,7 +480,6 @@
         "text_button_cancel": "Отмена",
         "text_button_submit": "Разблокировать Funds",
         "text_button_done": "Завершить",
-        "error_fidelity_bond_still_locked": "Данный Fidelity Bond все еще заблокирован.",
         "error_loading_address": "Невозможно получить новый адрес.",
         "error_freezing_utxos": "Не удалось заморозить UTXOs.",
         "error_unfreezing_fidelity_bond": "Ошибка при разморозке просроченного Fidelity Bond.",
@@ -626,9 +531,7 @@
     "error_loading_orderbook_failed": "Ошибка при загрузке ордербука. Ваша текущая локальная настройка может не поддерживать загрузку ордербука. Причина: {{ reason }}",
     "text_offer_type_absolute": "абсолютная",
     "text_offer_type_relative": "относительная",
-    "label_search": "Поиск",
     "placeholder_search": "Поиск",
-    "text_orderbook_filter_count": "{{ filterCount }} записей соответствуют заданным критериям поиска",
     "label_highlight_own_orders": "Выделите мои предложения",
     "text_highlight_own_orders_subtitle": "Может потребоваться некоторое время, чтобы ваше предложение и ваш Fidelity Bond появились в вашем локальном ордербуке.",
     "label_pin_to_top_own_orders": "Закрепить мои предложения",
@@ -662,24 +565,15 @@
     "progress_tldr_seconds": "Запланировано <1>{{ length }}</1> Совместных Транзакций Переноса в течение <3>{{ seconds }}</3> секунд.",
     "progress_tldr_hours": "Запланировано <1>{{ length }}</1> Совместных Транзакций Переноса в течение <3>{{ hours }}</3> часов.",
     "progress_description": "Эта оценка является минимальным временем ожидания. Дополнительные задержки из-за сетевой коммуникации или подтверждения транзакции не учитываются.",
-    "progress_current_state": "Ожидание обработки Совместной Транзакции Переноса <1>{{ current }}</1> из <3>{{ total }}</3>",
     "progress_done": "Все Совместные Транзакции Переноса завершены успешно. Планировщик скоро остановится.",
     "precondition": {
       "hint_missing_utxos": "Для запуска планировщика Переноса вам понадобятся UTXO с {{ minConfirmations }} или большим количеством подтверждений. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Планировщик требует, чтобы ваши UTXO имели {{ minConfirmations }} или более подтверждений. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Слишком много раз не удалось получить обязательства по источнику. По соображениям безопасности вам нужен свежий UTXO в банке, чтобы попробовать еще раз. Подробнее см. в <1>документации</1>.",
-      "hint_missing_retries_detail_one": "Следующий UTXO был использован безуспешно слишком много раз и не может быть использован повторно: <1></1>",
-      "hint_missing_retries_detail_other": "Следующие {{count}} UTXO были использованы безуспешно слишком много раз и не могут быть использованы повторно: <1></1>",
       "nested_hint_wait_for_block": "Подождите еще один блок.",
       "nested_hint_wait_for_block_other": "Подождите еще {{ count }} блоков.",
       "nested_hint_fund_wallet": "Пополните свой кошелек и ждите еще один блок.",
       "nested_hint_fund_wallet_other": "Пополните свой кошелек и ждите еще {{count}} блоков."
-    },
-    "success": {
-      "title": "Выполнено!",
-      "subtitle": "Успешно завершена одна запланированная Совместная Транзакция Переноса.",
-      "subtitle_other": "Успешно завершено {{count}} запланированных Совместных Транзакций Переноса.",
-      "text_button_submit": "Продолжить"
     },
     "confirm_modal": {
       "title": "Начать запланированный Перенос",
@@ -698,35 +592,14 @@
       "title_one": "{{ count }} UTXO в банке {{ jar }}",
       "title_other": "{{ count }} UTXOs в банке{{ jar }}",
       "text_balance_sum_total": "<0></0> всего",
-      "text_balance_sum_selected": "<0></0> выбрано",
       "button_freeze": "Заморозить",
       "button_unfreeze": "Разморозить",
-      "button_freeze_loading": "Заморозка",
-      "button_unfreeze_loading": "Разморозка",
-      "utxo_tooltip_locktime": "заблокировано до {{ locktime }}",
-      "utxo_tag_frozen": "заморожен",
       "utxo_tag_fb": "залог",
       "column_title_balance": "Значение",
       "column_title_address": "Адрес",
       "column_title_confirmations": "Подтверждений",
       "column_title_label_and_status": "Метки",
-      "row_button_details": "Подробности",
-      "utxo_detail_label_id": "UTXO Id",
-      "utxo_detail_label_address": "Адрес",
-      "utxo_detail_label_path": "Путь",
-      "utxo_detail_label_label": "Метка адреса",
-      "utxo_detail_label_value": "Значение",
-      "utxo_detail_label_tries": "Попыток",
-      "utxo_detail_label_tries_remaining": "Попыток осталось",
-      "utxo_detail_label_jar": "банка",
-      "utxo_detail_label_is_external": "Внешний",
-      "utxo_detail_label_confirmations": "Подтверждений",
-      "utxo_detail_label_is_frozen": "Заморожен",
-      "utxo_detail_label_locktime": "Locktime",
-      "utxo_detail_label_status": "Статус адреса",
-      "text_actions_disabled": "Некоторые операции отключены.",
-      "text_actions_disabled_maker_running": "заработок активен. Некоторые операции отключены.",
-      "text_actions_disabled_taker_running": "В настоящее время выполняется Совместная Транзакция. Некоторые операции отключены."
+      "row_button_details": "Подробности"
     }
   },
   "show_utxos": {
