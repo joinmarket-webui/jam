@@ -21,9 +21,11 @@ describe('PostLoginOnboardingTour', () => {
       configurable: true,
       value: vi.fn(),
     })
+
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function getBoundingClientRect(
       this: HTMLElement,
     ) {
+      // eslint-disable-next-line unicorn/no-this-outside-of-class -- acceptable for mocks
       const id = this.dataset.tourId
       const top = id === 'settings-button' ? 520 : 80
 

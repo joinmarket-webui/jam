@@ -44,11 +44,10 @@ const buildDestinationErrorList = (
   return new yup.ValidationError(innerErrors)
 }
 
-const hasSweepResolverContext = (value: unknown): value is SweepResolverContext => {
-  return typeof value === 'object' && value !== null && 'addressSummary' in value
-}
-
-export const sweepFormSchema = (t: TFunction<'translation', undefined>): yup.ObjectSchema<SweepFormValues> => {
+export const sweepFormSchema = (
+  addressSummary: AddressSummary,
+  t: TFunction<'translation', undefined>,
+): yup.ObjectSchema<SweepFormValues> => {
   const invalidDestinationAddressMessage = t('scheduler.feedback_invalid_destination_address')
 
   return yup
@@ -58,6 +57,7 @@ export const sweepFormSchema = (t: TFunction<'translation', undefined>): yup.Obj
         .of(
           yup
             .object({
+              // TODO: use formValidation#destinationAddressField ?
               address: yup
                 .string()
                 .transform((_, originalValue: unknown) =>
@@ -66,7 +66,7 @@ export const sweepFormSchema = (t: TFunction<'translation', undefined>): yup.Obj
                 .defined()
                 .test('valid-sweep-destination', invalidDestinationAddressMessage, function (value) {
                   if (!isValidAddress(value)) {
-                    return this.createError({ message: invalidDestinationAddressMessage })
+                    return false
                   }
 
                   return true
@@ -76,9 +76,6 @@ export const sweepFormSchema = (t: TFunction<'translation', undefined>): yup.Obj
         )
         .test('unique-destination-addresses', function (value: SweepFormValues['destinations'] | undefined) {
           const destinations = value ?? []
-          const context: unknown = this.options.context
-          const addressSummary = hasSweepResolverContext(context) ? context.addressSummary : {}
-
           return buildDestinationErrorList(destinations, addressSummary, t)
         })
         .required(),

@@ -57,7 +57,7 @@ describe('getErrorReason', () => {
   it('returns fallback when nothing usable is present', () => {
     expect(getErrorReason(undefined, 'fallback')).toBe('fallback')
     expect(getErrorReason({}, 'fallback')).toBe('fallback')
-    expect(getErrorReason('   ', 'fallback')).toBe('fallback')
+    expect(getErrorReason(' '.repeat(3), 'fallback')).toBe('fallback')
   })
 
   it('returns direct string errors', () => {

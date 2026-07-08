@@ -35,13 +35,8 @@ const isKeyEventFromInputElement = (event: KeyboardEvent) => {
   return (
     event.target &&
     (('tagName' in event.target &&
-      (event.target['tagName'] === 'BUTTON' ||
-        event.target['tagName'] === 'AUDIO' ||
-        event.target['tagName'] === 'VIDEO' ||
-        event.target['tagName'] === 'SEARCH' ||
-        event.target['tagName'] === 'SELECT' ||
-        event.target['tagName'] === 'INPUT' ||
-        event.target['tagName'] === 'TEXTAREA')) ||
+      typeof event.target['tagName'] === 'string' &&
+      ['BUTTON', 'AUDIO', 'VIDEO', 'SEARCH', 'SELECT', 'INPUT', 'TEXTAREA'].includes(event.target['tagName'])) ||
       ('isContentEditable' in event.target && event.target.isContentEditable === true))
   )
 }

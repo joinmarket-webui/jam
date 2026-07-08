@@ -131,7 +131,7 @@ interface JamWalletInfoContextProviderProps {
 }
 
 const combinedUtxosHash = (utxos: Utxo[]) => {
-  const utxoIds = utxos.map((it) => hexToBytes(it.utxo.split(':')[0]))
+  const utxoIds = utxos.map((it) => hexToBytes(it.utxo.split(':', 1)[0]))
   const combinedUtxoIds = new Uint8Array(utxoIds.reduce((acc, current) => [...acc, ...current], [] as number[]))
   return sha256(combinedUtxoIds)
 }
@@ -180,8 +180,8 @@ export const JamWalletInfoContextProvider = ({
   })
 
   Object.values(jarTemplatesByJarIndex).forEach((jarTemplate) => {
-    const existingJar = jars.find((it) => it.jarIndex === jarTemplate.jarIndex)
-    if (!existingJar) {
+    const jarPresent = jars.some((it) => it.jarIndex === jarTemplate.jarIndex)
+    if (!jarPresent) {
       jars.push({
         ...jarTemplate,
         balanceSummary: EMPTY_BALANCE_SUMMARY,
