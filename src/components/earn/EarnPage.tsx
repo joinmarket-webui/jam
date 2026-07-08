@@ -88,9 +88,8 @@ const NoSpendableBalanceAlert = () => {
       <AlertTitle>{t('earn.alert_no_spendable_balance_title')}</AlertTitle>
       <AlertDescription>
         <Trans i18nKey="earn.alert_no_spendable_balance_description">
-          Fund your wallet on the
           <Link to={routes.receive} className="font-semibold">
-            Receive page
+            Fund your wallet
           </Link>
           to start earning.
         </Trans>

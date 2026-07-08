@@ -365,6 +365,7 @@
     "alert_stopping": "服务正在停止。",
     "alert_running": "正在提供流动性并以此赚取收益...",
     "alert_coinjoin_in_progress": "协作式交易正在进行中。",
+    "alert_no_spendable_balance_description": "<0>充值你的钱包</0>以开始收益。",
     "button_settings": "报价选项",
     "radio_abs_offer_label": "绝对报价",
     "radio_rel_offer_label": "相对报价",

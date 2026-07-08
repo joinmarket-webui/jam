@@ -402,6 +402,7 @@
     "alert_stopping": "Остановка службы",
     "alert_running": "Предлагаем sats, чтобы заработать больше sats",
     "alert_coinjoin_in_progress": "В настоящее время выполняется Совместная Транзакция.",
+    "alert_no_spendable_balance_description": "<0>Пополните свой кошелек</0>, чтобы начать зарабатывать.",
     "button_settings": "Параметры Вашего предложения",
     "radio_abs_offer_label": "Абсолютная комиссия",
     "radio_rel_offer_label": "Относительная комиссия",
