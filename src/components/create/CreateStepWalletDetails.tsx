@@ -14,8 +14,8 @@ type CreateStepWalletDetailsProps = ComponentProps<typeof CreateWalletForm> & {
 export const CreateStepWalletDetails = ({ sessionInfo, ...createFormProps }: CreateStepWalletDetailsProps) => {
   return (
     <div className="space-y-2">
-      {sessionInfo?.session === true && sessionInfo.wallet_name ? (
-        <OtherWalletActiveAlert linkTarget={'login'} walletFileName={sessionInfo.wallet_name as WalletFileName} />
+      {sessionInfo?.session === true ? (
+        <OtherWalletActiveAlert linkTarget={'login'} walletFileName={sessionInfo.wallet_name as WalletFileName | undefined} />
       ) : (
         <CreateWalletForm {...createFormProps} />
       )}

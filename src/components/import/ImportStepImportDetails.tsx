@@ -21,7 +21,7 @@ export const ImportStepImportDetails = ({ sessionInfo, onBack, ...importFormProp
   return (
     <div className="space-y-2">
       {isSessionActive && (
-        <OtherWalletActiveAlert linkTarget={'login'} walletFileName={sessionInfo.wallet_name as WalletFileName} />
+        <OtherWalletActiveAlert linkTarget={'login'} walletFileName={sessionInfo.wallet_name as WalletFileName | undefined} />
       )}
       {isRescanActive && <RescanActiveAlert linkTarget={'login'} />}
       {showForm && <ImportDetailsForm {...importFormProps} />}
