@@ -6,6 +6,22 @@
 @custom-variant dark (&:is([data-theme='dark'] *));
 @custom-variant light (&:is([data-theme='light'] *));
 
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html,
+  :root,
+  :host {
+    --font-sans: ui-sans-serif, system-ui, sans-serif;
+    --font-serif: ui-serif, serif;
+    --font-mono: ui-monospace, monospace;
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -154,15 +170,6 @@
   --brand-warning-foreground: #181b20;
   --brand-info: #7893d1;
   --brand-info-foreground: #181b20;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }
 
 html body[data-scroll-locked] {
