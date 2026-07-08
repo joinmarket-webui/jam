@@ -57,7 +57,7 @@ type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog
 }
 
 const responsiveSelectionButtonGroupClass =
-  'w-full flex-col gap-2 sm:flex-row sm:items-stretch [&>*]:rounded-md [&>*]:border sm:[&>*:not(:first-child)]:rounded-l-none sm:[&>*:not(:first-child)]:border-l-0 sm:[&>*:not(:last-child)]:rounded-r-none'
+  'w-full flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-0 [&>*:not(:first-child)]:rounded-l-lg [&>*:not(:first-child)]:border-l [&>*:not(:last-child)]:rounded-r-lg sm:[&>*:not(:first-child)]:rounded-l-none sm:[&>*:not(:first-child)]:border-l-0 sm:[&>*:not(:last-child)]:rounded-r-none'
 
 const AddressFromJarSelectorDialog = ({
   walletFileName,
