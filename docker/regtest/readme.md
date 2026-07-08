@@ -120,7 +120,7 @@ Port mapping overview:
 
 | Container                               | Ports                                          |
 | --------------------------------------- | ---------------------------------------------- |
-| `joinmarket` (ng native)                | `28183` (API), `28283` (WS), `62601` (obwatch) |
+| `joinmarket` (ng native)                | `28183` (API)                                  |
 | `joinmarket2` (ng standalone)           | `29080` (UI), `29183` (API)                    |
 | `joinmarket3` (clientserver native)     | `30183` (API), `30283` (WS), `30601` (obwatch) |
 | `joinmarket4` (clientserver standalone) | `31080` (UI, basic auth), `31183` (API)        |
