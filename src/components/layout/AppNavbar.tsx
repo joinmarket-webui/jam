@@ -70,7 +70,7 @@ const WalletPreview = ({
             ) : (
               <>
                 {isLoading ? (
-                  <Skeleton className="bg-muted h-4 w-full" />
+                  <Skeleton className="bg-brand-nav-foreground/25 h-4 w-full" />
                 ) : (
                   <Balance valueString={String(totalBalance)} />
                 )}
