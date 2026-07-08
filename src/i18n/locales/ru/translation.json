@@ -46,7 +46,8 @@
     "tab_sweep": "Перенести",
     "joining_in_progress": "Перемешивание",
     "menu_mobile": "Меню",
-    "menu_mobile_settings": "Настройки"
+    "menu_mobile_settings": "Настройки",
+    "button_logout": "Выйти"
   },
   "footer": {
     "warning": "Это бета-версия ПО.<br /><1>Прочитайте перед использованием.</1>",

@@ -43,7 +43,8 @@
     "tab_sweep": "扫空",
     "joining_in_progress": "Jamming",
     "menu_mobile": "菜单",
-    "menu_mobile_settings": "设置"
+    "menu_mobile_settings": "设置",
+    "button_logout": "退出登录"
   },
   "footer": {
     "warning": "这是测试版软件。<br /><1>使用前请先参阅。</1>",

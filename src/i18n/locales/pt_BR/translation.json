@@ -40,7 +40,8 @@
     "tab_sweep": "Limpar",
     "joining_in_progress": "Misturando",
     "menu_mobile": "Menu",
-    "menu_mobile_settings": "Configurações"
+    "menu_mobile_settings": "Configurações",
+    "button_logout": "Sair"
   },
   "footer": {
     "warning": "Este é um software em beta.<br /><1>Leia isso antes de utilizá-lo.</1>",
