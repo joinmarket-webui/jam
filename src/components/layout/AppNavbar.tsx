@@ -159,7 +159,7 @@ export function AppNavbar({
       />
       <div
         className={cn(
-          'hidden min-w-0 flex-1 items-center justify-center text-sm font-semibold md:gap-6 lg:gap-12 lg:text-base',
+          'text-brand-nav-foreground/80 hidden min-w-0 flex-1 items-center justify-center text-sm font-semibold md:gap-6 lg:gap-12 lg:text-base',
           {
             'md:flex': !isSidebarOpen,
             'lg:flex': isSidebarOpen,
@@ -167,20 +167,17 @@ export function AppNavbar({
           },
         )}
       >
-        <Link to={rescanningRoute ? '#' : routes.receive} className="text-muted-foreground hover:text-foreground">
+        <Link to={rescanningRoute ? '#' : routes.receive} className="hover:text-brand-nav-foreground">
           {t('navbar.tab_receive')}
         </Link>
-        <Link to={rescanningRoute ? '#' : routes.send} className="text-muted-foreground hover:text-foreground relative">
+        <Link to={rescanningRoute ? '#' : routes.send} className="hover:text-brand-nav-foreground relative">
           <WithActivityIndicator active={singleCoinJoinRunning}>{t('navbar.tab_send')}</WithActivityIndicator>
         </Link>
-        <Link to={rescanningRoute ? '#' : routes.earn} className="text-muted-foreground hover:text-foreground relative">
+        <Link to={rescanningRoute ? '#' : routes.earn} className="hover:text-brand-nav-foreground relative">
           <WithActivityIndicator active={makerRunning}>{t('navbar.tab_earn')}</WithActivityIndicator>
         </Link>
-        <span className="text-border">|</span>
-        <Link
-          to={rescanningRoute ? '#' : routes.sweep}
-          className="text-muted-foreground hover:text-foreground relative"
-        >
+        <span className="text-border select-none">|</span>
+        <Link to={rescanningRoute ? '#' : routes.sweep} className="hover:text-brand-nav-foreground relative">
           <WithActivityIndicator active={schedulerRunning}>{t('navbar.tab_sweep')}</WithActivityIndicator>
         </Link>
       </div>
@@ -189,7 +186,7 @@ export function AppNavbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="text-brand-success"
+                className="text-brand-success/80 hover:text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(rescanningRoute)}
@@ -205,7 +202,7 @@ export function AppNavbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="text-brand-success"
+                className="text-brand-success/80 hover:text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(joiningRoute)}
