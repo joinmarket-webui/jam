@@ -55,7 +55,9 @@
     "joining_in_progress": "Jamming",
     "menu_mobile": "Menu",
     "menu_mobile_settings": "Settings",
-    "button_logout": "Logout"
+    "button_logout": "Logout",
+    "tooltip_text_sidebar_open": "Open sidebar",
+    "tooltip_text_sidebar_close": "Close sidebar"
   },
   "footer": {
     "warning": "This is beta software.<br /><1>Read this before using.</1>",

@@ -1,4 +1,5 @@
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { ComponentProps } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { LockKeyholeIcon, LogOutIcon, PackageSearchIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
@@ -94,6 +95,7 @@ type AppNavbarProps = WalletPreviewProps & {
   sessionInfo?: SessionInfo
   sidebarInfo?: SidebarInfo
   rescanInfo?: RescanInfo
+  tooltipSide?: ComponentProps<typeof TooltipContent>['side']
 }
 
 export function AppNavbar({
@@ -109,6 +111,7 @@ export function AppNavbar({
   sessionInfo,
   sidebarInfo,
   rescanInfo,
+  tooltipSide,
 }: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -195,7 +198,7 @@ export function AppNavbar({
                 <PackageSearchIcon className="motion-safe:animate-pulse" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('navbar.text_rescan_in_progress')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('navbar.text_rescan_in_progress')}</TooltipContent>
           </Tooltip>
         )}
         {joiningRoute && (
@@ -211,10 +214,17 @@ export function AppNavbar({
                 <ShuffleIcon className="motion-safe:animate-pulse" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('navbar.joining_in_progress')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('navbar.joining_in_progress')}</TooltipContent>
           </Tooltip>
         )}
-        <ThemeToggleButton className="hidden sm:flex" variant="ghost-navbar" theme={theme} onClick={toggleTheme} />
+
+        <ThemeToggleButton
+          className="hidden sm:flex"
+          variant="ghost-navbar"
+          theme={theme}
+          onClick={toggleTheme}
+          tooltipSide={tooltipSide}
+        />
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -228,7 +238,7 @@ export function AppNavbar({
               <SettingsIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{t('navbar.menu_mobile_settings')}</TooltipContent>
+          <TooltipContent side={tooltipSide}>{t('navbar.menu_mobile_settings')}</TooltipContent>
         </Tooltip>
 
         {!serviceRunning && (
@@ -245,7 +255,7 @@ export function AppNavbar({
                 {lockWalletMutation.isPending ? <Spinner /> : <LockKeyholeIcon />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('settings.button_lock_wallet')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('settings.button_lock_wallet')}</TooltipContent>
           </Tooltip>
         )}
         {serviceRunning && (
@@ -262,7 +272,7 @@ export function AppNavbar({
                 {logoutMutation.isPending ? <Spinner /> : <LogOutIcon />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('navbar.button_logout')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('navbar.button_logout')}</TooltipContent>
           </Tooltip>
         )}
         {sidebarTrigger}
