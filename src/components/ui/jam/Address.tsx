@@ -27,10 +27,10 @@ const PlainAddress = ({ value, className, chunked }: PlainAddressProps) => {
 
 type CopyableAddressProps = PlainAddressProps
 
-const CopyableAddress = (props: CopyableAddressProps) => {
+const CopyableAddress = ({ className, ...props }: CopyableAddressProps) => {
   const { t } = useTranslation()
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className={cn('flex min-w-0 items-center gap-2', className)}>
       <PlainAddress {...props} />
       <CopyButton
         value={props.value}
