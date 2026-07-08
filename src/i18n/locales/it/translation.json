@@ -40,7 +40,8 @@
     "tab_sweep": "Sweep",
     "joining_in_progress": "Mescolamento in corso",
     "menu_mobile": "Menu",
-    "menu_mobile_settings": "Impostazioni"
+    "menu_mobile_settings": "Impostazioni",
+    "button_logout": "Disconnetti"
   },
   "footer": {
     "warning": "Questo software è in beta.<br /><1>Leggi qui prima di usarlo.</1>",

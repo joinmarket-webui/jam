@@ -12,7 +12,8 @@
     "tab_earn": "Générer",
     "joining_in_progress": "Brouillage",
     "menu_mobile": "Menu",
-    "menu_mobile_settings": "Réglages"
+    "menu_mobile_settings": "Réglages",
+    "button_logout": "Se déconnecter"
   },
   "app": {
     "alert_no_connection": "Aucune connexion au backend: {{ connectionError }}"

@@ -54,7 +54,8 @@
     "tab_sweep": "Sweep",
     "joining_in_progress": "Jamming",
     "menu_mobile": "Menu",
-    "menu_mobile_settings": "Settings"
+    "menu_mobile_settings": "Settings",
+    "button_logout": "Logout"
   },
   "footer": {
     "warning": "This is beta software.<br /><1>Read this before using.</1>",

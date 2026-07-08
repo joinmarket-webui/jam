@@ -43,7 +43,8 @@
     "tab_sweep": "Sweepen",
     "joining_in_progress": "Jamming",
     "menu_mobile": "Menü",
-    "menu_mobile_settings": "Einstellungen"
+    "menu_mobile_settings": "Einstellungen",
+    "button_logout": "Abmelden"
   },
   "footer": {
     "warning": "Jam ist Beta Software! <br /><1> Lies das, bevor du weitermachst.</1>",

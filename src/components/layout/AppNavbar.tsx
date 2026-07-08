@@ -120,6 +120,10 @@ export function AppNavbar({
   const singleCoinJoinRunning = sessionInfo?.coinjoin_in_process === true && !sessionInfo?.schedule
   const schedulerRunning = sessionInfo?.coinjoin_in_process === true && !!sessionInfo?.schedule
 
+  // While a maker/taker/rescan is in progress the wallet cannot be locked, so
+  // only offer "logout"; otherwise offer "lock wallet".
+  const serviceRunning = makerRunning || sessionInfo?.coinjoin_in_process === true || rescanInfo?.rescanning === true
+
   const joiningRoute = (() => {
     if (schedulerRunning) return routes.sweep
     if (singleCoinJoinRunning) return routes.send
@@ -230,35 +234,40 @@ export function AppNavbar({
           <TooltipContent>{t('navbar.menu_mobile_settings')}</TooltipContent>
         </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              className="hidden sm:flex"
-              variant="ghost-navbar"
-              size="icon"
-              onClick={() => void lockWalletMutation.mutateAsync({ navigate, t })}
-              aria-label={t('settings.button_lock_wallet')}
-              disabled={lockWalletMutation.isPending}
-            >
-              {lockWalletMutation.isPending ? <Spinner /> : <LockKeyholeIcon />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t('settings.button_lock_wallet')}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              className="hidden sm:flex"
-              variant="ghost-navbar"
-              size="icon"
-              onClick={() => void logoutMutation.mutateAsync({ navigate })}
-              aria-label={/* TODO: i18n */ 'Logout'}
-            >
-              <LogOutIcon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{/* TODO: i18n */ 'Logout'}</TooltipContent>
-        </Tooltip>
+        {!serviceRunning && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="hidden sm:flex"
+                variant="ghost-navbar"
+                size="icon"
+                onClick={() => void lockWalletMutation.mutateAsync({ navigate, t })}
+                aria-label={t('settings.button_lock_wallet')}
+                disabled={lockWalletMutation.isPending}
+              >
+                {lockWalletMutation.isPending ? <Spinner /> : <LockKeyholeIcon />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('settings.button_lock_wallet')}</TooltipContent>
+          </Tooltip>
+        )}
+        {serviceRunning && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="hidden sm:flex"
+                variant="ghost-navbar"
+                size="icon"
+                onClick={() => void logoutMutation.mutateAsync({ navigate })}
+                aria-label={t('navbar.button_logout')}
+                disabled={logoutMutation.isPending}
+              >
+                {logoutMutation.isPending ? <Spinner /> : <LogOutIcon />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('navbar.button_logout')}</TooltipContent>
+          </Tooltip>
+        )}
         {sidebarTrigger}
       </div>
     </header>

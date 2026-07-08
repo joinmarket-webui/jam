@@ -43,7 +43,8 @@
     "tab_sweep": "掃空",
     "joining_in_progress": "Jamming",
     "menu_mobile": "菜單",
-    "menu_mobile_settings": "設置"
+    "menu_mobile_settings": "設置",
+    "button_logout": "登出"
   },
   "footer": {
     "warning": "這是測試版軟件。<br /><1>使用前請先閱讀。</1>",
