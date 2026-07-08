@@ -117,70 +117,74 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
 
       <Card>
-        <CardContent className="flex w-full flex-col items-center justify-center gap-2">
-          {getAddressMutation.isPending ? (
-            <Skeleton className="aspect-square w-full max-w-80" />
-          ) : getAddressMutation.data?.address ? (
-            <BitcoinAddressQrCode
-              className="animate-in fade-in duration-1000"
-              address={getAddressMutation.data.address}
-              amount={amount}
-              width={QRCODE_WIDTH}
-            />
-          ) : getAddressMutation.isIdle ? (
-            <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => void fetchNewAddress()}
-                disabled={getAddressMutation.isPending}
-              >
-                <HatGlassesIcon />
-                {
-                  /*TODO: i18n*/ t('receive.button_reveal_address', {
-                    defaultValue: 'Reveal address',
-                  })
-                }
-              </Button>
-            </div>
-          ) : (
-            <div
-              className={cn(
-                'text-destructive flex aspect-square w-full max-w-80 items-center justify-center border text-sm',
-              )}
-            >
-              {t('receive.error_loading_address_failed')}
-            </div>
-          )}
-
-          {getAddressMutation.isPending ? (
-            <div className="flex flex-col items-center space-y-2">
-              <Skeleton className="mt-0.5 h-5 w-full max-w-96" />
-              <Skeleton className="h-6 w-[84px]" />
-            </div>
-          ) : (
-            <div className="animate-in fade-in space-y-2 text-center duration-1000">
-              <div className="min-h-5">
-                {!getAddressMutation.data?.address ? undefined : (
-                  <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
-                )}
+        <CardContent className="space-y-6 sm:space-y-2">
+          <div className="flex flex-col flex-wrap items-center justify-center gap-2">
+            {getAddressMutation.isPending ? (
+              <Skeleton className="aspect-square w-full max-w-80" />
+            ) : getAddressMutation.data?.address ? (
+              <BitcoinAddressQrCode
+                className="animate-in fade-in duration-1000"
+                address={getAddressMutation.data.address}
+                amount={amount}
+                width={QRCODE_WIDTH}
+              />
+            ) : getAddressMutation.isIdle ? (
+              <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => void fetchNewAddress()}
+                  disabled={getAddressMutation.isPending}
+                >
+                  <HatGlassesIcon />
+                  {
+                    /*TODO: i18n*/ t('receive.button_reveal_address', {
+                      defaultValue: 'Reveal address',
+                    })
+                  }
+                </Button>
               </div>
-              <Badge
-                className="min-h-6 text-sm"
-                variant={sourceJar ? getJarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
-              >
-                {sourceJar ? (
-                  <>
-                    {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
-                  </>
-                ) : (
-                  <>
-                    {selectedSourceJar?.name} <span className="text-xs">#{selectedSourceJar?.jarIndex}</span>
-                  </>
+            ) : (
+              <div
+                className={cn(
+                  'text-destructive flex aspect-square w-full max-w-80 items-center justify-center border text-sm',
                 )}
-              </Badge>
-            </div>
-          )}
+              >
+                {t('receive.error_loading_address_failed')}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {getAddressMutation.isPending ? (
+              <div className="flex w-full flex-col items-center space-y-2">
+                <Skeleton className="mt-0.5 h-5 w-full max-w-96" />
+                <Skeleton className="h-6 w-[84px]" />
+              </div>
+            ) : (
+              <div className="animate-in fade-in space-y-2 text-center duration-1000">
+                {!getAddressMutation.data?.address ? (
+                  <div className="min-h-5" />
+                ) : (
+                  <Address value={getAddressMutation.data.address} className="min-h-5 text-sm" copyable={true} />
+                )}
+                <Badge
+                  className="min-h-6 text-sm"
+                  variant={sourceJar ? getJarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
+                >
+                  {sourceJar ? (
+                    <>
+                      {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
+                    </>
+                  ) : (
+                    <>
+                      {selectedSourceJar?.name} <span className="text-xs">#{selectedSourceJar?.jarIndex}</span>
+                    </>
+                  )}
+                </Badge>
+              </div>
+            )}
+          </div>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <Button
@@ -237,27 +241,27 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               </Button>
             )}
           </div>
+
+          <Accordion type="single" collapsible>
+            <AccordionItem value="options">
+              <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-4">
+                <ReceiveForm
+                  className={'mx-1' /* add x-spacing for input component focus state*/}
+                  defaultValues={receiveFormDefaultValues}
+                  jars={jars}
+                  disabled={getAddressMutation.isPending}
+                  debug={isDeveloperMode}
+                  onSubmit={(values) => {
+                    setSelectedSourceJarIndex(values.source?.fromJar)
+                    setAmount(values.amount)
+                  }}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
-
-      <Accordion type="single" collapsible>
-        <AccordionItem value="options">
-          <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
-          <AccordionContent className="flex flex-col gap-4">
-            <ReceiveForm
-              className={'mx-1' /* add x-spacing for input component focus state*/}
-              defaultValues={receiveFormDefaultValues}
-              jars={jars}
-              disabled={getAddressMutation.isPending}
-              debug={isDeveloperMode}
-              onSubmit={(values) => {
-                setSelectedSourceJarIndex(values.source?.fromJar)
-                setAmount(values.amount)
-              }}
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
     </div>
   )
 }
