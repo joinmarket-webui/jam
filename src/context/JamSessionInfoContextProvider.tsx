@@ -7,7 +7,7 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
-import type { WalletFileName } from '@/lib/utils'
+import { factorToPercentage, type WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { JamSessionInfoContext } from './JamSessionInfoContext'
 import type { PaymentAttempt, RescanInfo, TakerInfo } from './JamSessionInfoContext'
@@ -92,10 +92,12 @@ export const JamSessionInfoContextProvider = ({
     const isRescanning = getrescaninfoQuery.data.rescanning || state?.rescanning === true
     const rescanningFinished = getrescaninfoQuery.data.rescanning === false && state?.rescanning === true
 
+    const progress = rescanningFinished ? 1 : (getrescaninfoQuery.data.progress ?? undefined)
     setRescanInfo({
       updatedAt: getrescaninfoQuery.dataUpdatedAt,
       rescanning: isRescanning,
-      progress: rescanningFinished ? 1 : (getrescaninfoQuery.data.progress ?? undefined),
+      progress: progress,
+      progressInPercentage: progress === undefined ? undefined : factorToPercentage(progress).toFixed(1),
     })
   }
 

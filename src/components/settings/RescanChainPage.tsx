@@ -124,7 +124,6 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
       setRescanInfo({
         updatedAt: Date.now(),
         rescanning: true,
-        progress: undefined,
       })
     },
     onError: (error: unknown) => {
@@ -133,7 +132,6 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
       setRescanInfo({
         updatedAt: Date.now(),
         rescanning: false,
-        progress: undefined,
       })
 
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
@@ -181,10 +179,10 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
               <div className="flex min-w-0 items-start gap-2">
                 <RefreshCwIcon className="mt-0.5 h-4 w-4 shrink-0 animate-spin motion-reduce:hidden" />
                 <span className="min-w-0 text-sm break-words">
-                  {rescanInfo?.progress === undefined
+                  {rescanInfo?.progressInPercentage === undefined
                     ? t('app.alert_rescan_in_progress')
                     : t('app.alert_rescan_in_progress_with_progress', {
-                        progress: rescanInfo.progress,
+                        progress: rescanInfo.progressInPercentage,
                       })}
                 </span>
               </div>

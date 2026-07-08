@@ -12,6 +12,6 @@ describe('AuthPageShell', () => {
 
     const child = screen.getByTestId('child')
     expect(child).toBeInTheDocument()
-    expect(child.parentElement).toHaveClass('from-background', 'to-muted', 'flex', 'flex-1')
+    expect(child.parentElement).toHaveClass('from-background', 'to-muted', 'flex', 'min-h-screen')
   })
 })
