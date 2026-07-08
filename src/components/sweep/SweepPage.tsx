@@ -97,14 +97,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     return buildSweepPreconditionSummary(allUtxos)
   }, [allUtxos])
 
-  const schema = useMemo(() => sweepFormSchema(t), [t])
+  const schema = useMemo(() => sweepFormSchema(walletInfo.addressSummary, t), [walletInfo.addressSummary, t])
   const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
   const form = useForm<SweepFormValues, SweepResolverContext, SweepFormValues>({
     mode: 'onChange',
     defaultValues: {
       destinations: initialDestinations,
     },
-    context: { addressSummary: walletInfo.addressSummary },
     resolver: yupResolver(schema),
   })
 

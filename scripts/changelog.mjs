@@ -58,7 +58,7 @@ const generateChangelog = (newVersion) => {
     })
 
     changelogStream.on('end', () => {
-      changelog = changelog.replaceAll(/###\s(\w+)/g, '#### $1').replaceAll('\n\n\n', '\n\n')
+      changelog = changelog.replaceAll(/###\s(\w+)/g, '#### $1').replaceAll('\n'.repeat(3), '\n\n')
       const finalChangelog = header + '\n' + (changelog + oldContent).replaceAll(/\n+$/, '\n')
       fs.writeFileSync(file, finalChangelog, 'utf8')
       return resolve()

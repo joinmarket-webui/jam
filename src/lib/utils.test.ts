@@ -42,6 +42,7 @@ const withRuntimeLocale = (locale: string, callback: () => void) => {
     locales,
     options,
   ) {
+    // eslint-disable-next-line unicorn/no-this-outside-of-class -- acceptable for mocks
     return Intl.NumberFormat(locales ?? locale, options).format(this)
   })
 
@@ -269,7 +270,7 @@ describe('tryBtcToSat', () => {
 
   it('should return undefined for invalid values', () => {
     expect(tryBtcToSat('')).toBeUndefined()
-    expect(tryBtcToSat('   ')).toBeUndefined()
+    expect(tryBtcToSat(' '.repeat(3))).toBeUndefined()
     expect(tryBtcToSat('.')).toBeUndefined()
     expect(tryBtcToSat('+')).toBeUndefined()
     expect(tryBtcToSat('-')).toBeUndefined()

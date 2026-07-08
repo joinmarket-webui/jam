@@ -57,12 +57,12 @@ describe('yieldgenReportToEarnReportEntries', () => {
   it('should handle unexpected/malformed data in a sane way', () => {
     const unexpectedHeader = EXPECTED_HEADER_LINE + ',foo,bar'
     const emptyLine = ''
-    const onlyNewLine = '\n'
+    const onlyNewline = '\n'
     const shortLine = '2009/01/03 04:04:04,,,'
     const longLine = '2009/01/03 05:05:05,,,,,,,,,,,,,,,,,,,,,,,'
     const malformedLine = 'this,is,a,malformed,line,with,some,unexpected,data'
 
-    const exampleData = [unexpectedHeader, emptyLine, onlyNewLine, shortLine, longLine, malformedLine]
+    const exampleData = [unexpectedHeader, emptyLine, onlyNewline, shortLine, longLine, malformedLine]
 
     const entries = yieldgenReportToEarnReportEntries(exampleData)
 
