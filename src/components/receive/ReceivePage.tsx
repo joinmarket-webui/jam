@@ -93,8 +93,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     if (getAddressMutation.data?.sourceJarIndex === undefined) return
     return jars[getAddressMutation.data.sourceJarIndex]
   }, [jars, getAddressMutation.data])
-  const displayedJar = sourceJar ?? selectedSourceJar
-
   const shareAddress = async (bitcoinAddress: BitcoinAddress) => {
     if ('share' in navigator) {
       await navigator
@@ -169,7 +167,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               </div>
               <Badge
                 className="min-h-6 text-sm"
-                variant={displayedJar ? getJarBadgeVariant(displayedJar.jarIndex) : 'secondary'}
+                variant={sourceJar ? getJarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
               >
                 {sourceJar ? (
                   <>

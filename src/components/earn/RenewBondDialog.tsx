@@ -333,7 +333,13 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
                   <Badge variant={getJarBadgeVariant(utxo.mixdepth)}>
-                    {sourceJar?.name ?? t('earn.fidelity_bond.review_inputs.label_jar')} <span>#{utxo.mixdepth}</span>
+                    {sourceJar?.name ? (
+                      <>
+                        {sourceJar.name} <span>#{utxo.mixdepth}</span>
+                      </>
+                    ) : (
+                      t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: utxo.mixdepth })
+                    )}
                   </Badge>
                 </div>
               </div>

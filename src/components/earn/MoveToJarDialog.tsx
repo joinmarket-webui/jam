@@ -283,14 +283,25 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
                     {t('earn.fidelity_bond.review_inputs.label_jar')}
                   </p>
                   <Badge variant={getJarBadgeVariant(utxo.mixdepth)}>
-                    {sourceJar?.name ?? t('earn.fidelity_bond.review_inputs.label_jar')} <span>#{utxo.mixdepth}</span>
+                    {sourceJar?.name ? (
+                      <>
+                        {sourceJar.name} <span>#{utxo.mixdepth}</span>
+                      </>
+                    ) : (
+                      t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: utxo.mixdepth })
+                    )}
                   </Badge>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.move.label_destination')}</p>
                   <Badge variant={getJarBadgeVariant(selectedJarIndex)}>
-                    {destinationJar?.name ?? t('earn.fidelity_bond.review_inputs.label_jar')}{' '}
-                    <span>#{selectedJarIndex}</span>
+                    {destinationJar?.name ? (
+                      <>
+                        {destinationJar.name} <span>#{selectedJarIndex}</span>
+                      </>
+                    ) : (
+                      t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: selectedJarIndex })
+                    )}
                   </Badge>
                 </div>
               </div>
