@@ -210,7 +210,7 @@ describe('SendForm', () => {
     renderForm()
     fireEvent.click(document.querySelector('#show-address-from-jar-selector-trigger')!)
     fireEvent.click(await screen.findByTestId('jar-confirm'))
-    await waitFor(() => expect(h.toastError).toHaveBeenCalledWith('receive.error_loading_address_failed'))
+    await waitFor(() => expect(h.toastError).toHaveBeenCalledWith('send.error_loading_address_failed'))
   })
 
   it('applies a pasted bip21 uri', async () => {

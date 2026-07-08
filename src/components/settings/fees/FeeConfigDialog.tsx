@@ -203,7 +203,7 @@ export const FeeConfigDialog = ({
                 rel="noopener noreferrer"
                 className="underline"
               >
-                {t('settings.fees.link_documentation')}
+                see the documentation on fees
               </a>
             </Trans>
           </DialogDescription>

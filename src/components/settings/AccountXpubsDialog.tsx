@@ -146,11 +146,7 @@ const AccountXpubItem = ({ xpub, accountNameAndLabel }: AccountXpubItemProps) =>
         <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
           <Button variant="outline" size="lg" onClick={() => setShowQrCode(true)}>
             <HatGlassesIcon />
-            {
-              /*TODO: i18n*/ t('settings.account.xpubs.button_reveal_xpub_qrcode', {
-                defaultValue: 'Reveal xpub QR-Code',
-              })
-            }
+            {t('settings.xpubs_modal.button_reveal_xpub_qrcode')}
           </Button>
         </div>
       )}

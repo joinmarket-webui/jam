@@ -256,7 +256,8 @@
       "alert_success_account_xpub_copied_message": "Copied Extended Public Key of {{account}} to clipboard!",
       "text_info_title": "Keep in mind",
       "text_info_message": "Account-level extended public keys can be imported into watch-only wallets for monitoring. They reveal all addresses in the derivation path. Share them with caution.",
-      "button_copy_title": "Copy Extended Public Key for {{account}}"
+      "button_copy_title": "Copy Extended Public Key for {{account}}",
+      "button_reveal_xpub_qrcode": "Reveal xpub QR-Code"
     },
     "documentation": "Documentation",
     "github": "GitHub",
@@ -348,6 +349,8 @@
     "feedback_invalid_destination_address": "Please enter a valid destination address.",
     "feedback_destination_network_mismatch": "This address does not match your wallet's network.",
     "feedback_reused_address": "This address is already used. To preserve your privacy please choose another one.",
+    "feedback_address_from_source_jar": "This address is from the source jar. To preserve your privacy please choose a different one.",
+    "error_loading_address_failed": "Unable to get new address.",
     "label_source_jar": "Send from",
     "title_jar_selector": "Select a jar from your wallet to send the funds to.",
     "label_amount_input": "Amount",
@@ -409,10 +412,12 @@
     "button_share_address": "Share",
     "button_settings": "Receive options",
     "label_source_jar": "Receive to",
+    "feedback_invalid_source_jar": "Please select a source jar.",
     "label_amount_input": "Amount",
     "placeholder_amount_input": "Enter amount in sats...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "button_new_address": "Get new address",
+    "button_reveal_address": "Reveal address",
     "button_download_qr": "Save QR Code to file",
     "text_getting_address": "Getting new address"
   },
