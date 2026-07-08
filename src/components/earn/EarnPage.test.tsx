@@ -333,7 +333,7 @@ describe('EarnPage', () => {
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('Waiting for maker to start...')).toBeInTheDocument()
+    expect(screen.getByText('earn.alert_waiting_start')).toBeInTheDocument()
   })
 
   it('opens fidelity bond actions', async () => {
@@ -363,7 +363,7 @@ describe('EarnPage', () => {
     setSession({ maker_running: true })
     mocks.stopMutationState.isSuccess = true
     render(<EarnPage walletFileName="wallet.jmdat" />)
-    expect(screen.getByText('Waiting for maker to stop...')).toBeInTheDocument()
+    expect(screen.getByText('earn.alert_waiting_stop')).toBeInTheDocument()
   })
 
   it('shows the loading-offer alert while the maker runs without an offer', () => {

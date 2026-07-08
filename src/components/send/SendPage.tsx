@@ -13,7 +13,7 @@ import type {
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckCircle2Icon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
@@ -274,20 +274,18 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       setFormId((current) => current + 1)
       setNonCollaborativePaymentSuccessInfoAlert({
         variant: 'success',
-        title: /* TODO: i18n */ 'Successfully sent non-collaborative transaction',
+        title: t('send.alert_direct_payment_success_title'),
         description: t('send.alert_payment_successful', {
           amount: output?.value_sats,
           address: output?.address,
           txid: tx.txid,
         }),
       })
-      /* TODO: i18n */
-      toast.success('Successfully sent non-collaborative transaction.')
+      toast.success(t('send.alert_direct_payment_success_title'))
     },
     onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      /* TODO: i18n */
-      toast.error(`Error while sending non-collaborative transaction: ${reason}`)
+      toast.error(t('send.error_sending_direct_payment', { reason }))
     },
   })
 
@@ -535,29 +533,33 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         {triggerNonCollaborativeTransaction.error ? (
           <Alert variant="destructive">
             <AlertTriangleIcon />
-            <AlertTitle>{/* TODO: i18n */}Error while sending non-collaborative transaction</AlertTitle>
+            <AlertTitle>{t('send.alert_direct_payment_error_title')}</AlertTitle>
             <AlertDescription>
               <p>
-                The exact reason is not entirely clear, only the following is known:{' '}
-                <span className="inline font-mono font-semibold">
-                  "{getErrorReason(triggerNonCollaborativeTransaction.error, t('global.errors.reason_unknown'))}"
-                </span>
-                <br />
+                <Trans
+                  i18nKey="send.alert_direct_payment_error_description"
+                  values={{
+                    reason: getErrorReason(triggerNonCollaborativeTransaction.error, t('global.errors.reason_unknown')),
+                  }}
+                >
+                  The exact reason is not entirely clear, only the following is known:
+                  <span className="inline font-mono font-semibold">"reason"</span>
+                </Trans>
               </p>
-              <p>Please validate your inputs and try again.</p>
+              <p>{t('send.alert_direct_payment_error_hint')}</p>
             </AlertDescription>
           </Alert>
         ) : triggerNonCollaborativeTransaction.isPending ? (
           <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
             <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>{/* TODO: i18n*/ t('Initiating non-collaborative transaction...')}</AlertTitle>
+            <AlertTitle>{t('send.alert_direct_payment_pending')}</AlertTitle>
           </Alert>
         ) : (
           <>
             {waitForUtxosToBeSpent.length > 0 && (
               <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
                 <Spinner className="motion-reduce:hidden" />
-                <AlertTitle>{/* TODO: i18n*/ t('Waiting for utxos to be marked as spent...')}</AlertTitle>
+                <AlertTitle>{t('send.alert_waiting_utxos_spent')}</AlertTitle>
               </Alert>
             )}
             {nonCollaborativePaymentSuccessInfoAlert && (
