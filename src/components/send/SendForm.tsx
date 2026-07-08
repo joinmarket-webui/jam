@@ -421,7 +421,7 @@ export function SendForm({
                       type="button"
                       variant="outline"
                       size="lg"
-                      className="h-auto w-full sm:w-auto"
+                      className="w-auto"
                       disabled={disabled}
                       onClick={() => {
                         setValue('destination.address', '', { shouldValidate: true })
@@ -522,7 +522,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
-                  className="h-auto w-full sm:w-auto"
+                  className="w-auto"
                   disabled={disabled}
                   onClick={() => {
                     setValue('amount.isSweep', false, { shouldValidate: true })
