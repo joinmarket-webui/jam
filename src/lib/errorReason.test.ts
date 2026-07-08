@@ -41,6 +41,39 @@ describe('normalizeAppError', () => {
     expect(appError.error_description).toBe('Invalid wallet password')
   })
 
+  it('uses FastAPI string detail as the error description', () => {
+    const context = {
+      detail: 'Invalid wallet password',
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Invalid wallet password')
+    expect(appError.error_message).toBe(undefined)
+    expect(appError.error_description).toBe('Invalid wallet password')
+  })
+
+  it('formats FastAPI validation detail arrays as readable descriptions', () => {
+    const context = {
+      detail: [
+        { loc: ['body', 'password'], msg: 'field required' },
+        { loc: ['query', 'force'], msg: 'Input should be a valid boolean' },
+      ],
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('password: field required, force: Input should be a valid boolean')
+    expect(appError.error_message).toBe(undefined)
+    expect(appError.error_description).toBe('password: field required, force: Input should be a valid boolean')
+  })
+
+  it('keeps backend error_description ahead of FastAPI detail when both are present', () => {
+    const context = {
+      error_description: 'Wallet is already unlocked',
+      detail: 'Ignored detail',
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Wallet is already unlocked')
+    expect(appError.error_description).toBe('Wallet is already unlocked')
+  })
+
   it('returns fallback message for unknown contexts', () => {
     const context = {
       dont: 'trust',
@@ -77,6 +110,13 @@ describe('getErrorReason', () => {
       message: 'Request failed with status 422',
     }
     expect(getErrorReason(error, 'fallback')).toBe('Request failed with status 422')
+  })
+
+  it('returns FastAPI detail when legacy fields are missing', () => {
+    const error = {
+      detail: [{ loc: ['body', 'walletname'], msg: 'field required' }],
+    }
+    expect(getErrorReason(error, 'fallback')).toBe('walletname: field required')
   })
 
   it('returns fallback for non-normalized nested objects', () => {

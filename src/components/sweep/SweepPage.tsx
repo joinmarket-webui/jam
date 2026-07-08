@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { tumblerstatusOptions, tumblerstopMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import {
-  tumblerplanMutation,
-  tumblerstartMutation,
-  tumblerstatusOptions,
-  tumblerstopMutation,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+  tumblerplan,
+  tumblerstart,
+  type TumblerPhaseResponse,
+  type TumblerPlanResponse,
+} from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
@@ -178,21 +178,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     refetchIntervalInBackground: true,
     retry: false,
     select: (data: TumblerPlanResponse): { schedule: Schedule } | null => {
-      if (data.status.toLowerCase() === 'pending') {
+      if (data.status.toLowerCase() !== 'running' || data.stale === true) {
         return null
       }
 
       return { schedule: toSchedule(data) }
     },
-  })
-
-  const createTumblerPlanMutation = useMutation({
-    ...tumblerplanMutation({ client }),
-    retry: false,
-  })
-  const startTumblerPlanMutation = useMutation({
-    ...tumblerstartMutation({ client }),
-    retry: false,
   })
 
   const {
@@ -205,17 +196,21 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       path: { walletname: WalletFileName }
       body: { destinations: string[]; parameters?: typeof INSECURE_SCHEDULE_TUMBLER_OPTIONS }
     }) => {
-      await createTumblerPlanMutation.mutateAsync({
+      await tumblerplan({
+        client,
         path: args.path,
         body: {
           destinations: args.body.destinations,
           parameters: args.body.parameters,
           force: true,
         },
+        throwOnError: true,
       })
 
-      return await startTumblerPlanMutation.mutateAsync({
+      return await tumblerstart({
+        client,
         path: args.path,
+        throwOnError: true,
       })
     },
     retry: false,
@@ -255,12 +250,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const currentSchedule = isScheduleValue(getScheduleQuery.data?.schedule) ? getScheduleQuery.data.schedule : undefined
 
   const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
-  const singleCoinJoinRunning = jmSession?.coinjoin_in_process === true && !schedulerRunning
+  const isWaitingSchedulerStart =
+    startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
+  const waitingForTumblerStatus = jmSession?.coinjoin_in_process === true && getScheduleQuery.isPending
+  const singleCoinJoinRunning =
+    jmSession?.coinjoin_in_process === true && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
   const makerRunning = jmSession?.maker_running === true
   const collaborativeOperationRunning = makerRunning || jmSession?.coinjoin_in_process === true
 
-  const isWaitingSchedulerStart =
-    startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
   const isWaitingSchedulerStop = stopScheduleMutationIsPending || (stopScheduleMutationIsSuccess && schedulerRunning)
 
   useRefreshSession({

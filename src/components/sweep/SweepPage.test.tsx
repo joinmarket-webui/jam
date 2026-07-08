@@ -57,6 +57,7 @@ const mocks = vi.hoisted(() => ({
   startTumbler: vi.fn<(input?: unknown) => Promise<unknown>>(),
   stopTumbler: vi.fn<(input?: unknown) => Promise<unknown>>(),
   tumblerStatusData: undefined as TumblerPlanResponse | undefined,
+  tumblerStatusPending: false,
   startReset: vi.fn(),
   startState: { isPending: false, isSuccess: false },
   stopReset: vi.fn(),
@@ -66,10 +67,13 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
-  tumblerplanMutation: vi.fn(() => ({ mutationFn: mocks.planTumbler })),
-  tumblerstartMutation: vi.fn(() => ({ mutationFn: mocks.startTumbler })),
   tumblerstatusOptions: vi.fn(() => ({ queryKey: ['tumblerstatus'], queryFn: vi.fn() })),
   tumblerstopMutation: vi.fn(() => ({ mutationFn: mocks.stopTumbler })),
+}))
+
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+  tumblerplan: mocks.planTumbler,
+  tumblerstart: mocks.startTumbler,
 }))
 
 type MutationOptions = {
@@ -87,12 +91,7 @@ type QueryOptions = {
 vi.mock('@tanstack/react-query', () => ({
   useMutation: vi.fn((options: MutationOptions) => {
     const isStopSchedule = options.mutationFn === mocks.stopTumbler
-    const isInnerTumblerMutation = options.mutationFn === mocks.planTumbler || options.mutationFn === mocks.startTumbler
-    const state = isStopSchedule
-      ? mocks.stopState
-      : isInnerTumblerMutation
-        ? { isPending: false, isSuccess: false }
-        : mocks.startState
+    const state = isStopSchedule ? mocks.stopState : mocks.startState
 
     return {
       error: undefined,
@@ -114,13 +113,14 @@ vi.mock('@tanstack/react-query', () => ({
           return undefined
         }
       },
-      reset: isStopSchedule ? mocks.stopReset : isInnerTumblerMutation ? vi.fn() : mocks.startReset,
+      reset: isStopSchedule ? mocks.stopReset : mocks.startReset,
     }
   }),
   useQuery: vi.fn((options: QueryOptions) => {
     if (Array.isArray(options.queryKey) && options.queryKey[0] === 'tumblerstatus') {
       return {
         data: mocks.tumblerStatusData ? options.select?.(mocks.tumblerStatusData) : undefined,
+        isPending: mocks.tumblerStatusPending,
       }
     }
 
@@ -321,6 +321,7 @@ describe('SweepPage', () => {
     mocks.stopTumbler.mockReset()
     mocks.stopTumbler.mockResolvedValue(undefined)
     mocks.tumblerStatusData = undefined
+    mocks.tumblerStatusPending = false
     mocks.startReset.mockReset()
     mocks.startState = { isPending: false, isSuccess: false }
     mocks.stopReset.mockReset()
@@ -365,10 +366,14 @@ describe('SweepPage', () => {
         force: true,
         parameters: undefined,
       },
+      client: {},
       path: { walletname: 'wallet.jmdat' },
+      throwOnError: true,
     })
     expect(mocks.startTumbler).toHaveBeenCalledWith({
+      client: {},
       path: { walletname: 'wallet.jmdat' },
+      throwOnError: true,
     })
   })
 
@@ -486,13 +491,31 @@ describe('SweepPage', () => {
     expect(screen.getByText('global.error')).toBeInTheDocument()
   })
 
-  it('does not render a pending tumbler plan as a running schedule', () => {
+  it('does not render non-running tumbler plans as a running schedule', () => {
     setSession({ coinjoin_in_process: true })
-    mocks.tumblerStatusData = { ...activePlan, status: 'pending' }
+    mocks.tumblerStatusData = { ...activePlan, status: 'completed' }
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
     expect(screen.queryByText('schedule-progress:false')).not.toBeInTheDocument()
+  })
+
+  it('does not render a stale running tumbler plan as a running schedule', () => {
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusData = { ...activePlan, stale: true }
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('schedule-progress:false')).not.toBeInTheDocument()
+  })
+
+  it('does not flash the single coinjoin alert while tumbler status is loading', () => {
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusPending = true
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('send.text_coinjoin_already_running')).not.toBeInTheDocument()
   })
 
   describe('with insecure testing toggle enabled', () => {
