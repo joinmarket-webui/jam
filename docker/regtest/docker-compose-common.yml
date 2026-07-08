@@ -64,7 +64,7 @@ services:
       BITCOIN__BACKEND_TYPE: descriptor_wallet
       BITCOIN__RPC_URL: http://bitcoind:43782
       BITCOIN__RPC_USER: regtest
-      BITCOIN__RPC_PASSWORD: tegtest
+      BITCOIN__RPC_PASSWORD: regtest
       LOGGING__LEVEL: DEBUG
       NETWORK_CONFIG__NETWORK: testnet
       NETWORK_CONFIG__BITCOIN_NETWORK: regtest
