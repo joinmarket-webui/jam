@@ -3,7 +3,7 @@ import { DialogTitle } from '@radix-ui/react-dialog'
 import { InfoIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
-import { getJarBadgeVariant } from '@/components/ui/badge-variants'
+import { jarBadgeVariant } from '@/components/ui/badge-variants'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
@@ -111,7 +111,7 @@ export default function PaymentConfirmDialog({
         <div className="grid grid-cols-1 gap-x-4 gap-y-1 md:grid-cols-5">
           <div className="col-span-1 font-semibold md:text-right">{t('send.confirm_send_modal.label_source_jar')}</div>
           <div className="col-span-4">
-            <Badge variant={getJarBadgeVariant(meta.sourceJar.jarIndex)}>
+            <Badge variant={jarBadgeVariant(meta.sourceJar.jarIndex)}>
               {meta.sourceJar.name} <span>#{meta.sourceJar.jarIndex}</span>
             </Badge>
           </div>
@@ -121,7 +121,7 @@ export default function PaymentConfirmDialog({
             {meta.destinationJar !== undefined ? (
               <>
                 <div>
-                  <Badge variant={getJarBadgeVariant(meta.destinationJar.jarIndex)}>
+                  <Badge variant={jarBadgeVariant(meta.destinationJar.jarIndex)}>
                     {meta.destinationJar.name} <span>#{meta.destinationJar.jarIndex}</span>
                   </Badge>
                 </div>
