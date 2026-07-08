@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 
 @import './styles/sonner.css';
+@import './styles/fonts.css';
 
 @custom-variant dark (&:is([data-theme='dark'] *));
 @custom-variant light (&:is([data-theme='light'] *));
@@ -16,9 +17,9 @@
   html,
   :root,
   :host {
-    --font-sans: ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-serif: ui-serif, serif;
-    --font-mono: ui-monospace, monospace;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   }
 }
 
