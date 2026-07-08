@@ -15,7 +15,10 @@ export const CreateStepWalletDetails = ({ sessionInfo, ...createFormProps }: Cre
   return (
     <div className="space-y-2">
       {sessionInfo?.session === true ? (
-        <OtherWalletActiveAlert linkTarget={'login'} walletFileName={sessionInfo.wallet_name as WalletFileName | undefined} />
+        <OtherWalletActiveAlert
+          linkTarget={'login'}
+          walletFileName={sessionInfo.wallet_name as WalletFileName | undefined}
+        />
       ) : (
         <CreateWalletForm {...createFormProps} />
       )}
