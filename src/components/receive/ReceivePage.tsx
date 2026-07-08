@@ -18,7 +18,7 @@ import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
-import { getJarBadgeVariant } from '../ui/badge-variants'
+import { jarBadgeVariant } from '../ui/badge-variants'
 import { buttonVariants } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
 import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
@@ -175,7 +175,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 )}
                 <Badge
                   className="min-h-6 text-sm"
-                  variant={sourceJar ? getJarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
+                  variant={sourceJar ? jarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
                 >
                   {sourceJar ? (
                     <>

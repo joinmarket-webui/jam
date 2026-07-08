@@ -40,7 +40,7 @@ import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import { getErrorReason } from '@/lib/errorReason'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
-import { getJarBadgeVariant } from '../ui/badge-variants'
+import { jarBadgeVariant } from '../ui/badge-variants'
 import { Address } from '../ui/jam/Address'
 
 type Step = 'select_jar' | 'confirm' | 'sending' | 'success'
@@ -282,7 +282,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
                   <p className="text-muted-foreground mb-1 text-xs">
                     {t('earn.fidelity_bond.review_inputs.label_jar')}
                   </p>
-                  <Badge variant={getJarBadgeVariant(utxo.mixdepth)}>
+                  <Badge variant={jarBadgeVariant(utxo.mixdepth)}>
                     {sourceJar?.name ? (
                       <>
                         {sourceJar.name} <span>#{utxo.mixdepth}</span>
@@ -294,7 +294,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
                 </div>
                 <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.move.label_destination')}</p>
-                  <Badge variant={getJarBadgeVariant(selectedJarIndex)}>
+                  <Badge variant={jarBadgeVariant(selectedJarIndex)}>
                     {destinationJar?.name ? (
                       <>
                         {destinationJar.name} <span>#{selectedJarIndex}</span>

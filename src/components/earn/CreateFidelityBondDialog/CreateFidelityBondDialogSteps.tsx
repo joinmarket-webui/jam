@@ -13,7 +13,7 @@ import { Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { getJarBadgeVariant } from '@/components/ui/badge-variants'
+import { jarBadgeVariant } from '@/components/ui/badge-variants'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
@@ -418,7 +418,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               </div>
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                <Badge variant={getJarBadgeVariant(selectedJarIndex)}>
+                <Badge variant={jarBadgeVariant(selectedJarIndex)}>
                   {selectedJar ? (
                     <>
                       {selectedJar.name} <span>#{selectedJar.jarIndex}</span>
