@@ -19,7 +19,7 @@ import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
 import { jarBadgeVariant } from '../ui/badge-variants'
-import { buttonVariants } from '../ui/button-variants'
+import { buttonVariants, jarButtonVariant } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
 import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
 import { CopyButton } from '../ui/jam/CopyButton'
@@ -132,7 +132,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             ) : getAddressMutation.isIdle ? (
               <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
                 <Button
-                  variant="outline"
+                  variant={jarButtonVariant(selectedSourceJarIndex)}
                   size="lg"
                   onClick={() => void fetchNewAddress()}
                   disabled={getAddressMutation.isPending}
