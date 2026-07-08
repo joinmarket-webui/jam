@@ -42,6 +42,12 @@
   --color-brand-cherry: var(--brand-cherry);
   --color-brand-date: var(--brand-date);
   --color-brand-elderberry: var(--brand-elderberry);
+  --color-jar0: var(--brand-apricot);
+  --color-jar1: var(--brand-blueberry);
+  --color-jar2: var(--brand-cherry);
+  --color-jar3: var(--brand-date);
+  --color-jar4: var(--brand-elderberry);
+  --color-jar-unknown: #808080;
   --color-brand-shell: var(--brand-shell);
   --color-brand-shell-foreground: var(--brand-shell-foreground);
   --color-brand-nav: var(--brand-nav);
@@ -153,11 +159,6 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-html {
-  overflow: -moz-scrollbars-vertical;
-  overflow-y: scroll;
 }
 
 html body[data-scroll-locked] {

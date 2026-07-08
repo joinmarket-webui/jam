@@ -6,13 +6,42 @@ import type { Jar } from '@/context/JamWalletInfoContext'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import { ReceivePage } from './ReceivePage'
 
-const mocks = vi.hoisted(() => ({
-  developerMode: false,
-  getAddress: vi.fn(),
-  share: vi.fn(),
-  toastError: vi.fn(),
-  toastSuccess: vi.fn(),
-}))
+const mocks = vi.hoisted(() => {
+  const defaultJars = [
+    {
+      jarIndex: 0,
+      name: 'Zero',
+      color: '#e2b86a',
+      balanceSummary: {
+        calculatedTotalBalanceInSats: 10_000,
+        calculatedAvailableBalanceInSats: 9_000,
+        calculatedConfirmedAvailableBalanceInSats: 9_000,
+        calculatedFrozenOrLockedBalanceInSats: 1_000,
+      },
+    },
+    {
+      jarIndex: 1,
+      name: 'One',
+      color: '#3b5ba9',
+      balanceSummary: {
+        calculatedTotalBalanceInSats: 8_000,
+        calculatedAvailableBalanceInSats: 8_000,
+        calculatedConfirmedAvailableBalanceInSats: 8_000,
+        calculatedFrozenOrLockedBalanceInSats: 0,
+      },
+    },
+  ] as unknown as Jar[]
+
+  return {
+    developerMode: false,
+    getAddress: vi.fn(),
+    defaultJars,
+    jars: defaultJars,
+    share: vi.fn(),
+    toastError: vi.fn(),
+    toastSuccess: vi.fn(),
+  }
+})
 
 type MutationOptions = {
   mutationFn: () => Promise<unknown>
@@ -74,30 +103,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/context/JamWalletInfoContext', () => ({
   useJars: () => ({
-    jars: [
-      {
-        jarIndex: 0,
-        name: 'Zero',
-        color: '#e2b86a',
-        balanceSummary: {
-          calculatedTotalBalanceInSats: 10_000,
-          calculatedAvailableBalanceInSats: 9_000,
-          calculatedConfirmedAvailableBalanceInSats: 9_000,
-          calculatedFrozenOrLockedBalanceInSats: 1_000,
-        },
-      },
-      {
-        jarIndex: 1,
-        name: 'One',
-        color: '#3b5ba9',
-        balanceSummary: {
-          calculatedTotalBalanceInSats: 8_000,
-          calculatedAvailableBalanceInSats: 8_000,
-          calculatedConfirmedAvailableBalanceInSats: 8_000,
-          calculatedFrozenOrLockedBalanceInSats: 0,
-        },
-      },
-    ] as unknown as Jar[],
+    jars: mocks.jars,
   }),
 }))
 
@@ -142,6 +148,7 @@ vi.mock('./ReceiveForm', () => ({
 describe('ReceivePage', () => {
   beforeEach(() => {
     mocks.developerMode = false
+    mocks.jars = mocks.defaultJars
     mocks.getAddress.mockReset()
     mocks.getAddress.mockResolvedValue({ data: { address: 'bc1qexample' } })
     mocks.toastError.mockReset()
@@ -166,6 +173,16 @@ describe('ReceivePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
     expect(mocks.getAddress).toHaveBeenCalledTimes(2)
     await flushActUpdates()
+  })
+
+  it('uses a secondary jar badge when no jar is available', () => {
+    mocks.jars = []
+
+    const { container } = render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    const badge = container.querySelector('[data-slot="badge"]')
+    expect(badge).toHaveClass('bg-secondary')
+    expect(badge).not.toHaveClass('bg-primary')
   })
 
   it('uses receive form changes for the next address request and sharing', async () => {

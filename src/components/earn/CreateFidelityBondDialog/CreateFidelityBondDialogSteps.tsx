@@ -12,6 +12,8 @@ import {
 import { Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { getJarBadgeVariant } from '@/components/ui/badge-variants'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
@@ -73,6 +75,8 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     frozenUtxos,
     t,
   } = wizard
+
+  const selectedJar = jarsWithUtxos.find((jar) => jar.jarIndex === selectedJarIndex)
 
   switch (step) {
     case 'select_date':
@@ -414,9 +418,15 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               </div>
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                <p className="font-semibold">
-                  {t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: selectedJarIndex })}
-                </p>
+                <Badge variant={getJarBadgeVariant(selectedJarIndex)}>
+                  {selectedJar ? (
+                    <>
+                      {selectedJar.name} <span>#{selectedJar.jarIndex}</span>
+                    </>
+                  ) : (
+                    t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: selectedJarIndex })
+                  )}
+                </Badge>
               </div>
             </div>
 
