@@ -140,7 +140,7 @@ describe('MoveToJarDialog', () => {
   it('moves to the confirm step and shows the destination address', () => {
     renderDialog()
     goToConfirm()
-    expect(screen.getByText('earn.fidelity_bond.review_inputs.label_jar_n {"jar":1}')).toBeInTheDocument()
+    expect(screen.getByText('Jar 1')).toBeInTheDocument()
     expect(screen.getByTestId('address')).toHaveTextContent('bc111')
   })
 

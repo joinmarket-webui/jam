@@ -23,6 +23,7 @@ import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Badge } from '../ui/badge'
+import { getJarBadgeVariant } from '../ui/badge-variants'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
@@ -410,7 +411,7 @@ export function SendForm({
                       )}
                     >
                       <Address value={values.destination.address} copyable={true} className="text-xs sm:text-sm" />
-                      <Badge className="shrink-0 text-sm" variant="default">
+                      <Badge className="shrink-0 text-sm" variant={getJarBadgeVariant(destinationJar.jarIndex)}>
                         {destinationJar.name} <span className="text-xs">#{destinationJar.jarIndex}</span>
                       </Badge>
                     </div>
@@ -511,7 +512,7 @@ export function SendForm({
                     <Balance valueString={values.amount.sweepAmount.toFixed(0)} />
                   )}
 
-                  <Badge className="shrink-0 text-sm" variant="default">
+                  <Badge className="shrink-0 text-sm" variant={getJarBadgeVariant(sourceJar?.jarIndex)}>
                     {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
                   </Badge>
                 </div>

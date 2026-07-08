@@ -18,6 +18,7 @@ import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
+import { getJarBadgeVariant } from '../ui/badge-variants'
 import { buttonVariants } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
 import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
@@ -92,7 +93,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     if (getAddressMutation.data?.sourceJarIndex === undefined) return
     return jars[getAddressMutation.data.sourceJarIndex]
   }, [jars, getAddressMutation.data])
-
   const shareAddress = async (bitcoinAddress: BitcoinAddress) => {
     if ('share' in navigator) {
       await navigator
@@ -165,7 +165,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
                 )}
               </div>
-              <Badge className="min-h-6 text-sm" variant={sourceJar ? 'default' : 'secondary'}>
+              <Badge
+                className="min-h-6 text-sm"
+                variant={sourceJar ? getJarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
+              >
                 {sourceJar ? (
                   <>
                     {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
