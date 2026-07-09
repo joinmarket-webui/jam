@@ -333,6 +333,8 @@
       "text_button_submit": "Save",
       "text_button_submitting": "Saving...",
       "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}",
+      "error_loading_fee_config_failed": "Error while loading fee config values. Reason: {{ reason }}",
+      "error_reloading_fee_config_failed": "Error while reloading fee config values. Reason: {{ reason }}",
       "success_message": "Fee settings updated successfully."
     }
   },
@@ -788,6 +790,7 @@
     "confirm_button_reject": "Cancel"
   },
   "jar_details": {
+    "title": "Wallet Jars Details",
     "title_tab_utxos": "UTXOs",
     "title_tab_jar_details": "Details",
     "utxo_list": {

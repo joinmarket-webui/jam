@@ -42,7 +42,7 @@ describe('WalletJarsDetailsPage', () => {
     // @ts-expect-error test
     render(<WalletJarsDetailsPage walletFileName="test-wallet" />)
 
-    expect(screen.getByTestId('page-title')).toHaveTextContent('Wallet Jars Details')
+    expect(screen.getByTestId('page-title')).toHaveTextContent('jar_details.title')
 
     const content = screen.getByTestId('wallet-jars-details-content')
     expect(content).toBeInTheDocument()

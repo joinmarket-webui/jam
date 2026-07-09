@@ -14,7 +14,7 @@ export const WalletJarsDetailsPage = ({ walletFileName }: WalletJarsDetailsProps
 
   return (
     <div className="mx-auto space-y-3 p-4">
-      <PageTitle title={/* todo: i18n */ t('Wallet Jars Details')} />
+      <PageTitle title={t('jar_details.title')} />
       <WalletJarsDetailsContent enabled={true} walletFileName={walletFileName} debug={isDeveloperMode} />
     </div>
   )

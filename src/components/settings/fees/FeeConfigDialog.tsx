@@ -173,8 +173,7 @@ export const FeeConfigDialog = ({
       await feeConfigValidation.refetchAll()
     } catch (error: unknown) {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      // TODO: i18n
-      const errorMessage = t('Error while reloading fee values.: {{ reason }}', { reason })
+      const errorMessage = t('settings.fees.error_reloading_fee_config_failed', { reason })
       toast.error(errorMessage)
       console.error(errorMessage)
     }
