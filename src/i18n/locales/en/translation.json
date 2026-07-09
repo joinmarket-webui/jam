@@ -91,7 +91,22 @@
     "screen_5_title": "Privacy for All",
     "screen_5_description": "JoinMarket is free and open-source software without a single point of failure. Everyone is free to extend it, tinker with it, inspect it, distribute it, and build upon it. And, of course, you are free to use it to improve the privacy of yourself and others.",
     "button_next": "Next",
-    "button_complete": "Let's go!"
+    "button_complete": "Let's go!",
+    "tour": {
+      "step_label": "Step {{ current }} of {{ total }}",
+      "button_skip": "Skip tour",
+      "button_finish": "Finish",
+      "step_wallet_title": "Wallet Snapshot",
+      "step_wallet_description": "This area shows your current wallet and total balance. Use it to quickly verify you are in the right wallet.",
+      "step_actions_title": "Primary Actions",
+      "step_actions_description": "Start here for day-to-day usage: Receive for deposits and Send for withdrawals or coinjoin flows.",
+      "step_jars_title": "Jars Overview",
+      "step_jars_description": "Jars help you separate funds by mixdepth. Click any jar to inspect UTXOs and details.",
+      "step_tools_title": "Quick Tools",
+      "step_tools_description": "Open Cheatsheet, Orderbook, and Logs from here without leaving the current page.",
+      "step_settings_title": "Settings & Safety",
+      "step_settings_description": "Use Settings to manage lock wallet, language, display mode, and other important preferences."
+    }
   },
   "login": {
     "title": "Welcome to Jam",
