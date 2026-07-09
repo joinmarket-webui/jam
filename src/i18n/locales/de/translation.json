@@ -221,7 +221,8 @@
       "feedback_invalid_max_cj_fee_rel": "Bitte gib eine gültige maximale relative Fee zwischen {{ min }} und {{ max }} an.",
       "text_button_submit": "Speichern",
       "text_button_submitting": "Speichern...",
-      "error_saving_fee_config_failed": "Fehler beim Speichern der Konfiguration. Begründung: {{ reason }}"
+      "error_saving_fee_config_failed": "Fehler beim Speichern der Konfiguration. Begründung: {{ reason }}",
+      "error_loading_fee_config_failed": "Fehler beim Laden der Konfigurationswerte."
     }
   },
   "logs": {

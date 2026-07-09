@@ -184,7 +184,8 @@
       "feedback_invalid_max_cj_fee_rel": "Forneça uma taxa relativa máxima válida entre {{ min }} e {{ max }}.",
       "text_button_submit": "Salvar",
       "text_button_submitting": "Salvando...",
-      "error_saving_fee_config_failed": "Erro ao salvar valores de configuração de taxa. Motivo: {{ reason }}"
+      "error_saving_fee_config_failed": "Erro ao salvar valores de configuração de taxa. Motivo: {{ reason }}",
+      "error_loading_fee_config_failed": "Erro ao carregar valores de configuração de taxa. "
     }
   },
   "logs": {

@@ -221,7 +221,8 @@
       "feedback_invalid_max_cj_fee_rel": "请提供一个有效的最高相对费用，从{{ min }}到{{ max }}。",
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
-      "error_saving_fee_config_failed": "保存费用配置值时出错了。原因：{{ reason }}"
+      "error_saving_fee_config_failed": "保存费用配置值时出错了。原因：{{ reason }}",
+      "error_loading_fee_config_failed": "加载费用设置时出错了。"
     }
   },
   "logs": {

@@ -184,7 +184,8 @@
       "feedback_invalid_max_cj_fee_rel": "Si prega di fornire una commissione massima relativa valida compresa tra {{ min }} e {{ max }}.",
       "text_button_submit": "Salva",
       "text_button_submitting": "Salvataggio in corso...",
-      "error_saving_fee_config_failed": "Errore durante il salvataggio dei valori di configurazione delle commissioni. Motivo: {{ reason }}"
+      "error_saving_fee_config_failed": "Errore durante il salvataggio dei valori di configurazione delle commissioni. Motivo: {{ reason }}",
+      "error_loading_fee_config_failed": "Errore durante il caricamento dei valori di configurazione delle commissioni."
     }
   },
   "logs": {

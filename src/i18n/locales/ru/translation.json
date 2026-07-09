@@ -230,7 +230,8 @@
       "feedback_invalid_max_sweep_fee_change": "Пожалуйста, укажите допустимое максимальное изменение комиссии за участие в Переносе между {{ min }} и {{ max }}.",
       "text_button_submit": "Сохранить",
       "text_button_submitting": "Отправка",
-      "error_saving_fee_config_failed": "Ошибка при сохранении значений конфигурации комиссии. Причина: {{ reason }}"
+      "error_saving_fee_config_failed": "Ошибка при сохранении значений конфигурации комиссии. Причина: {{ reason }}",
+      "error_loading_fee_config_failed": "Ошибка при загрузке значений конфигурации комиссии."
     }
   },
   "rescan_chain": {
