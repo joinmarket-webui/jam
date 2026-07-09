@@ -149,9 +149,9 @@ describe('useUtxoSelectionDialog', () => {
     await act(async () => result.current.dialogProps.onSubmit())
 
     expect(mocks.toastWarning).toHaveBeenCalledWith(
-      'Security measure: Selection changed',
+      'jar_details.utxo_list.toast_auto_selection_title',
       expect.objectContaining({
-        description: 'Automatically selected 1 additional UTXOs with matching addresses.',
+        description: 'jar_details.utxo_list.toast_auto_selected_matching:1',
       }),
     )
     expect(mocks.freezeOrUnfreeze).toHaveBeenCalledWith({
