@@ -141,7 +141,7 @@
     "import_details": {
       "title": "请输入你的助记词组！",
       "subtitle": "请按正确的顺序输入你的助记词组，然后开始重新扫描过程。",
-      "feedback_invalid_menmonic_phrase": "请提供一个有效的助记词组",
+      "feedback_invalid_mnemonic_phrase": "请提供一个有效的助记词组",
       "import_options": "导入选项",
       "label_blockheight": "重新扫描高度",
       "description_blockheight": "扫描过程开始寻找你的资金的区块高度。 该钱包创建的越早，该值应该越低。",

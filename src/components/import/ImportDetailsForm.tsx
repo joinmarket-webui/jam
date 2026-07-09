@@ -106,10 +106,10 @@ const importDetailsFormSchema = (t: TFunction) => {
       mnemonicPhrase: yup
         .string()
         .transform((currentValue: string | undefined) => normalizeSeedPhrase(currentValue))
-        .required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase'))
+        .required(t('import_wallet.import_details.feedback_invalid_mnemonic_phrase'))
         .test(
           'valid-bip39-mnemonic-phrase-test',
-          t('import_wallet.import_details.feedback_invalid_menmonic_phrase'),
+          t('import_wallet.import_details.feedback_invalid_mnemonic_phrase'),
           (value) => {
             return isBip39Mnemonic(value)
           },
@@ -183,7 +183,7 @@ export const ImportDetailsForm = ({
       <div className="space-y-2">
         <Field data-invalid={errors.mnemonicPhrase !== undefined}>
           <FieldLabel htmlFor="import-wallet-seed">
-            {t('import_wallet.import_details.label_menmonic_phrase')}
+            {t('import_wallet.import_details.label_mnemonic_phrase')}
             <Tooltip>
               <TooltipTrigger asChild>
                 <InfoIcon className="text-muted-foreground ml-1 inline size-3.5 align-text-bottom" />
@@ -196,7 +196,7 @@ export const ImportDetailsForm = ({
           <Textarea
             id="import-wallet-seed"
             rows={4}
-            placeholder={t('import_wallet.import_details.placeholder_menmonic_phrase')}
+            placeholder={t('import_wallet.import_details.placeholder_mnemonic_phrase')}
             {...register('mnemonicPhrase', {
               required: true,
             })}

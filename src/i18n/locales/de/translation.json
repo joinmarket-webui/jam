@@ -141,7 +141,7 @@
     "import_details": {
       "title": "Bitte gib deine Mnemonic Phrase ein!",
       "subtitle": "Bitte gib deine Mnemonic Phrase in der richtigen Reihenfolge ein, um den Rescan zu starten.",
-      "feedback_invalid_menmonic_phrase": "Bitte gib eine korrekte Mnemonic Phrase ein.",
+      "feedback_invalid_mnemonic_phrase": "Bitte gib eine korrekte Mnemonic Phrase ein.",
       "import_options": "Import Optionen",
       "label_blockheight": "Rescan Blockhöhe ",
       "description_blockheight": "Ab diesen Zeitpunkt beginnt der Rescan Prozess und sucht nach deinen Bitcoin UTXOs. Je früher die Wallet erstellt wurde, desto niedriger sollte der Wert sein.",

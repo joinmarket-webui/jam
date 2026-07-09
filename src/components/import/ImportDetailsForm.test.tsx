@@ -72,7 +72,7 @@ vi.mock('@/components/ui/spinner', () => ({ Spinner: () => <div data-testid="spi
 const VALID_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 
 const typeMnemonic = (value: string) => {
-  fireEvent.change(screen.getByPlaceholderText('import_wallet.import_details.placeholder_menmonic_phrase'), {
+  fireEvent.change(screen.getByPlaceholderText('import_wallet.import_details.placeholder_mnemonic_phrase'), {
     target: { value },
   })
 }
@@ -80,7 +80,7 @@ const typeMnemonic = (value: string) => {
 describe('ImportDetailsForm', () => {
   it('renders the mnemonic, blockheight and gaplimit fields', async () => {
     render(<ImportDetailsForm onSubmit={vi.fn()} />)
-    expect(screen.getByText('import_wallet.import_details.label_menmonic_phrase')).toBeInTheDocument()
+    expect(screen.getByText('import_wallet.import_details.label_mnemonic_phrase')).toBeInTheDocument()
     expect(document.querySelector('#blockheight')).toBeInTheDocument()
     expect(document.querySelector('#gaplimit')).toBeInTheDocument()
     await flushActUpdates()
