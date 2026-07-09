@@ -29,13 +29,7 @@ const createFormSchema = (t: TFunction) => {
   return yup
     .object({
       revealSensitiveInfo: yup.boolean().required(),
-      backupConfirmed: yup
-        .boolean()
-        .isTrue(
-          /* TODO: i18n */ t(
-            'Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!',
-          ),
-        ),
+      backupConfirmed: yup.boolean().isTrue(t('create_wallet.subtitle_wallet_created')),
     })
     .required()
 }
@@ -77,10 +71,10 @@ export const CreateStepConfirm = ({
   useEffect(() => {
     if (backupConfirmed) return
 
-    const toastId = toast.info(/* TODO: i18n */ 'Save Your Seed Phrase', {
+    const toastId = toast.info(t('create_wallet.alert_save_seed_title'), {
       id: 'save-seed-phrase-reminder',
       icon: <AlertCircleIcon />,
-      description: /* TODO: change i18n key ("alert_description") */ t('create_wallet.subtitle_wallet_created'),
+      description: t('create_wallet.subtitle_wallet_created'),
       duration: Number.POSITIVE_INFINITY,
     })
 

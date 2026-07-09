@@ -114,7 +114,9 @@
     "label_wallet": "Wallet",
     "placeholder_select_wallet": "Select a wallet",
     "placeholder_no_wallets": "No wallets found.",
-    "label_password": "Password"
+    "label_password": "Password",
+    "alert_wallet_unlocked": "Successfully unlocked wallet.",
+    "error_unlocking_wallet": "Failed to unlock wallet: {{ reason }}"
   },
   "error_page": {
     "unknown_error": {
@@ -165,6 +167,12 @@
     "feedback_invalid_password_confirm": "Given passwords do not match.",
     "button_create": "Create",
     "button_creating": "Creating...",
+    "error_creating_wallet": "Failed to create wallet: {{ reason }}",
+    "error_wallet_active": "Cannot create wallet as \"{{ walletName }}\" wallet is currently active.",
+    "error_wallet_active_hint": "Alternatively, you can <1>log in with the existing wallet</1> instead.",
+    "alert_save_seed_title": "Save Your Seed Phrase",
+    "text_login_hint": "Already have a wallet?",
+    "button_login_link": "Sign in here",
     "confirmation_label_wallet_name": "Wallet Name",
     "confirmation_label_password": "Wallet Password",
     "confirmation_toggle_reveal_info": "Reveal sensitive information",
@@ -193,6 +201,10 @@
       "label_menmonic_phrase": "Mnemonic phrase",
       "placeholder_menmonic_phrase": "abandon abandon abandon ... about",
       "feedback_invalid_menmonic_phrase": "Please provide a valid mnemonic phrase",
+      "hint_seed_word_count": "Expects {{ wordCounts }} words.",
+      "text_mnemonic_valid": "Mnemonic phrase is valid",
+      "alert_mnemonic_not_recognized_title": "Mnemonic phrase is not recognized",
+      "alert_mnemonic_not_recognized_description": "Only BIP-39 compliant mnemonic phrases can be imported. Please review your inputs carefully.",
       "import_options": "Import options",
       "label_blockheight": "Rescan height",
       "description_blockheight": "The blockheight at which the rescan process starts to search for your funds. The earlier the wallet has been created, the lower this value should be.",

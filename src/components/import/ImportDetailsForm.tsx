@@ -189,8 +189,7 @@ export const ImportDetailsForm = ({
                 <InfoIcon className="text-muted-foreground ml-1 inline size-3.5 align-text-bottom" />
               </TooltipTrigger>
               <TooltipContent>
-                {/* TODO: i18n */}
-                <p>Expects {SEED_WORD_COUNT_HINT} words.</p>
+                <p>{t('import_wallet.import_details.hint_seed_word_count', { wordCounts: SEED_WORD_COUNT_HINT })}</p>
               </TooltipContent>
             </Tooltip>
           </FieldLabel>
@@ -211,22 +210,15 @@ export const ImportDetailsForm = ({
         {isSeedPhraseBip39Valid && (
           <Alert variant="success" className="py-2">
             <CheckCircle2Icon />
-            <AlertDescription>
-              {/* TODO: i18n */}
-              Mnemonic phrase is valid
-            </AlertDescription>
+            <AlertDescription>{t('import_wallet.import_details.text_mnemonic_valid')}</AlertDescription>
           </Alert>
         )}
         {isSubmitted && !isSubmitSuccessful && !isValid && !isSeedPhraseBip39Valid && (
           <Alert variant="warning" className="py-2">
             <AlertTriangleIcon />
-            <AlertTitle>
-              {/* TODO: i18n */}
-              Mnemonic phrase is not recognized
-            </AlertTitle>
+            <AlertTitle>{t('import_wallet.import_details.alert_mnemonic_not_recognized_title')}</AlertTitle>
             <AlertDescription className="text-sm">
-              {/* TODO: i18n */}
-              Only BIP-39 compliant mnemonic phrases can be imported. Please review your inputs carefully.
+              {t('import_wallet.import_details.alert_mnemonic_not_recognized_description')}
             </AlertDescription>
           </Alert>
         )}

@@ -79,13 +79,11 @@ const LoginPage = () => {
       }
     },
     onSuccess: () => {
-      /* TODO: i18n */
-      toast.success('Successfully unlocked wallet.')
+      toast.success(t('login.alert_wallet_unlocked'))
     },
     onError: (error) => {
-      /* TODO: i18n */
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      toast.error(`Failed to unlock wallet: ${reason}`)
+      toast.error(t('login.error_unlocking_wallet', { reason }))
     },
   })
 
