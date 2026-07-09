@@ -59,8 +59,7 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     if (token === undefined) {
       return {
         variant: 'destructive',
-        // TODO: i18n
-        message: 'No authentication token available. Please login again.',
+        message: t('logs.error_no_auth_token'),
       }
     }
 

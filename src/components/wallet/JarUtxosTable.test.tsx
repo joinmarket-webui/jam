@@ -118,8 +118,8 @@ describe('JarUtxosTable', () => {
     await waitFor(() => expect(onRowSelectionChange).toHaveBeenCalled())
     expect(mocks.toastWarning).toHaveBeenCalledOnce()
     const [message, options] = mocks.toastWarning.mock.calls[0]
-    expect(message).toBe('Security measure: Selection changed')
-    expect(options.description).toContain('Automatically selected 1 more UTXOs')
+    expect(message).toBe('jar_details.utxo_list.toast_auto_selection_title')
+    expect(options.description).toContain('jar_details.utxo_list.toast_auto_selected_with_address')
   })
 
   it('supports disabled selection and empty pagination state', () => {
@@ -139,7 +139,7 @@ describe('JarUtxosTable', () => {
 
     expect(mocks.toastWarning).toHaveBeenCalledOnce()
     const [, options] = mocks.toastWarning.mock.calls[0]
-    expect(options.description).toContain('Automatically deselected 1 more UTXOs')
+    expect(options.description).toContain('jar_details.utxo_list.toast_auto_deselected_with_address')
   })
 
   it('dismisses the toast for a single unique-address selection', async () => {

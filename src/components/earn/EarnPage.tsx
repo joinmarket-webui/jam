@@ -151,8 +151,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     },
     onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      // TODO: i18n
-      toast.error(`Error while stopping the earn process. Reason: ${reason}`)
+      toast.error(t('earn.error_stopping_earn', { reason }))
     },
   })
 

@@ -110,17 +110,19 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
 
     if (groupedSelectedUtxos.length > selectedUtxos.length) {
-      // TODO: i18n
-      toast.warning(`Security measure: Selection changed`, {
-        description: `Automatically selected ${groupedSelectedUtxos.length - selectedUtxos.length} additional UTXOs with matching addresses.`,
+      toast.warning(t('jar_details.utxo_list.toast_auto_selection_title'), {
+        description: t('jar_details.utxo_list.toast_auto_selected_matching', {
+          count: groupedSelectedUtxos.length - selectedUtxos.length,
+        }),
         id: SEND_AUTO_SELECTION_TOAST_ID,
       })
     }
 
     if (groupedDeselectedUtxos.length > userDeselectedUtxos.length) {
-      // TODO: i18n
-      toast.warning(`Security measure: Selection changed`, {
-        description: `Automatically deselected ${groupedDeselectedUtxos.length - userDeselectedUtxos.length} additional UTXOs with matching addresses.`,
+      toast.warning(t('jar_details.utxo_list.toast_auto_selection_title'), {
+        description: t('jar_details.utxo_list.toast_auto_deselected_matching', {
+          count: groupedDeselectedUtxos.length - userDeselectedUtxos.length,
+        }),
         id: SEND_AUTO_SELECTION_TOAST_ID,
       })
     }

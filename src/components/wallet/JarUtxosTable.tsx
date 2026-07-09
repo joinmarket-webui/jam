@@ -131,21 +131,14 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
             eligibleRows.forEach((it) => it.toggleSelected())
 
             if (eligibleRows.length > 1) {
-              if (checked) {
-                /* TODO: i18n */
-                toast.warning(`Security measure: Selection changed`, {
-                  description: `Automatically selected ${eligibleRows.length - 1} more UTXOs with address ${address}!`,
-                  id: AUTO_CHANGE_SELECTION_TOAST_ID,
-                  duration: 10_000,
-                })
-              } else {
-                /* TODO: i18n */
-                toast.warning(`Security measure: Selection changed`, {
-                  description: `Automatically deselected ${eligibleRows.length - 1} more UTXOs with address ${address}!`,
-                  id: AUTO_CHANGE_SELECTION_TOAST_ID,
-                  duration: 10_000,
-                })
-              }
+              const affectedCount = eligibleRows.length - 1
+              toast.warning(t('jar_details.utxo_list.toast_auto_selection_title'), {
+                description: checked
+                  ? t('jar_details.utxo_list.toast_auto_selected_with_address', { count: affectedCount, address })
+                  : t('jar_details.utxo_list.toast_auto_deselected_with_address', { count: affectedCount, address }),
+                id: AUTO_CHANGE_SELECTION_TOAST_ID,
+                duration: 10_000,
+              })
             } else {
               toast.dismiss(AUTO_CHANGE_SELECTION_TOAST_ID)
             }
