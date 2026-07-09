@@ -300,8 +300,7 @@ export const FeeConfigDialog = ({
             onClick={() => void handleResetFormValues()}
             disabled={isSubmitting || feeConfigValidation.isLoading}
           >
-            {/* TODO: i18n */}
-            Reset
+            {t('settings.fees.text_button_reset')}
           </Button>
           <Button onClick={() => void handleSubmit()} disabled={isSubmitting || feeConfigValidation.isLoading}>
             {isSubmitting ? t('settings.fees.text_button_submitting') : t('settings.fees.text_button_submit')}

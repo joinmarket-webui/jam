@@ -197,9 +197,9 @@ describe('FeeConfigDialog', () => {
   it('resets form values when reset is clicked', async () => {
     renderDialog(makeValidValidation())
 
-    fireEvent.click(screen.getByText('Reset'))
+    fireEvent.click(screen.getByText('settings.fees.text_button_reset'))
     await waitFor(() => {
-      expect(screen.getByText('Reset')).toBeInTheDocument()
+      expect(screen.getByText('settings.fees.text_button_reset')).toBeInTheDocument()
     })
   })
 

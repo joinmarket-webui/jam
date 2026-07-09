@@ -391,7 +391,7 @@ export function SendForm({
                   onClick={() => setShowAddressFromJarSelectorDialog(true)}
                 >
                   <MilkIcon />
-                  <span className="sr-only">{/* TODO: i18n */} Choose Jar</span>
+                  <span className="sr-only">{t('send.button_choose_jar')}</span>
                 </Button>
               </ButtonGroup>
               <ButtonGroup

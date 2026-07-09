@@ -13,6 +13,7 @@
     "clear": "Clear",
     "done": "Done",
     "download": "Download",
+    "utxos": "UTXOs",
     "table": {
       "pagination": {
         "items_per_page": {
@@ -49,6 +50,15 @@
     "joining_in_progress": "Jamming",
     "menu_mobile_settings": "Settings",
     "button_logout": "Logout"
+  },
+  "sidebar": {
+    "title_mobile": "Sidebar",
+    "description_mobile": "Displays the mobile sidebar.",
+    "button_toggle": "Toggle Sidebar",
+    "item_home": "Home",
+    "item_earn_report": "Earn Report",
+    "item_jars": "Jars",
+    "item_tour": "Tour"
   },
   "footer": {
     "warning": "This is beta software.<br /><1>Read this before using.</1>",
@@ -251,6 +261,7 @@
       "title": "Account Extended Public Keys",
       "subtitle": "Account-level extended public keys (xpubs/zpubs) for watch-only wallet import. These are BIP84 account keys, not address-level keys.",
       "label_account": "Account {{accountIndex}}",
+      "label_xpub": "Extended Public Key",
       "text_error_title": "Error while retrieving account information",
       "text_error_no_data": "No accounts found.",
       "alert_success_account_xpub_copied_message": "Copied Extended Public Key of {{account}} to clipboard!",
@@ -291,6 +302,7 @@
       "description_max_sweep_fee_change": "The maximum fee increase you are willing to pay on collaborative sweep transactions, as a percentage of the estimated transaction fee. Example: when set to 60% with 10 sats/vByte, the actual fee for collaborative sweeps can be between 4 and 16 sats/vByte. Default: {{ defaultValue }}",
       "feedback_invalid_max_sweep_fee_change": "Please provide a valid maximum sweep fee change between {{ min }} and {{ max }}.",
       "text_button_cancel": "Cancel",
+      "text_button_reset": "Reset",
       "text_button_submit": "Save",
       "text_button_submitting": "Saving...",
       "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}",
@@ -311,7 +323,13 @@
   },
   "logs": {
     "title": "Logs",
-    "error_loading_logs_failed": "Could not retrieve log file."
+    "error_loading_logs_failed": "Could not retrieve log file.",
+    "button_scroll_to_bottom": "Scroll to bottom",
+    "label_search": "Search logs",
+    "placeholder_search": "Search logs...",
+    "text_search_matches_zero": "No matches for \"{{ searchValue }}\".",
+    "text_search_matches_one": "{{ count }} matching line.",
+    "text_search_matches_other": "{{ count }} matching lines."
   },
   "send": {
     "title": "Send",
@@ -364,6 +382,7 @@
     "placeholder_amount_input": "Enter amount in sats...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "feedback_amount_exceeds_balance": "Amount exceeds the available balance in the selected jar.",
+    "button_choose_jar": "Choose Jar",
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
     "toggle_coinjoin_subtitle": "Collaborative transactions improve the privacy of yourself and others.",

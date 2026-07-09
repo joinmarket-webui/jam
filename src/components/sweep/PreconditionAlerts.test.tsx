@@ -87,7 +87,7 @@ describe('precondition alerts', () => {
 
     expect(screen.getByText('send.coinjoin_precondition.hint_missing_retries')).toBeInTheDocument()
     expect(screen.getByText('scheduler.precondition.hint_missing_retries')).toBeInTheDocument()
-    expect(screen.getAllByText('UTXOs')).toHaveLength(2)
+    expect(screen.getAllByText('global.utxos')).toHaveLength(2)
     expect(screen.getAllByText('jar 0')).toHaveLength(2)
     expect(screen.getAllByText('123,456 sats')).toHaveLength(2)
   })

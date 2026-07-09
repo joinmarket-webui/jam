@@ -12,6 +12,8 @@ const RETRIES_DOCS_URL =
   'https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/SOURCING-COMMITMENTS.md'
 
 const RetryLockedUtxoList = ({ summary }: SendCoinjoinPreconditionAlertProps) => {
+  const { t } = useTranslation()
+
   if (summary.retryLockedUtxos.length === 0) {
     return null
   }
@@ -26,7 +28,7 @@ const RetryLockedUtxoList = ({ summary }: SendCoinjoinPreconditionAlertProps) =>
         ]}
       />
       <div className="mt-3 rounded-md border p-2">
-        <div className="mb-2 text-xs font-semibold">UTXOs</div>
+        <div className="mb-2 text-xs font-semibold">{t('global.utxos')}</div>
         <ul className="space-y-1">
           {summary.retryLockedUtxos.map((utxo) => (
             <li key={utxo.utxo} className="bg-muted/50 rounded-sm px-2 py-1 font-mono text-xs">

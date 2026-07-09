@@ -99,12 +99,12 @@ describe('AppSidebar', () => {
     render(<AppSidebar side="left" />)
 
     expect(screen.getByText('navbar.title')).toBeInTheDocument()
-    expect(screen.getByText('Home')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_home')).toBeInTheDocument()
     expect(screen.getByText('navbar.tab_receive')).toBeInTheDocument()
     expect(screen.getByText('navbar.tab_send')).toBeInTheDocument()
     expect(screen.getByText('navbar.tab_earn')).toBeInTheDocument()
-    expect(screen.getByText('Earn Report')).toBeInTheDocument()
-    expect(screen.getByText('Orderbook')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_earn_report')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.title')).toBeInTheDocument()
     expect(screen.getByText('navbar.menu_mobile_settings')).toBeInTheDocument()
     expect(screen.getByText('settings.rescan_chain')).toBeInTheDocument()
     expect(screen.queryByText('settings.show_logs')).not.toBeInTheDocument()
@@ -113,7 +113,7 @@ describe('AppSidebar', () => {
     fireEvent.click(screen.getByTitle('global.close'))
     expect(mocks.toggleSidebar).toHaveBeenCalledTimes(1)
 
-    fireEvent.click(screen.getByText('Tour'))
+    fireEvent.click(screen.getByText('sidebar.item_tour'))
     expect(mocks.toggleSidebar).toHaveBeenCalledTimes(2)
     expect(onTour).toHaveBeenCalledTimes(1)
 

@@ -177,7 +177,7 @@ export const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) =>
             <AccordionContent className="flex flex-col gap-1 p-4 pt-2">
               <Label className="text-muted-foreground text-sm">
                 <div className="flex min-w-0 flex-1 flex-wrap items-end gap-2">
-                  {/* TODO: i18n */}Extended Public Key
+                  {t('settings.xpubs_modal.label_xpub')}
                   <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
                 </div>
                 <div>

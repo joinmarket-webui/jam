@@ -29,15 +29,15 @@ describe('LogViewer', () => {
 
     render(<LogViewer fileName="jmwalletd.log" value={'first line\nneedle found\nlast line'} refresh={vi.fn()} />)
 
-    await user.type(screen.getByLabelText('Search logs'), 'needle')
+    await user.type(screen.getByLabelText('logs.label_search'), 'needle')
 
-    expect(screen.getByText('1 matching line.')).toBeInTheDocument()
+    expect(screen.getByText('logs.text_search_matches')).toBeInTheDocument()
     expect(screen.getByText('needle')).toBeInTheDocument()
     expect(screen.queryByText('first line')).not.toBeInTheDocument()
 
     await user.click(screen.getByTitle('global.clear'))
 
-    expect(screen.queryByText('1 matching line.')).not.toBeInTheDocument()
+    expect(screen.queryByText('logs.text_search_matches')).not.toBeInTheDocument()
     expect(screen.getByText('first line')).toBeInTheDocument()
   })
 
@@ -46,9 +46,9 @@ describe('LogViewer', () => {
 
     render(<LogViewer fileName="jmwalletd.log" value={'alpha\nbeta'} refresh={vi.fn()} />)
 
-    await user.type(screen.getByLabelText('Search logs'), 'missing')
+    await user.type(screen.getByLabelText('logs.label_search'), 'missing')
 
-    expect(screen.getByText('No matches for "missing".')).toBeInTheDocument()
+    expect(screen.getByText('logs.text_search_matches')).toBeInTheDocument()
   })
 
   it('refreshes without allowing duplicate in-flight refreshes', async () => {
@@ -103,7 +103,7 @@ describe('LogViewer', () => {
     })
 
     const card = screen.getByText('jmwalletd.log').closest<HTMLElement>('[data-slot="card"]')!
-    await user.click(within(card).getByTitle('Scroll to bottom'))
+    await user.click(within(card).getByTitle('logs.button_scroll_to_bottom'))
 
     expect(scrollTo).toHaveBeenCalledWith({
       top: 100,
