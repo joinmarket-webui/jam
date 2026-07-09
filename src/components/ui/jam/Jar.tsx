@@ -42,7 +42,8 @@ export function Jar({
         <p
           className={cn(
             'text-muted-foreground',
-            disabled ? [] : ['group-hover/jar:font-bold', `group-hover/jar:text-[${color}]`],
+            !disabled && isSelected ? ['font-bold', `text-[${color}]`] : [],
+            !disabled ? ['group-hover/jar:font-bold', `group-hover/jar:text-[${color}]`] : [],
           )}
         >
           {name}
