@@ -45,12 +45,7 @@ describe('useQueryYieldgenReport', () => {
     expect(parserMock).toHaveBeenCalledWith(['a', 'b'])
   })
 
-  it('parses a plain string array response', async () => {
-    yieldgenreportMock.mockResolvedValue({ data: ['x'] })
-    renderHook(() => useQueryYieldgenReport())
 
-    await expect(runQueryFn()).resolves.toEqual(['x'])
-  })
 
   it('returns an empty array on a 404 error', async () => {
     yieldgenreportMock.mockRejectedValue({ status: 404 })

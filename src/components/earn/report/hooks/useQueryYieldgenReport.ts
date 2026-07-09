@@ -16,8 +16,7 @@ export function useQueryYieldgenReport({ enabled = true }: { enabled?: boolean }
       try {
         const response = await yieldgenreport({ client, signal })
 
-        const data = response.data
-        const lines = Array.isArray(data) ? data : Array.isArray(data?.yigen_data) ? data.yigen_data : []
+        const lines = response.data?.yigen_data ?? []
 
         return yieldgenReportToEarnReportEntries(lines)
       } catch (error: unknown) {
