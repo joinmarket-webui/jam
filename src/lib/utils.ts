@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
-import type { Factor, Milliseconds, MnemonicPhrase } from '@/types/global'
+import type { BlockHeight, Factor, Milliseconds, MnemonicPhrase } from '@/types/global'
 
 const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
 
@@ -137,7 +137,7 @@ export const tryBtcToSat = (value: string): number | undefined => {
   return sats === 0 ? 0 : sign * sats
 }
 
-export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
+export const SEGWIT_ACTIVATION_BLOCK: BlockHeight = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
 //  if applicable, the genesis date can be used as minimum `since` timestamp
 export const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')

@@ -6,6 +6,7 @@ export type AmountSats = number
 export type Factor = number
 export type BitcoinAddress = string
 export type JarIndex = number
+export type BlockHeight = number
 
 export type MnemonicPhrase = string[]
 

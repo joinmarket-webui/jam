@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { rescanblockchain } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
+import type { TFunction } from 'i18next'
 import { ArrowLeftIcon, PackageSearchIcon, RefreshCwIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import type { SubmitHandler } from 'react-hook-form'
@@ -14,40 +16,65 @@ import { Input } from '@/components/ui/input'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Label } from '@/components/ui/label'
 import { routes } from '@/constants/routes'
-import { useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
+import { useCurrentBlockHeight, useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
-import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
+import { isValidInteger, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import type { BlockHeight } from '@/types/global'
 
 const INPUT_BLOCK_HEIGHT_MIN = 0
+const INPUT_BLOCK_HEIGHT_MAX = Number.MAX_SAFE_INTEGER
 
 type Inputs = {
-  blockHeight: number
+  blockHeight: BlockHeight
 }
 
-const schema = yup
-  .object({
-    blockHeight: yup.number().integer().default(SEGWIT_ACTIVATION_BLOCK).min(INPUT_BLOCK_HEIGHT_MIN).required(),
-  })
-  .required()
+const rescanFormSchema = (currentBlockHeight: BlockHeight | undefined, t: TFunction) => {
+  const minBlockHeight = Math.min(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight ?? INPUT_BLOCK_HEIGHT_MIN)
+  const maxBlockheight = currentBlockHeight || INPUT_BLOCK_HEIGHT_MAX
+  const invalidBlockheightMessage = t('rescan_chain.feedback_invalid_blockheight', { min: minBlockHeight })
+
+  return yup
+    .object({
+      blockHeight: yup
+        .number<BlockHeight>()
+        .integer(invalidBlockheightMessage)
+        .transform((value) => (isValidInteger(value) ? value : null))
+        .min(minBlockHeight, invalidBlockheightMessage)
+        .max(maxBlockheight, invalidBlockheightMessage)
+        .required(invalidBlockheightMessage),
+    })
+    .required()
+}
 
 interface RescanChainFormProps {
   rescanInfo: RescanInfo
+  initialBlockHeight?: BlockHeight
+  currentBlockHeight?: BlockHeight
   onSubmit: SubmitHandler<Inputs>
   disabled?: boolean
 }
 
-function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProps) {
+function RescanChainForm({
+  rescanInfo,
+  initialBlockHeight,
+  currentBlockHeight,
+  onSubmit,
+  disabled,
+}: RescanChainFormProps) {
   const { t } = useTranslation()
+
+  const schema = useMemo(() => rescanFormSchema(currentBlockHeight, t), [currentBlockHeight, t])
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting },
   } = useForm<Inputs>({
-    mode: 'all',
+    mode: 'onSubmit',
     defaultValues: {
-      blockHeight: SEGWIT_ACTIVATION_BLOCK,
+      blockHeight: initialBlockHeight,
     },
     resolver: yupResolver(schema),
   })
@@ -77,18 +104,9 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
             placeholder={t('rescan_chain.placeholder_blockheight')}
           />
         </div>
-        {errors.blockHeight && (
-          <div className="text-destructive text-xs">
-            <span>{t('rescan_chain.feedback_invalid_blockheight', { min: INPUT_BLOCK_HEIGHT_MIN })}</span>
-          </div>
-        )}
+        {errors.blockHeight?.message && <div className="text-destructive text-xs">{errors.blockHeight.message}</div>}
       </div>
-      <Button
-        type="submit"
-        disabled={disabled || !isValid || isSubmitting || rescanInfo.rescanning}
-        className="w-full"
-        size="xxl"
-      >
+      <Button type="submit" disabled={disabled || isSubmitting || rescanInfo.rescanning} className="w-full" size="xxl">
         {isSubmitting || rescanInfo.rescanning
           ? t('rescan_chain.text_button_submitting')
           : t('rescan_chain.text_button_submit')}
@@ -105,6 +123,8 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
+  const { currentBlockHeight } = useCurrentBlockHeight()
+
   const { rescanInfo, setRescanInfo } = useRescanStatus()
 
   const rescanMutation = useMutation({
@@ -139,17 +159,8 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
     },
   })
 
-  const handleRescan = async (blockHeight: number) => {
-    if (Number.isNaN(blockHeight) || blockHeight < INPUT_BLOCK_HEIGHT_MIN) {
-      toast.error(t('rescan_chain.feedback_invalid_blockheight', { min: INPUT_BLOCK_HEIGHT_MIN }))
-      return
-    }
-
-    await rescanMutation.mutateAsync(blockHeight)
-  }
-
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    return handleRescan(data.blockHeight)
+    return await rescanMutation.mutateAsync(data.blockHeight)
   }
 
   return (
@@ -171,6 +182,12 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
         <CardContent>
           <RescanChainForm
             rescanInfo={rescanInfo}
+            initialBlockHeight={
+              currentBlockHeight === undefined
+                ? SEGWIT_ACTIVATION_BLOCK
+                : Math.max(0, currentBlockHeight - (1 / 10) * 60 * 24)
+            }
+            currentBlockHeight={currentBlockHeight}
             onSubmit={onSubmit}
             disabled={rescanInfo.rescanning || rescanMutation.isPending}
           />
