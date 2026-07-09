@@ -26,7 +26,8 @@
       "error_loading_wallet_failed": "Ошибка открытия кошелька. {{ reason }}",
       "error_reloading_wallet_failed": "Ошибка чтения кошелька. {{ reason }}",
       "reason_unknown": "Причина неизвестна."
-    }
+    },
+    "next": "След"
   },
   "app": {
     "alert_rescan_in_progress": "Повторное сканирование в процессе"
@@ -225,7 +226,6 @@
       "label_max_sweep_fee_change": "Изменение комиссии за участие в Переносе",
       "description_max_sweep_fee_change": "Максимальное увеличение комиссии, которое вы готовы заплатить за участие соавторов в транзакции Переноса, в процентах от предполагаемой комиссии за транзакцию. Пример: при установке на 60% с 10 sats/vByte фактическая комиссия за Совместные Транзакции Переноса может составлять от 4 до 16 sats/vByte. По умолчанию: {{ defaultValue }}",
       "feedback_invalid_max_sweep_fee_change": "Пожалуйста, укажите допустимое максимальное изменение комиссии за участие в Переносе между {{ min }} и {{ max }}.",
-      "text_button_cancel": "Отмена",
       "text_button_submit": "Сохранить",
       "text_button_submitting": "Отправка",
       "error_saving_fee_config_failed": "Ошибка при сохранении значений конфигурации комиссии. Причина: {{ reason }}"
@@ -399,8 +399,6 @@
       "text_creating": "Создание",
       "text_unfreezing": "Разморозка",
       "select_date": {
-        "text_primary_button": "След",
-        "text_secondary_button": "Отмена",
         "form_label_year": "Год",
         "form_label_month": "Месяц",
         "description": "Срок блокировки средств:",
@@ -431,7 +429,6 @@
       "create_fidelity_bond": {
         "title": "Создать Fidelity Bond",
         "success_text": "Fidelity Bond создан!",
-        "text_primary_button": "Завершить",
         "text_primary_button_unfreeze": "Разморозить UTXOs",
         "label_lock_date": "Заблокировано до",
         "label_address": "Адрес с ограничением по времени",
@@ -477,9 +474,7 @@
         "success_text": "Fidelity Bond успешно разблокирован!",
         "text_loading": "загрузка",
         "text_sending": "Разблокировка",
-        "text_button_cancel": "Отмена",
         "text_button_submit": "Разблокировать Funds",
-        "text_button_done": "Завершить",
         "error_loading_address": "Невозможно получить новый адрес.",
         "error_freezing_utxos": "Не удалось заморозить UTXOs.",
         "error_unfreezing_fidelity_bond": "Ошибка при разморозке просроченного Fidelity Bond.",

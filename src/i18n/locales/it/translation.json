@@ -24,7 +24,8 @@
       "error_loading_wallet_failed": "Caricamento del portafoglio fallito. {{ reason }}",
       "error_reloading_wallet_failed": "Ricaricamento del portafoglio fallito. {{ reason }}",
       "reason_unknown": "Motivo sconosciuto."
-    }
+    },
+    "next": "Successivo"
   },
   "navbar": {
     "title": "Jam",
@@ -179,7 +180,6 @@
       "label_max_cj_fee_rel": "Limite relativo (per collaboratore)",
       "description_max_cj_fee_rel": "La commissione massima che si è disposti a pagare per ogni collaboratore, come percentuale dell'importo della transazione. Esempio: se si inviano 2 milioni di sats e la commissione massima è impostata allo 0,1%, si pagheranno al massimo 2.000 sats ad un singolo collaboratore.",
       "feedback_invalid_max_cj_fee_rel": "Si prega di fornire una commissione massima relativa valida compresa tra {{ min }} e {{ max }}.",
-      "text_button_cancel": "Cancella",
       "text_button_submit": "Salva",
       "text_button_submitting": "Salvataggio in corso...",
       "error_saving_fee_config_failed": "Errore durante il salvataggio dei valori di configurazione delle commissioni. Motivo: {{ reason }}"
@@ -324,8 +324,6 @@
       "text_creating": "Creazione...",
       "text_unfreezing": "Scongelando...",
       "select_date": {
-        "text_primary_button": "Successivo",
-        "text_secondary_button": "Cancella",
         "form_label_year": "Anno",
         "form_label_month": "Mese",
         "description": "Data di scadenza del fidelity bond:"
@@ -354,7 +352,6 @@
       },
       "create_fidelity_bond": {
         "success_text": "Fidelity bond creato!",
-        "text_primary_button": "Fatto",
         "text_primary_button_unfreeze": "Scongela UTXO",
         "label_lock_date": "Bloccato fino al",
         "label_address": "Indirizzo bloccato temporalmente",
@@ -388,9 +385,7 @@
         "success_text": "Fidelity Bond sbloccato con successo!",
         "text_loading": "Caricamento...",
         "text_sending": "Sbloccando...",
-        "text_button_cancel": "Cancella",
         "text_button_submit": "Sblocca fondi",
-        "text_button_done": "Fatto",
         "error_loading_address": "Impossibile ottenere un nuovo indirizzo.",
         "error_freezing_utxos": "Impossibile congelare gli UTXO.",
         "error_unfreezing_fidelity_bond": "Errore durante lo sblocco del fidelity bond scaduto.",

@@ -400,10 +400,10 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
         {step === 'select_jar' && (
           <DialogFooter className="gap-3 sm:gap-2">
             <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)}>
-              {t('earn.fidelity_bond.move.text_button_cancel')}
+              {t('global.cancel')}
             </Button>
             <Button className="min-w-32" disabled={selectedJarIndex === undefined} onClick={() => setStep('confirm')}>
-              {t('earn.fidelity_bond.select_date.text_primary_button')}
+              {t('global.next')}
             </Button>
           </DialogFooter>
         )}
@@ -415,7 +415,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
               {t('global.back')}
             </Button>
             <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)} disabled={isLoading}>
-              {t('earn.fidelity_bond.move.text_button_cancel')}
+              {t('global.cancel')}
             </Button>
             <Button
               className="min-w-32"
@@ -431,7 +431,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
         {step === 'success' && (
           <DialogFooter className="gap-3 sm:gap-2">
             <Button className="min-w-32" onClick={() => handleOpenChange(false)}>
-              {t('earn.fidelity_bond.move.text_button_done')}
+              {t('global.done')}
             </Button>
           </DialogFooter>
         )}

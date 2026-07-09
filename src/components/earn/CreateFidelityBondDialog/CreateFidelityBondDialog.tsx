@@ -64,7 +64,7 @@ export function CreateFidelityBondDialog({
             </Button>
           )}
           <Button className="min-w-32" onClick={() => handleOpenChange(false)}>
-            {t('earn.fidelity_bond.create_fidelity_bond.text_primary_button')}
+            {t('global.done')}
           </Button>
         </DialogFooter>
       )
@@ -81,7 +81,7 @@ export function CreateFidelityBondDialog({
           </Button>
         )}
         <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)} disabled={isLoading}>
-          {t('earn.fidelity_bond.select_date.text_secondary_button')}
+          {t('global.cancel')}
         </Button>
         <Button className="min-w-32" onClick={() => void handleNext()} disabled={!canProceed() || isLoading}>
           {isLoading && <Spinner className="mr-2 h-4 w-4" />}
@@ -91,7 +91,7 @@ export function CreateFidelityBondDialog({
               : t('earn.fidelity_bond.freeze_utxos.text_primary_button_all_frozen')
             : step === 'review'
               ? t('earn.fidelity_bond.review_inputs.text_primary_button')
-              : t('earn.fidelity_bond.select_date.text_primary_button')}
+              : t('global.next')}
         </Button>
       </DialogFooter>
     )

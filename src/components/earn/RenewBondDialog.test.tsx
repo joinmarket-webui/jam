@@ -166,7 +166,7 @@ const selectYear = (value: string) => {
 
 const goToConfirm = () => {
   selectMonth('06')
-  fireEvent.click(screen.getByText('earn.fidelity_bond.select_date.text_primary_button'))
+  fireEvent.click(screen.getByText('global.next'))
 }
 
 describe('RenewBondDialog', () => {

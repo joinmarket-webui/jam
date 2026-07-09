@@ -127,7 +127,7 @@ describe('FeeConfigDialog', () => {
     expect(screen.getByText('settings.fees.title')).toBeInTheDocument()
     expect(screen.getByText('settings.fees.title_max_cj_fee_settings')).toBeInTheDocument()
     expect(screen.getByText('settings.fees.title_general_fee_settings')).toBeInTheDocument()
-    expect(screen.getByText('settings.fees.text_button_cancel')).toBeInTheDocument()
+    expect(screen.getByText('global.cancel')).toBeInTheDocument()
     expect(screen.getByText('settings.fees.text_button_submit')).toBeInTheDocument()
     await flushActUpdates()
   })
@@ -155,7 +155,7 @@ describe('FeeConfigDialog', () => {
     fireEvent.click(screen.getByText('settings.fees.title_max_cj_fee_settings'))
     expect(screen.getAllByText('global.loading').length).toBeGreaterThan(0)
 
-    const cancelButton = screen.getByText('settings.fees.text_button_cancel')
+    const cancelButton = screen.getByText('global.cancel')
     expect(cancelButton).toBeDisabled()
   })
 
@@ -189,7 +189,7 @@ describe('FeeConfigDialog', () => {
     const onOpenChange = vi.fn()
     renderDialog(makeValidValidation(), onOpenChange)
 
-    fireEvent.click(screen.getByText('settings.fees.text_button_cancel'))
+    fireEvent.click(screen.getByText('global.cancel'))
     expect(onOpenChange).toHaveBeenCalledWith(false)
     await flushActUpdates()
   })

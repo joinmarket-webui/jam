@@ -33,7 +33,8 @@
       "error_reloading_wallet_failed": "Reloading wallet failed. {{ reason }}",
       "error_copy_to_clipboard_failed": "Failed to copy to clipboard. {{ reason }}",
       "reason_unknown": "Unknown reason."
-    }
+    },
+    "next": "Next"
   },
   "app": {
     "alert_rescan_in_progress": "Rescanning in progress...",
@@ -328,7 +329,6 @@
       "label_max_sweep_fee_change": "Collaborative sweep fee change",
       "description_max_sweep_fee_change": "The maximum fee increase you are willing to pay on collaborative sweep transactions, as a percentage of the estimated transaction fee. Example: when set to 60% with 10 sats/vByte, the actual fee for collaborative sweeps can be between 4 and 16 sats/vByte. Default: {{ defaultValue }}",
       "feedback_invalid_max_sweep_fee_change": "Please provide a valid maximum sweep fee change between {{ min }} and {{ max }}.",
-      "text_button_cancel": "Cancel",
       "text_button_reset": "Reset",
       "text_button_submit": "Save",
       "text_button_submitting": "Saving...",
@@ -561,8 +561,6 @@
       "text_creating_subtitle": "This may take a moment...",
       "text_unfreezing": "Unfreezing...",
       "select_date": {
-        "text_primary_button": "Next",
-        "text_secondary_button": "Cancel",
         "form_label_year": "Year",
         "form_label_month": "Month",
         "description": "Fidelity bond expiration date:",
@@ -609,7 +607,6 @@
       "create_fidelity_bond": {
         "title": "Create Fidelity Bond",
         "success_text": "Fidelity bond created!",
-        "text_primary_button": "Done",
         "text_primary_button_unfreeze": "Unfreeze UTXOs",
         "label_lock_date": "Locked until",
         "label_address": "Time-locked address",
@@ -657,9 +654,7 @@
         "success_text": "Fidelity Bond unlocked successfully!",
         "text_loading": "Loading...",
         "text_sending": "Unlocking...",
-        "text_button_cancel": "Cancel",
         "text_button_submit": "Unlock Funds",
-        "text_button_done": "Done",
         "label_destination": "Destination",
         "error_loading_address": "Unable to get new address.",
         "error_freezing_utxos": "Could not freeze UTXOs.",

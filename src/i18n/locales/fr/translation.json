@@ -142,7 +142,6 @@
     "matrix": "Matrix",
     "telegram": "Telegram",
     "fees": {
-      "text_button_cancel": "Annuler",
       "text_button_submit": "Sauvegarder",
       "text_button_submitting": "Sauvant..."
     }

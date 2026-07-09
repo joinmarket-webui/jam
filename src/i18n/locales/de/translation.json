@@ -25,7 +25,8 @@
       "error_loading_wallet_failed": "Fehler beim Laden der Wallet. {{ reason }}",
       "error_reloading_wallet_failed": "Fehler beim erneuten Laden der Wallet. {{ reason }}",
       "reason_unknown": "Unbekannter Grund"
-    }
+    },
+    "next": "Weiter"
   },
   "app": {
     "alert_rescan_in_progress": "Erneuter Scan läuft..."
@@ -216,7 +217,6 @@
       "label_max_cj_fee_rel": "Relatives Limit (pro Teilnehmer)",
       "description_max_cj_fee_rel": "Die maximale Gebühr, die du für jeden Beteiligten als Prozentzahl von der Transaktionsmenge zu zahlen bereit bist. Beispiel: Wenn du 2 Millionen Sats verschicken willst und das Maximum bei 0,1% einstellst, wirst du nicht mehr als 2000 Sats pro Teilnehmer zahlen. ",
       "feedback_invalid_max_cj_fee_rel": "Bitte gib eine gültige maximale relative Fee zwischen {{ min }} und {{ max }} an.",
-      "text_button_cancel": "Abbrechen",
       "text_button_submit": "Speichern",
       "text_button_submitting": "Speichern...",
       "error_saving_fee_config_failed": "Fehler beim Speichern der Konfiguration. Begründung: {{ reason }}"
@@ -365,8 +365,6 @@
       "text_creating": "Erstellen...",
       "text_unfreezing": "Ensperren...",
       "select_date": {
-        "text_primary_button": "Weiter",
-        "text_secondary_button": "Abbrechen",
         "form_label_year": "Jahr",
         "form_label_month": "Monat",
         "description": "Fidelity Bond Auslaufdatum:"
@@ -395,7 +393,6 @@
       },
       "create_fidelity_bond": {
         "success_text": "Fidelity Bond erstellt!",
-        "text_primary_button": "Erledigt",
         "text_primary_button_unfreeze": "UTXOs auftauen",
         "label_lock_date": "Gesperrt bis",
         "label_address": "Zeitlich gesperrte Adresse",
@@ -429,9 +426,7 @@
         "success_text": "Fidelity Bond erfolgreich entsperrt!",
         "text_loading": "Laden...",
         "text_sending": "Entsperren...",
-        "text_button_cancel": "Abbrechen",
         "text_button_submit": "Gelder entsperren",
-        "text_button_done": "Erledigt",
         "error_loading_address": "Neue Adresse konnte nicht generiert werden.",
         "error_freezing_utxos": "Die UTXOs konnten nicht eingefroren werden. ",
         "error_unfreezing_fidelity_bond": "Fehler beim Auftauen des abgelaufenen Fidelity Bonds. ",

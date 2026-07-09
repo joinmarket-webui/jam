@@ -293,7 +293,7 @@ export const FeeConfigDialog = ({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting || feeConfigValidation.isLoading}
           >
-            {t('settings.fees.text_button_cancel')}
+            {t('global.cancel')}
           </Button>
           <Button
             variant="outline"

@@ -24,7 +24,8 @@
       "error_loading_wallet_failed": "Erro ao carregar carteira. {{ reason }}",
       "error_reloading_wallet_failed": "Erro ao recarregar carteira. {{ reason }}",
       "reason_unknown": "Razão desconhecida."
-    }
+    },
+    "next": "Próximo"
   },
   "navbar": {
     "title": "Jam",
@@ -179,7 +180,6 @@
       "label_max_cj_fee_rel": "Limite relativo (por colaborador)",
       "description_max_cj_fee_rel": "A taxa máxima que você está disposto a pagar por colaboração, como uma porcentagem do valor da transação. Exemplo: se você enviar 2 milhões de sats e a taxa máxima for de 0,1%, você pagará no máximo 2.000 sats para um único colaborador.",
       "feedback_invalid_max_cj_fee_rel": "Forneça uma taxa relativa máxima válida entre {{ min }} e {{ max }}.",
-      "text_button_cancel": "Cancelar",
       "text_button_submit": "Salvar",
       "text_button_submitting": "Salvando...",
       "error_saving_fee_config_failed": "Erro ao salvar valores de configuração de taxa. Motivo: {{ reason }}"
@@ -324,8 +324,6 @@
       "text_creating": "Criando...",
       "text_unfreezing": "Descongelando...",
       "select_date": {
-        "text_primary_button": "Próximo",
-        "text_secondary_button": "Cancelar",
         "form_label_year": "Ano",
         "form_label_month": "Mês",
         "description": "Data de vencimento do título de fidelidade:"
@@ -354,7 +352,6 @@
       },
       "create_fidelity_bond": {
         "success_text": "Título de fidelidade criado!",
-        "text_primary_button": "Pronto",
         "text_primary_button_unfreeze": "Descongelar UTXOs",
         "label_lock_date": "Trancado até",
         "label_address": "Endereços trancados no tempo",
@@ -388,9 +385,7 @@
         "success_text": "Título de Fidelidade desbloqueado com sucesso!",
         "text_loading": "Carregando...",
         "text_sending": "Desbloqueando...",
-        "text_button_cancel": "Cancelar",
         "text_button_submit": "Desbloquear fundos",
-        "text_button_done": "Pronto",
         "error_loading_address": "Não foi possível obter novo endereço.",
         "error_freezing_utxos": "Não foi possível congelar UTXOs.",
         "error_unfreezing_fidelity_bond": "Erro ao descongelar o título de fidelidade expirado.",

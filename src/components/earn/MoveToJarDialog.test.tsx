@@ -118,7 +118,7 @@ const renderDialog = (props?: { utxo?: FidelityBondUtxo; onOpenChange?: (open: b
 
 const goToConfirm = () => {
   fireEvent.click(screen.getByText('Jar 1'))
-  fireEvent.click(screen.getByText('earn.fidelity_bond.select_date.text_primary_button'))
+  fireEvent.click(screen.getByText('global.next'))
 }
 
 describe('MoveToJarDialog', () => {

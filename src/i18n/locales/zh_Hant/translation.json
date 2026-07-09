@@ -25,7 +25,8 @@
       "error_loading_wallet_failed": "加載錢包失敗。{{ reason }}",
       "error_reloading_wallet_failed": "重新加載錢包失敗。{{ reason }}",
       "reason_unknown": "未知原因。"
-    }
+    },
+    "next": "繼續"
   },
   "app": {
     "alert_rescan_in_progress": "正在進行重新掃描..."
@@ -216,7 +217,6 @@
       "label_max_cj_fee_rel": "相對限制（每個協作方）",
       "description_max_cj_fee_rel": "你願意支付給每個協作方的最高費用，作為交易金額的百分比。例：如果你發送2百萬聰並把最高費用設為0.1%，那麼你將最多支付每個協作方2000聰。",
       "feedback_invalid_max_cj_fee_rel": "請提供一個有效的最高相對費用，從{{ min }}到{{ max }}。",
-      "text_button_cancel": "取消",
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
       "error_saving_fee_config_failed": "保存費用配置值時出錯了。原因：{{ reason }}"
@@ -365,8 +365,6 @@
       "text_creating": "正在創建...",
       "text_unfreezing": "正在解凍...",
       "select_date": {
-        "text_primary_button": "繼續",
-        "text_secondary_button": "取消",
         "form_label_year": "年",
         "form_label_month": "月",
         "description": "保證金到期日期："
@@ -395,7 +393,6 @@
       },
       "create_fidelity_bond": {
         "success_text": "保證金已創建！",
-        "text_primary_button": "完成",
         "text_primary_button_unfreeze": "解凍 UTXOs",
         "label_lock_date": "鎖定至",
         "label_address": "時間鎖地址",
@@ -429,9 +426,7 @@
         "success_text": "已成功解鎖保證金！",
         "text_loading": "正在加載...",
         "text_sending": "正在解鎖...",
-        "text_button_cancel": "取消",
         "text_button_submit": "解鎖資金",
-        "text_button_done": "完成",
         "error_loading_address": "無法獲取新地址。",
         "error_freezing_utxos": "無法凍結 UTXOs。",
         "error_unfreezing_fidelity_bond": "解凍到期的保證金時出錯了。",
