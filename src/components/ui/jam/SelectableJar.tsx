@@ -34,7 +34,7 @@ export const SelectableJar = ({
       tabIndex={-1}
     >
       <Jar
-        className="flex-col gap-0"
+        className="flex-col"
         name={name}
         color={color}
         totalBalance={totalBalance}
