@@ -25,7 +25,9 @@
     "errors": {
       "error_loading_wallet_failed": "Ошибка открытия кошелька. {{ reason }}",
       "error_reloading_wallet_failed": "Ошибка чтения кошелька. {{ reason }}",
-      "reason_unknown": "Причина неизвестна."
+      "reason_unknown": "Причина неизвестна.",
+      "error_loading_address_failed": "Невозможно получить новый адрес.",
+      "error_freezing_utxos": "Не удалось заморозить UTXOs."
     },
     "next": "След"
   },
@@ -316,7 +318,6 @@
     "title": "Получить",
     "subtitle": "Отправьте sats на указанный ниже адрес, чтобы пополнить свой кошелек.",
     "text_copy_address": "Адрес скопирован",
-    "error_loading_address_failed": "Невозможно получить новый адрес.",
     "error_copy_address_failed": "Не удалось скопировать адрес.",
     "button_copy_address": "Скопировать",
     "text_copy_address_confirmed": "Скопировано",
@@ -390,7 +391,6 @@
     "title_fidelity_bonds_other": "Ваши Fidelity Bond",
     "subtitle_fidelity_bonds": "Fidelity Bond — это долгосрочный депозит, который делает криптографические идентификаторы намеренно дорогими. Криптографически блокируя средства на определенный срок, вы показываете, что являетесь серьезным участником рынка, и увеличиваете вероятность того, что ваши предложения будут приняты.",
     "fidelity_bond": {
-      "error_freezing_utxos": "Не удалось заморозить UTXOs.",
       "error_unfreezing_utxos": "Не удалось разморозить UTXOs.",
       "error_loading_address": "Не удалось загрузить адрес с временной блокировкой.",
       "error_creating_fidelity_bond": "Сделка по созданию Fidelity Bond провалилась.",
@@ -475,8 +475,6 @@
         "text_loading": "загрузка",
         "text_sending": "Разблокировка",
         "text_button_submit": "Разблокировать Funds",
-        "error_loading_address": "Невозможно получить новый адрес.",
-        "error_freezing_utxos": "Не удалось заморозить UTXOs.",
         "error_unfreezing_fidelity_bond": "Ошибка при разморозке просроченного Fidelity Bond.",
         "error_spending_fidelity_bond": "Ошибка при разблокировке просроченного Fidelity Bond.",
         "select_jar": {
@@ -604,5 +602,17 @@
     "subtitle_one": "Выбранный UTXO имеет право быть включенным в транзакцию.",
     "subtitle_other": "Выбранные UTXO имеют право на включение в транзакцию.",
     "text_subtitle_addon": "Невыбранные UTXO будут заморожены и могут быть разморожены позже в любое время."
+  },
+  "sidebar": {
+    "title": "Jam",
+    "item_orderbook": {
+      "label": "Книга заказов"
+    },
+    "item_rescan": {
+      "label": "Повторное сканирование блокчейна"
+    },
+    "item_settings": {
+      "label": "Настройки"
+    }
   }
 }

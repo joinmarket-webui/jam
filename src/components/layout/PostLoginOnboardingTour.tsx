@@ -196,7 +196,7 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
         </CardContent>
         <CardFooter className="flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={closeTour}>
-            {t('onboarding.tour.button_skip')}
+            {t('global.skip')}
           </Button>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
             <Button
@@ -217,7 +217,7 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
                 setStepIndex((current) => Math.min(TOUR_STEPS.length - 1, current + 1))
               }}
             >
-              {isLastStep ? t('onboarding.tour.button_finish') : t('onboarding.button_next')}
+              {isLastStep ? t('global.finish') : t('global.next')}
             </Button>
           </div>
         </CardFooter>

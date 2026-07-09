@@ -24,7 +24,9 @@
     "errors": {
       "error_loading_wallet_failed": "加載錢包失敗。{{ reason }}",
       "error_reloading_wallet_failed": "重新加載錢包失敗。{{ reason }}",
-      "reason_unknown": "未知原因。"
+      "reason_unknown": "未知原因。",
+      "error_loading_address_failed": "無法獲取新地址。",
+      "error_freezing_utxos": "無法凍結 UTXOs。"
     },
     "next": "繼續"
   },
@@ -294,7 +296,6 @@
     "title": "接收",
     "subtitle": "將聰發送到以下的地址來充值你的錢包。",
     "text_copy_address": "已複製地址",
-    "error_loading_address_failed": "無法獲取新地址。",
     "error_copy_address_failed": "無法複製地址。",
     "button_copy_address": "複製",
     "text_copy_address_confirmed": "已複製",
@@ -356,7 +357,6 @@
     "title_fidelity_bonds_other": "你的保證金",
     "subtitle_fidelity_bonds": "保證金是一個刻意使加密身份變得昂貴的長期存款。通過使用加密方式時間鎖定資金，你向市場表示你是一個認真的市場參與者，而你的報價被接受的機率也會因此增加。",
     "fidelity_bond": {
-      "error_freezing_utxos": "無法凍結 UTXOs。",
       "error_unfreezing_utxos": "無法解凍 UTXOs。",
       "error_loading_address": "無法加載時間鎖地址。",
       "error_creating_fidelity_bond": "創建保證金的交易失敗了。",
@@ -427,8 +427,6 @@
         "text_loading": "正在加載...",
         "text_sending": "正在解鎖...",
         "text_button_submit": "解鎖資金",
-        "error_loading_address": "無法獲取新地址。",
-        "error_freezing_utxos": "無法凍結 UTXOs。",
         "error_unfreezing_fidelity_bond": "解凍到期的保證金時出錯了。",
         "error_spending_fidelity_bond": "解鎖到期的保證金時出錯了。",
         "select_jar": {
@@ -540,6 +538,15 @@
       "column_title_confirmations": "確認",
       "column_title_label_and_status": "標籤",
       "row_button_details": "詳情"
+    }
+  },
+  "sidebar": {
+    "title": "Jam",
+    "item_orderbook": {
+      "label": "訂單簿"
+    },
+    "item_settings": {
+      "label": "設置"
     }
   }
 }

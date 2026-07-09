@@ -175,7 +175,7 @@ export function useCreateFidelityBondWizard(
     ...freezeMutation({ client }),
     onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.error_freezing_utxos')} ${reason}`)
+      setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
     },
   })
 

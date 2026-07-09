@@ -48,13 +48,13 @@ describe('PostLoginOnboardingTour', () => {
     expect(screen.getByText('onboarding.tour.step_wallet_title')).toBeInTheDocument()
     expect(screen.getByText('onboarding.tour.step_label')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('onboarding.button_next'))
+    fireEvent.click(screen.getByText('global.next'))
     expect(screen.getByText('onboarding.tour.step_actions_title')).toBeInTheDocument()
 
     fireEvent.click(screen.getByText('global.back'))
     expect(screen.getByText('onboarding.tour.step_wallet_title')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('onboarding.tour.button_skip'))
+    fireEvent.click(screen.getByText('global.skip'))
     expect(screen.queryByText('onboarding.tour.step_wallet_title')).not.toBeInTheDocument()
     expect(window.localStorage.getItem(POST_LOGIN_TOUR_DISMISSED_STORAGE_KEY)).toBe('1')
   })
@@ -69,14 +69,14 @@ describe('PostLoginOnboardingTour', () => {
     fireEvent(window, new Event(POST_LOGIN_TOUR_EVENT))
     expect(screen.getByText('onboarding.tour.step_wallet_title')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('onboarding.button_next'))
-    fireEvent.click(screen.getByText('onboarding.button_next'))
-    fireEvent.click(screen.getByText('onboarding.button_next'))
-    fireEvent.click(screen.getByText('onboarding.button_next'))
+    fireEvent.click(screen.getByText('global.next'))
+    fireEvent.click(screen.getByText('global.next'))
+    fireEvent.click(screen.getByText('global.next'))
+    fireEvent.click(screen.getByText('global.next'))
 
     expect(screen.getByText('onboarding.tour.step_settings_title')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('onboarding.tour.button_finish'))
+    fireEvent.click(screen.getByText('global.finish'))
     expect(screen.queryByText('onboarding.tour.step_settings_title')).not.toBeInTheDocument()
     expect(window.localStorage.getItem(POST_LOGIN_TOUR_DISMISSED_STORAGE_KEY)).toBe('1')
   })

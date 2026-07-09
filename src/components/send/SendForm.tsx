@@ -277,7 +277,7 @@ export function SendForm({
         disabledJars={sourceJar === undefined ? [] : [sourceJar]}
         walletBalanceSummary={walletBalanceSummary}
         onError={(_ignoredOnPurpose) => {
-          toast.error(t('send.error_loading_address_failed'))
+          toast.error(t('global.errors.error_loading_address_failed'))
           setValue('destination.address', '', { shouldValidate: true })
           setValue('destination.fromJar', undefined, { shouldValidate: true })
         }}

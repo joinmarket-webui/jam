@@ -53,7 +53,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const mainItems = useMemo(
     () => [
       {
-        title: t('sidebar.item_home'),
+        title: t('sidebar.item_home.label'),
         url: routes.home,
         icon: WalletIcon,
       },
@@ -73,7 +73,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         icon: HandCoinsIcon,
         subitems: [
           {
-            title: t('sidebar.item_earn_report'),
+            title: t('sidebar.item_earn_report.label'),
             url: routes.earnReport,
             icon: NotebookTabsIcon,
           },
@@ -85,12 +85,12 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         icon: BrushCleaningIcon,
       },
       {
-        title: t('orderbook.title'),
+        title: t('sidebar.item_orderbook.label'),
         url: routes.orderbook,
         icon: BookOpenIcon,
       },
       {
-        title: t('sidebar.item_jars'),
+        title: t('sidebar.item_jars.label'),
         url: routes.walletJarsDetails,
         icon: MilkIcon,
       },
@@ -101,7 +101,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const settingsItems = useMemo(
     () => [
       {
-        title: t('sidebar.item_tour'),
+        title: t('sidebar.item_tour.label'),
         url: routes.home,
         icon: SparklesIcon,
         onClick: () => {
@@ -110,7 +110,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         },
       },
       {
-        title: t('settings.rescan_chain'),
+        title: t('sidebar.item_rescan.label'),
         url: routes.rescan,
         icon: PackageSearchIcon,
       },
@@ -118,7 +118,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         ? []
         : [
             {
-              title: t('settings.show_logs'),
+              title: t('sidebar.item_logs.label'),
               url: routes.logs,
               icon: LogsIcon,
             },
@@ -167,7 +167,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
     <Sidebar side={side} variant="sidebar" collapsible="offcanvas">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t('navbar.title')}</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('sidebar.title')}</SidebarGroupLabel>
           <SidebarGroupAction className="cursor-pointer" title={t('global.close')} onClick={() => toggleSidebar()}>
             <XIcon />
             <span className="sr-only">{t('global.close')}</span>
@@ -209,7 +209,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                 <SidebarMenuButton asChild>
                   <Link to={routes.settings}>
                     <SettingsIcon />
-                    <span>{t('navbar.menu_mobile_settings')}</span>
+                    <span>{t('sidebar.item_settings.label')}</span>
                   </Link>
                 </SidebarMenuButton>
                 <SidebarMenuSub>

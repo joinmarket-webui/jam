@@ -155,7 +155,7 @@ describe('MoveToJarDialog', () => {
     h.queryReturn = { data: undefined, isLoading: false, isError: true }
     renderDialog()
     goToConfirm()
-    expect(screen.getByText('earn.fidelity_bond.move.error_loading_address')).toBeInTheDocument()
+    expect(screen.getByText('global.errors.error_loading_address_failed')).toBeInTheDocument()
   })
 
   it('completes the move flow and reaches the success step', async () => {

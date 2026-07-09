@@ -93,7 +93,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   })
 
   if (getAddressQuery.isError && !error) {
-    setError(t('earn.fidelity_bond.move.error_loading_address'))
+    setError(t('global.errors.error_loading_address_failed'))
   }
 
   const destinationAddress = getAddressQuery.data?.address
@@ -102,7 +102,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
     ...freezeMutation({ client }),
     onError: (error: ErrorMessage) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.move.error_freezing_utxos')} ${reason}`)
+      setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
     },
   })
 

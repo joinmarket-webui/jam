@@ -23,7 +23,9 @@
     "errors": {
       "error_loading_wallet_failed": "Caricamento del portafoglio fallito. {{ reason }}",
       "error_reloading_wallet_failed": "Ricaricamento del portafoglio fallito. {{ reason }}",
-      "reason_unknown": "Motivo sconosciuto."
+      "reason_unknown": "Motivo sconosciuto.",
+      "error_loading_address_failed": "Impossibile ottenere un nuovo indirizzo.",
+      "error_freezing_utxos": "Impossibile congelare gli UTXO."
     },
     "next": "Successivo"
   },
@@ -254,7 +256,6 @@
     "title": "Ricevi",
     "subtitle": "Invia sats all'indirizzo sottostante per depositare nel tuo wallet.",
     "text_copy_address": "Indirizzo copiato",
-    "error_loading_address_failed": "Impossibile ottenere un nuovo indirizzo.",
     "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
     "button_copy_address": "Copia",
     "text_copy_address_confirmed": "Copiato",
@@ -316,7 +317,6 @@
     "title_fidelity_bonds_other": "I tuoi Fidelity Bonds",
     "subtitle_fidelity_bonds": "Un fidelity bond è un deposito a lunga scadenza che rende deliberatamente costose le identità crittografiche. Bloccando crittograficamente i fondi per una durata specifica, segnali di essere un serio partecipante al mercato e aumenti la possibilità che le tue offerte vengano accettate.",
     "fidelity_bond": {
-      "error_freezing_utxos": "Impossibile congelare gli UTXO.",
       "error_unfreezing_utxos": "Impossibile scongelare gli UTXO.",
       "error_loading_address": "Impossibile caricare l'indirizzo bloccato con time-lock.",
       "error_creating_fidelity_bond": "La transazione per la creazione del fidelity bond è fallita.",
@@ -386,8 +386,6 @@
         "text_loading": "Caricamento...",
         "text_sending": "Sbloccando...",
         "text_button_submit": "Sblocca fondi",
-        "error_loading_address": "Impossibile ottenere un nuovo indirizzo.",
-        "error_freezing_utxos": "Impossibile congelare gli UTXO.",
         "error_unfreezing_fidelity_bond": "Errore durante lo sblocco del fidelity bond scaduto.",
         "error_spending_fidelity_bond": "Errore durante lo sblocco del fidelity bond scaduto.",
         "select_jar": {
@@ -499,6 +497,15 @@
       "column_title_confirmations": "Conf.",
       "column_title_label_and_status": "Tags",
       "row_button_details": "Dettagli"
+    }
+  },
+  "sidebar": {
+    "title": "Jam",
+    "item_orderbook": {
+      "label": "Registro ordini"
+    },
+    "item_settings": {
+      "label": "Impostazioni"
     }
   }
 }

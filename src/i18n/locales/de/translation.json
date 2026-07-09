@@ -24,7 +24,9 @@
     "errors": {
       "error_loading_wallet_failed": "Fehler beim Laden der Wallet. {{ reason }}",
       "error_reloading_wallet_failed": "Fehler beim erneuten Laden der Wallet. {{ reason }}",
-      "reason_unknown": "Unbekannter Grund"
+      "reason_unknown": "Unbekannter Grund",
+      "error_loading_address_failed": "Neue Adresse kann nicht ermittelt werden.",
+      "error_freezing_utxos": "Die UTXOs konnten nicht gefroren werden. "
     },
     "next": "Weiter"
   },
@@ -294,7 +296,6 @@
     "title": "Empfangen",
     "subtitle": "Befülle deine Wallet, indem du Sats an die unten stehende Adresse schickst. ",
     "text_copy_address": "Adresse kopiert",
-    "error_loading_address_failed": "Neue Adresse kann nicht ermittelt werden.",
     "error_copy_address_failed": "Adresse konnte nicht kopiert werden",
     "button_copy_address": "Kopieren",
     "text_copy_address_confirmed": "Kopiert",
@@ -356,7 +357,6 @@
     "title_fidelity_bonds_other": "Deine Fidelity Bonds",
     "subtitle_fidelity_bonds": "Ein Fidelity Bond ist eine langfristige Einlage, die kryptografische Identitäten absichtlich teuer macht. Indem du Gelder für eine bestimmte Dauer kryptografisch sperrst, signalisierst du, dass du ein ernsthafter Marktteilnehmer bist und erhöhst die Wahrscheinlichkeit, dass deine Angebote angenommen werden.",
     "fidelity_bond": {
-      "error_freezing_utxos": "Die UTXOs konnten nicht gefroren werden. ",
       "error_unfreezing_utxos": "Die UTXOs konnten nicht aufgetaut werden.",
       "error_loading_address": "Die zeitlich gesperrte Adresse konnte nicht geladen werden.",
       "error_creating_fidelity_bond": "Die Transaktion zur Erstellung des Fidelity Bond ist fehlgeschlagen. ",
@@ -427,8 +427,6 @@
         "text_loading": "Laden...",
         "text_sending": "Entsperren...",
         "text_button_submit": "Gelder entsperren",
-        "error_loading_address": "Neue Adresse konnte nicht generiert werden.",
-        "error_freezing_utxos": "Die UTXOs konnten nicht eingefroren werden. ",
         "error_unfreezing_fidelity_bond": "Fehler beim Auftauen des abgelaufenen Fidelity Bonds. ",
         "error_spending_fidelity_bond": "Fehler beim Entsperren des abgelaufenen Fidelity Bonds. ",
         "select_jar": {
@@ -540,6 +538,15 @@
       "column_title_confirmations": "Confs.",
       "column_title_label_and_status": "Tags",
       "row_button_details": "Details"
+    }
+  },
+  "sidebar": {
+    "title": "Jam",
+    "item_orderbook": {
+      "label": "Orderbook"
+    },
+    "item_settings": {
+      "label": "Einstellungen"
     }
   }
 }

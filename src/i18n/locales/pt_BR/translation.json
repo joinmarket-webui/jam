@@ -23,7 +23,9 @@
     "errors": {
       "error_loading_wallet_failed": "Erro ao carregar carteira. {{ reason }}",
       "error_reloading_wallet_failed": "Erro ao recarregar carteira. {{ reason }}",
-      "reason_unknown": "Razão desconhecida."
+      "reason_unknown": "Razão desconhecida.",
+      "error_loading_address_failed": "Não foi possível obter novo endereço.",
+      "error_freezing_utxos": "Não foi possível congelar os UTXOs."
     },
     "next": "Próximo"
   },
@@ -254,7 +256,6 @@
     "title": "Receber",
     "subtitle": "Envie sats para o endereço abaixo para financiar sua carteira.",
     "text_copy_address": "Endereço copiado",
-    "error_loading_address_failed": "Não foi possível obter novo endereço.",
     "error_copy_address_failed": "Não foi possível copiar o endereço.",
     "button_copy_address": "Copiar",
     "text_copy_address_confirmed": "Copiado",
@@ -316,7 +317,6 @@
     "title_fidelity_bonds_other": "Seus Títulos de Fidelidade",
     "subtitle_fidelity_bonds": "Um título de fidelidade é um depósito de longo prazo que torna as identidades criptográficas deliberadamente caras. Ao bloquear fundos criptograficamente por um período específico, você sinaliza que é um participante sério do mercado e aumenta a chance de suas ofertas serem aceitas.",
     "fidelity_bond": {
-      "error_freezing_utxos": "Não foi possível congelar os UTXOs.",
       "error_unfreezing_utxos": "Não foi possível descongelar os UTXOs.",
       "error_loading_address": "Não foi possível carregar o endereço bloqueado por time-lock.",
       "error_creating_fidelity_bond": "Falha ao criar o título de fidelidade.",
@@ -386,8 +386,6 @@
         "text_loading": "Carregando...",
         "text_sending": "Desbloqueando...",
         "text_button_submit": "Desbloquear fundos",
-        "error_loading_address": "Não foi possível obter novo endereço.",
-        "error_freezing_utxos": "Não foi possível congelar UTXOs.",
         "error_unfreezing_fidelity_bond": "Erro ao descongelar o título de fidelidade expirado.",
         "error_spending_fidelity_bond": "Erro ao desbloquear o título de fidelidade expirado.",
         "select_jar": {
@@ -499,6 +497,15 @@
       "column_title_confirmations": "Conf.",
       "column_title_label_and_status": "Tags",
       "row_button_details": "Detalhes"
+    }
+  },
+  "sidebar": {
+    "title": "Jam",
+    "item_orderbook": {
+      "label": "Livro de ordens"
+    },
+    "item_settings": {
+      "label": "Configurações"
     }
   }
 }

@@ -1,7 +1,8 @@
 {
   "global": {
     "errors": {
-      "error_loading_wallet_failed": "Le chargement du portefeuille a échoué. {{ reason }}"
+      "error_loading_wallet_failed": "Le chargement du portefeuille a échoué. {{ reason }}",
+      "error_loading_address_failed": "Le chargement de la nouvelle adresse a échoué."
     }
   },
   "navbar": {
@@ -176,7 +177,6 @@
     "title": "Recevoir",
     "subtitle": "Envoyez du bitcoin à l'adresse ci-dessous.",
     "text_copy_address": "Adresse copiée",
-    "error_loading_address_failed": "Le chargement de la nouvelle adresse a échoué.",
     "error_copy_address_failed": "L'adresse n'a pu être copiée.",
     "button_copy_address": "Copier",
     "text_copy_address_confirmed": "Copié",
@@ -209,5 +209,11 @@
     "text_stopping": "Arrêt en cours",
     "button_show_report": "Afficher le rapport",
     "button_hide_report": "Masquer le rapport"
+  },
+  "sidebar": {
+    "title": "Jam",
+    "item_settings": {
+      "label": "Réglages"
+    }
   }
 }
