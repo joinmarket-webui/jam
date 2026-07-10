@@ -36,7 +36,7 @@ export const UtxoSelectionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl">
+      <DialogContent className="flex max-w-6xl flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t('show_utxos.title')}</DialogTitle>
           <DialogDescription>
@@ -45,12 +45,13 @@ export const UtxoSelectionDialog = ({
         </DialogHeader>
 
         <Input
+          className="shrink-0"
           value={filter}
           onChange={(event) => onFilterChange(event.target.value)}
           placeholder={t('jar_details.utxo_list.placeholder_search')}
           disabled={isSubmitting}
         />
-        <div className="max-h-[55dvh] min-h-0 overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <JarUtxosTable
             globalFilter={filter}
             tableEntries={tableEntries}
@@ -61,7 +62,7 @@ export const UtxoSelectionDialog = ({
           />
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             {t('modal.confirm_button_reject')}
           </Button>
