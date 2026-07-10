@@ -20,9 +20,11 @@ import { useCurrentBlockHeight, useRescanStatus, type RescanInfo } from '@/conte
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { blockHeightField } from '@/lib/formValidation'
-import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
+import { AVERAGE_BLOCKS_PER_DAY, AVERAGE_BLOCKS_PER_YEAR, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { BlockHeight } from '@/types/global'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 type Inputs = {
   blockHeight: BlockHeight
@@ -58,12 +60,14 @@ function RescanChainForm({
   disabled,
 }: RescanChainFormProps) {
   const { t } = useTranslation()
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const schema = useMemo(() => rescanFormSchema(currentBlockHeight, t), [currentBlockHeight, t])
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Inputs>({
     mode: 'onSubmit',
@@ -99,6 +103,63 @@ function RescanChainForm({
           />
         </div>
         {errors.blockHeight?.message && <div className="text-destructive text-xs">{errors.blockHeight.message}</div>}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {(currentBlockHeight && currentBlockHeight > AVERAGE_BLOCKS_PER_DAY) || isDeveloperMode ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              setValue('blockHeight', (currentBlockHeight ?? AVERAGE_BLOCKS_PER_DAY + 1) - AVERAGE_BLOCKS_PER_DAY, {
+                shouldValidate: true,
+              })
+            }
+            disabled={disabled || isSubmitting || rescanInfo.rescanning}
+          >
+            {/* TODO: i18n */}
+            Last {AVERAGE_BLOCKS_PER_DAY.toLocaleString()} blocks (~24 hours)
+          </Button>
+        ) : null}
+
+        {(currentBlockHeight && currentBlockHeight > AVERAGE_BLOCKS_PER_YEAR) || isDeveloperMode ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              setValue('blockHeight', (currentBlockHeight ?? AVERAGE_BLOCKS_PER_YEAR + 1) - AVERAGE_BLOCKS_PER_YEAR, {
+                shouldValidate: true,
+              })
+            }
+            disabled={disabled || isSubmitting || rescanInfo.rescanning}
+          >
+            {/* TODO: i18n */}
+            Last {AVERAGE_BLOCKS_PER_YEAR.toLocaleString()} blocks (~1 year)
+          </Button>
+        ) : null}
+
+        {(currentBlockHeight && currentBlockHeight > SEGWIT_ACTIVATION_BLOCK) || isDeveloperMode ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() =>
+                  setValue('blockHeight', SEGWIT_ACTIVATION_BLOCK, {
+                    shouldValidate: true,
+                  })
+                }
+                disabled={disabled || isSubmitting || rescanInfo.rescanning}
+              >
+                {/* TODO: i18n */}
+                From block #{SEGWIT_ACTIVATION_BLOCK.toLocaleString()}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Segwit Activation Block</TooltipContent>
+          </Tooltip>
+        ) : null}
       </div>
       <Button type="submit" disabled={disabled || isSubmitting || rescanInfo.rescanning} className="w-full" size="xxl">
         {isSubmitting || rescanInfo.rescanning
