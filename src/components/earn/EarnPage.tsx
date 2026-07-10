@@ -247,13 +247,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {isWaitingMakerStart && (
         <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
           <Spinner className="motion-reduce:hidden" />
-          <AlertTitle>{t('earn.alert_waiting_start')}</AlertTitle>
+          <AlertTitle>{t('earn.alert_waiting_start_title')}</AlertTitle>
         </Alert>
       )}
       {isWaitingMakerStop && (
         <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
           <Spinner className="motion-reduce:hidden" />
-          <AlertTitle>{t('earn.alert_waiting_stop')}</AlertTitle>
+          <AlertTitle>{t('earn.alert_waiting_stop_title')}</AlertTitle>
         </Alert>
       )}
       {waitingForOfferUpdate && (
