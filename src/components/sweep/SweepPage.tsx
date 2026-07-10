@@ -80,8 +80,7 @@ const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string
 }
 
 const isPhaseComplete = (phase: TumblerPhaseResponse): boolean => {
-  const status = phase.status.toLowerCase()
-  return ['completed', 'complete', 'succeeded', 'success'].includes(status)
+  return phase.status.toLowerCase() === 'completed'
 }
 
 const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry[6] => {
