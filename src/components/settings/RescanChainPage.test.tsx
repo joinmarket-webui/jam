@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { type RescanInfo } from '@/context/JamSessionInfoContext'
@@ -80,9 +80,9 @@ const walletFileName = 'wallet.jmdat' as WalletFileName
 
 // react-hook-form runs validation after mount; flushing inside async act keeps
 // that deferred state update from triggering a "not wrapped in act" warning.
-const renderPage = async () => {
+const renderPage = async (props: Omit<ComponentProps<typeof RescanChainPage>, 'walletFileName'> = {}) => {
   await act(async () => {
-    render(<RescanChainPage walletFileName={walletFileName} />)
+    render(<RescanChainPage walletFileName={walletFileName} {...props} />)
     await Promise.resolve()
   })
 }
@@ -94,9 +94,10 @@ describe('RescanChainPage', () => {
   })
 
   it('renders the form and navigates back', async () => {
-    await renderPage()
+    await renderPage({ backLinkTarget: 'settings' })
 
     expect(screen.getByText('rescan_chain.title')).toBeInTheDocument()
+    expect(screen.getByText('global.back')).toBeInTheDocument()
     fireEvent.click(screen.getByTitle('global.back'))
     expect(navigateMock).toHaveBeenCalled()
   })

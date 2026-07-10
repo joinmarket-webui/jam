@@ -15,7 +15,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Label } from '@/components/ui/label'
-import { routes } from '@/constants/routes'
+import { routes, type Route } from '@/constants/routes'
 import { useCurrentBlockHeight, useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
@@ -172,9 +172,10 @@ function RescanChainForm({
 
 interface RescanChainProps {
   walletFileName: WalletFileName
+  backLinkTarget?: Route
 }
 
-export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
+export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
@@ -221,15 +222,17 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
       <div className="flex min-w-0 items-start gap-2 sm:items-center sm:gap-4">
-        <Button
-          variant="ghost"
-          className="shrink-0"
-          onClick={() => void navigate(routes.settings)}
-          title={t('global.back')}
-        >
-          <ArrowLeftIcon />
-          <span className="sr-only">{t('global.back')}</span>
-        </Button>
+        {backLinkTarget ? (
+          <Button
+            variant="ghost"
+            className="shrink-0"
+            onClick={() => void navigate(routes.settings)}
+            title={t('global.back')}
+          >
+            <ArrowLeftIcon />
+            <span className="sr-only">{t('global.back')}</span>
+          </Button>
+        ) : null}
         <PageTitle title={t('rescan_chain.title')} subtitle={t('rescan_chain.subtitle')} />
       </div>
 

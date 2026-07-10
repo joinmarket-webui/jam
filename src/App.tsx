@@ -232,7 +232,10 @@ function App() {
             />
             <Route path={routes.orderbook} element={<OrderbookPage />} />
             <Route path={routes.logs} element={<LogsPage />} />
-            <Route path={routes.rescan} element={<RescanChainPage walletFileName={walletFileName!} />} />
+            <Route
+              path={routes.rescan}
+              element={<RescanChainPage walletFileName={walletFileName!} backLinkTarget="settings" />}
+            />
             <Route
               path={routes.walletJarsDetails}
               element={<WalletJarsDetailsPage walletFileName={walletFileName!} />}
