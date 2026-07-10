@@ -1,7 +1,8 @@
 import { getAddressInfo, validate as isValidBitcoinAddress, type Network } from 'bitcoin-address-validation'
 import * as yup from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
-import type { BitcoinAddress, JarIndex } from '@/types/global'
+import type { BitcoinAddress, BlockHeight, JarIndex } from '@/types/global'
+import { isValidInteger } from './utils'
 
 /**
  * Shared bitcoin-address predicates used across form schemas (send, sweep, ...).
@@ -73,3 +74,32 @@ export const destinationAddressField = ({
       (value) =>
         !isValidAddress(value) || !isAddressOnNetwork(value, network) || !isReusedAddress(value, addressSummary),
     )
+
+export type BlockHeightMessages = {
+  invalid: string
+}
+
+export const INPUT_BLOCK_HEIGHT_MIN = 1
+const INPUT_BLOCK_HEIGHT_MAX = Number.MAX_SAFE_INTEGER
+
+export const blockHeightField = ({
+  currentBlockHeight,
+  messages: { invalid },
+}: {
+  currentBlockHeight: BlockHeight | undefined
+  messages: {
+    invalid: ({ min, max }: { min: BlockHeight; max: BlockHeight }) => string
+  }
+}) => {
+  const minBlockHeight = Math.min(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight ?? INPUT_BLOCK_HEIGHT_MIN)
+  const maxBlockheight = currentBlockHeight || INPUT_BLOCK_HEIGHT_MAX
+  const invalidBlockheightMessage = invalid({ min: minBlockHeight, max: maxBlockheight })
+
+  return yup
+    .number()
+    .transform((value) => (isValidInteger(value) ? value : null))
+    .integer(invalidBlockheightMessage)
+    .min(minBlockHeight, invalidBlockheightMessage)
+    .max(maxBlockheight, invalidBlockheightMessage)
+    .required(invalidBlockheightMessage)
+}

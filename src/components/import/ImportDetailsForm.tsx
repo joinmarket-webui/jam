@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { validateMnemonic } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import type { TFunction } from 'i18next'
@@ -20,7 +21,9 @@ import { Spinner } from '@/components/ui/spinner'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { GAPLIMIT_WARN_THRESHOLD } from '@/constants/jam'
 import { JM_GAPLIMIT_DEFAULT } from '@/constants/jm'
+import { blockHeightField, INPUT_BLOCK_HEIGHT_MIN } from '@/lib/formValidation'
 import { cn, DUMMY_SEED_PHRASE, isValidInteger, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
+import type { BlockHeight } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
@@ -36,17 +39,6 @@ const GAPLIMIT_SUGGESTIONS = {
   normal: JM_GAPLIMIT_DEFAULT,
   heavy: JM_GAPLIMIT_DEFAULT * 4,
 }
-
-const MIN_BLOCKHEIGHT_VALUE = 1
-/**
- * Maximum blockheight value.
- * Value choosen based on estimation of blockheight in tge year 2140 (plus some buffer):
- * 365 × 144 × (2140 - 2009) = 6_885_360 = ~7_000_000
- * This is necessary because javascript does not handle large values too well,
- * and the `/rescanblockchain` errors. Not to mention that a value beyond the current
- * height does not make any sense in the first place.
- */
-const MAX_BLOCKHEIGHT_VALUE = 10_000_000
 
 const MIN_GAPLIMIT_VALUE = 1
 /**
@@ -70,7 +62,7 @@ interface ImportDetailsFormValues {
 const defaultImportDetailsFormValues: ImportDetailsFormValues = isDevMode()
   ? {
       mnemonicPhrase: '',
-      blockheight: MIN_BLOCKHEIGHT_VALUE,
+      blockheight: INPUT_BLOCK_HEIGHT_MIN,
       gaplimit: GAPLIMIT_SUGGESTIONS.heavy,
     }
   : {
@@ -93,10 +85,7 @@ const isBip39Mnemonic = (value: string) => {
   return validateMnemonic(normalized, wordlist)
 }
 
-const importDetailsFormSchema = (t: TFunction) => {
-  const invalidBlockheightMessage = t('import_wallet.import_details.feedback_invalid_blockheight', {
-    min: MIN_BLOCKHEIGHT_VALUE.toLocaleString(),
-  })
+const importDetailsFormSchema = (currentBlockHeight: BlockHeight | undefined, t: TFunction) => {
   const invalidGaplimitMessage = t('import_wallet.import_details.feedback_invalid_gaplimit', {
     min: MIN_GAPLIMIT_VALUE.toLocaleString(),
     max: MAX_GAPLIMIT_VALUE.toLocaleString(),
@@ -114,13 +103,13 @@ const importDetailsFormSchema = (t: TFunction) => {
             return isBip39Mnemonic(value)
           },
         ),
-      blockheight: yup
-        .number()
-        .transform((value) => (isValidInteger(value) ? value : null))
-        .integer(invalidBlockheightMessage)
-        .min(MIN_BLOCKHEIGHT_VALUE, invalidBlockheightMessage)
-        .max(MAX_BLOCKHEIGHT_VALUE, invalidBlockheightMessage)
-        .required(invalidBlockheightMessage),
+      blockheight: blockHeightField({
+        currentBlockHeight: currentBlockHeight,
+        messages: {
+          invalid: ({ min, max }) =>
+            t('rescan_chain.feedback_invalid_blockheight', { min: min.toLocaleString(), max: max.toLocaleString() }),
+        },
+      }),
       gaplimit: yup
         .number()
         .transform((value) => (isValidInteger(value) ? value : null))
@@ -134,6 +123,7 @@ const importDetailsFormSchema = (t: TFunction) => {
 
 type ImportDetailsFormProps = {
   className?: string
+  sessionInfo: SessionResponse | undefined
   onSubmit: SubmitHandler<ImportDetailsFormValues>
   initialValues?: ImportDetailsFormValues
   disabled?: boolean
@@ -142,6 +132,7 @@ type ImportDetailsFormProps = {
 
 export const ImportDetailsForm = ({
   className,
+  sessionInfo,
   onSubmit,
   initialValues,
   disabled,
@@ -149,7 +140,10 @@ export const ImportDetailsForm = ({
 }: ImportDetailsFormProps) => {
   const { t } = useTranslation()
 
-  const schema = useMemo(() => importDetailsFormSchema(t), [t])
+  const schema = useMemo(
+    () => importDetailsFormSchema(sessionInfo?.block_height ?? undefined, t),
+    [sessionInfo?.block_height, t],
+  )
 
   const {
     register,
@@ -270,8 +264,6 @@ export const ImportDetailsForm = ({
                       disabled,
                     })}
                     type="number"
-                    min={MIN_BLOCKHEIGHT_VALUE}
-                    max={MAX_BLOCKHEIGHT_VALUE}
                     step={1}
                   />
                   <InputGroupAddon align="inline-start">

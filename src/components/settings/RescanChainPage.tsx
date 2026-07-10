@@ -19,31 +19,25 @@ import { routes } from '@/constants/routes'
 import { useCurrentBlockHeight, useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
-import { isValidInteger, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
+import { blockHeightField } from '@/lib/formValidation'
+import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import type { BlockHeight } from '@/types/global'
-
-const INPUT_BLOCK_HEIGHT_MIN = 0
-const INPUT_BLOCK_HEIGHT_MAX = Number.MAX_SAFE_INTEGER
 
 type Inputs = {
   blockHeight: BlockHeight
 }
 
 const rescanFormSchema = (currentBlockHeight: BlockHeight | undefined, t: TFunction) => {
-  const minBlockHeight = Math.min(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight ?? INPUT_BLOCK_HEIGHT_MIN)
-  const maxBlockheight = currentBlockHeight || INPUT_BLOCK_HEIGHT_MAX
-  const invalidBlockheightMessage = t('rescan_chain.feedback_invalid_blockheight', { min: minBlockHeight })
-
   return yup
     .object({
-      blockHeight: yup
-        .number<BlockHeight>()
-        .integer(invalidBlockheightMessage)
-        .transform((value) => (isValidInteger(value) ? value : null))
-        .min(minBlockHeight, invalidBlockheightMessage)
-        .max(maxBlockheight, invalidBlockheightMessage)
-        .required(invalidBlockheightMessage),
+      blockHeight: blockHeightField({
+        currentBlockHeight: currentBlockHeight,
+        messages: {
+          invalid: ({ min, max }) =>
+            t('rescan_chain.feedback_invalid_blockheight', { min: min.toLocaleString(), max: max.toLocaleString() }),
+        },
+      }),
     })
     .required()
 }

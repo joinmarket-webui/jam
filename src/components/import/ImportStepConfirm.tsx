@@ -127,14 +127,14 @@ export const ImportStepConfirm = ({
                   <div className="text-muted-foreground text-xs">
                     {t('import_wallet.import_details.description_blockheight')}
                   </div>
-                  <div className="text-xl">{importDetails.blockheight}</div>
+                  <div className="text-xl">{importDetails.blockheight.toLocaleString()}</div>
                 </div>
                 <div>
                   <div>{t('import_wallet.import_details.label_gaplimit')}</div>
                   <div className="text-muted-foreground text-xs">
                     {t('import_wallet.import_details.description_gaplimit')}
                   </div>
-                  <div className="text-xl">{importDetails.gaplimit}</div>
+                  <div className="text-xl">{importDetails.gaplimit.toLocaleString()}</div>
                 </div>
                 {showGaplimitWarning && (
                   <Alert variant="warning">
