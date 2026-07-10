@@ -1,3 +1,4 @@
+import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { UseFormReturn } from 'react-hook-form'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -7,7 +8,6 @@ import { jmSessionStore } from '@/store/jmSessionStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import type { SweepFormValues } from './SweepFormSchema'
 import { SweepPage } from './SweepPage'
-import type { Schedule } from './scheduleUtils'
 
 const VALID_DESTINATIONS = [
   'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
@@ -17,51 +17,81 @@ const VALID_DESTINATIONS = [
 
 type WalletInfo = ReturnType<typeof useJamWalletInfoContext>
 
-const activeSchedule: Schedule = [
-  [0, 0, 8, 'INTERNAL', 5, 16, 1],
-  [1, 0, 8, VALID_DESTINATIONS[0], 0, 16, 0],
-]
+const activePlan: TumblerPlanResponse = {
+  plan_id: 'plan-1',
+  wallet_name: 'wallet.jmdat',
+  status: 'running',
+  destinations: VALID_DESTINATIONS,
+  current_phase: 1,
+  phases: [
+    {
+      kind: 'coinjoin',
+      index: 0,
+      status: 'completed',
+      wait_seconds: 300,
+      mixdepth: 0,
+      amount_fraction: 5,
+      counterparty_count: 16,
+      destination: 'INTERNAL',
+    },
+    {
+      kind: 'coinjoin',
+      index: 1,
+      status: 'pending',
+      wait_seconds: 0,
+      mixdepth: 1,
+      amount_fraction: 0,
+      counterparty_count: 16,
+      destination: VALID_DESTINATIONS[0],
+    },
+  ],
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+}
 
 const mocks = vi.hoisted(() => ({
   debugFeatureEnabled: false,
   feeConfigMissing: false,
   feeConfigLoading: false,
-  getScheduleResult: undefined as { schedule?: Schedule } | null | undefined,
-  runSchedule: vi.fn<(input?: unknown) => Promise<{ schedule: Schedule }>>(),
-  scheduleQuery: { data: undefined as { schedule?: Schedule } | null | undefined },
+  planTumbler: vi.fn<(input?: unknown) => Promise<TumblerPlanResponse>>(),
+  startTumbler: vi.fn<(input?: unknown) => Promise<unknown>>(),
+  stopTumbler: vi.fn<(input?: unknown) => Promise<unknown>>(),
+  tumblerStatusData: undefined as TumblerPlanResponse | undefined,
+  tumblerStatusPending: false,
   startReset: vi.fn(),
   startState: { isPending: false, isSuccess: false },
-  stopScheduleRefetch: vi.fn<() => Promise<{ data: unknown }>>(),
   stopReset: vi.fn(),
   stopState: { isPending: false, isSuccess: false },
   toastError: vi.fn(),
   walletInfo: undefined as WalletInfo | undefined,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
-  runscheduleMutation: vi.fn(() => ({ mutationFn: mocks.runSchedule })),
-  stopcoinjoinOptions: vi.fn(() => ({ queryKey: ['stopcoinjoin'], queryFn: vi.fn() })),
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+  tumblerstatusOptions: vi.fn(() => ({ queryKey: ['tumblerstatus'], queryFn: vi.fn() })),
+  tumblerstopMutation: vi.fn(() => ({ mutationFn: mocks.stopTumbler })),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
-  getschedule: vi.fn(() => Promise.resolve({ data: mocks.getScheduleResult })),
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+  tumblerplan: mocks.planTumbler,
+  tumblerstart: mocks.startTumbler,
 }))
 
 type MutationOptions = {
   mutationFn: (input?: unknown) => Promise<unknown>
   onError?: (error: Error) => void
   onMutate?: () => void
-  onSuccess?: (result: { schedule?: Schedule }) => void
+  onSuccess?: (result: unknown) => void
 }
 
 type QueryOptions = {
   queryKey?: unknown
+  select?: (data: TumblerPlanResponse) => unknown
 }
 
 vi.mock('@tanstack/react-query', () => ({
   useMutation: vi.fn((options: MutationOptions) => {
-    const isStartSchedule = options.mutationFn === mocks.runSchedule
-    const state = isStartSchedule ? mocks.startState : mocks.stopState
+    const isStopSchedule = options.mutationFn === mocks.stopTumbler
+    const state = isStopSchedule ? mocks.stopState : mocks.startState
 
     return {
       error: undefined,
@@ -70,27 +100,31 @@ vi.mock('@tanstack/react-query', () => ({
       mutateAsync: async (input?: unknown) => {
         options.onMutate?.()
         try {
-          const result = (await options.mutationFn(input)) as { schedule?: Schedule }
+          const result = await options.mutationFn(input)
           options.onSuccess?.(result)
           return result
         } catch (error) {
-          options.onError?.(error instanceof Error ? error : new Error(String(error)))
+          if (!options.onError) {
+            throw error
+          }
+          options.onError(error instanceof Error ? error : new Error(String(error)))
           // do not rethrow: the component fires these mutations without catching,
           // and the UI is driven entirely by the onError handler above
           return undefined
         }
       },
-      reset: isStartSchedule ? mocks.startReset : mocks.stopReset,
+      reset: isStopSchedule ? mocks.stopReset : mocks.startReset,
     }
   }),
   useQuery: vi.fn((options: QueryOptions) => {
-    if (Array.isArray(options.queryKey) && options.queryKey[0] === 'sweep-get-schedule') {
-      return mocks.scheduleQuery
+    if (Array.isArray(options.queryKey) && options.queryKey[0] === 'tumblerstatus') {
+      return {
+        data: mocks.tumblerStatusData ? options.select?.(mocks.tumblerStatusData) : undefined,
+        isPending: mocks.tumblerStatusPending,
+      }
     }
 
-    return {
-      refetch: mocks.stopScheduleRefetch,
-    }
+    return { data: undefined }
   }),
 }))
 
@@ -280,14 +314,16 @@ describe('SweepPage', () => {
     mocks.debugFeatureEnabled = false
     mocks.feeConfigLoading = false
     mocks.feeConfigMissing = false
-    mocks.getScheduleResult = undefined
-    mocks.runSchedule.mockReset()
-    mocks.runSchedule.mockResolvedValue({ schedule: activeSchedule })
-    mocks.scheduleQuery = { data: undefined }
+    mocks.planTumbler.mockReset()
+    mocks.planTumbler.mockResolvedValue(activePlan)
+    mocks.startTumbler.mockReset()
+    mocks.startTumbler.mockResolvedValue(undefined)
+    mocks.stopTumbler.mockReset()
+    mocks.stopTumbler.mockResolvedValue(undefined)
+    mocks.tumblerStatusData = undefined
+    mocks.tumblerStatusPending = false
     mocks.startReset.mockReset()
     mocks.startState = { isPending: false, isSuccess: false }
-    mocks.stopScheduleRefetch.mockReset()
-    mocks.stopScheduleRefetch.mockResolvedValue({ data: null })
     mocks.stopReset.mockReset()
     mocks.stopState = { isPending: false, isSuccess: false }
     mocks.toastError.mockReset()
@@ -323,24 +359,38 @@ describe('SweepPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
     fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
 
-    await waitFor(() => expect(mocks.runSchedule).toHaveBeenCalledTimes(1))
-    expect(mocks.runSchedule).toHaveBeenCalledWith({
+    await waitFor(() => expect(mocks.planTumbler).toHaveBeenCalledTimes(1))
+    expect(mocks.planTumbler).toHaveBeenCalledWith({
       body: {
-        destination_addresses: VALID_DESTINATIONS,
+        destinations: VALID_DESTINATIONS,
+        force: true,
+        parameters: undefined,
       },
+      client: {},
       path: { walletname: 'wallet.jmdat' },
+      throwOnError: true,
+    })
+    expect(mocks.startTumbler).toHaveBeenCalledWith({
+      client: {},
+      path: { walletname: 'wallet.jmdat' },
+      throwOnError: true,
     })
   })
 
   it('stops a running sweep schedule', async () => {
-    setSession({ coinjoin_in_process: true, schedule: activeSchedule })
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusData = activePlan
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('schedule-progress:false')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'stop-sweep' }))
 
-    await waitFor(() => expect(mocks.stopScheduleRefetch).toHaveBeenCalledWith({ throwOnError: true }))
+    await waitFor(() =>
+      expect(mocks.stopTumbler).toHaveBeenCalledWith({
+        path: { walletname: 'wallet.jmdat' },
+      }),
+    )
   })
 
   it('shows blocking alerts while other collaborative operations are running', () => {
@@ -395,7 +445,8 @@ describe('SweepPage', () => {
   })
 
   it('shows the stop waiting alert while the schedule stop is pending', () => {
-    setSession({ coinjoin_in_process: true, schedule: activeSchedule })
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusData = activePlan
     mocks.stopState = { isPending: true, isSuccess: false }
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
@@ -403,9 +454,9 @@ describe('SweepPage', () => {
     expect(screen.getByText('schedule-progress:true')).toBeInTheDocument()
   })
 
-  it('renders the schedule from the get-schedule query when no session schedule is set', () => {
+  it('renders the schedule converted from tumbler status when no session schedule is set', () => {
     setSession({ coinjoin_in_process: true })
-    mocks.scheduleQuery = { data: { schedule: activeSchedule } }
+    mocks.tumblerStatusData = activePlan
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
@@ -413,7 +464,7 @@ describe('SweepPage', () => {
   })
 
   it('shows an alert when starting the schedule fails', async () => {
-    mocks.runSchedule.mockRejectedValue(new Error('boom'))
+    mocks.planTumbler.mockRejectedValue(new Error('boom'))
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
@@ -428,8 +479,9 @@ describe('SweepPage', () => {
   })
 
   it('shows an alert when stopping the schedule fails', async () => {
-    setSession({ coinjoin_in_process: true, schedule: activeSchedule })
-    mocks.stopScheduleRefetch.mockRejectedValue(new Error('stop-boom'))
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusData = activePlan
+    mocks.stopTumbler.mockRejectedValue(new Error('stop-boom'))
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
@@ -439,19 +491,31 @@ describe('SweepPage', () => {
     expect(screen.getByText('global.error')).toBeInTheDocument()
   })
 
-  it('does not store a schedule when the start result has no valid schedule', async () => {
-    mocks.runSchedule.mockResolvedValue({ schedule: undefined } as unknown as { schedule: Schedule })
+  it('does not render non-running tumbler plans as a running schedule', () => {
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusData = { ...activePlan, status: 'completed' }
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'fill-destinations' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
-
-    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
-
-    await waitFor(() => expect(mocks.runSchedule).toHaveBeenCalledTimes(1))
     expect(screen.queryByText('schedule-progress:false')).not.toBeInTheDocument()
+  })
+
+  it('does not render a stale running tumbler plan as a running schedule', () => {
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusData = { ...activePlan, stale: true }
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('schedule-progress:false')).not.toBeInTheDocument()
+  })
+
+  it('does not flash the single coinjoin alert while tumbler status is loading', () => {
+    setSession({ coinjoin_in_process: true })
+    mocks.tumblerStatusPending = true
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('send.text_coinjoin_already_running')).not.toBeInTheDocument()
   })
 
   describe('with insecure testing toggle enabled', () => {
@@ -478,9 +542,9 @@ describe('SweepPage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
       fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
 
-      await waitFor(() => expect(mocks.runSchedule).toHaveBeenCalledTimes(1))
-      const callArgument = mocks.runSchedule.mock.calls[0][0] as { body: { tumbler_options?: unknown } }
-      expect(callArgument.body.tumbler_options).toBeDefined()
+      await waitFor(() => expect(mocks.planTumbler).toHaveBeenCalledTimes(1))
+      const callArgument = mocks.planTumbler.mock.calls[0][0] as { body: { parameters?: unknown } }
+      expect(callArgument.body.parameters).toBeDefined()
     })
 
     it('falls back to any new address when no default-jar new address exists', async () => {

@@ -1,5 +1,5 @@
-import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { ErrorMessage, ListUtxosResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { listutxosOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { ListUtxosResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { isDevMode } from '@/constants/debugFeatures'
@@ -20,7 +20,7 @@ export type UtxoId = `${TxId}:${Vout}`
 
 type UtxoBase = Required<UtxoApiObject>
 // @apiNote: Although marked as optional, all fields are always present, hence `Required<UtxoApiObject>`
-export type Utxo = UtxoBase & {
+export type Utxo = Omit<UtxoBase, 'utxo' | 'locktime'> & {
   utxo: UtxoId // @implNote: more precise type def than plain `string`
   locktime: Locktime | undefined
 }
@@ -31,7 +31,7 @@ export type FidelityBondUtxo = Omit<Utxo, 'locktime'> & {
 
 export type UseQueryUtxosResult = {
   utxos: Utxo[]
-  queryResult: UseQueryResult<ListUtxosResponse, ErrorMessage>
+  queryResult: UseQueryResult<ListUtxosResponse, unknown>
 }
 
 interface UseQueryUtxosProps {

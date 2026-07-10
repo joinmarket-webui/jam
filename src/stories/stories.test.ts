@@ -16,7 +16,7 @@ vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: vi.fn() },
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts', () => ({
   createClient: vi.fn(() => ({
     interceptors: {
       error: { use: vi.fn() },
@@ -26,7 +26,7 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts', () => ({
   })),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => {
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => {
   const queryOption = vi.fn(() => ({ queryKey: ['mock'], queryFn: vi.fn() }))
   const mutationOption = vi.fn(() => ({ mutationFn: vi.fn() }))
 
@@ -58,7 +58,7 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => {
   }
 })
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => {
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => {
   const apiCall = vi.fn()
 
   return new Proxy(

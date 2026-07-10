@@ -16,17 +16,26 @@ export const OtherWalletActiveAlert = ({ walletFileName, linkTarget }: OtherWall
     <Alert variant="warning">
       <AlertCircleIcon />
       <AlertDescription>
-        <Trans
-          i18nKey="create_wallet.alert_other_wallet_unlocked"
-          values={{
-            walletName: walletDisplayName((walletFileName || 'Unknown') as WalletFileName),
-          }}
-        >
-          Currently <strong>walletName</strong> is active. You need to lock it first.
-          <Link to={routes[linkTarget]} className="font-semibold underline">
-            Go back
-          </Link>
-        </Trans>
+        {walletFileName ? (
+          <Trans
+            i18nKey="create_wallet.alert_other_wallet_unlocked"
+            values={{
+              walletName: walletDisplayName(walletFileName),
+            }}
+          >
+            Currently <strong>walletName</strong> is active. You need to lock it first.
+            <Link to={routes[linkTarget]} className="font-semibold underline">
+              Go back
+            </Link>
+          </Trans>
+        ) : (
+          <Trans i18nKey="create_wallet.alert_other_wallet_unlocked_generic">
+            Another wallet is active. You need to lock it first.
+            <Link to={routes[linkTarget]} className="font-semibold underline">
+              Go back
+            </Link>
+          </Trans>
+        )}
       </AlertDescription>
     </Alert>
   )

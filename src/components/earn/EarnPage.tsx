@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, FileTextIcon, HourglassIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
@@ -149,7 +149,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     onMutate: () => {
       toast.info(t('earn.alert_stopping'), { id: 'earn.alert_stopping' })
     },
-    onError: (error: ErrorMessage) => {
+    onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       // TODO: i18n
       toast.error(`Error while stopping the earn process. Reason: ${reason}`)
@@ -162,7 +162,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     onMutate: () => {
       toast.info(t('earn.alert_starting'), { id: 'earn.alert_starting' })
     },
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       console.error('StartMaker error:', error)
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('earn.alert_start_failed', { reason }))

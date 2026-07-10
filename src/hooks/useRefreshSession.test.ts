@@ -1,4 +1,4 @@
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { authStore } from '@/store/authStore'
@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   sessionOptions: vi.fn(() => ({
     queryKey: ['session'],
     queryFn: vi.fn(),

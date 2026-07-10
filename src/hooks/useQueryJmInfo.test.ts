@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   data: undefined as { version: string } | undefined,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   versionOptions: vi.fn(() => ({ queryKey: ['version'] })),
 }))
 

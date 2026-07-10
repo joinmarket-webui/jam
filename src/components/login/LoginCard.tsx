@@ -1,5 +1,4 @@
 import { useState, type ComponentProps } from 'react'
-import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -9,6 +8,7 @@ import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { routes } from '@/constants/routes'
+import { getErrorReason } from '@/lib/errorReason'
 import { cn } from '@/lib/utils'
 import { LoginForm } from './LoginForm'
 import { OnboardingDialog } from './OnboardingDialog'
@@ -19,7 +19,7 @@ type LoginCardProps = Omit<LoginFormProps, 'loading' | 'onSubmit'> &
     isSubmitting: boolean
     listWalletsFetching: boolean
     listWalletsLoading: boolean
-    listWalletsError?: ErrorMessage
+    listWalletsError?: unknown
     onReloadClick: () => Promise<void>
     enableOnboardingDialog?: boolean
   }
@@ -106,7 +106,7 @@ export const LoginCard = ({
         <CardContent className="space-y-6">
           {listWalletsError ? (
             <>
-              <WalletLoadErrorAlert reason={listWalletsError.message} />
+              <WalletLoadErrorAlert reason={getErrorReason(listWalletsError, t('global.errors.reason_unknown'))} />
               <Button variant="ghost" onClick={() => void onReloadClick()} disabled={listWalletsFetching}>
                 <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
                 {t('global.retry')}

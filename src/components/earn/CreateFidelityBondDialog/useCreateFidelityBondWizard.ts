@@ -4,8 +4,8 @@ import {
   directsendMutation,
   freezeMutation,
   gettimelockaddressOptions,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -173,7 +173,7 @@ export function useCreateFidelityBondWizard(
 
   const freezeUtxo = useMutation({
     ...freezeMutation({ client }),
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.error_freezing_utxos')} ${reason}`)
     },
@@ -181,7 +181,7 @@ export function useCreateFidelityBondWizard(
 
   const unfreezeUtxo = useMutation({
     ...freezeMutation({ client }),
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
     },
@@ -189,7 +189,7 @@ export function useCreateFidelityBondWizard(
 
   const directSend = useMutation({
     ...directsendMutation({ client }),
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.error_creating_fidelity_bond')} ${reason}`)
     },

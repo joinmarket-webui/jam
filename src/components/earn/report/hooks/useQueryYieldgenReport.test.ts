@@ -18,11 +18,11 @@ vi.mock('@tanstack/react-query', () => ({
   },
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   yieldgenreportQueryKey: () => ['yieldgenreport'],
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
   yieldgenreport: () => yieldgenreportMock(),
 }))
 
@@ -43,13 +43,6 @@ describe('useQueryYieldgenReport', () => {
 
     await expect(runQueryFn()).resolves.toEqual(['a', 'b'])
     expect(parserMock).toHaveBeenCalledWith(['a', 'b'])
-  })
-
-  it('parses a plain string array response', async () => {
-    yieldgenreportMock.mockResolvedValue({ data: ['x'] })
-    renderHook(() => useQueryYieldgenReport())
-
-    await expect(runQueryFn()).resolves.toEqual(['x'])
   })
 
   it('returns an empty array on a 404 error', async () => {

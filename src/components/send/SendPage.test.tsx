@@ -34,7 +34,7 @@ const mocks = vi.hoisted(() => ({
   waitForUtxosToBeSpent: [] as string[],
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   directsendMutation: vi.fn(() => ({ mutationFn: mocks.directSend })),
   docoinjoinMutation: vi.fn(() => ({ mutationFn: mocks.startCoinjoin })),
   stopcoinjoinOptions: vi.fn(() => ({ queryKey: ['stopcoinjoin'], queryFn: vi.fn() })),

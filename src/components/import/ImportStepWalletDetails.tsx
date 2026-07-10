@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { Link } from 'react-router-dom'
 import { CreateWalletForm } from '@/components/create/CreateWalletForm'
 import { Button } from '@/components/ui/button'
@@ -19,7 +19,10 @@ export const ImportStepWalletDetails = ({ sessionInfo, ...createFormProps }: Imp
   return (
     <div className="space-y-2">
       {isSessionActive && (
-        <OtherWalletActiveAlert linkTarget={'login'} walletFileName={sessionInfo.wallet_name as WalletFileName} />
+        <OtherWalletActiveAlert
+          linkTarget={'login'}
+          walletFileName={sessionInfo.wallet_name as WalletFileName | undefined}
+        />
       )}
       {isRescanActive && <RescanActiveAlert linkTarget={'login'} />}
       {showForm && <CreateWalletForm {...createFormProps} />}

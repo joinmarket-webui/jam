@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type ComponentProps } from 'react'
-import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { getseedOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { AlertTriangleIcon, ClockIcon } from 'lucide-react'
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import type { Milliseconds, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
@@ -160,7 +161,9 @@ export const SeedPhraseDialog = ({
                 <Alert variant="destructive">
                   <AlertTriangleIcon />
                   <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
-                  <AlertDescription>{seedQueryError.message || t('global.errors.reason_unknown')}</AlertDescription>
+                  <AlertDescription>
+                    {getErrorReason(seedQueryError, t('global.errors.reason_unknown'))}
+                  </AlertDescription>
                 </Alert>
               )}
 

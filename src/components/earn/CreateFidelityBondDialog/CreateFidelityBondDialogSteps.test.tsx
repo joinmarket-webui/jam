@@ -141,7 +141,7 @@ describe('CreateFidelityBondDialogSteps', () => {
   it('renders success step', () => {
     const wizard = getBaseWizard()
     wizard.step = 'success'
-    wizard.txResult = { txinfo: { txid: '1234abcd' } }
+    wizard.txResult = { txinfo: { txid: '1234abcd', hex: '' } }
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
 
     expect(screen.getByText('earn.fidelity_bond.create_fidelity_bond.success_text')).toBeInTheDocument()

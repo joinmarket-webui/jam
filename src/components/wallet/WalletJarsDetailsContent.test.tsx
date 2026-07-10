@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AccountSummary, AddressSummary, Jar } from '@/context/JamWalletInfoContext'
+import type { AccountMeta, AccountSummary, AddressMeta, AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { WalletJarsDetailsContent } from './WalletJarsDetailsContent'
 
@@ -27,7 +27,7 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   freezeMutation: vi.fn(() => ({ mutationFn: vi.fn() })),
 }))
 
@@ -104,7 +104,7 @@ const jars: Jar[] = [
 
 const addressSummary: AddressSummary = {
   'bc1qwallet-a': {
-    __raw: {},
+    __raw: {} as unknown as AddressMeta['__raw'],
     address: 'bc1qwallet-a',
     info: undefined,
     jarIndex: 0,
@@ -112,7 +112,7 @@ const addressSummary: AddressSummary = {
     used: true,
   },
   'bc1qwallet-b': {
-    __raw: {},
+    __raw: {} as unknown as AddressMeta['__raw'],
     address: 'bc1qwallet-b',
     info: undefined,
     jarIndex: 1,
@@ -123,7 +123,7 @@ const addressSummary: AddressSummary = {
 
 const accountSummary: AccountSummary = {
   0: {
-    __raw: {},
+    __raw: {} as unknown as AccountMeta['__raw'],
     branches: [],
     jarIndex: 0,
   },

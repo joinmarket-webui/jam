@@ -19,7 +19,7 @@ type MutationOptions = {
   onSuccess?: (result: unknown) => void
 }
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   listwalletsOptions: vi.fn(() => ({ queryKey: ['wallets'], queryFn: vi.fn() })),
   unlockwalletMutation: vi.fn(() => ({
     mutationFn: mocks.unlockWallet,
