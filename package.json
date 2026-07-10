@@ -7,8 +7,8 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=24.11.1",
-    "npm": ">=11.6.2"
+    "node": ">=26.3.0",
+    "npm": ">=11.16.0"
   },
   "scripts": {
     "dev": "npm run dev:ng:native",
@@ -71,7 +71,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "5.4.0",
-    "@joinmarket-webui/joinmarket-api-ts": "0.3.0",
+    "@joinmarket-webui/joinmarket-ng-api-ts": "1.0.0",
     "@noble/hashes": "2.2.0",
     "@radix-ui/react-accordion": "1.2.16",
     "@radix-ui/react-avatar": "1.2.2",
@@ -159,7 +159,7 @@
   },
   "overrides": {
     "storybook": "$storybook",
-    "@joinmarket-webui/joinmarket-api-ts": {
+    "@joinmarket-webui/joinmarket-ng-api-ts": {
       "@tanstack/react-query": "$@tanstack/react-query"
     }
   },

@@ -1,4 +1,4 @@
-import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -47,7 +47,9 @@ const LoginPage = () => {
   })
 
   const activeWalletOrNull: WalletFileName | null =
-    jmSession?.session === true && isWalletFileName(jmSession.wallet_name) ? jmSession.wallet_name : null
+    jmSession?.session === true && jmSession.wallet_name && isWalletFileName(jmSession.wallet_name)
+      ? jmSession.wallet_name
+      : null
   const wallets = sortWallets((listWalletsData?.wallets || []) as WalletFileName[], activeWalletOrNull)
 
   const unlockWallet = useMutation({

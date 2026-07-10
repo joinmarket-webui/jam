@@ -1,4 +1,4 @@
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SendFormValues } from '@/components/send/types'
@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   dataUpdatedAt: 0,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   getrescaninfoOptions: vi.fn(() => ({
     queryKey: ['rescan-info'],
     queryFn: vi.fn(),

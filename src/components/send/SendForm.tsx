@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getaddress } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { getAddressInfo, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import { AlertTriangleIcon, BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
@@ -23,7 +23,7 @@ import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Badge } from '../ui/badge'
-import { getJarBadgeVariant } from '../ui/badge-variants'
+import { jarBadgeVariant } from '../ui/badge-variants'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
@@ -52,12 +52,12 @@ import type { SendFormValues } from './types'
 
 type AddressFromJarSelectorDialog = Omit<ComponentProps<typeof JarSelectorDialog>, 'onConfirm'> & {
   walletFileName: WalletFileName
-  onError: (error: ErrorMessage) => void
+  onError: (error: unknown) => void
   onConfirm: (jar: JarIndex, address: AddressInfo) => void
 }
 
 const responsiveSelectionButtonGroupClass =
-  'w-full flex-col gap-2 sm:flex-row sm:items-stretch [&>*]:rounded-md [&>*]:border sm:[&>*:not(:first-child)]:rounded-l-none sm:[&>*:not(:first-child)]:border-l-0 sm:[&>*:not(:last-child)]:rounded-r-none'
+  'w-full flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-0 [&>*:not(:first-child)]:rounded-l-lg [&>*:not(:first-child)]:border-l [&>*:not(:last-child)]:rounded-r-lg sm:[&>*:not(:first-child)]:rounded-l-none sm:[&>*:not(:first-child)]:border-l-0 sm:[&>*:not(:last-child)]:rounded-r-none'
 
 const AddressFromJarSelectorDialog = ({
   walletFileName,
@@ -410,7 +410,7 @@ export function SendForm({
                       )}
                     >
                       <Address value={values.destination.address} copyable={true} className="text-xs sm:text-sm" />
-                      <Badge className="shrink-0 text-sm" variant={getJarBadgeVariant(destinationJar.jarIndex)}>
+                      <Badge className="shrink-0 text-sm" variant={jarBadgeVariant(destinationJar.jarIndex)}>
                         {destinationJar.name} <span className="text-xs">#{destinationJar.jarIndex}</span>
                       </Badge>
                     </div>
@@ -420,7 +420,7 @@ export function SendForm({
                       type="button"
                       variant="outline"
                       size="lg"
-                      className="h-auto w-full sm:w-auto"
+                      className="w-auto"
                       disabled={disabled}
                       onClick={() => {
                         setValue('destination.address', '', { shouldValidate: true })
@@ -511,7 +511,7 @@ export function SendForm({
                     <Balance valueString={values.amount.sweepAmount.toFixed(0)} />
                   )}
 
-                  <Badge className="shrink-0 text-sm" variant={getJarBadgeVariant(sourceJar?.jarIndex)}>
+                  <Badge className="shrink-0 text-sm" variant={jarBadgeVariant(sourceJar?.jarIndex)}>
                     {sourceJar?.name} <span className="text-xs">#{sourceJar?.jarIndex}</span>
                   </Badge>
                 </div>
@@ -521,7 +521,7 @@ export function SendForm({
                   type="button"
                   variant="outline"
                   size="lg"
-                  className="h-auto w-full sm:w-auto"
+                  className="w-auto"
                   disabled={disabled}
                   onClick={() => {
                     setValue('amount.isSweep', false, { shouldValidate: true })

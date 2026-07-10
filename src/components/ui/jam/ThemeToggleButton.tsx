@@ -9,9 +9,10 @@ type ThemeToggleButtonProps = {
   variant: ComponentProps<typeof Button>['variant']
   onClick: ComponentProps<typeof Button>['onClick']
   className?: ComponentProps<typeof Button>['className']
+  tooltipSide?: ComponentProps<typeof TooltipContent>['side']
 }
 
-export const ThemeToggleButton = ({ theme, variant, onClick, className }: ThemeToggleButtonProps) => {
+export const ThemeToggleButton = ({ theme, variant, onClick, className, tooltipSide }: ThemeToggleButtonProps) => {
   const { t } = useTranslation()
   return (
     <Tooltip>
@@ -26,7 +27,9 @@ export const ThemeToggleButton = ({ theme, variant, onClick, className }: ThemeT
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{theme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}</TooltipContent>
+      <TooltipContent side={tooltipSide}>
+        {theme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
+      </TooltipContent>
     </Tooltip>
   )
 }

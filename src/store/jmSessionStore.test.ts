@@ -1,4 +1,4 @@
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { describe, expect, it } from 'vitest'
 import { jmSessionStore } from './jmSessionStore'
 

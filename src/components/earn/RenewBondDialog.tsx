@@ -3,8 +3,8 @@ import {
   directsendMutation,
   freezeMutation,
   gettimelockaddressOptions,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { DirectSendResponse, ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   AlertTriangleIcon,
@@ -41,7 +41,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import { getJarBadgeVariant } from '../ui/badge-variants'
+import { jarBadgeVariant } from '../ui/badge-variants'
 import { Address } from '../ui/jam/Address'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './CreateFidelityBondDialog/types'
 
@@ -119,7 +119,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   const freezeUtxo = useMutation({
     ...freezeMutation({ client }),
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
     },
@@ -127,7 +127,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   const unfreezeUtxo = useMutation({
     ...freezeMutation({ client }),
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
     },
@@ -135,7 +135,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   const directSend = useMutation({
     ...directsendMutation({ client }),
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       setError(`${t('earn.fidelity_bond.renew.error_renewing_fidelity_bond')} ${reason}`)
     },
@@ -332,7 +332,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                  <Badge variant={getJarBadgeVariant(utxo.mixdepth)}>
+                  <Badge variant={jarBadgeVariant(utxo.mixdepth)}>
                     {sourceJar?.name ? (
                       <>
                         {sourceJar.name} <span>#{utxo.mixdepth}</span>

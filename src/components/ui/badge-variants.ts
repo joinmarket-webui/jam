@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import type { JarIndex } from '@/types/global'
 
 const badgeVariants = cva(
   'inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden',
@@ -27,7 +28,7 @@ const badgeVariants = cva(
 
 type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
 
-const JAR_BADGE_VARIANTS: Record<number, BadgeVariant> = {
+const JAR_BADGE_VARIANTS: Record<JarIndex, BadgeVariant> = {
   0: 'jar0',
   1: 'jar1',
   2: 'jar2',
@@ -35,7 +36,7 @@ const JAR_BADGE_VARIANTS: Record<number, BadgeVariant> = {
   4: 'jar4',
 }
 
-const getJarBadgeVariant = (jarIndex?: number): BadgeVariant | undefined =>
+const jarBadgeVariant = (jarIndex?: JarIndex): BadgeVariant | undefined =>
   jarIndex === undefined ? undefined : (JAR_BADGE_VARIANTS[jarIndex] ?? 'jarUnknown')
 
-export { badgeVariants, getJarBadgeVariant }
+export { badgeVariants, jarBadgeVariant }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ComponentProps } from 'react'
 import type { TFunction } from 'i18next'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -21,10 +21,12 @@ import { jmSessionStore } from '@/store/jmSessionStore'
 import { LogsOverlay } from '../LogsOverlay'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
 import { Cheatsheet } from '../ui/jam/Cheatsheet'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { AppSidebar } from './AppSidebar'
 import { PostLoginOnboardingTour } from './PostLoginOnboardingTour'
 
-const SIDEBAR_SIDE: React.ComponentProps<typeof Sidebar>['side'] = 'right'
+const SIDEBAR_SIDE: ComponentProps<typeof Sidebar>['side'] = 'right'
+const NAVBAR_TOOLTIP_SIDE: ComponentProps<typeof TooltipContent>['side'] = 'bottom'
 
 type LayoutInnerProps = {
   onLogout: (navigate: NavigateFunction) => Promise<void>
@@ -83,14 +85,24 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         toggleTheme={toggleTheme}
         onLogout={async () => await onLogout(navigate)}
         onLockWallet={async () => await onLockWallet(navigate, t)}
-        sidebarTrigger={<SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />}
+        sidebarTrigger={
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />
+            </TooltipTrigger>
+            <TooltipContent side={NAVBAR_TOOLTIP_SIDE}>
+              {sidebarContext.open ? t('navbar.tooltip_text_sidebar_close') : t('navbar.tooltip_text_sidebar_open')}
+            </TooltipContent>
+          </Tooltip>
+        }
         sessionInfo={jmSession}
         sidebarInfo={sidebarContext}
+        tooltipSide={NAVBAR_TOOLTIP_SIDE}
       />
       <main className="min-w-0 flex-1">{children}</main>
       <AppFooter
         websocketInfo={websocket}
-        blockHeight={jmSession?.block_height}
+        blockHeight={jmSession?.block_height ?? undefined}
         jamVersion={APP_DISPLAY_VERSION}
         joinmarketVersion={joinmarketVersion}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}

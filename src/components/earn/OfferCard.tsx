@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import type { TFunction } from 'i18next'
 import { FingerprintIcon, HandCoinsIcon, Maximize2Icon, Minimize2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -23,13 +23,13 @@ const OfferTypeBadge = ({ value }: { value: Offer }) => {
 }
 
 const renderOfferText = (value: Offer, t: TFunction<'translation', undefined>) => {
-  if (isAbsoluteOffer(value?.ordertype || '')) {
+  if (isAbsoluteOffer(String(value?.ordertype || ''))) {
     return t('earn.current.text_offer_type_absolute')
   }
-  if (isRelativeOffer(value?.ordertype || '')) {
+  if (isRelativeOffer(String(value?.ordertype || ''))) {
     return t('earn.current.text_offer_type_relative')
   }
-  return value?.ordertype
+  return String(value?.ordertype || '')
 }
 
 interface OfferCardProps {
@@ -71,8 +71,10 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
           <div className="min-w-0 flex-1">
             <Label className="font-semibold">{t('earn.current.text_cjfee')}</Label>
             <span className="text-sm">
-              {isRelativeOffer(value?.ordertype || '') ? (
-                <span className="select-all">{factorToPercentage(Number.parseFloat(value?.cjfee || '') || 0)}%</span>
+              {isRelativeOffer(String(value?.ordertype || '')) ? (
+                <span className="select-all">
+                  {factorToPercentage(Number.parseFloat(String(value?.cjfee || '')) || 0)}%
+                </span>
               ) : (
                 <Balance valueString={String(value?.cjfee || '0')} />
               )}

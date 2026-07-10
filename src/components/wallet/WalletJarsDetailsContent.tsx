@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { freezeMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { freezeMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import type { RowSelectionState } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
@@ -348,7 +348,7 @@ export const WalletJarsDetailsContent = ({
         </TabsList>
       </Tabs>
 
-      <Tabs defaultValue="utxos" className="flex flex-1 flex-col gap-4">
+      <Tabs defaultValue="utxos" className="flex min-h-0 flex-1 flex-col gap-4">
         <TabsList className="mx-auto flex items-center gap-2">
           <TabsTrigger value="utxos" className="cursor-pointer" disabled={!enabled}>
             {t('jar_details.title_tab_utxos')}
@@ -363,7 +363,7 @@ export const WalletJarsDetailsContent = ({
           )}
         </TabsList>
 
-        <TabsContent value="utxos" className="flex flex-col gap-2">
+        <TabsContent value="utxos" className="flex min-h-0 flex-1 flex-col gap-2">
           <UtxosContent
             key={activeJar.jarIndex}
             enabled={enabled}

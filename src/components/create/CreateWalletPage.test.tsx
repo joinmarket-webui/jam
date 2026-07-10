@@ -21,14 +21,14 @@ const mocks = vi.hoisted(() => ({
 type QueryOptions = { queryKey?: readonly unknown[] }
 type MutationOptions = { mutationFn: (input: unknown) => Promise<unknown> }
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   createwalletMutation: vi.fn(() => ({ mutationFn: mocks.createWallet })),
   listwalletsOptions: vi.fn(() => ({ queryKey: ['wallets'], queryFn: vi.fn() })),
   sessionOptions: vi.fn(() => ({ queryKey: ['session'], queryFn: vi.fn() })),
   unlockwalletMutation: vi.fn(() => ({ mutationFn: mocks.unlockWallet })),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
   lockwallet: mocks.lockWallet,
 }))
 

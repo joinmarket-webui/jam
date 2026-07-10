@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
-import { getaddressQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { getaddress, type ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getaddressQueryKey } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { getaddress } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, HatGlassesIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -17,11 +17,12 @@ import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { Badge } from '../ui/badge'
-import { getJarBadgeVariant } from '../ui/badge-variants'
-import { buttonVariants } from '../ui/button-variants'
+import { jarBadgeVariant } from '../ui/badge-variants'
+import { buttonVariants, jarButtonVariant } from '../ui/button-variants'
 import { Address } from '../ui/jam/Address'
 import { BitcoinAddressQrCode } from '../ui/jam/BitcoinQrCode'
 import { CopyButton } from '../ui/jam/CopyButton'
+import { MaskedText } from '../ui/jam/MaskedText'
 import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320
@@ -81,7 +82,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     ),
     retry: false,
     gcTime: Number.POSITIVE_INFINITY,
-    onError: (_error: ErrorMessage) => {
+    onError: (_error: unknown) => {
       toast.error(t('global.errors.error_loading_address_failed'))
     },
   })
@@ -114,74 +115,77 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
 
       <Card>
-        <CardContent className="flex w-full flex-col items-center justify-center gap-2">
-          {getAddressMutation.isPending ? (
-            <Skeleton className="aspect-square w-full max-w-80" />
-          ) : getAddressMutation.data?.address ? (
-            <BitcoinAddressQrCode
-              className="animate-in fade-in duration-1000"
-              address={getAddressMutation.data.address}
-              amount={amount}
-              width={QRCODE_WIDTH}
-            />
-          ) : getAddressMutation.isIdle ? (
-            <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => void fetchNewAddress()}
-                disabled={getAddressMutation.isPending}
-              >
-                <HatGlassesIcon />
-                {t('receive.button_reveal_address')}
-              </Button>
-            </div>
-          ) : (
-            <div
-              className={cn(
-                'text-destructive flex aspect-square w-full max-w-80 items-center justify-center border text-sm',
-              )}
-            >
-              {t('global.errors.error_loading_address_failed')}
-            </div>
-          )}
-
-          {getAddressMutation.isPending ? (
-            <div className="flex flex-col items-center space-y-2">
-              <Skeleton className="mt-0.5 h-5 w-full max-w-96" />
-              <Skeleton className="h-6 w-[84px]" />
-            </div>
-          ) : (
-            <div className="animate-in fade-in space-y-2 text-center duration-1000">
-              <div className="min-h-5">
-                {!getAddressMutation.data?.address ? undefined : (
-                  <Address value={getAddressMutation.data.address} className="text-sm" copyable={true} />
-                )}
+        <CardContent className="space-y-6 sm:space-y-4">
+          <div className="flex flex-col flex-wrap items-center justify-center gap-2">
+            {getAddressMutation.isPending ? (
+              <Skeleton className="aspect-square w-full max-w-80" />
+            ) : getAddressMutation.data?.address ? (
+              <BitcoinAddressQrCode
+                className="animate-in fade-in duration-1000"
+                address={getAddressMutation.data.address}
+                amount={amount}
+                width={QRCODE_WIDTH}
+              />
+            ) : getAddressMutation.isIdle ? (
+              <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
+                <Button
+                  variant={jarButtonVariant(selectedSourceJarIndex)}
+                  size="lg"
+                  onClick={() => void fetchNewAddress()}
+                  disabled={getAddressMutation.isPending}
+                >
+                  <HatGlassesIcon />
+                  {t('receive.button_reveal_address')}
+                </Button>
               </div>
-              <Badge
-                className="min-h-6 text-sm"
-                variant={sourceJar ? getJarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
-              >
-                {sourceJar ? (
-                  <>
-                    {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
-                  </>
-                ) : (
-                  <>
-                    {selectedSourceJar?.name} <span className="text-xs">#{selectedSourceJar?.jarIndex}</span>
-                  </>
+            ) : (
+              <div
+                className={cn(
+                  'text-destructive flex aspect-square w-full max-w-80 items-center justify-center border text-sm',
                 )}
-              </Badge>
-            </div>
-          )}
+              >
+                {t('global.errors.error_loading_address_failed')}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {getAddressMutation.isPending ? (
+              <div className="flex flex-col items-center space-y-2 text-center">
+                <MaskedText
+                  className="flex min-h-[64px] items-center text-xl"
+                  masked
+                  maskedText={<Address value={`=${'loading'.repeat(6)}=`} copyable={false} />}
+                />
+                <Skeleton className="h-6 w-[84px]" />
+              </div>
+            ) : (
+              <div className="animate-in fade-in space-y-2 text-center duration-1000">
+                {!getAddressMutation.data?.address ? (
+                  <div className="min-h-[64px]" />
+                ) : (
+                  <Address value={getAddressMutation.data.address} className="min-h-[64px] text-xl" copyable={true} />
+                )}
+                <Badge
+                  className="min-h-6 text-sm"
+                  variant={sourceJar ? jarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
+                >
+                  {sourceJar ? (
+                    <>
+                      {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
+                    </>
+                  ) : (
+                    <>
+                      {selectedSourceJar?.name} <span className="text-xs">#{selectedSourceJar?.jarIndex}</span>
+                    </>
+                  )}
+                </Badge>
+              </div>
+            )}
+          </div>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void fetchNewAddress()}
-              disabled={getAddressMutation.isPending}
-            >
+            <Button variant="outline" onClick={() => void fetchNewAddress()} disabled={getAddressMutation.isPending}>
               {getAddressMutation.isPending ? (
                 <>
                   <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
@@ -197,7 +201,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
             <CopyButton
               className={buttonVariants({
-                size: 'sm',
                 variant: 'outline',
               })}
               disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
@@ -221,7 +224,6 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             {'share' in navigator && (
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => void shareAddress(getAddressMutation.data!.address)}
                 disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
               >
@@ -230,27 +232,27 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               </Button>
             )}
           </div>
+
+          <Accordion type="single" collapsible>
+            <AccordionItem value="options">
+              <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
+              <AccordionContent className="flex flex-col gap-4">
+                <ReceiveForm
+                  className={'mx-1' /* add x-spacing for input component focus state*/}
+                  defaultValues={receiveFormDefaultValues}
+                  jars={jars}
+                  disabled={getAddressMutation.isPending}
+                  debug={isDeveloperMode}
+                  onSubmit={(values) => {
+                    setSelectedSourceJarIndex(values.source?.fromJar)
+                    setAmount(values.amount)
+                  }}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
-
-      <Accordion type="single" collapsible>
-        <AccordionItem value="options">
-          <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
-          <AccordionContent className="flex flex-col gap-4">
-            <ReceiveForm
-              className={'mx-1' /* add x-spacing for input component focus state*/}
-              defaultValues={receiveFormDefaultValues}
-              jars={jars}
-              disabled={getAddressMutation.isPending}
-              debug={isDeveloperMode}
-              onSubmit={(values) => {
-                setSelectedSourceJarIndex(values.source?.fromJar)
-                setAmount(values.amount)
-              }}
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
     </div>
   )
 }

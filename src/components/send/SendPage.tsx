@@ -3,13 +3,12 @@ import {
   directsendMutation,
   docoinjoinMutation,
   stopcoinjoinOptions,
-} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type {
   DirectSendRequest,
   DirectSendResponse,
   DoCoinjoinRequest,
-  ErrorMessage,
-} from '@joinmarket-webui/joinmarket-api-ts/jm'
+} from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckCircle2Icon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
@@ -146,7 +145,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     onSuccess: () => {
       toast.info(t('send.alert_collaborative_starting'))
     },
-    onError: (error: ErrorMessage) => {
+    onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('send.error_starting_collaborative_transaction', { reason })
       setCollaborativeFlowError(message)
@@ -239,7 +238,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     return () => abortCtrl.abort()
   }, [fetchIfMissing, t])
 
-  const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, ErrorMessage, SendFormValues, unknown>({
+  const triggerNonCollaborativeTransaction = useMutation<DirectSendResult, unknown, SendFormValues, unknown>({
     mutationFn: withMutationDelay(
       async (data: SendFormValues) => {
         const body: DirectSendRequest = buildNonCollaborativeSendRequest(data)
@@ -289,7 +288,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const triggerCollaborativeTransaction = useMutation<CollaborativeSendResult, ErrorMessage, SendFormValues, unknown>({
+  const triggerCollaborativeTransaction = useMutation<CollaborativeSendResult, unknown, SendFormValues, unknown>({
     mutationFn: withMutationDelay(
       async (data: SendFormValues) => {
         const body: DoCoinjoinRequest = buildCollaborativeSendRequest(data)

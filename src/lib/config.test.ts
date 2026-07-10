@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   isDevMode: vi.fn(),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-api-ts', () => ({
+vi.mock('@joinmarket-webui/joinmarket-ng-api-ts', () => ({
   createClient: mocks.createClient,
 }))
 

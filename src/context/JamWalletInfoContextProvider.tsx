@@ -22,14 +22,14 @@ import {
 } from './JamWalletInfoContext'
 
 const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
-  return walletInfo.accounts.reduce((acc, __raw) => {
+  return (walletInfo.accounts ?? []).reduce((acc, __raw) => {
     if (__raw.account === undefined) {
       return acc
     }
     const branches = (__raw.branches || [])
       .filter((it) => it.branch !== undefined)
       .map((it) => {
-        const [type, derivation] = it.branch!.split('\t')
+        const [type, derivation] = it.branch.split('\t')
         return {
           type,
           derivation,

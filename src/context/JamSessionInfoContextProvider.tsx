@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { useMemo, useState } from 'react'
-import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { createStore, useStore } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
@@ -92,7 +92,7 @@ export const JamSessionInfoContextProvider = ({
     const isRescanning = getrescaninfoQuery.data.rescanning || state?.rescanning === true
     const rescanningFinished = getrescaninfoQuery.data.rescanning === false && state?.rescanning === true
 
-    const progress = rescanningFinished ? 1 : getrescaninfoQuery.data.progress
+    const progress = rescanningFinished ? 1 : (getrescaninfoQuery.data.progress ?? undefined)
     setRescanInfo({
       updatedAt: getrescaninfoQuery.dataUpdatedAt,
       rescanning: isRescanning,
@@ -102,7 +102,7 @@ export const JamSessionInfoContextProvider = ({
   }
 
   const value = {
-    blockHeight: state?.block_height,
+    blockHeight: state?.block_height ?? undefined,
     takerRunning: state?.coinjoin_in_process === true,
     takerInfo,
     rescanInfo,

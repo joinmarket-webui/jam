@@ -1,4 +1,5 @@
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { ComponentProps } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { LockKeyholeIcon, LogOutIcon, PackageSearchIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
@@ -69,7 +70,7 @@ const WalletPreview = ({
             ) : (
               <>
                 {isLoading ? (
-                  <Skeleton className="bg-muted h-4 w-full" />
+                  <Skeleton className="bg-brand-nav-foreground/25 h-4 w-full" />
                 ) : (
                   <Balance valueString={String(totalBalance)} />
                 )}
@@ -94,6 +95,7 @@ type AppNavbarProps = WalletPreviewProps & {
   sessionInfo?: SessionInfo
   sidebarInfo?: SidebarInfo
   rescanInfo?: RescanInfo
+  tooltipSide?: ComponentProps<typeof TooltipContent>['side']
 }
 
 export function AppNavbar({
@@ -109,6 +111,7 @@ export function AppNavbar({
   sessionInfo,
   sidebarInfo,
   rescanInfo,
+  tooltipSide,
 }: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -159,7 +162,7 @@ export function AppNavbar({
       />
       <div
         className={cn(
-          'hidden min-w-0 flex-1 items-center justify-center text-sm font-semibold md:gap-6 lg:gap-12 lg:text-base',
+          'text-brand-nav-foreground/80 hidden min-w-0 flex-1 items-center justify-center text-sm font-semibold md:gap-6 lg:gap-12 lg:text-base',
           {
             'md:flex': !isSidebarOpen,
             'lg:flex': isSidebarOpen,
@@ -167,20 +170,17 @@ export function AppNavbar({
           },
         )}
       >
-        <Link to={rescanningRoute ? '#' : routes.receive} className="text-muted-foreground hover:text-foreground">
+        <Link to={rescanningRoute ? '#' : routes.receive} className="hover:text-brand-nav-foreground">
           {t('navbar.tab_receive')}
         </Link>
-        <Link to={rescanningRoute ? '#' : routes.send} className="text-muted-foreground hover:text-foreground relative">
+        <Link to={rescanningRoute ? '#' : routes.send} className="hover:text-brand-nav-foreground relative">
           <WithActivityIndicator active={singleCoinJoinRunning}>{t('navbar.tab_send')}</WithActivityIndicator>
         </Link>
-        <Link to={rescanningRoute ? '#' : routes.earn} className="text-muted-foreground hover:text-foreground relative">
+        <Link to={rescanningRoute ? '#' : routes.earn} className="hover:text-brand-nav-foreground relative">
           <WithActivityIndicator active={makerRunning}>{t('navbar.tab_earn')}</WithActivityIndicator>
         </Link>
-        <span className="text-border">|</span>
-        <Link
-          to={rescanningRoute ? '#' : routes.sweep}
-          className="text-muted-foreground hover:text-foreground relative"
-        >
+        <span className="text-border select-none">|</span>
+        <Link to={rescanningRoute ? '#' : routes.sweep} className="hover:text-brand-nav-foreground relative">
           <WithActivityIndicator active={schedulerRunning}>{t('navbar.tab_sweep')}</WithActivityIndicator>
         </Link>
       </div>
@@ -189,7 +189,7 @@ export function AppNavbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="text-brand-success"
+                className="text-brand-success/80 hover:text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(rescanningRoute)}
@@ -198,14 +198,14 @@ export function AppNavbar({
                 <PackageSearchIcon className="motion-safe:animate-pulse" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('navbar.text_rescan_in_progress')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('navbar.text_rescan_in_progress')}</TooltipContent>
           </Tooltip>
         )}
         {joiningRoute && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="text-brand-success"
+                className="text-brand-success/80 hover:text-brand-success"
                 variant="ghost-navbar"
                 size="icon"
                 onClick={() => void navigate(joiningRoute)}
@@ -214,10 +214,17 @@ export function AppNavbar({
                 <ShuffleIcon className="motion-safe:animate-pulse" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('navbar.joining_in_progress')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('navbar.joining_in_progress')}</TooltipContent>
           </Tooltip>
         )}
-        <ThemeToggleButton className="hidden sm:flex" variant="ghost-navbar" theme={theme} onClick={toggleTheme} />
+
+        <ThemeToggleButton
+          className="hidden sm:flex"
+          variant="ghost-navbar"
+          theme={theme}
+          onClick={toggleTheme}
+          tooltipSide={tooltipSide}
+        />
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -231,7 +238,7 @@ export function AppNavbar({
               <SettingsIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{t('navbar.menu_mobile_settings')}</TooltipContent>
+          <TooltipContent side={tooltipSide}>{t('navbar.menu_mobile_settings')}</TooltipContent>
         </Tooltip>
 
         {!serviceRunning && (
@@ -248,7 +255,7 @@ export function AppNavbar({
                 {lockWalletMutation.isPending ? <Spinner /> : <LockKeyholeIcon />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('settings.button_lock_wallet')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('settings.button_lock_wallet')}</TooltipContent>
           </Tooltip>
         )}
         {serviceRunning && (
@@ -265,7 +272,7 @@ export function AppNavbar({
                 {logoutMutation.isPending ? <Spinner /> : <LogOutIcon />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{t('navbar.button_logout')}</TooltipContent>
+            <TooltipContent side={tooltipSide}>{t('navbar.button_logout')}</TooltipContent>
           </Tooltip>
         )}
         {sidebarTrigger}

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { sessionOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { sessionOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'

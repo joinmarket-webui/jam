@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { PropsWithChildren } from 'react'
-import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { lockwalletOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { token } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ThemeProvider } from 'next-themes'
@@ -315,7 +315,7 @@ function RefreshApiToken() {
           clearAuthAndQueryCache()
 
           if (isDevMode) {
-            const message = response.error?.message || response.error?.error_description || 'Unknown error.'
+            const message = getErrorReason(response.error, 'Unknown error.')
             toast.error(`[DEV] Error while renewing auth token: ${message}`, {
               id: 'token-renew-error',
             })
