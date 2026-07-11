@@ -6,7 +6,7 @@ The aim of this document is to help you get setup for participating in all areas
 ## Understanding the Components Involved
 
 Jam is a web UI for [JoinMarket-NG](https://github.com/joinmarket-ng/joinmarket-ng) with focus on user-friendliness.
-The web UI's purpose is to be a rather lightweight front end for the JoinMarket API.
+The web UI's purpose is to be a rather lightweight front end for the JoinMarket-NG API.
 To function, the web UI needs to connect to an instance of JoinMarket-NG with [the API service](https://joinmarket-ng.github.io/joinmarket-ng/README-jmwalletd/) running.
 
 You don't need to worry about that, though.
