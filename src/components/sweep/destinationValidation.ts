@@ -25,8 +25,7 @@ export const buildDestinationErrors = (
     }
 
     const isDuplicateAddress = (counts.get(address) ?? 0) > 1
-
-    if (isReusedAddress(address, addressSummary) || isDuplicateAddress) {
+    if (isDuplicateAddress || isReusedAddress(address, addressSummary)) {
       return t('scheduler.feedback_reused_destination_address')
     }
 

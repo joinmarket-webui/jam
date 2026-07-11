@@ -394,7 +394,7 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
 
   const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
   const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
-  const { formState, register, trigger, control, setValue, handleSubmit } = useForm<
+  const { formState, register, control, setValue, handleSubmit } = useForm<
     SweepFormValues,
     SweepResolverContext,
     SweepFormValues
@@ -409,37 +409,13 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
   const watchedUseInsecureTestSettings = useWatch({ control, name: 'useInsecureTestingSettings' })
   const { fields, replace } = useFieldArray({ control, name: 'destinations' })
 
-  const destinationValues = useWatch({
-    control: control,
-    name: 'destinations',
-    defaultValue: initialDestinations,
-  })
-  const normalizedDestinationAddresses = useMemo(
-    () => getSweepDestinationAddresses({ destinations: destinationValues }),
-    [destinationValues],
-  )
-
-  const destinationUsageKey = useMemo(() => {
-    return normalizedDestinationAddresses
-      .map((address) => (address && addressSummary[address]?.used ? '1' : '0'))
-      .join('')
-  }, [normalizedDestinationAddresses, addressSummary])
-
-  useEffect(() => {
-    if (!normalizedDestinationAddresses.some((address) => address !== '')) return
-    void trigger('destinations')
-  }, [trigger, destinationUsageKey, normalizedDestinationAddresses])
-
   const onInsecureTestingToggleChange = (checked: boolean) => {
     setValue('useInsecureTestingSettings', checked)
 
     if (checked) {
       replace([{ address: getNewTestingDestinationAddress(addressSummary) }])
-      void trigger('destinations')
-      return
     } else {
       replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
-      void trigger('destinations')
     }
   }
 
