@@ -113,7 +113,7 @@ describe('<JmWebsocketContextProvider />', () => {
 
   it('does not show a toast for transactions already known (e.g. made via the ui)', () => {
     const txid = 'c'.repeat(64)
-    jmTxStore.getState().add({ txid })
+    jmTxStore.getState().add({ txid, hex: '00' })
 
     render(
       <JmWebsocketContextProvider>
