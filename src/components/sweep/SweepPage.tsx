@@ -9,7 +9,7 @@ import {
 } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { useFieldArray, useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -43,7 +43,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import type { WalletFileName } from '@/lib/utils'
+import { cn, type WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
 
@@ -112,10 +112,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const walletInfo = useJamWalletInfoContext()
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
-  const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState(false)
-  const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
+  const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<SweepFormValues>()
   const [alertMessage, setAlertMessage] = useState<string>()
-  const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
@@ -126,45 +124,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const preconditionSummary = useMemo(() => {
     return buildSweepPreconditionSummary(allUtxos)
   }, [allUtxos])
-
-  const schema = useMemo(() => sweepFormSchema(walletInfo.addressSummary, t), [walletInfo.addressSummary, t])
-  const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
-  const form = useForm<SweepFormValues, SweepResolverContext, SweepFormValues>({
-    mode: 'onChange',
-    defaultValues: {
-      destinations: initialDestinations,
-    },
-    resolver: yupResolver(schema),
-  })
-
-  const { fields, replace } = useFieldArray({
-    control: form.control,
-    name: 'destinations',
-  })
-  const { trigger } = form
-
-  const destinationValues = useWatch({
-    control: form.control,
-    name: 'destinations',
-    defaultValue: initialDestinations,
-  })
-  const normalizedDestinationAddresses = useMemo(
-    () => getSweepDestinationAddresses({ destinations: destinationValues }),
-    [destinationValues],
-  )
-  const hasDestinationErrors = !form.formState.isValid
-  const allDestinationAddressesPresent = normalizedDestinationAddresses.every((address) => address !== '')
-
-  const destinationUsageKey = useMemo(() => {
-    return normalizedDestinationAddresses
-      .map((address) => (address && walletInfo.addressSummary[address]?.used ? '1' : '0'))
-      .join('')
-  }, [normalizedDestinationAddresses, walletInfo.addressSummary])
-
-  useEffect(() => {
-    if (!normalizedDestinationAddresses.some((address) => address !== '')) return
-    void trigger('destinations')
-  }, [trigger, destinationUsageKey, normalizedDestinationAddresses])
 
   const getScheduleQuery = useQuery({
     ...tumblerstatusOptions({
@@ -183,6 +142,19 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       return { schedule: toSchedule(data) }
     },
   })
+
+  /*const planSchedule = useMutation({
+    ...tumblerplanMutation({ client }),
+    retry: false,
+    onMutate: () => {
+      setAlertMessage(undefined)
+    },
+    onError: (error) => {
+      console.error('Plan schedule error:', error)
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(t('scheduler.error_planning_schedule_failed', { reason }))
+    },
+  })*/
 
   const {
     isPending: startScheduleMutationIsPending,
@@ -216,10 +188,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setAlertMessage(undefined)
     },
     onSuccess: () => {
-      setShowScheduleConfirmDialog(false)
+      setShowScheduleConfirmDialog(undefined)
     },
     onError: (error: unknown) => {
-      setShowScheduleConfirmDialog(false)
+      setShowScheduleConfirmDialog(undefined)
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('scheduler.error_starting_schedule_failed', { reason })
       setAlertMessage(message)
@@ -283,54 +255,22 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     jmSession?.rescanning ||
     !preconditionSummary.isFulfilled
 
-  const isStartDisabled =
-    isOperationDisabled ||
-    isWaitingSchedulerStart ||
-    isWaitingSchedulerStop ||
-    hasDestinationErrors ||
-    !allDestinationAddressesPresent
-
-  const onInsecureTestingToggleChange = (checked: boolean) => {
-    setUseInsecureTestingSettings(checked)
-
-    if (checked) {
-      replace([{ address: getNewTestingDestinationAddress(walletInfo.addressSummary) }])
-      void trigger('destinations')
-      return
-    }
-
-    replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
-    void trigger('destinations')
-  }
+  const isStartDisabled = isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop
 
   const startSchedule = async () => {
-    if (isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop) {
-      return
+    if (showScheduleConfirmDialog === undefined) return
+
+    const body = {
+      destinations: getSweepDestinationAddresses(showScheduleConfirmDialog),
+      ...(showScheduleConfirmDialog.useInsecureTestingSettings
+        ? { parameters: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
+        : {}),
     }
 
-    await form.handleSubmit(async (values) => {
-      const body = {
-        destinations: getSweepDestinationAddresses(values),
-        ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
-          ? { parameters: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
-          : {}),
-      }
-
-      await startScheduleMutationMutateAsync({
-        path: { walletname: walletFileName },
-        body,
-      })
-    })()
-  }
-
-  const onOpenScheduleConfirm = async () => {
-    if (isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop) {
-      return
-    }
-
-    await form.handleSubmit(() => {
-      setShowScheduleConfirmDialog(true)
-    })()
+    await startScheduleMutationMutateAsync({
+      path: { walletname: walletFileName },
+      body,
+    })
   }
 
   const stopSchedule = async () => {
@@ -352,8 +292,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         onOpenChange={setShowFeeConfigDialog}
       />
       <SweepStartConfirmDialog
-        open={showScheduleConfirmDialog}
-        onOpenChange={setShowScheduleConfirmDialog}
+        open={showScheduleConfirmDialog !== undefined}
+        onOpenChange={() => setShowScheduleConfirmDialog(undefined)}
         onConfirm={startSchedule}
         disabled={isStartDisabled || isWaitingSchedulerStart}
         isStarting={isWaitingSchedulerStart}
@@ -422,55 +362,131 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
                 <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
 
-                {showInsecureScheduleTestingToggle && (
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="switch-use-insecure-schedule-testing"
-                      checked={useInsecureTestingSettings}
-                      onCheckedChange={onInsecureTestingToggleChange}
-                      disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                    />
-                    <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-                      <div className="flex items-center gap-2 font-medium">
-                        Use insecure testing settings
-                        <DevBadge />
-                      </div>
-                      <div className="text-muted-foreground text-sm">
-                        This is completely insecure but makes testing the schedule much faster.
-                      </div>
-                    </Label>
-                  </div>
-                )}
-
-                <SweepDestinationInputs
-                  form={form}
-                  fields={fields}
+                <PlanSweepForm
+                  className=""
+                  addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
+                  onSubmit={(values) => {
+                    setShowScheduleConfirmDialog(values)
+                  }}
                 />
-
-                <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
-
-                <Button
-                  type="button"
-                  onClick={() => void onOpenScheduleConfirm()}
-                  disabled={isStartDisabled}
-                  size="xxl"
-                  className="w-full"
-                >
-                  {isWaitingSchedulerStart ? (
-                    <>
-                      <Spinner className="motion-reduce:hidden" />
-                      {t('scheduler.button_start')}
-                    </>
-                  ) : (
-                    t('scheduler.button_start')
-                  )}
-                </Button>
               </CardContent>
             </Card>
           </>
         )}
       </div>
     </>
+  )
+}
+
+interface PlanSweepFormProps {
+  className?: string
+  onSubmit: SubmitHandler<SweepFormValues>
+  addressSummary: AddressSummary
+  disabled?: boolean
+  debug?: boolean
+}
+
+const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSweepFormProps) => {
+  const { t } = useTranslation()
+
+  const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
+
+  const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
+  const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
+  const { formState, register, trigger, control, setValue, handleSubmit } = useForm<
+    SweepFormValues,
+    SweepResolverContext,
+    SweepFormValues
+  >({
+    mode: 'onChange',
+    defaultValues: {
+      destinations: initialDestinations,
+    },
+    resolver: yupResolver(schema),
+  })
+
+  const watchedUseInsecureTestSettings = useWatch({ control, name: 'useInsecureTestingSettings' })
+  const { fields, replace } = useFieldArray({ control, name: 'destinations' })
+
+  const destinationValues = useWatch({
+    control: control,
+    name: 'destinations',
+    defaultValue: initialDestinations,
+  })
+  const normalizedDestinationAddresses = useMemo(
+    () => getSweepDestinationAddresses({ destinations: destinationValues }),
+    [destinationValues],
+  )
+
+  const destinationUsageKey = useMemo(() => {
+    return normalizedDestinationAddresses
+      .map((address) => (address && addressSummary[address]?.used ? '1' : '0'))
+      .join('')
+  }, [normalizedDestinationAddresses, addressSummary])
+
+  useEffect(() => {
+    if (!normalizedDestinationAddresses.some((address) => address !== '')) return
+    void trigger('destinations')
+  }, [trigger, destinationUsageKey, normalizedDestinationAddresses])
+
+  const onInsecureTestingToggleChange = (checked: boolean) => {
+    setValue('useInsecureTestingSettings', checked)
+
+    if (checked) {
+      replace([{ address: getNewTestingDestinationAddress(addressSummary) }])
+      void trigger('destinations')
+      return
+    } else {
+      replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
+      void trigger('destinations')
+    }
+  }
+
+  const doOnSubmit = handleSubmit(onSubmit)
+
+  return (
+    <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
+      {showInsecureScheduleTestingToggle && (
+        <div className="flex items-center gap-2">
+          <Switch
+            id="switch-use-insecure-schedule-testing"
+            checked={watchedUseInsecureTestSettings ?? false}
+            onCheckedChange={onInsecureTestingToggleChange}
+            disabled={disabled}
+          />
+          <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
+            <div className="flex items-center gap-2 font-medium">
+              Use insecure testing settings
+              <DevBadge />
+            </div>
+            <div className="text-muted-foreground text-sm">
+              This is completely insecure but makes testing the schedule much faster.
+            </div>
+          </Label>
+        </div>
+      )}
+
+      <SweepDestinationInputs
+        register={register}
+        setValue={setValue}
+        formState={formState}
+        fields={fields}
+        disabled={disabled}
+      />
+
+      <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
+
+      <Button type="submit" disabled={disabled || formState.isSubmitting} className="w-full" size="xxl">
+        {formState.isSubmitting ? (
+          <>
+            <Spinner className="motion-reduce:hidden" />
+            {t('scheduler.button_start')}
+          </>
+        ) : (
+          t('scheduler.button_start')
+        )}
+      </Button>
+    </form>
   )
 }

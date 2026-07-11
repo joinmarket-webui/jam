@@ -11,19 +11,24 @@ import { Input } from '@/components/ui/input'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { SweepFormValues } from './SweepFormSchema'
 
+type ParentForm = UseFormReturn<SweepFormValues, unknown, SweepFormValues>
+
 interface SweepDestinationInputsProps {
-  form: UseFormReturn<SweepFormValues, unknown, SweepFormValues>
+  register: ParentForm['register']
+  setValue: ParentForm['setValue']
+  formState: ParentForm['formState']
   fields: Array<FieldArrayWithId<SweepFormValues, 'destinations', 'id'>>
-  disabled: boolean
+  disabled?: boolean
 }
 
-export const SweepDestinationInputs = ({ form, fields, disabled }: SweepDestinationInputsProps) => {
+export const SweepDestinationInputs = ({
+  setValue,
+  register,
+  formState: { errors, isSubmitted, touchedFields },
+  fields,
+  disabled,
+}: SweepDestinationInputsProps) => {
   const { t } = useTranslation()
-  const {
-    formState: { errors, isSubmitted, touchedFields },
-    register,
-    setValue,
-  } = form
 
   const [qrScannerIndex, setQrScannerIndex] = useState<number>()
 

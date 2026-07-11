@@ -8,6 +8,7 @@ export type SweepFormValues = {
   destinations: Array<{
     address: string
   }>
+  useInsecureTestingSettings?: boolean
 }
 
 export type SweepResolverContext = {
@@ -79,6 +80,7 @@ export const sweepFormSchema = (
           return buildDestinationErrorList(destinations, addressSummary, t)
         })
         .required(),
+      useInsecureTestingSettings: yup.boolean().default(false).optional(),
     })
     .required()
 }
