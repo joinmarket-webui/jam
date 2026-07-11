@@ -145,15 +145,20 @@ vi.mock('@/components/settings/fees/FeeConfigDialog', () => ({
 }))
 
 vi.mock('@/components/sweep/SweepDestinationInputs', () => ({
-  SweepDestinationInputs: ({ disabled, form }: { disabled: boolean; form: UseFormReturn<SweepFormValues> }) => (
+  SweepDestinationInputs: ({
+    disabled,
+    setValue,
+  }: {
+    disabled: boolean
+    setValue: UseFormReturn<SweepFormValues>['setValue']
+  }) => (
     <button
       type="button"
       disabled={disabled}
       onClick={() => {
         VALID_DESTINATIONS.forEach((address, index) => {
-          form.setValue(`destinations.${index}.address`, address, { shouldDirty: true, shouldValidate: true })
+          setValue(`destinations.${index}.address`, address, { shouldDirty: true, shouldValidate: true })
         })
-        void form.trigger('destinations')
       }}
     >
       fill-destinations
@@ -329,6 +334,16 @@ describe('SweepPage', () => {
     mocks.toastError.mockReset()
     mocks.walletInfo = makeWalletInfo()
     setSession()
+
+    vi.clearAllMocks()
+    vi.stubGlobal(
+      'ResizeObserver',
+      class ResizeObserver {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    )
   })
 
   it('shows loading while session, fee config, or wallet info is loading', () => {
@@ -440,8 +455,7 @@ describe('SweepPage', () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    // the key is shown both on the button and in the waiting alert title
-    expect(screen.getAllByText('scheduler.button_start').length).toBeGreaterThan(1)
+    expect(screen.getAllByText('scheduler.alert_scheduler_starting_title').length).toBe(1)
   })
 
   it('shows the stop waiting alert while the schedule stop is pending', () => {
@@ -451,6 +465,7 @@ describe('SweepPage', () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
+    expect(screen.getAllByText('scheduler.alert_scheduler_stopping_title').length).toBe(1)
     expect(screen.getByText('schedule-progress:true')).toBeInTheDocument()
   })
 
@@ -475,7 +490,8 @@ describe('SweepPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
 
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
-    expect(screen.getByText('global.error')).toBeInTheDocument()
+    expect(screen.getByText('global.error')).toBeInTheDocument() // title
+    expect(screen.getByText('scheduler.error_starting_schedule_failed')).toBeInTheDocument() // description
   })
 
   it('shows an alert when stopping the schedule fails', async () => {
@@ -488,7 +504,8 @@ describe('SweepPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'stop-sweep' }))
 
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
-    expect(screen.getByText('global.error')).toBeInTheDocument()
+    expect(screen.getByText('global.error')).toBeInTheDocument() // title
+    expect(screen.getByText('scheduler.error_stopping_schedule_failed')).toBeInTheDocument() // description
   })
 
   it('does not render non-running tumbler plans as a running schedule', () => {

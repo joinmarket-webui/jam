@@ -29,7 +29,14 @@ describe('SweepDestinationInputs', () => {
   ] as unknown as SweepFields
 
   it('renders input fields correctly', () => {
-    render(<SweepDestinationInputs form={defaultFormMock} fields={fields} disabled={false} />)
+    render(
+      <SweepDestinationInputs
+        formState={defaultFormMock.formState}
+        setValue={defaultFormMock.setValue}
+        register={defaultFormMock.register}
+        fields={fields}
+      />,
+    )
 
     // Should render 2 inputs
     const inputs = screen.getAllByRole('textbox')
@@ -45,7 +52,15 @@ describe('SweepDestinationInputs', () => {
   })
 
   it('renders disabled input fields', () => {
-    render(<SweepDestinationInputs form={defaultFormMock} fields={fields} disabled={true} />)
+    render(
+      <SweepDestinationInputs
+        formState={defaultFormMock.formState}
+        setValue={defaultFormMock.setValue}
+        register={defaultFormMock.register}
+        fields={fields}
+        disabled={true}
+      />,
+    )
 
     const inputs = screen.getAllByRole('textbox')
     expect(inputs[0]).toBeDisabled()
@@ -67,7 +82,14 @@ describe('SweepDestinationInputs', () => {
       },
     } as unknown as SweepForm
 
-    render(<SweepDestinationInputs form={errorFormMock} fields={fields} disabled={false} />)
+    render(
+      <SweepDestinationInputs
+        formState={errorFormMock.formState}
+        setValue={errorFormMock.setValue}
+        register={errorFormMock.register}
+        fields={fields}
+      />,
+    )
 
     expect(screen.getByText('Invalid address 1')).toBeInTheDocument()
 
