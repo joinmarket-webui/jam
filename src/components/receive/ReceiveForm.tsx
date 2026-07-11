@@ -27,10 +27,7 @@ const FieldPrefixSatSymbol = (
 )
 
 const receiveFormSchema = (jars: Jar[], t: TFunction) => {
-  const invalidSourceJarFeedbackMessage = t('receive.feedback_invalid_source_jar', {
-    /* TODO: i18n: remove defaultValue and add key to language files */
-    defaultValue: 'Please select a source jar.',
-  })
+  const invalidSourceJarFeedbackMessage = t('receive.feedback_invalid_source_jar')
 
   return yup
     .object({

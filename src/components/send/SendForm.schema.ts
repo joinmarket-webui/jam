@@ -143,10 +143,7 @@ export const createSendFormSchema = (
         const addressIsFromSourceJar = addressSummary[root.destination.address]?.jarIndex === root.source.fromJar
         if (!addressIsFromSourceJar) return true
 
-        const errorMessage = t('send.feedback_address_from_source_jar', {
-          /* TODO: i18n: remove defaultValue and add key to language files */
-          defaultValue: 'This address is from the source jar. To preserve your privacy please choose a different one.',
-        })
+        const errorMessage = t('send.feedback_address_from_source_jar')
 
         return new yup.ValidationError(errorMessage, root.destination.address, 'destination.address', undefined, true)
       })

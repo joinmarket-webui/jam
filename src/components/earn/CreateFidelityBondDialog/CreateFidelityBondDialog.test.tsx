@@ -45,8 +45,8 @@ describe('CreateFidelityBondDialog', () => {
 
     // Check buttons
     expect(screen.queryByText('global.back')).not.toBeInTheDocument()
-    expect(screen.getByText('earn.fidelity_bond.select_date.text_secondary_button')).toBeInTheDocument()
-    expect(screen.getByText('earn.fidelity_bond.select_date.text_primary_button')).toBeInTheDocument()
+    expect(screen.getByText('global.cancel')).toBeInTheDocument()
+    expect(screen.getByText('global.next')).toBeInTheDocument()
   })
 
   it('renders correctly on review step', () => {
@@ -65,7 +65,7 @@ describe('CreateFidelityBondDialog', () => {
     render(<CreateFidelityBondDialog open={true} onOpenChange={vi.fn()} walletFileName="wallet.jmdat" />)
 
     expect(screen.queryByTestId('step-progress')).not.toBeInTheDocument()
-    expect(screen.getByText('earn.fidelity_bond.create_fidelity_bond.text_primary_button')).toBeInTheDocument()
+    expect(screen.getByText('global.done')).toBeInTheDocument()
   })
 
   it('renders correctly on freeze_utxos step', () => {

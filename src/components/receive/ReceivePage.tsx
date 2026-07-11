@@ -12,7 +12,6 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useJars } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import { getErrorReason } from '@/lib/errorReason'
 import { withMutationDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
@@ -83,10 +82,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     ),
     retry: false,
     gcTime: Number.POSITIVE_INFINITY,
-    onError: (error: unknown) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      // TODO: add reason to i18n
-      toast.error(t('receive.error_loading_address_failed', { reason }))
+    onError: (_error: unknown) => {
+      toast.error(t('global.errors.error_loading_address_failed'))
     },
   })
 
@@ -138,11 +135,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   disabled={getAddressMutation.isPending}
                 >
                   <HatGlassesIcon />
-                  {
-                    /*TODO: i18n*/ t('receive.button_reveal_address', {
-                      defaultValue: 'Reveal address',
-                    })
-                  }
+                  {t('receive.button_reveal_address')}
                 </Button>
               </div>
             ) : (
@@ -151,7 +144,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   'text-destructive flex aspect-square w-full max-w-80 items-center justify-center border text-sm',
                 )}
               >
-                {t('receive.error_loading_address_failed')}
+                {t('global.errors.error_loading_address_failed')}
               </div>
             )}
           </div>

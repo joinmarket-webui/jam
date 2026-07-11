@@ -118,7 +118,7 @@ const renderDialog = (props?: { utxo?: FidelityBondUtxo; onOpenChange?: (open: b
 
 const goToConfirm = () => {
   fireEvent.click(screen.getByText('Jar 1'))
-  fireEvent.click(screen.getByText('earn.fidelity_bond.select_date.text_primary_button'))
+  fireEvent.click(screen.getByText('global.next'))
 }
 
 describe('MoveToJarDialog', () => {
@@ -155,7 +155,7 @@ describe('MoveToJarDialog', () => {
     h.queryReturn = { data: undefined, isLoading: false, isError: true }
     renderDialog()
     goToConfirm()
-    expect(screen.getByText('earn.fidelity_bond.move.error_loading_address')).toBeInTheDocument()
+    expect(screen.getByText('global.errors.error_loading_address_failed')).toBeInTheDocument()
   })
 
   it('completes the move flow and reaches the success step', async () => {

@@ -122,7 +122,7 @@ describe('sidebar components', () => {
     expect(screen.getByText('Dashboard tooltip')).toBeInTheDocument()
     expect(screen.getByLabelText('Search menu')).toBeInTheDocument()
 
-    await user.click(screen.getAllByRole('button', { name: 'Toggle Sidebar' })[0])
+    await user.click(screen.getAllByRole('button', { name: 'sidebar.button_toggle' })[0])
     expect(sidebar).toHaveAttribute('data-state', 'collapsed')
     expect(document.cookie).toContain('sidebar_state=false')
 
@@ -141,7 +141,7 @@ describe('sidebar components', () => {
     )
 
     expect(container.querySelector('[data-open="false"]')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Toggle Sidebar' }))
+    await user.click(screen.getByRole('button', { name: 'sidebar.button_toggle' }))
     expect(container.querySelector('[data-open="true"]')).toBeInTheDocument()
     expect(screen.getByText('Mobile body')).toBeInTheDocument()
 
@@ -164,7 +164,7 @@ describe('sidebar components', () => {
       </SidebarProvider>,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Toggle Sidebar' }))
+    await user.click(screen.getByRole('button', { name: 'sidebar.button_toggle' }))
     expect(onOpenChange).toHaveBeenCalledWith(false)
 
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)

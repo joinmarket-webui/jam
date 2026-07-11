@@ -373,8 +373,7 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
       })
       .catch((error) => {
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        // TODO: i18n
-        const errorMessage = t('Error while loading fee values.: {{ reason }}', { reason })
+        const errorMessage = t('settings.fees.error_loading_fee_config_failed', { reason })
         toast.error(errorMessage)
         console.error(errorMessage)
       })

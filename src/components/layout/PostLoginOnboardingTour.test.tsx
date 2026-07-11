@@ -22,10 +22,10 @@ describe('PostLoginOnboardingTour', () => {
       value: vi.fn(),
     })
 
+    /* eslint-disable unicorn/no-this-outside-of-class -- mocking HTMLElement.prototype.getBoundingClientRect requires `this` */
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function getBoundingClientRect(
       this: HTMLElement,
     ) {
-      // eslint-disable-next-line unicorn/no-this-outside-of-class -- acceptable for mocks
       const id = this.dataset.tourId
       const top = id === 'settings-button' ? 520 : 80
 
@@ -41,22 +41,23 @@ describe('PostLoginOnboardingTour', () => {
         toJSON: () => undefined,
       }
     })
+    /* eslint-enable unicorn/no-this-outside-of-class */
   })
 
   it('walks through the tour and persists dismissal', () => {
     render(renderTargets())
 
-    expect(screen.getByText('Wallet Snapshot')).toBeInTheDocument()
-    expect(screen.getByText('Step 1 of 5')).toBeInTheDocument()
+    expect(screen.getByText('onboarding.tour.step_wallet_title')).toBeInTheDocument()
+    expect(screen.getByText('onboarding.tour.step_label')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Next'))
-    expect(screen.getByText('Primary Actions')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('global.next'))
+    expect(screen.getByText('onboarding.tour.step_actions_title')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Back'))
-    expect(screen.getByText('Wallet Snapshot')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('global.back'))
+    expect(screen.getByText('onboarding.tour.step_wallet_title')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Skip tour'))
-    expect(screen.queryByText('Wallet Snapshot')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByText('global.skip'))
+    expect(screen.queryByText('onboarding.tour.step_wallet_title')).not.toBeInTheDocument()
     expect(window.localStorage.getItem(POST_LOGIN_TOUR_DISMISSED_STORAGE_KEY)).toBe('1')
   })
 
@@ -65,26 +66,26 @@ describe('PostLoginOnboardingTour', () => {
 
     render(renderTargets())
 
-    expect(screen.queryByText('Wallet Snapshot')).not.toBeInTheDocument()
+    expect(screen.queryByText('onboarding.tour.step_wallet_title')).not.toBeInTheDocument()
 
     fireEvent(window, new Event(POST_LOGIN_TOUR_EVENT))
-    expect(screen.getByText('Wallet Snapshot')).toBeInTheDocument()
+    expect(screen.getByText('onboarding.tour.step_wallet_title')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Next'))
-    fireEvent.click(screen.getByText('Next'))
-    fireEvent.click(screen.getByText('Next'))
-    fireEvent.click(screen.getByText('Next'))
+    fireEvent.click(screen.getByText('global.next'))
+    fireEvent.click(screen.getByText('global.next'))
+    fireEvent.click(screen.getByText('global.next'))
+    fireEvent.click(screen.getByText('global.next'))
 
-    expect(screen.getByText('Settings & Safety')).toBeInTheDocument()
+    expect(screen.getByText('onboarding.tour.step_settings_title')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Finish'))
-    expect(screen.queryByText('Settings & Safety')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByText('global.finish'))
+    expect(screen.queryByText('onboarding.tour.step_settings_title')).not.toBeInTheDocument()
     expect(window.localStorage.getItem(POST_LOGIN_TOUR_DISMISSED_STORAGE_KEY)).toBe('1')
   })
 
   it('does not render when disabled', () => {
     render(<PostLoginOnboardingTour enabled={false} />)
 
-    expect(screen.queryByText('Wallet Snapshot')).not.toBeInTheDocument()
+    expect(screen.queryByText('onboarding.tour.step_wallet_title')).not.toBeInTheDocument()
   })
 })

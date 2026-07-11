@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { POST_LOGIN_TOUR_DISMISSED_STORAGE_KEY, POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
@@ -6,37 +7,35 @@ import { clamp, cn } from '@/lib/utils'
 
 type TourStep = {
   selector: string
-  title: string
-  description: string
+  titleKey: string
+  descriptionKey: string
 }
 
-// TODO: i18n
 const TOUR_STEPS: TourStep[] = [
   {
     selector: '[data-tour-id="wallet-preview"]',
-    title: 'Wallet Snapshot',
-    description:
-      'This area shows your current wallet and total balance. Use it to quickly verify you are in the right wallet.',
+    titleKey: 'onboarding.tour.step_wallet_title',
+    descriptionKey: 'onboarding.tour.step_wallet_description',
   },
   {
     selector: '[data-tour-id="wallet-actions"]',
-    title: 'Primary Actions',
-    description: 'Start here for day-to-day usage: Receive for deposits and Send for withdrawals or coinjoin flows.',
+    titleKey: 'onboarding.tour.step_actions_title',
+    descriptionKey: 'onboarding.tour.step_actions_description',
   },
   {
     selector: '[data-tour-id="wallet-jars"]',
-    title: 'Jars Overview',
-    description: 'Jars help you separate funds by mixdepth. Click any jar to inspect UTXOs and details.',
+    titleKey: 'onboarding.tour.step_jars_title',
+    descriptionKey: 'onboarding.tour.step_jars_description',
   },
   {
     selector: '[data-tour-id="footer-tools"]',
-    title: 'Quick Tools',
-    description: 'Open Cheatsheet, Orderbook, and Logs from here without leaving the current page.',
+    titleKey: 'onboarding.tour.step_tools_title',
+    descriptionKey: 'onboarding.tour.step_tools_description',
   },
   {
     selector: '[data-tour-id="settings-button"]',
-    title: 'Settings & Safety',
-    description: 'Use Settings to manage lock wallet, language, display mode, and other important preferences.',
+    titleKey: 'onboarding.tour.step_settings_title',
+    descriptionKey: 'onboarding.tour.step_settings_description',
   },
 ]
 
@@ -68,6 +67,7 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
       return false
     }
   })
+  const { t } = useTranslation()
   const [stepIndex, setStepIndex] = useState(0)
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
 
@@ -186,17 +186,17 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
         style={tooltipStyles}
       >
         <CardHeader className="space-y-1">
-          <CardTitle className="text-lg">{currentStep.title}</CardTitle>
+          <CardTitle className="text-lg">{t(currentStep.titleKey)}</CardTitle>
           <CardDescription>
-            Step {stepIndex + 1} of {TOUR_STEPS.length}
+            {t('onboarding.tour.step_label', { current: stepIndex + 1, total: TOUR_STEPS.length })}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed">{currentStep.description}</p>
+          <p className="text-sm leading-relaxed">{t(currentStep.descriptionKey)}</p>
         </CardContent>
         <CardFooter className="flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={closeTour}>
-            Skip tour
+            {t('global.skip')}
           </Button>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
             <Button
@@ -205,7 +205,7 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
               onClick={() => setStepIndex((current) => Math.max(0, current - 1))}
               disabled={stepIndex === 0}
             >
-              Back
+              {t('global.back')}
             </Button>
             <Button
               size="sm"
@@ -217,7 +217,7 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
                 setStepIndex((current) => Math.min(TOUR_STEPS.length - 1, current + 1))
               }}
             >
-              {isLastStep ? 'Finish' : 'Next'}
+              {isLastStep ? t('global.finish') : t('global.next')}
             </Button>
           </div>
         </CardFooter>

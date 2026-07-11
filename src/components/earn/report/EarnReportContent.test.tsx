@@ -136,7 +136,7 @@ describe('EarnReportContent', () => {
     const anchorClick = vi.fn()
     const createElement = vi.spyOn(document, 'createElement')
     createElement.mockImplementation((tagName: string) => {
-      // eslint-disable-next-line unicorn/prefer-https -- needs to be 'http'
+      // eslint-disable-next-line unicorn/prefer-https -- XHTML namespace URI is an identifier that must be http
       const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName)
       if (tagName === 'a') {
         Object.defineProperty(element, 'click', {

@@ -151,8 +151,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     },
     onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      // TODO: i18n
-      toast.error(`Error while stopping the earn process. Reason: ${reason}`)
+      toast.error(t('earn.error_stopping_earn', { reason }))
     },
   })
 
@@ -248,13 +247,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {isWaitingMakerStart && (
         <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
           <Spinner className="motion-reduce:hidden" />
-          <AlertTitle>{/* TODO: i18n */ t('Waiting for maker to start...')}</AlertTitle>
+          <AlertTitle>{t('earn.alert_waiting_start_title')}</AlertTitle>
         </Alert>
       )}
       {isWaitingMakerStop && (
         <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
           <Spinner className="motion-reduce:hidden" />
-          <AlertTitle>{/* TODO: i18n */ t('Waiting for maker to stop...')}</AlertTitle>
+          <AlertTitle>{t('earn.alert_waiting_stop_title')}</AlertTitle>
         </Alert>
       )}
       {waitingForOfferUpdate && (

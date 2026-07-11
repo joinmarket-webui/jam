@@ -364,7 +364,7 @@ describe('SendPage', () => {
     await waitFor(() => expect(mocks.directSend).toHaveBeenCalled())
     expect(jmTxStore.getState().get('txid-success')).toBeDefined()
     expect(mocks.setWaitForUtxosToBeSpent).toHaveBeenCalledWith(['source-tx:0'])
-    expect(mocks.toastSuccess).toHaveBeenCalledWith('Successfully sent non-collaborative transaction.')
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('send.alert_direct_payment_success_title')
     expect(screen.getByText(/send.alert_payment_successful/u)).toBeInTheDocument()
   })
 
@@ -521,7 +521,7 @@ describe('SendPage', () => {
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('Waiting for utxos to be marked as spent...')).toBeInTheDocument()
+    expect(screen.getByText('send.alert_waiting_utxos_spent')).toBeInTheDocument()
     expect(screen.getByText('send-form:true')).toBeInTheDocument()
     await flushActUpdates()
   })

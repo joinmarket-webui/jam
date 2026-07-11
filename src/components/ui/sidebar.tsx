@@ -126,6 +126,7 @@ function Sidebar({
   variant?: 'sidebar' | 'floating' | 'inset'
   collapsible?: 'offcanvas' | 'icon' | 'none'
 }) {
+  const { t } = useTranslation()
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
   if (collapsible === 'none') {
@@ -156,9 +157,8 @@ function Sidebar({
           side={side}
         >
           <SheetHeader className="sr-only">
-            {/* TODO: i18n */}
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+            <SheetTitle>{t('sidebar.title_mobile')}</SheetTitle>
+            <SheetDescription>{t('sidebar.description_mobile')}</SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
@@ -244,7 +244,7 @@ function SidebarTrigger({
     >
       {side === 'left' ? isSidebarOpen ? <PanelLeftCloseIcon /> : <PanelLeftIcon /> : undefined}
       {side === 'right' ? isSidebarOpen ? <PanelRightCloseIcon /> : <PanelRightIcon /> : undefined}
-      <span className="sr-only">{/*TODO: i18n */}Toggle Sidebar</span>
+      <span className="sr-only">{t('sidebar.button_toggle')}</span>
     </Button>
   )
 }

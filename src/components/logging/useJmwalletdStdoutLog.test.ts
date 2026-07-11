@@ -54,7 +54,7 @@ describe('useJmwalletdStdoutLog', () => {
     expect(result.current.isInitialized).toBe(true)
     expect(result.current.alert).toEqual({
       variant: 'destructive',
-      message: 'No authentication token available. Please login again.',
+      message: 'logs.error_no_auth_token',
     })
     expect(mocks.queryOptions?.enabled).toBe(false)
   })

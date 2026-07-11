@@ -27,7 +27,7 @@ export function WalletJarsDetailsOverlay({
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-dvh max-h-dvh! max-w-screen! flex-col overflow-hidden rounded-none border-none">
         <DialogHeader className="px-2">
           <DialogTitle className="sr-only flex items-center gap-2">
-            <PageTitle title={/* todo: i18n */ t('Wallet Jars Details')} />
+            <PageTitle title={t('jar_details.title')} />
           </DialogTitle>
         </DialogHeader>
 

@@ -277,8 +277,7 @@ export function SendForm({
         disabledJars={sourceJar === undefined ? [] : [sourceJar]}
         walletBalanceSummary={walletBalanceSummary}
         onError={(_ignoredOnPurpose) => {
-          // TODO: i18n own key `send.error_loading_address_failed`
-          toast.error(t('receive.error_loading_address_failed'))
+          toast.error(t('global.errors.error_loading_address_failed'))
           setValue('destination.address', '', { shouldValidate: true })
           setValue('destination.fromJar', undefined, { shouldValidate: true })
         }}
@@ -392,7 +391,7 @@ export function SendForm({
                   onClick={() => setShowAddressFromJarSelectorDialog(true)}
                 >
                   <MilkIcon />
-                  <span className="sr-only">{/* TODO: i18n */} Choose Jar</span>
+                  <span className="sr-only">{t('send.button_choose_jar')}</span>
                 </Button>
               </ButtonGroup>
               <ButtonGroup

@@ -98,22 +98,22 @@ describe('AppSidebar', () => {
 
     render(<AppSidebar side="left" />)
 
-    expect(screen.getByText('navbar.title')).toBeInTheDocument()
-    expect(screen.getByText('Home')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.title')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_home.label')).toBeInTheDocument()
     expect(screen.getByText('navbar.tab_receive')).toBeInTheDocument()
     expect(screen.getByText('navbar.tab_send')).toBeInTheDocument()
     expect(screen.getByText('navbar.tab_earn')).toBeInTheDocument()
-    expect(screen.getByText('Earn Report')).toBeInTheDocument()
-    expect(screen.getByText('Orderbook')).toBeInTheDocument()
-    expect(screen.getByText('navbar.menu_mobile_settings')).toBeInTheDocument()
-    expect(screen.getByText('settings.rescan_chain')).toBeInTheDocument()
-    expect(screen.queryByText('settings.show_logs')).not.toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_earn_report.label')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_orderbook.label')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_settings.label')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_rescan.label')).toBeInTheDocument()
+    expect(screen.queryByText('sidebar.item_logs.label')).not.toBeInTheDocument()
     expect(screen.queryByText('Development')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByTitle('global.close'))
     expect(mocks.toggleSidebar).toHaveBeenCalledTimes(1)
 
-    fireEvent.click(screen.getByText('Tour'))
+    fireEvent.click(screen.getByText('sidebar.item_tour.label'))
     expect(mocks.toggleSidebar).toHaveBeenCalledTimes(2)
     expect(onTour).toHaveBeenCalledTimes(1)
 
@@ -128,7 +128,7 @@ describe('AppSidebar', () => {
 
     render(<AppSidebar side="right" />)
 
-    expect(screen.getByText('settings.show_logs')).toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_logs.label')).toBeInTheDocument()
     expect(screen.getByText('Development')).toBeInTheDocument()
     expect(screen.getByText('Dev Page')).toBeInTheDocument()
     expect(screen.getByText('Dev Setup')).toBeInTheDocument()

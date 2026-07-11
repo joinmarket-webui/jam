@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { routes } from '@/constants/routes'
@@ -12,6 +13,8 @@ type CreateStepWalletDetailsProps = ComponentProps<typeof CreateWalletForm> & {
 }
 
 export const CreateStepWalletDetails = ({ sessionInfo, ...createFormProps }: CreateStepWalletDetailsProps) => {
+  const { t } = useTranslation()
+
   return (
     <div className="space-y-2">
       {sessionInfo?.session === true ? (
@@ -24,11 +27,10 @@ export const CreateStepWalletDetails = ({ sessionInfo, ...createFormProps }: Cre
       )}
       <div className="text-center">
         <p className="text-muted-foreground text-sm">
-          {/* TODO: i18n */}
-          Already have a wallet?{' '}
+          {t('create_wallet.text_login_hint')}{' '}
           <Button variant="link" asChild>
             <Link to={routes.login} className="font-semibold">
-              Sign in here
+              {t('create_wallet.button_login_link')}
             </Link>
           </Button>
         </p>

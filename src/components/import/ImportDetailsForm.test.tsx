@@ -72,7 +72,7 @@ vi.mock('@/components/ui/spinner', () => ({ Spinner: () => <div data-testid="spi
 const VALID_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 
 const typeMnemonic = (value: string) => {
-  fireEvent.change(screen.getByPlaceholderText('import_wallet.import_details.placeholder_menmonic_phrase'), {
+  fireEvent.change(screen.getByPlaceholderText('import_wallet.import_details.placeholder_mnemonic_phrase'), {
     target: { value },
   })
 }
@@ -80,7 +80,7 @@ const typeMnemonic = (value: string) => {
 describe('ImportDetailsForm', () => {
   it('renders the mnemonic, blockheight and gaplimit fields', async () => {
     render(<ImportDetailsForm onSubmit={vi.fn()} />)
-    expect(screen.getByText('import_wallet.import_details.label_menmonic_phrase')).toBeInTheDocument()
+    expect(screen.getByText('import_wallet.import_details.label_mnemonic_phrase')).toBeInTheDocument()
     expect(document.querySelector('#blockheight')).toBeInTheDocument()
     expect(document.querySelector('#gaplimit')).toBeInTheDocument()
     await flushActUpdates()
@@ -89,7 +89,7 @@ describe('ImportDetailsForm', () => {
   it('shows a success alert when the mnemonic is a valid BIP-39 phrase', async () => {
     render(<ImportDetailsForm onSubmit={vi.fn()} />)
     typeMnemonic(VALID_MNEMONIC)
-    expect(screen.getByText('Mnemonic phrase is valid')).toBeInTheDocument()
+    expect(screen.getByText('import_wallet.import_details.text_mnemonic_valid')).toBeInTheDocument()
     await flushActUpdates()
   })
 
@@ -98,7 +98,9 @@ describe('ImportDetailsForm', () => {
     render(<ImportDetailsForm onSubmit={onSubmit} />)
     typeMnemonic('not a real seed phrase at all')
     fireEvent.submit(document.querySelector('form')!)
-    await waitFor(() => expect(screen.getByText('Mnemonic phrase is not recognized')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByText('import_wallet.import_details.alert_mnemonic_not_recognized_title')).toBeInTheDocument(),
+    )
     expect(onSubmit).not.toHaveBeenCalled()
   })
 

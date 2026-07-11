@@ -106,10 +106,10 @@ const importDetailsFormSchema = (t: TFunction) => {
       mnemonicPhrase: yup
         .string()
         .transform((currentValue: string | undefined) => normalizeSeedPhrase(currentValue))
-        .required(t('import_wallet.import_details.feedback_invalid_menmonic_phrase'))
+        .required(t('import_wallet.import_details.feedback_invalid_mnemonic_phrase'))
         .test(
           'valid-bip39-mnemonic-phrase-test',
-          t('import_wallet.import_details.feedback_invalid_menmonic_phrase'),
+          t('import_wallet.import_details.feedback_invalid_mnemonic_phrase'),
           (value) => {
             return isBip39Mnemonic(value)
           },
@@ -183,21 +183,20 @@ export const ImportDetailsForm = ({
       <div className="space-y-2">
         <Field data-invalid={errors.mnemonicPhrase !== undefined}>
           <FieldLabel htmlFor="import-wallet-seed">
-            {t('import_wallet.import_details.label_menmonic_phrase')}
+            {t('import_wallet.import_details.label_mnemonic_phrase')}
             <Tooltip>
               <TooltipTrigger asChild>
                 <InfoIcon className="text-muted-foreground ml-1 inline size-3.5 align-text-bottom" />
               </TooltipTrigger>
               <TooltipContent>
-                {/* TODO: i18n */}
-                <p>Expects {SEED_WORD_COUNT_HINT} words.</p>
+                <p>{t('import_wallet.import_details.hint_seed_word_count', { wordCounts: SEED_WORD_COUNT_HINT })}</p>
               </TooltipContent>
             </Tooltip>
           </FieldLabel>
           <Textarea
             id="import-wallet-seed"
             rows={4}
-            placeholder={t('import_wallet.import_details.placeholder_menmonic_phrase')}
+            placeholder={t('import_wallet.import_details.placeholder_mnemonic_phrase')}
             {...register('mnemonicPhrase', {
               required: true,
             })}
@@ -211,22 +210,15 @@ export const ImportDetailsForm = ({
         {isSeedPhraseBip39Valid && (
           <Alert variant="success" className="py-2">
             <CheckCircle2Icon />
-            <AlertDescription>
-              {/* TODO: i18n */}
-              Mnemonic phrase is valid
-            </AlertDescription>
+            <AlertDescription>{t('import_wallet.import_details.text_mnemonic_valid')}</AlertDescription>
           </Alert>
         )}
         {isSubmitted && !isSubmitSuccessful && !isValid && !isSeedPhraseBip39Valid && (
           <Alert variant="warning" className="py-2">
             <AlertTriangleIcon />
-            <AlertTitle>
-              {/* TODO: i18n */}
-              Mnemonic phrase is not recognized
-            </AlertTitle>
+            <AlertTitle>{t('import_wallet.import_details.alert_mnemonic_not_recognized_title')}</AlertTitle>
             <AlertDescription className="text-sm">
-              {/* TODO: i18n */}
-              Only BIP-39 compliant mnemonic phrases can be imported. Please review your inputs carefully.
+              {t('import_wallet.import_details.alert_mnemonic_not_recognized_description')}
             </AlertDescription>
           </Alert>
         )}

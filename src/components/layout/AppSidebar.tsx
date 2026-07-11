@@ -53,44 +53,44 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const mainItems = useMemo(
     () => [
       {
-        title: /*TODO: i18n t('sidebar.item_home.label')*/ 'Home',
+        title: t('sidebar.item_home.label'),
         url: routes.home,
         icon: WalletIcon,
       },
       {
-        title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_receive'),
+        title: t('navbar.tab_receive'),
         url: routes.receive,
         icon: DownloadIcon,
       },
       {
-        title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_send'),
+        title: t('navbar.tab_send'),
         url: routes.send,
         icon: UploadIcon,
       },
       {
-        title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_earn'),
+        title: t('navbar.tab_earn'),
         url: routes.earn,
         icon: HandCoinsIcon,
         subitems: [
           {
-            title: /*TODO: i18n t('sidebar.item_earn_report.label')*/ 'Earn Report',
+            title: t('sidebar.item_earn_report.label'),
             url: routes.earnReport,
             icon: NotebookTabsIcon,
           },
         ],
       },
       {
-        title: /*TODO: i18n t('sidebar.item_earn.label')*/ t('navbar.tab_sweep'),
+        title: t('navbar.tab_sweep'),
         url: routes.sweep,
         icon: BrushCleaningIcon,
       },
       {
-        title: /*TODO: i18n t('sidebar.item_orderbook.label')*/ 'Orderbook',
+        title: t('sidebar.item_orderbook.label'),
         url: routes.orderbook,
         icon: BookOpenIcon,
       },
       {
-        title: /*TODO: i18n t('sidebar.item_jars.label')*/ 'Jars',
+        title: t('sidebar.item_jars.label'),
         url: routes.walletJarsDetails,
         icon: MilkIcon,
       },
@@ -101,7 +101,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const settingsItems = useMemo(
     () => [
       {
-        title: /*TODO: i18n t('sidebar.item_tour.label')*/ 'Tour',
+        title: t('sidebar.item_tour.label'),
         url: routes.home,
         icon: SparklesIcon,
         onClick: () => {
@@ -110,7 +110,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         },
       },
       {
-        title: /*TODO: i18n t('sidebar.item_rescan.label')*/ t('settings.rescan_chain'),
+        title: t('sidebar.item_rescan.label'),
         url: routes.rescan,
         icon: PackageSearchIcon,
       },
@@ -118,7 +118,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         ? []
         : [
             {
-              title: /*TODO: i18n t('sidebar.item_settings.label')*/ t('settings.show_logs'),
+              title: t('sidebar.item_logs.label'),
               url: routes.logs,
               icon: LogsIcon,
             },
@@ -167,10 +167,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
     <Sidebar side={side} variant="sidebar" collapsible="offcanvas">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            {/*TODO: i18n t('sidebar.title')*/}
-            {t('navbar.title')}
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>{t('sidebar.title')}</SidebarGroupLabel>
           <SidebarGroupAction className="cursor-pointer" title={t('global.close')} onClick={() => toggleSidebar()}>
             <XIcon />
             <span className="sr-only">{t('global.close')}</span>
@@ -212,8 +209,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                 <SidebarMenuButton asChild>
                   <Link to={routes.settings}>
                     <SettingsIcon />
-                    {/*TODO: i18n t('sidebar.item_settings.label')*/}
-                    <span>{t('navbar.menu_mobile_settings')}</span>
+                    <span>{t('sidebar.item_settings.label')}</span>
                   </Link>
                 </SidebarMenuButton>
                 <SidebarMenuSub>

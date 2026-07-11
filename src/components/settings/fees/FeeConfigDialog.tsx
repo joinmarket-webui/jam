@@ -173,8 +173,7 @@ export const FeeConfigDialog = ({
       await feeConfigValidation.refetchAll()
     } catch (error: unknown) {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      // TODO: i18n
-      const errorMessage = t('Error while reloading fee values.: {{ reason }}', { reason })
+      const errorMessage = t('settings.fees.error_reloading_fee_config_failed', { reason })
       toast.error(errorMessage)
       console.error(errorMessage)
     }
@@ -203,7 +202,7 @@ export const FeeConfigDialog = ({
                 rel="noopener noreferrer"
                 className="underline"
               >
-                {t('settings.fees.link_documentation')}
+                see the documentation on fees
               </a>
             </Trans>
           </DialogDescription>
@@ -293,15 +292,14 @@ export const FeeConfigDialog = ({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting || feeConfigValidation.isLoading}
           >
-            {t('settings.fees.text_button_cancel')}
+            {t('global.cancel')}
           </Button>
           <Button
             variant="outline"
             onClick={() => void handleResetFormValues()}
             disabled={isSubmitting || feeConfigValidation.isLoading}
           >
-            {/* TODO: i18n */}
-            Reset
+            {t('settings.fees.text_button_reset')}
           </Button>
           <Button onClick={() => void handleSubmit()} disabled={isSubmitting || feeConfigValidation.isLoading}>
             {isSubmitting ? t('settings.fees.text_button_submitting') : t('settings.fees.text_button_submit')}

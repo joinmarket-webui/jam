@@ -122,7 +122,7 @@ export const PasswordVerificationForm = ({
 
       <Field
         orientation="horizontal"
-        className="flex-col items-stretch justify-end sm:flex-row sm:items-center [&>*]:w-full sm:[&>*]:w-auto"
+        className="flex-col-reverse items-stretch justify-end sm:flex-row sm:items-center [&>*]:w-full sm:[&>*]:w-auto"
       >
         {onCancel !== undefined && (
           <Button type="button" variant="outline" onClick={() => void onCancel()}>

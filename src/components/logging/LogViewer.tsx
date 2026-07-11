@@ -153,8 +153,8 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
               className="h-9 pr-8 pl-8 text-xs"
-              placeholder="Search logs..."
-              aria-label="Search logs"
+              placeholder={t('logs.placeholder_search')}
+              aria-label={t('logs.label_search')}
             />
             {searchValue.length > 0 && (
               <Button
@@ -193,10 +193,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
       {/* Search match count */}
       {normalizedSearchValue.length > 0 && (
         <div className="text-muted-foreground px-6 pb-2 text-xs">
-          {/* TODO: i18n */}
-          {matchingLineCount === 0
-            ? `No matches for "${searchValue}".`
-            : `${matchingLineCount} matching line${matchingLineCount > 1 ? 's' : ''}.`}
+          {t('logs.text_search_matches', { count: matchingLineCount, searchValue })}
         </div>
       )}
       <CardContent className="relative flex-1 overflow-hidden rounded-b-xl p-0">
@@ -224,7 +221,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
           disabled={isScrolledToLogBottom}
           size="icon"
           onClick={scrollToLogBottom}
-          title={/* TODO: i18n */ 'Scroll to bottom'}
+          title={t('logs.button_scroll_to_bottom')}
         >
           <ArrowDownIcon />
         </Button>

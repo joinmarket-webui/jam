@@ -37,14 +37,15 @@ import {
 import type { WalletFileName } from './utils'
 
 const withRuntimeLocale = (locale: string, callback: () => void) => {
+  /* eslint-disable unicorn/no-this-outside-of-class -- mocking Number.prototype.toLocaleString requires `this` */
   const numberToLocaleStringMock = vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
     this: number,
     locales,
     options,
   ) {
-    // eslint-disable-next-line unicorn/no-this-outside-of-class -- acceptable for mocks
     return Intl.NumberFormat(locales ?? locale, options).format(this)
   })
+  /* eslint-enable unicorn/no-this-outside-of-class */
 
   try {
     callback()

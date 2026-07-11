@@ -136,9 +136,10 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
     const eligibleUtxos = jar.utxos.filter((it) => selectedAddresses.has(it.address))
 
     if (eligibleUtxos.length > selectedUtxos.length) {
-      // TODO: i18n
-      toast.warning('Security measure: Freeze additional UTXOs', {
-        description: `Automatically freezing ${eligibleUtxos.length - selectedUtxos.length} additional UTXOs. They should be spent together.`,
+      toast.warning(t('jar_details.utxo_list.toast_auto_freeze_title'), {
+        description: t('jar_details.utxo_list.toast_auto_freeze_description', {
+          count: eligibleUtxos.length - selectedUtxos.length,
+        }),
       })
     }
 
@@ -161,9 +162,10 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
     const eligibleUtxos = jar.utxos.filter((it) => selectedAddresses.has(it.address))
 
     if (eligibleUtxos.length > selectedUtxos.length) {
-      // TODO: i18n
-      toast.warning('Security measure: Unfreeze additional UTXOs', {
-        description: `Automatically unfreezing ${eligibleUtxos.length - selectedUtxos.length} additional UTXOs. They should be spent together.`,
+      toast.warning(t('jar_details.utxo_list.toast_auto_unfreeze_title'), {
+        description: t('jar_details.utxo_list.toast_auto_unfreeze_description', {
+          count: eligibleUtxos.length - selectedUtxos.length,
+        }),
       })
     }
 

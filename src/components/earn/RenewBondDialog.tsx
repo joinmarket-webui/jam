@@ -121,7 +121,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     ...freezeMutation({ client }),
     onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.error_freezing_utxos')} ${reason}`)
+      setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
     },
   })
 
@@ -468,10 +468,10 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
         {step === 'select_date' && (
           <DialogFooter className="gap-3 sm:gap-2">
             <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)}>
-              {t('earn.fidelity_bond.select_date.text_secondary_button')}
+              {t('global.cancel')}
             </Button>
             <Button className="min-w-32" disabled={!selectedLockdate} onClick={() => setStep('confirm')}>
-              {t('earn.fidelity_bond.select_date.text_primary_button')}
+              {t('global.next')}
             </Button>
           </DialogFooter>
         )}
@@ -483,7 +483,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
               {t('global.back')}
             </Button>
             <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)} disabled={isLoading}>
-              {t('earn.fidelity_bond.select_date.text_secondary_button')}
+              {t('global.cancel')}
             </Button>
             <Button
               className="min-w-32"
@@ -499,7 +499,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
         {step === 'success' && (
           <DialogFooter className="gap-3 sm:gap-2">
             <Button className="min-w-32" onClick={() => handleOpenChange(false)}>
-              {t('earn.fidelity_bond.create_fidelity_bond.text_primary_button')}
+              {t('global.done')}
             </Button>
           </DialogFooter>
         )}

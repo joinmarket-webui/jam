@@ -9,7 +9,7 @@ import {
 import { lockwallet } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { CircleCheckBigIcon, ShieldCheckIcon, WalletIcon, type LucideIcon } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -112,20 +112,19 @@ const CreateWalletPage = () => {
         const { data: sessionInfo } = await sessionQuery.refetch()
         if (sessionInfo?.session === true) {
           console.warn('Active session detected:', sessionInfo)
-          // TODO: i18n
           toast.error(
-            `Cannot create wallet as "${walletDisplayName(
-              (sessionInfo?.wallet_name || 'Unknown') as WalletFileName,
-            )}" wallet is currently active.`,
+            t('create_wallet.error_wallet_active', {
+              walletName: walletDisplayName((sessionInfo?.wallet_name || 'Unknown') as WalletFileName),
+            }),
             {
               description: (
-                <>
+                <Trans i18nKey="create_wallet.error_wallet_active_hint">
                   Alternatively, you can{' '}
                   <a href={routes.login} className="font-medium underline hover:no-underline">
                     log in with the existing wallet
                   </a>{' '}
                   instead.
-                </>
+                </Trans>
               ),
               duration: 10_000,
             },
@@ -181,8 +180,7 @@ const CreateWalletPage = () => {
       setStep('confirm')
     } catch (error: unknown) {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      /* TODO: i18n */
-      toast.error(`Failed to create wallet: ${reason}`)
+      toast.error(t('create_wallet.error_creating_wallet', { reason }))
     } finally {
       toast.dismiss(durationHintToastId)
     }
@@ -211,8 +209,7 @@ const CreateWalletPage = () => {
       await navigate(routes.home)
     } catch (error: unknown) {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      /* TODO: i18n */
-      toast.error(`Failed to unlock wallet: ${reason}`)
+      toast.error(t('login.error_unlocking_wallet', { reason }))
 
       await navigate(routes.login)
     }
