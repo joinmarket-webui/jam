@@ -1,5 +1,8 @@
 import type { PropsWithChildren } from 'react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
+import { shortenStringMiddle } from '@/lib/utils'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import { JmWebsocketContext } from './JmWebsocketContext'
 
@@ -21,9 +24,15 @@ function isJmTxWebsocketMessage(val: unknown): val is JmTxWebsocketMessage {
   )
 }
 
-const onWebsocketMessage = (message: unknown) => {
+const onWebsocketMessage = (message: unknown, onNewTx: (tx: JmTxInfo) => void) => {
   if (isJmTxWebsocketMessage(message)) {
+    // txs made via the ui are added to the store before the websocket
+    // echoes them, so an unknown txid means an external tx (e.g. earn, deposit)
+    const isKnownTx = jmTxStore.getState().get(message.txid) !== undefined
     jmTxStore.getState().add(message.txdetails)
+    if (!isKnownTx) {
+      onNewTx(message.txdetails)
+    }
   }
 }
 
@@ -32,6 +41,7 @@ interface JmWebsocketContextType {
 }
 
 export const JmWebsocketContextProvider = ({ children }: PropsWithChildren<JmWebsocketContextType>) => {
+  const { t } = useTranslation()
   const websocket = useJmWebsocket({
     config: {
       enableHeartbeat: true,
@@ -49,7 +59,9 @@ export const JmWebsocketContextProvider = ({ children }: PropsWithChildren<JmWeb
         })()
 
         if (message !== undefined && message !== null) {
-          onWebsocketMessage(message)
+          onWebsocketMessage(message, (tx) => {
+            toast.info(t('app.alert_new_transaction', { txid: shortenStringMiddle(tx.txid) }))
+          })
         }
       },
     },

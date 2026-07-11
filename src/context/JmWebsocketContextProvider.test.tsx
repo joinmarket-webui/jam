@@ -6,6 +6,7 @@ import { JmWebsocketContextProvider } from './JmWebsocketContextProvider'
 
 const mocks = vi.hoisted(() => ({
   useJmWebsocket: vi.fn(),
+  toastInfo: vi.fn(),
   websocket: {
     isOpen: true,
     isAuthenticated: true,
@@ -20,6 +21,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/hooks/useJmWebsocket', () => ({
   useJmWebsocket: mocks.useJmWebsocket,
+}))
+
+vi.mock('sonner', () => ({
+  toast: { info: mocks.toastInfo },
 }))
 
 const Consumer = () => {
@@ -82,6 +87,53 @@ describe('<JmWebsocketContextProvider />', () => {
 
     expect(jmTxStore.getState().get(txid)).toEqual({ txid, outs: [] })
     expect(jmTxStore.getState().get('short')).toBeUndefined()
+  })
+
+  it('shows an info toast for unknown transactions from websocket messages', () => {
+    render(
+      <JmWebsocketContextProvider>
+        <Consumer />
+      </JmWebsocketContextProvider>,
+    )
+
+    const onMessage = lastOnMessage()
+    const txid = 'b'.repeat(64)
+
+    onMessage(
+      new MessageEvent('message', {
+        data: JSON.stringify({
+          txid,
+          txdetails: { txid, outs: [] },
+        }),
+      }),
+    )
+
+    expect(mocks.toastInfo).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not show a toast for transactions already known (e.g. made via the ui)', () => {
+    const txid = 'c'.repeat(64)
+    jmTxStore.getState().add({ txid })
+
+    render(
+      <JmWebsocketContextProvider>
+        <Consumer />
+      </JmWebsocketContextProvider>,
+    )
+
+    const onMessage = lastOnMessage()
+
+    onMessage(
+      new MessageEvent('message', {
+        data: JSON.stringify({
+          txid,
+          txdetails: { txid, outs: [] },
+        }),
+      }),
+    )
+
+    expect(mocks.toastInfo).not.toHaveBeenCalled()
+    expect(jmTxStore.getState().get(txid)).toEqual({ txid, outs: [] })
   })
 
   it('ignores malformed websocket payloads', () => {

@@ -41,6 +41,7 @@
     "next": "Next"
   },
   "app": {
+    "alert_new_transaction": "New transaction: {{ txid }}",
     "alert_rescan_in_progress": "Rescanning in progress...",
     "alert_rescan_in_progress_with_progress": "Rescanning in progress ({{progress}}%)..."
   },
