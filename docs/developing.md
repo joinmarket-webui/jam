@@ -6,7 +6,7 @@ A place to collect useful information for developers that doesn't really fit els
 
 ## JoinMarket Development Environment
 
-For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
+For a complete development environment you need a local JoinMarket-NG instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket-NG. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
 
 ## Running Jam Against JoinMarket-NG
 
@@ -86,17 +86,17 @@ By default, the hook will be installed automatically as an [NPM postinstall scri
 If you're having issues with Husky not using the correct `$PATH`, you may need to setup a `~/.huskyrc` which will let you set up your path before the hook is run.
 See [here](https://typicode.github.io/husky/#/?id=command-not-found) for more info.
 
-## Running the Web UI Locally and Connecting to a Remote JoinMarket Instance
+## Running the Web UI Locally and Connecting to a Remote JoinMarket-NG Instance
 
-These instructions assume you want to run the web UI locally and connect it to a JoinMarket instance on your RaspiBlitz.
+These instructions assume you want to run the web UI locally and connect it to a JoinMarket-NG instance on your RaspiBlitz.
 The process should be similar for other setups.
-If you run the Web UI and JoinMarket on the same system, simply skip the SSH tunnel step.
+If you run the Web UI and JoinMarket-NG on the same system, simply skip the SSH tunnel step.
 
-### 🚨 Prerequisite: JoinMarket
+### 🚨 Prerequisite: JoinMarket-NG
 
-To run the web UI locally you need to connect it to a running JoinMarket instance.
+To run the web UI locally you need to connect it to a running JoinMarket-NG instance.
 
-#### 1. Install JoinMarket
+#### 1. Install JoinMarket-NG
 
 Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](https://github.com/rootzoll/raspiblitz):
 
@@ -104,38 +104,38 @@ Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](h
 Services > j [BTC JoinMarket+JoininBox menu]
 ```
 
-Or follow the JoinMarket [installation guide](https://github.com/JoinMarket-Org/joinmarket-clientserver#quickstart---recommended-installation-method-linux-and-macos-only) if you're on another system.
+Or follow the JoinMarket-NG [installation guide](https://joinmarket-ng.github.io/joinmarket-ng/install/) if you're on another system.
 
-### 🚨 Prerequisite: JoinMarket API Service
+### 🚨 Prerequisite: JoinMarket-NG API Service
 
-This app makes use of the JoinMarket RPC API. For this, you will need JoinMarket version 0.9.3 or higher. If needed you can upgrade JoinMarket to the latest commit via the JoininBox menu on your RaspiBlitz: Type `jm` in the command line and select `UPDATE > ADVANCED > JMCOMMIT`. This will install the latest development version from JoinMarket's master branch.
+This app makes use of the JoinMarket-NG API.
 
 #### 2. SSL Certificate
 
-As the joinmarket user on your RaspiBlitz, generate a self-signed certificate for the JoinMarket API Service as described [here](https://linuxize.com/post/creating-a-self-signed-ssl-certificate/), and put the certificate and the key in the `~/.joinmarket/ssl/` directory.
+As the joinmarket user on your RaspiBlitz, generate a self-signed certificate for the JoinMarket-NG API Service as described [here](https://linuxize.com/post/creating-a-self-signed-ssl-certificate/), and put the certificate and the key in the `~/.joinmarket-ng/ssl/` directory.
 
 _Hint:_ To login as the JoinMarket user, you can ssh into your RaspiBlitz, type `jm`, and exit the JoininBox menu.
 
 Create the SSL directory:
 
 ```bash
-(jmvenv) joinmarket@raspberrypi:~ $ mkdir ~/.joinmarket/ssl/
+(jmvenv) joinmarket@raspberrypi:~ $ mkdir ~/.joinmarket-ng/ssl/
 ```
 
 Generate the certificate and associated key:
 
 ```bash
-openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ~/.joinmarket/ssl/cert.pem -keyout ~/.joinmarket/ssl/key.pem
+openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ~/.joinmarket-ng/ssl/cert.pem -keyout ~/.joinmarket-ng/ssl/key.pem
 ```
 
 _Hint:_ You don't have to enter anything meaningful, you can just hit the return key a couple of times.
 
 #### 3. API Service
 
-Start the JoinMarket [API service](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md):
+Start the JoinMarket-NG [API service](https://joinmarket-ng.github.io/joinmarket-ng/README-jmwalletd/):
 
 ```bash
-(jmvenv) joinmarket@raspberrypi:~/joinmarket-clientserver/scripts $ python jmwalletd.py
+(jmvenv) joinmarket@raspberrypi:~/joinmarket-ng $ jmwalletd serve
 ```
 
 You should see the following:

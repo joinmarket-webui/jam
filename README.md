@@ -19,7 +19,7 @@
 
 ---
 
-Jam is a web interface for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) focusing on user-friendliness and ease-of-use.
+Jam is a web interface for [JoinMarket-NG](https://github.com/joinmarket-ng/joinmarket-ng) focusing on user-friendliness and ease-of-use.
 It aims to provide sensible defaults and be easy to use for beginners while still having the features advanced users expect.
 
 - 💬 Join our [Matrix room](https://matrix.to/#/%23jam:bitcoin.kyoto) to get help and [contribute](https://joinmarket-webui.github.io/jamdocs/contribute/)!
@@ -88,4 +88,4 @@ Want to get your hands dirty with code? Great! [CONTRIBUTING.md](CONTRIBUTING.md
 
 This project builds upon the [jm-web-client](https://github.com/JoinMarket-Org/jm-web-client) which was developed by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [waxwing](https://github.com/AdamISZ) himself. Many people contributed over time, some of which are [listed here](https://github.com/joinmarket-webui/jam/graphs/contributors).
 
-Jam and JoinMarket are separate projects. For more information on JoinMarket, see the [JoinMarket GitHub Page](https://github.com/JoinMarket-Org/joinmarket-clientserver).
+Jam and JoinMarket-NG are separate projects. For more information on JoinMarket-NG, see the [JoinMarket-NG GitHub Page](https://github.com/joinmarket-ng/joinmarket-ng).
