@@ -54,7 +54,7 @@ const TablePagination = ({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center gap-2 px-2 py-4 sm:flex-row sm:justify-between',
+        'flex flex-col items-center justify-center gap-2 px-2 py-4 sm:flex-row sm:flex-wrap sm:justify-between',
         className,
       )}
     >
