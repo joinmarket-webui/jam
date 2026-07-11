@@ -389,14 +389,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         {isWaitingSchedulerStart && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>{t('scheduler.button_start')}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_scheduler_starting_title')}</AlertTitle>
           </Alert>
         )}
 
         {isWaitingSchedulerStop && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>{t('scheduler.button_stop')}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_scheduler_stopping_title')}</AlertTitle>
           </Alert>
         )}
 

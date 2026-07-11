@@ -782,6 +782,8 @@
     "description_fees": "The scheduler will pay all occurring fees automatically.",
     "button_start": "Start Scheduler",
     "button_stop": "Stop Scheduler",
+    "alert_scheduler_starting_title": "Starting Scheduler...",
+    "alert_scheduler_stopping_title": "Stopping Scheduler...",
     "progress_tldr_seconds": "Scheduled <1>{{ length }}</1> transactions over <3>{{ seconds }}</3> seconds.",
     "progress_tldr_hours": "Scheduled <1>{{ length }}</1> transactions over <3>{{ hours }}</3> hours.",
     "progress_description": "This estimate is the minimum waiting time. Additional delays due to network communication or transaction confirmation are not considered.",
