@@ -493,8 +493,8 @@
   "scheduler": {
     "title": "预定扫空（试验性）",
     "subtitle": "使用随机金额和时间间隔执行多次交易，以此增加你和他人的隐私程度。每个预定的交易都是协作式交易。",
-    "error_starting_schedule_failed": "开始调度程序失败。",
-    "error_stopping_schedule_failed": "停止调度程序失败。",
+    "error_starting_schedule_failed": "开始调度程序失败。原因：{{ reason }}",
+    "error_stopping_schedule_failed": "停止调度程序失败。原因：{{ reason }}",
     "complete_wallet_title": "整个钱包",
     "complete_wallet_subtitle": "这将使用你所有解冻的资金。",
     "description_destination_addresses": "调度程序将把所有可用资金随机分配并发送到多个目的地。",

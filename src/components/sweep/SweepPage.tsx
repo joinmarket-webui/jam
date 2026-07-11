@@ -220,7 +220,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
     onError: (error: unknown) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
+      const message = t('scheduler.error_starting_schedule_failed', { reason })
       setAlertMessage(message)
       toast.error(message)
     },
@@ -239,7 +239,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
     onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
+      const message = t('scheduler.error_stopping_schedule_failed', { reason })
       setAlertMessage(message)
       toast.error(message)
     },

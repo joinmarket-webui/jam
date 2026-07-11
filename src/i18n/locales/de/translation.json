@@ -493,8 +493,8 @@
   "scheduler": {
     "title": "Geplanter Sweep (experimentell)",
     "subtitle": "Führe mehrere Transaktionen mit zufälligen Beträgen und Zeitintervallen durch, um deine Privatsphäre und die von anderen zu erhöhen. Jede durchgeführte Transaktion ist ein Coinjoin. ",
-    "error_starting_schedule_failed": "Der Scheduler konnte nicht gestartet werden. ",
-    "error_stopping_schedule_failed": "Der Scheduler konnte nicht gestoppt werden. ",
+    "error_starting_schedule_failed": "Der Scheduler konnte nicht gestartet werden. Begründung: {{ reason }}",
+    "error_stopping_schedule_failed": "Der Scheduler konnte nicht gestoppt werden. Begründung: {{ reason }}",
     "complete_wallet_title": "Gesamte Wallet ",
     "complete_wallet_subtitle": "Das wird alle deine nicht eingefrorenen Gelder verwenden. ",
     "description_destination_addresses": "Der Scheduler wird alle verfügbaren Gelder in zufällige Beträge aufteilen und sie an mehrere Adressen schicken. ",

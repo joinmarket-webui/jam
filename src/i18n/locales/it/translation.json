@@ -452,8 +452,8 @@
   "scheduler": {
     "title": "Spazzamento programmata (sperimentale)",
     "subtitle": "Eseguire transazioni multiple utilizzando importi e intervalli di tempo casuali per aumentare la propria privacy e quella altrui. Ogni transazione programmata è una transazione collaborativa.",
-    "error_starting_schedule_failed": "L'avvio dello scheduler non è riuscito.",
-    "error_stopping_schedule_failed": "L'arresto dello scheduler non è riuscito.",
+    "error_starting_schedule_failed": "L'avvio dello scheduler non è riuscito. Motivo: {{ reason }}",
+    "error_stopping_schedule_failed": "L'arresto dello scheduler non è riuscito. Motivo: {{ reason }}",
     "complete_wallet_title": "Completa portafoglio",
     "complete_wallet_subtitle": "In questo modo si utilizzeranno tutti i fondi non congelati.",
     "description_destination_addresses": "Lo scheduler invierà tutti i fondi disponibili a più destinazioni, suddividendoli in tranche casuali.",

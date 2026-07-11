@@ -493,8 +493,8 @@
   "scheduler": {
     "title": "預定掃空（試驗性）",
     "subtitle": "使用隨機金額和時間間隔執行多次交易，以此增加你和他人的隱私程度。每個預定的交易都是協作式交易。",
-    "error_starting_schedule_failed": "開始調度程序失敗。",
-    "error_stopping_schedule_failed": "停止調度程序失敗。",
+    "error_starting_schedule_failed": "開始調度程序失敗。原因： {{ reason }}",
+    "error_stopping_schedule_failed": "停止調度程序失敗。原因： {{ reason }}",
     "complete_wallet_title": "整個錢包",
     "complete_wallet_subtitle": "這將使用你所有解凍的資金。",
     "description_destination_addresses": "調度程序將把所有可用資金隨機分配並發送到多個目的地。",

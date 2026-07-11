@@ -452,8 +452,8 @@
   "scheduler": {
     "title": "Programar Limpeza (Experimental)",
     "subtitle": "Execute várias transações usando valores aleatórios e intervalos de tempo para aumentar a sua privacidade e a dos outros. Cada transação agendada é uma transação colaborativa.",
-    "error_starting_schedule_failed": "Falha ao iniciar o agendador.",
-    "error_stopping_schedule_failed": "Falha ao parar agendador.",
+    "error_starting_schedule_failed": "Falha ao iniciar o agendador. Motivo: {{ reason }}",
+    "error_stopping_schedule_failed": "Falha ao parar agendador. Motivo: {{ reason }}",
     "complete_wallet_title": "Carteira Completa",
     "complete_wallet_subtitle": "Isso usará todos os seus fundos não congelados.",
     "description_destination_addresses": "O agendador enviará todos os fundos disponíveis para vários destinos, dividindo-os em partes aleatórias.",

@@ -769,8 +769,9 @@
   "scheduler": {
     "title": "Scheduled Sweep (Experimental)",
     "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of yourself and others. Every scheduled transaction is a collaborative transaction.",
-    "error_starting_schedule_failed": "Starting the scheduler failed.",
-    "error_stopping_schedule_failed": "Stopping the scheduler failed.",
+    "error_starting_schedule_failed": "Starting the scheduler failed. Reason: {{ reason }}",
+    "error_stopping_schedule_failed": "Stopping the scheduler failed. Reason: {{ reason }}",
+    "error_planning_schedule_failed": "Error while planning the sweep schedule. Reason: {{ reason }}",
     "complete_wallet_title": "Complete Wallet",
     "complete_wallet_subtitle": "This will use all of your non-frozen funds.",
     "description_destination_addresses": "The scheduler will send all available funds to multiple destinations, splitting them up in random chunks.",
