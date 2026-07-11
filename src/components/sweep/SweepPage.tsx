@@ -219,6 +219,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setShowScheduleConfirmDialog(false)
     },
     onError: (error: unknown) => {
+      setShowScheduleConfirmDialog(false)
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('scheduler.error_starting_schedule_failed', { reason })
       setAlertMessage(message)

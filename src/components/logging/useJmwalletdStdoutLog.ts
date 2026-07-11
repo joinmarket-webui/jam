@@ -20,9 +20,8 @@ interface UseJmwalletdStdoutLogParameters {
 }
 
 export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogParameters = {}) {
-  const authState = useStore(authStore, (state) => state.state)
   const { t } = useTranslation()
-  const token = authState?.auth?.token
+  const token = useStore(authStore, (state) => state.state?.auth?.token)
 
   const {
     refetch: logQueryRefetch,
