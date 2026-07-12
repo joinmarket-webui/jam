@@ -107,7 +107,10 @@ const importDetailsFormSchema = (currentBlockHeight: BlockHeight | undefined, t:
         currentBlockHeight: currentBlockHeight,
         messages: {
           invalid: ({ min, max }) =>
-            t('rescan_chain.feedback_invalid_blockheight', { min: min.toLocaleString(), max: max.toLocaleString() }),
+            t('import_wallet.import_details.feedback_invalid_blockheight', {
+              min: min.toLocaleString(),
+              max: max.toLocaleString(),
+            }),
         },
       }),
       gaplimit: yup
@@ -259,6 +262,7 @@ export const ImportDetailsForm = ({
                 <InputGroup>
                   <InputGroupInput
                     id="blockheight"
+                    placeholder={t('import_wallet.import_details.placeholder_blockheight')}
                     {...register('blockheight', {
                       required: true,
                       disabled,
@@ -284,6 +288,7 @@ export const ImportDetailsForm = ({
                 <InputGroup>
                   <InputGroupInput
                     id="gaplimit"
+                    placeholder={t('import_wallet.import_details.placeholder_gaplimit')}
                     {...register('gaplimit', {
                       required: true,
                       disabled,
