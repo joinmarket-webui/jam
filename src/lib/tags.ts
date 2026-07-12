@@ -5,46 +5,70 @@ import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from './fidelityBondUtils'
 
+/**
+ * see https://github.com/joinmarket-ng/joinmarket-ng/blob/0.33.0/jmwallet/src/jmwallet/wallet/models.py#L13 (last checked 2026-07-11)
+ *
+ *  "deposit",  # External address with funds (received deposit)
+ *  "cj-out",  # Internal address - CoinJoin output (from previous CJ)
+ *  "cj-change",  # Internal address - change output from a CoinJoin tx
+ *  "non-cj-change",  # Internal address - regular change (not from CJ)
+ *  "new",  # Unused address (no funds, never used)
+ *  "reused",  # Address that was used and reused (privacy warning)
+ *  "reserved",  # Set aside/handed out by the user; do not reuse (may be labeled)
+ *  "used-empty",  # Address that had funds but is now empty
+ *  "bond",  # Fidelity bond address
+ *  "flagged",  # Address flagged/shared but tx failed (should not reuse)
+ *
+ * https://github.com/joinmarket-ng/joinmarket-ng/blob/0.33.0/jmwallet/src/jmwallet/wallet/utxo_metadata.py#L57
+ *  "jm:autofrozen:reuse"
+ */
 type JmPlainTagValue =
-  | 'new'
-  | 'used'
-  | 'reused'
+  | 'deposit'
   | 'cj-out'
   | 'cj-change'
   | 'non-cj-change'
-  | 'change-out'
-  | 'deposit'
+  | 'new'
+  | 'reused'
+  | 'reserved'
   | 'used-empty'
+  | 'bond'
   | 'flagged'
-type AdditionalTagValue = 'locked' | 'pending' | 'frozen'
-type UtxoTagValue = JmPlainTagValue | AdditionalTagValue | 'bond' | string
+
+type AdditionalTagValue = 'jm:autofrozen:reuse'
+
+// TODO: Verify if these tags are used by backend
+type AdditionalUnverifiedTagValue = 'locked' | 'pending' | 'frozen' | 'change-out' | 'used'
+
+type UtxoTagValue = JmPlainTagValue | AdditionalTagValue | AdditionalUnverifiedTagValue | string
 
 type StatusBadgeVariant = VariantProps<typeof statusBadgeVariants>['variant']
 
-const JM_PLAIN_STATUS_TAG_VARIANTS: { [key in JmPlainTagValue]: StatusBadgeVariant } = {
+const JM_PLAIN_STATUS_TAG_VARIANTS: { [key in JmPlainTagValue | AdditionalTagValue]: StatusBadgeVariant } = {
   new: 'new',
-  used: 'used',
   reused: 'reused',
   'cj-out': 'cj-out',
   'cj-change': 'cj-change',
-  'change-out': 'change-out',
   'non-cj-change': 'non-cj-change',
   deposit: 'deposit',
-  'used-empty': 'used',
-  flagged: 'reused',
+  'used-empty': 'used-empty',
+  flagged: 'flagged',
+  bond: 'bond',
+  reserved: 'reserved',
+  'jm:autofrozen:reuse': 'reused',
 }
 
-const ADDITIONAL_STATUS_TAG_VARIANTS: { [key in AdditionalTagValue]: StatusBadgeVariant } = {
-  locked: 'locked',
+const ADDITIONAL_UNVERIFIED_STATUS_TAG_VARIANTS: { [key in AdditionalUnverifiedTagValue]: StatusBadgeVariant } = {
   pending: 'pending',
   frozen: 'frozen',
+  locked: 'bond',
+  used: 'used-empty',
+  'change-out': 'non-cj-change',
 }
 
 export const UTXO_STATUS_TAG_VARIANTS: { [key in UtxoTagValue]: StatusBadgeVariant } = {
+  default: 'default',
   ...JM_PLAIN_STATUS_TAG_VARIANTS,
-  ...ADDITIONAL_STATUS_TAG_VARIANTS,
-  bond: 'fidelity-bond',
-  'jm:autofrozen:reuse': 'reused',
+  ...ADDITIONAL_UNVERIFIED_STATUS_TAG_VARIANTS,
 }
 
 export type UtxoTag = { value: UtxoTagValue; displayValue: string; variant: StatusBadgeVariant }
