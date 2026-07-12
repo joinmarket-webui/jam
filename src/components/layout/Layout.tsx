@@ -15,8 +15,9 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useJmWebsocketContext } from '@/context/JmWebsocketContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useFeatures } from '@/hooks/useFeatures'
+import { useJamInfo } from '@/hooks/useJamInfo'
 import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
-import type { WalletFileName } from '@/lib/utils'
+import { parseSemanticVersion, type WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { LogsOverlay } from '../LogsOverlay'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
@@ -41,7 +42,17 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const rescanStatus = useRescanStatus()
 
-  const { version: joinmarketVersion } = useQueryJmInfo()
+  const { version: nativeJoinmarketVersion, backend: nativeBackendName } = useQueryJmInfo()
+  const { info: jamInfo } = useJamInfo()
+  const standaloneJoinmarketVersion = jamInfo?.backend.version
+    ? parseSemanticVersion(jamInfo.backend.version)
+    : undefined
+  const hasStandaloneBackendVersion =
+    standaloneJoinmarketVersion?.raw !== undefined && standaloneJoinmarketVersion.raw !== 'unknown'
+  const isJamStandalone = jamInfo?.backend !== undefined
+  const backendName = isJamStandalone ? 'jam-standalone (' + jamInfo.backend.name + ')' : nativeBackendName
+  const joinmarketVersion =
+    isJamStandalone && hasStandaloneBackendVersion ? standaloneJoinmarketVersion : nativeJoinmarketVersion
 
   const { resolvedTheme = JAM_DEFAULT_THEME, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
@@ -105,6 +116,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         blockHeight={jmSession?.block_height ?? undefined}
         jamVersion={APP_DISPLAY_VERSION}
         joinmarketVersion={joinmarketVersion}
+        backendName={backendName}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
         onClickLogs={isFeatureEnabled('logs') ? () => setIsLogsOverlayOpen(true) : undefined}

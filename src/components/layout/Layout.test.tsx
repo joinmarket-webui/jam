@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   pathname: '/',
   setTheme: vi.fn(),
   theme: 'dark',
+  jamInfo: undefined as { backend: { name: string; version: string } } | undefined,
 }))
 
 vi.mock('react-i18next', () => ({
@@ -89,18 +90,20 @@ vi.mock('@/components/layout/AppFooter', () => ({
   AppFooter: ({
     blockHeight,
     joinmarketVersion,
+    backendName,
     onClickCheatsheet,
     onClickLogs,
     onClickOrderbook,
   }: {
     blockHeight?: number
     joinmarketVersion?: string
+    backendName?: string
     onClickCheatsheet: () => void
     onClickLogs?: () => void
     onClickOrderbook: () => void
   }) => (
     <footer>
-      footer:{blockHeight}:{joinmarketVersion}
+      footer:{blockHeight}:{joinmarketVersion}:{backendName}
       <button type="button" onClick={onClickCheatsheet}>
         open-cheatsheet
       </button>
@@ -166,9 +169,16 @@ vi.mock('@/hooks/useFeatures', () => ({
   }),
 }))
 
+vi.mock('@/hooks/useJamInfo', () => ({
+  useJamInfo: () => ({
+    info: mocks.jamInfo,
+  }),
+}))
+
 vi.mock('@/hooks/useQueryJmInfo', () => ({
   useQueryJmInfo: () => ({
     version: 'jm-version',
+    backend: 'joinmarket-clientserver',
   }),
 }))
 
@@ -200,6 +210,7 @@ describe('Layout', () => {
     mocks.logsFeature = true
     mocks.pathname = '/'
     mocks.theme = 'dark'
+    mocks.jamInfo = undefined
     mocks.navigate.mockReset()
     mocks.onCheatsheetOpenChange.mockReset()
     mocks.setTheme.mockReset()
@@ -217,7 +228,7 @@ describe('Layout', () => {
 
     expect(screen.getByText('page-content')).toBeInTheDocument()
     expect(screen.getByText('navbar:dark:test-wallet:9876:123')).toBeInTheDocument()
-    expect(screen.getByText('footer:123:jm-version')).toBeInTheDocument()
+    expect(screen.getByText('footer:123:jm-version:joinmarket-clientserver')).toBeInTheDocument()
     expect(screen.getByText('sidebar:right')).toBeInTheDocument()
     expect(screen.getByText('tour-enabled:true')).toBeInTheDocument()
 
@@ -243,6 +254,18 @@ describe('Layout', () => {
 
     fireEvent.keyDown(window, { key: 'l', ctrlKey: true })
     expect(screen.getByText('logs-overlay:false')).toBeInTheDocument()
+  })
+
+  it('uses standalone backend label with native version fallback when standalone version is not semantic', () => {
+    mocks.jamInfo = { backend: { name: 'joinmarket-ng', version: 'main' } }
+
+    render(
+      <Layout walletFileName={walletFileName} onLogout={vi.fn()} onLockWallet={vi.fn()}>
+        <section>page-content</section>
+      </Layout>,
+    )
+
+    expect(screen.getByText('footer:123:jm-version:jam-standalone (joinmarket-ng)')).toBeInTheDocument()
   })
 
   it('disables logs and onboarding when the route or feature state requires it', () => {

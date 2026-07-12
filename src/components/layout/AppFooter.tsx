@@ -8,7 +8,10 @@ import { BetaWarningDialog } from './footer/BetaWarningDialog'
 
 type JmWebsocketInfo = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
 
-type AppFooterProps = Pick<ComponentProps<typeof BetaWarningDialog>, 'jamVersion' | 'joinmarketVersion'> & {
+type AppFooterProps = Pick<
+  ComponentProps<typeof BetaWarningDialog>,
+  'jamVersion' | 'joinmarketVersion' | 'backendName'
+> & {
   blockHeight?: number
   websocketInfo?: JmWebsocketInfo
   onClickCheatsheet: () => void
@@ -21,6 +24,7 @@ export function AppFooter({
   websocketInfo,
   jamVersion,
   joinmarketVersion,
+  backendName,
   onClickCheatsheet,
   onClickOrderbook,
   onClickLogs,
@@ -35,6 +39,7 @@ export function AppFooter({
         open={isShowBetaWarning}
         onOpenChange={setShowBetaWarning}
         joinmarketVersion={joinmarketVersion}
+        backendName={backendName}
         jamVersion={jamVersion}
       />
       <footer>

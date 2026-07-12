@@ -1,9 +1,31 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/i18n/config'
 import { OnboardingDialog } from './OnboardingDialog'
 
+const mocks = vi.hoisted(() => ({
+  backend: 'joinmarket-clientserver',
+  jamInfo: undefined as { backend: { name: string; version: string } } | undefined,
+}))
+
+vi.mock('@/hooks/useQueryJmInfo', () => ({
+  useQueryJmInfo: () => ({
+    backend: mocks.backend,
+  }),
+}))
+
+vi.mock('@/hooks/useJamInfo', () => ({
+  useJamInfo: () => ({
+    info: mocks.jamInfo,
+  }),
+}))
+
 describe('<OnboardingDialog />', () => {
+  beforeEach(() => {
+    mocks.backend = 'joinmarket-clientserver'
+    mocks.jamInfo = undefined
+  })
+
   it('walks through the intro and closes on the final step', () => {
     const onOpenChange = vi.fn()
     render(<OnboardingDialog open onOpenChange={onOpenChange} />)
@@ -20,6 +42,23 @@ describe('<OnboardingDialog />', () => {
     fireEvent.click(screen.getByRole('button', { name: "Let's go!" }))
 
     expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('shows the joinmarket-ng splash warning when using the native ng backend', () => {
+    mocks.backend = 'joinmarket-ng'
+
+    render(<OnboardingDialog open onOpenChange={vi.fn()} />)
+
+    expect(screen.getByText(/JoinMarket-NG backend is bleeding edge/i)).toBeInTheDocument()
+  })
+
+  it('shows the joinmarket-ng splash warning when using standalone-ng', () => {
+    mocks.backend = 'joinmarket-ng'
+    mocks.jamInfo = { backend: { name: 'joinmarket-ng', version: '0.33.0' } }
+
+    render(<OnboardingDialog open onOpenChange={vi.fn()} />)
+
+    expect(screen.getByText(/JoinMarket-NG backend is bleeding edge/i)).toBeInTheDocument()
   })
 
   it('can go back to the splash screen and skip the intro', () => {

@@ -12,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useJamInfo } from '@/hooks/useJamInfo'
+import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import { cn } from '@/lib/utils'
 
 type OnboardingStep = {
@@ -55,6 +57,10 @@ interface OnboardingDialogProps {
 
 export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) => {
   const { t } = useTranslation()
+  const { backend } = useQueryJmInfo()
+  const { info: jamInfo } = useJamInfo()
+  const resolvedBackend = jamInfo?.backend.name ?? backend
+  const isJoinmarketNg = resolvedBackend?.includes('joinmarket-ng') === true
   const [step, setStep] = useState(0)
 
   const isSplashStep = step === 0
@@ -118,7 +124,11 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
                 </Badge>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   <Trans
-                    i18nKey="onboarding.splashscreen_warning_text"
+                    i18nKey={
+                      isJoinmarketNg
+                        ? 'onboarding.splashscreen_warning_text_ng'
+                        : 'onboarding.splashscreen_warning_text'
+                    }
                     components={{
                       '1': (
                         <a

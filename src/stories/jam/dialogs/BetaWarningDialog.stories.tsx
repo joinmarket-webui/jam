@@ -27,6 +27,23 @@ export const Default: Story = {
   args: {
     jamVersion: APP_DISPLAY_VERSION,
     joinmarketVersion: parseSemanticVersion('0.9.12'),
+    backendName: 'joinmarket-clientserver',
+  },
+}
+
+export const JoinmarketNg: Story = {
+  args: {
+    jamVersion: APP_DISPLAY_VERSION,
+    joinmarketVersion: parseSemanticVersion('0.33.0'),
+    backendName: 'joinmarket-ng',
+  },
+}
+
+export const StandaloneJoinmarketNg: Story = {
+  args: {
+    jamVersion: APP_DISPLAY_VERSION,
+    joinmarketVersion: parseSemanticVersion('0.33.0'),
+    backendName: 'jam-standalone (joinmarket-ng)',
   },
 }
 

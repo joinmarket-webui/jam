@@ -18,23 +18,35 @@ type BetaWarningDialogProps = WithRequiredProperty<
 > & {
   jamVersion: SemanticVersion
   joinmarketVersion?: SemanticVersion
+  backendName?: string
 }
 
-export const BetaWarningDialog = ({ jamVersion, joinmarketVersion, ...dialogProps }: BetaWarningDialogProps) => {
+export const BetaWarningDialog = ({
+  jamVersion,
+  joinmarketVersion,
+  backendName,
+  ...dialogProps
+}: BetaWarningDialogProps) => {
   const { t } = useTranslation()
+  const isJoinmarketNg = backendName?.includes('joinmarket-ng') === true
+  const backendDisplayName = backendName ?? 'JoinMarket'
+  const warningText = isJoinmarketNg ? t('footer.warning_alert_text_ng') : t('footer.warning_alert_text')
 
   return (
     <Dialog {...dialogProps}>
       <DialogContent showCloseButton={true}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('footer.warning_alert_title')}</DialogTitle>
-          <DialogDescription>{t('footer.warning_alert_text')}</DialogDescription>
+          <DialogDescription>{warningText}</DialogDescription>
         </DialogHeader>
         <div className="items-end-safe text-sm">
-          <span className="text-muted-foreground">JoinMarket: </span>
+          <span className="text-muted-foreground">{t('footer.warning_alert_backend')}: </span>
+          <span className="font-mono font-semibold select-all">{backendDisplayName}</span>
+          <br />
+          <span className="text-muted-foreground">{t('footer.warning_alert_backend_version')}: </span>
           <span className="font-mono font-semibold select-all">v{joinmarketVersion?.raw || '_unknown'}</span>
           <br />
-          <span className="text-muted-foreground">Jam: </span>
+          <span className="text-muted-foreground">{t('footer.warning_alert_jam_version')}: </span>
           <span className="font-mono font-semibold select-all">v{jamVersion.raw || '_unknown'}</span>
         </div>
         <DialogFooter>

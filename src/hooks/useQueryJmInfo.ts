@@ -6,6 +6,7 @@ import { parseSemanticVersion, type SemanticVersion } from '@/lib/utils'
 
 type UseQueryJmInfoResult = {
   version: SemanticVersion | undefined
+  backend: string | undefined
   queryResult: UseQueryResult<VersionResponse, unknown>
 }
 
@@ -20,6 +21,7 @@ export function useQueryJmInfo(): UseQueryJmInfoResult {
 
   return {
     version: queryResult.data ? parseSemanticVersion(queryResult.data.version) : undefined,
+    backend: queryResult.data?.backend,
     queryResult,
   }
 }
