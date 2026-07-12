@@ -47,10 +47,11 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import { cn, type WalletFileName } from '@/lib/utils'
+import { cn, percentageToFactor, type WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
+import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
 
 interface SweepPageProps {
@@ -82,7 +83,7 @@ interface TumblerParameters {
   mintxcount: number // default: 2
   // Maximum re-tries per failed taker CoinJoin phase before the plan fails
   max_phase_retries: number // default: 3
-  // Probability that any given non-sweep taker CJ amount is rounded to a random number of significant figures- Set to 0.0 to disable rounding entirely.
+  // Probability that any given non-sweep taker CJ amount is rounded to a random number of significant figures. Set to 0.0 to disable rounding entirely.
   rounding_chance: number // default: 0.25
 }
 
@@ -284,11 +285,19 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const startSchedule = async () => {
     if (showScheduleConfirmDialog === undefined) return
 
+    const parameters: Partial<TumblerParameters> = {
+      ...(showScheduleConfirmDialog.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
+      ...(showScheduleConfirmDialog.roundingChanceInPercent !== undefined
+        ? {
+            rounding_chance: percentageToFactor(showScheduleConfirmDialog.roundingChanceInPercent, 2),
+          }
+        : {}),
+      include_maker_sessions: showScheduleConfirmDialog.includeMakerSessions,
+    }
+
     const body = {
       destinations: getSweepDestinationAddresses(showScheduleConfirmDialog),
-      ...(showScheduleConfirmDialog.useInsecureTestingSettings
-        ? { parameters: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
-        : {}),
+      parameters,
     }
 
     await startScheduleMutationMutateAsync({
@@ -393,6 +402,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   onSubmit={async (values) => {
                     const parameters: Partial<TumblerParameters> = {
                       ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
+                      ...(values.roundingChanceInPercent !== undefined
+                        ? {
+                            rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
+                          }
+                        : {}),
                       include_maker_sessions: values.includeMakerSessions,
                     }
                     const body: TumblerPlanRequest = {
@@ -456,6 +470,7 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
     defaultValues: {
       destinations: initialDestinations,
       includeMakerSessions: true,
+      roundingChanceInPercent: 25,
     },
     resolver: yupResolver(schema),
   })
@@ -537,11 +552,34 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
                 disabled={disabled}
               />
               <Label htmlFor="switch-include-maker-sessions" className="flex flex-col items-start gap-0">
+                {/* TODO: i18n */}
                 <div className="flex items-center gap-2 font-medium">Include maker sessions</div>
                 <div className="text-muted-foreground text-sm">
-                  Occasionally switches from taker to maker which improves privacy
+                  Occasionally switch from taker to maker, which aids privacy.
                 </div>
               </Label>
+            </div>
+            <div className="flex flex-col justify-center gap-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="slider-rounding-chance-in-percent" className="flex flex-col items-start gap-0">
+                  {/* TODO: i18n */}
+                  <div className="flex items-center gap-2 font-medium">Round output amount probability</div>
+                  <div className="text-muted-foreground text-sm">
+                    Probability that an intermediate transaction output amount is rounded to mimic human behavior.
+                  </div>
+                </Label>
+                <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
+              </div>
+              <Slider
+                id="slider-rounding-chance-in-percent"
+                min={0}
+                max={100}
+                value={
+                  formWatch.roundingChanceInPercent === undefined ? undefined : [formWatch.roundingChanceInPercent]
+                }
+                onValueChange={(values: number[]) => setValue('roundingChanceInPercent', values[0])}
+                disabled={disabled}
+              />
             </div>
           </AccordionContent>
         </AccordionItem>

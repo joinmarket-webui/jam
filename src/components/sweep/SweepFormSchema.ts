@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next'
 import * as yup from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { isValidAddress } from '@/lib/formValidation'
+import { factorToPercentage, isValidNumber } from '@/lib/utils'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
 export type SweepFormValues = {
@@ -10,6 +11,7 @@ export type SweepFormValues = {
   }>
   useInsecureTestingSettings: boolean
   includeMakerSessions: boolean
+  roundingChanceInPercent?: number
 }
 
 export type SweepResolverContext = {
@@ -83,6 +85,12 @@ export const sweepFormSchema = (
         .required(),
       useInsecureTestingSettings: yup.boolean().default(false).required(),
       includeMakerSessions: yup.boolean().default(true).required(),
+      roundingChanceInPercent: yup
+        .number()
+        .transform((value) => (isValidNumber(value) ? value : null))
+        .min(factorToPercentage(0))
+        .max(factorToPercentage(1))
+        .optional(),
     })
     .required()
 }
