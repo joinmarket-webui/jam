@@ -69,10 +69,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   tumblerstatusOptions: vi.fn(() => ({ queryKey: ['tumblerstatus'], queryFn: vi.fn() })),
   tumblerstopMutation: vi.fn(() => ({ mutationFn: mocks.stopTumbler })),
+  tumblerplanMutation: vi.fn(() => ({ mutationFn: mocks.planTumbler })),
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
-  tumblerplan: mocks.planTumbler,
   tumblerstart: mocks.startTumbler,
 }))
 
@@ -119,7 +119,7 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn((options: QueryOptions) => {
     if (Array.isArray(options.queryKey) && options.queryKey[0] === 'tumblerstatus') {
       return {
-        data: mocks.tumblerStatusData ? options.select?.(mocks.tumblerStatusData) : undefined,
+        data: mocks.tumblerStatusData,
         isPending: mocks.tumblerStatusPending,
       }
     }
@@ -379,7 +379,10 @@ describe('SweepPage', () => {
       body: {
         destinations: VALID_DESTINATIONS,
         force: true,
-        parameters: undefined,
+        parameters: {
+          include_maker_sessions: true,
+          rounding_chance: 0.25,
+        },
       },
       client: {},
       path: { walletname: 'wallet.jmdat' },
@@ -479,7 +482,7 @@ describe('SweepPage', () => {
   })
 
   it('shows an alert when starting the schedule fails', async () => {
-    mocks.planTumbler.mockRejectedValue(new Error('boom'))
+    mocks.startTumbler.mockRejectedValue(new Error('boom'))
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 

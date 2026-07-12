@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { ScanQrCodeIcon } from 'lucide-react'
-import type { FieldArrayWithId, UseFormReturn } from 'react-hook-form'
+import { PlusCircleIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
+import type { UseFieldArrayReturn, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
@@ -14,19 +14,25 @@ import type { SweepFormValues } from './SweepFormSchema'
 type ParentForm = UseFormReturn<SweepFormValues, unknown, SweepFormValues>
 
 interface SweepDestinationInputsProps {
+  minNumberOfFields: number
   register: ParentForm['register']
   setValue: ParentForm['setValue']
   formState: ParentForm['formState']
-  fields: Array<FieldArrayWithId<SweepFormValues, 'destinations', 'id'>>
+  fields: UseFieldArrayReturn<SweepFormValues, 'destinations', 'id'>['fields']
   disabled?: boolean
+  onClickAppend?: () => void
+  onClickRemove?: (index: number) => void
 }
 
 export const SweepDestinationInputs = ({
+  minNumberOfFields,
   setValue,
   register,
   formState: { errors, isSubmitted, touchedFields },
   fields,
   disabled,
+  onClickAppend,
+  onClickRemove,
 }: SweepDestinationInputsProps) => {
   const { t } = useTranslation()
 
@@ -80,7 +86,7 @@ export const SweepDestinationInputs = ({
                 <ButtonGroup className="w-full">
                   <Input
                     id={`sweep-destination-${index}`}
-                    {...register(`destinations.${index}.address`)}
+                    {...register(`destinations.${index}.address` as const)}
                     className="font-mono"
                     placeholder={t('scheduler.placeholder_destination_input')}
                     disabled={disabled}
@@ -88,6 +94,11 @@ export const SweepDestinationInputs = ({
                     spellCheck={false}
                     onPaste={(event) => handleAddressPaste(event, index)}
                   />
+                  {index >= minNumberOfFields && onClickRemove ? (
+                    <Button type="button" variant="outline" size="lg" onClick={() => onClickRemove(index)}>
+                      <XIcon />
+                    </Button>
+                  ) : null}
                   <Button
                     id={`show-qr-scanner-trigger-${index}`}
                     type="button"
@@ -106,6 +117,15 @@ export const SweepDestinationInputs = ({
           )
         })}
       </div>
+      {onClickAppend ? (
+        <div className="flex gap-2">
+          <Button type="button" size="sm" onClick={onClickAppend}>
+            <PlusCircleIcon />
+            {/* TODO: i18n */}
+            Add additional destination
+          </Button>
+        </div>
+      ) : null}
     </>
   )
 }

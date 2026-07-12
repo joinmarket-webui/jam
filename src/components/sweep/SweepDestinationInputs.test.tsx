@@ -31,6 +31,7 @@ describe('SweepDestinationInputs', () => {
   it('renders input fields correctly', () => {
     render(
       <SweepDestinationInputs
+        minNumberOfFields={fields.length}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -54,6 +55,7 @@ describe('SweepDestinationInputs', () => {
   it('renders disabled input fields', () => {
     render(
       <SweepDestinationInputs
+        minNumberOfFields={fields.length}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -84,6 +86,7 @@ describe('SweepDestinationInputs', () => {
 
     render(
       <SweepDestinationInputs
+        minNumberOfFields={fields.length}
         formState={errorFormMock.formState}
         setValue={errorFormMock.setValue}
         register={errorFormMock.register}

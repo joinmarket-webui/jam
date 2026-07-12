@@ -141,7 +141,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const walletInfo = useJamWalletInfoContext()
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
-  const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<SweepFormValues>()
+  const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
   const [alertMessage, setAlertMessage] = useState<string>()
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
@@ -156,7 +156,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       client,
       path: { walletname: walletFileName },
     }),
-    //enabled: jmSession?.coinjoin_in_process === true,
     refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
     refetchIntervalInBackground: true,
     retry: false,
@@ -181,24 +180,17 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     reset: startScheduleMutationReset,
     mutateAsync: startScheduleMutationMutateAsync,
   } = useMutation({
-    mutationFn: async (args: {
-      path: { walletname: WalletFileName }
-      body: { destinations: string[]; parameters?: Partial<TumblerParameters> }
-    }) => {
+    mutationFn: async ({ path, body }: { path: { walletname: WalletFileName }; body: TumblerPlanRequest }) => {
       await planSchedule.mutateAsync({
         client,
-        path: args.path,
-        body: {
-          destinations: args.body.destinations,
-          parameters: args.body.parameters,
-          force: true,
-        },
+        path,
+        body,
         throwOnError: true,
       })
 
       return await tumblerstart({
         client,
-        path: args.path,
+        path,
         throwOnError: true,
       })
     },
@@ -285,24 +277,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const startSchedule = async () => {
     if (showScheduleConfirmDialog === undefined) return
 
-    const parameters: Partial<TumblerParameters> = {
-      ...(showScheduleConfirmDialog.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
-      ...(showScheduleConfirmDialog.roundingChanceInPercent !== undefined
-        ? {
-            rounding_chance: percentageToFactor(showScheduleConfirmDialog.roundingChanceInPercent, 2),
-          }
-        : {}),
-      include_maker_sessions: showScheduleConfirmDialog.includeMakerSessions,
-    }
-
-    const body = {
-      destinations: getSweepDestinationAddresses(showScheduleConfirmDialog),
-      parameters,
-    }
-
     await startScheduleMutationMutateAsync({
       path: { walletname: walletFileName },
-      body,
+      body: showScheduleConfirmDialog,
     })
   }
 
@@ -399,7 +376,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   className=""
                   addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                  onSubmit={async (values) => {
+                  onSubmit={(values) => {
                     const parameters: Partial<TumblerParameters> = {
                       ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
                       ...(values.roundingChanceInPercent !== undefined
@@ -414,13 +391,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                       destinations: getSweepDestinationAddresses(values),
                       parameters,
                     }
-
+                    /*
                     await planSchedule.mutateAsync({
                       path: { walletname: walletFileName },
                       body,
-                    })
+                    })*/
 
-                    setShowScheduleConfirmDialog(values)
+                    setShowScheduleConfirmDialog(body)
                   }}
                 />
                 {/*
@@ -466,7 +443,7 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
     SweepResolverContext,
     SweepFormValues
   >({
-    mode: 'onChange',
+    mode: 'onSubmit',
     defaultValues: {
       destinations: initialDestinations,
       includeMakerSessions: true,
@@ -501,12 +478,39 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
 
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
+      {showInsecureScheduleTestingToggle && (
+        <div className="flex items-center gap-2">
+          <Switch
+            id="switch-use-insecure-schedule-testing"
+            checked={formWatch.useInsecureTestingSettings}
+            onCheckedChange={onInsecureTestingToggleChange}
+            disabled={disabled}
+          />
+          <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
+            <div className="flex items-center gap-2 font-medium">
+              Use insecure testing settings
+              <DevBadge />
+            </div>
+            <div className="text-muted-foreground text-sm">
+              This is completely insecure but makes testing the schedule much faster.
+            </div>
+          </Label>
+        </div>
+      )}
+
       <SweepDestinationInputs
+        minNumberOfFields={formWatch.useInsecureTestingSettings ? 1 : DESTINATION_ADDRESS_COUNT_PROD}
         register={register}
         setValue={setValue}
         formState={formState}
         fields={destinationsFieldArray.fields}
         disabled={disabled}
+        onClickAppend={() => {
+          destinationsFieldArray.append([{ address: '' }], { shouldFocus: false })
+        }}
+        onClickRemove={(index: number) => {
+          destinationsFieldArray.remove(index)
+        }}
       />
 
       <Accordion type="single" collapsible>
@@ -525,25 +529,6 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
           <AccordionContent
             className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
           >
-            {showInsecureScheduleTestingToggle && (
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="switch-use-insecure-schedule-testing"
-                  checked={formWatch.useInsecureTestingSettings}
-                  onCheckedChange={onInsecureTestingToggleChange}
-                  disabled={disabled}
-                />
-                <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-                  <div className="flex items-center gap-2 font-medium">
-                    Use insecure testing settings
-                    <DevBadge />
-                  </div>
-                  <div className="text-muted-foreground text-sm">
-                    This is completely insecure but makes testing the schedule much faster.
-                  </div>
-                </Label>
-              </div>
-            )}
             <div className="flex items-center gap-2">
               <Switch
                 id="switch-include-maker-sessions"
