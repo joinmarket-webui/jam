@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { tumblerstatusOptions, tumblerstopMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import {
-  tumblerplan,
+  tumblerplanMutation,
+  tumblerstatusOptions,
+  tumblerstopMutation,
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import {
   tumblerstart,
   type TumblerPhaseResponse,
+  type TumblerPlanRequest,
   type TumblerPlanResponse,
 } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { HourglassIcon } from 'lucide-react'
+import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
 import { useFieldArray, useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -27,7 +31,7 @@ import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAler
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
-import { isScheduleValue, type Schedule, type ScheduleEntry } from '@/components/sweep/scheduleUtils'
+import type { Schedule, ScheduleEntry } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -45,6 +49,8 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { AmountSats } from '@/types/global'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Spinner } from '../ui/spinner'
 
 interface SweepPageProps {
@@ -52,20 +58,42 @@ interface SweepPageProps {
 }
 
 const DESTINATION_ADDRESS_COUNT_PROD = 3
-const DESTINATION_ADDRESS_COUNT_TEST = 1
 const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
-const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
-  addrcount: DESTINATION_ADDRESS_COUNT_TEST,
-  minmakercount: 1,
-  makercountrange: [1, 0],
-  mixdepthcount: DESTINATION_ADDRESS_COUNT_TEST,
+
+// https://github.com/joinmarket-ng/joinmarket-ng/blob/0.33.0/tumbler/src/tumbler/builder.py#L49
+interface TumblerParameters {
+  maker_count_min: number // default: 5
+  maker_count_max: number // default: 9
+  // Average wait between phases (mean of an exponential distribution)
+  time_lambda_seconds: number // default: 6 hours
+  // Multiplier on ``time_lambda_seconds`` for stage-1 (cleavage) sweeps
+  stage1_wait_multiplier: number // default: 3.0
+  include_maker_sessions: boolean // default: true
+  mincjamount_sats: AmountSats // default: 100_000
+  maker_session_seconds: number // default: 12.0 * 60.0 * 60.0
+  /**
+   * If set, maker phases exit successfully when no CoinJoin has been served
+   * within this many seconds. Useful as a safety fallback when the wallet is
+   * never selected as a counterparty.
+   */
+  maker_session_idle_timeout_seconds: number | undefined // default: undefined
+  // Minimum number of destination-bearing taker CJs per mixdepth (excluding sweep).
+  mintxcount: number // default: 2
+  // Maximum re-tries per failed taker CoinJoin phase before the plan fails
+  max_phase_retries: number // default: 3
+  // Probability that any given non-sweep taker CJ amount is rounded to a random number of significant figures- Set to 0.0 to disable rounding entirely.
+  rounding_chance: number // default: 0.25
+}
+
+const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
+  maker_count_min: 1,
+  maker_count_max: 1,
+  time_lambda_seconds: 0.025,
+  stage1_wait_multiplier: 1,
+  maker_session_idle_timeout_seconds: 60,
+  mincjamount_sats: 1,
   mintxcount: 1,
-  txcountparams: [1, 0],
-  timelambda: 0.025,
-  stage1_timelambda_increase: 1,
-  liquiditywait: 13,
-  waittime: 0,
 }
 
 const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
@@ -117,33 +145,23 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
-  const allUtxos = useMemo(() => {
-    return walletInfo.jars.flatMap((jar) => jar.utxos)
-  }, [walletInfo.jars])
-
   const preconditionSummary = useMemo(() => {
+    const allUtxos = walletInfo.jars.flatMap((jar) => jar.utxos)
     return buildSweepPreconditionSummary(allUtxos)
-  }, [allUtxos])
+  }, [walletInfo.jars])
 
   const getScheduleQuery = useQuery({
     ...tumblerstatusOptions({
       client,
       path: { walletname: walletFileName },
     }),
-    enabled: jmSession?.coinjoin_in_process === true,
+    //enabled: jmSession?.coinjoin_in_process === true,
     refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
     refetchIntervalInBackground: true,
     retry: false,
-    select: (data: TumblerPlanResponse): { schedule: Schedule } | null => {
-      if (data.status.toLowerCase() !== 'running' || data.stale === true) {
-        return null
-      }
-
-      return { schedule: toSchedule(data) }
-    },
   })
 
-  /*const planSchedule = useMutation({
+  const planSchedule = useMutation({
     ...tumblerplanMutation({ client }),
     retry: false,
     onMutate: () => {
@@ -154,7 +172,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       toast.error(t('scheduler.error_planning_schedule_failed', { reason }))
     },
-  })*/
+  })
 
   const {
     isPending: startScheduleMutationIsPending,
@@ -164,9 +182,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   } = useMutation({
     mutationFn: async (args: {
       path: { walletname: WalletFileName }
-      body: { destinations: string[]; parameters?: typeof INSECURE_SCHEDULE_TUMBLER_OPTIONS }
+      body: { destinations: string[]; parameters?: Partial<TumblerParameters> }
     }) => {
-      await tumblerplan({
+      await planSchedule.mutateAsync({
         client,
         path: args.path,
         body: {
@@ -218,7 +236,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
   })
 
-  const currentSchedule = isScheduleValue(getScheduleQuery.data?.schedule) ? getScheduleQuery.data.schedule : undefined
+  const currentSchedule = useMemo(() => {
+    if (getScheduleQuery.data === undefined) return
+    if (getScheduleQuery.data.stale === true) return
+    if (getScheduleQuery.data.status.toLowerCase() !== 'running') return
+
+    return toSchedule(getScheduleQuery.data)
+  }, [getScheduleQuery.data])
 
   const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
   const isWaitingSchedulerStart =
@@ -366,10 +390,39 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   className=""
                   addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                  onSubmit={(values) => {
+                  onSubmit={async (values) => {
+                    const parameters: Partial<TumblerParameters> = {
+                      ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
+                      include_maker_sessions: values.includeMakerSessions,
+                    }
+                    const body: TumblerPlanRequest = {
+                      force: true,
+                      destinations: getSweepDestinationAddresses(values),
+                      parameters,
+                    }
+
+                    await planSchedule.mutateAsync({
+                      path: { walletname: walletFileName },
+                      body,
+                    })
+
                     setShowScheduleConfirmDialog(values)
                   }}
                 />
+                {/*
+                <div>
+                  {planSchedule.data?.phases.map((phrase, index) => {
+                    return (<div key={index}>
+                      <div>{phrase.kind}</div>
+
+                    </div>)
+                  })}
+
+                </div>
+                <pre >
+                { JSON.stringify(planSchedule.data, null, 2)}
+                </pre> 
+*/}
               </CardContent>
             </Card>
           </>
@@ -394,7 +447,7 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
 
   const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
   const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
-  const { formState, register, control, setValue, handleSubmit } = useForm<
+  const { formState, register, control, setValue, handleSubmit, trigger } = useForm<
     SweepFormValues,
     SweepResolverContext,
     SweepFormValues
@@ -402,55 +455,97 @@ const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSw
     mode: 'onChange',
     defaultValues: {
       destinations: initialDestinations,
+      includeMakerSessions: true,
     },
     resolver: yupResolver(schema),
   })
 
-  const watchedUseInsecureTestSettings = useWatch({ control, name: 'useInsecureTestingSettings' })
-  const { fields, replace } = useFieldArray({ control, name: 'destinations' })
+  const formWatch = useWatch({ control })
+  const destinationsFieldArray = useFieldArray({ control, name: 'destinations' })
 
   const onInsecureTestingToggleChange = (checked: boolean) => {
     setValue('useInsecureTestingSettings', checked)
 
     if (checked) {
-      replace([{ address: getNewTestingDestinationAddress(addressSummary) }])
+      destinationsFieldArray.replace([{ address: getNewTestingDestinationAddress(addressSummary) }])
+      void trigger('destinations')
     } else {
-      replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
+      destinationsFieldArray.replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
     }
   }
 
   const doOnSubmit = handleSubmit(onSubmit)
 
+  const collapsibleFormElementsValid = useMemo(
+    () =>
+      [formState.errors.includeMakerSessions, formState.errors.useInsecureTestingSettings].every(
+        (it) => it === undefined,
+      ),
+    [formState.errors.includeMakerSessions, formState.errors.useInsecureTestingSettings],
+  )
+
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
-      {showInsecureScheduleTestingToggle && (
-        <div className="flex items-center gap-2">
-          <Switch
-            id="switch-use-insecure-schedule-testing"
-            checked={watchedUseInsecureTestSettings ?? false}
-            onCheckedChange={onInsecureTestingToggleChange}
-            disabled={disabled}
-          />
-          <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-            <div className="flex items-center gap-2 font-medium">
-              Use insecure testing settings
-              <DevBadge />
-            </div>
-            <div className="text-muted-foreground text-sm">
-              This is completely insecure but makes testing the schedule much faster.
-            </div>
-          </Label>
-        </div>
-      )}
-
       <SweepDestinationInputs
         register={register}
         setValue={setValue}
         formState={formState}
-        fields={fields}
+        fields={destinationsFieldArray.fields}
         disabled={disabled}
       />
 
+      <Accordion type="single" collapsible>
+        <AccordionItem value="options">
+          <AccordionTrigger
+            className={cn({
+              'text-destructive': !collapsibleFormElementsValid,
+            })}
+          >
+            <div className="flex items-center gap-2">
+              {!collapsibleFormElementsValid ? <AlertTriangleIcon /> : null}
+              {t('scheduler.scheduler_options')}
+            </div>
+          </AccordionTrigger>
+
+          <AccordionContent
+            className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
+          >
+            {showInsecureScheduleTestingToggle && (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="switch-use-insecure-schedule-testing"
+                  checked={formWatch.useInsecureTestingSettings}
+                  onCheckedChange={onInsecureTestingToggleChange}
+                  disabled={disabled}
+                />
+                <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
+                  <div className="flex items-center gap-2 font-medium">
+                    Use insecure testing settings
+                    <DevBadge />
+                  </div>
+                  <div className="text-muted-foreground text-sm">
+                    This is completely insecure but makes testing the schedule much faster.
+                  </div>
+                </Label>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Switch
+                id="switch-include-maker-sessions"
+                checked={formWatch.includeMakerSessions}
+                onCheckedChange={(checked: boolean) => setValue('includeMakerSessions', checked)}
+                disabled={disabled}
+              />
+              <Label htmlFor="switch-include-maker-sessions" className="flex flex-col items-start gap-0">
+                <div className="flex items-center gap-2 font-medium">Include maker sessions</div>
+                <div className="text-muted-foreground text-sm">
+                  Occasionally switches from taker to maker which improves privacy
+                </div>
+              </Label>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
       <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
 
       <Button type="submit" disabled={disabled || formState.isSubmitting} className="w-full" size="xxl">

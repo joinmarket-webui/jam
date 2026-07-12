@@ -780,6 +780,7 @@
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
     "description_fees": "The scheduler will pay all occurring fees automatically.",
+    "scheduler_options": "Scheduled Sweep options",
     "button_start": "Start Scheduler",
     "button_stop": "Stop Scheduler",
     "alert_scheduler_starting_title": "Starting Scheduler...",

@@ -176,7 +176,7 @@ export function SendForm({
     [formState.errors, formState.isValid, formState.isSubmitting],
   )
   const collapsibleFormElementsValid = useMemo(
-    () => errors.numCollaborators === undefined && errors.txFee === undefined,
+    () => [errors.numCollaborators, errors.txFee].every((it) => it === undefined),
     [errors.numCollaborators, errors.txFee],
   )
 
