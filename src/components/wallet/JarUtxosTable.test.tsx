@@ -45,7 +45,7 @@ const makeUtxo = (overrides: Partial<Utxo>): Utxo =>
 
 const firstEntry: UtxoTableEntry = {
   utxo: makeUtxo({ address: 'bc1qshared', label: 'cold', utxo: 'txid-a:0', value: 10_000 }),
-  tags: [{ displayValue: 'used', value: 'used', variant: 'used' }],
+  tags: [{ displayValue: 'used', value: 'used', variant: 'reused' }],
 }
 
 const secondEntry: UtxoTableEntry = {
@@ -61,7 +61,7 @@ const frozenEntry: UtxoTableEntry = {
     utxo: 'txid-c:2',
     value: 20_000,
   }),
-  tags: [{ displayValue: 'bond', value: 'bond', variant: 'fidelity-bond' }],
+  tags: [{ displayValue: 'bond', value: 'bond', variant: 'bond' }],
 }
 
 const findFirstDataRowCheckbox = () => {
