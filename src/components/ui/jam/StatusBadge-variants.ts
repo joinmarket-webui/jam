@@ -9,36 +9,45 @@ export const statusBadgeVariants = cva(
         default: badgeVariants({ variant: 'default' }),
         new: badgeVariants({
           variant: 'default',
-          className: 'bg-brand-success text-brand-success-foreground border-transparent',
+          className: 'bg-brand-info/70 text-brand-info-foreground border-transparent',
         }),
         deposit: badgeVariants({ variant: 'default' }),
-        used: badgeVariants({ variant: 'secondary' }),
-        reused: badgeVariants({ variant: 'destructive', className: 'light:bg-destructive/70' }),
+        reused: badgeVariants({ variant: 'destructive' }),
         'cj-out': badgeVariants({
           variant: 'default',
-          className: 'bg-brand-success text-brand-success-foreground border-transparent',
+          className: 'bg-brand-success/20 text-brand-success border-brand-success',
         }),
         'cj-change': badgeVariants({
           variant: 'default',
-          className: 'bg-brand-success/80 text-brand-success-foreground border-transparent',
-        }),
-        'change-out': badgeVariants({
-          variant: 'default',
-          className: 'bg-brand-warning text-brand-warning-foreground border-transparent',
+          className: 'bg-brand-date/20 text-brand-date border-brand-date',
         }),
         'non-cj-change': badgeVariants({
           variant: 'default',
           className: 'bg-brand-date text-white border-transparent',
         }),
-        // TODO: style and verify "fidelity-bond, locked, pending and frozen" status tags
-        'fidelity-bond': badgeVariants({ variant: 'outline' }),
-        locked: badgeVariants({ variant: 'outline' }),
+        'used-empty': badgeVariants({
+          variant: 'default',
+          className: 'bg-brand-warning/50 text-brand-warning-foreground border-transparent',
+        }),
+        bond: badgeVariants({
+          variant: 'outline',
+          className: 'light:border-black/70 dark:border-white/70',
+        }),
+        reserved: badgeVariants({
+          variant: 'default',
+          className: 'bg-brand-warning/50 text-brand-warning-foreground border-transparent',
+        }),
+        flagged: badgeVariants({
+          variant: 'default',
+          className: 'bg-destructive/20 text-destructive border-destructive',
+        }),
+        // TODO: style and verify "pending and frozen" status tags
         pending: badgeVariants({
           variant: 'default',
-          className: 'bg-brand-warning/30 text-brand-warning-foreground border-transparent',
+          className: 'bg-brand-warning/50 text-brand-warning-foreground border-transparent',
         }),
         frozen: badgeVariants({
-          variant: 'outline',
+          variant: 'default',
           className: 'bg-brand-info text-brand-info-foreground border-transparent',
         }),
       },
