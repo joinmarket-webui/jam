@@ -67,6 +67,10 @@ vi.mock('./store/jmSessionStore', () => ({
   jmSessionStore: { getState: () => ({ state: holders.jmSession }) },
 }))
 
+vi.mock('./store/jmTxStore', () => ({
+  jmTxStore: { getState: () => ({ state: {} }) },
+}))
+
 vi.mock('@/store/jamSettingsStore', () => ({
   jamSettingsStore: { getState: () => ({ state: { developerMode: holders.developerMode } }) },
   useDeveloperMode: () => ({ enabled: holders.developerMode }),

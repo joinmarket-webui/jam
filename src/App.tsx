@@ -55,6 +55,7 @@ import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { JmWebsocketContextProvider } from './context/JmWebsocketContextProvider'
 import { getErrorReason } from './lib/errorReason'
 import { jmSessionStore } from './store/jmSessionStore'
+import { jmTxStore, type JmTxInfos } from './store/jmTxStore'
 import type { Milliseconds } from './types/global'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
@@ -387,6 +388,7 @@ const RELOAD_WALLET_INFO_DELAY: {
   AFTER_UTXO_CHANGE: Milliseconds
   AFTER_BLOCK_HEIGHT_CHANGE: Milliseconds
   AFTER_TAKER_STOPPED: Milliseconds
+  AFTER_TX_MESSAGE: Milliseconds
 } = {
   // After rescanning, it is necessary to give the JM backend some time to synchronize.
   // A couple of seconds should be enough, however, this depends on the user hardware
@@ -404,6 +406,9 @@ const RELOAD_WALLET_INFO_DELAY: {
 
   // Small delay is sufficient after block height change
   AFTER_TAKER_STOPPED: 210,
+
+  // Small delay is sufficient after an incoming tx message via websocket
+  AFTER_TX_MESSAGE: 210,
 }
 
 /**
@@ -424,6 +429,9 @@ const WalletInfoAutoReload = () => {
   const previousRescanningRef = useRef<boolean>(currentRescanInfo.rescanning)
   const previousBlockHeightRef = useRef<number | undefined>(currentBlockHeight)
   const previousTakerRunningRef = useRef<boolean>(currentTakerRunning)
+
+  const jmTxs = useStore(jmTxStore, (state) => state.state)
+  const previousJmTxsRef = useRef<JmTxInfos>(jmTxs)
 
   const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
 
@@ -492,6 +500,26 @@ const WalletInfoAutoReload = () => {
       return () => abortCtrl.abort('useEffect(AFTER_UTXO_CHANGE) ended')
     },
     [refetchWalletBalance, utxosHashHex],
+  )
+
+  useEffect(
+    function refetchWalletInfoAfterTxMessage() {
+      const txsChanged = previousJmTxsRef.current !== jmTxs
+      previousJmTxsRef.current = jmTxs
+      if (!txsChanged) {
+        return
+      }
+
+      const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_TX_MESSAGE
+      console.debug('Trigger refetch looking for funds AFTER_TX_MESSAGE with delay %d...', delayBefore)
+
+      const abortCtrl = new AbortController()
+      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
+        console.warn('Error while auto-reloading wallet info AFTER_TX_MESSAGE finished', error)
+      })
+      return () => abortCtrl.abort('useEffect(AFTER_TX_MESSAGE) ended')
+    },
+    [refetchWalletBalance, jmTxs],
   )
 
   useEffect(
