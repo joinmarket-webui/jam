@@ -101,7 +101,7 @@ describe('tags', () => {
       ])
     })
 
-    it('should prefer fidelity-bond tag and ignore raw status for locked UTXOs', () => {
+    it('should prefer bond tag and ignore raw status for locked UTXOs', () => {
       expect(
         utxoTags(
           {
@@ -116,7 +116,7 @@ describe('tags', () => {
         {
           displayValue: 'translated:jar_details.utxo_list.utxo_tag_fb',
           value: 'bond',
-          variant: 'fidelity-bond',
+          variant: 'bond',
         },
       ])
     })
