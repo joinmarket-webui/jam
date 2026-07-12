@@ -18,7 +18,7 @@ import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { cn, delayedPromise, factorToPercentage, type WalletFileName } from '@/lib/utils'
-import type { JarIndex } from '@/types/global'
+import type { BitcoinAddress, JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { buildSweepPreconditionSummary } from '../sweep/preconditions'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -181,9 +181,9 @@ export function SendForm({
   )
 
   const values = useWatch({ control })
-  const sourceJarIndex = useWatch({ control, name: 'source.fromJar' })
-  const destinationAddress = useWatch({ control, name: 'destination.address' })
-  const destinationJarIndex = useWatch({ control, name: 'destination.fromJar' })
+  const sourceJarIndex: JarIndex | undefined = useWatch({ control, name: 'source.fromJar' })
+  const destinationAddress: BitcoinAddress | undefined = useWatch({ control, name: 'destination.address' })
+  const destinationJarIndex: JarIndex | undefined = useWatch({ control, name: 'destination.fromJar' })
   const isSweep = useWatch({ control, name: 'amount.isSweep' })
   const isCoinJoin = useWatch({ control, name: 'isCoinJoin' })
   const collaboratorCount = useWatch({ control, name: 'numCollaborators' })
@@ -365,8 +365,11 @@ export function SendForm({
                     disabled,
                   })}
                   type="text"
+                  className="font-mono"
                   placeholder={t('send.placeholder_recipient')}
                   onPaste={handleAddressPaste}
+                  autoComplete="off"
+                  spellCheck={false}
                 />
 
                 <Button

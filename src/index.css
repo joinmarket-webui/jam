@@ -178,6 +178,10 @@ html body[data-scroll-locked] {
   margin-right: 0 !important;
 }
 
+::placeholder {
+  font-family: var(--font-sans);
+}
+
 @keyframes slide-up {
   from {
     transform: translateY(100%);
