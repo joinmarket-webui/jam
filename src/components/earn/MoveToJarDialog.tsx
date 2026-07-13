@@ -1,11 +1,7 @@
 import { useState, useMemo } from 'react'
-import {
-  directsendMutation,
-  freezeMutation,
-  getaddressOptions,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { getaddressOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
@@ -36,12 +32,12 @@ import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
-import { getErrorReason } from '@/lib/errorReason'
+import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { jarBadgeVariant } from '../ui/badge-variants'
 import { Address } from '../ui/jam/Address'
+import { useFidelityBondSweep } from './fidelity-bond/useFidelityBondSweep'
 
 type Step = 'select_jar' | 'confirm' | 'sending' | 'success'
 
@@ -61,21 +57,20 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | undefined>()
   const [confirmationChecked, setConfirmationChecked] = useState(false)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
-  const [error, setError] = useState<string | undefined>()
 
-  const sourceJar = walletInfo.jars.find((jar) => jar.jarIndex === utxo.mixdepth)
+  const { sweep, isLoading, error, setError, sourceJar } = useFidelityBondSweep({
+    walletFileName,
+    utxo,
+    unfreezeErrorKey: 'earn.fidelity_bond.move.error_unfreezing_fidelity_bond',
+    sendErrorKey: 'earn.fidelity_bond.move.error_spending_fidelity_bond',
+  })
+
   const destinationJar = walletInfo.jars.find((jar) => jar.jarIndex === selectedJarIndex)
 
   // All jars except the FB's source jar are valid destinations
   const destinationJars = useMemo(() => {
     return walletInfo.jars.filter((jar) => jar.jarIndex !== utxo.mixdepth)
   }, [walletInfo.jars, utxo.mixdepth])
-
-  // UTXOs in the source jar that are NOT this FB — they need to be frozen during sweep
-  const utxosToFreeze = useMemo(() => {
-    if (!sourceJar) return []
-    return sourceJar.utxos.filter((u) => u.utxo !== utxo.utxo && !u.frozen)
-  }, [sourceJar, utxo.utxo])
 
   const getAddressQueryOptions = getaddressOptions({
     client,
@@ -98,30 +93,6 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
   const destinationAddress = getAddressQuery.data?.address
 
-  const freezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
-    },
-  })
-
-  const unfreezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.move.error_unfreezing_fidelity_bond')} ${reason}`)
-    },
-  })
-
-  const directSend = useMutation({
-    ...directsendMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.move.error_spending_fidelity_bond')} ${reason}`)
-    },
-  })
-
   const handleReset = () => {
     setStep('select_jar')
     setSelectedJarIndex(undefined)
@@ -141,69 +112,13 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
     if (selectedJarIndex === undefined || !destinationAddress) return
 
     setStep('sending')
-    setError(undefined)
-
-    const frozen: Utxo[] = []
-    try {
-      // Freeze other UTXOs in the source jar so only the FB gets swept
-      for (const u of utxosToFreeze) {
-        await freezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': u.utxo, freeze: true },
-        })
-        frozen.push(u)
-      }
-
-      if (utxo.frozen) {
-        await unfreezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': utxo.utxo, freeze: false },
-        })
-      }
-
-      const result = await directSend.mutateAsync({
-        path: { walletname: walletFileName },
-        body: {
-          mixdepth: utxo.mixdepth,
-          amount_sats: 0,
-          destination: destinationAddress,
-        },
-      })
-
+    const swept = await sweep(destinationAddress, (result) => {
       setTxResult(result)
       setStep('success')
       toast.success(t('earn.fidelity_bond.move.success_text'))
-
-      // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
-      for (const u of frozen) {
-        try {
-          await unfreezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
-          })
-        } catch {
-          // logged via onError
-        }
-      }
-
-      await walletInfo.refetch()
-    } catch {
-      // Best-effort rollback — unfreeze UTXOs that were frozen before the error
-      for (const u of frozen) {
-        try {
-          await unfreezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
-          })
-        } catch {
-          // logged via onError
-        }
-      }
-      setStep('confirm')
-    }
+    })
+    if (!swept) setStep('confirm')
   }
-
-  const isLoading = freezeUtxo.isPending || unfreezeUtxo.isPending || directSend.isPending
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

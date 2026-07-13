@@ -1,11 +1,7 @@
 import { useState, useMemo } from 'react'
-import {
-  directsendMutation,
-  freezeMutation,
-  gettimelockaddressOptions,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { gettimelockaddressOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
   AlertTriangleIcon,
   CalendarIcon,
@@ -34,16 +30,15 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
-import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
-import { getErrorReason } from '@/lib/errorReason'
+import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { cn, formatSats, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jarBadgeVariant } from '../ui/badge-variants'
 import { Address } from '../ui/jam/Address'
 import { generateLockdateOptions, getYearOptions, getMonthOptions } from './CreateFidelityBondDialog/types'
+import { useFidelityBondSweep } from './fidelity-bond/useFidelityBondSweep'
 
 type Step = 'select_date' | 'confirm' | 'sending' | 'success'
 
@@ -57,14 +52,19 @@ interface RenewBondDialogProps {
 export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: RenewBondDialogProps) {
   const { t } = useTranslation()
   const client = useApiClient()
-  const walletInfo = useJamWalletInfoContext()
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [step, setStep] = useState<Step>('select_date')
   const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')
   const [confirmationChecked, setConfirmationChecked] = useState(false)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
-  const [error, setError] = useState<string | undefined>()
+
+  const { sweep, isLoading, error, setError, sourceJar } = useFidelityBondSweep({
+    walletFileName,
+    utxo,
+    unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
+    sendErrorKey: 'earn.fidelity_bond.renew.error_renewing_fidelity_bond',
+  })
 
   const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
   const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
@@ -90,14 +90,6 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
       })
     : null
 
-  const sourceJar = walletInfo.jars.find((jar) => jar.jarIndex === utxo.mixdepth)
-
-  // UTXOs in the source jar that are NOT this FB — they need to be frozen during sweep
-  const utxosToFreeze = useMemo(() => {
-    if (!sourceJar) return []
-    return sourceJar.utxos.filter((u) => u.utxo !== utxo.utxo && !u.frozen)
-  }, [sourceJar, utxo.utxo])
-
   const timelockAddressQuery = useQuery({
     ...gettimelockaddressOptions({
       client,
@@ -116,30 +108,6 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   }
 
   const destinationAddress = timelockAddressQuery.data?.address
-
-  const freezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
-    },
-  })
-
-  const unfreezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
-    },
-  })
-
-  const directSend = useMutation({
-    ...directsendMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.renew.error_renewing_fidelity_bond')} ${reason}`)
-    },
-  })
 
   const handleReset = () => {
     setStep('select_date')
@@ -160,69 +128,13 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     if (!destinationAddress) return
 
     setStep('sending')
-    setError(undefined)
-
-    const frozen: Utxo[] = []
-    try {
-      // Freeze other UTXOs in the source jar so only the FB gets swept
-      for (const u of utxosToFreeze) {
-        await freezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': u.utxo, freeze: true },
-        })
-        frozen.push(u)
-      }
-
-      if (utxo.frozen) {
-        await unfreezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': utxo.utxo, freeze: false },
-        })
-      }
-
-      const result = await directSend.mutateAsync({
-        path: { walletname: walletFileName },
-        body: {
-          mixdepth: utxo.mixdepth,
-          amount_sats: 0,
-          destination: destinationAddress,
-        },
-      })
-
+    const swept = await sweep(destinationAddress, (result) => {
       setTxResult(result)
       setStep('success')
       toast.success(t('earn.fidelity_bond.renew.success_text'))
-
-      // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
-      for (const u of frozen) {
-        try {
-          await unfreezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
-          })
-        } catch {
-          // logged via onError
-        }
-      }
-
-      await walletInfo.refetch()
-    } catch {
-      // Best-effort rollback — unfreeze UTXOs that were frozen before the error
-      for (const u of frozen) {
-        try {
-          await unfreezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
-          })
-        } catch {
-          // logged via onError
-        }
-      }
-      setStep('confirm')
-    }
+    })
+    if (!swept) setStep('confirm')
   }
-
-  const isLoading = freezeUtxo.isPending || unfreezeUtxo.isPending || directSend.isPending
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
