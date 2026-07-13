@@ -24,7 +24,7 @@ import {
   StepIntro,
   SuccessHeading,
 } from './fidelity-bond/FidelityBondDialogParts'
-import { LockdateSelect, lockdateLabel } from './fidelity-bond/LockdateSelect'
+import { LockdateSelect } from './fidelity-bond/LockdateSelect'
 import { WizardStepFooter } from './fidelity-bond/WizardStepFooter'
 import { useFidelityBondSweep } from './fidelity-bond/useFidelityBondSweep'
 
@@ -55,7 +55,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     sendErrorKey: 'earn.fidelity_bond.renew.error_renewing_fidelity_bond',
   })
 
-  const selectedDateLabel = selectedLockdate ? lockdateLabel(selectedLockdate) : null
+  const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
 
   const timelockAddressQuery = useQuery({
     ...gettimelockaddressOptions({

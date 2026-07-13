@@ -6,14 +6,6 @@ import * as fb from '@/lib/fidelityBondUtils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { generateLockdateOptions, getMonthOptions, getYearOptions } from '../CreateFidelityBondDialog/types'
 
-export function lockdateLabel(lockdate: fb.Lockdate): string {
-  return new Date(fb.lockdate.toTimestamp(lockdate)).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
 type LockdateSelectProps = {
   /** prefix for the month/year element ids */
   id: string
@@ -97,7 +89,7 @@ export function LockdateSelect({ id, value, onChange }: LockdateSelectProps) {
           <p className="text-muted-foreground text-sm">
             {t('earn.fidelity_bond.select_date.label_selected_lock_date')}
           </p>
-          <p className="mt-1 text-lg font-semibold">{lockdateLabel(value)}</p>
+          <p className="mt-1 text-lg font-semibold">{fb.lockdate.toDateLabel(value)}</p>
         </div>
       )}
     </>

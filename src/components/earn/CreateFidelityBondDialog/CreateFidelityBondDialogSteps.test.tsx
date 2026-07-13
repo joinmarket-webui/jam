@@ -28,7 +28,7 @@ vi.mock('@/lib/fidelityBondUtils', () => ({
     isFidelityBond: vi.fn(),
   },
   lockdate: {
-    toTimestamp: () => Date.UTC(2025, 0, 1),
+    toDateLabel: () => 'January 1, 2025',
   },
 }))
 

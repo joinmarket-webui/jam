@@ -48,6 +48,16 @@ describe('utils', () => {
       expect(fb.lockdate.toTimestamp('2009-13' as fb.Lockdate)).toBe(Date.UTC(2010, 0, 1))
     })
 
+    it('should format lockdate as a human readable date label', () => {
+      expect(fb.lockdate.toDateLabel('2009-01')).toBe(
+        new Date(Date.UTC(2009, 0, 1)).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }),
+      )
+    })
+
     it('should create an initial lockdate', () => {
       const rangeZero = fb.toYearsRange(0, 10)
       const rangeMinusOneYear = fb.toYearsRange(-1, 10)

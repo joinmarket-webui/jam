@@ -56,7 +56,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 vi.mock('@/lib/errorReason', () => ({ getErrorReason: () => 'reason' }))
 
 vi.mock('@/lib/fidelityBondUtils', () => ({
-  lockdate: { toTimestamp: () => 1_893_456_000_000 },
+  lockdate: { toDateLabel: () => 'January 1, 2030' },
 }))
 
 vi.mock('@/lib/utils', async (importOriginal) => ({

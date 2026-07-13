@@ -11,6 +11,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import * as fb from '@/lib/fidelityBondUtils'
 import { clamp, cn, formatSats } from '@/lib/utils'
 import {
   ConfirmationToggle,
@@ -24,7 +25,7 @@ import {
   SuccessHeading,
 } from '../fidelity-bond/FidelityBondDialogParts'
 import { FidelityBondJarSelector } from '../fidelity-bond/FidelityBondJarSelector'
-import { LockdateSelect, lockdateLabel } from '../fidelity-bond/LockdateSelect'
+import { LockdateSelect } from '../fidelity-bond/LockdateSelect'
 import type { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
 type Wizard = ReturnType<typeof useCreateFidelityBondWizard>
@@ -62,7 +63,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
   } = wizard
 
   const selectedJar = jarsWithUtxos.find((jar) => jar.jarIndex === selectedJarIndex)
-  const selectedDateLabel = selectedLockdate ? lockdateLabel(selectedLockdate) : null
+  const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
 
   switch (step) {
     case 'select_date':
