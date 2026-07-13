@@ -226,7 +226,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90dvh] max-w-lg overflow-y-auto">
+      <DialogContent className="flex max-h-[90dvh] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('earn.fidelity_bond.renew.title')}</DialogTitle>
           <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>
@@ -239,7 +239,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           </Alert>
         )}
 
-        <div className="py-2">
+        <div className="min-h-0 flex-1 overflow-y-auto py-2">
           {step === 'select_date' && (
             <div className="space-y-6">
               <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">

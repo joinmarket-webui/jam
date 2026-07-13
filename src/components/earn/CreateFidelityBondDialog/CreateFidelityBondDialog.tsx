@@ -99,7 +99,7 @@ export function CreateFidelityBondDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} {...dialogProps}>
-      <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
+      <DialogContent className="flex max-h-[90dvh] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('earn.fidelity_bond.create_fidelity_bond.title')}</DialogTitle>
           <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>
@@ -114,7 +114,7 @@ export function CreateFidelityBondDialog({
           </Alert>
         )}
 
-        <div className="py-2">
+        <div className="min-h-0 flex-1 overflow-y-auto py-2">
           <CreateFidelityBondDialogSteps wizard={wizard} />
         </div>
 
