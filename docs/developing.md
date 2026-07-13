@@ -6,9 +6,9 @@ A place to collect useful information for developers that doesn't really fit els
 
 ## JoinMarket Development Environment
 
-For a complete development environment you need a local JoinMarket-NG instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket-NG. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
+For a complete development environment you need a local JoinMarket NG instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket NG. You can find details here: [docker/regtest/readme.md](../docker/regtest/readme.md).
 
-## Running Jam Against JoinMarket-NG
+## Running Jam Against JoinMarket NG
 
 Jam v2 can talk directly to a separately running `jmwalletd` / orderbook watcher from `joinmarket-ng`. You do not need to run the Jam regtest compose or the reference implementation for this workflow.
 
@@ -86,17 +86,17 @@ By default, the hook will be installed automatically as an [NPM postinstall scri
 If you're having issues with Husky not using the correct `$PATH`, you may need to setup a `~/.huskyrc` which will let you set up your path before the hook is run.
 See [here](https://typicode.github.io/husky/#/?id=command-not-found) for more info.
 
-## Running the Web UI Locally and Connecting to a Remote JoinMarket-NG Instance
+## Running the Web UI Locally and Connecting to a Remote JoinMarket NG Instance
 
-These instructions assume you want to run the web UI locally and connect it to a JoinMarket-NG instance on your RaspiBlitz.
+These instructions assume you want to run the web UI locally and connect it to a JoinMarket NG instance on your RaspiBlitz.
 The process should be similar for other setups.
-If you run the Web UI and JoinMarket-NG on the same system, simply skip the SSH tunnel step.
+If you run the Web UI and JoinMarket NG on the same system, simply skip the SSH tunnel step.
 
-### 🚨 Prerequisite: JoinMarket-NG
+### 🚨 Prerequisite: JoinMarket NG
 
-To run the web UI locally you need to connect it to a running JoinMarket-NG instance.
+To run the web UI locally you need to connect it to a running JoinMarket NG instance.
 
-#### 1. Install JoinMarket-NG
+#### 1. Install JoinMarket NG
 
 Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](https://github.com/rootzoll/raspiblitz):
 
@@ -104,15 +104,15 @@ Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](h
 Services > j [BTC JoinMarket+JoininBox menu]
 ```
 
-Or follow the JoinMarket-NG [installation guide](https://joinmarket-ng.github.io/joinmarket-ng/install/) if you're on another system.
+Or follow the JoinMarket NG [installation guide](https://joinmarket-ng.github.io/joinmarket-ng/install/) if you're on another system.
 
-### 🚨 Prerequisite: JoinMarket-NG API Service
+### 🚨 Prerequisite: JoinMarket NG API Service
 
-This app makes use of the JoinMarket-NG API.
+This app makes use of the JoinMarket NG API.
 
 #### 2. SSL Certificate
 
-As the joinmarket user on your RaspiBlitz, generate a self-signed certificate for the JoinMarket-NG API Service as described [here](https://linuxize.com/post/creating-a-self-signed-ssl-certificate/), and put the certificate and the key in the `~/.joinmarket-ng/ssl/` directory.
+As the joinmarket user on your RaspiBlitz, generate a self-signed certificate for the JoinMarket NG API Service as described [here](https://linuxize.com/post/creating-a-self-signed-ssl-certificate/), and put the certificate and the key in the `~/.joinmarket-ng/ssl/` directory.
 
 _Hint:_ To login as the JoinMarket user, you can ssh into your RaspiBlitz, type `jm`, and exit the JoininBox menu.
 
@@ -132,7 +132,7 @@ _Hint:_ You don't have to enter anything meaningful, you can just hit the return
 
 #### 3. API Service
 
-Start the JoinMarket-NG [API service](https://joinmarket-ng.github.io/joinmarket-ng/README-jmwalletd/):
+Start the JoinMarket NG [API service](https://joinmarket-ng.github.io/joinmarket-ng/README-jmwalletd/):
 
 ```bash
 (jmvenv) joinmarket@raspberrypi:~/joinmarket-ng $ jmwalletd serve
