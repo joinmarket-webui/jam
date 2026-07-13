@@ -15,6 +15,7 @@
     "download": "Download",
     "finish": "Finish",
     "skip": "Skip",
+    "step_label": "Step {{ current }} of {{ total }}",
     "utxos": "UTXOs",
     "table": {
       "pagination": {

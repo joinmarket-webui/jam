@@ -1,30 +1,26 @@
 import { useState, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import {
-  directsendMutation,
-  freezeMutation,
-  gettimelockaddressOptions,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { gettimelockaddressOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
-import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
+import { useFidelityBondMutations } from '../fidelity-bond/useFidelityBondMutations'
 import {
   CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES,
   createFidelityBondFormSchema,
   type CreateFidelityBondFormValues,
 } from './CreateFidelityBondFormSchema'
 import type { Step } from './types'
-import { generateLockdateOptions, getYearOptions, getMonthOptions } from './types'
+import { generateLockdateOptions } from './types'
 
 export function useCreateFidelityBondWizard(
   open: boolean,
@@ -40,7 +36,11 @@ export function useCreateFidelityBondWizard(
   const [frozenUtxos, setFrozenUtxos] = useState<Utxo[]>([])
   const [utxoPage, setUtxoPage] = useState(0)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
-  const [error, setError] = useState<string | undefined>()
+
+  const { freezeUtxo, unfreezeUtxo, directSend, error, setError } = useFidelityBondMutations({
+    unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
+    sendErrorKey: 'earn.fidelity_bond.error_creating_fidelity_bond',
+  })
 
   const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
   const jarIndexes = useMemo(() => walletInfo.jars.map((jar) => jar.jarIndex), [walletInfo.jars])
@@ -68,20 +68,6 @@ export function useCreateFidelityBondWizard(
     defaultValue: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES.confirmationAccepted,
   })
 
-  const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
-  const monthOptions = useMemo(() => getMonthOptions(), [])
-
-  const minLockdate = lockdateOptions.at(0)?.value ?? ''
-  const maxLockdate = lockdateOptions.at(-1)?.value ?? ''
-  const clampLockdate = (lockdate: string): fb.Lockdate | '' => {
-    if (!lockdate || lockdate < minLockdate) return minLockdate || ''
-    if (lockdate > maxLockdate) return maxLockdate || ''
-    return lockdate as fb.Lockdate
-  }
-  const selectedYear = selectedLockdate ? selectedLockdate.slice(0, 4) : ''
-  const selectedMonth = selectedLockdate ? selectedLockdate.slice(5, 7) : ''
-  const minYear = minLockdate ? Number.parseInt(minLockdate.slice(0, 4), 10) : 0
-  const minMonth = minLockdate ? Number.parseInt(minLockdate.slice(5, 7), 10) : 1
   const setSelectedLockdate = (lockdate: fb.Lockdate | '') => {
     form.setValue('lockdate', lockdate || undefined, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
   }
@@ -170,30 +156,6 @@ export function useCreateFidelityBondWizard(
   })
 
   const address = timelockAddressQuery.data?.address
-
-  const freezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
-    },
-  })
-
-  const unfreezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
-    },
-  })
-
-  const directSend = useMutation({
-    ...directsendMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.error_creating_fidelity_bond')} ${reason}`)
-    },
-  })
 
   const handleReset = () => {
     setStep('select_date')
@@ -380,14 +342,6 @@ export function useCreateFidelityBondWizard(
   const selectAllUtxos = () => setSelectedUtxoIds(availableUtxos.map((utxo) => utxo.utxo))
   const deselectAllUtxos = () => setSelectedUtxoIds([])
 
-  const selectedDateLabel = selectedLockdate
-    ? new Date(fb.lockdate.toTimestamp(selectedLockdate)).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null
-
   const canProceed = () => {
     switch (step) {
       case 'select_date':
@@ -415,15 +369,7 @@ export function useCreateFidelityBondWizard(
     setStep,
     setSelectedLockdate,
     selectedLockdate,
-    selectedYear,
-    selectedMonth,
-    minYear,
-    minMonth,
-    yearOptions,
-    monthOptions,
-    clampLockdate,
     hasDuplicateLockdate,
-    selectedDateLabel,
     selectedJarIndex,
     setSelectedJarIndex,
     jarsWithUtxos,

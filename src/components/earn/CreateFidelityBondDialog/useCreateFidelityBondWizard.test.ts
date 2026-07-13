@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import { generateLockdateOptions } from './types'
 import { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
 const mocks = vi.hoisted(() => ({
@@ -86,8 +87,8 @@ const jar = (jarIndex: number, utxos: Utxo[]): Jar =>
     utxos,
   }) as unknown as Jar
 
-const lockdateFromWizard = (wizard: ReturnType<typeof useCreateFidelityBondWizard>) => {
-  const lockdate = wizard.clampLockdate('1900-01')
+const minLockdateOption = () => {
+  const lockdate = generateLockdateOptions(false).at(0)?.value
   if (!lockdate) throw new Error('Expected a generated lockdate option')
   return lockdate
 }
@@ -144,7 +145,7 @@ describe('useCreateFidelityBondWizard', () => {
   it('skips jar selection when only one jar has eligible utxos', async () => {
     mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'only:0', value: 25_000 })])]
     const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
-    const lockdate = lockdateFromWizard(result.current)
+    const lockdate = minLockdateOption()
 
     act(() => result.current.setSelectedLockdate(lockdate))
     await act(async () => result.current.handleNext())
@@ -176,7 +177,7 @@ describe('useCreateFidelityBondWizard', () => {
 
   it('freezes unselected utxos before review and supports back navigation', async () => {
     const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
-    const lockdate = lockdateFromWizard(result.current)
+    const lockdate = minLockdateOption()
 
     act(() => result.current.setSelectedLockdate(lockdate))
     await act(async () => result.current.handleNext())
@@ -235,40 +236,8 @@ describe('useCreateFidelityBondWizard', () => {
     expect(result.current.step).toBe('review')
   })
 
-  it('exposes lockdate boundaries and clamps out-of-range values', () => {
-    const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
-
-    const { minYear, minMonth, yearOptions, monthOptions } = result.current
-    expect(minYear).toBeGreaterThan(0)
-    expect(minMonth).toBeGreaterThanOrEqual(1)
-    expect(yearOptions.length).toBeGreaterThan(0)
-    expect(monthOptions.length).toBe(12)
-
-    const min = result.current.clampLockdate('1900-01')
-    const max = result.current.clampLockdate('9999-12')
-    expect(min).not.toBe('')
-    expect(max).not.toBe('')
-    expect(min < max).toBe(true)
-
-    // empty input clamps to min
-    expect(result.current.clampLockdate('')).toBe(min)
-    // a value already inside the range is returned untouched
-    expect(result.current.clampLockdate(min)).toBe(min)
-
-    // derived year/month default to empty before a selection
-    expect(result.current.selectedYear).toBe('')
-    expect(result.current.selectedMonth).toBe('')
-
-    act(() => result.current.setSelectedLockdate(min))
-
-    expect(result.current.selectedYear).toBe(min.slice(0, 4))
-    expect(result.current.selectedMonth).toBe(min.slice(5, 7))
-    expect(result.current.selectedDateLabel).not.toBeNull()
-  })
-
   it('flags duplicate lockdates against existing fidelity bonds', () => {
-    const { result: probe } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
-    const lockdate = lockdateFromWizard(probe.current)
+    const lockdate = minLockdateOption()
     const timestampSeconds = Math.floor(new Date(`${lockdate}-01T00:00:00Z`).getTime() / 1000)
 
     mocks.walletInfo.fidelityBondSummary = {
@@ -303,7 +272,7 @@ describe('useCreateFidelityBondWizard', () => {
     }
 
     const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
-    const lockdate = lockdateFromWizard(result.current)
+    const lockdate = minLockdateOption()
 
     act(() => result.current.setSelectedLockdate(lockdate))
     expect(result.current.hasDuplicateLockdate).toBeFalsy()
@@ -324,7 +293,7 @@ describe('useCreateFidelityBondWizard', () => {
 
   it('reflects canProceed gating for each step', () => {
     const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
-    const lockdate = lockdateFromWizard(result.current)
+    const lockdate = minLockdateOption()
 
     // select_date
     expect(result.current.canProceed()).toBe(false)
@@ -421,7 +390,7 @@ describe('useCreateFidelityBondWizard', () => {
 
     it('skips freezing and moves straight to review when all utxos are selected', async () => {
       const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
-      const lockdate = lockdateFromWizard(result.current)
+      const lockdate = minLockdateOption()
 
       act(() => result.current.setSelectedLockdate(lockdate))
       await act(async () => result.current.handleNext())

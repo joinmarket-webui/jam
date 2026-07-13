@@ -2,24 +2,16 @@ import {
   AlertTriangleIcon,
   CheckCircle2Icon,
   CheckIcon,
-  CopyIcon,
-  Loader2Icon,
   CalendarIcon,
   WalletIcon,
   CoinsIcon,
   LockIcon,
 } from 'lucide-react'
 import { Trans } from 'react-i18next'
-import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { jarBadgeVariant } from '@/components/ui/badge-variants'
 import { Button } from '@/components/ui/button'
-import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent } from '@/components/ui/card'
 import { BitcoinAddressQrCode } from '@/components/ui/jam/BitcoinQrCode'
-import { CopyButton } from '@/components/ui/jam/CopyButton'
-import { Label } from '@/components/ui/label'
 import {
   Pagination,
   PaginationContent,
@@ -27,11 +19,20 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
-import { Switch } from '@/components/ui/switch'
 import * as fb from '@/lib/fidelityBondUtils'
 import { clamp, cn, formatSats } from '@/lib/utils'
+import {
+  ConfirmationToggle,
+  CopyableField,
+  InfoCard,
+  InlineLoading,
+  JarBadge,
+  PendingStep,
+  SatsAmount,
+  StepIntro,
+  SuccessHeading,
+} from '../fidelity-bond/FidelityBondDialogParts'
+import { LockdateSelect, lockdateLabel } from '../fidelity-bond/LockdateSelect'
 import type { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
 type Wizard = ReturnType<typeof useCreateFidelityBondWizard>
@@ -45,15 +46,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     step,
     setSelectedLockdate,
     selectedLockdate,
-    selectedYear,
-    selectedMonth,
-    minYear,
-    minMonth,
-    yearOptions,
-    monthOptions,
-    clampLockdate,
     hasDuplicateLockdate,
-    selectedDateLabel,
     selectedJarIndex,
     setSelectedJarIndex,
     jarsWithUtxos,
@@ -77,80 +70,19 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
   } = wizard
 
   const selectedJar = jarsWithUtxos.find((jar) => jar.jarIndex === selectedJarIndex)
+  const selectedDateLabel = selectedLockdate ? lockdateLabel(selectedLockdate) : null
 
   switch (step) {
     case 'select_date':
       return (
         <div className="space-y-6">
-          <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
-            <div className="bg-primary/10 rounded-lg p-2">
-              <CalendarIcon className="text-primary h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium">{t('earn.fidelity_bond.select_date.description')}</p>
-              <p className="text-muted-foreground mt-1 text-sm">{t('earn.fidelity_bond.select_date.subtitle')}</p>
-            </div>
-          </div>
+          <StepIntro
+            icon={CalendarIcon}
+            title={t('earn.fidelity_bond.select_date.description')}
+            subtitle={t('earn.fidelity_bond.select_date.subtitle')}
+          />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="lockdate-month" className="text-sm font-medium">
-                {t('earn.fidelity_bond.select_date.form_label_month')}
-              </Label>
-              <Select
-                value={selectedMonth}
-                onValueChange={(month) => {
-                  const year = selectedYear || String(Number.parseInt(month, 10) >= minMonth ? minYear : minYear + 1)
-                  const newLockdate = clampLockdate(`${year}-${month}`)
-                  setSelectedLockdate(newLockdate)
-                }}
-              >
-                <SelectTrigger id="lockdate-month" className="h-11 w-full">
-                  <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_month')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lockdate-year" className="text-sm font-medium">
-                {t('earn.fidelity_bond.select_date.form_label_year')}
-              </Label>
-              <Select
-                value={selectedYear}
-                onValueChange={(year) => {
-                  const month = selectedMonth || String(year === String(minYear) ? minMonth : 1).padStart(2, '0')
-                  const newLockdate = clampLockdate(`${year}-${month}`)
-                  setSelectedLockdate(newLockdate)
-                }}
-              >
-                <SelectTrigger id="lockdate-year" className="h-11 w-full">
-                  <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_year')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {selectedLockdate && (
-            <div className="bg-primary/5 border-primary/20 rounded-lg border p-4">
-              <p className="text-muted-foreground text-sm">
-                {t('earn.fidelity_bond.select_date.label_selected_lock_date')}
-              </p>
-              <p className="mt-1 text-lg font-semibold">{selectedDateLabel}</p>
-            </div>
-          )}
+          <LockdateSelect id="lockdate" value={selectedLockdate} onChange={setSelectedLockdate} />
 
           {hasDuplicateLockdate && (
             <Alert variant="warning">
@@ -168,15 +100,11 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     case 'select_jar':
       return (
         <div className="space-y-6">
-          <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
-            <div className="bg-primary/10 rounded-lg p-2">
-              <WalletIcon className="text-primary h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium">{t('earn.fidelity_bond.select_jar.title')}</p>
-              <p className="text-muted-foreground mt-1 text-sm">{t('earn.fidelity_bond.select_jar.description')}</p>
-            </div>
-          </div>
+          <StepIntro
+            icon={WalletIcon}
+            title={t('earn.fidelity_bond.select_jar.title')}
+            subtitle={t('earn.fidelity_bond.select_jar.description')}
+          />
 
           <div className="grid gap-3">
             {jarsWithUtxos.map((jar) => {
@@ -228,17 +156,11 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     case 'select_utxos':
       return (
         <div className="space-y-6">
-          <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
-            <div className="bg-primary/10 rounded-lg p-2">
-              <CoinsIcon className="text-primary h-5 w-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">{t('earn.fidelity_bond.select_utxos.title')}</p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t('earn.fidelity_bond.select_utxos.description', { jar: selectedJarIndex })}
-              </p>
-            </div>
-          </div>
+          <StepIntro
+            icon={CoinsIcon}
+            title={t('earn.fidelity_bond.select_utxos.title')}
+            subtitle={t('earn.fidelity_bond.select_utxos.description', { jar: selectedJarIndex })}
+          />
 
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={selectAllUtxos} className="shadow-sm">
@@ -356,15 +278,11 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     case 'freeze_utxos':
       return (
         <div className="space-y-6">
-          <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
-            <div className="bg-primary/10 rounded-lg p-2">
-              <LockIcon className="text-primary h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium">{t('earn.fidelity_bond.freeze_utxos.title')}</p>
-              <p className="text-muted-foreground mt-1 text-sm">{t('earn.fidelity_bond.freeze_utxos.subtitle')}</p>
-            </div>
-          </div>
+          <StepIntro
+            icon={LockIcon}
+            title={t('earn.fidelity_bond.freeze_utxos.title')}
+            subtitle={t('earn.fidelity_bond.freeze_utxos.subtitle')}
+          />
 
           <div className="space-y-4">
             <div className="border-brand-success/20 bg-brand-success/10 rounded-lg border p-4">
@@ -410,60 +328,32 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="bg-muted/50 rounded-lg p-4">
-                <p className="text-muted-foreground mb-1 text-xs">
-                  {t('earn.fidelity_bond.review_inputs.label_lock_date')}
-                </p>
+              <InfoCard label={t('earn.fidelity_bond.review_inputs.label_lock_date')}>
                 <p className="font-semibold">{selectedDateLabel}</p>
-              </div>
-              <div className="bg-muted/50 rounded-lg p-4">
-                <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                <Badge variant={jarBadgeVariant(selectedJarIndex)}>
-                  {selectedJar ? (
-                    <>
-                      {selectedJar.name} <span>#{selectedJar.jarIndex}</span>
-                    </>
-                  ) : (
-                    t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: selectedJarIndex })
-                  )}
-                </Badge>
-              </div>
+              </InfoCard>
+              <InfoCard label={t('earn.fidelity_bond.review_inputs.label_jar')}>
+                <JarBadge jarIndex={selectedJarIndex} name={selectedJar?.name} />
+              </InfoCard>
             </div>
 
-            <div className="bg-primary/5 border-primary/20 rounded-lg border p-4">
-              <p className="text-muted-foreground mb-1 text-xs">{t('earn.fidelity_bond.review_inputs.label_amount')}</p>
-              <p className="font-mono text-2xl font-bold">{formatSats(totalAmount)}</p>
-            </div>
+            <InfoCard highlight label={t('earn.fidelity_bond.review_inputs.label_amount')}>
+              <SatsAmount value={totalAmount} />
+            </InfoCard>
           </div>
 
           {timelockAddressQuery.isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <Loader2Icon className="text-primary mx-auto h-8 w-8 animate-spin" />
-                <p className="text-muted-foreground mt-3">{t('earn.fidelity_bond.text_loading')}</p>
-              </div>
-            </div>
+            <InlineLoading text={t('earn.fidelity_bond.text_loading')} />
           ) : (
             address && (
               <div className="space-y-4">
                 <div className="dark:bg-muted/30 flex justify-center rounded-lg bg-white p-4">
                   <BitcoinAddressQrCode address={address} amount={totalAmount} width={200} />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">{t('earn.fidelity_bond.review_inputs.label_address')}</Label>
-                  <div className="flex items-center gap-2">
-                    <code className="bg-muted flex-1 rounded-lg p-3 font-mono text-xs break-all">{address}</code>
-                    <CopyButton
-                      key="copy-address-review"
-                      value={address}
-                      text={<CopyIcon className="h-4 w-4" />}
-                      successText={<CheckIcon className="text-brand-success h-4 w-4" />}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
-                      onSuccess={() => toast.success(t('receive.text_copy_address'))}
-                      onError={() => toast.error(t('receive.error_copy_address_failed'))}
-                    />
-                  </div>
-                </div>
+                <CopyableField
+                  label={t('earn.fidelity_bond.review_inputs.label_address')}
+                  value={address}
+                  copiedMessage={t('receive.text_copy_address')}
+                />
               </div>
             )
           )}
@@ -479,105 +369,50 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </AlertDescription>
           </Alert>
 
-          <div className="bg-muted/50 flex items-start gap-3 rounded-lg p-4">
-            <Switch
-              id="confirmation"
-              checked={confirmationChecked}
-              onCheckedChange={(checked) => setConfirmationChecked(checked)}
-            />
-            <div className="grid gap-1.5 leading-none">
-              <Label htmlFor="confirmation" className="cursor-pointer text-sm font-medium">
-                {t('earn.fidelity_bond.create_form.confirmation_toggle_title')}
-              </Label>
-              <p className="text-muted-foreground text-xs">
-                {t('earn.fidelity_bond.create_form.confirmation_toggle_subtitle')}
-              </p>
-            </div>
-          </div>
+          <ConfirmationToggle
+            id="confirmation"
+            checked={confirmationChecked}
+            onCheckedChange={setConfirmationChecked}
+          />
         </div>
       )
 
     case 'creating':
       return (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="relative">
-            <Spinner className="h-16 w-16" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <LockIcon className="text-primary h-6 w-6 animate-pulse" />
-            </div>
-          </div>
-          <p className="mt-6 text-lg font-semibold">{t('earn.fidelity_bond.text_creating')}</p>
-          <p className="text-muted-foreground mt-2 text-sm">{t('earn.fidelity_bond.text_creating_subtitle')}</p>
-        </div>
+        <PendingStep
+          icon={LockIcon}
+          title={t('earn.fidelity_bond.text_creating')}
+          subtitle={t('earn.fidelity_bond.text_creating_subtitle')}
+        />
       )
 
     case 'success':
       return (
         <div className="space-y-6">
-          <div className="flex flex-col items-center py-6">
-            <div className="bg-brand-success/10 rounded-full p-4">
-              <CheckCircle2Icon className="text-brand-success h-16 w-16" />
-            </div>
-            <p className="mt-4 text-xl font-bold">{t('earn.fidelity_bond.create_fidelity_bond.success_text')}</p>
-            <p className="text-muted-foreground mt-2 text-sm">
-              {t('earn.fidelity_bond.create_fidelity_bond.text_success_subtitle')}
-            </p>
-          </div>
+          <SuccessHeading
+            title={t('earn.fidelity_bond.create_fidelity_bond.success_text')}
+            subtitle={t('earn.fidelity_bond.create_fidelity_bond.text_success_subtitle')}
+          />
 
           <div className="space-y-3">
-            <div className="bg-muted/50 rounded-lg p-4">
-              <p className="text-muted-foreground mb-1 text-xs">
-                {t('earn.fidelity_bond.create_fidelity_bond.label_lock_date')}
-              </p>
+            <InfoCard label={t('earn.fidelity_bond.create_fidelity_bond.label_lock_date')}>
               <p className="font-semibold">{selectedDateLabel}</p>
-            </div>
+            </InfoCard>
 
             {address && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t('earn.fidelity_bond.create_fidelity_bond.label_address')}
-                </Label>
-                <div className="flex items-center gap-2">
-                  <code className="bg-muted flex-1 rounded-lg p-3 font-mono text-xs break-all">{address}</code>
-                  <CopyButton
-                    key="copy-address-success"
-                    value={address}
-                    text={<CopyIcon className="h-4 w-4" />}
-                    successText={<CheckIcon className="text-brand-success h-4 w-4" />}
-                    className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
-                    onSuccess={() => toast.success(t('receive.text_copy_address'))}
-                    onError={() => toast.error(t('receive.error_copy_address_failed'))}
-                  />
-                </div>
-              </div>
+              <CopyableField
+                label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
+                value={address}
+                copiedMessage={t('receive.text_copy_address')}
+              />
             )}
 
             {txResult?.txinfo?.txid && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
-                </Label>
-                <div className="flex items-center gap-2">
-                  <code className="bg-muted flex-1 rounded-lg p-3 font-mono text-xs break-all">
-                    {txResult.txinfo.txid}
-                  </code>
-                  <CopyButton
-                    key="copy-txid"
-                    value={txResult.txinfo.txid}
-                    text={<CopyIcon className="h-4 w-4" />}
-                    successText={<CheckIcon className="text-brand-success h-4 w-4" />}
-                    className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
-                    onSuccess={() =>
-                      toast.success(t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id'))
-                    }
-                    onError={(error) => {
-                      const reason =
-                        (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
-                      toast.error(t('global.errors.error_copy_to_clipboard_failed', { reason }))
-                    }}
-                  />
-                </div>
-              </div>
+              <CopyableField
+                label={t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
+                value={txResult.txinfo.txid}
+                copiedMessage={t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id')}
+              />
             )}
           </div>
 

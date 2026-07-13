@@ -27,6 +27,13 @@ vi.mock('@/lib/fidelityBondUtils', () => ({
   utxo: {
     isFidelityBond: vi.fn(),
   },
+  lockdate: {
+    toTimestamp: () => Date.UTC(2025, 0, 1),
+  },
+}))
+
+vi.mock('@/store/jamSettingsStore', () => ({
+  useDeveloperMode: () => ({ enabled: false }),
 }))
 
 const getBaseWizard = (): Wizard =>
@@ -34,15 +41,7 @@ const getBaseWizard = (): Wizard =>
     step: 'select_date',
     setSelectedLockdate: vi.fn(),
     selectedLockdate: '2025-01',
-    selectedYear: '2025',
-    selectedMonth: '01',
-    minYear: 2024,
-    minMonth: 1,
-    yearOptions: [{ value: '2025', label: '2025' }],
-    monthOptions: [{ value: '01', label: 'Jan' }],
-    clampLockdate: vi.fn((x: unknown) => x),
     hasDuplicateLockdate: false,
-    selectedDateLabel: 'Jan 2025',
     selectedJarIndex: 0,
     setSelectedJarIndex: vi.fn(),
     jarsWithUtxos: [],
@@ -72,7 +71,7 @@ describe('CreateFidelityBondDialogSteps', () => {
 
     expect(screen.getByText('earn.fidelity_bond.select_date.description')).toBeInTheDocument()
     expect(screen.getByText('earn.fidelity_bond.select_date.form_label_month')).toBeInTheDocument()
-    expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+    expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
   })
 
   it('renders select_jar step with jars', () => {
