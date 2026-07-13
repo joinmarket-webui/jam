@@ -1,17 +1,16 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { getaddressOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
-import { AlertTriangleIcon, CheckCircle2Icon, UnlockIcon } from 'lucide-react'
+import { AlertTriangleIcon, UnlockIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
-import { cn, formatSats, type WalletFileName } from '@/lib/utils'
+import type { WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
@@ -26,6 +25,7 @@ import {
   StepIntro,
   SuccessHeading,
 } from './fidelity-bond/FidelityBondDialogParts'
+import { FidelityBondJarSelector } from './fidelity-bond/FidelityBondJarSelector'
 import { WizardStepFooter } from './fidelity-bond/WizardStepFooter'
 import { useFidelityBondSweep } from './fidelity-bond/useFidelityBondSweep'
 
@@ -58,11 +58,6 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   })
 
   const destinationJar = walletInfo.jars.find((jar) => jar.jarIndex === selectedJarIndex)
-
-  // All jars except the FB's source jar are valid destinations
-  const destinationJars = useMemo(() => {
-    return walletInfo.jars.filter((jar) => jar.jarIndex !== utxo.mixdepth)
-  }, [walletInfo.jars, utxo.mixdepth])
 
   const getAddressQueryOptions = getaddressOptions({
     client,
@@ -156,39 +151,11 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
             <SatsAmount value={utxo.value} className="text-lg" />
           </InfoCard>
 
-          <div className="grid gap-3">
-            {destinationJars.map((jar) => {
-              const isSelected = selectedJarIndex === jar.jarIndex
-              return (
-                <Card
-                  key={jar.jarIndex}
-                  className={cn(
-                    'cursor-pointer transition-all duration-200 hover:shadow-md',
-                    isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'hover:bg-muted/30',
-                  )}
-                  onClick={() => setSelectedJarIndex(jar.jarIndex)}
-                >
-                  <CardContent className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div
-                        className="h-10 w-10 rounded-full shadow-sm"
-                        style={{ backgroundColor: jar.color, opacity: 0.8 }}
-                      />
-                      <div>
-                        <p className="font-semibold">{jar.name}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono font-semibold">
-                        {formatSats(jar.balanceSummary.calculatedAvailableBalanceInSats)}
-                      </p>
-                      {isSelected && <CheckCircle2Icon className="text-primary mt-1 ml-auto h-5 w-5" />}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+          <FidelityBondJarSelector
+            selectedJarIndex={selectedJarIndex}
+            onSelect={setSelectedJarIndex}
+            isJarDisabled={(jar) => jar.jarIndex === utxo.mixdepth}
+          />
         </div>
       )}
 

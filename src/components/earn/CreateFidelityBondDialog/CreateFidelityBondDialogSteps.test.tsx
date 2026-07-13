@@ -36,6 +36,34 @@ vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: false }),
 }))
 
+vi.mock('@/context/JamWalletInfoContext', () => ({
+  useJamWalletInfoContext: () => ({
+    jars: [
+      { jarIndex: 0, name: 'Jar 0', color: '#000', balanceSummary: {}, utxos: [] },
+      { jarIndex: 1, name: 'Jar 1', color: '#111', balanceSummary: {}, utxos: [] },
+    ],
+    walletBalanceSummary: { calculatedTotalBalanceInSats: 14000 },
+  }),
+}))
+
+vi.mock('@/components/ui/jam/SelectableJar', () => ({
+  SelectableJar: ({
+    name,
+    onClick,
+    disabled,
+    isSelected,
+  }: {
+    name?: string
+    onClick?: () => void
+    disabled?: boolean
+    isSelected?: boolean
+  }) => (
+    <button onClick={onClick} disabled={disabled} data-selected={isSelected}>
+      {name}
+    </button>
+  ),
+}))
+
 const getBaseWizard = (): Wizard =>
   ({
     step: 'select_date',
@@ -89,8 +117,9 @@ describe('CreateFidelityBondDialogSteps', () => {
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
 
     expect(screen.getByText('earn.fidelity_bond.select_jar.title')).toBeInTheDocument()
-    expect(screen.getByText('Jar 0')).toBeInTheDocument()
-    expect(screen.getByText('5000 sats')).toBeInTheDocument()
+    // Jar 0 is eligible, Jar 1 has no eligible utxos and is disabled
+    expect(screen.getByText('Jar 0')).toBeEnabled()
+    expect(screen.getByText('Jar 1')).toBeDisabled()
   })
 
   it('renders select_utxos step', () => {
@@ -176,7 +205,7 @@ describe('CreateFidelityBondDialogSteps', () => {
     ] as unknown as Wizard['jarsWithUtxos']
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
     expect(screen.getByText('Jar 0')).toBeInTheDocument()
-    expect(screen.getByText('Jar 1')).toBeInTheDocument()
+    expect(screen.getByText('Jar 1')).toHaveAttribute('data-selected', 'true')
   })
 
   it('renders select_utxos with a selected utxo, pagination, and the all-funds warning', () => {

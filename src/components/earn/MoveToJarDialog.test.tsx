@@ -64,8 +64,27 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
         utxos: [],
       },
     ],
+    walletBalanceSummary: { calculatedTotalBalanceInSats: 6000 },
     refetch: h.refetch,
   }),
+}))
+
+vi.mock('@/components/ui/jam/SelectableJar', () => ({
+  SelectableJar: ({
+    name,
+    onClick,
+    disabled,
+    isSelected,
+  }: {
+    name?: string
+    onClick?: () => void
+    disabled?: boolean
+    isSelected?: boolean
+  }) => (
+    <button onClick={onClick} disabled={disabled} data-selected={isSelected}>
+      {name}
+    </button>
+  ),
 }))
 
 vi.mock('@/components/ui/dialog', () => ({

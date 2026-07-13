@@ -1,12 +1,4 @@
-import {
-  AlertTriangleIcon,
-  CheckCircle2Icon,
-  CheckIcon,
-  CalendarIcon,
-  WalletIcon,
-  CoinsIcon,
-  LockIcon,
-} from 'lucide-react'
+import { AlertTriangleIcon, CheckIcon, CalendarIcon, WalletIcon, CoinsIcon, LockIcon } from 'lucide-react'
 import { Trans } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -19,7 +11,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import * as fb from '@/lib/fidelityBondUtils'
 import { clamp, cn, formatSats } from '@/lib/utils'
 import {
   ConfirmationToggle,
@@ -32,6 +23,7 @@ import {
   StepIntro,
   SuccessHeading,
 } from '../fidelity-bond/FidelityBondDialogParts'
+import { FidelityBondJarSelector } from '../fidelity-bond/FidelityBondJarSelector'
 import { LockdateSelect, lockdateLabel } from '../fidelity-bond/LockdateSelect'
 import type { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
@@ -106,44 +98,11 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             subtitle={t('earn.fidelity_bond.select_jar.description')}
           />
 
-          <div className="grid gap-3">
-            {jarsWithUtxos.map((jar) => {
-              const isSelected = selectedJarIndex === jar.jarIndex
-              return (
-                <Card
-                  key={jar.jarIndex}
-                  className={cn(
-                    'cursor-pointer transition-all duration-200 hover:shadow-md',
-                    isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'hover:bg-muted/30',
-                  )}
-                  onClick={() => setSelectedJarIndex(jar.jarIndex)}
-                >
-                  <CardContent className="flex flex-col items-start justify-between gap-3 p-4 sm:flex-row sm:items-center">
-                    <div className="flex min-w-0 items-center gap-4">
-                      <div
-                        className="h-10 w-10 rounded-full shadow-sm"
-                        style={{ backgroundColor: jar.color, opacity: 0.8 }}
-                      />
-                      <div>
-                        <p className="font-semibold">{jar.name}</p>
-                        <p className="text-muted-foreground text-sm">
-                          {t('earn.fidelity_bond.select_jar.text_available_utxos', {
-                            count: jar.utxos.filter((u) => !u.frozen && !fb.utxo.isFidelityBond(u)).length,
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-left sm:text-right">
-                      <p className="font-mono font-semibold">
-                        {formatSats(jar.balanceSummary.calculatedAvailableBalanceInSats)}
-                      </p>
-                      {isSelected && <CheckCircle2Icon className="text-primary mt-1 ml-auto h-5 w-5" />}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+          <FidelityBondJarSelector
+            selectedJarIndex={selectedJarIndex}
+            onSelect={setSelectedJarIndex}
+            isJarDisabled={(jar) => !jarsWithUtxos.some((eligible) => eligible.jarIndex === jar.jarIndex)}
+          />
           {jarsWithUtxos.length === 0 && (
             <Alert variant="warning">
               <AlertTriangleIcon className="h-4 w-4" />
