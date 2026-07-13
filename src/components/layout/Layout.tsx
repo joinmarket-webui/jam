@@ -15,9 +15,8 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useJmWebsocketContext } from '@/context/JmWebsocketContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useFeatures } from '@/hooks/useFeatures'
-import { useJamInfo } from '@/hooks/useJamInfo'
-import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
-import { parseSemanticVersion, type WalletFileName } from '@/lib/utils'
+import { useQueryJamInfo } from '@/hooks/useQueryJamInfo'
+import { type WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { LogsOverlay } from '../LogsOverlay'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
@@ -42,17 +41,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const rescanStatus = useRescanStatus()
 
-  const { version: nativeJoinmarketVersion, backend: nativeBackendName } = useQueryJmInfo()
-  const { info: jamInfo } = useJamInfo()
-  const standaloneJoinmarketVersion = jamInfo?.backend.version
-    ? parseSemanticVersion(jamInfo.backend.version)
-    : undefined
-  const hasStandaloneBackendVersion =
-    standaloneJoinmarketVersion?.raw !== undefined && standaloneJoinmarketVersion.raw !== 'unknown'
-  const isJamStandalone = jamInfo?.backend !== undefined
-  const backendName = isJamStandalone ? 'jam-standalone (' + jamInfo.backend.name + ')' : nativeBackendName
-  const joinmarketVersion =
-    isJamStandalone && hasStandaloneBackendVersion ? standaloneJoinmarketVersion : nativeJoinmarketVersion
+  const { backendName, joinmarketVersion } = useQueryJamInfo()
 
   const { resolvedTheme = JAM_DEFAULT_THEME, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')

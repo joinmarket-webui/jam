@@ -12,8 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useJamInfo } from '@/hooks/useJamInfo'
-import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
+import { useQueryJamInfo } from '@/hooks/useQueryJamInfo'
 import { cn } from '@/lib/utils'
 
 type OnboardingStep = {
@@ -57,10 +56,8 @@ interface OnboardingDialogProps {
 
 export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) => {
   const { t } = useTranslation()
-  const { backend } = useQueryJmInfo()
-  const { info: jamInfo } = useJamInfo()
-  const resolvedBackend = jamInfo?.backend.name ?? backend
-  const isJoinmarketNg = resolvedBackend?.includes('joinmarket-ng') === true
+  const { backendName } = useQueryJamInfo()
+  const isJoinmarketNg = backendName?.includes('joinmarket-ng') === true
   const [step, setStep] = useState(0)
 
   const isSplashStep = step === 0

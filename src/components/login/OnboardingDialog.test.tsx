@@ -8,16 +8,14 @@ const mocks = vi.hoisted(() => ({
   jamInfo: undefined as { backend: { name: string; version: string } } | undefined,
 }))
 
-vi.mock('@/hooks/useQueryJmInfo', () => ({
-  useQueryJmInfo: () => ({
-    backend: mocks.backend,
-  }),
-}))
-
-vi.mock('@/hooks/useJamInfo', () => ({
-  useJamInfo: () => ({
-    info: mocks.jamInfo,
-  }),
+vi.mock('@/hooks/useQueryJamInfo', () => ({
+  useQueryJamInfo: () => {
+    const isJamStandalone = mocks.jamInfo !== undefined
+    const backendName = isJamStandalone ? `jam-standalone (${mocks.jamInfo?.backend?.name || ''})` : mocks.backend
+    return {
+      backendName,
+    }
+  },
 }))
 
 describe('<OnboardingDialog />', () => {
@@ -49,7 +47,7 @@ describe('<OnboardingDialog />', () => {
 
     render(<OnboardingDialog open onOpenChange={vi.fn()} />)
 
-    expect(screen.getByText(/JoinMarket-NG backend is bleeding edge/i)).toBeInTheDocument()
+    expect(screen.getByText(/JoinMarket NG backend is bleeding edge/i)).toBeInTheDocument()
   })
 
   it('shows the joinmarket-ng splash warning when using standalone-ng', () => {
@@ -58,7 +56,7 @@ describe('<OnboardingDialog />', () => {
 
     render(<OnboardingDialog open onOpenChange={vi.fn()} />)
 
-    expect(screen.getByText(/JoinMarket-NG backend is bleeding edge/i)).toBeInTheDocument()
+    expect(screen.getByText(/JoinMarket NG backend is bleeding edge/i)).toBeInTheDocument()
   })
 
   it('can go back to the splash screen and skip the intro', () => {

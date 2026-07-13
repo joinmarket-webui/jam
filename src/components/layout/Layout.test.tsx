@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { UseQueryResult } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { WalletFileName } from '@/lib/utils'
@@ -96,14 +97,14 @@ vi.mock('@/components/layout/AppFooter', () => ({
     onClickOrderbook,
   }: {
     blockHeight?: number
-    joinmarketVersion?: string
+    joinmarketVersion?: { raw?: string }
     backendName?: string
     onClickCheatsheet: () => void
     onClickLogs?: () => void
     onClickOrderbook: () => void
   }) => (
     <footer>
-      footer:{blockHeight}:{joinmarketVersion}:{backendName}
+      footer:{blockHeight}:{joinmarketVersion?.raw}:{backendName}
       <button type="button" onClick={onClickCheatsheet}>
         open-cheatsheet
       </button>
@@ -169,17 +170,31 @@ vi.mock('@/hooks/useFeatures', () => ({
   }),
 }))
 
-vi.mock('@/hooks/useJamInfo', () => ({
-  useJamInfo: () => ({
-    info: mocks.jamInfo,
-  }),
-}))
+vi.mock('@/hooks/useQueryJamInfo', () => ({
+  useQueryJamInfo: () => {
+    const isJamStandalone = mocks.jamInfo !== undefined
+    const rawVersion = mocks.jamInfo?.backend.version
+    const isSemantic = rawVersion && /^v?(\d+)\.(\d+)\.(\d+).*$/.test(rawVersion)
+    const standaloneJoinmarketVersion = rawVersion ? { raw: rawVersion, major: 0, minor: 0, patch: 0 } : undefined
+    const hasStandaloneBackendVersion = isSemantic === true
 
-vi.mock('@/hooks/useQueryJmInfo', () => ({
-  useQueryJmInfo: () => ({
-    version: 'jm-version',
-    backend: 'joinmarket-clientserver',
-  }),
+    const backendName = isJamStandalone
+      ? `jam-standalone (${mocks.jamInfo?.backend?.name || ''})`
+      : 'joinmarket-clientserver'
+
+    const joinmarketVersion =
+      isJamStandalone && hasStandaloneBackendVersion
+        ? standaloneJoinmarketVersion
+        : { raw: 'jm-version', major: 0, minor: 0, patch: 0 }
+
+    return {
+      info: mocks.jamInfo,
+      isJamStandalone,
+      backendName,
+      joinmarketVersion,
+      queryResult: {} as unknown as UseQueryResult<unknown, unknown>,
+    }
+  },
 }))
 
 vi.mock('@/components/ui/jam/Cheatsheet', () => ({
