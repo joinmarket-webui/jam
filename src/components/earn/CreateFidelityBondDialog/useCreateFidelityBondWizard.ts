@@ -55,7 +55,7 @@ export function useCreateFidelityBondWizard(
   })
 
   const watchedLockdate = useWatch({ control: form.control, name: 'lockdate' })
-  const selectedLockdate = watchedLockdate ?? ''
+  const selectedLockdate: fb.Lockdate | '' = watchedLockdate ?? ''
   const selectedJarIndex = useWatch({ control: form.control, name: 'source.fromJar' })
   const selectedUtxoIds = useWatch({
     control: form.control,
