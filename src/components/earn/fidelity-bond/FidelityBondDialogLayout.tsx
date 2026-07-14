@@ -49,7 +49,8 @@ export function FidelityBondDialogLayout({
           </Alert>
         )}
 
-        <div className="min-h-0 flex-1 overflow-y-auto py-2">{children}</div>
+        {/* negative margin + matching padding keep the scrollbar in the dialog padding, clear of content */}
+        <div className="-mr-4 min-h-0 flex-1 overflow-y-auto py-2 pr-4 sm:-mr-6 sm:pr-6">{children}</div>
 
         {footer && <DialogFooter className="gap-3 sm:gap-2">{footer}</DialogFooter>}
       </DialogContent>
