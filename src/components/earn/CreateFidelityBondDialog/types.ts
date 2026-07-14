@@ -24,7 +24,8 @@ export function generateLockdateOptions(isDeveloperMode: boolean): { value: fb.L
   for (let i = startOffset; i <= 120; i++) {
     const monthOffset = startMonth + i
     const year = startYear + Math.floor(monthOffset / 12)
-    const month = (monthOffset % 12) + 1
+    // floored modulo — monthOffset is negative for past months in dev mode
+    const month = (((monthOffset % 12) + 12) % 12) + 1
     const lockdate = `${year}-${month.toString().padStart(2, '0')}` as fb.Lockdate
     const date = new Date(Date.UTC(year, month - 1, 1))
     const label = date.toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
