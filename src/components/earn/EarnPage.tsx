@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangleIcon, FileTextIcon, HourglassIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import {
+  AlertTriangleIcon,
+  FileTextIcon,
+  HourglassIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  ShuffleIcon,
+  UnlockIcon,
+} from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -371,6 +379,16 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               )
             })}
           </div>
+          {/* Existing bonds hide the create button — expose it in developer mode to test multiple bonds */}
+          {isDeveloperMode && (
+            <div className="mt-2 flex items-center gap-2">
+              <Button variant="outline" onClick={() => setShowCreateFidelityBondDialog(true)}>
+                <PlusIcon />
+                {t('earn.fidelity_bond.create_form.button_create')}
+              </Button>
+              <DevBadge />
+            </div>
+          )}
         </>
       )}
 
