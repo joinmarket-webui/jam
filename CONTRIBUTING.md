@@ -5,12 +5,12 @@ The aim of this document is to help you get setup for participating in all areas
 
 ## Understanding the Components Involved
 
-Jam is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) with focus on user-friendliness.
-The web UI's purpose is to be a rather lightweight front end for the JoinMarket API.
-To function, the web UI needs to connect to an instance of JoinMarket with [the API service](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md) running.
+Jam is a web UI for [JoinMarket NG](https://github.com/joinmarket-ng/joinmarket-ng) with focus on user-friendliness.
+The web UI's purpose is to be a rather lightweight front end for the JoinMarket NG API.
+To function, the web UI needs to connect to an instance of JoinMarket NG with [the API service](https://joinmarket-ng.github.io/joinmarket-ng/README-jmwalletd/) running.
 
 You don't need to worry about that, though.
-To ease development and testing, we provide a Docker setup that runs JoinMarket and its API service in a regtest setup.
+To ease development and testing, we provide a Docker setup that runs JoinMarket NG and its API service in a regtest setup.
 
 ## Local setup (regtest and UI)
 
@@ -22,7 +22,7 @@ Install dependencies:
 npm install
 ```
 
-Start the JoinMarket HTTP API service in regtest.
+Start the JoinMarket NG HTTP API service in regtest.
 It isn't needed to dig deeper into how it works to use it.
 However, if you want to find out more about it, see [docker/regtest/readme.md](docker/regtest/readme.md).
 
