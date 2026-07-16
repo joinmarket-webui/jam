@@ -236,9 +236,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
           <Accordion type="single" collapsible>
             <AccordionItem value="options">
               <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
-              <AccordionContent className="flex flex-col gap-4">
+              <AccordionContent
+                className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+              >
                 <ReceiveForm
-                  className={'mx-1' /* add x-spacing for input component focus state*/}
                   defaultValues={receiveFormDefaultValues}
                   jars={jars}
                   disabled={getAddressMutation.isPending}

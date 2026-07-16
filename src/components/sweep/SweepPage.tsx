@@ -17,7 +17,6 @@ import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
-import { getSweepDestinationAddresses } from '@/components/sweep/SweepFormSchema'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
@@ -29,6 +28,7 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import type { TumblerParameters } from '@/constants/jm'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -37,7 +37,6 @@ import { getErrorReason } from '@/lib/errorReason'
 import { percentageToFactor, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import type { AmountSats } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 import { SweepForm } from './SweepForm'
 
@@ -47,31 +46,6 @@ interface SweepPageProps {
 
 const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
-
-// https://github.com/joinmarket-ng/joinmarket-ng/blob/0.33.0/tumbler/src/tumbler/builder.py#L49
-interface TumblerParameters {
-  maker_count_min: number // default: 5
-  maker_count_max: number // default: 9
-  // Average wait between phases (mean of an exponential distribution)
-  time_lambda_seconds: number // default: 6 hours
-  // Multiplier on ``time_lambda_seconds`` for stage-1 (cleavage) sweeps
-  stage1_wait_multiplier: number // default: 3.0
-  include_maker_sessions: boolean // default: true
-  mincjamount_sats: AmountSats // default: 100_000
-  maker_session_seconds: number // default: 12.0 * 60.0 * 60.0
-  /**
-   * If set, maker phases exit successfully when no CoinJoin has been served
-   * within this many seconds. Useful as a safety fallback when the wallet is
-   * never selected as a counterparty.
-   */
-  maker_session_idle_timeout_seconds: number | undefined // default: undefined
-  // Minimum number of destination-bearing taker CJs per mixdepth (excluding sweep).
-  mintxcount: number // default: 2
-  // Maximum re-tries per failed taker CoinJoin phase before the plan fails
-  max_phase_retries: number // default: 3
-  // Probability that any given non-sweep taker CJ amount is rounded to a random number of significant figures. Set to 0.0 to disable rounding entirely.
-  rounding_chance: number // default: 0.25
-}
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_count_min: 1,
@@ -346,23 +320,20 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                 <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
 
                 <SweepForm
-                  className=""
                   addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
                   debug={isDeveloperMode}
                   onSubmit={async (values) => {
                     const parameters: Partial<TumblerParameters> = {
-                      ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
-                      ...(values.roundingChanceInPercent !== undefined
-                        ? {
-                            rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
-                          }
-                        : {}),
                       include_maker_sessions: values.includeMakerSessions,
+                      maker_count_min: values.minNumberOfCollaborators,
+                      maker_count_max: values.maxNumberOfCollaborators,
+                      rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
+                      ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
                     }
                     const body: TumblerPlanRequest = {
                       force: true,
-                      destinations: getSweepDestinationAddresses(values),
+                      destinations: values.destinations.map((it) => it.address),
                       parameters,
                     }
 

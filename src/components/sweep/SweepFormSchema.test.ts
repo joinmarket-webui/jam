@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import {
   buildSweepDestinationValues,
-  getSweepDestinationAddresses,
+  buildSweepFormValuesDefaultValues,
   sweepFormSchema,
   type SweepFormValues,
 } from './SweepFormSchema'
@@ -20,17 +20,10 @@ describe('sweepFormSchema', () => {
     expect(buildSweepDestinationValues(3)).toEqual([{ address: '' }, { address: '' }, { address: '' }])
   })
 
-  it('normalizes destination addresses', () => {
-    expect(
-      getSweepDestinationAddresses({
-        destinations: [{ address: `  ${validRegtestAddress}  ` }],
-      }),
-    ).toEqual([validRegtestAddress])
-  })
-
   it('rejects invalid addresses per destination field', async () => {
     await expect(
       validate({
+        ...buildSweepFormValuesDefaultValues(),
         destinations: [{ address: 'invalid-address' }, { address: '' }],
       }),
     ).rejects.toMatchObject({
@@ -50,6 +43,7 @@ describe('sweepFormSchema', () => {
   it('rejects duplicate destination addresses', async () => {
     await expect(
       validate({
+        ...buildSweepFormValuesDefaultValues(),
         destinations: [{ address: validRegtestAddress }, { address: validRegtestAddress }],
       }),
     ).rejects.toMatchObject({
@@ -77,6 +71,7 @@ describe('sweepFormSchema', () => {
     await expect(
       validate(
         {
+          ...buildSweepFormValuesDefaultValues(),
           destinations: [{ address: usedAddress }],
         },
         addressSummary,

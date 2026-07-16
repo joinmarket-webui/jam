@@ -66,3 +66,52 @@ export const FEE_CONFIG_KEYS: Record<FeeConfigName, ConfigKey> = {
   max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
   max_sweep_fee_change: { section: 'POLICY', field: 'max_sweep_fee_change' },
 }
+
+// https://github.com/joinmarket-ng/joinmarket-ng/blob/0.33.0/tumbler/src/tumbler/builder.py#L49 (last checked: 2026-07-14)
+export interface TumblerParameters {
+  maker_count_min: number // default: 5
+  maker_count_max: number // default: 9
+  // Average wait between phases (mean of an exponential distribution)
+  time_lambda_seconds: number // default: 6 hours
+  // Multiplier on ``time_lambda_seconds`` for stage-1 (cleavage) sweeps
+  stage1_wait_multiplier: number // default: 3.0
+  include_maker_sessions: boolean // default: true
+  mincjamount_sats: AmountSats // default: 100_000
+  maker_session_seconds: number // default: 12.0 * 60.0 * 60.0
+  /**
+   * If set, maker phases exit successfully when no CoinJoin has been served
+   * within this many seconds. Useful as a safety fallback when the wallet is
+   * never selected as a counterparty.
+   */
+  maker_session_idle_timeout_seconds: number | undefined // default: undefined
+  // Minimum number of destination-bearing taker CJs per mixdepth (excluding sweep).
+  mintxcount: number // default: 2
+  // Maximum re-tries per failed taker CoinJoin phase before the plan fails
+  max_phase_retries: number // default: 3
+  // Probability that any given non-sweep taker CJ amount is rounded to a random number of significant figures. Set to 0.0 to disable rounding entirely.
+  rounding_chance: number // default: 0.25
+}
+
+export const JM_NG_DEFAULT_TUMBLER_PARAMS: TumblerParameters = {
+  maker_count_min: 5, // default: 5
+  maker_count_max: 9, // default: 9
+  // Average wait between phases (mean of an exponential distribution)
+  time_lambda_seconds: 6 * 60 * 60, // default: 6 hours
+  // Multiplier on ``time_lambda_seconds`` for stage-1 (cleavage) sweeps
+  stage1_wait_multiplier: 3, // default: 3.0
+  include_maker_sessions: true, // default: true
+  mincjamount_sats: 100_000, // default: 100_000
+  maker_session_seconds: 12 * 60 * 60, // default: 12.0 * 60.0 * 60.0
+  /**
+   * If set, maker phases exit successfully when no CoinJoin has been served
+   * within this many seconds. Useful as a safety fallback when the wallet is
+   * never selected as a counterparty.
+   */
+  maker_session_idle_timeout_seconds: undefined, // default: undefined
+  // Minimum number of destination-bearing taker CJs per mixdepth (excluding sweep).
+  mintxcount: 2, // default: 2
+  // Maximum re-tries per failed taker CoinJoin phase before the plan fails
+  max_phase_retries: 3, // default: 3
+  // Probability that any given non-sweep taker CJ amount is rounded to a random number of significant figures. Set to 0.0 to disable rounding entirely.
+  rounding_chance: 0.25, // default: 0.25
+}

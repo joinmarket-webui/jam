@@ -10,18 +10,24 @@ import {
   sweepFormSchema,
   type SweepResolverContext,
   type SweepFormValues,
+  buildSweepFormValuesDefaultValues,
+  MIN_DESTINATION_ADDRESS_COUNT_DEV,
+  MIN_DESTINATION_ADDRESS_COUNT_PROD,
+  MIN_MIN_NUMBER_OF_COLLABORATORS,
+  MAX_MAX_NUMBER_OF_COLLABORATORS,
+  MIN_ROUNDING_CHANCE_FACTOR,
+  MAX_ROUNDING_CHANCE_FACTOR,
 } from '@/components/sweep/SweepFormSchema'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
-import { cn } from '@/lib/utils'
+import { cn, factorToPercentage } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
+import { Card, CardContent, CardHeader } from '../ui/card'
 import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
-
-const DESTINATION_ADDRESS_COUNT_PROD = 3
 
 const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
   const newAddressFromDefaultJar =
@@ -37,18 +43,20 @@ const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string
 interface SweepFormProps {
   className?: string
   onSubmit: SubmitHandler<SweepFormValues>
+  initialValues?: Partial<SweepFormValues>
   addressSummary: AddressSummary
   disabled?: boolean
   debug?: boolean
 }
 
-export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug }: SweepFormProps) => {
+export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, disabled, debug }: SweepFormProps) => {
   const { t } = useTranslation()
 
   const showInsecureScheduleTestingToggle = debug && isDebugFeatureEnabled('insecureScheduleTesting')
 
+  const defaultValues = useMemo(() => buildSweepFormValuesDefaultValues(), [])
+
   const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
-  const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
   const { formState, register, control, setValue, handleSubmit, trigger } = useForm<
     SweepFormValues,
     SweepResolverContext,
@@ -56,9 +64,12 @@ export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug
   >({
     mode: 'onSubmit',
     defaultValues: {
-      destinations: initialDestinations,
-      includeMakerSessions: true,
-      roundingChanceInPercent: 25,
+      ...defaultValues,
+      destinations: defaultValues?.destinations ?? buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_PROD),
+    },
+    values: {
+      ...defaultValues,
+      ...initialValues,
     },
     resolver: yupResolver(schema),
   })
@@ -70,10 +81,16 @@ export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug
     setValue('useInsecureTestingSettings', checked)
 
     if (checked) {
-      destinationsFieldArray.replace([{ address: getNewTestingDestinationAddress(addressSummary) }])
+      destinationsFieldArray.replace(
+        buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_DEV).map(() => ({
+          address: getNewTestingDestinationAddress(addressSummary),
+        })),
+      )
       void trigger('destinations')
     } else {
-      destinationsFieldArray.replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
+      destinationsFieldArray.replace(
+        defaultValues?.destinations ?? buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_PROD),
+      )
     }
   }
 
@@ -110,14 +127,16 @@ export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug
       )}
 
       <SweepDestinationInputs
-        minNumberOfFields={formWatch.useInsecureTestingSettings ? 1 : DESTINATION_ADDRESS_COUNT_PROD}
+        minNumberOfFields={
+          formWatch.useInsecureTestingSettings ? MIN_DESTINATION_ADDRESS_COUNT_DEV : MIN_DESTINATION_ADDRESS_COUNT_PROD
+        }
         register={register}
         setValue={setValue}
         formState={formState}
         fields={destinationsFieldArray.fields}
         disabled={disabled}
         onClickAppend={() => {
-          destinationsFieldArray.append([{ address: '' }], { shouldFocus: false })
+          destinationsFieldArray.append(buildSweepDestinationValues(1), { shouldFocus: false })
         }}
         onClickRemove={(index: number) => {
           destinationsFieldArray.remove(index)
@@ -138,7 +157,7 @@ export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug
           </AccordionTrigger>
 
           <AccordionContent
-            className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
+            className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
           >
             <div className="flex items-center gap-2">
               <Switch
@@ -157,6 +176,39 @@ export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug
             </div>
             <div className="flex flex-col justify-center gap-2">
               <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="slider-min-max-maker" className="flex flex-col items-start gap-0">
+                  {/* TODO: i18n */}
+                  <div className="flex items-center gap-2 font-medium">Number of collaborators</div>
+                  <div className="text-muted-foreground text-sm">
+                    More collaborators are better for privacy, but also increase transaction fees.
+                  </div>
+                </Label>
+                <span className="text-foreground">
+                  {formWatch.minNumberOfCollaborators} - {formWatch.maxNumberOfCollaborators}
+                </span>
+              </div>
+              <Slider
+                id="slider-min-max-maker"
+                min={MIN_MIN_NUMBER_OF_COLLABORATORS}
+                max={MAX_MAX_NUMBER_OF_COLLABORATORS}
+                minStepsBetweenThumbs={1}
+                value={[
+                  formWatch.minNumberOfCollaborators ??
+                    defaultValues?.minNumberOfCollaborators ??
+                    MIN_MIN_NUMBER_OF_COLLABORATORS,
+                  formWatch.maxNumberOfCollaborators ??
+                    defaultValues?.maxNumberOfCollaborators ??
+                    MAX_MAX_NUMBER_OF_COLLABORATORS,
+                ]}
+                onValueChange={(values: number[]) => {
+                  setValue('minNumberOfCollaborators', values[0])
+                  setValue('maxNumberOfCollaborators', values[1])
+                }}
+                disabled={disabled}
+              />
+            </div>
+            <div className="flex flex-col justify-center gap-2">
+              <div className="flex items-center justify-between gap-2">
                 <Label htmlFor="slider-rounding-chance-in-percent" className="flex flex-col items-start gap-0">
                   {/* TODO: i18n */}
                   <div className="flex items-center gap-2 font-medium">Round output amount probability</div>
@@ -168,8 +220,8 @@ export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug
               </div>
               <Slider
                 id="slider-rounding-chance-in-percent"
-                min={0}
-                max={100}
+                min={factorToPercentage(MIN_ROUNDING_CHANCE_FACTOR)}
+                max={factorToPercentage(MAX_ROUNDING_CHANCE_FACTOR)}
                 value={
                   formWatch.roundingChanceInPercent === undefined ? undefined : [formWatch.roundingChanceInPercent]
                 }
@@ -192,6 +244,41 @@ export const SweepForm = ({ className, onSubmit, addressSummary, disabled, debug
           t('scheduler.button_start')
         )}
       </Button>
+
+      {debug && (
+        <Card className="mt-8">
+          <CardHeader className="grid">
+            <DevBadge className="justify-self-end" />
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <div className="overflow-scroll">
+              <code className="text-destructive">errors:</code>
+              <pre className="text-xs">
+                {JSON.stringify(formState.errors.maxNumberOfCollaborators?.message, null, 2)}
+              </pre>
+              <pre className="text-xs">
+                {JSON.stringify(formState.errors.minNumberOfCollaborators?.message, null, 2)}
+              </pre>
+
+              <pre className="text-xs">{JSON.stringify(formState.errors.destinations?.message, null, 2)}</pre>
+              <pre className="text-xs">
+                {JSON.stringify(formState.errors.destinations?.[0]?.address?.message, null, 2)}
+              </pre>
+              <pre className="text-xs">
+                {JSON.stringify(formState.errors.destinations?.[1]?.address?.message, null, 2)}
+              </pre>
+              <pre className="text-xs">
+                {JSON.stringify(formState.errors.destinations?.[2]?.address?.message, null, 2)}
+              </pre>
+
+              <pre className="text-xs">
+                {JSON.stringify(formState.errors.roundingChanceInPercent?.message, null, 2)}
+              </pre>
+              <pre className="text-xs">{JSON.stringify(formState.errors.includeMakerSessions?.message, null, 2)}</pre>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </form>
   )
 }

@@ -10,9 +10,9 @@ import type { SweepFormValues } from './SweepFormSchema'
 import { SweepPage } from './SweepPage'
 
 const VALID_DESTINATIONS = [
-  'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
-  '1BoatSLRHtKNngkdXEeobR76b53LETtpyT',
-  '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy',
+  'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk',
+  'mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV',
+  '2Mww8dCYPUpKHofjgcXcBCEGmniw9CoaiD2',
 ]
 
 type WalletInfo = ReturnType<typeof useJamWalletInfoContext>
@@ -378,17 +378,22 @@ describe('SweepPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
 
     await waitFor(() => expect(mocks.planTumbler).toHaveBeenCalledTimes(1))
-    expect(mocks.planTumbler).toHaveBeenCalledWith({
-      body: {
-        destinations: VALID_DESTINATIONS,
-        force: true,
-        parameters: {
-          include_maker_sessions: true,
-          rounding_chance: 0.25,
-        },
-      },
-      path: { walletname: 'wallet.jmdat' },
-    })
+    expect(mocks.planTumbler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- okay for `expect#objectContaining`
+        body: expect.objectContaining({
+          destinations: VALID_DESTINATIONS,
+          force: true,
+          parameters: {
+            include_maker_sessions: expect.any(Boolean) as boolean,
+            rounding_chance: expect.any(Number) as number,
+            maker_count_min: expect.any(Number) as number,
+            maker_count_max: expect.any(Number) as number,
+          },
+        }),
+      }),
+    )
+
     expect(mocks.startTumbler).toHaveBeenCalledWith({
       path: { walletname: 'wallet.jmdat' },
     })

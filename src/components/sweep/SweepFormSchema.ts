@@ -1,8 +1,10 @@
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
+import { JM_MINIMUM_MAKERS_DEFAULT, JM_NG_DEFAULT_TUMBLER_PARAMS } from '@/constants/jm'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { isValidAddress } from '@/lib/formValidation'
-import { factorToPercentage, isValidNumber } from '@/lib/utils'
+import { factorToPercentage, isValidNumber, pseudoRandomInteger } from '@/lib/utils'
+import type { Factor } from '@/types/global'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
 export type SweepFormValues = {
@@ -11,18 +13,51 @@ export type SweepFormValues = {
   }>
   useInsecureTestingSettings: boolean
   includeMakerSessions: boolean
-  roundingChanceInPercent?: number
+  roundingChanceInPercent: number
+  minNumberOfCollaborators: number
+  maxNumberOfCollaborators: number
 }
 
 export type SweepResolverContext = {
   addressSummary: AddressSummary
 }
 
+export const MIN_DESTINATION_ADDRESS_COUNT_DEV = 1
+export const MIN_DESTINATION_ADDRESS_COUNT_PROD = 3
+
+export const MIN_MIN_NUMBER_OF_COLLABORATORS = Math.max(1, JM_MINIMUM_MAKERS_DEFAULT)
+export const MAX_MAX_NUMBER_OF_COLLABORATORS =
+  MIN_MIN_NUMBER_OF_COLLABORATORS +
+  pseudoRandomInteger(MIN_MIN_NUMBER_OF_COLLABORATORS * 4, MIN_MIN_NUMBER_OF_COLLABORATORS * 5 + 1)
+
+export const MIN_ROUNDING_CHANCE_FACTOR: Factor = 0.1
+export const MAX_ROUNDING_CHANCE_FACTOR: Factor = 0.9
+
+export const buildSweepFormValuesDefaultValues = (): SweepFormValues => {
+  const minNumberOfCollaborators = Math.max(
+    MIN_MIN_NUMBER_OF_COLLABORATORS,
+    JM_NG_DEFAULT_TUMBLER_PARAMS.maker_count_min + pseudoRandomInteger(0, 1),
+  )
+  const maxNumberOfCollaborators = Math.min(
+    MAX_MAX_NUMBER_OF_COLLABORATORS,
+    Math.max(minNumberOfCollaborators + 3, JM_NG_DEFAULT_TUMBLER_PARAMS.maker_count_max + pseudoRandomInteger(-1, 2)),
+  )
+
+  return {
+    destinations: buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_PROD),
+    includeMakerSessions: JM_NG_DEFAULT_TUMBLER_PARAMS.include_maker_sessions,
+    roundingChanceInPercent: Math.max(
+      0,
+      Math.min(100, factorToPercentage(JM_NG_DEFAULT_TUMBLER_PARAMS.rounding_chance) + pseudoRandomInteger(-5, 5)),
+    ),
+    useInsecureTestingSettings: false,
+    minNumberOfCollaborators,
+    maxNumberOfCollaborators,
+  }
+}
+
 export const buildSweepDestinationValues = (count: number): SweepFormValues['destinations'] =>
   Array.from({ length: count }, () => ({ address: '' }))
-
-export const getSweepDestinationAddresses = (values: SweepFormValues): string[] =>
-  normalizeDestinationAddresses(values.destinations.map((destination) => destination.address))
 
 const buildDestinationErrorList = (
   destinations: SweepFormValues['destinations'],
@@ -88,9 +123,39 @@ export const sweepFormSchema = (
       roundingChanceInPercent: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
-        .min(factorToPercentage(0))
-        .max(factorToPercentage(1))
-        .optional(),
+        .min(factorToPercentage(MIN_ROUNDING_CHANCE_FACTOR))
+        .max(factorToPercentage(MAX_ROUNDING_CHANCE_FACTOR))
+        .required(),
+      minNumberOfCollaborators: yup
+        .number()
+        .transform((value) => (isValidNumber(value) ? value : null))
+        .min(1)
+        .required(),
+      maxNumberOfCollaborators: yup
+        .number()
+        .transform((value) => (isValidNumber(value) ? value : null))
+        .min(1)
+        .required(),
+    })
+    .test('min-max-collaborators-test', function (root) {
+      if (root.minNumberOfCollaborators === undefined) return true
+      if (root.maxNumberOfCollaborators === undefined) return true
+
+      if (root.minNumberOfCollaborators > root.maxNumberOfCollaborators) {
+        // TODO: i18n
+        const errorMessage = t('scheduler.feedback_invalid_min_max_collaborators', {
+          defaultValue: 'Please provide valid values for minimum and maximum number of collaborators.',
+        })
+        return new yup.ValidationError(
+          errorMessage,
+          root.maxNumberOfCollaborators,
+          'maxNumberOfCollaborators',
+          undefined,
+          true,
+        )
+      }
+
+      return true
     })
     .required()
 }

@@ -561,7 +561,7 @@ export function SendForm({
               </AccordionTrigger>
 
               <AccordionContent
-                className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
+                className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
               >
                 <div className="flex items-center gap-2">
                   <Switch
