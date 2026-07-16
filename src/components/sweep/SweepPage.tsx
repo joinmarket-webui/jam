@@ -355,12 +355,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               <div className="overflow-scroll">
-                <code className="text-destructive">planSchedule.data:</code>
-                <pre className="text-xs">{JSON.stringify(planSchedule.data, null, 2)}</pre>
-              </div>
-              <div className="overflow-scroll">
                 <code className="text-destructive">getScheduleQuery.data:</code>
                 <pre className="text-xs">{JSON.stringify(getScheduleQuery.data, null, 2)}</pre>
+              </div>
+              <div className="overflow-scroll">
+                <code className="text-destructive">planSchedule.data:</code>
+                <pre className="text-xs">{JSON.stringify(planSchedule.data, null, 2)}</pre>
               </div>
             </CardContent>
           </Card>

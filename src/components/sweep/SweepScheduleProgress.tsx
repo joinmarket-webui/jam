@@ -33,15 +33,16 @@ const SweepProgressBar = ({ schedule }: { schedule: Schedule }) => {
   )
 }
 
+const highlightedComponents = {
+  '1': <span className="font-semibold" />,
+  '3': <span className="font-semibold" />,
+}
+
 export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
   const progress = toScheduleProgressSummary(schedule)
   const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
   const totalSeconds = Math.ceil(progress.totalWaitSeconds)
-  const highlightedComponents = {
-    '1': <span className="font-semibold" />,
-    '3': <span className="font-semibold" />,
-  }
 
   const formatWaitTime = (seconds: number): string => {
     const roundedSeconds = Math.max(0, Math.ceil(seconds))
