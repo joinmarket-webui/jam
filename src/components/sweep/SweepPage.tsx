@@ -298,7 +298,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         )}
 
         {schedulerRunning && currentSchedule && (
-          <SweepScheduleProgress schedule={currentSchedule} isStopping={isWaitingSchedulerStop} onStop={stopSchedule} />
+          <SweepScheduleProgress
+            schedule={currentSchedule}
+            isStopping={isWaitingSchedulerStop}
+            onStop={stopSchedule}
+            debug={isDeveloperMode}
+          />
         )}
 
         {!schedulerRunning && (

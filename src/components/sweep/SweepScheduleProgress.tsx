@@ -1,8 +1,9 @@
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { DevBadge } from '../dev/DevBadge'
 import { Spinner } from '../ui/spinner'
 import type { Schedule, ScheduleEntryState } from './scheduleUtils'
 import { toScheduleProgressSummary } from './scheduleUtils'
@@ -11,6 +12,7 @@ interface SweepScheduleProgressProps {
   schedule: Schedule
   isStopping: boolean
   onStop: () => Promise<void>
+  debug?: boolean
 }
 
 const SweepProgressBar = ({ schedule }: { schedule: Schedule }) => {
@@ -38,7 +40,7 @@ const highlightedComponents = {
   '3': <span className="font-semibold" />,
 }
 
-export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepScheduleProgressProps) => {
+export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
   const progress = toScheduleProgressSummary(schedule)
   const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
@@ -180,6 +182,20 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
             t('scheduler.button_stop')
           )}
         </Button>
+
+        {debug && (
+          <Card className="mt-8">
+            <CardHeader className="grid">
+              <DevBadge className="justify-self-end" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <div className="overflow-scroll">
+                <code className="text-destructive">progress:</code>
+                <pre className="text-xs">{JSON.stringify(progress, null, 2)}</pre>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </CardContent>
     </Card>
   )

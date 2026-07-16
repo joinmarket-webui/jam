@@ -158,7 +158,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
         ? MIN_STEP_WIDTH_PERCENT
         : Math.max(
             MIN_STEP_WIDTH_PERCENT,
-            ((Math.max(1, getScheduleEntryWaitMinutes(schedule[index - 1])) * 60) / totalWaitSeconds) * 100,
+            ((Math.max(1 / 60, getScheduleEntryWaitMinutes(schedule[index - 1])) * 60) / totalWaitSeconds) * 100,
           )
 
     return {
