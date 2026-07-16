@@ -50,8 +50,8 @@ const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_count_min: 1,
   maker_count_max: 1,
-  time_lambda_seconds: 0.025,
-  stage1_wait_multiplier: 1,
+  time_lambda_seconds: 10,
+  stage1_wait_multiplier: 1.5,
   maker_session_idle_timeout_seconds: 60,
   mincjamount_sats: 1,
   mintxcount: 1,

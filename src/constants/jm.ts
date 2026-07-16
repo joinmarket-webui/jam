@@ -1,4 +1,4 @@
-import type { AmountSats, Milliseconds } from '@/types/global'
+import type { AmountSats, Factor, Milliseconds, Seconds } from '@/types/global'
 import { parseAsIntOrDefault } from './meta-env-utils'
 
 export const JM_WALLET_FILE_EXTENSION = '.jmdat'
@@ -69,27 +69,27 @@ export const FEE_CONFIG_KEYS: Record<FeeConfigName, ConfigKey> = {
 
 // https://github.com/joinmarket-ng/joinmarket-ng/blob/0.33.0/tumbler/src/tumbler/builder.py#L49 (last checked: 2026-07-14)
 export interface TumblerParameters {
-  maker_count_min: number // default: 5
-  maker_count_max: number // default: 9
+  maker_count_min: number
+  maker_count_max: number
   // Average wait between phases (mean of an exponential distribution)
-  time_lambda_seconds: number // default: 6 hours
+  time_lambda_seconds: Seconds
   // Multiplier on ``time_lambda_seconds`` for stage-1 (cleavage) sweeps
-  stage1_wait_multiplier: number // default: 3.0
-  include_maker_sessions: boolean // default: true
-  mincjamount_sats: AmountSats // default: 100_000
-  maker_session_seconds: number // default: 12.0 * 60.0 * 60.0
+  stage1_wait_multiplier: Factor
+  include_maker_sessions: boolean
+  mincjamount_sats: AmountSats
+  maker_session_seconds: Seconds
   /**
    * If set, maker phases exit successfully when no CoinJoin has been served
    * within this many seconds. Useful as a safety fallback when the wallet is
    * never selected as a counterparty.
    */
-  maker_session_idle_timeout_seconds: number | undefined // default: undefined
+  maker_session_idle_timeout_seconds: Seconds | undefined
   // Minimum number of destination-bearing taker CJs per mixdepth (excluding sweep).
-  mintxcount: number // default: 2
+  mintxcount: number
   // Maximum re-tries per failed taker CoinJoin phase before the plan fails
-  max_phase_retries: number // default: 3
+  max_phase_retries: number
   // Probability that any given non-sweep taker CJ amount is rounded to a random number of significant figures. Set to 0.0 to disable rounding entirely.
-  rounding_chance: number // default: 0.25
+  rounding_chance: Factor
 }
 
 export const JM_NG_DEFAULT_TUMBLER_PARAMS: TumblerParameters = {
