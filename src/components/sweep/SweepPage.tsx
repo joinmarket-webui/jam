@@ -49,7 +49,7 @@ const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_count_min: 1,
-  maker_count_max: 1,
+  maker_count_max: 2,
   time_lambda_seconds: 10,
   stage1_wait_multiplier: 1.5,
   maker_session_idle_timeout_seconds: 60,
@@ -61,7 +61,7 @@ const isPhaseComplete = (phase: TumblerPhaseResponse): boolean => {
   return phase.status.toLowerCase() === 'completed'
 }
 
-const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry[6] => {
+const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry['stateFlag'] => {
   if (isPhaseComplete(phase)) {
     return 1
   }
@@ -69,18 +69,15 @@ const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry[6] => {
 }
 
 const toSchedule = (plan: TumblerPlanResponse): Schedule => {
-  return plan.phases.map(
-    (phase) =>
-      [
-        phase.mixdepth ?? 0,
-        phase.amount_fraction ?? 0,
-        phase.counterparty_count ?? 0,
-        phase.destination ?? 'INTERNAL',
-        (phase.wait_seconds ?? 0) / 60,
-        0,
-        toScheduleStateFlag(phase),
-      ] as ScheduleEntry,
-  )
+  return plan.phases.map((phase) => ({
+    jarIndex: phase.mixdepth ?? 0,
+    amountFraction: phase.amount_fraction ?? 0,
+    numberOfRequestedCounterparties: phase.counterparty_count ?? 0,
+    destinationOrInternal: phase.destination ?? 'INTERNAL',
+    waitTimeInSeconds: phase.wait_seconds ?? 0,
+    rounding: 0,
+    stateFlag: toScheduleStateFlag(phase),
+  }))
 }
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {

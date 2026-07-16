@@ -1,23 +1,36 @@
 import { describe, expect, it } from 'vitest'
-import {
-  isScheduleLikelyCompletedSuccessfully,
-  isScheduleValue,
-  toScheduleProgressSummary,
-  type Schedule,
-} from './scheduleUtils'
+import { isScheduleLikelyCompletedSuccessfully, toScheduleProgressSummary, type Schedule } from './scheduleUtils'
 
 describe('scheduleUtils', () => {
-  it('identifies valid schedule values', () => {
-    expect(isScheduleValue([[0, 0, 8, 'INTERNAL', 10, 16, 0]])).toBe(true)
-    expect(isScheduleValue(undefined)).toBe(false)
-    expect(isScheduleValue([{}])).toBe(false)
-  })
-
   it('creates progress summary from schedule entries', () => {
     const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 10, 16, 1],
-      [1, 0, 8, 'INTERNAL', 5, 16, 0],
-      [2, 0, 8, 'bc1qdestination', 1, 16, 0],
+      {
+        jarIndex: 0,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 10 * 60,
+        rounding: 16,
+        stateFlag: 1,
+      },
+      {
+        jarIndex: 1,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 5 * 60,
+        rounding: 16,
+        stateFlag: 0,
+      },
+      {
+        jarIndex: 2,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'bc1qdestination',
+        waitTimeInSeconds: 1 * 60,
+        rounding: 16,
+        stateFlag: 0,
+      },
     ]
 
     const summary = toScheduleProgressSummary(schedule)
@@ -36,9 +49,33 @@ describe('scheduleUtils', () => {
 
   it('derives current state while waiting for transaction confirmation', () => {
     const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 10, 16, 1],
-      [1, 0, 8, 'INTERNAL', 5, 16, '8'.repeat(64)],
-      [2, 0, 8, 'bc1qdestination', 1, 16, 0],
+      {
+        jarIndex: 0,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 10 * 60,
+        rounding: 16,
+        stateFlag: 1,
+      },
+      {
+        jarIndex: 1,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 5 * 60,
+        rounding: 16,
+        stateFlag: '8'.repeat(64),
+      },
+      {
+        jarIndex: 2,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'bc1qdestination',
+        waitTimeInSeconds: 1 * 60,
+        rounding: 16,
+        stateFlag: 0,
+      },
     ]
 
     const summary = toScheduleProgressSummary(schedule)
@@ -51,8 +88,24 @@ describe('scheduleUtils', () => {
 
   it('derives current state while waiting before the next transaction', () => {
     const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 2, 16, 1],
-      [1, 0, 8, 'bc1qdestination', 0, 16, 0],
+      {
+        jarIndex: 0,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 2 * 60,
+        rounding: 16,
+        stateFlag: 1,
+      },
+      {
+        jarIndex: 1,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 0,
+        rounding: 16,
+        stateFlag: 0,
+      },
     ]
 
     const summary = toScheduleProgressSummary(schedule)
@@ -64,8 +117,24 @@ describe('scheduleUtils', () => {
 
   it('falls back to frozen-utxo check when last schedule entry is stale', () => {
     const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 10, 16, 1],
-      [1, 0, 8, 'bc1qdestination', 0, 16, 0],
+      {
+        jarIndex: 0,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 2 * 60,
+        rounding: 16,
+        stateFlag: 1,
+      },
+      {
+        jarIndex: 1,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 0,
+        rounding: 16,
+        stateFlag: 0,
+      },
     ]
 
     expect(isScheduleLikelyCompletedSuccessfully(schedule, false)).toBe(false)

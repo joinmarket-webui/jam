@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Spinner } from '../ui/spinner'
-import type { Schedule, ScheduleEntryState } from './scheduleUtils'
+import type { Schedule, ScheduleEntryState, ScheduleProgressSummary } from './scheduleUtils'
 import { toScheduleProgressSummary } from './scheduleUtils'
 
 interface SweepScheduleProgressProps {
@@ -15,9 +15,7 @@ interface SweepScheduleProgressProps {
   debug?: boolean
 }
 
-const SweepProgressBar = ({ schedule }: { schedule: Schedule }) => {
-  const progress = toScheduleProgressSummary(schedule)
-
+const SweepProgressBar = ({ progress }: { progress: ScheduleProgressSummary }) => {
   return (
     <div className="bg-muted flex h-3 w-full overflow-hidden rounded-full">
       {progress.steps.map((step, index) => (
@@ -94,7 +92,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
           <p className="text-muted-foreground text-xs">{t('scheduler.progress_description')}</p>
         </div>
 
-        <SweepProgressBar schedule={schedule} />
+        <SweepProgressBar progress={progress} />
 
         {progress.isDone ? (
           <Alert variant="success">

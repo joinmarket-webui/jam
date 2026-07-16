@@ -1,27 +1,25 @@
-import { isValidNumber } from '@/lib/utils'
 import type { TxId } from '@/store/jmTxStore'
-import type { BitcoinAddress, JarIndex, Minutes } from '@/types/global'
+import type { BitcoinAddress, JarIndex, Seconds } from '@/types/global'
 
 type AmountFraction = number
 type AmountCounterparties = number
 type SchedulerDestinationAddress = 'INTERNAL' | BitcoinAddress
-type WaitTimeInMinutes = Minutes
 type Rounding = number
-type StateFlag = 0 | 1 | TxId
+type StateFlag = 0 | 1 | TxId // flag indicating incomplete/broadcast/completed (0/txid/1)
 
-// [mixdepth, amount-fraction, N-counterparties (requested), destination address, wait time in minutes, rounding, flag indicating incomplete/broadcast/completed (0/txid/1)]
+// [mixdepth, amount-fraction, N-counterparties (requested), destination address, wait time in minutes, rounding, ]
 // e.g.
 // - [ 2, 0.2456498211214867, 4, "INTERNAL", 0.01, 16, 1 ]
 // - [ 3, 0, 8, "bcrt1qpnv3nze7u6ecw63mn06ksxh497a3lryagh233q", 0.04, 16, 0 ]
-export type ScheduleEntry = [
-  JarIndex,
-  AmountFraction,
-  AmountCounterparties,
-  SchedulerDestinationAddress,
-  WaitTimeInMinutes,
-  Rounding,
-  StateFlag,
-]
+export type ScheduleEntry = {
+  jarIndex: JarIndex
+  amountFraction: AmountFraction
+  numberOfRequestedCounterparties: AmountCounterparties // N-counterparties (requested)
+  destinationOrInternal: SchedulerDestinationAddress
+  waitTimeInSeconds: Seconds
+  rounding: Rounding
+  stateFlag: StateFlag
+}
 
 export type Schedule = ScheduleEntry[]
 
@@ -65,18 +63,11 @@ export interface ScheduleProgressSummary {
   currentState?: ScheduleCurrentState
 }
 
-const MIN_STEP_WIDTH_PERCENT = 8
-
-const toNumberOrDefault = (value: unknown, fallback: number): number => {
-  return isValidNumber(value) ? value : fallback
-}
-
-const getScheduleEntryWaitMinutes = (entry: ScheduleEntry): number => {
-  return Math.max(0, toNumberOrDefault(entry[4], 0))
-}
+const FIRST_STEP_WIDTH_PERCENT = 5
+const MIN_STEP_WIDTH_PERCENT = 3
 
 const getScheduleEntryState = (entry: ScheduleEntry): string | number => {
-  return entry[6] ?? 0
+  return entry.stateFlag ?? 0
 }
 
 const getScheduleEntryTxId = (entry: ScheduleEntry): TxId | undefined => {
@@ -107,24 +98,6 @@ export const isScheduleEntrySuccessful = (entry: ScheduleEntry): boolean => {
   return state === 1 || typeof state === 'string'
 }
 
-export const isScheduleValue = (value: unknown): value is Schedule => {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (entry) =>
-        Array.isArray(entry) &&
-        entry.length >= 7 &&
-        typeof entry[0] === 'number' /* JarIndex */ &&
-        typeof entry[1] === 'number' /* AmountFraction */ &&
-        typeof entry[2] === 'number' /* AmountCounterparties */ &&
-        typeof entry[3] === 'string' /* SchedulerDestinationAddress */ &&
-        typeof entry[4] === 'number' /* WaitTimeInMinutes */ &&
-        typeof entry[5] === 'number' /* Rounding */ &&
-        (typeof entry[6] === 'number' || typeof entry[6] === 'string') /* StateFlag */,
-    )
-  )
-}
-
 export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressSummary => {
   if (schedule.length === 0) {
     return {
@@ -145,7 +118,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
   const totalWaitSeconds = Math.max(
     1,
     schedule.slice(0, Math.max(0, schedule.length - 1)).reduce((acc, entry) => {
-      return acc + getScheduleEntryWaitMinutes(entry) * 60
+      return acc + entry.waitTimeInSeconds
     }, 0),
   )
 
@@ -155,11 +128,8 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
   const steps: ScheduleProgressStep[] = schedule.map((_entry, index) => {
     const widthPercent =
       index === 0
-        ? MIN_STEP_WIDTH_PERCENT
-        : Math.max(
-            MIN_STEP_WIDTH_PERCENT,
-            ((Math.max(1 / 60, getScheduleEntryWaitMinutes(schedule[index - 1])) * 60) / totalWaitSeconds) * 100,
-          )
+        ? FIRST_STEP_WIDTH_PERCENT
+        : Math.max(MIN_STEP_WIDTH_PERCENT, (schedule[index - 1].waitTimeInSeconds / totalWaitSeconds) * 100)
 
     return {
       widthPercent,
@@ -173,7 +143,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
   const entries: ScheduleProgressEntry[] = schedule.map((entry, index) => {
     return {
       index,
-      waitBeforeNextSeconds: index >= schedule.length - 1 ? 0 : getScheduleEntryWaitMinutes(entry) * 60,
+      waitBeforeNextSeconds: index >= schedule.length - 1 ? 0 : entry.waitTimeInSeconds,
       state: toScheduleEntryState(entry),
       txid: getScheduleEntryTxId(entry),
       isLast: index === schedule.length - 1,
@@ -202,9 +172,7 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
       }
     } else {
       const waitSeconds =
-        currentTransactionIndex > 0
-          ? Math.ceil(getScheduleEntryWaitMinutes(schedule[currentTransactionIndex - 1]) * 60)
-          : 0
+        currentTransactionIndex > 0 ? Math.ceil(schedule[currentTransactionIndex - 1].waitTimeInSeconds) : 0
 
       currentState =
         waitSeconds > 0

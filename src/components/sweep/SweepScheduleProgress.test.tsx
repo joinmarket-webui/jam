@@ -21,9 +21,33 @@ describe('SweepScheduleProgress', () => {
     const user = userEvent.setup()
     const onStop = vi.fn().mockResolvedValue(undefined)
     const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 80, 16, 1],
-      [1, 0, 8, 'tx-destination', 5, 16, '8'.repeat(64)],
-      [2, 0, 8, 'final-destination', 0, 16, 0],
+      {
+        jarIndex: 0,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 80 * 60,
+        rounding: 16,
+        stateFlag: 1,
+      },
+      {
+        jarIndex: 1,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'tx-destination',
+        waitTimeInSeconds: 5 * 60,
+        rounding: 16,
+        stateFlag: '8'.repeat(64),
+      },
+      {
+        jarIndex: 2,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'final-destination',
+        waitTimeInSeconds: 0,
+        rounding: 16,
+        stateFlag: 0,
+      },
     ]
 
     render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={onStop} />)
@@ -40,8 +64,24 @@ describe('SweepScheduleProgress', () => {
 
   it('shows done and stopping states', () => {
     const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 0.25, 16, 1],
-      [1, 0, 8, 'final-destination', 0, 16, 1],
+      {
+        jarIndex: 0,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'INTERNAL',
+        waitTimeInSeconds: 15,
+        rounding: 16,
+        stateFlag: 1,
+      },
+      {
+        jarIndex: 1,
+        amountFraction: 0,
+        numberOfRequestedCounterparties: 8,
+        destinationOrInternal: 'final-destination',
+        waitTimeInSeconds: 0,
+        rounding: 16,
+        stateFlag: 1,
+      },
     ]
 
     const { rerender } = render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={vi.fn()} />)
