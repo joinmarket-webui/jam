@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { yupResolver } from '@hookform/resolvers/yup'
 import {
   tumblerplanMutation,
   tumblerstartMutation,
@@ -12,54 +11,40 @@ import type {
   TumblerPlanResponse,
 } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
-import { useFieldArray, useForm, useWatch, type SubmitHandler } from 'react-hook-form'
+import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
-import { SweepDestinationInputs } from '@/components/sweep/SweepDestinationInputs'
-import {
-  buildSweepDestinationValues,
-  getSweepDestinationAddresses,
-  sweepFormSchema,
-  type SweepResolverContext,
-  type SweepFormValues,
-} from '@/components/sweep/SweepFormSchema'
+import { getSweepDestinationAddresses } from '@/components/sweep/SweepFormSchema'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
 import type { Schedule, ScheduleEntry } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
-import { useJamWalletInfoContext, type AddressSummary } from '@/context/JamWalletInfoContext'
+import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import { cn, percentageToFactor, type WalletFileName } from '@/lib/utils'
+import { percentageToFactor, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
-import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
+import { SweepForm } from './SweepForm'
 
 interface SweepPageProps {
   walletFileName: WalletFileName
 }
 
-const DESTINATION_ADDRESS_COUNT_PROD = 3
 const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 
@@ -96,17 +81,6 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_session_idle_timeout_seconds: 60,
   mincjamount_sats: 1,
   mintxcount: 1,
-}
-
-const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
-  const newAddressFromDefaultJar =
-    Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new' && addressMeta.jarIndex === 0)
-      ?.address ?? ''
-  if (newAddressFromDefaultJar !== '') {
-    return newAddressFromDefaultJar
-  }
-
-  return Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new')?.address ?? ''
 }
 
 const isPhaseComplete = (phase: TumblerPhaseResponse): boolean => {
@@ -371,7 +345,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
                 <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
 
-                <PlanSweepForm
+                <SweepForm
                   className=""
                   addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
@@ -422,167 +396,5 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         )}
       </div>
     </>
-  )
-}
-
-interface PlanSweepFormProps {
-  className?: string
-  onSubmit: SubmitHandler<SweepFormValues>
-  addressSummary: AddressSummary
-  disabled?: boolean
-  debug?: boolean
-}
-
-const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled, debug }: PlanSweepFormProps) => {
-  const { t } = useTranslation()
-
-  const showInsecureScheduleTestingToggle = debug && isDebugFeatureEnabled('insecureScheduleTesting')
-
-  const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
-  const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
-  const { formState, register, control, setValue, handleSubmit, trigger } = useForm<
-    SweepFormValues,
-    SweepResolverContext,
-    SweepFormValues
-  >({
-    mode: 'onSubmit',
-    defaultValues: {
-      destinations: initialDestinations,
-      includeMakerSessions: true,
-      roundingChanceInPercent: 25,
-    },
-    resolver: yupResolver(schema),
-  })
-
-  const formWatch = useWatch({ control })
-  const destinationsFieldArray = useFieldArray({ control, name: 'destinations' })
-
-  const onInsecureTestingToggleChange = (checked: boolean) => {
-    setValue('useInsecureTestingSettings', checked)
-
-    if (checked) {
-      destinationsFieldArray.replace([{ address: getNewTestingDestinationAddress(addressSummary) }])
-      void trigger('destinations')
-    } else {
-      destinationsFieldArray.replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
-    }
-  }
-
-  const doOnSubmit = handleSubmit(onSubmit)
-
-  const collapsibleFormElementsValid = useMemo(
-    () =>
-      [formState.errors.includeMakerSessions, formState.errors.useInsecureTestingSettings].every(
-        (it) => it === undefined,
-      ),
-    [formState.errors.includeMakerSessions, formState.errors.useInsecureTestingSettings],
-  )
-
-  return (
-    <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
-      {showInsecureScheduleTestingToggle && (
-        <div className="flex items-center gap-2">
-          <Switch
-            id="switch-use-insecure-schedule-testing"
-            checked={formWatch.useInsecureTestingSettings}
-            onCheckedChange={onInsecureTestingToggleChange}
-            disabled={disabled}
-          />
-          <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-            <div className="flex items-center gap-2 font-medium">
-              Use insecure testing settings
-              <DevBadge />
-            </div>
-            <div className="text-muted-foreground text-sm">
-              This is completely insecure but makes testing the schedule much faster.
-            </div>
-          </Label>
-        </div>
-      )}
-
-      <SweepDestinationInputs
-        minNumberOfFields={formWatch.useInsecureTestingSettings ? 1 : DESTINATION_ADDRESS_COUNT_PROD}
-        register={register}
-        setValue={setValue}
-        formState={formState}
-        fields={destinationsFieldArray.fields}
-        disabled={disabled}
-        onClickAppend={() => {
-          destinationsFieldArray.append([{ address: '' }], { shouldFocus: false })
-        }}
-        onClickRemove={(index: number) => {
-          destinationsFieldArray.remove(index)
-        }}
-      />
-
-      <Accordion type="single" collapsible>
-        <AccordionItem value="options">
-          <AccordionTrigger
-            className={cn({
-              'text-destructive': !collapsibleFormElementsValid,
-            })}
-          >
-            <div className="flex items-center gap-2">
-              {!collapsibleFormElementsValid ? <AlertTriangleIcon /> : null}
-              {t('scheduler.scheduler_options')}
-            </div>
-          </AccordionTrigger>
-
-          <AccordionContent
-            className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
-          >
-            <div className="flex items-center gap-2">
-              <Switch
-                id="switch-include-maker-sessions"
-                checked={formWatch.includeMakerSessions}
-                onCheckedChange={(checked: boolean) => setValue('includeMakerSessions', checked)}
-                disabled={disabled}
-              />
-              <Label htmlFor="switch-include-maker-sessions" className="flex flex-col items-start gap-0">
-                {/* TODO: i18n */}
-                <div className="flex items-center gap-2 font-medium">Include maker sessions</div>
-                <div className="text-muted-foreground text-sm">
-                  Occasionally switch from taker to maker, which aids privacy.
-                </div>
-              </Label>
-            </div>
-            <div className="flex flex-col justify-center gap-2">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor="slider-rounding-chance-in-percent" className="flex flex-col items-start gap-0">
-                  {/* TODO: i18n */}
-                  <div className="flex items-center gap-2 font-medium">Round output amount probability</div>
-                  <div className="text-muted-foreground text-sm">
-                    Probability that an intermediate transaction output amount is rounded to mimic human behavior.
-                  </div>
-                </Label>
-                <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
-              </div>
-              <Slider
-                id="slider-rounding-chance-in-percent"
-                min={0}
-                max={100}
-                value={
-                  formWatch.roundingChanceInPercent === undefined ? undefined : [formWatch.roundingChanceInPercent]
-                }
-                onValueChange={(values: number[]) => setValue('roundingChanceInPercent', values[0])}
-                disabled={disabled}
-              />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-      <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
-
-      <Button type="submit" disabled={disabled || formState.isSubmitting} className="w-full" size="xxl">
-        {formState.isSubmitting ? (
-          <>
-            <Spinner className="motion-reduce:hidden" />
-            {t('scheduler.button_start')}
-          </>
-        ) : (
-          t('scheduler.button_start')
-        )}
-      </Button>
-    </form>
   )
 }
