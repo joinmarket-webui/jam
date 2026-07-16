@@ -34,7 +34,7 @@ import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
 import type { Schedule, ScheduleEntry } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
@@ -48,6 +48,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
 import { cn, percentageToFactor, type WalletFileName } from '@/lib/utils'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -139,6 +140,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const walletInfo = useJamWalletInfoContext()
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
@@ -167,10 +169,16 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     onMutate: () => {
       setAlertMessage(undefined)
     },
+    onSuccess: (data) => {
+      setShowScheduleConfirmDialog(data)
+    },
     onError: (error) => {
       console.error('Plan schedule error:', error)
+
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      toast.error(t('scheduler.error_planning_schedule_failed', { reason }))
+      const message = t('scheduler.error_starting_schedule_failed', { reason })
+      setAlertMessage(message)
+      toast.error(message)
     },
   })
 
@@ -180,17 +188,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     reset: startScheduleMutationReset,
     mutateAsync: startScheduleMutationMutateAsync,
   } = useMutation({
-    mutationFn: async ({ path, body }: { path: { walletname: WalletFileName }; body: TumblerPlanRequest }) => {
-      await planSchedule.mutateAsync({
-        client,
-        path,
-        body,
-        throwOnError: true,
-      })
-
+    mutationFn: async () => {
       return await tumblerstart({
         client,
-        path,
+        path: { walletname: walletFileName },
         throwOnError: true,
       })
     },
@@ -198,11 +199,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     onMutate: () => {
       setAlertMessage(undefined)
     },
-    onSuccess: () => {
+    onSettled: () => {
       setShowScheduleConfirmDialog(undefined)
     },
     onError: (error: unknown) => {
-      setShowScheduleConfirmDialog(undefined)
+      console.error('Plan schedule error:', error)
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('scheduler.error_starting_schedule_failed', { reason })
       setAlertMessage(message)
@@ -277,10 +278,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const startSchedule = async () => {
     if (showScheduleConfirmDialog === undefined) return
 
-    await startScheduleMutationMutateAsync({
-      path: { walletname: walletFileName },
-      body: showScheduleConfirmDialog,
-    })
+    await startScheduleMutationMutateAsync()
   }
 
   const stopSchedule = async () => {
@@ -376,7 +374,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   className=""
                   addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                  onSubmit={(values) => {
+                  debug={isDeveloperMode}
+                  onSubmit={async (values) => {
                     const parameters: Partial<TumblerParameters> = {
                       ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
                       ...(values.roundingChanceInPercent !== undefined
@@ -391,32 +390,34 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                       destinations: getSweepDestinationAddresses(values),
                       parameters,
                     }
-                    /*
+
                     await planSchedule.mutateAsync({
                       path: { walletname: walletFileName },
                       body,
-                    })*/
-
-                    setShowScheduleConfirmDialog(body)
+                    })
                   }}
                 />
-                {/*
-                <div>
-                  {planSchedule.data?.phases.map((phrase, index) => {
-                    return (<div key={index}>
-                      <div>{phrase.kind}</div>
-
-                    </div>)
-                  })}
-
-                </div>
-                <pre >
-                { JSON.stringify(planSchedule.data, null, 2)}
-                </pre> 
-*/}
               </CardContent>
             </Card>
           </>
+        )}
+
+        {isDeveloperMode && (
+          <Card className="mt-8">
+            <CardHeader className="grid">
+              <DevBadge className="justify-self-end" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <div className="overflow-scroll">
+                <code className="text-destructive">planSchedule.data:</code>
+                <pre className="text-xs">{JSON.stringify(planSchedule.data, null, 2)}</pre>
+              </div>
+              <div className="overflow-scroll">
+                <code className="text-destructive">getScheduleQuery.data:</code>
+                <pre className="text-xs">{JSON.stringify(getScheduleQuery.data, null, 2)}</pre>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </>
@@ -431,10 +432,10 @@ interface PlanSweepFormProps {
   debug?: boolean
 }
 
-const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled }: PlanSweepFormProps) => {
+const PlanSweepForm = ({ className, onSubmit, addressSummary, disabled, debug }: PlanSweepFormProps) => {
   const { t } = useTranslation()
 
-  const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
+  const showInsecureScheduleTestingToggle = debug && isDebugFeatureEnabled('insecureScheduleTesting')
 
   const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
   const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])

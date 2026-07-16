@@ -125,7 +125,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
                 />
               ) : progress.currentState?.type === 'transaction_confirmed' ? (
                 <Trans
-                  i18nKey="scheduler.progress_current_state_transaction_confirmed"
+                  i18nKey="scheduler.progress_current_state_confirmed"
                   values={{
                     current: progress.currentState.currentTransaction,
                     total: progress.currentState.totalTransactions,

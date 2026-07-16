@@ -140,6 +140,16 @@ vi.mock('sonner', () => ({
   },
 }))
 
+vi.mock('@/constants/debugFeatures', () => ({
+  isDevMode: () => true,
+  isDebugFeatureEnabled: () => mocks.debugFeatureEnabled,
+}))
+
+vi.mock('@/store/jamSettingsStore', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/store/jamSettingsStore')>()),
+  useDeveloperMode: () => ({ enabled: true }),
+}))
+
 vi.mock('@/components/settings/fees/FeeConfigDialog', () => ({
   FeeConfigDialog: ({ open }: { open: boolean }) => (open ? <div>fee-config-dialog</div> : null),
 }))
@@ -222,10 +232,6 @@ vi.mock('@/components/ui/jam/PageTitle', () => ({
       {title}:{subtitle}
     </h1>
   ),
-}))
-
-vi.mock('@/constants/debugFeatures', () => ({
-  isDebugFeatureEnabled: () => mocks.debugFeatureEnabled,
 }))
 
 vi.mock('@/context/JamWalletInfoContext', () => ({
@@ -384,9 +390,7 @@ describe('SweepPage', () => {
           rounding_chance: 0.25,
         },
       },
-      client: {},
       path: { walletname: 'wallet.jmdat' },
-      throwOnError: true,
     })
     expect(mocks.startTumbler).toHaveBeenCalledWith({
       client: {},
@@ -554,9 +558,9 @@ describe('SweepPage', () => {
         } as unknown as WalletInfo['addressSummary'],
       })
 
-      render(<SweepPage walletFileName="wallet.jmdat" />)
+      const result = render(<SweepPage walletFileName="wallet.jmdat" />)
 
-      fireEvent.click(screen.getByRole('switch'))
+      fireEvent.click(result.container.querySelector('#switch-use-insecure-schedule-testing')!)
       await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
 
       fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))

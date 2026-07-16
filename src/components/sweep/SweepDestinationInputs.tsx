@@ -119,7 +119,7 @@ export const SweepDestinationInputs = ({
       </div>
       {onClickAppend ? (
         <div className="flex gap-2">
-          <Button type="button" size="sm" onClick={onClickAppend}>
+          <Button type="button" size="sm" variant="outline" onClick={onClickAppend}>
             <PlusCircleIcon />
             {/* TODO: i18n */}
             Add additional destination
