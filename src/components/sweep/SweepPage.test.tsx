@@ -68,12 +68,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   tumblerstatusOptions: vi.fn(() => ({ queryKey: ['tumblerstatus'], queryFn: vi.fn() })),
-  tumblerstopMutation: vi.fn(() => ({ mutationFn: mocks.stopTumbler })),
   tumblerplanMutation: vi.fn(() => ({ mutationFn: mocks.planTumbler })),
-}))
-
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
-  tumblerstart: mocks.startTumbler,
+  tumblerstartMutation: vi.fn(() => ({ mutationFn: mocks.startTumbler })),
+  tumblerstopMutation: vi.fn(() => ({ mutationFn: mocks.stopTumbler })),
 }))
 
 type MutationOptions = {
@@ -393,9 +390,7 @@ describe('SweepPage', () => {
       path: { walletname: 'wallet.jmdat' },
     })
     expect(mocks.startTumbler).toHaveBeenCalledWith({
-      client: {},
       path: { walletname: 'wallet.jmdat' },
-      throwOnError: true,
     })
   })
 

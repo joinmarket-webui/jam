@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
   tumblerplanMutation,
+  tumblerstartMutation,
   tumblerstatusOptions,
   tumblerstopMutation,
 } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import {
-  tumblerstart,
-  type TumblerPhaseResponse,
-  type TumblerPlanRequest,
-  type TumblerPlanResponse,
+import type {
+  TumblerPhaseResponse,
+  TumblerPlanRequest,
+  TumblerPlanResponse,
 } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, HourglassIcon } from 'lucide-react'
@@ -188,13 +188,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     reset: startScheduleMutationReset,
     mutateAsync: startScheduleMutationMutateAsync,
   } = useMutation({
-    mutationFn: async () => {
-      return await tumblerstart({
-        client,
-        path: { walletname: walletFileName },
-        throwOnError: true,
-      })
-    },
+    ...tumblerstartMutation({
+      client,
+    }),
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
@@ -202,7 +198,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     onSettled: () => {
       setShowScheduleConfirmDialog(undefined)
     },
-    onError: (error: unknown) => {
+    onError: (error) => {
       console.error('Plan schedule error:', error)
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const message = t('scheduler.error_starting_schedule_failed', { reason })
@@ -217,7 +213,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     mutateAsync: stopScheduleMutationMutateAsync,
     reset: stopScheduleMutationReset,
   } = useMutation({
-    ...tumblerstopMutation({ client }),
+    ...tumblerstopMutation({
+      client,
+      path: { walletname: walletFileName },
+    }),
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
@@ -278,7 +277,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const startSchedule = async () => {
     if (showScheduleConfirmDialog === undefined) return
 
-    await startScheduleMutationMutateAsync()
+    await startScheduleMutationMutateAsync({
+      path: { walletname: walletFileName },
+    })
   }
 
   const stopSchedule = async () => {
