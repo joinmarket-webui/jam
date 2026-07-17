@@ -14,7 +14,7 @@ import { Separator } from '../ui/separator'
 import { Spinner } from '../ui/spinner'
 import { ScheduleProgressEntryItem } from './ScheduleProgressEntryItem'
 import type { Schedule, ScheduleEntryState, ScheduleProgressSummary } from './scheduleUtils'
-import { toScheduleProgressSummary } from './scheduleUtils'
+import { formatDuration, toScheduleProgressSummary } from './scheduleUtils'
 
 interface SweepScheduleProgressProps {
   schedule: Schedule
@@ -54,20 +54,6 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
   const progress = toScheduleProgressSummary(schedule)
   const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
   const totalSeconds = Math.ceil(progress.totalWaitSeconds)
-
-  const formatWaitTime = (seconds: number): string => {
-    const roundedSeconds = Math.max(0, Math.ceil(seconds))
-    const minutes = Math.floor(roundedSeconds / 60)
-    const remainingSeconds = roundedSeconds % 60
-
-    if (minutes === 0) {
-      return t('scheduler.progress_wait_seconds', { seconds: remainingSeconds })
-    }
-    if (remainingSeconds === 0) {
-      return t('scheduler.progress_wait_minutes', { minutes })
-    }
-    return t('scheduler.progress_wait_minutes_seconds', { minutes, seconds: remainingSeconds })
-  }
 
   const toScheduleEntryStateText = (state: ScheduleEntryState, txid?: string): string => {
     if (state === 'confirmed') {
@@ -121,7 +107,7 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
                   values={{
                     current: progress.currentState.currentTransaction,
                     total: progress.currentState.totalTransactions,
-                    wait: formatWaitTime(progress.currentState.waitSeconds ?? 0),
+                    wait: formatDuration(progress.currentState.waitSeconds ?? 0, t),
                   }}
                   components={highlightedComponents}
                 />
@@ -241,13 +227,6 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
                     {entry.__raw?.__raw?.amount === 0 ? <Badge variant="outline">Sweep</Badge> : null}
                   </div>
                   <div className="text-muted-foreground">{toScheduleEntryStateText(entry.state, entry.txid)}</div>
-                  <div className="text-muted-foreground">
-                    {entry.isLast
-                      ? t('scheduler.progress_entry_wait_final')
-                      : t('scheduler.progress_entry_wait_before_next', {
-                          wait: formatWaitTime(entry.waitBeforeNextSeconds),
-                        })}
-                  </div>
                 </div>
               )
             })}

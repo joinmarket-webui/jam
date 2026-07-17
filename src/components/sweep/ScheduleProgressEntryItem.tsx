@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   CalendarCheck2Icon,
   CalendarClockIcon,
@@ -8,6 +7,7 @@ import {
   ExternalLinkIcon,
   FingerprintIcon,
   MilkIcon,
+  TimerResetIcon,
   UsersIcon,
 } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -19,7 +19,7 @@ import { Item, ItemContent, ItemDescription, ItemHeader, ItemTitle } from '../ui
 import { Address } from '../ui/jam/Address'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { Label } from '../ui/label'
-import type { ScheduleProgressEntry } from './scheduleUtils'
+import { formatDuration, type ScheduleProgressEntry } from './scheduleUtils'
 
 export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEntry }) => {
   const { t, i18n } = useTranslation()
@@ -139,19 +139,6 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
           </div>
         ) : null*/}
 
-        {value.__raw.idleTimeoutSeconds ? (
-          <div className="flex min-w-0 items-start gap-4">
-            <ClockFadingIcon className="mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{/* TODO: i18n*/ 'Idle Timeout'}</Label>
-              {time.humanReadableRelativeTimeInterval(
-                value.__raw.idleTimeoutSeconds * 1_000,
-                i18n.resolvedLanguage || i18n.language,
-              )}
-            </div>
-          </div>
-        ) : null}
-
         {value.__raw.__raw?.txid ? (
           <div className="flex min-w-0 items-start gap-4">
             <FingerprintIcon className="mt-0.5 shrink-0" />
@@ -180,12 +167,35 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
           </div>
         ) : null}
 
+        {value.__raw.idleTimeoutSeconds ? (
+          <div className="flex min-w-0 items-start gap-4">
+            <ClockFadingIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <Label className="font-semibold">{/* TODO: i18n*/ 'Idle Timeout'}</Label>
+              {time.humanReadableRelativeTimeInterval(
+                value.__raw.idleTimeoutSeconds * 1_000,
+                i18n.resolvedLanguage || i18n.language,
+              )}
+            </div>
+          </div>
+        ) : null}
+
         {value.__raw.externalDestinationAddress ? (
           <div className="col-span-2 flex min-w-0 items-start gap-4">
             <ExternalLinkIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'External destination'}</Label>
               <Address value={value.__raw.externalDestinationAddress ?? ' test'} />
+            </div>
+          </div>
+        ) : null}
+
+        {value.__raw.waitTimeInSeconds ? (
+          <div className="flex min-w-0 items-start gap-4">
+            <TimerResetIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <Label className="font-semibold">{t('scheduler.progress_entry_wait_before_next_title')}</Label>
+              {value.isLast ? '-' : formatDuration(value.__raw.waitTimeInSeconds, t)}
             </div>
           </div>
         ) : null}

@@ -1,4 +1,5 @@
 import type { TumblerPhaseResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { TFunction } from 'i18next'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, JarIndex, Seconds } from '@/types/global'
@@ -233,4 +234,19 @@ export const isScheduleLikelyCompletedSuccessfully = (schedule: Schedule, allUtx
   const lastEntrySucceeded = isScheduleEntrySuccessful(lastEntry)
 
   return entriesBeforeLastSucceeded && (lastEntrySucceeded || allUtxosFrozen)
+}
+
+// TODO: move to utils and use Intl.DurationFormat (es2025) if available
+export const formatDuration = (seconds: number, t: TFunction): string => {
+  const roundedSeconds = Math.max(0, Math.ceil(seconds))
+  const minutes = Math.floor(roundedSeconds / 60)
+  const remainingSeconds = roundedSeconds % 60
+
+  if (minutes === 0) {
+    return t('global.duration_seconds', { seconds: remainingSeconds })
+  }
+  if (remainingSeconds === 0) {
+    return t('global.duration_minutes', { minutes })
+  }
+  return t('global.duration_minutes_seconds', { minutes, seconds: remainingSeconds })
 }

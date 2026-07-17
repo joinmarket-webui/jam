@@ -60,7 +60,6 @@ describe('SweepScheduleProgress', () => {
     expect(screen.getByText(/scheduler.progress_current_state_waiting_confirmation/u)).toBeInTheDocument()
     expect(screen.getByText(/scheduler.progress_entry_state_confirmed/u)).toBeInTheDocument()
     expect(screen.getByText(/scheduler.progress_entry_state_waiting_confirmation/u)).toBeInTheDocument()
-    expect(screen.getByText(/scheduler.progress_entry_wait_final/u)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
     expect(onStop).toHaveBeenCalledTimes(1)
