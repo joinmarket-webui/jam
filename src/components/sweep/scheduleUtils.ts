@@ -3,15 +3,22 @@ import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, JarIndex, Seconds } from '@/types/global'
 
 type AmountCounterparties = number
-type SchedulerDestinationAddress = 'INTERNAL' | BitcoinAddress
 type StateFlag = 0 | 1 | TxId // flag indicating incomplete/broadcast/completed (0/txid/1)
 
 export type TakerEntryDetails = {
   jarIndex: JarIndex
   amountFraction?: number
   numberOfRequestedCounterparties: AmountCounterparties // N-counterparties (requested)
-  destinationOrInternal: SchedulerDestinationAddress
-}
+} & (
+  | {
+      internal: true
+      externalDestinationAddress: undefined
+    }
+  | {
+      internal: false
+      externalDestinationAddress: BitcoinAddress
+    }
+)
 
 export type MakerEntryDetails = {
   durationSeconds: Seconds
@@ -23,7 +30,7 @@ export type ScheduleEntry = {
   startedAt?: Date
   finishedAt?: Date
   waitTimeInSeconds: Seconds
-  stateFlag: StateFlag
+  stateFlag: StateFlag // TODO: replace
   __raw?: TumblerPhaseResponse // TODO: not optional
 } & Partial<TakerEntryDetails> &
   Partial<MakerEntryDetails>

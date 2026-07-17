@@ -1,12 +1,14 @@
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { type Jar } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Badge } from '../ui/badge'
 import { jarBadgeVariant } from '../ui/badge-variants'
+import { Address } from '../ui/jam/Address'
+import { Separator } from '../ui/separator'
 import { Spinner } from '../ui/spinner'
 import type { Schedule, ScheduleEntryState, ScheduleProgressSummary } from './scheduleUtils'
 import { toScheduleProgressSummary } from './scheduleUtils'
@@ -154,6 +156,33 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
           </Alert>
         )}
 
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {t('scheduler.destination_addresses_header_title', {
+                defaultValue: 'Destination Addresses',
+              })}
+            </CardTitle>
+            <CardDescription>
+              {t('scheduler.description_destination_addresses', {
+                defaultValue: 'Destination Addresses',
+              })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {schedule
+              .filter((it) => it.externalDestinationAddress !== undefined)
+              .map((it, index) => {
+                return (
+                  <div key={index}>
+                    {index === 0 ? null : <Separator className="my-2" />}
+                    <Address value={it.externalDestinationAddress!} />
+                  </div>
+                )
+              })}
+          </CardContent>
+        </Card>
+
         <div className="space-y-2 rounded-lg border p-3">
           <div className="font-medium">{t('scheduler.progress_schedule_info_title')}</div>
           <div className="space-y-2">
@@ -166,7 +195,8 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
                   className={cn(
                     'bg-muted/30 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-1.5 text-xs',
                     {
-                      'bg-muted': entry.step.isComplete,
+                      'bg-secondary/80 text-secondary-foreground': !entry.step.isActive,
+                      'bg-muted text-muted-foreground': entry.step.isComplete,
                       'motion-safe:animate-pulse': entry.step.isActive,
                     },
                   )}

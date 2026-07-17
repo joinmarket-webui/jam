@@ -79,11 +79,20 @@ const toSchedule = (plan: TumblerPlanResponse): Schedule => {
       __raw: phase,
     }
     if (phase.kind === 'taker_coinjoin') {
+      const internal = phase.destination?.toUpperCase() === 'INTERNAL'
       const details: TakerEntryDetails = {
         jarIndex: phase.mixdepth ?? 0,
         amountFraction: phase.amount_fraction ?? 0,
         numberOfRequestedCounterparties: phase.counterparty_count ?? 0,
-        destinationOrInternal: phase.destination ?? 'INTERNAL',
+        ...(internal === true
+          ? {
+              internal: true,
+              externalDestinationAddress: undefined,
+            }
+          : {
+              internal: false,
+              externalDestinationAddress: phase.destination!,
+            }),
       }
       value = { ...value, ...details }
     }

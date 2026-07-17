@@ -16,6 +16,10 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+vi.mock('../ui/jam/Address', () => ({
+  Address: ({ value }: { value?: string }) => <span data-testid="address">{value}</span>,
+}))
+
 describe('SweepScheduleProgress', () => {
   it('renders active schedule progress and stops it', async () => {
     const user = userEvent.setup()
@@ -26,7 +30,7 @@ describe('SweepScheduleProgress', () => {
         jarIndex: 0,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
-        destinationOrInternal: 'INTERNAL',
+        internal: true,
         waitTimeInSeconds: 80 * 60,
         stateFlag: 1,
       },
@@ -35,7 +39,7 @@ describe('SweepScheduleProgress', () => {
         jarIndex: 1,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
-        destinationOrInternal: 'tx-destination',
+        externalDestinationAddress: 'tx-destination',
         waitTimeInSeconds: 5 * 60,
         stateFlag: '8'.repeat(64),
       },
@@ -44,7 +48,7 @@ describe('SweepScheduleProgress', () => {
         jarIndex: 2,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
-        destinationOrInternal: 'final-destination',
+        externalDestinationAddress: 'final-destination',
         waitTimeInSeconds: 0,
         stateFlag: 0,
       },
@@ -69,7 +73,7 @@ describe('SweepScheduleProgress', () => {
         jarIndex: 0,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
-        destinationOrInternal: 'INTERNAL',
+        internal: true,
         waitTimeInSeconds: 15,
         stateFlag: 1,
       },
@@ -78,7 +82,7 @@ describe('SweepScheduleProgress', () => {
         jarIndex: 1,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
-        destinationOrInternal: 'final-destination',
+        externalDestinationAddress: 'final-destination',
         waitTimeInSeconds: 0,
         stateFlag: 1,
       },
