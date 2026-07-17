@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => ({
   startCoinjoin: vi.fn(),
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
+  singleTakerRun: false,
   toastError: vi.fn(),
   toastInfo: vi.fn(),
   toastSuccess: vi.fn(),
@@ -160,6 +161,7 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     takerInfo: {
       currentPaymentAttempt: mocks.takerRunning || mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
       running: mocks.takerRunning,
+      singleTakerRun: mocks.singleTakerRun,
     },
   }),
 }))
@@ -318,6 +320,7 @@ describe('SendPage', () => {
     mocks.stopCoinjoinRefetch.mockReset()
     mocks.stopCoinjoinRefetch.mockResolvedValue({ data: {} })
     mocks.takerRunning = false
+    mocks.singleTakerRun = false
     mocks.toastError.mockReset()
     mocks.toastInfo.mockReset()
     mocks.toastSuccess.mockReset()
@@ -384,6 +387,7 @@ describe('SendPage', () => {
   it('shows the running CoinJoin state and confirms abort', async () => {
     const user = userEvent.setup()
     mocks.takerRunning = true
+    mocks.singleTakerRun = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
@@ -395,6 +399,17 @@ describe('SendPage', () => {
 
     await user.click(screen.getByText('confirm-abort'))
     expect(mocks.stopCoinjoinRefetch).toHaveBeenCalledWith({ throwOnError: true })
+  })
+
+  it('shows the running CoinJoin state with abort button not present', () => {
+    mocks.takerRunning = true
+    mocks.singleTakerRun = false
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
+    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
   })
 
   it('confirms and starts a collaborative transaction', async () => {

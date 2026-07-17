@@ -83,7 +83,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const {
-    takerInfo: { running: takerRunning, currentPaymentAttempt },
+    takerInfo: { running: takerRunning, currentPaymentAttempt, singleTakerRun: isSingleTakerRun },
     rescanInfo,
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
@@ -494,7 +494,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         }
         {takerRunning && !isWaitingCoinjoinStop && (
           <Alert variant="warning">
-            <HourglassIcon />
+            <HourglassIcon className="motion-safe:animate-pulse" />
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
               {currentPaymentAttempt && (
@@ -516,15 +516,17 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                   )}
                 </pre>
               )}
-              <div>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAbortCoinjoinDialog(true)}
-                  disabled={isWaitingCoinjoinStop}
-                >
-                  {t('global.abort')}
-                </Button>
-              </div>
+              {isSingleTakerRun ? (
+                <div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAbortCoinjoinDialog(true)}
+                    disabled={isWaitingCoinjoinStop}
+                  >
+                    {t('global.abort')}
+                  </Button>
+                </div>
+              ) : null}
             </AlertDescription>
           </Alert>
         )}

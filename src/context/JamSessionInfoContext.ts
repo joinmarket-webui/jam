@@ -20,6 +20,7 @@ export interface PaymentAttempt {
 export interface TakerInfo {
   currentPaymentAttempt?: PaymentAttempt
   running: boolean
+  singleTakerRun: boolean
 }
 
 interface JamSessionInfoContextType {

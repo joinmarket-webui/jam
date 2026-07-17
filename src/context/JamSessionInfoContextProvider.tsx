@@ -57,11 +57,13 @@ export const JamSessionInfoContextProvider = ({
     const isWalletPayment = currentPaymentAttempt?.walletFileName === walletFileName
     const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
     const takerIsRunning = state?.coinjoin_in_process === true
+    const schedulerIsRunning = takerIsRunning && !!state?.schedule
     return {
       currentPaymentAttempt: isWalletPayment && isCoinJoin ? currentPaymentAttempt : undefined,
       running: takerIsRunning,
+      singleTakerRun: takerIsRunning && !schedulerIsRunning,
     }
-  }, [state?.coinjoin_in_process, walletFileName, currentPaymentAttempt])
+  }, [state?.coinjoin_in_process, state?.schedule, walletFileName, currentPaymentAttempt])
 
   const getrescaninfoQueryOptions = useMemo(
     () =>

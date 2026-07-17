@@ -220,13 +220,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={() => setShowEarnReport(true)}>
-          <FileTextIcon />
-          {t('earn.button_show_report')}
-        </Button>
-      </div>
-
       {feeConfigValidation.maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
       )}
@@ -234,7 +227,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {jmSession.coinjoin_in_process === true && (
         <Alert variant="warning">
           <HourglassIcon className="motion-safe:animate-pulse" />
-          <AlertDescription>{t('send.text_coinjoin_already_running')}</AlertDescription>
+          <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
         </Alert>
       )}
 
@@ -262,6 +255,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           <AlertTitle>{t('earn.alert_loading_offer')}</AlertTitle>
         </Alert>
       )}
+
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={() => setShowEarnReport(true)}>
+          <FileTextIcon />
+          {t('earn.button_show_report')}
+        </Button>
+      </div>
 
       {jmSession.offer_list && jmSession.offer_list.length > 0 && (
         <OfferCard
