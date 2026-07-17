@@ -34,7 +34,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import { percentageToFactor, type WalletFileName } from '@/lib/utils'
+import { percentageToFactor, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
@@ -166,6 +166,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
+      scrollToTop()
     },
     onSettled: () => {
       setShowScheduleConfirmDialog(undefined)
@@ -192,6 +193,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
+      scrollToTop()
     },
     onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))

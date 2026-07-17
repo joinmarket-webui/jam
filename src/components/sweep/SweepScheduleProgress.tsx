@@ -197,7 +197,7 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
                     {
                       'bg-secondary/80 text-secondary-foreground': !entry.step.isActive,
                       'bg-muted text-muted-foreground': entry.step.isComplete,
-                      'motion-safe:animate-pulse': entry.step.isActive,
+                      'ring-ring/50 ring-2 motion-safe:animate-pulse': entry.step.isActive,
                     },
                   )}
                 >
