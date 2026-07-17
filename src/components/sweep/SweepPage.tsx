@@ -29,7 +29,7 @@ import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import type { TumblerParameters } from '@/constants/jm'
-import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJamWalletInfoContext, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
@@ -68,7 +68,7 @@ const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry['stateF
   return phase.txid ?? 0
 }
 
-const toSchedule = (plan: TumblerPlanResponse): Schedule => {
+const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => {
   return plan.phases.map((phase) => {
     let value: ScheduleEntry = {
       kind: phase.kind,
@@ -81,7 +81,8 @@ const toSchedule = (plan: TumblerPlanResponse): Schedule => {
     if (phase.kind === 'taker_coinjoin') {
       const internal = phase.destination?.toUpperCase() === 'INTERNAL'
       const details: TakerEntryDetails = {
-        jarIndex: phase.mixdepth ?? 0,
+        jarIndex: phase.mixdepth ?? -1,
+        jar: jars.find((it) => it.jarIndex === phase.mixdepth),
         amountFraction: phase.amount_fraction ?? 0,
         numberOfRequestedCounterparties: phase.counterparty_count ?? 0,
         ...(internal === true
@@ -208,8 +209,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     if (getScheduleQuery.data.stale === true) return
     if (getScheduleQuery.data.status.toLowerCase() !== 'running') return
 
-    return toSchedule(getScheduleQuery.data)
-  }, [getScheduleQuery.data])
+    return toSchedule(getScheduleQuery.data, walletInfo.jars)
+  }, [getScheduleQuery.data, walletInfo.jars])
 
   const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
   const isWaitingSchedulerStart =

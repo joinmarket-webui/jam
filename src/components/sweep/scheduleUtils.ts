@@ -1,4 +1,5 @@
 import type { TumblerPhaseResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { Jar } from '@/context/JamWalletInfoContext'
 import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, JarIndex, Seconds } from '@/types/global'
 
@@ -7,6 +8,7 @@ type StateFlag = 0 | 1 | TxId // flag indicating incomplete/broadcast/completed 
 
 export type TakerEntryDetails = {
   jarIndex: JarIndex
+  jar?: Jar
   amountFraction?: number
   numberOfRequestedCounterparties: AmountCounterparties // N-counterparties (requested)
 } & (

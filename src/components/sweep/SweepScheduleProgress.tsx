@@ -1,15 +1,18 @@
+import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { type Jar } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Badge } from '../ui/badge'
 import { jarBadgeVariant } from '../ui/badge-variants'
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '../ui/item'
 import { Address } from '../ui/jam/Address'
 import { Separator } from '../ui/separator'
 import { Spinner } from '../ui/spinner'
+import { ScheduleProgressEntryItem } from './ScheduleProgressEntryItem'
 import type { Schedule, ScheduleEntryState, ScheduleProgressSummary } from './scheduleUtils'
 import { toScheduleProgressSummary } from './scheduleUtils'
 
@@ -156,20 +159,18 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
           </Alert>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
+        <Item variant="outline">
+          <ItemContent>
+            <ItemTitle>
               {t('scheduler.destination_addresses_header_title', {
                 defaultValue: 'Destination Addresses',
               })}
-            </CardTitle>
-            <CardDescription>
+            </ItemTitle>
+            <ItemDescription>
               {t('scheduler.description_destination_addresses', {
                 defaultValue: 'Destination Addresses',
               })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </ItemDescription>
             {schedule
               .filter((it) => it.externalDestinationAddress !== undefined)
               .map((it, index) => {
@@ -180,8 +181,18 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
                   </div>
                 )
               })}
-          </CardContent>
-        </Card>
+          </ItemContent>
+        </Item>
+
+        <ItemGroup className="space-y-2">
+          {progress.entries.map((entry, index) => {
+            return (
+              <React.Fragment key={index}>
+                <ScheduleProgressEntryItem value={entry} />
+              </React.Fragment>
+            )
+          })}
+        </ItemGroup>
 
         <div className="space-y-2 rounded-lg border p-3">
           <div className="font-medium">{t('scheduler.progress_schedule_info_title')}</div>

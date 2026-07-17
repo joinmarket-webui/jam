@@ -20,6 +20,7 @@ const badgeVariants = cva(
         jarUnknown: 'border-transparent bg-jar-unknown text-primary-foreground [a&]:hover:bg-jar-unknown/90',
         muted: 'border-transparent bg-muted text-muted-foreground [a&]:hover:bg-muted/90',
         success: 'border-transparent bg-brand-success text-brand-success-foreground [a&]:hover:bg-brand-success/90',
+        info: 'border-transparent bg-brand-info text-brand-info-foreground [a&]:hover:bg-brand-info/90',
       },
     },
     defaultVariants: {

@@ -313,13 +313,13 @@ export const time = (() => {
     from?: Milliseconds
     to: Milliseconds
     locale: string
-  }) => humanReadableTimeInterval(timeInterval({ from, to }), locale || 'en')
+  }) => humanReadableRelativeTimeInterval(timeInterval({ from, to }), locale || 'en')
 
   const timeInterval = ({ from = Date.now(), to }: { from?: Milliseconds; to: Milliseconds }): TimeInterval => {
     return to - from
   }
 
-  const humanReadableTimeInterval = (timeInterval: TimeInterval, locale: string) => {
+  const humanReadableRelativeTimeInterval = (timeInterval: TimeInterval, locale: string) => {
     const rtf = new Intl.RelativeTimeFormat(locale || 'en', { numeric: 'always', style: 'long' })
 
     const sortedUnits = (Object.keys(UNIT_MILLIS) as Unit[])
@@ -340,5 +340,6 @@ export const time = (() => {
   return {
     timeInterval,
     humanReadableDuration,
+    humanReadableRelativeTimeInterval,
   }
 })()
