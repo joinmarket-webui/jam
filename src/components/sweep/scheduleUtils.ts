@@ -1,25 +1,32 @@
+import type { TumblerPhaseResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, JarIndex, Seconds } from '@/types/global'
 
-type AmountFraction = number
 type AmountCounterparties = number
 type SchedulerDestinationAddress = 'INTERNAL' | BitcoinAddress
-type Rounding = number
 type StateFlag = 0 | 1 | TxId // flag indicating incomplete/broadcast/completed (0/txid/1)
 
-// [mixdepth, amount-fraction, N-counterparties (requested), destination address, wait time in minutes, rounding, ]
-// e.g.
-// - [ 2, 0.2456498211214867, 4, "INTERNAL", 0.01, 16, 1 ]
-// - [ 3, 0, 8, "bcrt1qpnv3nze7u6ecw63mn06ksxh497a3lryagh233q", 0.04, 16, 0 ]
-export type ScheduleEntry = {
+export type TakerEntryDetails = {
   jarIndex: JarIndex
-  amountFraction: AmountFraction
+  amountFraction?: number
   numberOfRequestedCounterparties: AmountCounterparties // N-counterparties (requested)
   destinationOrInternal: SchedulerDestinationAddress
-  waitTimeInSeconds: Seconds
-  rounding: Rounding
-  stateFlag: StateFlag
 }
+
+export type MakerEntryDetails = {
+  durationSeconds: Seconds
+  idleTimeoutSeconds: Seconds
+}
+
+export type ScheduleEntry = {
+  kind: 'taker_coinjoin' | 'maker_session' | TumblerPhaseResponse['kind']
+  startedAt?: Date
+  finishedAt?: Date
+  waitTimeInSeconds: Seconds
+  stateFlag: StateFlag
+  __raw?: TumblerPhaseResponse // TODO: not optional
+} & Partial<TakerEntryDetails> &
+  Partial<MakerEntryDetails>
 
 export type Schedule = ScheduleEntry[]
 
@@ -39,6 +46,8 @@ export interface ScheduleProgressEntry {
   state: ScheduleEntryState
   txid?: TxId
   isLast: boolean
+  step: ScheduleProgressStep
+  __raw: ScheduleEntry
 }
 
 export type ScheduleCurrentStateType =
@@ -58,7 +67,6 @@ export interface ScheduleProgressSummary {
   completedTransactions: number
   currentTransactionIndex: number
   isDone: boolean
-  steps: ScheduleProgressStep[]
   entries: ScheduleProgressEntry[]
   currentState?: ScheduleCurrentState
 }
@@ -106,7 +114,6 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
       completedTransactions: 0,
       currentTransactionIndex: 0,
       isDone: true,
-      steps: [],
       entries: [],
     }
   }
@@ -147,6 +154,8 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
       state: toScheduleEntryState(entry),
       txid: getScheduleEntryTxId(entry),
       isLast: index === schedule.length - 1,
+      step: steps[index],
+      __raw: entry,
     }
   })
 
@@ -196,7 +205,6 @@ export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressS
     completedTransactions: Math.min(completedTransactions, schedule.length),
     currentTransactionIndex,
     isDone,
-    steps,
     entries,
     currentState,
   }

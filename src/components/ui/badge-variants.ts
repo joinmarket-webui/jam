@@ -18,6 +18,8 @@ const badgeVariants = cva(
         jar3: 'border-transparent bg-jar3 text-primary-foreground [a&]:hover:bg-jar3/90',
         jar4: 'border-transparent bg-jar4 text-primary-foreground [a&]:hover:bg-jar4/90',
         jarUnknown: 'border-transparent bg-jar-unknown text-primary-foreground [a&]:hover:bg-jar-unknown/90',
+        muted: 'border-transparent bg-muted text-muted-foreground [a&]:hover:bg-muted/90',
+        success: 'border-transparent bg-brand-success text-brand-success-foreground [a&]:hover:bg-brand-success/90',
       },
     },
     defaultVariants: {

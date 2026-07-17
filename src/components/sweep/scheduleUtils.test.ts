@@ -5,30 +5,30 @@ describe('scheduleUtils', () => {
   it('creates progress summary from schedule entries', () => {
     const schedule: Schedule = [
       {
+        kind: 'taker_coinjoin',
         jarIndex: 0,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 10 * 60,
-        rounding: 16,
         stateFlag: 1,
       },
       {
+        kind: 'taker_coinjoin',
         jarIndex: 1,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 5 * 60,
-        rounding: 16,
         stateFlag: 0,
       },
       {
+        kind: 'taker_coinjoin',
         jarIndex: 2,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'bc1qdestination',
         waitTimeInSeconds: 1 * 60,
-        rounding: 16,
         stateFlag: 0,
       },
     ]
@@ -39,41 +39,40 @@ describe('scheduleUtils', () => {
     expect(summary.completedTransactions).toBe(1)
     expect(summary.currentTransactionIndex).toBe(1)
     expect(summary.isDone).toBe(false)
-    expect(summary.steps).toHaveLength(3)
-    expect(summary.steps[1].isActive).toBe(true)
     expect(summary.entries).toHaveLength(3)
     expect(summary.entries[0].state).toBe('confirmed')
     expect(summary.entries[0].waitBeforeNextSeconds).toBe(600)
+    expect(summary.entries[1].step.isActive).toBe(true)
     expect(summary.entries[2].isLast).toBe(true)
   })
 
   it('derives current state while waiting for transaction confirmation', () => {
     const schedule: Schedule = [
       {
+        kind: 'taker_coinjoin',
         jarIndex: 0,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 10 * 60,
-        rounding: 16,
         stateFlag: 1,
       },
       {
+        kind: 'taker_coinjoin',
         jarIndex: 1,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 5 * 60,
-        rounding: 16,
         stateFlag: '8'.repeat(64),
       },
       {
+        kind: 'taker_coinjoin',
         jarIndex: 2,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'bc1qdestination',
         waitTimeInSeconds: 1 * 60,
-        rounding: 16,
         stateFlag: 0,
       },
     ]
@@ -89,21 +88,21 @@ describe('scheduleUtils', () => {
   it('derives current state while waiting before the next transaction', () => {
     const schedule: Schedule = [
       {
+        kind: 'taker_coinjoin',
         jarIndex: 0,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 2 * 60,
-        rounding: 16,
         stateFlag: 1,
       },
       {
+        kind: 'taker_coinjoin',
         jarIndex: 1,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 0,
-        rounding: 16,
         stateFlag: 0,
       },
     ]
@@ -118,21 +117,21 @@ describe('scheduleUtils', () => {
   it('falls back to frozen-utxo check when last schedule entry is stale', () => {
     const schedule: Schedule = [
       {
+        kind: 'taker_coinjoin',
         jarIndex: 0,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 2 * 60,
-        rounding: 16,
         stateFlag: 1,
       },
       {
+        kind: 'taker_coinjoin',
         jarIndex: 1,
         amountFraction: 0,
         numberOfRequestedCounterparties: 8,
         destinationOrInternal: 'INTERNAL',
         waitTimeInSeconds: 0,
-        rounding: 16,
         stateFlag: 0,
       },
     ]

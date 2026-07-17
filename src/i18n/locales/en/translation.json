@@ -801,7 +801,7 @@
     "progress_entry_state_waiting_confirmation": "Waiting for confirmation ({{ txid }})",
     "progress_entry_state_confirmed": "Confirmed",
     "progress_entry_wait_before_next": "Wait before next: {{ wait }}",
-    "progress_entry_wait_final": "Final tractionansaction",
+    "progress_entry_wait_final": "Final transaction",
     "progress_done": "All actions completed successfully. The scheduler will stop soon.",
     "precondition": {
       "hint_missing_utxos": "To run the scheduler you need UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",

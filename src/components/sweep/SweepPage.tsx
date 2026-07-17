@@ -21,7 +21,7 @@ import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAler
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
-import type { Schedule, ScheduleEntry } from '@/components/sweep/scheduleUtils'
+import type { MakerEntryDetails, Schedule, ScheduleEntry, TakerEntryDetails } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
@@ -69,15 +69,33 @@ const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry['stateF
 }
 
 const toSchedule = (plan: TumblerPlanResponse): Schedule => {
-  return plan.phases.map((phase) => ({
-    jarIndex: phase.mixdepth ?? 0,
-    amountFraction: phase.amount_fraction ?? 0,
-    numberOfRequestedCounterparties: phase.counterparty_count ?? 0,
-    destinationOrInternal: phase.destination ?? 'INTERNAL',
-    waitTimeInSeconds: phase.wait_seconds ?? 0,
-    rounding: 0,
-    stateFlag: toScheduleStateFlag(phase),
-  }))
+  return plan.phases.map((phase) => {
+    let value: ScheduleEntry = {
+      kind: phase.kind,
+      startedAt: phase.started_at ? new Date(Date.parse(phase.started_at)) : undefined,
+      finishedAt: phase.finished_at ? new Date(Date.parse(phase.finished_at)) : undefined,
+      waitTimeInSeconds: phase.wait_seconds ?? 0,
+      stateFlag: toScheduleStateFlag(phase),
+      __raw: phase,
+    }
+    if (phase.kind === 'taker_coinjoin') {
+      const details: TakerEntryDetails = {
+        jarIndex: phase.mixdepth ?? 0,
+        amountFraction: phase.amount_fraction ?? 0,
+        numberOfRequestedCounterparties: phase.counterparty_count ?? 0,
+        destinationOrInternal: phase.destination ?? 'INTERNAL',
+      }
+      value = { ...value, ...details }
+    }
+    if (phase.kind === 'maker_session') {
+      const details: MakerEntryDetails = {
+        durationSeconds: phase.duration_seconds ?? 0,
+        idleTimeoutSeconds: phase.idle_timeout_seconds ?? 0,
+      }
+      value = { ...value, ...details }
+    }
+    return value
+  })
 }
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
@@ -297,6 +315,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         {schedulerRunning && currentSchedule && (
           <SweepScheduleProgress
             schedule={currentSchedule}
+            jars={walletInfo.jars}
             isStopping={isWaitingSchedulerStop}
             onStop={stopSchedule}
             debug={isDeveloperMode}
