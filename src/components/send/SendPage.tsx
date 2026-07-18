@@ -83,7 +83,11 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   } = useJamWalletInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const {
-    takerInfo: { running: takerRunning, currentPaymentAttempt, singleTakerRun: isSingleTakerRun },
+    takerInfo: {
+      running: takerRunning,
+      currentPaymentAttempt,
+      scheduler: { running: schedulerRunning },
+    },
     rescanInfo,
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
@@ -516,7 +520,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                   )}
                 </pre>
               )}
-              {isSingleTakerRun ? (
+              {takerRunning && !schedulerRunning ? (
                 <div>
                   <Button
                     variant="outline"

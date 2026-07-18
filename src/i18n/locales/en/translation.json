@@ -796,9 +796,6 @@
     "progress_current_state_confirmed": "Transaction <1>{{ current }}</1> of <3>{{ total }}</3> confirmed.",
     "progress_current_state_creating_next": "Executing action <1>{{ current }}</1> of <3>{{ total }}</3>...",
     "progress_entry_label": "Action {{ index }}",
-    "progress_entry_state_pending": "Pending",
-    "progress_entry_state_waiting_confirmation": "Waiting for confirmation ({{ txid }})",
-    "progress_entry_state_confirmed": "Confirmed",
     "progress_entry_wait_before_next_title": "Wait period before next action",
     "progress_done": "All actions completed successfully. The scheduler will stop soon.",
     "precondition": {

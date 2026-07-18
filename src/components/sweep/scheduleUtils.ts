@@ -1,4 +1,4 @@
-import type { TumblerPhaseResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import type { TFunction } from 'i18next'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { TxId } from '@/store/jmTxStore'
@@ -38,6 +38,7 @@ export type ScheduleEntry = {
 } & Partial<TakerEntryDetails> &
   Partial<MakerEntryDetails>
 
+// TODO: refactor to object with summary props
 export type Schedule = ScheduleEntry[]
 
 export interface ScheduleProgressStep {
@@ -114,6 +115,59 @@ const isScheduleEntryConfirmed = (entry: ScheduleEntry): boolean => {
 export const isScheduleEntrySuccessful = (entry: ScheduleEntry): boolean => {
   const state = getScheduleEntryState(entry)
   return state === 1 || typeof state === 'string'
+}
+
+const isPhaseComplete = (phase: TumblerPhaseResponse): boolean => {
+  return phase.status.toLowerCase() === 'completed'
+}
+
+const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry['stateFlag'] => {
+  if (isPhaseComplete(phase)) {
+    return 1
+  }
+  return phase.txid ?? 0
+}
+
+export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => {
+  return plan.phases.map((it) => toScheduleEntry(it, jars))
+}
+
+export const toScheduleEntry = (phase: TumblerPhaseResponse, jars: Jar[]): ScheduleEntry => {
+  let value: ScheduleEntry = {
+    kind: phase.kind,
+    startedAt: phase.started_at ? new Date(Date.parse(phase.started_at)) : undefined,
+    finishedAt: phase.finished_at ? new Date(Date.parse(phase.finished_at)) : undefined,
+    waitTimeInSeconds: phase.wait_seconds ?? 0,
+    stateFlag: toScheduleStateFlag(phase), // TODO: deprecated; replace with actual tumbler state (pending, running, completed, failed, cancelled)
+    __raw: phase,
+  }
+  if (phase.kind === 'taker_coinjoin') {
+    const internal = phase.destination?.toUpperCase() === 'INTERNAL'
+    const details: TakerEntryDetails = {
+      jarIndex: phase.mixdepth ?? -1,
+      jar: jars.find((it) => it.jarIndex === phase.mixdepth),
+      amountFraction: phase.amount_fraction ?? 0,
+      numberOfRequestedCounterparties: phase.counterparty_count ?? 0,
+      ...(internal === true
+        ? {
+            internal: true,
+            externalDestinationAddress: undefined,
+          }
+        : {
+            internal: false,
+            externalDestinationAddress: phase.destination!,
+          }),
+    }
+    value = { ...value, ...details }
+  }
+  if (phase.kind === 'maker_session') {
+    const details: MakerEntryDetails = {
+      durationSeconds: phase.duration_seconds ?? 0,
+      idleTimeoutSeconds: phase.idle_timeout_seconds ?? 0,
+    }
+    value = { ...value, ...details }
+  }
+  return value
 }
 
 export const toScheduleProgressSummary = (schedule: Schedule): ScheduleProgressSummary => {

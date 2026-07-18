@@ -5,11 +5,7 @@ import {
   tumblerstatusOptions,
   tumblerstopMutation,
 } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type {
-  TumblerPhaseResponse,
-  TumblerPlanRequest,
-  TumblerPlanResponse,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { TumblerPlanRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -21,7 +17,7 @@ import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAler
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
-import type { MakerEntryDetails, Schedule, ScheduleEntry, TakerEntryDetails } from '@/components/sweep/scheduleUtils'
+import { toSchedule } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
@@ -29,7 +25,8 @@ import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import type { TumblerParameters } from '@/constants/jm'
-import { useJamWalletInfoContext, type Jar } from '@/context/JamWalletInfoContext'
+import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
@@ -57,60 +54,10 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   mintxcount: 1,
 }
 
-const isPhaseComplete = (phase: TumblerPhaseResponse): boolean => {
-  return phase.status.toLowerCase() === 'completed'
-}
-
-const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry['stateFlag'] => {
-  if (isPhaseComplete(phase)) {
-    return 1
-  }
-  return phase.txid ?? 0
-}
-
-const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => {
-  return plan.phases.map((phase) => {
-    let value: ScheduleEntry = {
-      kind: phase.kind,
-      startedAt: phase.started_at ? new Date(Date.parse(phase.started_at)) : undefined,
-      finishedAt: phase.finished_at ? new Date(Date.parse(phase.finished_at)) : undefined,
-      waitTimeInSeconds: phase.wait_seconds ?? 0,
-      stateFlag: toScheduleStateFlag(phase),
-      __raw: phase,
-    }
-    if (phase.kind === 'taker_coinjoin') {
-      const internal = phase.destination?.toUpperCase() === 'INTERNAL'
-      const details: TakerEntryDetails = {
-        jarIndex: phase.mixdepth ?? -1,
-        jar: jars.find((it) => it.jarIndex === phase.mixdepth),
-        amountFraction: phase.amount_fraction ?? 0,
-        numberOfRequestedCounterparties: phase.counterparty_count ?? 0,
-        ...(internal === true
-          ? {
-              internal: true,
-              externalDestinationAddress: undefined,
-            }
-          : {
-              internal: false,
-              externalDestinationAddress: phase.destination!,
-            }),
-      }
-      value = { ...value, ...details }
-    }
-    if (phase.kind === 'maker_session') {
-      const details: MakerEntryDetails = {
-        durationSeconds: phase.duration_seconds ?? 0,
-        idleTimeoutSeconds: phase.idle_timeout_seconds ?? 0,
-      }
-      value = { ...value, ...details }
-    }
-    return value
-  })
-}
-
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
+  const { rescanInfo, takerInfo, makerInfo } = useJamSessionInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const walletInfo = useJamWalletInfoContext()
   const { enabled: isDeveloperMode } = useDeveloperMode()
@@ -131,7 +78,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       client,
       path: { walletname: walletFileName },
     }),
-    refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
+    refetchInterval:
+      takerInfo.running && takerInfo.scheduler.running ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
     refetchIntervalInBackground: true,
     retry: false,
   })
@@ -207,19 +155,18 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const currentSchedule = useMemo(() => {
     if (getScheduleQuery.data === undefined) return
     if (getScheduleQuery.data.stale === true) return
-    if (getScheduleQuery.data.status.toLowerCase() !== 'running') return
 
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.data, walletInfo.jars])
 
-  const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
+  const schedulerRunning = takerInfo.scheduler.running
   const isWaitingSchedulerStart =
     startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
-  const waitingForTumblerStatus = jmSession?.coinjoin_in_process === true && getScheduleQuery.isPending
+  const waitingForTumblerStatus = takerInfo.running && getScheduleQuery.isPending
   const singleCoinJoinRunning =
-    jmSession?.coinjoin_in_process === true && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
-  const makerRunning = jmSession?.maker_running === true
-  const collaborativeOperationRunning = makerRunning || jmSession?.coinjoin_in_process === true
+    takerInfo.running && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
+  const makerRunning = makerInfo.running === true
+  const collaborativeOperationRunning = makerRunning || takerInfo.running
 
   const isWaitingSchedulerStop = stopScheduleMutationIsPending || (stopScheduleMutationIsSuccess && schedulerRunning)
 
@@ -244,7 +191,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const isOperationDisabled =
     feeConfigValidation.maxFeesConfigMissing ||
     collaborativeOperationRunning ||
-    jmSession?.rescanning ||
+    rescanInfo.rescanning ||
     !preconditionSummary.isFulfilled
 
   const isStartDisabled = isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop
@@ -327,7 +274,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         {schedulerRunning && currentSchedule && (
           <SweepScheduleProgress
             schedule={currentSchedule}
-            jars={walletInfo.jars}
             isStopping={isWaitingSchedulerStop}
             onStop={stopSchedule}
             debug={isDeveloperMode}

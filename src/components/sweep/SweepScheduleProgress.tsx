@@ -1,24 +1,22 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { type Jar } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
-import { Badge } from '../ui/badge'
-import { jarBadgeVariant } from '../ui/badge-variants'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '../ui/item'
 import { Address } from '../ui/jam/Address'
 import { Separator } from '../ui/separator'
 import { Spinner } from '../ui/spinner'
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { ScheduleProgressEntryItem } from './ScheduleProgressEntryItem'
-import type { Schedule, ScheduleEntryState, ScheduleProgressSummary } from './scheduleUtils'
+import type { Schedule, ScheduleProgressSummary } from './scheduleUtils'
 import { formatDuration, toScheduleProgressSummary } from './scheduleUtils'
 
 interface SweepScheduleProgressProps {
   schedule: Schedule
-  jars: Jar[]
   isStopping: boolean
   onStop: () => Promise<void>
   debug?: boolean
@@ -49,21 +47,15 @@ const highlightedComponents = {
   '3': <span className="font-semibold" />,
 }
 
-export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debug }: SweepScheduleProgressProps) => {
+type Tab = 'active' | 'all'
+
+export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
   const progress = toScheduleProgressSummary(schedule)
   const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
   const totalSeconds = Math.ceil(progress.totalWaitSeconds)
 
-  const toScheduleEntryStateText = (state: ScheduleEntryState, txid?: string): string => {
-    if (state === 'confirmed') {
-      return t('scheduler.progress_entry_state_confirmed')
-    }
-    if (state === 'broadcasted') {
-      return t('scheduler.progress_entry_state_waiting_confirmation', { txid: txid ?? '-' })
-    }
-    return t('scheduler.progress_entry_state_pending')
-  }
+  const [activeTab, setActiveTab] = useState<Tab>('active')
 
   return (
     <Card>
@@ -170,68 +162,59 @@ export const SweepScheduleProgress = ({ schedule, jars, isStopping, onStop, debu
           </ItemContent>
         </Item>
 
-        <ItemGroup className="space-y-2">
-          {progress.entries.map((entry, index) => {
-            return (
-              <React.Fragment key={index}>
-                <ScheduleProgressEntryItem value={entry} />
-              </React.Fragment>
-            )
-          })}
-        </ItemGroup>
-
-        <div className="space-y-2 rounded-lg border p-3">
-          <div className="font-medium">{t('scheduler.progress_schedule_info_title')}</div>
-          <div className="space-y-2">
-            {progress.entries.map((entry) => {
-              const jar =
-                entry.__raw.jarIndex !== undefined ? jars.find((it) => it.jarIndex === entry.__raw.jarIndex) : undefined
-              return (
-                <div
-                  key={entry.index}
-                  className={cn(
-                    'bg-muted/30 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-1.5 text-xs',
-                    {
-                      'bg-secondary/80 text-secondary-foreground': !entry.step.isActive,
-                      'bg-muted text-muted-foreground': entry.step.isComplete,
-                      'ring-ring/50 ring-2 motion-safe:animate-pulse': entry.step.isActive,
-                    },
-                  )}
-                >
-                  <div className="font-medium">{t('scheduler.progress_entry_label', { index: entry.index + 1 })}</div>
-                  <div className="space-x-2 font-medium">
-                    <Badge
-                      variant={
-                        entry.__raw.kind === 'taker_coinjoin'
-                          ? 'default'
-                          : entry.__raw.kind === 'maker_session'
-                            ? 'secondary'
-                            : 'outline'
-                      }
-                    >
-                      {entry.__raw.kind === 'taker_coinjoin'
-                        ? 'Send'
-                        : entry.__raw.kind === 'maker_session'
-                          ? 'Earn'
-                          : 'outline'}
-                    </Badge>
-                    {jar ? (
-                      <Badge variant={jarBadgeVariant(jar.jarIndex)}>
-                        {jar.name} <span className="text-xs">#{jar.jarIndex}</span>
-                      </Badge>
-                    ) : null}
-                    <Badge variant={entry.step.isActive ? 'outline' : entry.step.isComplete ? 'success' : 'muted'}>
-                      {entry.__raw?.__raw?.status}
-                    </Badge>
-
-                    {entry.__raw?.__raw?.amount === 0 ? <Badge variant="outline">Sweep</Badge> : null}
-                  </div>
-                  <div className="text-muted-foreground">{toScheduleEntryStateText(entry.state, entry.txid)}</div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <Accordion type="single" collapsible defaultValue="details">
+          <AccordionItem value="details">
+            <AccordionTrigger>
+              {
+                /* TODO: i18n */ t('scheduler.button_settings', {
+                  defaultValue: 'Schedule details',
+                })
+              }
+            </AccordionTrigger>
+            <AccordionContent
+              className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+            >
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(value as Tab)}
+                className="flex flex-col gap-4"
+              >
+                <TabsList className="mx-auto flex items-center gap-2">
+                  <TabsTrigger value="active" className="cursor-pointer">
+                    {/* TODO: i18n */}Active
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className="cursor-pointer">
+                    {/* TODO: i18n */}All
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              {activeTab === 'active' ? (
+                <ItemGroup className="space-y-2">
+                  {progress.entries
+                    .filter((it) => it.step.isActive)
+                    .map((entry, index) => {
+                      return (
+                        <React.Fragment key={index}>
+                          <ScheduleProgressEntryItem value={entry} />
+                        </React.Fragment>
+                      )
+                    })}
+                </ItemGroup>
+              ) : null}
+              {activeTab === 'all' ? (
+                <ItemGroup className="space-y-2">
+                  {progress.entries.map((entry, index) => {
+                    return (
+                      <React.Fragment key={index}>
+                        <ScheduleProgressEntryItem value={entry} />
+                      </React.Fragment>
+                    )
+                  })}
+                </ItemGroup>
+              ) : null}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         <Button type="button" onClick={() => void onStop()} disabled={isStopping} size="lg" className="w-full">
           {isStopping ? (

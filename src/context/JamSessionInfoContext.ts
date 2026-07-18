@@ -20,13 +20,20 @@ export interface PaymentAttempt {
 export interface TakerInfo {
   currentPaymentAttempt?: PaymentAttempt
   running: boolean
-  singleTakerRun: boolean
+  scheduler: {
+    running: boolean
+  }
+}
+
+export interface MakerInfo {
+  running: boolean
 }
 
 interface JamSessionInfoContextType {
   blockHeight?: number
   takerInfo: TakerInfo
   rescanInfo: RescanInfo
+  makerInfo: MakerInfo
   setRescanInfo: Dispatch<SetStateAction<RescanInfo>>
   setCurrentPaymentAttempt: (val: PaymentAttempt) => void
   clearCurrentPaymentAttempt: () => void

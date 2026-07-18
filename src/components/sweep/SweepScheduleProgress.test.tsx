@@ -54,12 +54,10 @@ describe('SweepScheduleProgress', () => {
       },
     ]
 
-    render(<SweepScheduleProgress schedule={schedule} jars={[]} isStopping={false} onStop={onStop} />)
+    render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={onStop} />)
 
     expect(screen.getByText(/scheduler.progress_tldr_hours/u)).toBeInTheDocument()
     expect(screen.getByText(/scheduler.progress_current_state_waiting_confirmation/u)).toBeInTheDocument()
-    expect(screen.getByText(/scheduler.progress_entry_state_confirmed/u)).toBeInTheDocument()
-    expect(screen.getByText(/scheduler.progress_entry_state_waiting_confirmation/u)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
     expect(onStop).toHaveBeenCalledTimes(1)
@@ -87,14 +85,12 @@ describe('SweepScheduleProgress', () => {
       },
     ]
 
-    const { rerender } = render(
-      <SweepScheduleProgress schedule={schedule} jars={[]} isStopping={false} onStop={vi.fn()} />,
-    )
+    const { rerender } = render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={vi.fn()} />)
 
     expect(screen.getByText(/scheduler.progress_tldr_seconds/u)).toBeInTheDocument()
     expect(screen.getByText('scheduler.progress_done')).toBeInTheDocument()
 
-    rerender(<SweepScheduleProgress schedule={schedule} jars={[]} isStopping onStop={vi.fn()} />)
+    rerender(<SweepScheduleProgress schedule={schedule} isStopping onStop={vi.fn()} />)
     expect(screen.getByRole('button', { name: /scheduler\.button_stop/u })).toBeDisabled()
   })
 })

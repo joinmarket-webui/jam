@@ -25,7 +25,7 @@ const mocks = vi.hoisted(() => ({
   startCoinjoin: vi.fn(),
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
-  singleTakerRun: false,
+  schedulerRunning: false,
   toastError: vi.fn(),
   toastInfo: vi.fn(),
   toastSuccess: vi.fn(),
@@ -161,7 +161,9 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     takerInfo: {
       currentPaymentAttempt: mocks.takerRunning || mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
       running: mocks.takerRunning,
-      singleTakerRun: mocks.singleTakerRun,
+      scheduler: {
+        running: mocks.schedulerRunning,
+      },
     },
   }),
 }))
@@ -320,7 +322,7 @@ describe('SendPage', () => {
     mocks.stopCoinjoinRefetch.mockReset()
     mocks.stopCoinjoinRefetch.mockResolvedValue({ data: {} })
     mocks.takerRunning = false
-    mocks.singleTakerRun = false
+    mocks.schedulerRunning = false
     mocks.toastError.mockReset()
     mocks.toastInfo.mockReset()
     mocks.toastSuccess.mockReset()
@@ -387,7 +389,7 @@ describe('SendPage', () => {
   it('shows the running CoinJoin state and confirms abort', async () => {
     const user = userEvent.setup()
     mocks.takerRunning = true
-    mocks.singleTakerRun = true
+    mocks.schedulerRunning = false
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
@@ -403,7 +405,7 @@ describe('SendPage', () => {
 
   it('shows the running CoinJoin state with abort button not present', () => {
     mocks.takerRunning = true
-    mocks.singleTakerRun = false
+    mocks.schedulerRunning = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
