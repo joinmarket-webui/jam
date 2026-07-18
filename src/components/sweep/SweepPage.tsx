@@ -46,7 +46,7 @@ const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_count_min: 1,
-  maker_count_max: 2,
+  maker_count_max: 1,
   time_lambda_seconds: 10,
   stage1_wait_multiplier: 1.5,
   maker_session_idle_timeout_seconds: 60,
@@ -117,8 +117,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setAlertMessage(undefined)
       scrollToTop()
     },
-    onSettled: () => {
+    onSettled: async () => {
       setShowScheduleConfirmDialog(undefined)
+      await getScheduleQuery.refetch()
     },
     onError: (error) => {
       console.error('Plan schedule error:', error)
@@ -272,12 +273,20 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         )}
 
         {schedulerRunning && currentSchedule && (
-          <SweepScheduleProgress
-            schedule={currentSchedule}
-            isStopping={isWaitingSchedulerStop}
-            onStop={stopSchedule}
-            debug={isDeveloperMode}
-          />
+          <>
+            {getScheduleQuery.isPending ? (
+              <div className="flex flex-1 items-center justify-center">
+                <Spinner />
+              </div>
+            ) : (
+              <SweepScheduleProgress
+                schedule={currentSchedule}
+                isStopping={isWaitingSchedulerStop}
+                onStop={stopSchedule}
+                debug={isDeveloperMode}
+              />
+            )}
+          </>
         )}
 
         {!schedulerRunning && (

@@ -13,7 +13,7 @@ import { Spinner } from '../ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { ScheduleProgressEntryItem } from './ScheduleProgressEntryItem'
 import type { Schedule, ScheduleProgressSummary } from './scheduleUtils'
-import { formatDuration, toScheduleProgressSummary } from './scheduleUtils'
+import { toScheduleProgressSummary } from './scheduleUtils'
 
 interface SweepScheduleProgressProps {
   schedule: Schedule
@@ -93,17 +93,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
               {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
-              {progress.currentState?.type === 'waiting_before_next' ? (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_wait_before_next"
-                  values={{
-                    current: progress.currentState.currentTransaction,
-                    total: progress.currentState.totalTransactions,
-                    wait: formatDuration(progress.currentState.waitSeconds ?? 0, t),
-                  }}
-                  components={highlightedComponents}
-                />
-              ) : progress.currentState?.type === 'waiting_for_confirmation' ? (
+              {progress.currentState?.type === 'waiting_for_confirmation' ? (
                 <Trans
                   i18nKey="scheduler.progress_current_state_waiting_confirmation"
                   values={{
