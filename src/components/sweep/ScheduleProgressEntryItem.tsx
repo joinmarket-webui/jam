@@ -139,12 +139,37 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
           </div>
         ) : null*/}
 
-        {value.__raw.__raw?.txid ? (
+        {value.__raw.idleTimeoutSeconds ? (
           <div className="flex min-w-0 items-start gap-4">
+            <ClockFadingIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <Label className="font-semibold">{/* TODO: i18n*/ 'Idle Timeout'}</Label>
+              {time.humanReadableRelativeTimeInterval(
+                value.__raw.idleTimeoutSeconds * 1_000,
+                i18n.resolvedLanguage || i18n.language,
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {value.__raw.waitTimeInSeconds ? (
+          <div className="flex min-w-0 items-start gap-4">
+            <TimerResetIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <Label className="font-semibold">{t('scheduler.progress_entry_wait_before_next_title')}</Label>
+              {value.isLast ? '-' : formatDuration(value.__raw.waitTimeInSeconds, t)}
+            </div>
+          </div>
+        ) : null}
+
+        {value.__raw.__raw?.txid ? (
+          <div className="col-span-2 flex min-w-0 items-start gap-4">
             <FingerprintIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
+              <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
+
               <div className="flex items-center gap-2">
-                <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
+                <span className="text-md block font-mono break-all select-all">{value.__raw.__raw.txid}</span>
                 <CopyButton
                   value={value.__raw.__raw.txid}
                   text={
@@ -162,20 +187,6 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
                   className={cn(buttonVariants({ variant: 'outline', size: 'xs' }), 'shrink-0')}
                 />
               </div>
-              <span className="text-md block font-mono break-all select-all">{value.__raw.__raw.txid}</span>
-            </div>
-          </div>
-        ) : null}
-
-        {value.__raw.idleTimeoutSeconds ? (
-          <div className="flex min-w-0 items-start gap-4">
-            <ClockFadingIcon className="mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{/* TODO: i18n*/ 'Idle Timeout'}</Label>
-              {time.humanReadableRelativeTimeInterval(
-                value.__raw.idleTimeoutSeconds * 1_000,
-                i18n.resolvedLanguage || i18n.language,
-              )}
             </div>
           </div>
         ) : null}
@@ -186,16 +197,6 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
             <div className="min-w-0 flex-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'External destination'}</Label>
               <Address value={value.__raw.externalDestinationAddress ?? ' test'} />
-            </div>
-          </div>
-        ) : null}
-
-        {value.__raw.waitTimeInSeconds ? (
-          <div className="flex min-w-0 items-start gap-4">
-            <TimerResetIcon className="mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{t('scheduler.progress_entry_wait_before_next_title')}</Label>
-              {value.isLast ? '-' : formatDuration(value.__raw.waitTimeInSeconds, t)}
             </div>
           </div>
         ) : null}

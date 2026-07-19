@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -47,7 +47,7 @@ const highlightedComponents = {
   '3': <span className="font-semibold" />,
 }
 
-type Tab = 'active' | 'all'
+type Tab = 'active' | 'completed' | 'all'
 
 export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
@@ -56,6 +56,16 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
   const totalSeconds = Math.ceil(progress.totalWaitSeconds)
 
   const [activeTab, setActiveTab] = useState<Tab>('active')
+
+  const activeEntries = useMemo(() => {
+    return progress.entries.filter((it) => it.step.isActive)
+  }, [progress.entries])
+  const completedEntries = useMemo(() => {
+    return progress.entries.filter((it) => it.step.isComplete)
+  }, [progress.entries])
+  const entriesWithExternalDestinationAddress = useMemo(() => {
+    return schedule.filter((it) => it.externalDestinationAddress !== undefined)
+  }, [schedule])
 
   return (
     <Card>
@@ -127,21 +137,16 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
           </Alert>
         )}
 
-        <Item variant="outline">
-          <ItemContent>
-            <ItemTitle>
-              {t('scheduler.destination_addresses_header_title', {
-                defaultValue: 'Destination Addresses',
-              })}
-            </ItemTitle>
-            <ItemDescription>
-              {t('scheduler.description_destination_addresses', {
-                defaultValue: 'Destination Addresses',
-              })}
-            </ItemDescription>
-            {schedule
-              .filter((it) => it.externalDestinationAddress !== undefined)
-              .map((it, index) => {
+        {entriesWithExternalDestinationAddress.length === 0 ? null : (
+          <Item variant="outline">
+            <ItemContent>
+              <ItemTitle>
+                {t('scheduler.destination_addresses_header_title', {
+                  defaultValue: 'Destination Addresses',
+                })}
+              </ItemTitle>
+              <ItemDescription>{t('scheduler.description_destination_addresses')}</ItemDescription>
+              {entriesWithExternalDestinationAddress.map((it, index) => {
                 return (
                   <div key={index}>
                     {index === 0 ? null : <Separator className="my-2" />}
@@ -149,8 +154,9 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
                   </div>
                 )
               })}
-          </ItemContent>
-        </Item>
+            </ItemContent>
+          </Item>
+        )}
 
         <Accordion type="single" collapsible defaultValue="details">
           <AccordionItem value="details">
@@ -173,23 +179,43 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
                   <TabsTrigger value="active" className="cursor-pointer">
                     {/* TODO: i18n */}Active
                   </TabsTrigger>
+                  <TabsTrigger value="completed" className="cursor-pointer">
+                    {/* TODO: i18n */}Completed ({completedEntries.length})
+                  </TabsTrigger>
                   <TabsTrigger value="all" className="cursor-pointer">
-                    {/* TODO: i18n */}All
+                    {/* TODO: i18n */}All ({progress.entries.length})
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
               {activeTab === 'active' ? (
                 <ItemGroup className="space-y-2">
-                  {progress.entries
-                    .filter((it) => it.step.isActive)
-                    .map((entry, index) => {
+                  {activeEntries.map((entry, index) => {
+                    return (
+                      <React.Fragment key={index}>
+                        <ScheduleProgressEntryItem value={entry} />
+                      </React.Fragment>
+                    )
+                  })}
+                </ItemGroup>
+              ) : null}
+              {activeTab === 'completed' ? (
+                completedEntries.length === 0 ? (
+                  <>
+                    <div className="m-2 flex items-center justify-center gap-2">
+                      No completed entries yet.{/* TODO: i18n */}
+                    </div>
+                  </>
+                ) : (
+                  <ItemGroup className="space-y-2">
+                    {completedEntries.map((entry, index) => {
                       return (
                         <React.Fragment key={index}>
                           <ScheduleProgressEntryItem value={entry} />
                         </React.Fragment>
                       )
                     })}
-                </ItemGroup>
+                  </ItemGroup>
+                )
               ) : null}
               {activeTab === 'all' ? (
                 <ItemGroup className="space-y-2">
