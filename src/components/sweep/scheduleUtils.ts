@@ -122,13 +122,13 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     cancelled: plan.status === 'cancelled',
   }
   const terminated = !status.pending && !status.running
-  const active = terminated ? undefined : entries.find((it) => it.index === plan.current_phase)
+  const active = !status.running ? undefined : entries.find((it) => it.index === plan.current_phase)
 
   const summary: ScheduleSummary = {
     status,
     derivedStatus: {
       value: toScheduleDerivedStatus(entries, active) ?? plan.status,
-      terminated: !status.pending && !status.running,
+      terminated,
     },
     totalWaitSeconds: totalWaitSeconds,
     externalDestinationAddresses,

@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { SweepScheduleProgress } from './SweepScheduleProgress'
 import { toSchedule } from './scheduleUtils'
@@ -21,10 +20,7 @@ vi.mock('../ui/jam/Address', () => ({
 }))
 
 describe('SweepScheduleProgress', () => {
-  it('renders active schedule progress and stops it', async () => {
-    const user = userEvent.setup()
-    const onStop = vi.fn().mockResolvedValue(undefined)
-
+  it('renders active schedule progress and stops it', () => {
     const schedule = toSchedule(
       {
         plan_id: 'any',
@@ -102,23 +98,20 @@ describe('SweepScheduleProgress', () => {
       [],
     )
 
-    render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={onStop} />)
+    render(<SweepScheduleProgress schedule={schedule} />)
 
     expect(screen.getByText('scheduler.progress_tldr_hours:{"length":"3","hours":"2"}')).toBeInTheDocument()
     expect(screen.getByText(/scheduler.progress_current_state_waiting_confirmation/u)).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
-    expect(onStop).toHaveBeenCalledTimes(1)
   })
 
-  it('shows done and stopping states', () => {
+  it('shows completed schedule', () => {
     const schedule = toSchedule(
       {
         plan_id: 'any',
         wallet_name: 'wallet.jmdat',
         status: 'completed',
         destinations: ['final-destination'],
-        current_phase: 0,
+        current_phase: 1,
         phases: [
           {
             kind: 'taker_coinjoin',
@@ -142,7 +135,7 @@ describe('SweepScheduleProgress', () => {
           },
           {
             kind: 'taker_coinjoin',
-            index: 2,
+            index: 1,
             status: 'completed',
             wait_seconds: 0,
             started_at: '2026-07-19T11:35:52.775747+00:00',
@@ -169,12 +162,137 @@ describe('SweepScheduleProgress', () => {
       [],
     )
 
-    const { rerender } = render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={vi.fn()} />)
+    render(<SweepScheduleProgress schedule={schedule} />)
 
     expect(screen.getByText('scheduler.progress_tldr_seconds:{"length":"2","seconds":"60"}')).toBeInTheDocument()
-    expect(screen.getByText('scheduler.progress_done_awaiting_stop')).toBeInTheDocument()
+    expect(screen.getByText('Scheduled sweep finished successfully.')).toBeInTheDocument()
+  })
 
-    rerender(<SweepScheduleProgress schedule={schedule} isStopping onStop={vi.fn()} />)
-    expect(screen.getByRole('button', { name: /scheduler\.button_stop/u })).toBeDisabled()
+  it('shows failed schedule', () => {
+    const schedule = toSchedule(
+      {
+        plan_id: 'any',
+        wallet_name: 'wallet.jmdat',
+        status: 'failed',
+        destinations: ['final-destination'],
+        current_phase: 1,
+        phases: [
+          {
+            kind: 'taker_coinjoin',
+            index: 0,
+            status: 'completed',
+            wait_seconds: 30,
+            started_at: '2026-07-19T10:35:52.775747+00:00',
+            finished_at: '2026-07-19T10:36:17.645587+00:00',
+            error: null,
+            mixdepth: 0,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'INTERNAL',
+            txid: '1'.repeat(64),
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+          {
+            kind: 'taker_coinjoin',
+            index: 1,
+            status: 'failed',
+            wait_seconds: 0,
+            started_at: '2026-07-19T11:35:52.775747+00:00',
+            finished_at: '2026-07-19T11:36:17.645587+00:00',
+            error: null,
+            mixdepth: 2,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'final-destination',
+            txid: null,
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+        ],
+        created_at: '2009-01-03T10:35:51.466560+00:00',
+        updated_at: '2009-01-03T10:35:52.775780+00:00',
+        error: null,
+        stale: false,
+      },
+      [],
+    )
+
+    render(<SweepScheduleProgress schedule={schedule} />)
+
+    expect(screen.getByText('scheduler.progress_tldr_seconds:{"length":"2","seconds":"30"}')).toBeInTheDocument()
+    expect(screen.getByText('Scheduled sweep failed.')).toBeInTheDocument()
+  })
+
+  it('shows cancelled schedule', () => {
+    const schedule = toSchedule(
+      {
+        plan_id: 'any',
+        wallet_name: 'wallet.jmdat',
+        status: 'cancelled',
+        destinations: ['final-destination'],
+        current_phase: 1,
+        phases: [
+          {
+            kind: 'taker_coinjoin',
+            index: 0,
+            status: 'completed',
+            wait_seconds: 30,
+            started_at: '2026-07-19T10:35:52.775747+00:00',
+            finished_at: '2026-07-19T10:36:17.645587+00:00',
+            error: null,
+            mixdepth: 0,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'INTERNAL',
+            txid: '1'.repeat(64),
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+          {
+            kind: 'taker_coinjoin',
+            index: 1,
+            status: 'cancelled',
+            wait_seconds: 0,
+            started_at: '2026-07-19T11:35:52.775747+00:00',
+            finished_at: '2026-07-19T11:36:17.645587+00:00',
+            error: null,
+            mixdepth: 2,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'final-destination',
+            txid: null,
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+        ],
+        created_at: '2009-01-03T10:35:51.466560+00:00',
+        updated_at: '2009-01-03T10:35:52.775780+00:00',
+        error: null,
+        stale: false,
+      },
+      [],
+    )
+
+    render(<SweepScheduleProgress schedule={schedule} />)
+
+    expect(screen.getByText('scheduler.progress_tldr_seconds:{"length":"2","seconds":"30"}')).toBeInTheDocument()
+    expect(screen.getByText('Scheduled sweep cancelled.')).toBeInTheDocument()
   })
 })

@@ -127,8 +127,14 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
+  Trans: ({ i18nKey, values }: { i18nKey: string; values?: Record<string, unknown> }) => (
+    <span>
+      {i18nKey}
+      {values ? `:${JSON.stringify(values)}` : ''}
+    </span>
+  ),
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
   }),
 }))
 
@@ -177,17 +183,6 @@ vi.mock('@/components/sweep/SweepDestinationInputs', () => ({
 vi.mock('@/components/sweep/SweepPreconditionAlert', () => ({
   SweepPreconditionAlert: ({ summary }: { summary: { isFulfilled: boolean } }) => (
     <div>preconditions:{String(summary.isFulfilled)}</div>
-  ),
-}))
-
-vi.mock('@/components/sweep/SweepScheduleProgress', () => ({
-  SweepScheduleProgress: ({ isStopping, onStop }: { isStopping: boolean; onStop: () => void }) => (
-    <div>
-      schedule-progress;isStopping={String(isStopping)}
-      <button type="button" onClick={onStop}>
-        stop-sweep
-      </button>
-    </div>
   ),
 }))
 
@@ -424,8 +419,8 @@ describe('SweepPage', async () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('schedule-progress;isStopping=false')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'stop-sweep' }))
+    expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
 
     await waitFor(() =>
       expect(mocks.stopTumbler).toHaveBeenCalledWith({
@@ -492,7 +487,7 @@ describe('SweepPage', async () => {
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getAllByText('scheduler.alert_scheduler_stopping_title').length).toBe(1)
-    expect(screen.getByText('schedule-progress;isStopping=true')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'global.loadingscheduler.button_stop' })).toBeDisabled()
   })
 
   // TODO: currently skipped as the session schedule is a necessary flag - can be revisited on demand
@@ -502,7 +497,7 @@ describe('SweepPage', async () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('schedule-progress;isStopping=false')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
   })
 
   it('shows an alert when starting the schedule fails', async () => {
@@ -518,7 +513,7 @@ describe('SweepPage', async () => {
 
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
     expect(screen.getByText('global.error')).toBeInTheDocument() // title
-    expect(screen.getByText('scheduler.error_starting_schedule_failed')).toBeInTheDocument() // description
+    expect(screen.getByText('scheduler.error_starting_schedule_failed:{"reason":"boom"}')).toBeInTheDocument() // description
   })
 
   it('shows an alert when stopping the schedule fails', async () => {
@@ -528,11 +523,12 @@ describe('SweepPage', async () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'stop-sweep' }))
+    expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
 
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
     expect(screen.getByText('global.error')).toBeInTheDocument() // title
-    expect(screen.getByText('scheduler.error_stopping_schedule_failed')).toBeInTheDocument() // description
+    expect(screen.getByText('scheduler.error_stopping_schedule_failed:{"reason":"stop-boom"}')).toBeInTheDocument() // description
   })
 
   // TODO: do not skip this
@@ -542,7 +538,8 @@ describe('SweepPage', async () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.queryByText('schedule-progress;isStopping=false')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_stop' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.loadingscheduler.button_stop' })).not.toBeInTheDocument()
   })
 
   it('does not render a stale running tumbler plan as a running schedule', () => {
@@ -551,7 +548,8 @@ describe('SweepPage', async () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.queryByText('schedule-progress;isStopping=false')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_stop' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.loadingscheduler.button_stop' })).not.toBeInTheDocument()
   })
 
   it('does not flash the single coinjoin alert while tumbler status is loading', () => {

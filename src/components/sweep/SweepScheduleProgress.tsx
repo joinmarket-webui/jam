@@ -49,7 +49,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
   const totalHours = Math.ceil(schedule.summary.totalWaitSeconds / 60 / 60)
   const totalSeconds = Math.ceil(schedule.summary.totalWaitSeconds)
 
-  const [activeTab, setActiveTab] = useState<Tab>(() => (schedule.summary.derivedStatus.terminated ? 'all' : 'active'))
+  const [activeTab, setActiveTab] = useState<Tab>(() => (schedule.active ? 'active' : 'all'))
   const accordionDefaultOpen = !schedule.summary.derivedStatus.terminated
 
   return (
@@ -97,7 +97,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
         {schedule.summary.status.cancelled ? (
           <Alert variant="warning">
             <AlertTriangleIcon />
-            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep was cancelled.'}</AlertTitle>
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep cancelled.'}</AlertTitle>
             <AlertDescription />
           </Alert>
         ) : null}
