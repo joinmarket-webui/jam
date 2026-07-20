@@ -32,9 +32,12 @@ const SweepProgressBar = ({ progress }: { progress: ScheduleProgressSummary }) =
   )
 }
 
-const highlightedComponents = {
+const alertTitleComponents = {
   '1': <span className="font-semibold" />,
   '3': <span className="font-semibold" />,
+}
+const alertDescriptionWaitingForConfirmationsComponents = {
+  '1': <span className="font-mono" />,
 }
 
 type Tab = 'active' | 'completed' | 'all'
@@ -61,7 +64,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
               <Trans
                 i18nKey="scheduler.progress_tldr_seconds"
                 values={{ length: schedule.entries.length.toLocaleString(), seconds: totalSeconds.toLocaleString() }}
-                components={highlightedComponents}
+                components={alertTitleComponents}
               />
             </p>
           ) : (
@@ -69,7 +72,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
               <Trans
                 i18nKey="scheduler.progress_tldr_hours"
                 values={{ length: schedule.entries.length.toLocaleString(), hours: totalHours.toLocaleString() }}
-                components={highlightedComponents}
+                components={alertTitleComponents}
               />
             </p>
           )}
@@ -118,7 +121,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                 <HourglassIcon className="motion-safe:animate-pulse" />
                 <AlertTitle>
                   <Trans
-                    i18nKey="scheduler.progress_current_state_waiting_confirmation"
+                    i18nKey="scheduler.progress_current_state_waiting_confirmation_title"
                     values={{
                       current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
                       total: schedule.entries.length.toLocaleString(),
@@ -126,22 +129,32 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                         ? shortenStringMiddle(schedule.active.transactionId, 12)
                         : '-',
                     }}
-                    components={highlightedComponents}
+                    components={alertTitleComponents}
                   />
                 </AlertTitle>
-                <AlertDescription />
+                <AlertDescription>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_waiting_confirmation_description"
+                    values={{
+                      txid: schedule.active?.transactionId
+                        ? shortenStringMiddle(schedule.active.transactionId, 12)
+                        : '-',
+                    }}
+                    components={alertDescriptionWaitingForConfirmationsComponents}
+                  />
+                </AlertDescription>
               </Alert>
             ) : schedule.summary.derivedStatus.value === 'waiting_before_next' ? (
               <Alert>
                 <HourglassIcon className="motion-safe:animate-pulse" />
                 <AlertTitle>
                   <Trans
-                    i18nKey="scheduler.progress_current_state_waiting_start"
+                    i18nKey="scheduler.progress_current_state_waiting_start_title"
                     values={{
                       current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
                       total: schedule.entries.length,
                     }}
-                    components={highlightedComponents}
+                    components={alertTitleComponents}
                   />
                 </AlertTitle>
                 <AlertDescription />
@@ -151,12 +164,12 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                 <Spinner className="motion-reduce:hidden" />
                 <AlertTitle>
                   <Trans
-                    i18nKey="scheduler.progress_current_state_executing"
+                    i18nKey="scheduler.progress_current_state_executing_title"
                     values={{
                       current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
                       total: schedule.entries.length,
                     }}
-                    components={highlightedComponents}
+                    components={alertTitleComponents}
                   />
                 </AlertTitle>
                 <AlertDescription />

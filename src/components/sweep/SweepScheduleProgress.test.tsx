@@ -101,7 +101,8 @@ describe('SweepScheduleProgress', () => {
     render(<SweepScheduleProgress schedule={schedule} />)
 
     expect(screen.getByText('scheduler.progress_tldr_hours:{"length":"3","hours":"2"}')).toBeInTheDocument()
-    expect(screen.getByText(/scheduler.progress_current_state_waiting_confirmation/u)).toBeInTheDocument()
+    expect(screen.getByText(/scheduler.progress_current_state_waiting_confirmation_title/u)).toBeInTheDocument()
+    expect(screen.getByText(/scheduler.progress_current_state_waiting_confirmation_description/u)).toBeInTheDocument()
   })
 
   it('shows completed schedule', () => {

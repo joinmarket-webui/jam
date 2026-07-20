@@ -378,7 +378,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                         )}
                       </Button>
                     ) : null}
-                    {planSchedule.variables?.body ? (
+                    {currentSchedule.summary.status.pending && planSchedule.variables?.body ? (
                       <Button
                         type="button"
                         variant="secondary"
@@ -402,9 +402,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                         )}
                       </Button>
                     ) : null}
+
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant={currentSchedule.summary.derivedStatus.terminated ? 'default' : 'ghost'}
                       onClick={() => void deleteSchedule()}
                       disabled={
                         !getScheduleQuery.data ||
@@ -418,10 +419,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                       {deleteScheduleMutationIsPending ? (
                         <>
                           <Spinner className="motion-reduce:hidden" />
-                          {t('global.cancel')}
+                          {currentSchedule.summary.derivedStatus.terminated ? t('global.done') : t('global.cancel')}
                         </>
                       ) : (
-                        t('global.cancel')
+                        <>{currentSchedule.summary.derivedStatus.terminated ? t('global.done') : t('global.cancel')}</>
                       )}
                     </Button>
                   </>
