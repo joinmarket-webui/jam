@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { SweepScheduleProgress } from './SweepScheduleProgress'
-import type { Schedule } from './scheduleUtils'
+import { toSchedule } from './scheduleUtils'
 
 vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey, values }: { i18nKey: string; values?: Record<string, unknown> }) => (
@@ -24,39 +24,87 @@ describe('SweepScheduleProgress', () => {
   it('renders active schedule progress and stops it', async () => {
     const user = userEvent.setup()
     const onStop = vi.fn().mockResolvedValue(undefined)
-    const schedule: Schedule = [
+
+    const schedule = toSchedule(
       {
-        kind: 'taker_coinjoin',
-        jarIndex: 0,
-        amountFraction: 0,
-        numberOfRequestedCounterparties: 8,
-        internal: true,
-        waitTimeInSeconds: 80 * 60,
-        stateFlag: 1,
+        plan_id: 'any',
+        wallet_name: 'wallet.jmdat',
+        status: 'running',
+        destinations: ['final-destination'],
+        current_phase: 0,
+        phases: [
+          {
+            kind: 'taker_coinjoin',
+            index: 0,
+            status: 'completed',
+            wait_seconds: 80 * 60,
+            started_at: '2026-07-19T10:35:52.775747+00:00',
+            finished_at: '2026-07-19T10:36:17.645587+00:00',
+            error: null,
+            mixdepth: 0,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'INTERNAL',
+            txid: '1'.repeat(64),
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+          {
+            kind: 'taker_coinjoin',
+            index: 1,
+            status: 'running',
+            wait_seconds: 5 * 60,
+            started_at: '2026-07-19T10:39:11.684475+00:00',
+            finished_at: null,
+            error: null,
+            mixdepth: 1,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'INTERNAL',
+            txid: '2'.repeat(64),
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+          {
+            kind: 'taker_coinjoin',
+            index: 2,
+            status: 'pending',
+            wait_seconds: 0,
+            started_at: null,
+            finished_at: null,
+            error: null,
+            mixdepth: 2,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'final-destination',
+            txid: null,
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+        ],
+        created_at: '2009-01-03T10:35:51.466560+00:00',
+        updated_at: '2009-01-03T10:35:52.775780+00:00',
+        error: null,
+        stale: false,
       },
-      {
-        kind: 'taker_coinjoin',
-        jarIndex: 1,
-        amountFraction: 0,
-        numberOfRequestedCounterparties: 8,
-        externalDestinationAddress: 'tx-destination',
-        waitTimeInSeconds: 5 * 60,
-        stateFlag: '8'.repeat(64),
-      },
-      {
-        kind: 'taker_coinjoin',
-        jarIndex: 2,
-        amountFraction: 0,
-        numberOfRequestedCounterparties: 8,
-        externalDestinationAddress: 'final-destination',
-        waitTimeInSeconds: 0,
-        stateFlag: 0,
-      },
-    ]
+      [],
+    )
 
     render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={onStop} />)
 
-    expect(screen.getByText(/scheduler.progress_tldr_hours/u)).toBeInTheDocument()
+    expect(screen.getByText('scheduler.progress_tldr_hours:{"length":"3","hours":"2"}')).toBeInTheDocument()
     expect(screen.getByText(/scheduler.progress_current_state_waiting_confirmation/u)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
@@ -64,30 +112,66 @@ describe('SweepScheduleProgress', () => {
   })
 
   it('shows done and stopping states', () => {
-    const schedule: Schedule = [
+    const schedule = toSchedule(
       {
-        kind: 'taker_coinjoin',
-        jarIndex: 0,
-        amountFraction: 0,
-        numberOfRequestedCounterparties: 8,
-        internal: true,
-        waitTimeInSeconds: 15,
-        stateFlag: 1,
+        plan_id: 'any',
+        wallet_name: 'wallet.jmdat',
+        status: 'completed',
+        destinations: ['final-destination'],
+        current_phase: 0,
+        phases: [
+          {
+            kind: 'taker_coinjoin',
+            index: 0,
+            status: 'completed',
+            wait_seconds: 60,
+            started_at: '2026-07-19T10:35:52.775747+00:00',
+            finished_at: '2026-07-19T10:36:17.645587+00:00',
+            error: null,
+            mixdepth: 0,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'INTERNAL',
+            txid: '1'.repeat(64),
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+          {
+            kind: 'taker_coinjoin',
+            index: 2,
+            status: 'completed',
+            wait_seconds: 0,
+            started_at: '2026-07-19T11:35:52.775747+00:00',
+            finished_at: '2026-07-19T11:36:17.645587+00:00',
+            error: null,
+            mixdepth: 2,
+            amount: 0,
+            amount_fraction: null,
+            counterparty_count: 8,
+            destination: 'final-destination',
+            txid: null,
+            duration_seconds: null,
+            target_cj_count: null,
+            idle_timeout_seconds: null,
+            cj_served: null,
+            attempt_count: 0,
+          },
+        ],
+        created_at: '2009-01-03T10:35:51.466560+00:00',
+        updated_at: '2009-01-03T10:35:52.775780+00:00',
+        error: null,
+        stale: false,
       },
-      {
-        kind: 'taker_coinjoin',
-        jarIndex: 1,
-        amountFraction: 0,
-        numberOfRequestedCounterparties: 8,
-        externalDestinationAddress: 'final-destination',
-        waitTimeInSeconds: 0,
-        stateFlag: 1,
-      },
-    ]
+      [],
+    )
 
     const { rerender } = render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={vi.fn()} />)
 
-    expect(screen.getByText(/scheduler.progress_tldr_seconds/u)).toBeInTheDocument()
+    expect(screen.getByText('scheduler.progress_tldr_seconds:{"length":"2","seconds":"60"}')).toBeInTheDocument()
     expect(screen.getByText('scheduler.progress_done')).toBeInTheDocument()
 
     rerender(<SweepScheduleProgress schedule={schedule} isStopping onStop={vi.fn()} />)

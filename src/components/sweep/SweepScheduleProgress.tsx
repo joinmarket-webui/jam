@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -11,9 +11,8 @@ import { Address } from '../ui/jam/Address'
 import { Separator } from '../ui/separator'
 import { Spinner } from '../ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
-import { ScheduleProgressEntryItem } from './ScheduleProgressEntryItem'
+import { ScheduleEntryItem } from './ScheduleEntryItem'
 import type { Schedule, ScheduleProgressSummary } from './scheduleUtils'
-import { toScheduleProgressSummary } from './scheduleUtils'
 
 interface SweepScheduleProgressProps {
   schedule: Schedule
@@ -25,19 +24,17 @@ interface SweepScheduleProgressProps {
 const SweepProgressBar = ({ progress }: { progress: ScheduleProgressSummary }) => {
   return (
     <div className="bg-muted flex h-3 w-full overflow-hidden rounded-full">
-      {progress.entries
-        .map((it) => it.step)
-        .map((step, index) => (
-          <div
-            key={index}
-            className={cn('border-r-background h-full border-r-[1px] transition-all last:border-r-0', {
-              'bg-primary/35': !step.isComplete && !step.isActive,
-              'bg-primary motion-safe:animate-pulse': step.isActive,
-              'bg-primary': step.isComplete,
-            })}
-            style={{ width: `${step.widthPercent}%` }}
-          />
-        ))}
+      {progress.steps.map((step, index) => (
+        <div
+          key={index}
+          className={cn('border-r-background h-full border-r-[1px] transition-all last:border-r-0', {
+            'bg-primary/35': !step.completed && !step.active,
+            'bg-primary motion-safe:animate-pulse': step.active,
+            'bg-primary': step.completed,
+          })}
+          style={{ width: `${step.widthPercent}%` }}
+        />
+      ))}
     </div>
   )
 }
@@ -51,21 +48,10 @@ type Tab = 'active' | 'completed' | 'all'
 
 export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
-  const progress = toScheduleProgressSummary(schedule)
-  const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
-  const totalSeconds = Math.ceil(progress.totalWaitSeconds)
+  const totalHours = Math.ceil(schedule.summary.totalWaitSeconds / 60 / 60)
+  const totalSeconds = Math.ceil(schedule.summary.totalWaitSeconds)
 
   const [activeTab, setActiveTab] = useState<Tab>('active')
-
-  const activeEntries = useMemo(() => {
-    return progress.entries.filter((it) => it.step.isActive)
-  }, [progress.entries])
-  const completedEntries = useMemo(() => {
-    return progress.entries.filter((it) => it.step.isComplete)
-  }, [progress.entries])
-  const entriesWithExternalDestinationAddress = useMemo(() => {
-    return schedule.filter((it) => it.externalDestinationAddress !== undefined)
-  }, [schedule])
 
   return (
     <Card>
@@ -75,7 +61,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
             <p className="text-sm">
               <Trans
                 i18nKey="scheduler.progress_tldr_seconds"
-                values={{ length: progress.totalTransactions, seconds: totalSeconds }}
+                values={{ length: schedule.entries.length.toLocaleString(), seconds: totalSeconds.toLocaleString() }}
                 components={highlightedComponents}
               />
             </p>
@@ -83,7 +69,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
             <p className="text-sm">
               <Trans
                 i18nKey="scheduler.progress_tldr_hours"
-                values={{ length: progress.totalTransactions, hours: totalHours }}
+                values={{ length: schedule.entries.length.toLocaleString(), hours: totalHours.toLocaleString() }}
                 components={highlightedComponents}
               />
             </p>
@@ -91,9 +77,9 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
           <p className="text-muted-foreground text-xs">{t('scheduler.progress_description')}</p>
         </div>
 
-        <SweepProgressBar progress={progress} />
+        <SweepProgressBar progress={schedule.progress} />
 
-        {progress.isDone ? (
+        {schedule.summary.status.completed ? (
           <Alert variant="success">
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>{t('scheduler.progress_done')}</AlertTitle>
@@ -103,31 +89,31 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
               {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
-              {progress.currentState?.type === 'waiting_for_confirmation' ? (
+              {schedule.summary.derivedStatus === 'waiting_for_confirmation' ? (
                 <Trans
                   i18nKey="scheduler.progress_current_state_waiting_confirmation"
                   values={{
-                    current: progress.currentState.currentTransaction,
-                    total: progress.currentState.totalTransactions,
-                    txid: progress.currentState.txid ?? '-',
+                    current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                    total: schedule.entries.length.toLocaleString(),
+                    txid: schedule.active?.transactionId ?? '-',
                   }}
                   components={highlightedComponents}
                 />
-              ) : progress.currentState?.type === 'transaction_confirmed' ? (
+              ) : schedule.summary.derivedStatus === 'waiting_before_next' ? (
                 <Trans
-                  i18nKey="scheduler.progress_current_state_confirmed"
+                  i18nKey="scheduler.progress_current_state_waiting_start"
                   values={{
-                    current: progress.currentState.currentTransaction,
-                    total: progress.currentState.totalTransactions,
+                    current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                    total: schedule.entries.length,
                   }}
                   components={highlightedComponents}
                 />
               ) : (
                 <Trans
-                  i18nKey="scheduler.progress_current_state_creating_next"
+                  i18nKey="scheduler.progress_current_state_executing"
                   values={{
-                    current: progress.currentTransactionIndex + 1,
-                    total: progress.totalTransactions,
+                    current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                    total: schedule.entries.length,
                   }}
                   components={highlightedComponents}
                 />
@@ -137,7 +123,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
           </Alert>
         )}
 
-        {entriesWithExternalDestinationAddress.length === 0 ? null : (
+        {schedule.summary.externalDestinationAddresses.length === 0 ? null : (
           <Item variant="outline">
             <ItemContent>
               <ItemTitle>
@@ -146,11 +132,11 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
                 })}
               </ItemTitle>
               <ItemDescription>{t('scheduler.description_destination_addresses')}</ItemDescription>
-              {entriesWithExternalDestinationAddress.map((it, index) => {
+              {schedule.summary.externalDestinationAddresses.map((it, index) => {
                 return (
                   <div key={index}>
                     {index === 0 ? null : <Separator className="my-2" />}
-                    <Address value={it.externalDestinationAddress!} />
+                    <Address value={it} />
                   </div>
                 )
               })}
@@ -180,26 +166,24 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
                     {/* TODO: i18n */}Active
                   </TabsTrigger>
                   <TabsTrigger value="completed" className="cursor-pointer">
-                    {/* TODO: i18n */}Completed ({completedEntries.length})
+                    {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString()})
                   </TabsTrigger>
                   <TabsTrigger value="all" className="cursor-pointer">
-                    {/* TODO: i18n */}All ({progress.entries.length})
+                    {/* TODO: i18n */}All ({schedule.entries.length.toLocaleString()})
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
               {activeTab === 'active' ? (
                 <ItemGroup className="space-y-2">
-                  {activeEntries.map((entry, index) => {
-                    return (
-                      <React.Fragment key={index}>
-                        <ScheduleProgressEntryItem value={entry} />
-                      </React.Fragment>
-                    )
-                  })}
+                  {schedule.active === undefined ? null : (
+                    <React.Fragment>
+                      <ScheduleEntryItem value={schedule.active} active />
+                    </React.Fragment>
+                  )}
                 </ItemGroup>
               ) : null}
               {activeTab === 'completed' ? (
-                completedEntries.length === 0 ? (
+                schedule.completed.length === 0 ? (
                   <>
                     <div className="m-2 flex items-center justify-center gap-2">
                       No completed entries yet.{/* TODO: i18n */}
@@ -207,10 +191,10 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
                   </>
                 ) : (
                   <ItemGroup className="space-y-2">
-                    {completedEntries.map((entry, index) => {
+                    {schedule.completed.map((entry, index) => {
                       return (
                         <React.Fragment key={index}>
-                          <ScheduleProgressEntryItem value={entry} />
+                          <ScheduleEntryItem value={entry} active={entry === schedule.active} />
                         </React.Fragment>
                       )
                     })}
@@ -219,10 +203,10 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
               ) : null}
               {activeTab === 'all' ? (
                 <ItemGroup className="space-y-2">
-                  {progress.entries.map((entry, index) => {
+                  {schedule.entries.map((entry, index) => {
                     return (
                       <React.Fragment key={index}>
-                        <ScheduleProgressEntryItem value={entry} />
+                        <ScheduleEntryItem value={entry} active={entry === schedule.active} />
                       </React.Fragment>
                     )
                   })}
@@ -250,8 +234,8 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               <div className="overflow-scroll">
-                <code className="text-destructive">progress:</code>
-                <pre className="text-xs">{JSON.stringify(progress, null, 2)}</pre>
+                <code className="text-destructive">schedule:</code>
+                <pre className="text-xs">{JSON.stringify(schedule, null, 2)}</pre>
               </div>
             </CardContent>
           </Card>

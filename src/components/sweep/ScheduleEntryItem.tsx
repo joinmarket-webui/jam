@@ -11,43 +11,70 @@ import {
   UsersIcon,
 } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
-import { cn, time } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { Badge } from '../ui/badge'
-import { jarBadgeVariant } from '../ui/badge-variants'
+import { jarBadgeVariant, type BadgeVariant } from '../ui/badge-variants'
 import { buttonVariants } from '../ui/button-variants'
 import { Item, ItemContent, ItemDescription, ItemHeader, ItemTitle } from '../ui/item'
 import { Address } from '../ui/jam/Address'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { Label } from '../ui/label'
-import { formatDuration, type ScheduleProgressEntry } from './scheduleUtils'
+import { formatDuration, type ScheduleEntry } from './scheduleUtils'
 
-export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEntry }) => {
-  const { t, i18n } = useTranslation()
+const EntryStatusBadge = ({ active, status }: { active: boolean; status: ScheduleEntry['status'] }) => {
+  const variant: BadgeVariant = (() => {
+    if (active) return 'outline'
+    switch (status.value) {
+      case 'completed':
+        return 'success'
+      case 'failed':
+        return 'destructive'
+      case 'cancelled':
+      case 'skipped':
+        return 'warning'
+      default:
+        return 'muted'
+    }
+  })()
+  return (
+    <Badge
+      variant={variant}
+      className={cn({
+        'ring-ring/50 ring-1 motion-safe:animate-pulse': active,
+      })}
+    >
+      {/* TODO: i18n */ status.value}
+    </Badge>
+  )
+}
+
+export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; active: boolean }) => {
+  const { t } = useTranslation()
 
   return (
     <Item
       variant="outline"
       className={cn({
-        'bg-secondary/80 text-secondary-foreground': !value.step.isActive,
-        'bg-muted text-muted-foreground': value.step.isComplete,
-        'ring-ring/50 ring-2': value.step.isActive,
+        'bg-secondary/80 text-secondary-foreground': !active,
+        'ring-ring/50 ring-2': active,
+        'bg-muted text-muted-foreground': value.status.completed,
       })}
     >
       <ItemHeader>
         <div>
-          <ItemTitle>{t('scheduler.progress_entry_label', { index: value.index + 1 })}</ItemTitle>
+          <ItemTitle>{t('scheduler.progress_entry_label', { index: (value.index + 1).toLocaleString() })}</ItemTitle>
           <ItemDescription>
             {
               /* TODO: i18n */
-              value.__raw.kind === 'taker_coinjoin' ? (
+              value.kind === 'taker_coinjoin' ? (
                 <Trans
                   i18nKey="A collaborative transaction as <1>taker</1> with {{numberOfRequestedCounterparties}} counterparties"
-                  values={{ numberOfRequestedCounterparties: value.__raw.numberOfRequestedCounterparties }}
+                  values={{ numberOfRequestedCounterparties: value.numberOfRequestedCounterparties?.toLocaleString() }}
                   components={{
                     '1': <span className="font-semibold" />,
                   }}
                 />
-              ) : value.__raw.kind === 'maker_session' ? (
+              ) : value.kind === 'maker_session' ? (
                 <Trans
                   i18nKey="A collaborative transaction as <1>maker</1>"
                   components={{
@@ -59,72 +86,49 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
           </ItemDescription>
         </div>
         <div className="flex flex-row-reverse flex-wrap items-center gap-2">
-          <Badge
-            variant={value.step.isActive ? 'outline' : value.step.isComplete ? 'success' : 'muted'}
-            className={cn({
-              'ring-ring/50 ring-1 motion-safe:animate-pulse': value.step.isActive,
-            })}
-          >
-            {/* TODO: i18n */ value.__raw?.__raw?.status}
-          </Badge>
-          <Badge
-            variant={
-              value.__raw.kind === 'taker_coinjoin'
-                ? 'default'
-                : value.__raw.kind === 'maker_session'
-                  ? 'info'
-                  : 'outline'
-            }
-          >
-            {
-              /* TODO: i18n */ value.__raw.kind === 'taker_coinjoin'
-                ? 'Send'
-                : value.__raw.kind === 'maker_session'
-                  ? 'Earn'
-                  : 'outline'
-            }
-          </Badge>
-          {value.__raw?.__raw?.amount === 0 ? <Badge variant="outline">{/* TODO: i18n */ 'Sweep'}</Badge> : null}
+          <EntryStatusBadge active={active} status={value.status} />
+          {value.kind === 'maker_session' ? <Badge variant="info">{/* TODO: i18n */ 'Earn'}</Badge> : null}
+          {value.kind === 'taker_coinjoin' ? <Badge variant="default">{/* TODO: i18n */ 'Send'}</Badge> : null}
+          {value.isSweep ? <Badge variant="outline">{/* TODO: i18n */ 'Sweep'}</Badge> : null}
         </div>
       </ItemHeader>
       <ItemContent className="grid gap-4 sm:grid-cols-2">
-        {value.__raw.startedAt ? (
+        {value.startedAt ? (
           <div className="flex min-w-0 items-start gap-4">
             <CalendarClockIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
-              <span title={value.__raw.startedAt.toISOString()}>{value.__raw.startedAt.toLocaleString()}</span>
+              <span title={value.startedAt.toISOString()}>{value.startedAt.toLocaleString()}</span>
             </div>
           </div>
         ) : null}
-        {value.__raw.finishedAt ? (
+        {value.finishedAt ? (
           <div className="flex min-w-0 items-start gap-4">
             <CalendarCheck2Icon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
-              <span title={value.__raw.finishedAt.toISOString()}>{value.__raw.finishedAt.toLocaleString()}</span>
+              <span title={value.finishedAt.toISOString()}>{value.finishedAt.toLocaleString()}</span>
             </div>
           </div>
         ) : null}
 
-        {value.__raw.jar ? (
+        {value.jar ? (
           <div className="flex min-w-0 items-start gap-4">
             <MilkIcon className="shrink-0" />
             <div className="min-w-0 flex-1">
-              <Badge variant={jarBadgeVariant(value.__raw.jar.jarIndex)}>
-                {value.__raw.jar.name} <span className="text-xs">#{value.__raw.jar.jarIndex.toLocaleString()}</span>
+              <Badge variant={jarBadgeVariant(value.jar.jarIndex)}>
+                {value.jar.name} <span className="text-xs">#{value.jar.jarIndex.toLocaleString()}</span>
               </Badge>
             </div>
           </div>
         ) : null}
 
-        {value.__raw.numberOfRequestedCounterparties ? (
+        {value.numberOfRequestedCounterparties ? (
           <div className="flex min-w-0 items-start gap-4">
             <UsersIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Request collaborators'}</Label>
-
-              {value.__raw.numberOfRequestedCounterparties.toLocaleString()}
+              {value.numberOfRequestedCounterparties.toLocaleString()}
             </div>
           </div>
         ) : null}
@@ -139,39 +143,36 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
           </div>
         ) : null*/}
 
-        {value.__raw.idleTimeoutSeconds ? (
+        {value.idleTimeoutSeconds ? (
           <div className="flex min-w-0 items-start gap-4">
             <ClockFadingIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/* TODO: i18n*/ 'Idle Timeout'}</Label>
-              {time.humanReadableRelativeTimeInterval(
-                value.__raw.idleTimeoutSeconds * 1_000,
-                i18n.resolvedLanguage || i18n.language,
-              )}
+              {formatDuration(value.idleTimeoutSeconds, t)}
             </div>
           </div>
         ) : null}
 
-        {value.__raw.waitTimeInSeconds ? (
+        {value.waitTimeInSeconds ? (
           <div className="flex min-w-0 items-start gap-4">
             <TimerResetIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{t('scheduler.progress_entry_wait_before_next_title')}</Label>
-              {value.isLast ? '-' : formatDuration(value.__raw.waitTimeInSeconds, t)}
+              {value.waitTimeInSeconds <= 0 ? '-' : formatDuration(value.waitTimeInSeconds, t)}
             </div>
           </div>
         ) : null}
 
-        {value.__raw.__raw?.txid ? (
+        {value.transactionId ? (
           <div className="col-span-2 flex min-w-0 items-start gap-4">
             <FingerprintIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
 
               <div className="flex items-center gap-2">
-                <span className="text-md block font-mono break-all select-all">{value.__raw.__raw.txid}</span>
+                <span className="text-md block font-mono break-all select-all">{value.transactionId}</span>
                 <CopyButton
-                  value={value.__raw.__raw.txid}
+                  value={value.transactionId}
                   text={
                     <>
                       <CopyIcon />
@@ -191,12 +192,12 @@ export const ScheduleProgressEntryItem = ({ value }: { value: ScheduleProgressEn
           </div>
         ) : null}
 
-        {value.__raw.externalDestinationAddress ? (
+        {value.externalDestinationAddress ? (
           <div className="col-span-2 flex min-w-0 items-start gap-4">
             <ExternalLinkIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'External destination'}</Label>
-              <Address value={value.__raw.externalDestinationAddress ?? ' test'} />
+              <Address value={value.externalDestinationAddress} />
             </div>
           </div>
         ) : null}
