@@ -135,8 +135,9 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
 
         {value.jar ? (
           <div className="flex min-w-0 items-start gap-4">
-            <MilkIcon className="shrink-0" />
-            <div className="min-w-0 flex-1">
+            <MilkIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <Label className="font-semibold">{/*TODO: i18n */ 'Source Jar'}</Label>
               <Badge variant={jarBadgeVariant(value.jar.jarIndex)}>
                 {value.jar.name} <span className="text-xs">#{value.jar.jarIndex.toLocaleString()}</span>
               </Badge>

@@ -172,7 +172,7 @@ describe('SweepScheduleProgress', () => {
     const { rerender } = render(<SweepScheduleProgress schedule={schedule} isStopping={false} onStop={vi.fn()} />)
 
     expect(screen.getByText('scheduler.progress_tldr_seconds:{"length":"2","seconds":"60"}')).toBeInTheDocument()
-    expect(screen.getByText('scheduler.progress_done')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.progress_done_awaiting_stop')).toBeInTheDocument()
 
     rerender(<SweepScheduleProgress schedule={schedule} isStopping onStop={vi.fn()} />)
     expect(screen.getByRole('button', { name: /scheduler\.button_stop/u })).toBeDisabled()

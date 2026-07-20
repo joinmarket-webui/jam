@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { AlertTriangleIcon, CheckCircle2Icon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -13,13 +13,6 @@ import { Spinner } from '../ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { ScheduleEntryItem } from './ScheduleEntryItem'
 import type { Schedule, ScheduleProgressSummary } from './scheduleUtils'
-
-interface SweepScheduleProgressProps {
-  schedule: Schedule
-  isStopping: boolean
-  onStop: () => Promise<void>
-  debug?: boolean
-}
 
 const SweepProgressBar = ({ progress }: { progress: ScheduleProgressSummary }) => {
   return (
@@ -46,12 +39,18 @@ const highlightedComponents = {
 
 type Tab = 'active' | 'completed' | 'all'
 
-export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: SweepScheduleProgressProps) => {
+interface SweepScheduleProgressProps {
+  schedule: Schedule
+  debug?: boolean
+}
+
+export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
   const totalHours = Math.ceil(schedule.summary.totalWaitSeconds / 60 / 60)
   const totalSeconds = Math.ceil(schedule.summary.totalWaitSeconds)
 
-  const [activeTab, setActiveTab] = useState<Tab>('active')
+  const [activeTab, setActiveTab] = useState<Tab>(() => (schedule.summary.derivedStatus.terminated ? 'all' : 'active'))
+  const accordionDefaultOpen = !schedule.summary.derivedStatus.terminated
 
   return (
     <Card>
@@ -81,10 +80,29 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
 
         {schedule.summary.status.completed ? (
           <Alert variant="success">
-            <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>{t('scheduler.progress_done')}</AlertTitle>
+            <CheckCircle2Icon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep finished successfully.'}</AlertTitle>
+            <AlertDescription />
           </Alert>
-        ) : (
+        ) : null}
+
+        {schedule.summary.status.failed ? (
+          <Alert variant="destructive">
+            <AlertTriangleIcon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep failed.'}</AlertTitle>
+            <AlertDescription />
+          </Alert>
+        ) : null}
+
+        {schedule.summary.status.cancelled ? (
+          <Alert variant="warning">
+            <AlertTriangleIcon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep was cancelled.'}</AlertTitle>
+            <AlertDescription />
+          </Alert>
+        ) : null}
+
+        {!schedule.summary.derivedStatus.terminated ? (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
@@ -121,7 +139,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
             </AlertTitle>
             <AlertDescription />
           </Alert>
-        )}
+        ) : null}
 
         {schedule.summary.externalDestinationAddresses.length === 0 ? null : (
           <Item variant="outline">
@@ -144,7 +162,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
           </Item>
         )}
 
-        <Accordion type="single" collapsible defaultValue="details">
+        <Accordion type="single" collapsible defaultValue={accordionDefaultOpen ? 'details' : undefined}>
           <AccordionItem value="details">
             <AccordionTrigger>
               {
@@ -174,13 +192,17 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
                 </TabsList>
               </Tabs>
               {activeTab === 'active' ? (
-                <ItemGroup className="space-y-2">
-                  {schedule.active === undefined ? null : (
-                    <React.Fragment>
-                      <ScheduleEntryItem value={schedule.active} active />
-                    </React.Fragment>
-                  )}
-                </ItemGroup>
+                schedule.active === undefined ? (
+                  <>
+                    <div className="m-2 flex items-center justify-center gap-2">
+                      No action is active.{/* TODO: i18n */}
+                    </div>
+                  </>
+                ) : (
+                  <ItemGroup className="space-y-2">
+                    <ScheduleEntryItem value={schedule.active} active />
+                  </ItemGroup>
+                )
               ) : null}
               {activeTab === 'completed' ? (
                 schedule.completed.length === 0 ? (
@@ -192,11 +214,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
                 ) : (
                   <ItemGroup className="space-y-2">
                     {schedule.completed.map((entry, index) => {
-                      return (
-                        <React.Fragment key={index}>
-                          <ScheduleEntryItem value={entry} active={entry === schedule.active} />
-                        </React.Fragment>
-                      )
+                      return <ScheduleEntryItem key={index} value={entry} active={entry === schedule.active} />
                     })}
                   </ItemGroup>
                 )
@@ -204,11 +222,7 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
               {activeTab === 'all' ? (
                 <ItemGroup className="space-y-2">
                   {schedule.entries.map((entry, index) => {
-                    return (
-                      <React.Fragment key={index}>
-                        <ScheduleEntryItem value={entry} active={entry === schedule.active} />
-                      </React.Fragment>
-                    )
+                    return <ScheduleEntryItem key={index} value={entry} active={entry === schedule.active} />
                   })}
                 </ItemGroup>
               ) : null}
@@ -216,27 +230,24 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
           </AccordionItem>
         </Accordion>
 
-        <Button type="button" onClick={() => void onStop()} disabled={isStopping} size="lg" className="w-full">
-          {isStopping ? (
-            <>
-              <Spinner className="motion-reduce:hidden" />
-              {t('scheduler.button_stop')}
-            </>
-          ) : (
-            t('scheduler.button_stop')
-          )}
-        </Button>
-
         {debug && (
           <Card className="mt-8">
-            <CardHeader className="grid">
-              <DevBadge className="justify-self-end" />
-            </CardHeader>
             <CardContent className="flex flex-col gap-2">
-              <div className="overflow-scroll">
-                <code className="text-destructive">schedule:</code>
-                <pre className="text-xs">{JSON.stringify(schedule, null, 2)}</pre>
-              </div>
+              <Accordion type="single" collapsible>
+                <AccordionItem value="debug">
+                  <AccordionTrigger>
+                    <div>
+                      Debug <DevBadge className="justify-self-end" />
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="overflow-scroll">
+                      <code className="text-destructive">schedule:</code>
+                      <pre className="text-xs">{JSON.stringify(schedule, null, 2)}</pre>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </CardContent>
           </Card>
         )}

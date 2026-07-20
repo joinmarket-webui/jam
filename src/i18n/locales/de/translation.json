@@ -508,7 +508,7 @@
     "progress_tldr_seconds": "<1>{{ length }}</1> Transaktionen in <3>{{ seconds }}</3> Sekunden geplant.",
     "progress_tldr_hours": "<1>{{ length }}</1> Transaktionen in <3>{{ hours }}</3> Stunden geplant.",
     "progress_description": "Die Schätzung ist als minimale Wartezeit zu verstehen. Verzögerungen aufgrund von Netzwerkfehlern oder Transaktionsbestätigungen sind nicht eingerechnet. ",
-    "progress_done": "Alle Transaktionen erfolgreich durchgeführt. Der Scheduler wird in Kürze stoppen. ",
+    "progress_done_awaiting_stop": "Alle Transaktionen erfolgreich durchgeführt. Der Scheduler wird in Kürze stoppen. ",
     "precondition": {
       "hint_missing_utxos": "Um den Scheduler zu starten, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Um den Scheduler zu starten, brauchen deine UTXOs {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",

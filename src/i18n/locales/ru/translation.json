@@ -559,7 +559,7 @@
     "progress_tldr_seconds": "Запланировано <1>{{ length }}</1> Совместных Транзакций Переноса в течение <3>{{ seconds }}</3> секунд.",
     "progress_tldr_hours": "Запланировано <1>{{ length }}</1> Совместных Транзакций Переноса в течение <3>{{ hours }}</3> часов.",
     "progress_description": "Эта оценка является минимальным временем ожидания. Дополнительные задержки из-за сетевой коммуникации или подтверждения транзакции не учитываются.",
-    "progress_done": "Все Совместные Транзакции Переноса завершены успешно. Планировщик скоро остановится.",
+    "progress_done_awaiting_stop": "Все Совместные Транзакции Переноса завершены успешно. Планировщик скоро остановится.",
     "precondition": {
       "hint_missing_utxos": "Для запуска планировщика Переноса вам понадобятся UTXO с {{ minConfirmations }} или большим количеством подтверждений. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Планировщик требует, чтобы ваши UTXO имели {{ minConfirmations }} или более подтверждений. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",

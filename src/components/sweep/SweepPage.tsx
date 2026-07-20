@@ -34,6 +34,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import { percentageToFactor, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
 import { SweepForm } from './SweepForm'
 
@@ -272,19 +273,42 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
           </Alert>
         )}
 
-        {schedulerRunning && currentSchedule && (
+        {currentSchedule && (
           <>
             {getScheduleQuery.isPending ? (
               <div className="flex flex-1 items-center justify-center">
                 <Spinner />
               </div>
             ) : (
-              <SweepScheduleProgress
-                schedule={currentSchedule}
-                isStopping={isWaitingSchedulerStop}
-                onStop={stopSchedule}
-                debug={isDeveloperMode}
-              />
+              <>
+                {schedulerRunning && currentSchedule.summary.status.completed ? (
+                  <Alert variant="success">
+                    <Spinner className="motion-reduce:hidden" />
+                    <AlertTitle>{t('scheduler.progress_done_awaiting_stop')}</AlertTitle>
+                  </Alert>
+                ) : null}
+
+                <SweepScheduleProgress schedule={currentSchedule} debug={isDeveloperMode} />
+
+                {!currentSchedule.summary.derivedStatus.terminated ? (
+                  <Button
+                    type="button"
+                    onClick={() => void stopSchedule()}
+                    disabled={isWaitingSchedulerStop}
+                    size="lg"
+                    className="w-full"
+                  >
+                    {isWaitingSchedulerStop ? (
+                      <>
+                        <Spinner className="motion-reduce:hidden" />
+                        {t('scheduler.button_stop')}
+                      </>
+                    ) : (
+                      t('scheduler.button_stop')
+                    )}
+                  </Button>
+                ) : null}
+              </>
             )}
           </>
         )}

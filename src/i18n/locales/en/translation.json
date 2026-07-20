@@ -796,7 +796,7 @@
     "progress_current_state_executing": "Executing action <1>{{ current }}</1> of <3>{{ total }}</3>...",
     "progress_entry_label": "Action {{ index }}",
     "progress_entry_wait_before_next_title": "Wait period before next action",
-    "progress_done": "All actions completed successfully. The scheduler will stop soon.",
+    "progress_done_awaiting_stop": "All actions completed successfully. The scheduler will stop soon.",
     "precondition": {
       "hint_missing_utxos": "To run the scheduler you need UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "The scheduler requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",

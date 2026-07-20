@@ -100,7 +100,6 @@ const MIN_STEP_WIDTH_PERCENT = 3
 
 export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => {
   const entries = plan.phases.map((it) => toScheduleEntry(it, jars))
-  const active = entries.find((it) => it.index === plan.current_phase)
   const completed = entries.filter((it) => it.status.completed === true)
 
   const totalWaitSeconds: Seconds = Math.max(
@@ -109,6 +108,7 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
       return acc + entry.waitTimeInSeconds
     }, 0),
   )
+
   const externalDestinationAddresses = entries
     .filter((it) => it.externalDestinationAddress !== undefined)
     .map((it) => it.externalDestinationAddress!)
@@ -121,6 +121,8 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     failed: plan.status === 'failed',
     cancelled: plan.status === 'cancelled',
   }
+  const terminated = !status.pending && !status.running
+  const active = terminated ? undefined : entries.find((it) => it.index === plan.current_phase)
 
   const summary: ScheduleSummary = {
     status,

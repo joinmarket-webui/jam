@@ -467,7 +467,7 @@
     "progress_tldr_seconds": "Programmate <1>{{ length }}</1> transazioni su <3>{{ seconds }}</3> secondi.",
     "progress_tldr_hours": "Schedulate <1>{{ length }}</1> transazioni su <3>{{ hours }}</3> ore",
     "progress_description": "Questa stima rappresenta il tempo di attesa minimo. Non sono considerati i ritardi aggiuntivi dovuti alla comunicazione di rete o alla conferma della transazione.",
-    "progress_done": "Tutte le transazioni sono state completate con successo. Lo scheduler si fermerà a breve.",
+    "progress_done_awaiting_stop": "Tutte le transazioni sono state completate con successo. Lo scheduler si fermerà a breve.",
     "precondition": {
       "hint_missing_utxos": "Per eseguire lo scheduler sono necessari UTXO con {{ minConfirmations }} o più conferme. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Lo scheduler richiede che gli UTXO abbiano {{ minConfirmations }} o più conferme. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",

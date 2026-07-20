@@ -508,7 +508,7 @@
     "progress_tldr_seconds": "在<3>{{ seconds }}</3>的範圍內預定了<1>{{ length }}</1>個交易。",
     "progress_tldr_hours": "在<3>{{ hours }}</3>小時的範圍內預定了<1>{{ length }}</1>個交易。",
     "progress_description": "此估計是最低等待時間。不計因網路通信或交易確認而造成的其他耽延。",
-    "progress_done": "所有交易都已成功完成。調度程序即將停止。",
+    "progress_done_awaiting_stop": "所有交易都已成功完成。調度程序即將停止。",
     "precondition": {
       "hint_missing_utxos": "要運行調度程序你需要具有至少{{ minConfirmations }}次確認的 UTXOs。$t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "調度程序要求你的 UTXOs 具有至少{{ minConfirmations }}次確認。$t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
