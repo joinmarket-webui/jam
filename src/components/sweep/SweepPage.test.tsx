@@ -18,6 +18,38 @@ const VALID_DESTINATIONS = [
 
 type WalletInfo = ReturnType<typeof useJamWalletInfoContext>
 
+const pendingPlan: TumblerPlanResponse = {
+  plan_id: 'plan-0',
+  wallet_name: 'wallet.jmdat',
+  status: 'pending',
+  destinations: VALID_DESTINATIONS,
+  current_phase: 0,
+  phases: [
+    {
+      kind: 'coinjoin',
+      index: 0,
+      status: 'pending',
+      wait_seconds: 300,
+      mixdepth: 0,
+      amount_fraction: 5,
+      counterparty_count: 16,
+      destination: 'INTERNAL',
+    },
+    {
+      kind: 'coinjoin',
+      index: 1,
+      status: 'pending',
+      wait_seconds: 0,
+      mixdepth: 1,
+      amount_fraction: 0,
+      counterparty_count: 16,
+      destination: VALID_DESTINATIONS[0],
+    },
+  ],
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+}
+
 const activePlan: TumblerPlanResponse = {
   plan_id: 'plan-1',
   wallet_name: 'wallet.jmdat',
@@ -413,7 +445,7 @@ describe('SweepPage', async () => {
   })
 
   it('submits a sweep schedule after confirmation', async () => {
-    mocks.tumblerStatusData = activePlan
+    mocks.tumblerStatusData = pendingPlan
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
@@ -533,7 +565,7 @@ describe('SweepPage', async () => {
 
   it('shows an alert when starting the schedule fails', async () => {
     mocks.startTumbler.mockRejectedValue(new Error('boom'))
-    mocks.tumblerStatusData = activePlan
+    mocks.tumblerStatusData = pendingPlan
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 

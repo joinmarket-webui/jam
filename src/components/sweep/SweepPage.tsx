@@ -25,6 +25,7 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { isDevMode } from '@/constants/debugFeatures'
 import type { TumblerParameters } from '@/constants/jm'
 import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
@@ -47,7 +48,7 @@ interface SweepPageProps {
 const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
 const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
 
-const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = 3_000
+const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = isDevMode() ? 5_000 : 10_000
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_count_min: 1,
@@ -225,7 +226,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     rescanInfo.rescanning ||
     !preconditionSummary.isFulfilled
 
-  const isStartDisabled = isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop
+  const isStartDisabled =
+    isOperationDisabled ||
+    isWaitingSchedulerStart ||
+    isWaitingSchedulerStop ||
+    !getScheduleQuery.data ||
+    startScheduleMutationIsPending ||
+    planSchedule.isPending ||
+    deleteScheduleMutationIsPending
 
   const startSchedule = async () => {
     if (showScheduleConfirmDialog === undefined) return
@@ -308,6 +316,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
           </Alert>
         )}
 
+        {!isWaitingSchedulerStart && !isWaitingSchedulerStop && !schedulerRunning && (
+          <>
+            <SweepPreconditionAlert summary={preconditionSummary} />
+          </>
+        )}
+
         {currentSchedule && (
           <>
             {getScheduleQuery.isPending ? (
@@ -344,30 +358,26 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Button>
                 ) : (
                   <>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        setShowScheduleConfirmDialog(getScheduleQuery.data)
-                      }}
-                      disabled={
-                        isStartDisabled ||
-                        !getScheduleQuery.data ||
-                        startScheduleMutationIsPending ||
-                        planSchedule.isPending ||
-                        deleteScheduleMutationIsPending
-                      }
-                      size="lg"
-                      className="w-full"
-                    >
-                      {startScheduleMutationIsPending ? (
-                        <>
-                          <Spinner className="motion-reduce:hidden" />
-                          {t('scheduler.button_start')}
-                        </>
-                      ) : (
-                        t('scheduler.button_start')
-                      )}
-                    </Button>
+                    {currentSchedule.summary.status.pending || isWaitingSchedulerStart ? (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setShowScheduleConfirmDialog(getScheduleQuery.data)
+                        }}
+                        disabled={isStartDisabled}
+                        size="lg"
+                        className="w-full"
+                      >
+                        {isWaitingSchedulerStart ? (
+                          <>
+                            <Spinner className="motion-reduce:hidden" />
+                            {t('scheduler.button_start')}
+                          </>
+                        ) : (
+                          t('scheduler.button_start')
+                        )}
+                      </Button>
+                    ) : null}
                     {planSchedule.variables?.body ? (
                       <Button
                         type="button"
@@ -378,12 +388,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                             body: planSchedule.variables.body,
                           })
                         }}
-                        disabled={
-                          !getScheduleQuery.data ||
-                          startScheduleMutationIsPending ||
-                          planSchedule.isPending ||
-                          deleteScheduleMutationIsPending
-                        }
+                        disabled={isStartDisabled}
                         size="lg"
                         className="w-full"
                       >
@@ -428,8 +433,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
         {!currentSchedule && !schedulerRunning && (
           <>
-            <SweepPreconditionAlert summary={preconditionSummary} />
-
             <Card>
               <CardContent className="space-y-5">
                 <div className="bg-muted/50 flex flex-col items-start justify-between gap-2 rounded-lg border px-4 py-3 sm:flex-row sm:items-center">

@@ -123,12 +123,16 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
             </div>
           </div>
         ) : null}
-        {value.finishedAt ? (
+        {value.startedAt || value.finishedAt ? (
           <div className="flex min-w-0 items-start gap-4">
             <CalendarCheck2Icon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
-              <span title={value.finishedAt.toISOString()}>{value.finishedAt.toLocaleString()}</span>
+              {value.finishedAt === undefined ? (
+                '-'
+              ) : (
+                <span title={value.finishedAt.toISOString()}>{value.finishedAt.toLocaleString()}</span>
+              )}
             </div>
           </div>
         ) : null}
