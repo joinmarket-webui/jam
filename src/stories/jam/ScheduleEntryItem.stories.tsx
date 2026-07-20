@@ -132,6 +132,7 @@ export const Failed: Story = {
       {
         ...takerPhase,
         status: 'failed',
+        error: 'Error description',
       },
       [],
     ),

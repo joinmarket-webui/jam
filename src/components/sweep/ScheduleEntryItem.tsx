@@ -1,4 +1,5 @@
 import {
+  AlertTriangleIcon,
   CalendarCheck2Icon,
   CalendarClockIcon,
   ClockFadingIcon,
@@ -30,8 +31,9 @@ const EntryStatusBadge = ({ active, status }: { active: boolean; status: Schedul
       case 'failed':
         return 'destructive'
       case 'cancelled':
-      case 'skipped':
         return 'warning'
+      case 'skipped':
+        return 'outline'
       default:
         return 'muted'
     }
@@ -55,14 +57,24 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
     <Item
       variant="outline"
       className={cn({
-        'bg-secondary/80 text-secondary-foreground': !active,
+        'ring-brand-success ring-1': value.status.completed,
+        'ring-destructive ring-1': value.status.failed,
+        'ring-muted-foreground ring-1': value.status.skipped,
         'ring-ring/50 ring-2': active,
-        'bg-muted text-muted-foreground': value.status.completed,
+        'bg-muted text-muted-foreground': value.derivedStatus.terminated,
       })}
     >
       <ItemHeader>
         <div>
-          <ItemTitle>{t('scheduler.progress_entry_label', { index: (value.index + 1).toLocaleString() })}</ItemTitle>
+          <ItemTitle
+            className={cn({
+              'text-destructive': value.status.failed,
+              'text-brand-warning': value.status.cancelled,
+              'text-muted-foreground': value.status.skipped,
+            })}
+          >
+            {t('scheduler.progress_entry_label', { index: (value.index + 1).toLocaleString() })}
+          </ItemTitle>
           <ItemDescription>
             {
               /* TODO: i18n */
@@ -93,6 +105,15 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
         </div>
       </ItemHeader>
       <ItemContent className="grid gap-4 sm:grid-cols-2">
+        {value.__raw?.error ? (
+          <div className="text-destructive col-span-2 flex min-w-0 items-start gap-4">
+            <AlertTriangleIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <Label className="font-semibold">{/*TODO: i18n */ 'Error'}</Label>
+              {value.__raw?.error ?? t('global.errors.reason_unknown')}
+            </div>
+          </div>
+        ) : null}
         {value.startedAt ? (
           <div className="flex min-w-0 items-start gap-4">
             <CalendarClockIcon className="mt-0.5 shrink-0" />

@@ -365,7 +365,10 @@ describe('scheduleUtils', () => {
       skipped: false,
     })
 
-    expect(schedule.summary.derivedStatus).toBe('waiting_for_confirmation')
+    expect(schedule.summary.derivedStatus).toEqual({
+      value: 'waiting_for_confirmation',
+      terminated: false,
+    })
     expect(schedule.summary.status).toEqual({
       value: 'running',
       pending: false,
@@ -434,7 +437,10 @@ describe('scheduleUtils', () => {
     const schedule = toSchedule(response, [])
 
     expect(schedule.completed.length).toBe(1)
-    expect(schedule.summary.derivedStatus).toBe('waiting_before_next')
+    expect(schedule.summary.derivedStatus).toEqual({
+      value: 'waiting_before_next',
+      terminated: false,
+    })
     expect(schedule.active?.index).toBe(1)
     expect(schedule.active?.durationSeconds).toBe(42)
   })

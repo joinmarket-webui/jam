@@ -47,6 +47,9 @@ export type ScheduleEntry = {
     cancelled: boolean
     skipped: boolean
   }
+  derivedStatus: {
+    terminated: boolean
+  }
   transactionId?: TxId
   __raw?: TumblerPhaseResponse // TODO: not optional
 } & Partial<TakerEntryDetails> &
@@ -63,7 +66,10 @@ export interface ScheduleSummary {
     failed: boolean
     cancelled: boolean
   }
-  derivedStatus: ScheduleDerivedStatus | ScheduleStatus
+  derivedStatus: {
+    value: ScheduleDerivedStatus | ScheduleStatus
+    terminated: boolean
+  }
   totalWaitSeconds: number
   externalDestinationAddresses: BitcoinAddress[]
 }
@@ -107,16 +113,21 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     .filter((it) => it.externalDestinationAddress !== undefined)
     .map((it) => it.externalDestinationAddress!)
 
+  const status: ScheduleSummary['status'] = {
+    value: plan.status,
+    pending: plan.status === 'pending',
+    running: plan.status === 'running',
+    completed: plan.status === 'completed',
+    failed: plan.status === 'failed',
+    cancelled: plan.status === 'cancelled',
+  }
+
   const summary: ScheduleSummary = {
-    status: {
-      value: plan.status,
-      pending: plan.status === 'pending',
-      completed: plan.status === 'completed',
-      running: plan.status === 'running',
-      failed: plan.status === 'failed',
-      cancelled: plan.status === 'cancelled',
+    status,
+    derivedStatus: {
+      value: toScheduleDerivedStatus(entries, active) ?? plan.status,
+      terminated: !status.pending && !status.running,
     },
-    derivedStatus: toDerivedStatus(entries, active) ?? plan.status,
     totalWaitSeconds: totalWaitSeconds,
     externalDestinationAddresses,
   }
@@ -133,24 +144,29 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
 }
 
 export const toScheduleEntry = (phase: TumblerPhaseResponse, jars: Jar[]): ScheduleEntry => {
+  const status: ScheduleEntry['status'] = {
+    value: phase.status,
+    pending: phase.status === 'pending',
+    completed: phase.status === 'completed',
+    running: phase.status === 'running',
+    failed: phase.status === 'failed',
+    cancelled: phase.status === 'cancelled',
+    skipped: phase.status === 'skipped',
+  }
   let value: ScheduleEntry = {
     index: phase.index,
     kind: phase.kind,
+    status,
+    derivedStatus: {
+      terminated: !status.pending && !status.running,
+    },
     startedAt: phase.started_at ? new Date(Date.parse(phase.started_at)) : undefined,
     finishedAt: phase.finished_at ? new Date(Date.parse(phase.finished_at)) : undefined,
     waitTimeInSeconds: phase.wait_seconds ?? 0,
-    status: {
-      value: phase.status,
-      pending: phase.status === 'pending',
-      completed: phase.status === 'completed',
-      running: phase.status === 'running',
-      failed: phase.status === 'failed',
-      cancelled: phase.status === 'cancelled',
-      skipped: phase.status === 'skipped',
-    },
     transactionId: phase.txid ?? undefined,
     __raw: phase,
   }
+
   if (phase.kind === 'taker_coinjoin') {
     const internal = phase.destination?.toUpperCase() === 'INTERNAL'
     const details: TakerEntryDetails = {
@@ -191,7 +207,7 @@ const toScheduleProgressSummary = (
     const widthPercent =
       entry.index === 0
         ? FIRST_STEP_WIDTH_PERCENT
-        : Math.max(MIN_STEP_WIDTH_PERCENT, (previousEntry?.waitTimeInSeconds ?? 0 / summary.totalWaitSeconds) * 100)
+        : Math.max(MIN_STEP_WIDTH_PERCENT, ((previousEntry?.waitTimeInSeconds ?? 0) / summary.totalWaitSeconds) * 100)
 
     return {
       widthPercent,
@@ -205,7 +221,7 @@ const toScheduleProgressSummary = (
   }
 }
 
-export const toDerivedStatus = (
+export const toScheduleDerivedStatus = (
   entries: ScheduleEntry[],
   activeEntry: ScheduleEntry | undefined,
 ): ScheduleDerivedStatus | undefined => {

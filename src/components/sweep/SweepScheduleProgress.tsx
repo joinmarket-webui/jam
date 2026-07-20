@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { cn, shortenStringMiddle } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '../ui/item'
@@ -89,17 +89,17 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop, debug }: S
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
               {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
-              {schedule.summary.derivedStatus === 'waiting_for_confirmation' ? (
+              {schedule.summary.derivedStatus.value === 'waiting_for_confirmation' ? (
                 <Trans
                   i18nKey="scheduler.progress_current_state_waiting_confirmation"
                   values={{
                     current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
                     total: schedule.entries.length.toLocaleString(),
-                    txid: schedule.active?.transactionId ?? '-',
+                    txid: schedule.active?.transactionId ? shortenStringMiddle(schedule.active.transactionId, 12) : '-',
                   }}
                   components={highlightedComponents}
                 />
-              ) : schedule.summary.derivedStatus === 'waiting_before_next' ? (
+              ) : schedule.summary.derivedStatus.value === 'waiting_before_next' ? (
                 <Trans
                   i18nKey="scheduler.progress_current_state_waiting_start"
                   values={{
