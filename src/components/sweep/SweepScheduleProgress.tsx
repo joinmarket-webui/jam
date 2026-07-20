@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangleIcon, CheckCircle2Icon, ClockAlertIcon } from 'lucide-react'
+import { AlertTriangleIcon, CheckCircle2Icon, ClockAlertIcon, HourglassIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
@@ -111,42 +111,58 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
         ) : null}
 
         {schedule.summary.status.running ? (
-          <Alert>
-            <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>
-              {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
-              {schedule.summary.derivedStatus.value === 'waiting_for_confirmation' ? (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_waiting_confirmation"
-                  values={{
-                    current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
-                    total: schedule.entries.length.toLocaleString(),
-                    txid: schedule.active?.transactionId ? shortenStringMiddle(schedule.active.transactionId, 12) : '-',
-                  }}
-                  components={highlightedComponents}
-                />
-              ) : schedule.summary.derivedStatus.value === 'waiting_before_next' ? (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_waiting_start"
-                  values={{
-                    current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
-                    total: schedule.entries.length,
-                  }}
-                  components={highlightedComponents}
-                />
-              ) : (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_executing"
-                  values={{
-                    current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
-                    total: schedule.entries.length,
-                  }}
-                  components={highlightedComponents}
-                />
-              )}
-            </AlertTitle>
-            <AlertDescription />
-          </Alert>
+          <>
+            {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
+            {schedule.summary.derivedStatus.value === 'waiting_for_confirmation' ? (
+              <Alert>
+                <HourglassIcon className="motion-safe:animate-pulse" />
+                <AlertTitle>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_waiting_confirmation"
+                    values={{
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                      total: schedule.entries.length.toLocaleString(),
+                      txid: schedule.active?.transactionId
+                        ? shortenStringMiddle(schedule.active.transactionId, 12)
+                        : '-',
+                    }}
+                    components={highlightedComponents}
+                  />
+                </AlertTitle>
+                <AlertDescription />
+              </Alert>
+            ) : schedule.summary.derivedStatus.value === 'waiting_before_next' ? (
+              <Alert>
+                <HourglassIcon className="motion-safe:animate-pulse" />
+                <AlertTitle>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_waiting_start"
+                    values={{
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                      total: schedule.entries.length,
+                    }}
+                    components={highlightedComponents}
+                  />
+                </AlertTitle>
+                <AlertDescription />
+              </Alert>
+            ) : (
+              <Alert>
+                <Spinner className="motion-reduce:hidden" />
+                <AlertTitle>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_executing"
+                    values={{
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                      total: schedule.entries.length,
+                    }}
+                    components={highlightedComponents}
+                  />
+                </AlertTitle>
+                <AlertDescription />
+              </Alert>
+            )}
+          </>
         ) : null}
 
         {schedule.summary.externalDestinationAddresses.length === 0 ? null : (
