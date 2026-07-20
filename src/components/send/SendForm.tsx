@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
 import { MAX_NUM_COLLABORATORS } from '@/constants/jam'
-import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
+import { JM_MINIMUM_MAKERS_DEFAULT, JM_TAKER_UTXO_AGE } from '@/constants/jm'
 import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
@@ -212,7 +212,9 @@ export function SendForm({
 
   const coinjoinPreconditionSummary = useMemo(() => {
     if (!sourceJar) return undefined
-    return buildSweepPreconditionSummary(sourceJar.utxos)
+    return buildSweepPreconditionSummary(sourceJar.utxos, {
+      minConfirmations: JM_TAKER_UTXO_AGE,
+    })
   }, [sourceJar])
 
   const hasCoinjoinPreconditionWarning = isCoinJoin && coinjoinPreconditionSummary?.isFulfilled === false

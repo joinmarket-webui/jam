@@ -35,6 +35,14 @@ export const JM_TX_FEES_FACTOR_DEFAULT = 0.2
 
 export const JM_GAPLIMIT_DEFAULT = 6
 
+// initial value for `TAKER__UTXO_AGE` (last checked on 2026-07-19)
+// https://github.com/joinmarket-ng/joinmarket-ng/blob/0.34.1/jmcore/src/jmcore/settings.py#L877C5-L877C19
+export const JM_TAKER_UTXO_AGE = 5
+
+// initial value for `TUMBLER__MIN_CONFIRMATIONS_BETWEEN_PHASES` (last checked on 2026-07-19)
+// https://github.com/joinmarket-ng/joinmarket-ng/blob/0.34.1/jmcore/src/jmcore/settings.py#L1031
+export const JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES = 6
+
 export const JM_GAPLIMIT_CONFIGKEY: ConfigKey = {
   section: 'POLICY',
   field: 'gaplimit',
