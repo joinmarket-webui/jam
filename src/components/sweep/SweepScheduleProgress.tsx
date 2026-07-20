@@ -49,8 +49,8 @@ interface SweepScheduleProgressProps {
 
 export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
-  const totalHours = Math.ceil(schedule.summary.totalWaitSeconds / 60 / 60)
-  const totalSeconds = Math.ceil(schedule.summary.totalWaitSeconds)
+  const totalHours = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds / 60 / 60)
+  const totalSeconds = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds)
 
   const [activeTab, setActiveTab] = useState<Tab>(() => (schedule.active ? 'active' : 'all'))
   const accordionDefaultOpen = schedule.active

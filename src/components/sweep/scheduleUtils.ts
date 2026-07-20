@@ -1,8 +1,9 @@
 import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import type { TFunction } from 'i18next'
+import { JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { TxId } from '@/store/jmTxStore'
-import type { BitcoinAddress, JarIndex, Seconds } from '@/types/global'
+import type { BitcoinAddress, Factor, JarIndex, Seconds } from '@/types/global'
 
 type AmountCounterparties = number
 type ScheduleEntryKind = 'taker_coinjoin' | 'maker_session' | TumblerPhaseResponse['kind']
@@ -70,7 +71,8 @@ export interface ScheduleSummary {
     value: ScheduleDerivedStatus | ScheduleStatus
     terminated: boolean
   }
-  totalWaitSeconds: number
+  totalWaitDurationBetweenPhasesInSeconds: Seconds
+  estimatedTotalDurationInSeconds: Seconds
   externalDestinationAddresses: BitcoinAddress[]
 }
 
@@ -98,15 +100,25 @@ export type Schedule = {
 const FIRST_STEP_WIDTH_PERCENT = 5
 const MIN_STEP_WIDTH_PERCENT = 3
 
+const TIME_ESTIMATE_FACTOR: Factor = 1.1
+const MEAN_DURATION_BETWEEN_BLOCKS_SECONDS: Seconds = 10 * 60
+const MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS: Seconds =
+  JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES * MEAN_DURATION_BETWEEN_BLOCKS_SECONDS
+
 export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => {
   const entries = plan.phases.map((it) => toScheduleEntry(it, jars))
   const completed = entries.filter((it) => it.status.completed === true)
 
-  const totalWaitSeconds: Seconds = Math.max(
+  const totalWaitDurationBetweenPhasesInSeconds: Seconds = Math.max(
     1,
     entries.slice(0, Math.max(0, entries.length - 1)).reduce((acc, entry) => {
       return acc + entry.waitTimeInSeconds
     }, 0),
+  )
+  const estimatedWaitForConfirmationsInSeconds: Seconds =
+    entries.length * MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS
+  const estimatedTotalDurationInSeconds: Seconds = Math.ceil(
+    TIME_ESTIMATE_FACTOR * (totalWaitDurationBetweenPhasesInSeconds + estimatedWaitForConfirmationsInSeconds),
   )
 
   const externalDestinationAddresses = entries
@@ -130,7 +142,8 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
       value: toScheduleDerivedStatus(entries, active) ?? plan.status,
       terminated,
     },
-    totalWaitSeconds: totalWaitSeconds,
+    totalWaitDurationBetweenPhasesInSeconds,
+    estimatedTotalDurationInSeconds,
     externalDestinationAddresses,
   }
 
@@ -209,7 +222,10 @@ const toScheduleProgressSummary = (
     const widthPercent =
       entry.index === 0
         ? FIRST_STEP_WIDTH_PERCENT
-        : Math.max(MIN_STEP_WIDTH_PERCENT, ((previousEntry?.waitTimeInSeconds ?? 0) / summary.totalWaitSeconds) * 100)
+        : Math.max(
+            MIN_STEP_WIDTH_PERCENT,
+            ((previousEntry?.waitTimeInSeconds ?? 0) / summary.totalWaitDurationBetweenPhasesInSeconds) * 100,
+          )
 
     return {
       widthPercent,
