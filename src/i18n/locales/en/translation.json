@@ -784,8 +784,10 @@
     "placeholder_destination_input": "Enter destination address...",
     "description_fees": "The scheduler will pay all occurring fees automatically.",
     "scheduler_options": "Scheduled Sweep options",
-    "button_start": "Start Scheduler",
-    "button_stop": "Stop Scheduler",
+    "button_start": "Start Scheduled Sweep",
+    "button_stop": "Stop Scheduled Sweep",
+    "button_plan": "Create Scheduled Sweep plan",
+    "button_plan_renew": "Renew Scheduled Sweep plan",
     "alert_scheduler_starting_title": "Starting Scheduler...",
     "alert_scheduler_stopping_title": "Stopping Scheduler...",
     "progress_tldr_seconds": "Scheduled <1>{{ length }}</1> actions over <3>{{ seconds }}</3> seconds.",
@@ -808,7 +810,7 @@
     },
     "confirm_modal": {
       "title": "Start Scheduled Sweep",
-      "body": "Are you sure you want to start a scheduled sweep?"
+      "body": "Are you sure you want to start a Scheduled Sweep?"
     }
   },
   "modal": {

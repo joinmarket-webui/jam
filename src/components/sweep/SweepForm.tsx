@@ -238,10 +238,10 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
         {formState.isSubmitting ? (
           <>
             <Spinner className="motion-reduce:hidden" />
-            {t('scheduler.button_start')}
+            {t('scheduler.button_plan')}
           </>
         ) : (
-          t('scheduler.button_start')
+          t('scheduler.button_plan')
         )}
       </Button>
 

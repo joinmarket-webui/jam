@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangleIcon, CheckCircle2Icon } from 'lucide-react'
+import { AlertTriangleIcon, CheckCircle2Icon, ClockAlertIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
@@ -50,7 +50,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
   const totalSeconds = Math.ceil(schedule.summary.totalWaitSeconds)
 
   const [activeTab, setActiveTab] = useState<Tab>(() => (schedule.active ? 'active' : 'all'))
-  const accordionDefaultOpen = !schedule.summary.derivedStatus.terminated
+  const accordionDefaultOpen = schedule.active
 
   return (
     <Card>
@@ -102,7 +102,15 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
           </Alert>
         ) : null}
 
-        {!schedule.summary.derivedStatus.terminated ? (
+        {schedule.summary.status.pending ? (
+          <Alert variant="default">
+            <ClockAlertIcon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep pending.'}</AlertTitle>
+            <AlertDescription />
+          </Alert>
+        ) : null}
+
+        {schedule.summary.status.running ? (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
             <AlertTitle>
@@ -208,7 +216,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                 schedule.completed.length === 0 ? (
                   <>
                     <div className="m-2 flex items-center justify-center gap-2">
-                      No completed entries yet.{/* TODO: i18n */}
+                      No completed actions yet.{/* TODO: i18n */}
                     </div>
                   </>
                 ) : (

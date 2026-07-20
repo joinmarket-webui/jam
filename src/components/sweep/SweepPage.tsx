@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  tumblerplandeleteMutation,
   tumblerplanMutation,
   tumblerstartMutation,
   tumblerstatusOptions,
@@ -34,6 +35,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import { percentageToFactor, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { Milliseconds } from '@/types/global'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
 import { SweepForm } from './SweepForm'
@@ -42,8 +44,10 @@ interface SweepPageProps {
   walletFileName: WalletFileName
 }
 
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
-const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
+
+const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = 3_000
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_count_min: 1,
@@ -79,8 +83,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       client,
       path: { walletname: walletFileName },
     }),
-    refetchInterval:
-      takerInfo.running && takerInfo.scheduler.running ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
+    refetchInterval: takerInfo.running && takerInfo.scheduler.running ? RUNNING_SCHEDULE_POLLING_INTERVAL : false,
     refetchIntervalInBackground: true,
     retry: false,
   })
@@ -91,14 +94,15 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     onMutate: () => {
       setAlertMessage(undefined)
     },
-    onSuccess: (data) => {
-      setShowScheduleConfirmDialog(data)
+    onSettled: async () => {
+      await getScheduleQuery.refetch()
+      scrollToTop()
     },
     onError: (error) => {
       console.error('Plan schedule error:', error)
 
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      const message = t('scheduler.error_starting_schedule_failed', { reason })
+      const message = t('scheduler.error_planning_schedule_failed', { reason })
       setAlertMessage(message)
       toast.error(message)
     },
@@ -116,11 +120,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
-      scrollToTop()
     },
     onSettled: async () => {
       setShowScheduleConfirmDialog(undefined)
       await getScheduleQuery.refetch()
+      scrollToTop()
     },
     onError: (error) => {
       console.error('Plan schedule error:', error)
@@ -144,6 +148,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
+    },
+    onSettled: async () => {
+      await getScheduleQuery.refetch()
       scrollToTop()
     },
     onError: (error) => {
@@ -154,12 +161,34 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
   })
 
+  const { isPending: deleteScheduleMutationIsPending, mutateAsync: deleteScheduleMutationMutateAsync } = useMutation({
+    ...tumblerplandeleteMutation({
+      client,
+      path: { walletname: walletFileName },
+    }),
+    retry: false,
+    onMutate: () => {
+      setAlertMessage(undefined)
+      scrollToTop()
+    },
+    onSettled: async () => {
+      await getScheduleQuery.refetch()
+    },
+    onError: (error) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      const message = t('scheduler.error_deleting_schedule_failed', { reason })
+      setAlertMessage(message)
+      toast.error(message)
+    },
+  })
+
   const currentSchedule = useMemo(() => {
+    if (getScheduleQuery.error) return
     if (getScheduleQuery.data === undefined) return
     if (getScheduleQuery.data.stale === true) return
 
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
-  }, [getScheduleQuery.data, walletInfo.jars])
+  }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
 
   const schedulerRunning = takerInfo.scheduler.running
   const isWaitingSchedulerStart =
@@ -212,6 +241,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     })
   }
 
+  const deleteSchedule = async () => {
+    await deleteScheduleMutationMutateAsync({
+      path: { walletname: walletFileName },
+    })
+  }
+
   if (!jmSession || feeConfigValidation.isLoading || walletInfo.isLoading) {
     return <PageLoading />
   }
@@ -228,7 +263,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         open={showScheduleConfirmDialog !== undefined}
         onOpenChange={() => setShowScheduleConfirmDialog(undefined)}
         onConfirm={startSchedule}
-        disabled={isStartDisabled || isWaitingSchedulerStart}
+        disabled={isStartDisabled}
         isStarting={isWaitingSchedulerStart}
       />
       <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -290,7 +325,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
                 <SweepScheduleProgress schedule={currentSchedule} debug={isDeveloperMode} />
 
-                {!currentSchedule.summary.derivedStatus.terminated ? (
+                {schedulerRunning && currentSchedule.summary.status.running ? (
                   <Button
                     type="button"
                     onClick={() => void stopSchedule()}
@@ -307,13 +342,91 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                       t('scheduler.button_stop')
                     )}
                   </Button>
-                ) : null}
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setShowScheduleConfirmDialog(getScheduleQuery.data)
+                      }}
+                      disabled={
+                        isStartDisabled ||
+                        !getScheduleQuery.data ||
+                        startScheduleMutationIsPending ||
+                        planSchedule.isPending ||
+                        deleteScheduleMutationIsPending
+                      }
+                      size="lg"
+                      className="w-full"
+                    >
+                      {startScheduleMutationIsPending ? (
+                        <>
+                          <Spinner className="motion-reduce:hidden" />
+                          {t('scheduler.button_start')}
+                        </>
+                      ) : (
+                        t('scheduler.button_start')
+                      )}
+                    </Button>
+                    {planSchedule.variables?.body ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          void planSchedule.mutateAsync({
+                            path: { walletname: walletFileName },
+                            body: planSchedule.variables.body,
+                          })
+                        }}
+                        disabled={
+                          !getScheduleQuery.data ||
+                          startScheduleMutationIsPending ||
+                          planSchedule.isPending ||
+                          deleteScheduleMutationIsPending
+                        }
+                        size="lg"
+                        className="w-full"
+                      >
+                        {planSchedule.isPending ? (
+                          <>
+                            <Spinner className="motion-reduce:hidden" />
+                            {t('scheduler.button_plan_renew')}
+                          </>
+                        ) : (
+                          t('scheduler.button_plan_renew')
+                        )}
+                      </Button>
+                    ) : null}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => void deleteSchedule()}
+                      disabled={
+                        !getScheduleQuery.data ||
+                        startScheduleMutationIsPending ||
+                        planSchedule.isPending ||
+                        deleteScheduleMutationIsPending
+                      }
+                      size="lg"
+                      className="w-full"
+                    >
+                      {deleteScheduleMutationIsPending ? (
+                        <>
+                          <Spinner className="motion-reduce:hidden" />
+                          {t('global.cancel')}
+                        </>
+                      ) : (
+                        t('global.cancel')
+                      )}
+                    </Button>
+                  </>
+                )}
               </>
             )}
           </>
         )}
 
-        {!schedulerRunning && (
+        {!currentSchedule && !schedulerRunning && (
           <>
             <SweepPreconditionAlert summary={preconditionSummary} />
 

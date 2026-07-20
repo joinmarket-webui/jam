@@ -57,6 +57,7 @@ const mocks = vi.hoisted(() => ({
   planTumbler: vi.fn<(input?: unknown) => Promise<TumblerPlanResponse>>(),
   startTumbler: vi.fn<(input?: unknown) => Promise<unknown>>(),
   stopTumbler: vi.fn<(input?: unknown) => Promise<unknown>>(),
+  deleteTumbler: vi.fn<(input?: unknown) => Promise<unknown>>(),
   tumblerStatusData: undefined as TumblerPlanResponse | undefined,
   tumblerStatusPending: false,
   startReset: vi.fn(),
@@ -72,6 +73,7 @@ vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   tumblerplanMutation: vi.fn(() => ({ mutationFn: mocks.planTumbler })),
   tumblerstartMutation: vi.fn(() => ({ mutationFn: mocks.startTumbler })),
   tumblerstopMutation: vi.fn(() => ({ mutationFn: mocks.stopTumbler })),
+  tumblerplandeleteMutation: vi.fn(() => ({ mutationFn: mocks.deleteTumbler })),
 }))
 
 type MutationOptions = {
@@ -342,6 +344,8 @@ describe('SweepPage', async () => {
     mocks.startTumbler.mockResolvedValue(undefined)
     mocks.stopTumbler.mockReset()
     mocks.stopTumbler.mockResolvedValue(undefined)
+    mocks.deleteTumbler.mockReset()
+    mocks.deleteTumbler.mockResolvedValue(undefined)
     mocks.tumblerStatusData = undefined
     mocks.tumblerStatusPending = false
     mocks.startReset.mockReset()
@@ -379,17 +383,16 @@ describe('SweepPage', async () => {
     fireEvent.click(screen.getByRole('button', { name: 'open-fee-config' }))
 
     expect(screen.getByText('fee-config-dialog')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'scheduler.button_start' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'scheduler.button_plan' })).toBeDisabled()
   })
 
   it('builds and submits a sweep schedule after confirmation', async () => {
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
     fireEvent.click(screen.getByRole('button', { name: 'fill-destinations' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_plan' })).not.toBeDisabled())
 
-    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_plan' }))
 
     await waitFor(() => expect(mocks.planTumbler).toHaveBeenCalledTimes(1))
     expect(mocks.planTumbler).toHaveBeenCalledWith(
@@ -407,6 +410,19 @@ describe('SweepPage', async () => {
         }),
       }),
     )
+  })
+
+  it('submits a sweep schedule after confirmation', async () => {
+    mocks.tumblerStatusData = activePlan
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'scheduler.button_start' })).toBeInTheDocument())
+
+    expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
 
     expect(mocks.startTumbler).toHaveBeenCalledWith({
       path: { walletname: 'wallet.jmdat' },
@@ -468,7 +484,7 @@ describe('SweepPage', async () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByRole('button', { name: 'scheduler.button_start' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'scheduler.button_plan' })).toBeDisabled()
   })
 
   it('shows the start waiting alert while the schedule start is pending', () => {
@@ -500,12 +516,27 @@ describe('SweepPage', async () => {
     expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
   })
 
-  it('shows an alert when starting the schedule fails', async () => {
-    mocks.startTumbler.mockRejectedValue(new Error('boom'))
+  it('shows an alert when planning the schedule fails', async () => {
+    mocks.planTumbler.mockRejectedValue(new Error('boom'))
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
     fireEvent.click(screen.getByRole('button', { name: 'fill-destinations' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_plan' })).not.toBeDisabled())
+
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_plan' }))
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
+    expect(screen.getByText('global.error')).toBeInTheDocument() // title
+    expect(screen.getByText('scheduler.error_planning_schedule_failed:{"reason":"boom"}')).toBeInTheDocument() // description
+  })
+
+  it('shows an alert when starting the schedule fails', async () => {
+    mocks.startTumbler.mockRejectedValue(new Error('boom'))
+    mocks.tumblerStatusData = activePlan
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
     await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
 
     fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
@@ -580,10 +611,9 @@ describe('SweepPage', async () => {
       const result = render(<SweepPage walletFileName="wallet.jmdat" />)
 
       fireEvent.click(result.container.querySelector('#switch-use-insecure-schedule-testing')!)
-      await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_start' })).not.toBeDisabled())
+      await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_plan' })).not.toBeDisabled())
 
-      fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_start' }))
-      fireEvent.click(await screen.findByRole('button', { name: 'confirm-sweep' }))
+      fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_plan' }))
 
       await waitFor(() => expect(mocks.planTumbler).toHaveBeenCalledTimes(1))
       const callArgument = mocks.planTumbler.mock.calls[0][0] as { body: { parameters?: unknown } }
