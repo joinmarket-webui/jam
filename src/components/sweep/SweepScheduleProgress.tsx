@@ -1,5 +1,12 @@
-import { useState } from 'react'
-import { AlertTriangleIcon, CheckCircle2Icon, ClockAlertIcon, HourglassIcon } from 'lucide-react'
+import React, { useState } from 'react'
+import {
+  AlertTriangleIcon,
+  CalendarCheck2Icon,
+  CalendarClockIcon,
+  CheckCircle2Icon,
+  ClockAlertIcon,
+  HourglassIcon,
+} from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
@@ -8,6 +15,7 @@ import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '../ui/item'
 import { Address } from '../ui/jam/Address'
+import { Label } from '../ui/label'
 import { Separator } from '../ui/separator'
 import { Spinner } from '../ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
@@ -177,38 +185,103 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
           </>
         ) : null}
 
-        {schedule.summary.externalDestinationAddresses.length === 0 ? null : (
+        {schedule.summary.startedAt ? (
           <Item variant="outline">
-            <ItemContent>
-              <ItemTitle>
-                {t('scheduler.destination_addresses_header_title', {
-                  defaultValue: 'Destination Addresses',
-                })}
-              </ItemTitle>
-              <ItemDescription>{t('scheduler.description_destination_addresses')}</ItemDescription>
-              {schedule.summary.externalDestinationAddresses.map((it, index) => {
-                return (
-                  <div key={index}>
-                    {index === 0 ? null : <Separator className="my-2" />}
-                    <Address value={it} />
+            <ItemContent className="grid gap-4 sm:grid-cols-2">
+              {schedule.summary.startedAt ? (
+                <div className="flex min-w-0 items-start gap-4">
+                  <CalendarClockIcon className="mt-0.5 shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
+                    <span title={schedule.summary.startedAt.toISOString()}>
+                      {schedule.summary.startedAt.toLocaleString()}
+                    </span>
                   </div>
-                )
-              })}
+                </div>
+              ) : null}
+              {schedule.summary.startedAt || schedule.summary.finishedAt ? (
+                <div className="flex min-w-0 items-start gap-4">
+                  <CalendarCheck2Icon className="mt-0.5 shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
+                    {schedule.summary.finishedAt === undefined ? (
+                      '-'
+                    ) : (
+                      <span title={schedule.summary.finishedAt.toISOString()}>
+                        {schedule.summary.finishedAt.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </ItemContent>
           </Item>
-        )}
+        ) : null}
 
         {schedule.active !== undefined ? (
-          <ItemGroup className="space-y-2">
-            <ScheduleEntryItem value={schedule.active} active />
-          </ItemGroup>
+          <Accordion type="single" collapsible defaultValue="active">
+            <AccordionItem value="active">
+              <AccordionTrigger>
+                {
+                  /* TODO: i18n */ t('scheduler.section_active_action_title', {
+                    defaultValue: 'Active action',
+                  })
+                }
+              </AccordionTrigger>
+              <AccordionContent
+                className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+              >
+                <ItemGroup className="space-y-2">
+                  <ScheduleEntryItem value={schedule.active} active />
+                </ItemGroup>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         ) : null}
+
+        {schedule.summary.externalDestinationAddresses.length === 0 ? null : (
+          <Accordion type="single" collapsible>
+            <AccordionItem value="destinations">
+              <AccordionTrigger>
+                {
+                  /* TODO: i18n */ t('scheduler.section_destination_addresses_title', {
+                    defaultValue: 'Destinations',
+                  })
+                }
+              </AccordionTrigger>
+              <AccordionContent
+                className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+              >
+                <Item variant="outline">
+                  <ItemContent>
+                    <ItemTitle>
+                      {t('scheduler.destination_addresses_header_title', {
+                        defaultValue: 'Destination Addresses',
+                      })}
+                    </ItemTitle>
+                    <ItemDescription>{t('scheduler.description_destination_addresses')}</ItemDescription>
+                    <div className="mt-2 space-y-2">
+                      {schedule.summary.externalDestinationAddresses.map((it, index) => {
+                        return (
+                          <React.Fragment key={index}>
+                            {index === 0 ? null : <Separator />}
+                            <Address value={it} />
+                          </React.Fragment>
+                        )
+                      })}
+                    </div>
+                  </ItemContent>
+                </Item>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
 
         <Accordion type="single" collapsible>
           <AccordionItem value="details">
             <AccordionTrigger>
               {
-                /* TODO: i18n */ t('scheduler.button_settings', {
+                /* TODO: i18n */ t('scheduler.section_details_title', {
                   defaultValue: 'Schedule details',
                 })
               }
@@ -222,11 +295,11 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                 className="flex flex-col gap-4"
               >
                 <TabsList className="mx-auto flex items-center gap-2">
-                  <TabsTrigger value="completed" className="cursor-pointer">
-                    {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString()})
-                  </TabsTrigger>
                   <TabsTrigger value="pending" className="cursor-pointer">
                     {/* TODO: i18n */}Pending ({schedule.pending.length.toLocaleString()})
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="cursor-pointer">
+                    {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString()})
                   </TabsTrigger>
                   <TabsTrigger value="all" className="cursor-pointer">
                     {/* TODO: i18n */}All ({schedule.entries.length.toLocaleString()})

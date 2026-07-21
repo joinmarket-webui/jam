@@ -68,6 +68,8 @@ export interface ScheduleSummary {
     failed: boolean
     cancelled: boolean
   }
+  startedAt?: Date
+  finishedAt?: Date
   derivedStatus: {
     value: ScheduleDerivedStatus | ScheduleStatus
     terminated: boolean
@@ -155,8 +157,12 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
 
   const active = !status.running ? undefined : entries.find((it) => it.index === plan.current_phase)
 
+  const startedAt = entries.at(0)?.startedAt
+  const finishedAt = entries.at(-1)?.finishedAt
   const summary: ScheduleSummary = {
     status,
+    startedAt,
+    finishedAt,
     derivedStatus: {
       value: toScheduleDerivedStatus(entries, active) ?? plan.status,
       terminated: isPlanTerminated(plan),

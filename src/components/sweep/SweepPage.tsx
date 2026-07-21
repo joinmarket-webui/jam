@@ -319,9 +319,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         )}
 
         {!isWaitingSchedulerStart && !isWaitingSchedulerStop && !schedulerRunning && (
-          <>
-            <SweepPreconditionAlert summary={preconditionSummary} />
-          </>
+          <SweepPreconditionAlert summary={preconditionSummary} />
         )}
 
         {currentSchedule && (
