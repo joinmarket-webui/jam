@@ -111,7 +111,7 @@ function RescanChainForm({
             size="sm"
             variant="ghost"
             onClick={() =>
-              setValue('blockHeight', (currentBlockHeight ?? AVERAGE_BLOCKS_PER_DAY + 1) - AVERAGE_BLOCKS_PER_DAY, {
+              setValue('blockHeight', Math.max(0, (currentBlockHeight ?? 0) - AVERAGE_BLOCKS_PER_DAY), {
                 shouldValidate: true,
               })
             }
@@ -128,7 +128,7 @@ function RescanChainForm({
             size="sm"
             variant="ghost"
             onClick={() =>
-              setValue('blockHeight', (currentBlockHeight ?? AVERAGE_BLOCKS_PER_YEAR + 1) - AVERAGE_BLOCKS_PER_YEAR, {
+              setValue('blockHeight', Math.max(0, (currentBlockHeight ?? 0) - AVERAGE_BLOCKS_PER_YEAR), {
                 shouldValidate: true,
               })
             }
@@ -243,7 +243,7 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
             initialBlockHeight={
               currentBlockHeight === undefined
                 ? SEGWIT_ACTIVATION_BLOCK
-                : Math.max(0, currentBlockHeight - (1 / 10) * 60 * 24)
+                : Math.max(0, currentBlockHeight - AVERAGE_BLOCKS_PER_DAY)
             }
             currentBlockHeight={currentBlockHeight}
             onSubmit={onSubmit}

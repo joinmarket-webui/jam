@@ -138,7 +138,7 @@ export const tryBtcToSat = (value: string): number | undefined => {
 }
 
 export const SEGWIT_ACTIVATION_BLOCK: BlockHeight = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
-export const AVERAGE_BLOCKS_PER_DAY: number = 6 * 24
+export const AVERAGE_BLOCKS_PER_DAY: number = Math.round((1 / 10) * 60 * 24)
 export const AVERAGE_BLOCKS_PER_YEAR: number = 365 * AVERAGE_BLOCKS_PER_DAY
 
 //  if applicable, the genesis date can be used as minimum `since` timestamp
