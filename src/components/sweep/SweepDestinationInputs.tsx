@@ -97,6 +97,7 @@ export const SweepDestinationInputs = ({
                   {index >= minNumberOfFields && onClickRemove ? (
                     <Button type="button" variant="outline" size="lg" onClick={() => onClickRemove(index)}>
                       <XIcon />
+                      <span className="sr-only">{t('global.clear')}</span>
                     </Button>
                   ) : null}
                   <Button

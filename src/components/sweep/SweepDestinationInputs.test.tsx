@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import type { FieldArrayWithId, UseFormReturn } from 'react-hook-form'
 import { describe, expect, it, vi } from 'vitest'
 import { SweepDestinationInputs } from './SweepDestinationInputs'
@@ -28,7 +28,7 @@ describe('SweepDestinationInputs', () => {
     { id: '2', address: '' },
   ] as unknown as SweepFields
 
-  it('renders input fields correctly', () => {
+  it('renders input fields correctly', async () => {
     render(
       <SweepDestinationInputs
         minNumberOfFields={fields.length}
@@ -50,6 +50,37 @@ describe('SweepDestinationInputs', () => {
     // Inputs should not be disabled
     expect(inputs[0]).not.toBeDisabled()
     expect(inputs[1]).not.toBeDisabled()
+
+    // QR-Code scan button is present
+    const qrCodeButtons = await screen.findAllByRole('button', { name: 'send.qr_scan_title' })
+    expect(qrCodeButtons.length).toBe(fields.length)
+  })
+
+  it('qr-code scanner opens', () => {
+    render(
+      <SweepDestinationInputs
+        minNumberOfFields={fields.length}
+        formState={defaultFormMock.formState}
+        setValue={defaultFormMock.setValue}
+        register={defaultFormMock.register}
+        fields={fields}
+      />,
+    )
+
+    // QR-Code scan button is present
+    const qrCodeButtons = screen.queryAllByRole('button', { name: 'send.qr_scan_title' })
+    expect(qrCodeButtons.length).toBe(fields.length)
+
+    // CR-Code scanner not active yet
+    expect(screen.queryByText('send.qr_paste_button')).not.toBeInTheDocument()
+    expect(screen.queryByText('send.qr_scan_file_button')).not.toBeInTheDocument()
+    expect(screen.queryByText('send.confirm_button_reject')).not.toBeInTheDocument()
+
+    fireEvent.click(qrCodeButtons[0])
+
+    expect(screen.queryByText('send.qr_paste_button')).toBeInTheDocument()
+    expect(screen.queryByText('send.qr_scan_file_button')).toBeInTheDocument()
+    expect(screen.queryByText('modal.confirm_button_reject')).toBeInTheDocument()
   })
 
   it('renders disabled input fields', () => {
@@ -67,6 +98,59 @@ describe('SweepDestinationInputs', () => {
     const inputs = screen.getAllByRole('textbox')
     expect(inputs[0]).toBeDisabled()
     expect(inputs[1]).toBeDisabled()
+  })
+
+  it('adds additional destination inputs', () => {
+    const { rerender } = render(
+      <SweepDestinationInputs
+        minNumberOfFields={1}
+        formState={defaultFormMock.formState}
+        setValue={defaultFormMock.setValue}
+        register={defaultFormMock.register}
+        fields={fields}
+        onClickAppend={() => {
+          const id = fields.map((it) => it.id).reduce((acc, i) => acc + Number(i), 0) + 1
+          fields.push({ id: String(id), address: '' })
+        }}
+      />,
+    )
+
+    const inputs = screen.getAllByRole('textbox')
+    expect(inputs.length).toBe(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add additional destination' }))
+
+    rerender(
+      <SweepDestinationInputs
+        minNumberOfFields={1}
+        formState={defaultFormMock.formState}
+        setValue={defaultFormMock.setValue}
+        register={defaultFormMock.register}
+        fields={fields}
+        onClickRemove={() => fields.pop()}
+      />,
+    )
+
+    const inputsAfterAdd = screen.getAllByRole('textbox')
+    expect(inputsAfterAdd.length).toBe(3)
+
+    const clearButtons = screen.queryAllByRole('button', { name: 'global.clear' })
+    expect(clearButtons.length).toBe(fields.length - 1)
+
+    fireEvent.click(clearButtons[0])
+
+    rerender(
+      <SweepDestinationInputs
+        minNumberOfFields={1}
+        formState={defaultFormMock.formState}
+        setValue={defaultFormMock.setValue}
+        register={defaultFormMock.register}
+        fields={fields}
+      />,
+    )
+
+    const inputsAfterClear = screen.getAllByRole('textbox')
+    expect(inputsAfterClear.length).toBe(2)
   })
 
   it('shows error messages when submitted and there is an error', () => {
