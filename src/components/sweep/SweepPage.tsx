@@ -51,13 +51,10 @@ const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
 const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = isDevMode() ? 5_000 : 10_000
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
-  maker_count_min: 1,
-  maker_count_max: 1,
   time_lambda_seconds: 10,
   stage1_wait_multiplier: 1.5,
   maker_session_idle_timeout_seconds: 60,
   mincjamount_sats: 1,
-  mintxcount: 1,
   max_phase_retries: 1,
 }
 
@@ -454,11 +451,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
                   debug={isDeveloperMode}
                   onSubmit={async (values) => {
+                    console.log(values)
                     const parameters: Partial<TumblerParameters> = {
                       include_maker_sessions: values.includeMakerSessions,
                       maker_count_min: values.minNumberOfCollaborators,
                       maker_count_max: values.maxNumberOfCollaborators,
                       rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
+                      mintxcount: values.minNumberOfTransactionsPerJar,
                       ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
                     }
                     const body: TumblerPlanRequest = {

@@ -434,10 +434,11 @@ describe('SweepPage', async () => {
           destinations: VALID_DESTINATIONS,
           force: true,
           parameters: {
-            include_maker_sessions: expect.any(Boolean) as boolean,
+            include_maker_sessions: true,
             rounding_chance: expect.any(Number) as number,
             maker_count_min: expect.any(Number) as number,
             maker_count_max: expect.any(Number) as number,
+            mintxcount: 2,
           },
         }),
       }),

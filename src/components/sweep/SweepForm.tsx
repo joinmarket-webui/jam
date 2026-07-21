@@ -57,7 +57,7 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
   const defaultValues = useMemo(() => buildSweepFormValuesDefaultValues(), [])
 
   const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
-  const { formState, register, control, setValue, handleSubmit, trigger } = useForm<
+  const { formState, reset, register, control, setValue, handleSubmit, trigger } = useForm<
     SweepFormValues,
     SweepResolverContext,
     SweepFormValues
@@ -86,11 +86,13 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
           address: getNewTestingDestinationAddress(addressSummary),
         })),
       )
-      void trigger('destinations')
+      setValue('includeMakerSessions', false)
+      setValue('minNumberOfCollaborators', 1)
+      setValue('maxNumberOfCollaborators', 1)
+      setValue('minNumberOfTransactionsPerJar', 2)
+      void trigger()
     } else {
-      destinationsFieldArray.replace(
-        defaultValues?.destinations ?? buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_PROD),
-      )
+      reset()
     }
   }
 
@@ -209,9 +211,33 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
             </div>
             <div className="flex flex-col justify-center gap-2">
               <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="slider-min-number-of-transactions-per-jar" className="flex flex-col items-start gap-0">
+                  {/* TODO: i18n */}
+                  <div className="flex items-center gap-2 font-medium">Transactions per Jar</div>
+                  <div className="text-muted-foreground text-sm">
+                    Minimum number of collaborative transactions per Jar.
+                  </div>
+                </Label>
+                <span className="text-foreground">{formWatch.minNumberOfTransactionsPerJar}</span>
+              </div>
+              <Slider
+                id="slider-min-number-of-transactions-per-jar"
+                min={2}
+                max={8}
+                value={
+                  formWatch.minNumberOfTransactionsPerJar === undefined
+                    ? undefined
+                    : [formWatch.minNumberOfTransactionsPerJar]
+                }
+                onValueChange={(values: number[]) => setValue('minNumberOfTransactionsPerJar', values[0])}
+                disabled={disabled}
+              />
+            </div>
+            <div className="flex flex-col justify-center gap-2">
+              <div className="flex items-center justify-between gap-2">
                 <Label htmlFor="slider-rounding-chance-in-percent" className="flex flex-col items-start gap-0">
                   {/* TODO: i18n */}
-                  <div className="flex items-center gap-2 font-medium">Round output amount probability</div>
+                  <div className="flex items-center gap-2 font-medium">Round amount probability</div>
                   <div className="text-muted-foreground text-sm">
                     Probability that an intermediate transaction output amount is rounded to mimic human behavior.
                   </div>

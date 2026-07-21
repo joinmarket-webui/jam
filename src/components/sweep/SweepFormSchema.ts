@@ -16,6 +16,7 @@ export type SweepFormValues = {
   roundingChanceInPercent: number
   minNumberOfCollaborators: number
   maxNumberOfCollaborators: number
+  minNumberOfTransactionsPerJar: number
 }
 
 export type SweepResolverContext = {
@@ -53,6 +54,7 @@ export const buildSweepFormValuesDefaultValues = (): SweepFormValues => {
     useInsecureTestingSettings: false,
     minNumberOfCollaborators,
     maxNumberOfCollaborators,
+    minNumberOfTransactionsPerJar: JM_NG_DEFAULT_TUMBLER_PARAMS.mintxcount,
   }
 }
 
@@ -135,6 +137,11 @@ export const sweepFormSchema = (
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
         .min(1)
+        .required(),
+      minNumberOfTransactionsPerJar: yup
+        .number()
+        .transform((value) => (isValidNumber(value) ? value : null))
+        .min(2)
         .required(),
     })
     .test('min-max-collaborators-test', function (root) {
