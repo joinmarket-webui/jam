@@ -1,4 +1,3 @@
-// Replace nextjs-vite with the name of your framework
 import * as React from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BadgeCheckIcon, ChevronDownIcon, ChevronRightIcon, Plus, PlusIcon, ShieldAlertIcon } from 'lucide-react'
