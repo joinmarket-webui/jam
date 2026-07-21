@@ -2,6 +2,7 @@ import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webu
 import type { TFunction } from 'i18next'
 import { JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'
+import { percentageToFactor } from '@/lib/utils'
 import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, Factor, JarIndex, Seconds } from '@/types/global'
 
@@ -94,6 +95,9 @@ export type Schedule = {
   }
   active?: ScheduleEntry
   entries: ScheduleEntry[]
+  // all pending entries
+  pending: ScheduleEntry[]
+  // all successfully completed entries
   completed: ScheduleEntry[]
 }
 
@@ -107,6 +111,7 @@ const MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS: Seconds =
 
 export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => {
   const entries = plan.phases.map((it) => toScheduleEntry(it, jars))
+  const pending = entries.filter((it) => it.status.pending === true)
   const completed = entries.filter((it) => it.status.completed === true)
 
   const totalWaitDurationBetweenPhasesInSeconds: Seconds = Math.max(
@@ -133,14 +138,14 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     failed: plan.status === 'failed',
     cancelled: plan.status === 'cancelled',
   }
-  const terminated = !status.pending && !status.running
+  const scheduleTerminated = !status.pending && !status.running
   const active = !status.running ? undefined : entries.find((it) => it.index === plan.current_phase)
 
   const summary: ScheduleSummary = {
     status,
     derivedStatus: {
       value: toScheduleDerivedStatus(entries, active) ?? plan.status,
-      terminated,
+      terminated: scheduleTerminated,
     },
     totalWaitDurationBetweenPhasesInSeconds,
     estimatedTotalDurationInSeconds,
@@ -154,6 +159,7 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     progress,
     active,
     completed,
+    pending,
     entries,
   }
 }
@@ -217,15 +223,25 @@ const toScheduleProgressSummary = (
   entries: ScheduleEntry[],
   activeEntry: ScheduleEntry | undefined,
 ): ScheduleProgressSummary => {
-  const steps: ScheduleProgressStep[] = entries.map((entry) => {
-    const previousEntry = entries.find((it) => it.index === entry.index - 1)
+  const entriesByIndex = entries.reduce(
+    (acc, item) => {
+      acc[item.index] = item
+      return acc
+    },
+    {} as { [key: number]: ScheduleEntry },
+  )
+
+  const remainder = Math.max(
+    1,
+    (1 - percentageToFactor(FIRST_STEP_WIDTH_PERCENT)) * summary.totalWaitDurationBetweenPhasesInSeconds,
+  )
+
+  const steps: ScheduleProgressStep[] = Object.values(entriesByIndex).map((entry) => {
+    const previousEntry: ScheduleEntry | undefined = entriesByIndex[entry.index - 1]
     const widthPercent =
       entry.index === 0
         ? FIRST_STEP_WIDTH_PERCENT
-        : Math.max(
-            MIN_STEP_WIDTH_PERCENT,
-            ((previousEntry?.waitTimeInSeconds ?? 0) / summary.totalWaitDurationBetweenPhasesInSeconds) * 100,
-          )
+        : Math.max(MIN_STEP_WIDTH_PERCENT, ((previousEntry?.waitTimeInSeconds ?? 0) / remainder) * 100)
 
     return {
       widthPercent,

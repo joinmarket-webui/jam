@@ -40,7 +40,7 @@ const alertDescriptionWaitingForConfirmationsComponents = {
   '1': <span className="font-mono" />,
 }
 
-type Tab = 'active' | 'completed' | 'all'
+type Tab = 'completed' | 'pending' | 'all'
 
 interface SweepScheduleProgressProps {
   schedule: Schedule
@@ -52,8 +52,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
   const totalHours = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds / 60 / 60)
   const totalSeconds = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds)
 
-  const [activeTab, setActiveTab] = useState<Tab>(() => (schedule.active ? 'active' : 'all'))
-  const accordionDefaultOpen = schedule.active
+  const [activeTab, setActiveTab] = useState<Tab>(() => 'all')
 
   return (
     <Card>
@@ -199,7 +198,13 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
           </Item>
         )}
 
-        <Accordion type="single" collapsible defaultValue={accordionDefaultOpen ? 'details' : undefined}>
+        {schedule.active !== undefined ? (
+          <ItemGroup className="space-y-2">
+            <ScheduleEntryItem value={schedule.active} active />
+          </ItemGroup>
+        ) : null}
+
+        <Accordion type="single" collapsible>
           <AccordionItem value="details">
             <AccordionTrigger>
               {
@@ -217,30 +222,17 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                 className="flex flex-col gap-4"
               >
                 <TabsList className="mx-auto flex items-center gap-2">
-                  <TabsTrigger value="active" className="cursor-pointer">
-                    {/* TODO: i18n */}Active
-                  </TabsTrigger>
                   <TabsTrigger value="completed" className="cursor-pointer">
                     {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString()})
+                  </TabsTrigger>
+                  <TabsTrigger value="pending" className="cursor-pointer">
+                    {/* TODO: i18n */}Pending ({schedule.pending.length.toLocaleString()})
                   </TabsTrigger>
                   <TabsTrigger value="all" className="cursor-pointer">
                     {/* TODO: i18n */}All ({schedule.entries.length.toLocaleString()})
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-              {activeTab === 'active' ? (
-                schedule.active === undefined ? (
-                  <>
-                    <div className="m-2 flex items-center justify-center gap-2">
-                      No action is active.{/* TODO: i18n */}
-                    </div>
-                  </>
-                ) : (
-                  <ItemGroup className="space-y-2">
-                    <ScheduleEntryItem value={schedule.active} active />
-                  </ItemGroup>
-                )
-              ) : null}
               {activeTab === 'completed' ? (
                 schedule.completed.length === 0 ? (
                   <>
@@ -251,6 +243,21 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                 ) : (
                   <ItemGroup className="space-y-2">
                     {schedule.completed.map((entry, index) => {
+                      return <ScheduleEntryItem key={index} value={entry} active={entry === schedule.active} />
+                    })}
+                  </ItemGroup>
+                )
+              ) : null}
+              {activeTab === 'pending' ? (
+                schedule.pending.length === 0 ? (
+                  <>
+                    <div className="m-2 flex items-center justify-center gap-2">
+                      No pending actions.{/* TODO: i18n */}
+                    </div>
+                  </>
+                ) : (
+                  <ItemGroup className="space-y-2">
+                    {schedule.pending.map((entry, index) => {
                       return <ScheduleEntryItem key={index} value={entry} active={entry === schedule.active} />
                     })}
                   </ItemGroup>
