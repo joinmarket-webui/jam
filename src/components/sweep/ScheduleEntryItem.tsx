@@ -104,9 +104,9 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           {value.isSweep ? <Badge variant="outline">{/* TODO: i18n */ 'Sweep'}</Badge> : null}
         </div>
       </ItemHeader>
-      <ItemContent className="grid gap-4 sm:grid-cols-2">
+      <ItemContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {value.__raw?.error ? (
-          <div className="text-destructive col-span-2 flex min-w-0 items-start gap-4">
+          <div className="text-destructive col-span-full flex min-w-0 items-start gap-4">
             <AlertTriangleIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Error'}</Label>
@@ -189,8 +189,18 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           </div>
         ) : null}
 
+        {value.externalDestinationAddress ? (
+          <div className="col-span-full flex min-w-0 items-start gap-4">
+            <ExternalLinkIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <Label className="font-semibold">{/*TODO: i18n */ 'External destination'}</Label>
+              <Address value={value.externalDestinationAddress} />
+            </div>
+          </div>
+        ) : null}
+
         {value.transactionId ? (
-          <div className="col-span-2 flex min-w-0 items-start gap-4">
+          <div className="col-span-full flex min-w-0 items-start gap-4">
             <FingerprintIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
@@ -214,16 +224,6 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
                   className={cn(buttonVariants({ variant: 'outline', size: 'xs' }), 'shrink-0')}
                 />
               </div>
-            </div>
-          </div>
-        ) : null}
-
-        {value.externalDestinationAddress ? (
-          <div className="col-span-2 flex min-w-0 items-start gap-4">
-            <ExternalLinkIcon className="mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'External destination'}</Label>
-              <Address value={value.externalDestinationAddress} />
             </div>
           </div>
         ) : null}

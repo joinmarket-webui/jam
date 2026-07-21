@@ -188,32 +188,28 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
         {schedule.summary.startedAt ? (
           <Item variant="outline">
             <ItemContent className="grid gap-4 sm:grid-cols-2">
-              {schedule.summary.startedAt ? (
-                <div className="flex min-w-0 items-start gap-4">
-                  <CalendarClockIcon className="mt-0.5 shrink-0" />
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
-                    <span title={schedule.summary.startedAt.toISOString()}>
-                      {schedule.summary.startedAt.toLocaleString()}
+              <div className="flex min-w-0 items-start gap-4">
+                <CalendarClockIcon className="mt-0.5 shrink-0" />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
+                  <span title={schedule.summary.startedAt.toISOString()}>
+                    {schedule.summary.startedAt.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <div className="flex min-w-0 items-start gap-4">
+                <CalendarCheck2Icon className="mt-0.5 shrink-0" />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
+                  {schedule.summary.finishedAt === undefined ? (
+                    '-'
+                  ) : (
+                    <span title={schedule.summary.finishedAt.toISOString()}>
+                      {schedule.summary.finishedAt.toLocaleString()}
                     </span>
-                  </div>
+                  )}
                 </div>
-              ) : null}
-              {schedule.summary.startedAt || schedule.summary.finishedAt ? (
-                <div className="flex min-w-0 items-start gap-4">
-                  <CalendarCheck2Icon className="mt-0.5 shrink-0" />
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
-                    {schedule.summary.finishedAt === undefined ? (
-                      '-'
-                    ) : (
-                      <span title={schedule.summary.finishedAt.toISOString()}>
-                        {schedule.summary.finishedAt.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ) : null}
+              </div>
             </ItemContent>
           </Item>
         ) : null}
