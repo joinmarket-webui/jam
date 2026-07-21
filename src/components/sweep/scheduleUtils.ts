@@ -59,6 +59,10 @@ export type ScheduleEntry = {
 
 export type ScheduleDerivedStatus = 'waiting_before_next' | 'waiting_for_confirmation'
 
+type ExternalDestination = {
+  address: BitcoinAddress
+  transactionId?: TxId
+}
 export interface ScheduleSummary {
   status: {
     value: ScheduleStatus
@@ -76,7 +80,7 @@ export interface ScheduleSummary {
   }
   totalWaitDurationBetweenPhasesInSeconds: Seconds
   estimatedTotalDurationInSeconds: Seconds
-  externalDestinationAddresses: BitcoinAddress[]
+  externalDestinations: ExternalDestination[]
 }
 
 export interface ScheduleProgressSummary {
@@ -142,9 +146,12 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     TIME_ESTIMATE_FACTOR * totalEstimatedDurationBetweenPhasesInSeconds,
   )
 
-  const externalDestinationAddresses = entries
+  const externalDestinations: ExternalDestination[] = entries
     .filter((it) => it.externalDestinationAddress !== undefined)
-    .map((it) => it.externalDestinationAddress!)
+    .map((it) => ({
+      address: it.externalDestinationAddress!,
+      transactionId: it.transactionId,
+    }))
 
   const status: ScheduleSummary['status'] = {
     value: plan.status,
@@ -169,7 +176,7 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     },
     totalWaitDurationBetweenPhasesInSeconds,
     estimatedTotalDurationInSeconds,
-    externalDestinationAddresses,
+    externalDestinations,
   }
 
   const progress = toScheduleProgressSummary(summary, entries, active)

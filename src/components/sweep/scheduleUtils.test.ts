@@ -299,7 +299,11 @@ describe('scheduleUtils', () => {
       skipped: false,
     })
 
-    expect(schedule.summary.externalDestinationAddresses).toEqual(['different-external-address'])
+    expect(schedule.summary.externalDestinations).toEqual([
+      {
+        address: 'different-external-address',
+      },
+    ])
 
     expect(schedule.summary.status).toEqual({
       value: 'running',
@@ -548,5 +552,12 @@ describe('scheduleUtils', () => {
       terminated: true,
     })
     expect(schedule.active).toBeUndefined()
+
+    expect(schedule.summary.externalDestinations).toEqual([
+      {
+        address: 'final-destination',
+        transactionId: '1f95d0ff8b43645777b60bc23544b955be7e4d8984bb66856747f1fe5674df00',
+      },
+    ])
   })
 })

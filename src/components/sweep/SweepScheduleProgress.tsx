@@ -4,7 +4,9 @@ import {
   CalendarCheck2Icon,
   CalendarClockIcon,
   CheckCircle2Icon,
+  CheckIcon,
   ClockAlertIcon,
+  CopyIcon,
   HourglassIcon,
 } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -13,10 +15,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '../ui/item'
+import { buttonVariants } from '../ui/button-variants'
+import { Item, ItemContent, ItemGroup, ItemTitle } from '../ui/item'
 import { Address } from '../ui/jam/Address'
+import { CopyButton } from '../ui/jam/CopyButton'
 import { Label } from '../ui/label'
-import { Separator } from '../ui/separator'
 import { Spinner } from '../ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { ScheduleEntryItem } from './ScheduleEntryItem'
@@ -235,39 +238,49 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
           </Accordion>
         ) : null}
 
-        {schedule.summary.externalDestinationAddresses.length === 0 ? null : (
+        {schedule.summary.externalDestinations.length === 0 ? null : (
           <Accordion type="single" collapsible>
             <AccordionItem value="destinations">
               <AccordionTrigger>
                 {
-                  /* TODO: i18n */ t('scheduler.section_destination_addresses_title', {
+                  /* TODO: i18n */ t('scheduler.section_destinations_title', {
                     defaultValue: 'Destinations',
                   })
                 }
               </AccordionTrigger>
               <AccordionContent
-                className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+                className={cn('flex flex-col gap-2 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
               >
-                <Item variant="outline">
-                  <ItemContent>
-                    <ItemTitle>
-                      {t('scheduler.destination_addresses_header_title', {
-                        defaultValue: 'Destination Addresses',
-                      })}
-                    </ItemTitle>
-                    <ItemDescription>{t('scheduler.description_destination_addresses')}</ItemDescription>
-                    <div className="mt-2 space-y-2">
-                      {schedule.summary.externalDestinationAddresses.map((it, index) => {
-                        return (
-                          <React.Fragment key={index}>
-                            {index === 0 ? null : <Separator />}
-                            <Address value={it} />
-                          </React.Fragment>
-                        )
-                      })}
-                    </div>
-                  </ItemContent>
-                </Item>
+                <p className="text-muted-foreground">{t('scheduler.description_destination_addresses')}</p>
+                {schedule.summary.externalDestinations.map((value, index) => {
+                  return (
+                    <Item key={index} variant={value.transactionId ? 'muted' : 'outline'}>
+                      <ItemContent className="space-y-2">
+                        <ItemTitle className="flex-col items-start gap-1">
+                          <Label className="font-semibold">{/*TODO: i18n */ 'Address'}</Label>
+                          <Address value={value.address} />
+                        </ItemTitle>
+                        {value.transactionId ? (
+                          <div className="flex flex-col gap-1">
+                            <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-md block font-mono break-all select-all">
+                                {value.transactionId}
+                              </span>
+                              <CopyButton
+                                value={value.transactionId}
+                                text={<CopyIcon />}
+                                successText={<CheckIcon className="text-brand-success" />}
+                                className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
+                              />
+                            </div>
+                          </div>
+                        ) : null}
+                      </ItemContent>
+                    </Item>
+                  )
+                })}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
