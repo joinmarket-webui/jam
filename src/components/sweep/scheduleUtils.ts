@@ -110,6 +110,8 @@ export type Schedule = {
 const FIRST_STEP_WIDTH_PERCENT = 5
 const MIN_STEP_WIDTH_PERCENT = 3
 
+const MIN_ESTIMATE_ACTION_RUNTIME_IN_SECONDS: Seconds = 60
+
 const TIME_ESTIMATE_FACTOR: Factor = 1.1
 const MEAN_DURATION_BETWEEN_BLOCKS_SECONDS: Seconds = 10 * 60
 const MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS: Seconds =
@@ -137,7 +139,13 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     Math.max(
       1,
       entries.slice(0, Math.max(0, entries.length - 1)).reduce((acc, entry) => {
-        return acc + Math.max(entry.waitTimeInSeconds, MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS)
+        const fixedRuntimeInSeconds = Math.max(
+          MIN_ESTIMATE_ACTION_RUNTIME_IN_SECONDS,
+          Math.max(entry.durationSeconds ?? 0, entry.idleTimeoutSeconds ?? 0),
+        )
+        const waitTime = Math.max(entry.waitTimeInSeconds, MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS)
+        const estimatedActionRuntimeInSeconds = fixedRuntimeInSeconds + waitTime
+        return acc + estimatedActionRuntimeInSeconds
       }, 0),
     ),
   )
