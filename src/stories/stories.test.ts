@@ -143,6 +143,21 @@ describe('storybook stories', () => {
       observe = vi.fn()
       unobserve = vi.fn()
     }
+
+    // used is-mobile (e.g. sidebar)
+    Object.defineProperty(globalThis, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: unknown) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(), // Deprecated
+        removeListener: vi.fn(), // Deprecated
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    })
   })
 
   it('loads every story module', () => {
@@ -160,7 +175,13 @@ describe('storybook stories', () => {
 
     for (const module of Object.values(modules)) {
       const meta = (
-        module as { default?: { args?: Record<string, unknown>; component?: ComponentType<Record<string, unknown>> } }
+        module as {
+          default?: {
+            args?: Record<string, unknown>
+            component?: ComponentType<Record<string, unknown>>
+            decorators?: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement>
+          }
+        }
       ).default
 
       for (const [name, story] of Object.entries(module as Record<string, unknown>)) {
@@ -185,8 +206,10 @@ describe('storybook stories', () => {
           continue
         }
 
-        const decorators: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement> =
-          storyConfig.decorators ?? []
+        const decorators: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement> = [
+          ...(meta?.decorators ?? []),
+          ...(storyConfig.decorators ?? []),
+        ]
 
         for (const decorator of decorators) {
           const DecoratedStory: ComponentType<Record<string, unknown>> = StoryComponent
