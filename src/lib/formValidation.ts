@@ -79,7 +79,7 @@ export type BlockHeightMessages = {
   invalid: string
 }
 
-export const INPUT_BLOCK_HEIGHT_MIN = 1
+export const INPUT_BLOCK_HEIGHT_MIN = 0
 const INPUT_BLOCK_HEIGHT_MAX = Number.MAX_SAFE_INTEGER
 
 export const blockHeightField = ({
@@ -91,8 +91,8 @@ export const blockHeightField = ({
     invalid: ({ min, max }: { min: BlockHeight; max: BlockHeight }) => string
   }
 }) => {
-  const minBlockHeight = Math.min(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight ?? INPUT_BLOCK_HEIGHT_MIN)
-  const maxBlockheight = currentBlockHeight || INPUT_BLOCK_HEIGHT_MAX
+  const minBlockHeight = Math.min(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight || INPUT_BLOCK_HEIGHT_MIN)
+  const maxBlockheight = Math.max(minBlockHeight, currentBlockHeight || INPUT_BLOCK_HEIGHT_MAX)
   const invalidBlockheightMessage = invalid({ min: minBlockHeight, max: maxBlockheight })
 
   return yup

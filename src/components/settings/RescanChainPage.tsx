@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { rescanblockchain } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
@@ -12,21 +12,21 @@ import { toast } from 'sonner'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { Label } from '@/components/ui/label'
 import { routes, type Route } from '@/constants/routes'
 import { useCurrentBlockHeight, useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
-import { blockHeightField } from '@/lib/formValidation'
+import { blockHeightField, INPUT_BLOCK_HEIGHT_MIN } from '@/lib/formValidation'
 import { AVERAGE_BLOCKS_PER_DAY, AVERAGE_BLOCKS_PER_YEAR, SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { BlockHeight } from '@/types/global'
+import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
-type Inputs = {
+type RescanChainFormValues = {
   blockHeight: BlockHeight
 }
 
@@ -46,19 +46,13 @@ const rescanFormSchema = (currentBlockHeight: BlockHeight | undefined, t: TFunct
 
 interface RescanChainFormProps {
   rescanInfo: RescanInfo
-  initialBlockHeight?: BlockHeight
+  defaultValues?: Partial<RescanChainFormValues>
   currentBlockHeight?: BlockHeight
-  onSubmit: SubmitHandler<Inputs>
+  onSubmit: SubmitHandler<RescanChainFormValues>
   disabled?: boolean
 }
 
-function RescanChainForm({
-  rescanInfo,
-  initialBlockHeight,
-  currentBlockHeight,
-  onSubmit,
-  disabled,
-}: RescanChainFormProps) {
+function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubmit, disabled }: RescanChainFormProps) {
   const { t } = useTranslation()
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
@@ -69,11 +63,9 @@ function RescanChainForm({
     handleSubmit,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<Inputs>({
+  } = useForm<RescanChainFormValues>({
     mode: 'onSubmit',
-    defaultValues: {
-      blockHeight: initialBlockHeight,
-    },
+    defaultValues,
     resolver: yupResolver(schema),
   })
 
@@ -83,37 +75,42 @@ function RescanChainForm({
     <form onSubmit={(event) => void doOnSubmit(event)} className="space-y-4">
       {/* include validation with required or other standard HTML validation rules */}
       <div className="space-y-2">
-        <Label htmlFor="rescanHeight" className="text-sm font-medium">
-          {t('rescan_chain.label_blockheight')}
-        </Label>
-        <p className="text-muted-foreground text-xs">{t('rescan_chain.description_blockheight')}</p>
-        <div className="relative">
-          <div className="absolute top-1/2 left-3 -translate-y-1/2">
-            <PackageSearchIcon className="text-muted-foreground h-4 w-4" />
-          </div>
+        <Field data-invalid={errors.blockHeight !== undefined}>
+          <FieldLabel htmlFor="inputRescanBlockheight">{t('rescan_chain.label_blockheight')}</FieldLabel>
+          <FieldDescription className="text-xs">{t('rescan_chain.description_blockheight')}</FieldDescription>
+          <InputGroup className="gap-2">
+            <InputGroupInput
+              id="inputRescanBlockheight"
+              {...register('blockHeight', {
+                disabled: disabled || rescanInfo.rescanning,
+              })}
+              placeholder={t('rescan_chain.placeholder_blockheight')}
+              type="number"
+              step={1}
+            />
+            <InputGroupAddon align="inline-start">
+              <PackageSearchIcon />
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
 
-          <Input
-            {...register('blockHeight', {
-              disabled: rescanInfo.rescanning,
-            })}
-            type="number"
-            step={1}
-            className="bg-background pl-10"
-            placeholder={t('rescan_chain.placeholder_blockheight')}
-          />
-        </div>
         {errors.blockHeight?.message && <div className="text-destructive text-xs">{errors.blockHeight.message}</div>}
       </div>
+
       <div className="flex flex-wrap gap-2">
-        {(currentBlockHeight && currentBlockHeight > AVERAGE_BLOCKS_PER_DAY) || isDeveloperMode ? (
+        {(currentBlockHeight && currentBlockHeight >= AVERAGE_BLOCKS_PER_DAY) || isDeveloperMode ? (
           <Button
             type="button"
             size="sm"
             variant="ghost"
             onClick={() =>
-              setValue('blockHeight', Math.max(0, (currentBlockHeight ?? 0) - AVERAGE_BLOCKS_PER_DAY), {
-                shouldValidate: true,
-              })
+              setValue(
+                'blockHeight',
+                Math.max(INPUT_BLOCK_HEIGHT_MIN, (currentBlockHeight ?? 0) - AVERAGE_BLOCKS_PER_DAY),
+                {
+                  shouldValidate: true,
+                },
+              )
             }
             disabled={disabled || isSubmitting || rescanInfo.rescanning}
           >
@@ -122,15 +119,19 @@ function RescanChainForm({
           </Button>
         ) : null}
 
-        {(currentBlockHeight && currentBlockHeight > AVERAGE_BLOCKS_PER_YEAR) || isDeveloperMode ? (
+        {(currentBlockHeight && currentBlockHeight >= AVERAGE_BLOCKS_PER_YEAR) || isDeveloperMode ? (
           <Button
             type="button"
             size="sm"
             variant="ghost"
             onClick={() =>
-              setValue('blockHeight', Math.max(0, (currentBlockHeight ?? 0) - AVERAGE_BLOCKS_PER_YEAR), {
-                shouldValidate: true,
-              })
+              setValue(
+                'blockHeight',
+                Math.max(INPUT_BLOCK_HEIGHT_MIN, (currentBlockHeight ?? 0) - AVERAGE_BLOCKS_PER_YEAR),
+                {
+                  shouldValidate: true,
+                },
+              )
             }
             disabled={disabled || isSubmitting || rescanInfo.rescanning}
           >
@@ -139,7 +140,7 @@ function RescanChainForm({
           </Button>
         ) : null}
 
-        {(currentBlockHeight && currentBlockHeight > SEGWIT_ACTIVATION_BLOCK) || isDeveloperMode ? (
+        {(currentBlockHeight && currentBlockHeight >= SEGWIT_ACTIVATION_BLOCK) || isDeveloperMode ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -181,6 +182,13 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
   const client = useApiClient()
   const { currentBlockHeight } = useCurrentBlockHeight()
 
+  const [defaultValues] = useState<Partial<RescanChainFormValues>>(() => ({
+    blockHeight:
+      currentBlockHeight === undefined
+        ? SEGWIT_ACTIVATION_BLOCK
+        : Math.max(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight - AVERAGE_BLOCKS_PER_DAY),
+  }))
+
   const { rescanInfo, setRescanInfo } = useRescanStatus()
 
   const rescanMutation = useMutation({
@@ -215,7 +223,7 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
     },
   })
 
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+  const onSubmit: SubmitHandler<RescanChainFormValues> = async (data) => {
     return await rescanMutation.mutateAsync(data.blockHeight)
   }
 
@@ -240,11 +248,7 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
         <CardContent>
           <RescanChainForm
             rescanInfo={rescanInfo}
-            initialBlockHeight={
-              currentBlockHeight === undefined
-                ? SEGWIT_ACTIVATION_BLOCK
-                : Math.max(0, currentBlockHeight - AVERAGE_BLOCKS_PER_DAY)
-            }
+            defaultValues={defaultValues}
             currentBlockHeight={currentBlockHeight}
             onSubmit={onSubmit}
             disabled={rescanInfo.rescanning || rescanMutation.isPending}

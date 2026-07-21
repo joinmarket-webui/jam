@@ -93,12 +93,27 @@ describe('RescanChainPage', () => {
     rescanInfo = { updatedAt: 0, rescanning: false, progress: undefined, progressInPercentage: undefined }
   })
 
+  it('renders the form', async () => {
+    await renderPage()
+
+    expect(screen.getByText('rescan_chain.title')).toBeInTheDocument()
+
+    expect(screen.getByRole('spinbutton', { name: 'rescan_chain.label_blockheight' })).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')).toBeInTheDocument()
+
+    expect(screen.getByRole('button', { name: 'Last 144 blocks (~24 hours)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Last 52,560 blocks (~1 year)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'From block #481,824' })).toBeInTheDocument()
+
+    expect(screen.getByRole('button', { name: 'rescan_chain.text_button_submit' })).toBeInTheDocument()
+  })
+
   it('renders the form and navigates back', async () => {
     await renderPage({ backLinkTarget: 'settings' })
 
-    expect(screen.getByText('rescan_chain.title')).toBeInTheDocument()
     expect(screen.getByText('global.back')).toBeInTheDocument()
     fireEvent.click(screen.getByTitle('global.back'))
+
     expect(navigateMock).toHaveBeenCalled()
   })
 
