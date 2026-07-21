@@ -114,16 +114,26 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
   const pending = entries.filter((it) => it.status.pending === true)
   const completed = entries.filter((it) => it.status.completed === true)
 
-  const totalWaitDurationBetweenPhasesInSeconds: Seconds = Math.max(
-    1,
-    entries.slice(0, Math.max(0, entries.length - 1)).reduce((acc, entry) => {
-      return acc + entry.waitTimeInSeconds
-    }, 0),
+  const totalWaitDurationBetweenPhasesInSeconds: Seconds = Math.ceil(
+    Math.max(
+      1,
+      entries.slice(0, Math.max(0, entries.length - 1)).reduce((acc, entry) => {
+        return acc + entry.waitTimeInSeconds
+      }, 0),
+    ),
   )
-  const estimatedWaitForConfirmationsInSeconds: Seconds =
-    entries.length * MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS
+
+  const totalEstimatedDurationBetweenPhasesInSeconds: Seconds = Math.ceil(
+    Math.max(
+      1,
+      entries.slice(0, Math.max(0, entries.length - 1)).reduce((acc, entry) => {
+        return acc + Math.max(entry.waitTimeInSeconds, MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS)
+      }, 0),
+    ),
+  )
+
   const estimatedTotalDurationInSeconds: Seconds = Math.ceil(
-    TIME_ESTIMATE_FACTOR * (totalWaitDurationBetweenPhasesInSeconds + estimatedWaitForConfirmationsInSeconds),
+    TIME_ESTIMATE_FACTOR * totalEstimatedDurationBetweenPhasesInSeconds,
   )
 
   const externalDestinationAddresses = entries

@@ -58,6 +58,7 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   maker_session_idle_timeout_seconds: 60,
   mincjamount_sats: 1,
   mintxcount: 1,
+  max_phase_retries: 1,
 }
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
