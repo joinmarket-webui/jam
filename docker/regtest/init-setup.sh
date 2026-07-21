@@ -35,10 +35,14 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 dummy_wallet_address1='bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk' # 1st address of jar A (m/84'/1'/0'/0/0)
 dummy_wallet_address2='bcrt1qt5yxk3xzrx66q9wd5sdyynklqynqcyf7uh74j3' # 8th address of jar C (m/84'/1'/2'/0/7)
 dummy_wallet_address3='bcrt1qn8804dw5fahuc5cwqteuq5j4xlhk2cnkq7a8kw' # 21st change address of jar E (m/84'/1'/4'/1/21)
+dummy_wallet_address_fb0='bcrt1q7war3lusq3ez633rzzfkp75unfcgrqqcu80sgp0ellhrdvkzxh5swspygk' # 1st fb address (m/84'/1'/0'/2/0)
+dummy_wallet_address_fb959='bcrt1q6rlcknptmqhf4w20928tpz6px4y70960gyupd029c7vx7kdjwt0q46nk9c' # 960th fb address (m/84'/1'/0'/2/959)
 # make block rewards spendable: 100 + 5 (default of `taker_utxo_age`) + 1 = 106
 . "$script_dir/mine-block.sh" 2 "$dummy_wallet_address1" &>/dev/null
 . "$script_dir/mine-block.sh" 2 "$dummy_wallet_address2" &>/dev/null
 . "$script_dir/mine-block.sh" 2 "$dummy_wallet_address3" &>/dev/null
+. "$script_dir/mine-block.sh" 1 "$dummy_wallet_address_fb0" &>/dev/null
+. "$script_dir/mine-block.sh" 1 "$dummy_wallet_address_fb959" &>/dev/null
 . "$script_dir/mine-block.sh" 100 &>/dev/null
 
 start_maker() {
