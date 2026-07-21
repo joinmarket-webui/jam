@@ -109,6 +109,10 @@ const MEAN_DURATION_BETWEEN_BLOCKS_SECONDS: Seconds = 10 * 60
 const MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS: Seconds =
   JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES * MEAN_DURATION_BETWEEN_BLOCKS_SECONDS
 
+export const isPlanTerminated = (plan: TumblerPlanResponse) => {
+  return plan.stale === false && plan.status !== 'pending' && plan.status !== 'running'
+}
+
 export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => {
   const entries = plan.phases.map((it) => toScheduleEntry(it, jars))
   const pending = entries.filter((it) => it.status.pending === true)
@@ -148,14 +152,14 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
     failed: plan.status === 'failed',
     cancelled: plan.status === 'cancelled',
   }
-  const scheduleTerminated = !status.pending && !status.running
+
   const active = !status.running ? undefined : entries.find((it) => it.index === plan.current_phase)
 
   const summary: ScheduleSummary = {
     status,
     derivedStatus: {
       value: toScheduleDerivedStatus(entries, active) ?? plan.status,
-      terminated: scheduleTerminated,
+      terminated: isPlanTerminated(plan),
     },
     totalWaitDurationBetweenPhasesInSeconds,
     estimatedTotalDurationInSeconds,
@@ -265,7 +269,7 @@ const toScheduleProgressSummary = (
   }
 }
 
-export const toScheduleDerivedStatus = (
+const toScheduleDerivedStatus = (
   entries: ScheduleEntry[],
   activeEntry: ScheduleEntry | undefined,
 ): ScheduleDerivedStatus | undefined => {

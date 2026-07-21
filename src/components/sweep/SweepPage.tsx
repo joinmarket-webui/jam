@@ -18,7 +18,7 @@ import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAler
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
-import { toSchedule } from '@/components/sweep/scheduleUtils'
+import { isPlanTerminated, toSchedule } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
@@ -82,7 +82,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       client,
       path: { walletname: walletFileName },
     }),
-    refetchInterval: takerInfo.running && takerInfo.scheduler.running ? RUNNING_SCHEDULE_POLLING_INTERVAL : false,
+    refetchInterval: (query) => {
+      const schedulerRunning = takerInfo.running && takerInfo.scheduler.running
+      const currentScheduleStillActive = query.state.data && !isPlanTerminated(query.state.data)
+      return schedulerRunning || currentScheduleStillActive ? RUNNING_SCHEDULE_POLLING_INTERVAL : false
+    },
     refetchIntervalInBackground: true,
     retry: false,
   })

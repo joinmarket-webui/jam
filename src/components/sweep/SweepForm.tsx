@@ -90,7 +90,6 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
           address: getNewTestingDestinationAddress(addressSummary),
         })),
       )
-      setValue('includeMakerSessions', false)
       setValue('minNumberOfCollaborators', 1)
       setValue('maxNumberOfCollaborators', 1)
       setValue('minNumberOfTransactionsPerJar', 2)
