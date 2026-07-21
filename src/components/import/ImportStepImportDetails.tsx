@@ -1,5 +1,4 @@
 import type { ComponentProps } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { ChevronLeftIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -9,7 +8,6 @@ import { ImportDetailsForm } from './ImportDetailsForm'
 import { RescanActiveAlert } from './RescanActiveAlert'
 
 type ImportStepImportDetailsProps = ComponentProps<typeof ImportDetailsForm> & {
-  sessionInfo: SessionResponse | undefined
   onBack: () => void
 }
 
@@ -27,7 +25,7 @@ export const ImportStepImportDetails = ({ sessionInfo, onBack, ...importFormProp
         />
       )}
       {isRescanActive && <RescanActiveAlert linkTarget={'login'} />}
-      {showForm && <ImportDetailsForm {...importFormProps} />}
+      {showForm && <ImportDetailsForm sessionInfo={sessionInfo} {...importFormProps} />}
       <Button variant="ghost" onClick={onBack}>
         <ChevronLeftIcon />
         {t('global.back')}

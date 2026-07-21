@@ -253,7 +253,7 @@ const ImportWalletPage = () => {
         })
         toast.success(t('rescan_chain.success_rescan_started'))
       } catch (error: unknown) {
-        const reason = getErrorReason(error, 'Unknown error.')
+        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
         console.warn('Non-critical error while fetching session after wallet import. Continuing with import...', reason)
       }
 
@@ -276,7 +276,7 @@ const ImportWalletPage = () => {
             token: authState.auth.token,
           })
         } catch (error: unknown) {
-          const reason = getErrorReason(error, 'Unknown error.')
+          const reason = getErrorReason(error, t('global.errors.reason_unknown'))
           console.warn('Locking wallet attempt failed after import error.', reason)
         }
       }

@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import type { RescanInfo } from '@/context/JamSessionInfoContext'
-import type { WalletFileName } from '@/lib/utils'
+import { type RescanInfo } from '@/context/JamSessionInfoContext'
+import { SEGWIT_ACTIVATION_BLOCK, type WalletFileName } from '@/lib/utils'
+import type { BlockHeight } from '@/types/global'
 import { RescanChainPage } from './RescanChainPage'
 
 type MutationConfig = {
@@ -11,7 +12,7 @@ type MutationConfig = {
   onError: (error: unknown) => void
 }
 
-const mutateAsync = vi.fn<(blockHeight: number) => Promise<unknown>>().mockResolvedValue(undefined)
+const mutateAsync = vi.fn<(blockHeight: BlockHeight) => Promise<unknown>>().mockResolvedValue(undefined)
 const rescanblockchainMock = vi.fn<() => Promise<{ data: unknown }>>().mockResolvedValue({ data: 'ok' })
 const navigateMock = vi.fn()
 const setRescanInfo = vi.fn()
@@ -19,6 +20,7 @@ const toastSuccess = vi.fn()
 const toastError = vi.fn()
 let mutationConfig: MutationConfig
 let rescanInfo: RescanInfo
+const currentBlockHeight: BlockHeight = SEGWIT_ACTIVATION_BLOCK
 
 vi.mock('@tanstack/react-query', () => ({
   useMutation: (config: MutationConfig) => {
@@ -54,6 +56,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useRescanStatus: () => ({ rescanInfo, setRescanInfo }),
+  useCurrentBlockHeight: () => ({ currentBlockHeight: SEGWIT_ACTIVATION_BLOCK }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({
@@ -77,9 +80,9 @@ const walletFileName = 'wallet.jmdat' as WalletFileName
 
 // react-hook-form runs validation after mount; flushing inside async act keeps
 // that deferred state update from triggering a "not wrapped in act" warning.
-const renderPage = async () => {
+const renderPage = async (props: Omit<ComponentProps<typeof RescanChainPage>, 'walletFileName'> = {}) => {
   await act(async () => {
-    render(<RescanChainPage walletFileName={walletFileName} />)
+    render(<RescanChainPage walletFileName={walletFileName} {...props} />)
     await Promise.resolve()
   })
 }
@@ -90,11 +93,27 @@ describe('RescanChainPage', () => {
     rescanInfo = { updatedAt: 0, rescanning: false, progress: undefined, progressInPercentage: undefined }
   })
 
-  it('renders the form and navigates back', async () => {
+  it('renders the form', async () => {
     await renderPage()
 
     expect(screen.getByText('rescan_chain.title')).toBeInTheDocument()
+
+    expect(screen.getByRole('spinbutton', { name: 'rescan_chain.label_blockheight' })).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')).toBeInTheDocument()
+
+    expect(screen.getByRole('button', { name: 'Last 144 blocks (~24 hours)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Last 52,560 blocks (~1 year)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'From block #481,824' })).toBeInTheDocument()
+
+    expect(screen.getByRole('button', { name: 'rescan_chain.text_button_submit' })).toBeInTheDocument()
+  })
+
+  it('renders the form and navigates back', async () => {
+    await renderPage({ backLinkTarget: 'settings' })
+
+    expect(screen.getByText('global.back')).toBeInTheDocument()
     fireEvent.click(screen.getByTitle('global.back'))
+
     expect(navigateMock).toHaveBeenCalled()
   })
 
@@ -113,15 +132,25 @@ describe('RescanChainPage', () => {
   it('submits a valid block height through the mutation', async () => {
     await renderPage()
     const input = screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')
-    fireEvent.change(input, { target: { value: String(700_000) } })
+    fireEvent.change(input, { target: { value: String(currentBlockHeight - 1) } })
     fireEvent.submit(input.closest('form')!)
 
-    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(700_000))
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(currentBlockHeight - 1))
+  })
+
+  it('submits an invalid block height and verifies form error', async () => {
+    await renderPage()
+    const input = screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')
+    fireEvent.change(input, { target: { value: String(currentBlockHeight + 1) } })
+    fireEvent.submit(input.closest('form')!)
+
+    await waitFor(() => expect(screen.getByText(/rescan_chain\.feedback_invalid_blockheight/)).toBeInTheDocument())
+    expect(mutateAsync).not.toHaveBeenCalled()
   })
 
   it('mutationFn calls the rescan API and returns data', async () => {
     await renderPage()
-    await expect(mutationConfig.mutationFn(700_000)).resolves.toBe('ok')
+    await expect(mutationConfig.mutationFn(currentBlockHeight - 1)).resolves.toBe('ok')
     expect(rescanblockchainMock).toHaveBeenCalled()
   })
 

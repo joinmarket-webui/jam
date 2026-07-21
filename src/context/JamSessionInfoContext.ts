@@ -45,3 +45,8 @@ export const useRescanStatus = () => {
   const { rescanInfo, setRescanInfo } = useJamSessionInfoContext()
   return { rescanInfo, setRescanInfo }
 }
+
+export const useCurrentBlockHeight = () => {
+  const { blockHeight } = useJamSessionInfoContext()
+  return { currentBlockHeight: blockHeight }
+}

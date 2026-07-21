@@ -182,6 +182,11 @@ html body[data-scroll-locked] {
   font-family: var(--font-sans);
 }
 
+input[type='number'] {
+  font-family: var(--font-mono);
+  font-variant-numeric: slashed-zero;
+}
+
 @keyframes slide-up {
   from {
     transform: translateY(100%);
