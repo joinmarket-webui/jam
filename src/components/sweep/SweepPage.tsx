@@ -53,7 +53,7 @@ const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = isDevMode() ? 5_000 : 10
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   time_lambda_seconds: 10,
   stage1_wait_multiplier: 1.5,
-  maker_session_idle_timeout_seconds: 60,
+  maker_session_seconds: 60,
   mincjamount_sats: 1,
   max_phase_retries: 1,
 }
@@ -458,6 +458,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                       maker_count_max: values.maxNumberOfCollaborators,
                       rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
                       mintxcount: values.minNumberOfTransactionsPerJar,
+                      maker_session_idle_timeout_seconds: values.makerSessionIdleTimeoutSeconds,
                       ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
                     }
                     const body: TumblerPlanRequest = {

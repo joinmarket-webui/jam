@@ -11,8 +11,6 @@ import {
   type SweepResolverContext,
   type SweepFormValues,
   buildSweepFormValuesDefaultValues,
-  MIN_DESTINATION_ADDRESS_COUNT_DEV,
-  MIN_DESTINATION_ADDRESS_COUNT_PROD,
   MIN_MIN_NUMBER_OF_COLLABORATORS,
   MAX_MAX_NUMBER_OF_COLLABORATORS,
   MIN_ROUNDING_CHANCE_FACTOR,
@@ -22,6 +20,11 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
+import {
+  JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT,
+  JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT,
+  JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
+} from '@/constants/jam'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { cn, factorToPercentage } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -65,7 +68,8 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
     mode: 'onSubmit',
     defaultValues: {
       ...defaultValues,
-      destinations: defaultValues?.destinations ?? buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_PROD),
+      destinations:
+        defaultValues?.destinations ?? buildSweepDestinationValues(JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT),
     },
     values: {
       ...defaultValues,
@@ -82,7 +86,7 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
 
     if (checked) {
       destinationsFieldArray.replace(
-        buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_DEV).map(() => ({
+        buildSweepDestinationValues(JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT).map(() => ({
           address: getNewTestingDestinationAddress(addressSummary),
         })),
       )
@@ -90,6 +94,7 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
       setValue('minNumberOfCollaborators', 1)
       setValue('maxNumberOfCollaborators', 1)
       setValue('minNumberOfTransactionsPerJar', 2)
+      setValue('makerSessionIdleTimeoutSeconds', JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS)
       void trigger()
     } else {
       reset()
@@ -130,7 +135,9 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
 
       <SweepDestinationInputs
         minNumberOfFields={
-          formWatch.useInsecureTestingSettings ? MIN_DESTINATION_ADDRESS_COUNT_DEV : MIN_DESTINATION_ADDRESS_COUNT_PROD
+          formWatch.useInsecureTestingSettings
+            ? JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT
+            : JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT
         }
         register={register}
         setValue={setValue}

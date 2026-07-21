@@ -1,10 +1,15 @@
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
+import {
+  JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT,
+  JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
+  JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
+} from '@/constants/jam'
 import { JM_MINIMUM_MAKERS_DEFAULT, JM_NG_DEFAULT_TUMBLER_PARAMS } from '@/constants/jm'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { isValidAddress } from '@/lib/formValidation'
 import { factorToPercentage, isValidNumber, pseudoRandomInteger } from '@/lib/utils'
-import type { Factor } from '@/types/global'
+import type { Factor, Seconds } from '@/types/global'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
 export type SweepFormValues = {
@@ -13,18 +18,16 @@ export type SweepFormValues = {
   }>
   useInsecureTestingSettings: boolean
   includeMakerSessions: boolean
-  roundingChanceInPercent: number
+  makerSessionIdleTimeoutSeconds: Seconds
   minNumberOfCollaborators: number
   maxNumberOfCollaborators: number
   minNumberOfTransactionsPerJar: number
+  roundingChanceInPercent: number
 }
 
 export type SweepResolverContext = {
   addressSummary: AddressSummary
 }
-
-export const MIN_DESTINATION_ADDRESS_COUNT_DEV = 1
-export const MIN_DESTINATION_ADDRESS_COUNT_PROD = 3
 
 export const MIN_MIN_NUMBER_OF_COLLABORATORS = Math.max(1, JM_MINIMUM_MAKERS_DEFAULT)
 export const MAX_MAX_NUMBER_OF_COLLABORATORS =
@@ -45,13 +48,14 @@ export const buildSweepFormValuesDefaultValues = (): SweepFormValues => {
   )
 
   return {
-    destinations: buildSweepDestinationValues(MIN_DESTINATION_ADDRESS_COUNT_PROD),
+    destinations: buildSweepDestinationValues(JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT),
+    useInsecureTestingSettings: false,
     includeMakerSessions: JM_NG_DEFAULT_TUMBLER_PARAMS.include_maker_sessions,
     roundingChanceInPercent: Math.max(
       0,
       Math.min(100, factorToPercentage(JM_NG_DEFAULT_TUMBLER_PARAMS.rounding_chance) + pseudoRandomInteger(-5, 5)),
     ),
-    useInsecureTestingSettings: false,
+    makerSessionIdleTimeoutSeconds: JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
     minNumberOfCollaborators,
     maxNumberOfCollaborators,
     minNumberOfTransactionsPerJar: JM_NG_DEFAULT_TUMBLER_PARAMS.mintxcount,
@@ -142,6 +146,11 @@ export const sweepFormSchema = (
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
         .min(2)
+        .required(),
+      makerSessionIdleTimeoutSeconds: yup
+        .number()
+        .transform((value) => (isValidNumber(value) ? value : null))
+        .min(JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS)
         .required(),
     })
     .test('min-max-collaborators-test', function (root) {

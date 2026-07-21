@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import test from 'node:test'
 import type { UseFormReturn } from 'react-hook-form'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS } from '@/constants/jam'
 import type { Jar, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -439,6 +440,7 @@ describe('SweepPage', async () => {
             maker_count_min: expect.any(Number) as number,
             maker_count_max: expect.any(Number) as number,
             mintxcount: 2,
+            maker_session_idle_timeout_seconds: JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
           },
         }),
       }),

@@ -1,5 +1,5 @@
 import { percentageToFactor, parseSemanticVersion } from '@/lib/utils'
-import type { AmountSats, Milliseconds } from '@/types/global'
+import type { AmountSats, Milliseconds, Seconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
 import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD, JM_WALLET_FILE_EXTENSION } from './jm'
 import { parseAsIntOrDefault } from './meta-env-utils'
@@ -100,6 +100,25 @@ export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN: Milliseconds = Math.max(
 export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds = Math.max(
   parseAsIntOrDefault(import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX, 0),
   60_000,
+)
+
+export const JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS: Seconds = 60
+const JAM_SWEEP_MAKER_SESSION_IDLE_DEFAULT_TIMEOUT_SECONDS: Seconds = 60 * 60 * 24 * 2
+export const JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS: Milliseconds = Math.max(
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
+    JAM_SWEEP_MAKER_SESSION_IDLE_DEFAULT_TIMEOUT_SECONDS,
+  ),
+  JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
+)
+
+export const JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT: number = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT, 3),
+  1,
+)
+export const JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT: Seconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT, 3),
+  JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT,
 )
 
 /**
