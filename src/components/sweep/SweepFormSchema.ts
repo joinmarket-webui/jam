@@ -5,10 +5,10 @@ import {
   JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
   JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
 } from '@/constants/jam'
-import { JM_MINIMUM_MAKERS_DEFAULT, JM_NG_DEFAULT_TUMBLER_PARAMS } from '@/constants/jm'
+import { JM_MINIMUM_MAKERS_DEFAULT, JM_NG_DEFAULT_TUMBLER_PARAMS, type TumblerParameters } from '@/constants/jm'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { isValidAddress } from '@/lib/formValidation'
-import { factorToPercentage, isValidNumber, pseudoRandomInteger } from '@/lib/utils'
+import { factorToPercentage, isValidNumber, percentageToFactor, pseudoRandomInteger } from '@/lib/utils'
 import type { Factor, Seconds } from '@/types/global'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
@@ -23,6 +23,17 @@ export type SweepFormValues = {
   maxNumberOfCollaborators: number
   minNumberOfTransactionsPerJar: number
   roundingChanceInPercent: number
+}
+
+export const formValuesToTumblerParameters = (values: SweepFormValues): Partial<TumblerParameters> => {
+  return {
+    include_maker_sessions: values.includeMakerSessions,
+    maker_count_min: values.minNumberOfCollaborators,
+    maker_count_max: values.maxNumberOfCollaborators,
+    rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
+    mintxcount: values.minNumberOfTransactionsPerJar,
+    maker_session_idle_timeout_seconds: values.makerSessionIdleTimeoutSeconds,
+  }
 }
 
 export type SweepResolverContext = {

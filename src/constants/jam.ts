@@ -1,7 +1,12 @@
 import { percentageToFactor, parseSemanticVersion } from '@/lib/utils'
 import type { AmountSats, Milliseconds, Seconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
-import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD, JM_WALLET_FILE_EXTENSION } from './jm'
+import {
+  JM_API_AUTH_TOKEN_EXPIRY,
+  JM_DUST_THRESHOLD,
+  JM_NG_DEFAULT_TUMBLER_PARAMS,
+  JM_WALLET_FILE_EXTENSION,
+} from './jm'
 import { parseAsIntOrDefault } from './meta-env-utils'
 
 export const APP_DISPLAY_VERSION = (() => {
@@ -102,8 +107,12 @@ export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds = Math.max(
   60_000,
 )
 
-export const JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS: Seconds = 60
-const JAM_SWEEP_MAKER_SESSION_IDLE_DEFAULT_TIMEOUT_SECONDS: Seconds = 60 * 60 * 24 * 2
+export const JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS: Seconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS, 0),
+  60 * 60,
+)
+const JAM_SWEEP_MAKER_SESSION_IDLE_DEFAULT_TIMEOUT_SECONDS: Seconds =
+  JM_NG_DEFAULT_TUMBLER_PARAMS.maker_session_seconds - 15 * 60
 export const JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS: Milliseconds = Math.max(
   parseAsIntOrDefault(
     import.meta.env.VITE_JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,

@@ -141,7 +141,7 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
       entries.slice(0, Math.max(0, entries.length - 1)).reduce((acc, entry) => {
         const fixedRuntimeInSeconds = Math.max(
           MIN_ESTIMATE_ACTION_RUNTIME_IN_SECONDS,
-          Math.max(entry.durationSeconds ?? 0, entry.idleTimeoutSeconds ?? 0),
+          Math.min(entry.durationSeconds ?? 0, entry.idleTimeoutSeconds ?? 0),
         )
         const waitTime = Math.max(entry.waitTimeInSeconds, MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS)
         const estimatedActionRuntimeInSeconds = fixedRuntimeInSeconds + waitTime

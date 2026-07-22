@@ -33,13 +33,14 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import { percentageToFactor, scrollToTop, type WalletFileName } from '@/lib/utils'
+import { scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
 import { SweepForm } from './SweepForm'
+import { formValuesToTumblerParameters } from './SweepFormSchema'
 
 interface SweepPageProps {
   walletFileName: WalletFileName
@@ -453,16 +454,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
                   debug={isDeveloperMode}
                   onSubmit={async (values) => {
-                    console.log(values)
                     const parameters: Partial<TumblerParameters> = {
-                      include_maker_sessions: values.includeMakerSessions,
-                      maker_count_min: values.minNumberOfCollaborators,
-                      maker_count_max: values.maxNumberOfCollaborators,
-                      rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
-                      mintxcount: values.minNumberOfTransactionsPerJar,
-                      maker_session_idle_timeout_seconds: values.makerSessionIdleTimeoutSeconds,
+                      ...formValuesToTumblerParameters(values),
                       ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
                     }
+
                     const body: TumblerPlanRequest = {
                       force: true,
                       destinations: values.destinations.map((it) => it.address),
