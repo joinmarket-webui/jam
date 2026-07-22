@@ -50,7 +50,7 @@ jobs:
         run: npm run format:check
 
       - name: Test
-        run: npm test -- --coverage.enabled
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build

@@ -32,6 +32,7 @@
     "test": "NODE_OPTIONS=--no-webstorage vitest run",
     "test:unit": "NODE_OPTIONS=--no-webstorage vitest run --project unit",
     "test:storybook": "NODE_OPTIONS=--no-webstorage vitest run --project storybook",
+    "test:coverage": "npm test -- --coverage.enabled",
     "check": "npm run format && npm run test && npm run build",
     "regtest:build": "npm run regtest:clear && npm run regtest:pull && docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml build --pull",
     "regtest:pull": "docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml pull",
