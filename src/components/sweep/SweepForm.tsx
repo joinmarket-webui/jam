@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useFieldArray, useForm, useWatch, type SubmitHandler } from 'react-hook-form'
@@ -25,7 +25,7 @@ import {
   JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT,
   JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
 } from '@/constants/jam'
-import type { AddressSummary } from '@/context/JamWalletInfoContext'
+import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { cn, factorToPercentage } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Card, CardContent, CardHeader } from '../ui/card'
@@ -47,19 +47,42 @@ interface SweepFormProps {
   className?: string
   onSubmit: SubmitHandler<SweepFormValues>
   initialValues?: Partial<SweepFormValues>
+  jars: Jar[]
   addressSummary: AddressSummary
   disabled?: boolean
   debug?: boolean
 }
 
-export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, disabled, debug }: SweepFormProps) => {
+export const SweepForm = ({
+  className,
+  onSubmit,
+  jars,
+  addressSummary,
+  initialValues,
+  disabled,
+  debug,
+}: SweepFormProps) => {
   const { t } = useTranslation()
 
   const showInsecureScheduleTestingToggle = debug && isDebugFeatureEnabled('insecureScheduleTesting')
 
   const defaultValues = useMemo(() => buildSweepFormValuesDefaultValues(), [])
 
-  const schema = useMemo(() => sweepFormSchema(addressSummary, t), [addressSummary, t])
+  const [minNumberOfDestinations] = useState(JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT)
+  const [maxNumberOfDestinations] = useState(jars.length)
+
+  const schema = useMemo(
+    () =>
+      sweepFormSchema(
+        {
+          minNumberOfDestinations,
+          maxNumberOfDestinations,
+          addressSummary,
+        },
+        t,
+      ),
+    [minNumberOfDestinations, maxNumberOfDestinations, addressSummary, t],
+  )
   const { formState, reset, register, control, setValue, handleSubmit, trigger } = useForm<
     SweepFormValues,
     SweepResolverContext,
@@ -133,11 +156,8 @@ export const SweepForm = ({ className, onSubmit, addressSummary, initialValues, 
       )}
 
       <SweepDestinationInputs
-        minNumberOfFields={
-          formWatch.useInsecureTestingSettings
-            ? JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT
-            : JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT
-        }
+        minNumberOfFields={minNumberOfDestinations}
+        maxNumberOfFields={maxNumberOfDestinations}
         register={register}
         setValue={setValue}
         formState={formState}

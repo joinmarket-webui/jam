@@ -32,6 +32,7 @@ describe('SweepDestinationInputs', () => {
     render(
       <SweepDestinationInputs
         minNumberOfFields={fields.length}
+        maxNumberOfFields={fields.length}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -60,6 +61,7 @@ describe('SweepDestinationInputs', () => {
     render(
       <SweepDestinationInputs
         minNumberOfFields={fields.length}
+        maxNumberOfFields={fields.length}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -87,6 +89,7 @@ describe('SweepDestinationInputs', () => {
     render(
       <SweepDestinationInputs
         minNumberOfFields={fields.length}
+        maxNumberOfFields={fields.length}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -101,9 +104,11 @@ describe('SweepDestinationInputs', () => {
   })
 
   it('adds additional destination inputs', () => {
+    const maxNumberOfFields = 3
     const { rerender } = render(
       <SweepDestinationInputs
         minNumberOfFields={1}
+        maxNumberOfFields={maxNumberOfFields}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -118,11 +123,13 @@ describe('SweepDestinationInputs', () => {
     const inputs = screen.getAllByRole('textbox')
     expect(inputs.length).toBe(2)
 
+    expect(screen.getByRole('button', { name: 'Add additional destination' })).not.toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Add additional destination' }))
 
     rerender(
       <SweepDestinationInputs
         minNumberOfFields={1}
+        maxNumberOfFields={3}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -132,7 +139,9 @@ describe('SweepDestinationInputs', () => {
     )
 
     const inputsAfterAdd = screen.getAllByRole('textbox')
-    expect(inputsAfterAdd.length).toBe(3)
+    expect(inputsAfterAdd.length).toBe(maxNumberOfFields)
+
+    expect(screen.getByRole('button', { name: 'Add additional destination' })).toBeDisabled()
 
     const clearButtons = screen.queryAllByRole('button', { name: 'global.clear' })
     expect(clearButtons.length).toBe(fields.length - 1)
@@ -142,6 +151,7 @@ describe('SweepDestinationInputs', () => {
     rerender(
       <SweepDestinationInputs
         minNumberOfFields={1}
+        maxNumberOfFields={3}
         formState={defaultFormMock.formState}
         setValue={defaultFormMock.setValue}
         register={defaultFormMock.register}
@@ -171,6 +181,7 @@ describe('SweepDestinationInputs', () => {
     render(
       <SweepDestinationInputs
         minNumberOfFields={fields.length}
+        maxNumberOfFields={fields.length}
         formState={errorFormMock.formState}
         setValue={errorFormMock.setValue}
         register={errorFormMock.register}

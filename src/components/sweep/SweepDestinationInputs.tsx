@@ -15,6 +15,7 @@ type ParentForm = UseFormReturn<SweepFormValues, unknown, SweepFormValues>
 
 interface SweepDestinationInputsProps {
   minNumberOfFields: number
+  maxNumberOfFields: number
   register: ParentForm['register']
   setValue: ParentForm['setValue']
   formState: ParentForm['formState']
@@ -26,6 +27,7 @@ interface SweepDestinationInputsProps {
 
 export const SweepDestinationInputs = ({
   minNumberOfFields,
+  maxNumberOfFields,
   setValue,
   register,
   formState: { errors, isSubmitted, touchedFields },
@@ -120,7 +122,13 @@ export const SweepDestinationInputs = ({
       </div>
       {onClickAppend ? (
         <div className="flex gap-2">
-          <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onClickAppend}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onClickAppend}
+            disabled={disabled || fields.length > maxNumberOfFields}
+          >
             <PlusCircleIcon />
             {/* TODO: i18n */}
             Add additional destination

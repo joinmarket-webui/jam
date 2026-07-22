@@ -101,10 +101,24 @@ const buildDestinationErrorList = (
 }
 
 export const sweepFormSchema = (
-  addressSummary: AddressSummary,
+  {
+    minNumberOfDestinations,
+    maxNumberOfDestinations,
+    addressSummary,
+  }: {
+    minNumberOfDestinations: number
+    maxNumberOfDestinations: number
+    addressSummary: AddressSummary
+  },
   t: TFunction<'translation', undefined>,
 ): yup.ObjectSchema<SweepFormValues> => {
   const invalidDestinationAddressMessage = t('scheduler.feedback_invalid_destination_address')
+  const invalidNumberOfDestinationsMessage = t('send.feedback_invalid_number_of_destination_addresses', {
+    // TODO: i18n
+    defaultValue: 'Please provide between {{ min }} and {{ max }} destination addresses.',
+    min: minNumberOfDestinations.toLocaleString(),
+    max: maxNumberOfDestinations.toLocaleString(),
+  })
 
   return yup
     .object({
@@ -130,11 +144,13 @@ export const sweepFormSchema = (
             })
             .required(),
         )
-        .test('unique-destination-addresses', function (value: SweepFormValues['destinations'] | undefined) {
+        .required(invalidNumberOfDestinationsMessage)
+        .min(minNumberOfDestinations, invalidNumberOfDestinationsMessage)
+        .max(maxNumberOfDestinations, invalidNumberOfDestinationsMessage)
+        .test('unique-destination-addresses', function (value: SweepFormValues['destinations']) {
           const destinations = value ?? []
           return buildDestinationErrorList(destinations, addressSummary, t)
-        })
-        .required(),
+        }),
       useInsecureTestingSettings: yup.boolean().default(false).required(),
       includeMakerSessions: yup.boolean().default(true).required(),
       roundingChanceInPercent: yup
