@@ -1,4 +1,4 @@
-import { JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES } from '@/constants/jm'
+import { JM_TAKER_UTXO_AGE } from '@/constants/jm'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 
@@ -17,7 +17,7 @@ export interface SweepPreconditionSummary {
 
 const DEFAULT_OPTIONS: SweepPreconditionOptions = {
   minNumberOfUtxos: 1,
-  minConfirmations: JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES,
+  minConfirmations: JM_TAKER_UTXO_AGE,
 }
 
 const isUtxoEligible = (utxo: Utxo): boolean => {

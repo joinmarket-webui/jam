@@ -2,7 +2,7 @@ import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webu
 import type { TFunction } from 'i18next'
 import { JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'
-import { percentageToFactor } from '@/lib/utils'
+import { MEAN_DURATION_BETWEEN_BLOCKS_SECONDS, percentageToFactor } from '@/lib/utils'
 import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, Factor, JarIndex, Seconds } from '@/types/global'
 
@@ -113,7 +113,6 @@ const MIN_STEP_WIDTH_PERCENT = 3
 const MIN_ESTIMATE_ACTION_RUNTIME_IN_SECONDS: Seconds = 60
 
 const TIME_ESTIMATE_FACTOR: Factor = 1.1
-const MEAN_DURATION_BETWEEN_BLOCKS_SECONDS: Seconds = 10 * 60
 const MEAN_CONFIMRATION_WAIT_TIME_BETWEEN_PHASES_SECONDS: Seconds =
   JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES * MEAN_DURATION_BETWEEN_BLOCKS_SECONDS
 
