@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { type TxFeeUnit } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { cn } from '@/lib/utils'
-import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { CurrencySymbol } from '../ui/jam/CurrencySymbol'
 import { Label } from '../ui/label'
@@ -76,59 +76,53 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
       <div className={cn('flex flex-col gap-4', className)}>
         <Tabs value={txFeeUnitWatch ?? TX_FEE_UNITS.BLOCKS}>
           <TabsContent value={TX_FEE_UNITS.BLOCKS}>
-            <div className="space-y-2">
-              <Field data-invalid={errors.txFee?.txFeeInBlocks !== undefined}>
-                <FieldLabel htmlFor="txFeeInBlocks">{t('send.label_tx_fees')}</FieldLabel>
-                <FieldDescription>{t('settings.fees.description_tx_fees_blocks')}</FieldDescription>
-                <InputGroup>
-                  <InputGroupInput
-                    id="txFeeInBlocks"
-                    {...register('txFee.txFeeInBlocks', {
-                      disabled,
-                      valueAsNumber: true,
-                    })}
-                    type="number"
-                    min={MIN_TX_FEE_IN_BLOCKS}
-                    max={MAX_TX_FEE_IN_BLOCKS}
-                    step={1}
-                  />
-                  <InputGroupAddon align="inline-start">
-                    <BlocksIcon />
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
-              {errors.txFee?.txFeeInBlocks?.message && (
-                <div className="text-destructive text-xs">{errors.txFee.txFeeInBlocks.message}</div>
-              )}
-            </div>
+            <Field data-invalid={errors.txFee?.txFeeInBlocks !== undefined}>
+              <FieldLabel htmlFor="txFeeInBlocks">{t('send.label_tx_fees')}</FieldLabel>
+              <FieldDescription>{t('settings.fees.description_tx_fees_blocks')}</FieldDescription>
+              <InputGroup>
+                <InputGroupInput
+                  id="txFeeInBlocks"
+                  {...register('txFee.txFeeInBlocks', {
+                    disabled,
+                    valueAsNumber: true,
+                  })}
+                  type="number"
+                  min={MIN_TX_FEE_IN_BLOCKS}
+                  max={MAX_TX_FEE_IN_BLOCKS}
+                  step={1}
+                />
+                <InputGroupAddon align="inline-start">
+                  <BlocksIcon />
+                </InputGroupAddon>
+              </InputGroup>
+              {errors.txFee?.txFeeInBlocks?.message && <FieldError>{errors.txFee.txFeeInBlocks.message}</FieldError>}
+            </Field>
           </TabsContent>
           <TabsContent value={TX_FEE_UNITS.SATS_PER_VBYTE}>
-            <div className="space-y-2">
-              <Field data-invalid={errors.txFee?.txFeeInSatsPerVbyte !== undefined}>
-                <FieldLabel htmlFor="txFeeInSatsPerVbyte">{t('send.label_tx_fees')}</FieldLabel>
-                <FieldDescription>{t('settings.fees.description_tx_fees_satspervbyte')}</FieldDescription>
-                <InputGroup>
-                  <InputGroupInput
-                    id="txFeeInSatsPerVbyte"
-                    {...register('txFee.txFeeInSatsPerVbyte', {
-                      disabled,
-                      valueAsNumber: true,
-                    })}
-                    type="number"
-                    min={Math.floor(MIN_TX_FEE_IN_SATS_PER_VBYTE)}
-                    max={MAX_TX_FEE_IN_SATS_PER_VBYTE}
-                    step="0.01"
-                  />
-                  <InputGroupAddon align="inline-start" className="mr-1 gap-0.5">
-                    <CurrencySymbol currency="sats" />
-                    <span className="text-xs text-nowrap">/&nbsp;vB</span>
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
+            <Field data-invalid={errors.txFee?.txFeeInSatsPerVbyte !== undefined}>
+              <FieldLabel htmlFor="txFeeInSatsPerVbyte">{t('send.label_tx_fees')}</FieldLabel>
+              <FieldDescription>{t('settings.fees.description_tx_fees_satspervbyte')}</FieldDescription>
+              <InputGroup>
+                <InputGroupInput
+                  id="txFeeInSatsPerVbyte"
+                  {...register('txFee.txFeeInSatsPerVbyte', {
+                    disabled,
+                    valueAsNumber: true,
+                  })}
+                  type="number"
+                  min={Math.floor(MIN_TX_FEE_IN_SATS_PER_VBYTE)}
+                  max={MAX_TX_FEE_IN_SATS_PER_VBYTE}
+                  step="0.01"
+                />
+                <InputGroupAddon align="inline-start" className="mr-1 gap-0.5">
+                  <CurrencySymbol currency="sats" />
+                  <span className="text-xs text-nowrap">/&nbsp;vB</span>
+                </InputGroupAddon>
+              </InputGroup>
               {errors.txFee?.txFeeInSatsPerVbyte?.message && (
-                <div className="text-destructive text-xs">{errors.txFee.txFeeInSatsPerVbyte.message}</div>
+                <FieldError>{errors.txFee.txFeeInSatsPerVbyte.message}</FieldError>
               )}
-            </div>
+            </Field>
           </TabsContent>
         </Tabs>
 
@@ -153,10 +147,8 @@ export function TxFeeForm({ className }: TxFeeFormProps) {
                 })
               }}
             />
+            {errors.txFee?.txFeeUnit?.message && <FieldError>{errors.txFee.txFeeUnit.message}</FieldError>}
           </Field>
-          {errors.txFee?.txFeeUnit?.message && (
-            <div className="text-destructive text-xs">{errors.txFee.txFeeUnit.message}</div>
-          )}
         </div>
       </div>
     </>

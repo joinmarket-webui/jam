@@ -16,7 +16,7 @@ import { useForm, useWatch, type Mode, type SubmitHandler } from 'react-hook-for
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
-import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { GAPLIMIT_WARN_THRESHOLD } from '@/constants/jam'
@@ -200,10 +200,8 @@ export const ImportDetailsForm = ({
             disabled={disabled}
             autoComplete="off"
           />
+          {errors.mnemonicPhrase?.message && <FieldError>{errors.mnemonicPhrase.message}</FieldError>}
         </Field>
-        {errors.mnemonicPhrase?.message && (
-          <div className="text-destructive text-xs">{errors.mnemonicPhrase.message}</div>
-        )}
         {isSeedPhraseBip39Valid && (
           <Alert variant="success" className="py-2">
             <CheckCircle2Icon />
@@ -253,32 +251,28 @@ export const ImportDetailsForm = ({
             </div>
           </AccordionTrigger>
           <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
-            <div className="space-y-2">
-              <Field data-invalid={errors.blockheight !== undefined}>
-                <FieldLabel htmlFor="blockheight">{t('import_wallet.import_details.label_blockheight')}</FieldLabel>
-                <FieldDescription className="text-xs">
-                  {t('import_wallet.import_details.description_blockheight')}
-                </FieldDescription>
-                <InputGroup>
-                  <InputGroupInput
-                    id="blockheight"
-                    placeholder={t('import_wallet.import_details.placeholder_blockheight')}
-                    {...register('blockheight', {
-                      required: true,
-                      disabled,
-                    })}
-                    type="number"
-                    step={1}
-                  />
-                  <InputGroupAddon align="inline-start">
-                    <BlocksIcon />
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
-              {errors.blockheight?.message && (
-                <div className="text-destructive text-xs">{errors.blockheight.message}</div>
-              )}
-            </div>
+            <Field data-invalid={errors.blockheight !== undefined}>
+              <FieldLabel htmlFor="blockheight">{t('import_wallet.import_details.label_blockheight')}</FieldLabel>
+              <FieldDescription className="text-xs">
+                {t('import_wallet.import_details.description_blockheight')}
+              </FieldDescription>
+              <InputGroup>
+                <InputGroupInput
+                  id="blockheight"
+                  placeholder={t('import_wallet.import_details.placeholder_blockheight')}
+                  {...register('blockheight', {
+                    required: true,
+                    disabled,
+                  })}
+                  type="number"
+                  step={1}
+                />
+                <InputGroupAddon align="inline-start">
+                  <BlocksIcon />
+                </InputGroupAddon>
+              </InputGroup>
+              {errors.blockheight?.message && <FieldError>{errors.blockheight.message}</FieldError>}
+            </Field>
             <div className="space-y-2">
               <Field data-invalid={errors.gaplimit !== undefined}>
                 <FieldLabel htmlFor="gaplimit">{t('import_wallet.import_details.label_gaplimit')}</FieldLabel>
@@ -302,8 +296,8 @@ export const ImportDetailsForm = ({
                     <UnfoldHorizontalIcon />
                   </InputGroupAddon>
                 </InputGroup>
+                {errors.gaplimit?.message && <FieldError>{errors.gaplimit.message}</FieldError>}
               </Field>
-              {errors.gaplimit?.message && <div className="text-destructive text-xs">{errors.gaplimit.message}</div>}
 
               {showGaplimitWarning && (
                 <Alert variant="warning">

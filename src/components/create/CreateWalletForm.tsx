@@ -6,7 +6,7 @@ import { useForm, type Mode, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
-import { Field, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
@@ -91,89 +91,81 @@ export const CreateWalletForm = ({
 
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
-      <div className="space-y-2">
-        <Field data-invalid={errors.walletName !== undefined}>
-          <FieldLabel htmlFor="create-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>
-          <Input
-            id="create-wallet-name"
-            {...register('walletName', {
+      <Field data-invalid={errors.walletName !== undefined}>
+        <FieldLabel htmlFor="create-wallet-name">{t('create_wallet.label_wallet_name')}</FieldLabel>
+        <Input
+          id="create-wallet-name"
+          {...register('walletName', {
+            required: true,
+            disabled,
+          })}
+          placeholder={t('create_wallet.placeholder_wallet_name')}
+          autoComplete="off"
+        />
+        {errors.walletName?.message && <FieldError>{errors.walletName.message}</FieldError>}
+      </Field>
+
+      <Field data-invalid={errors.password !== undefined}>
+        <FieldLabel htmlFor="create-password">{t('create_wallet.label_password')}</FieldLabel>
+        <InputGroup>
+          <InputGroupInput
+            id="create-password"
+            {...register('password', {
               required: true,
               disabled,
             })}
-            placeholder={t('create_wallet.placeholder_wallet_name')}
+            type={showPassword ? 'text' : 'password'}
+            placeholder={t('create_wallet.placeholder_password')}
             autoComplete="off"
           />
-        </Field>
-        {errors.walletName?.message && <div className="text-destructive text-xs">{errors.walletName.message}</div>}
-      </div>
+          <InputGroupAddon align="inline-start">
+            <LockIcon />
+          </InputGroupAddon>
+          <InputGroupAddon align="inline-end">
+            <Button
+              tabIndex={-1}
+              type="button"
+              variant="link"
+              size="icon"
+              onClick={() => setShowPassword((val) => !val)}
+            >
+              {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+        {errors.password?.message && <FieldError>{errors.password.message}</FieldError>}
+      </Field>
 
-      <div className="space-y-2">
-        <Field data-invalid={errors.password !== undefined}>
-          <FieldLabel htmlFor="create-password">{t('create_wallet.label_password')}</FieldLabel>
-          <InputGroup>
-            <InputGroupInput
-              id="create-password"
-              {...register('password', {
-                required: true,
-                disabled,
-              })}
-              type={showPassword ? 'text' : 'password'}
-              placeholder={t('create_wallet.placeholder_password')}
-              autoComplete="off"
-            />
-            <InputGroupAddon align="inline-start">
-              <LockIcon />
-            </InputGroupAddon>
-            <InputGroupAddon align="inline-end">
-              <Button
-                tabIndex={-1}
-                type="button"
-                variant="link"
-                size="icon"
-                onClick={() => setShowPassword((val) => !val)}
-              >
-                {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </Field>
-        {errors.password?.message && <div className="text-destructive text-xs">{errors.password.message}</div>}
-      </div>
-
-      <div className="space-y-2">
-        <Field data-invalid={errors.confirmPassword !== undefined}>
-          <FieldLabel htmlFor="create-confirm-password">{t('create_wallet.label_password_confirm')}</FieldLabel>
-          <InputGroup>
-            <InputGroupInput
-              id="create-confirm-password"
-              {...register('confirmPassword', {
-                required: true,
-                disabled,
-              })}
-              type={showConfirmPassword ? 'text' : 'password'}
-              placeholder={t('create_wallet.placeholder_password_confirm')}
-              autoComplete="off"
-            />
-            <InputGroupAddon align="inline-start">
-              <LockIcon />
-            </InputGroupAddon>
-            <InputGroupAddon align="inline-end">
-              <Button
-                tabIndex={-1}
-                type="button"
-                variant="link"
-                size="icon"
-                onClick={() => setShowConfirmPassword((val) => !val)}
-              >
-                {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </Field>
-        {errors.confirmPassword?.message && (
-          <div className="text-destructive text-xs">{errors.confirmPassword?.message}</div>
-        )}
-      </div>
+      <Field data-invalid={errors.confirmPassword !== undefined}>
+        <FieldLabel htmlFor="create-confirm-password">{t('create_wallet.label_password_confirm')}</FieldLabel>
+        <InputGroup>
+          <InputGroupInput
+            id="create-confirm-password"
+            {...register('confirmPassword', {
+              required: true,
+              disabled,
+            })}
+            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder={t('create_wallet.placeholder_password_confirm')}
+            autoComplete="off"
+          />
+          <InputGroupAddon align="inline-start">
+            <LockIcon />
+          </InputGroupAddon>
+          <InputGroupAddon align="inline-end">
+            <Button
+              tabIndex={-1}
+              type="button"
+              variant="link"
+              size="icon"
+              onClick={() => setShowConfirmPassword((val) => !val)}
+            >
+              {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+        {errors.confirmPassword?.message && <FieldError>{errors.confirmPassword?.message}</FieldError>}
+      </Field>
 
       <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="xxl">
         {isSubmitting && <Spinner className="motion-reduce:hidden" />}

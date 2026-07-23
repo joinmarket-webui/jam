@@ -27,14 +27,14 @@ import { jarBadgeVariant } from '../ui/badge-variants'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
-import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
 import { inputVariants } from '../ui/input-variants'
 import { Address } from '../ui/jam/Address'
 import { Balance } from '../ui/jam/Balance'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { SelectableJar } from '../ui/jam/SelectableJar'
-import { Label } from '../ui/label'
+import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 import JarSelectorDialog from './JarSelectorDialog'
@@ -143,7 +143,6 @@ export function SendForm({
 
   const [showAddressFromJarSelectorDialog, setShowAddressFromJarSelectorDialog] = useState(false)
   const [showQrScannerDialog, setShowQrScannerDialog] = useState(false)
-  const [bip21Message, setBip21Message] = useState<string>()
 
   const { network } = useDetectNetwork()
 
@@ -248,7 +247,6 @@ export function SendForm({
         setValue('amount.amount', result.amount, { shouldValidate: true })
         setValue('amount.isSweep', false, { shouldValidate: true })
       }
-      setBip21Message(result.message)
     },
     [setValue],
   )
@@ -336,10 +334,8 @@ export function SendForm({
                   />
                 ))}
               </div>
+              {errors.source?.fromJar?.message ? <FieldError>{errors.source?.fromJar.message}</FieldError> : null}
             </Field>
-            {errors.source?.fromJar?.message && (
-              <div className="text-destructive text-xs">{errors.source?.fromJar.message}</div>
-            )}
             {hasCoinjoinPreconditionWarning && coinjoinPreconditionSummary && (
               <SendCoinjoinPreconditionAlert summary={coinjoinPreconditionSummary} />
             )}
@@ -435,18 +431,14 @@ export function SendForm({
                   </>
                 )}
               </ButtonGroup>
-            </Field>
 
-            {errors.destination?.address?.message && (
-              <>
-                <div className="text-destructive text-xs">{errors.destination.address.message}</div>
-                {/* TODO: feedback_invalid_source_jar */}
-              </>
-            )}
-            {errors.destination?.fromJar?.message && (
-              <div className="text-destructive text-xs">{errors.destination.fromJar.message}</div>
-            )}
-            {bip21Message && <div className="text-muted-foreground text-xs">{bip21Message}</div>}
+              {errors.destination?.address?.message ? (
+                <FieldError>{errors.destination.address.message}</FieldError>
+              ) : null}
+              {errors.destination?.fromJar?.message ? (
+                <FieldError>{errors.destination.fromJar.message}</FieldError>
+              ) : null}
+            </Field>
           </div>
 
           <div className="space-y-2">
@@ -535,16 +527,12 @@ export function SendForm({
                   <XIcon /> {t('send.button_clear_sweep')}
                 </Button>
               </ButtonGroup>
+              {errors.amount?.amount?.message ? <FieldError>{errors.amount.amount.message}</FieldError> : null}
+              {errors.amount?.sweepAmount?.message ? (
+                <FieldError>{errors.amount.sweepAmount.message}</FieldError>
+              ) : null}
+              {errors.amount?.isSweep?.message ? <FieldError>{errors.amount.isSweep.message}</FieldError> : null}
             </Field>
-            {errors.amount?.amount?.message && (
-              <div className="text-destructive text-xs">{errors.amount.amount.message}</div>
-            )}
-            {errors.amount?.sweepAmount?.message && (
-              <div className="text-destructive text-xs">{errors.amount.sweepAmount.message}</div>
-            )}
-            {errors.amount?.isSweep?.message && (
-              <div className="text-destructive text-xs">{errors.amount.isSweep.message}</div>
-            )}
           </div>
 
           <Accordion type="single" collapsible>
@@ -563,7 +551,7 @@ export function SendForm({
               <AccordionContent
                 className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
               >
-                <div className="flex items-center gap-2">
+                <Field orientation="horizontal" className="gap-4" data-invalid={errors.isCoinJoin !== undefined}>
                   <Switch
                     id="switch-is-collaborative-transaction"
                     checked={isCoinJoin}
@@ -587,33 +575,41 @@ export function SendForm({
                     }}
                     disabled={disabled}
                   />
-                  <Label htmlFor="switch-is-collaborative-transaction" className="flex flex-col items-start gap-0">
-                    <div className="font-medium">{t('send.toggle_coinjoin')}</div>
-                    <div className="text-muted-foreground text-sm">{t('send.toggle_coinjoin_subtitle')}</div>
-                  </Label>
-                </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-col items-start gap-0">
+                      <FieldLabel htmlFor="switch-is-collaborative-transaction">{t('send.toggle_coinjoin')}</FieldLabel>
+                      <FieldDescription>{t('send.toggle_coinjoin_subtitle')}</FieldDescription>
+                    </div>
+                  </div>
+                </Field>
 
                 {isCoinJoin && (
                   <div className="space-y-2">
-                    <Field data-invalid={errors.numCollaborators !== undefined}>
-                      <FieldLabel htmlFor="send-num-collaborators">
-                        {t('send.label_num_collaborators', {
-                          numCollaborators: values.numCollaborators ?? '?',
-                        })}
-                      </FieldLabel>
-                      <FieldDescription>{t('send.description_num_collaborators')}</FieldDescription>
-                      <Input
+                    <Field className="gap-4" data-invalid={errors.numCollaborators !== undefined}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col items-start gap-0">
+                          <FieldLabel htmlFor="send-num-collaborators">
+                            {t('send.label_num_collaborators', {
+                              numCollaborators: values.numCollaborators ?? '?',
+                            })}
+                          </FieldLabel>
+                          <FieldDescription className="text-xs">
+                            {t('send.description_num_collaborators')}
+                          </FieldDescription>
+                        </div>
+                        <span className="text-foreground">{values.numCollaborators}</span>
+                      </div>
+                      <Slider
                         id="send-num-collaborators"
-                        {...register('numCollaborators', {
-                          required: values.isCoinJoin,
-                          disabled,
-                          valueAsNumber: true,
-                        })}
-                        type="number"
                         min={minNumberOfCollaborators}
                         max={MAX_NUM_COLLABORATORS}
-                        placeholder={t('send.input_num_collaborators_placeholder')}
+                        value={values.numCollaborators === undefined ? undefined : [values.numCollaborators]}
+                        onValueChange={(values: number[]) => setValue('numCollaborators', values[0])}
+                        disabled={disabled}
                       />
+                      {errors.numCollaborators?.message ? (
+                        <FieldError>{errors.numCollaborators.message}</FieldError>
+                      ) : null}
                     </Field>
                     {estimatedMaxCollaboratorFee && (
                       <div className="text-muted-foreground inline-flex items-center text-xs">
@@ -625,9 +621,6 @@ export function SendForm({
                           ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
                         </span>
                       </div>
-                    )}
-                    {errors.numCollaborators?.message && (
-                      <div className="text-destructive text-xs">{errors.numCollaborators.message}</div>
                     )}
                   </div>
                 )}
