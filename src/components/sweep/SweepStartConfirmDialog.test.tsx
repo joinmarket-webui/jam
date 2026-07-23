@@ -12,7 +12,6 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-// Mock Dialog
 vi.mock('@/components/ui/dialog', () => ({
   Dialog: ({ children, open, onOpenChange }: DialogProps) =>
     open ? (

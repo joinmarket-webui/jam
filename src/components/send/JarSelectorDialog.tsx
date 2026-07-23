@@ -1,11 +1,10 @@
 import { useState, type ComponentProps } from 'react'
-import { DialogTitle } from '@radix-ui/react-dialog'
 import { useTranslation } from 'react-i18next'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import type { JarIndex, WithRequiredProperty } from '@/types/global'
 import { Button } from '../ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader } from '../ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from '../ui/dialog'
 import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Spinner } from '../ui/spinner'
 

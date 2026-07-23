@@ -99,14 +99,6 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
   PageLoading: () => <div>page-loading</div>,
 }))
 
-vi.mock('@/components/ui/jam/PageTitle', () => ({
-  default: ({ title, subtitle }: { title: string; subtitle: string }) => (
-    <h1>
-      {title}:{subtitle}
-    </h1>
-  ),
-}))
-
 vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
 }))

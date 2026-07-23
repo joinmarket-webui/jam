@@ -474,7 +474,8 @@ export function SendForm({
                   disabled={
                     disabled ||
                     sourceJar === undefined ||
-                    sourceJar.balanceSummary.calculatedAvailableBalanceInSats <= 0
+                    sourceJar.balanceSummary.calculatedAvailableBalanceInSats <= 0 ||
+                    isSweep === true
                   }
                   onClick={() => {
                     setValue('amount.isSweep', true, { shouldValidate: true })
@@ -517,7 +518,7 @@ export function SendForm({
                   variant="outline"
                   size="lg"
                   className="w-auto"
-                  disabled={disabled}
+                  disabled={disabled || isSweep !== true}
                   onClick={() => {
                     setValue('amount.isSweep', false, { shouldValidate: true })
                     setValue('amount.sweepAmount', undefined, { shouldValidate: true })

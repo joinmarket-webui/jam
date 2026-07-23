@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
@@ -7,26 +6,6 @@ import JarSelectorDialog from './JarSelectorDialog'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
-}))
-
-vi.mock('../ui/dialog', () => ({
-  Dialog: ({ children, open }: { children?: ReactNode; open?: boolean }) => (open ? <div>{children}</div> : null),
-  DialogContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  DialogDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  DialogFooter: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  DialogHeader: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@radix-ui/react-dialog', () => ({
-  DialogTitle: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('../ui/button', () => ({
-  Button: ({ children, onClick, disabled }: { children?: ReactNode; onClick?: () => void; disabled?: boolean }) => (
-    <button onClick={onClick} disabled={disabled}>
-      {children}
-    </button>
-  ),
 }))
 
 vi.mock('../ui/jam/SelectableJar', () => ({

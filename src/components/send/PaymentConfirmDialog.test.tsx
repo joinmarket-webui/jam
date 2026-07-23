@@ -7,10 +7,6 @@ import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import type { SendFormValues } from './types'
 
-vi.mock('@radix-ui/react-dialog', () => ({
-  DialogTitle: ({ children }: { children: ReactNode }) => <h2>{children}</h2>,
-}))
-
 vi.mock('react-i18next', () => ({
   Trans: ({ children, i18nKey }: { children?: ReactNode; i18nKey: string }) => (
     <span>
@@ -27,14 +23,6 @@ vi.mock('../dev/DevBadge', () => ({
   DevBadge: () => <span>dev-badge</span>,
 }))
 
-vi.mock('../ui/dialog', () => ({
-  Dialog: ({ children, open }: { children: ReactNode; open: boolean }) => (open ? <div>{children}</div> : null),
-  DialogContent: ({ children }: { children: ReactNode }) => <section>{children}</section>,
-  DialogDescription: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  DialogFooter: ({ children }: { children: ReactNode }) => <footer>{children}</footer>,
-  DialogHeader: ({ children }: { children: ReactNode }) => <header>{children}</header>,
-}))
-
 vi.mock('../ui/jam/Address', () => ({
   Address: ({ value }: { value: string }) => <span>address:{value}</span>,
 }))
@@ -45,12 +33,6 @@ vi.mock('../ui/jam/Balance', () => ({
 
 vi.mock('../ui/spinner', () => ({
   Spinner: () => <span>spinner</span>,
-}))
-
-vi.mock('../ui/tooltip', () => ({
-  Tooltip: ({ children }: { children: ReactNode }) => <span>{children}</span>,
-  TooltipContent: ({ children }: { children: ReactNode }) => <span>{children}</span>,
-  TooltipTrigger: ({ children }: { children: ReactNode }) => <span>{children}</span>,
 }))
 
 const feeConfigValues: JamFeeConfigValues = {

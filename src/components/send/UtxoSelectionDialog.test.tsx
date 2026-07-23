@@ -1,4 +1,4 @@
-import type { ChangeEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
@@ -16,26 +16,6 @@ vi.mock('../ui/dialog', () => ({
   DialogFooter: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   DialogHeader: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   DialogTitle: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('../ui/button', () => ({
-  Button: ({ children, onClick, disabled }: { children?: ReactNode; onClick?: () => void; disabled?: boolean }) => (
-    <button onClick={onClick} disabled={disabled}>
-      {children}
-    </button>
-  ),
-}))
-
-vi.mock('../ui/input', () => ({
-  Input: ({
-    value,
-    onChange,
-    disabled,
-  }: {
-    value?: string
-    onChange?: (event: ChangeEvent<HTMLInputElement>) => void
-    disabled?: boolean
-  }) => <input value={value} onChange={onChange} disabled={disabled} data-testid="filter-input" />,
 }))
 
 vi.mock('../ui/spinner', () => ({
@@ -78,7 +58,9 @@ describe('UtxoSelectionDialog', () => {
     const onFilterChange = vi.fn()
     render(<UtxoSelectionDialog {...baseProps} onFilterChange={onFilterChange} />)
 
-    fireEvent.change(screen.getByTestId('filter-input'), { target: { value: 'abc' } })
+    fireEvent.change(screen.getByPlaceholderText('jar_details.utxo_list.placeholder_search'), {
+      target: { value: 'abc' },
+    })
     expect(onFilterChange).toHaveBeenCalledWith('abc')
   })
 

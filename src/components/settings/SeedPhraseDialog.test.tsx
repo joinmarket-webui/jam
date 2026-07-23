@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { WalletFileName } from '@/lib/utils'
@@ -54,31 +53,6 @@ vi.mock('../utils/PasswordVerificationForm', () => ({
       <button data-testid="cancel" onClick={onCancel} />
     </div>
   ),
-}))
-
-vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: { children?: ReactNode; open?: boolean }) => (open ? <div>{children}</div> : null),
-  DialogContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  DialogDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  DialogFooter: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  DialogHeader: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  DialogTitle: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@/components/ui/alert', () => ({
-  Alert: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  AlertDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  AlertTitle: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick }: { children?: ReactNode; onClick?: () => void }) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-}))
-
-vi.mock('@/components/ui/label', () => ({
-  Label: ({ children }: { children?: ReactNode }) => <label>{children}</label>,
 }))
 
 const baseProps = {

@@ -13,64 +13,12 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-vi.mock('../dev/DevBadge', () => ({ DevBadge: () => <span data-testid="dev-badge" /> }))
-
 vi.mock('../ui/accordion', () => ({
   Accordion: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   AccordionItem: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   AccordionTrigger: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   AccordionContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
-
-vi.mock('../ui/alert', () => ({
-  Alert: ({ children, variant }: { children?: ReactNode; variant?: string }) => (
-    <div data-variant={variant}>{children}</div>
-  ),
-  AlertDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  AlertTitle: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@/components/ui/field', () => ({
-  Field: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  FieldDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  FieldLabel: ({ children }: { children?: ReactNode }) => <label>{children}</label>,
-}))
-
-vi.mock('../ui/input-group', () => ({
-  InputGroup: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  InputGroupAddon: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  InputGroupInput: (props: Record<string, unknown>) => <input {...props} />,
-}))
-
-vi.mock('../ui/textarea', () => ({
-  Textarea: (props: Record<string, unknown>) => <textarea {...props} />,
-}))
-
-vi.mock('../ui/tooltip', () => ({
-  Tooltip: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  TooltipContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  TooltipTrigger: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@/components/ui/button', () => ({
-  Button: ({
-    children,
-    onClick,
-    disabled,
-    type,
-  }: {
-    children?: ReactNode
-    onClick?: () => void
-    disabled?: boolean
-    type?: 'button' | 'submit'
-  }) => (
-    <button onClick={onClick} disabled={disabled} type={type}>
-      {children}
-    </button>
-  ),
-}))
-
-vi.mock('@/components/ui/spinner', () => ({ Spinner: () => <div data-testid="spinner" /> }))
 
 const VALID_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 
