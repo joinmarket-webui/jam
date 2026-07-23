@@ -1,186 +1,114 @@
 import { useEffect, useMemo, useState } from 'react'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { tumblerstatusOptions, tumblerstopMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import {
-  tumblerplan,
-  tumblerstart,
-  type TumblerPhaseResponse,
-  type TumblerPlanResponse,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+  tumblerplandeleteMutation,
+  tumblerplanMutation,
+  tumblerstartMutation,
+  tumblerstatusOptions,
+  tumblerstopMutation,
+} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import type { TumblerPlanRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
-import { SweepDestinationInputs } from '@/components/sweep/SweepDestinationInputs'
-import {
-  buildSweepDestinationValues,
-  getSweepDestinationAddresses,
-  sweepFormSchema,
-  type SweepResolverContext,
-  type SweepFormValues,
-} from '@/components/sweep/SweepFormSchema'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
-import { isScheduleValue, type Schedule, type ScheduleEntry } from '@/components/sweep/scheduleUtils'
+import { isPlanTerminated, toSchedule } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
-import { useJamWalletInfoContext, type AddressSummary } from '@/context/JamWalletInfoContext'
+import { isDevMode } from '@/constants/debugFeatures'
+import type { TumblerParameters } from '@/constants/jm'
+import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import type { WalletFileName } from '@/lib/utils'
+import { scrollToTop, type WalletFileName } from '@/lib/utils'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { Milliseconds } from '@/types/global'
+import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
+import { SweepForm } from './SweepForm'
+import { formValuesToTumblerParameters } from './SweepFormSchema'
 
 interface SweepPageProps {
   walletFileName: WalletFileName
 }
 
-const DESTINATION_ADDRESS_COUNT_PROD = 3
-const DESTINATION_ADDRESS_COUNT_TEST = 1
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL = 3_000
-const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY = 1_000
-const INSECURE_SCHEDULE_TUMBLER_OPTIONS = {
-  addrcount: DESTINATION_ADDRESS_COUNT_TEST,
-  minmakercount: 1,
-  makercountrange: [1, 0],
-  mixdepthcount: DESTINATION_ADDRESS_COUNT_TEST,
-  mintxcount: 1,
-  txcountparams: [1, 0],
-  timelambda: 0.025,
-  stage1_timelambda_increase: 1,
-  liquiditywait: 13,
-  waittime: 0,
-}
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
 
-const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
-  const newAddressFromDefaultJar =
-    Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new' && addressMeta.jarIndex === 0)
-      ?.address ?? ''
-  if (newAddressFromDefaultJar !== '') {
-    return newAddressFromDefaultJar
-  }
+const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = isDevMode() ? 5_000 : 10_000
 
-  return Object.values(addressSummary).find((addressMeta) => addressMeta.status === 'new')?.address ?? ''
-}
-
-const isPhaseComplete = (phase: TumblerPhaseResponse): boolean => {
-  return phase.status.toLowerCase() === 'completed'
-}
-
-const toScheduleStateFlag = (phase: TumblerPhaseResponse): ScheduleEntry[6] => {
-  if (isPhaseComplete(phase)) {
-    return 1
-  }
-  return phase.txid ?? 0
-}
-
-const toSchedule = (plan: TumblerPlanResponse): Schedule => {
-  return plan.phases.map(
-    (phase) =>
-      [
-        phase.mixdepth ?? 0,
-        phase.amount_fraction ?? 0,
-        phase.counterparty_count ?? 0,
-        phase.destination ?? 'INTERNAL',
-        (phase.wait_seconds ?? 0) / 60,
-        0,
-        toScheduleStateFlag(phase),
-      ] as ScheduleEntry,
-  )
+const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
+  time_lambda_seconds: 10,
+  stage1_wait_multiplier: 1.5,
+  maker_session_seconds: 60,
+  mincjamount_sats: 1,
+  max_phase_retries: 1,
 }
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
+  const { rescanInfo, takerInfo, makerInfo } = useJamSessionInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const walletInfo = useJamWalletInfoContext()
+  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
-  const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState(false)
-  const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
+  const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
   const [alertMessage, setAlertMessage] = useState<string>()
-  const showInsecureScheduleTestingToggle = isDebugFeatureEnabled('insecureScheduleTesting')
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
-  const allUtxos = useMemo(() => {
-    return walletInfo.jars.flatMap((jar) => jar.utxos)
-  }, [walletInfo.jars])
-
   const preconditionSummary = useMemo(() => {
+    const allUtxos = walletInfo.jars.flatMap((jar) => jar.utxos)
     return buildSweepPreconditionSummary(allUtxos)
-  }, [allUtxos])
-
-  const schema = useMemo(() => sweepFormSchema(walletInfo.addressSummary, t), [walletInfo.addressSummary, t])
-  const initialDestinations = useMemo(() => buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD), [])
-  const form = useForm<SweepFormValues, SweepResolverContext, SweepFormValues>({
-    mode: 'onChange',
-    defaultValues: {
-      destinations: initialDestinations,
-    },
-    resolver: yupResolver(schema),
-  })
-
-  const { fields, replace } = useFieldArray({
-    control: form.control,
-    name: 'destinations',
-  })
-  const { trigger } = form
-
-  const destinationValues = useWatch({
-    control: form.control,
-    name: 'destinations',
-    defaultValue: initialDestinations,
-  })
-  const normalizedDestinationAddresses = useMemo(
-    () => getSweepDestinationAddresses({ destinations: destinationValues }),
-    [destinationValues],
-  )
-  const hasDestinationErrors = !form.formState.isValid
-  const allDestinationAddressesPresent = normalizedDestinationAddresses.every((address) => address !== '')
-
-  const destinationUsageKey = useMemo(() => {
-    return normalizedDestinationAddresses
-      .map((address) => (address && walletInfo.addressSummary[address]?.used ? '1' : '0'))
-      .join('')
-  }, [normalizedDestinationAddresses, walletInfo.addressSummary])
-
-  useEffect(() => {
-    if (!normalizedDestinationAddresses.some((address) => address !== '')) return
-    void trigger('destinations')
-  }, [trigger, destinationUsageKey, normalizedDestinationAddresses])
+  }, [walletInfo.jars])
 
   const getScheduleQuery = useQuery({
     ...tumblerstatusOptions({
       client,
       path: { walletname: walletFileName },
     }),
-    enabled: jmSession?.coinjoin_in_process === true,
-    refetchInterval: jmSession?.coinjoin_in_process === true ? WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL : false,
+    refetchInterval: (query) => {
+      const schedulerRunning = takerInfo.running && takerInfo.scheduler.running
+      const currentScheduleStillActive = query.state.data && !isPlanTerminated(query.state.data)
+      return schedulerRunning || currentScheduleStillActive ? RUNNING_SCHEDULE_POLLING_INTERVAL : false
+    },
     refetchIntervalInBackground: true,
     retry: false,
-    select: (data: TumblerPlanResponse): { schedule: Schedule } | null => {
-      if (data.status.toLowerCase() !== 'running' || data.stale === true) {
-        return null
-      }
+  })
 
-      return { schedule: toSchedule(data) }
+  const planSchedule = useMutation({
+    ...tumblerplanMutation({ client }),
+    retry: false,
+    onMutate: () => {
+      setAlertMessage(undefined)
+    },
+    onSettled: async () => {
+      await getScheduleQuery.refetch()
+      scrollToTop()
+    },
+    onError: (error) => {
+      console.error('Plan schedule error:', error)
+
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      const message = t('scheduler.error_planning_schedule_failed', { reason })
+      setAlertMessage(message)
+      toast.error(message)
     },
   })
 
@@ -190,37 +118,22 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     reset: startScheduleMutationReset,
     mutateAsync: startScheduleMutationMutateAsync,
   } = useMutation({
-    mutationFn: async (args: {
-      path: { walletname: WalletFileName }
-      body: { destinations: string[]; parameters?: typeof INSECURE_SCHEDULE_TUMBLER_OPTIONS }
-    }) => {
-      await tumblerplan({
-        client,
-        path: args.path,
-        body: {
-          destinations: args.body.destinations,
-          parameters: args.body.parameters,
-          force: true,
-        },
-        throwOnError: true,
-      })
-
-      return await tumblerstart({
-        client,
-        path: args.path,
-        throwOnError: true,
-      })
-    },
+    ...tumblerstartMutation({
+      client,
+    }),
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
     },
-    onSuccess: () => {
-      setShowScheduleConfirmDialog(false)
+    onSettled: async () => {
+      setShowScheduleConfirmDialog(undefined)
+      await getScheduleQuery.refetch()
+      scrollToTop()
     },
-    onError: (error: unknown) => {
+    onError: (error) => {
+      console.error('Plan schedule error:', error)
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      const message = `${t('scheduler.error_starting_schedule_failed')} ${reason}`
+      const message = t('scheduler.error_starting_schedule_failed', { reason })
       setAlertMessage(message)
       toast.error(message)
     },
@@ -232,29 +145,63 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     mutateAsync: stopScheduleMutationMutateAsync,
     reset: stopScheduleMutationReset,
   } = useMutation({
-    ...tumblerstopMutation({ client }),
+    ...tumblerstopMutation({
+      client,
+      path: { walletname: walletFileName },
+    }),
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
     },
+    onSettled: async () => {
+      await getScheduleQuery.refetch()
+      scrollToTop()
+    },
     onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      const message = `${t('scheduler.error_stopping_schedule_failed')} ${reason}`
+      const message = t('scheduler.error_stopping_schedule_failed', { reason })
       setAlertMessage(message)
       toast.error(message)
     },
   })
 
-  const currentSchedule = isScheduleValue(getScheduleQuery.data?.schedule) ? getScheduleQuery.data.schedule : undefined
+  const { isPending: deleteScheduleMutationIsPending, mutateAsync: deleteScheduleMutationMutateAsync } = useMutation({
+    ...tumblerplandeleteMutation({
+      client,
+      path: { walletname: walletFileName },
+    }),
+    retry: false,
+    onMutate: () => {
+      setAlertMessage(undefined)
+      scrollToTop()
+    },
+    onSettled: async () => {
+      await getScheduleQuery.refetch()
+    },
+    onError: (error) => {
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      const message = t('scheduler.error_deleting_schedule_failed', { reason })
+      setAlertMessage(message)
+      toast.error(message)
+    },
+  })
 
-  const schedulerRunning = jmSession?.coinjoin_in_process === true && currentSchedule !== undefined
+  const currentSchedule = useMemo(() => {
+    if (getScheduleQuery.error) return
+    if (getScheduleQuery.data === undefined) return
+    if (getScheduleQuery.data.stale === true) return
+
+    return toSchedule(getScheduleQuery.data, walletInfo.jars)
+  }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
+
+  const schedulerRunning = takerInfo.scheduler.running
   const isWaitingSchedulerStart =
     startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
-  const waitingForTumblerStatus = jmSession?.coinjoin_in_process === true && getScheduleQuery.isPending
+  const waitingForTumblerStatus = takerInfo.running && getScheduleQuery.isPending
   const singleCoinJoinRunning =
-    jmSession?.coinjoin_in_process === true && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
-  const makerRunning = jmSession?.maker_running === true
-  const collaborativeOperationRunning = makerRunning || jmSession?.coinjoin_in_process === true
+    takerInfo.running && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
+  const makerRunning = makerInfo.running === true
+  const collaborativeOperationRunning = makerRunning || takerInfo.running
 
   const isWaitingSchedulerStop = stopScheduleMutationIsPending || (stopScheduleMutationIsSuccess && schedulerRunning)
 
@@ -279,61 +226,34 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const isOperationDisabled =
     feeConfigValidation.maxFeesConfigMissing ||
     collaborativeOperationRunning ||
-    jmSession?.rescanning ||
+    rescanInfo.rescanning ||
     !preconditionSummary.isFulfilled
 
   const isStartDisabled =
     isOperationDisabled ||
     isWaitingSchedulerStart ||
     isWaitingSchedulerStop ||
-    hasDestinationErrors ||
-    !allDestinationAddressesPresent
-
-  const onInsecureTestingToggleChange = (checked: boolean) => {
-    setUseInsecureTestingSettings(checked)
-
-    if (checked) {
-      replace([{ address: getNewTestingDestinationAddress(walletInfo.addressSummary) }])
-      void trigger('destinations')
-      return
-    }
-
-    replace(buildSweepDestinationValues(DESTINATION_ADDRESS_COUNT_PROD))
-    void trigger('destinations')
-  }
+    !getScheduleQuery.data ||
+    startScheduleMutationIsPending ||
+    planSchedule.isPending ||
+    deleteScheduleMutationIsPending
 
   const startSchedule = async () => {
-    if (isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop) {
-      return
-    }
+    if (showScheduleConfirmDialog === undefined) return
 
-    await form.handleSubmit(async (values) => {
-      const body = {
-        destinations: getSweepDestinationAddresses(values),
-        ...(showInsecureScheduleTestingToggle && useInsecureTestingSettings
-          ? { parameters: INSECURE_SCHEDULE_TUMBLER_OPTIONS }
-          : {}),
-      }
-
-      await startScheduleMutationMutateAsync({
-        path: { walletname: walletFileName },
-        body,
-      })
-    })()
-  }
-
-  const onOpenScheduleConfirm = async () => {
-    if (isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop) {
-      return
-    }
-
-    await form.handleSubmit(() => {
-      setShowScheduleConfirmDialog(true)
-    })()
+    await startScheduleMutationMutateAsync({
+      path: { walletname: walletFileName },
+    })
   }
 
   const stopSchedule = async () => {
     await stopScheduleMutationMutateAsync({
+      path: { walletname: walletFileName },
+    })
+  }
+
+  const deleteSchedule = async () => {
+    await deleteScheduleMutationMutateAsync({
       path: { walletname: walletFileName },
     })
   }
@@ -351,10 +271,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         onOpenChange={setShowFeeConfigDialog}
       />
       <SweepStartConfirmDialog
-        open={showScheduleConfirmDialog}
-        onOpenChange={setShowScheduleConfirmDialog}
+        open={showScheduleConfirmDialog !== undefined}
+        onOpenChange={() => setShowScheduleConfirmDialog(undefined)}
         onConfirm={startSchedule}
-        disabled={isStartDisabled || isWaitingSchedulerStart}
+        disabled={isStartDisabled}
         isStarting={isWaitingSchedulerStart}
       />
       <div className="mx-auto max-w-4xl space-y-3 p-4">
@@ -388,25 +308,133 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         {isWaitingSchedulerStart && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>{t('scheduler.button_start')}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_scheduler_starting_title')}</AlertTitle>
           </Alert>
         )}
 
         {isWaitingSchedulerStop && (
           <Alert>
             <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>{t('scheduler.button_stop')}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_scheduler_stopping_title')}</AlertTitle>
           </Alert>
         )}
 
-        {schedulerRunning && currentSchedule && (
-          <SweepScheduleProgress schedule={currentSchedule} isStopping={isWaitingSchedulerStop} onStop={stopSchedule} />
+        {!isWaitingSchedulerStart && !isWaitingSchedulerStop && !schedulerRunning && (
+          <SweepPreconditionAlert summary={preconditionSummary} />
         )}
 
-        {!schedulerRunning && (
+        {currentSchedule && (
           <>
-            <SweepPreconditionAlert summary={preconditionSummary} />
+            {getScheduleQuery.isPending ? (
+              <div className="flex flex-1 items-center justify-center">
+                <Spinner />
+              </div>
+            ) : (
+              <>
+                {schedulerRunning && currentSchedule.summary.status.completed ? (
+                  <Alert variant="success">
+                    <Spinner className="motion-reduce:hidden" />
+                    <AlertTitle>{t('scheduler.progress_done_awaiting_stop')}</AlertTitle>
+                  </Alert>
+                ) : null}
 
+                <SweepScheduleProgress schedule={currentSchedule} debug={isDeveloperMode} />
+
+                {schedulerRunning && currentSchedule.summary.status.running ? (
+                  <Button
+                    type="button"
+                    onClick={() => void stopSchedule()}
+                    disabled={isWaitingSchedulerStop}
+                    size="lg"
+                    className="w-full"
+                  >
+                    {isWaitingSchedulerStop ? (
+                      <>
+                        <Spinner className="motion-reduce:hidden" />
+                        {t('scheduler.button_stop')}
+                      </>
+                    ) : (
+                      t('scheduler.button_stop')
+                    )}
+                  </Button>
+                ) : (
+                  <>
+                    {currentSchedule.summary.status.pending || isWaitingSchedulerStart ? (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setShowScheduleConfirmDialog(getScheduleQuery.data)
+                        }}
+                        disabled={isStartDisabled}
+                        size="lg"
+                        className="w-full"
+                      >
+                        {isWaitingSchedulerStart ? (
+                          <>
+                            <Spinner className="motion-reduce:hidden" />
+                            {t('scheduler.button_start')}
+                          </>
+                        ) : (
+                          t('scheduler.button_start')
+                        )}
+                      </Button>
+                    ) : null}
+                    {currentSchedule.summary.status.pending && planSchedule.variables?.body ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          void planSchedule.mutateAsync({
+                            path: { walletname: walletFileName },
+                            body: planSchedule.variables.body,
+                          })
+                        }}
+                        disabled={isStartDisabled}
+                        size="lg"
+                        className="w-full"
+                      >
+                        {planSchedule.isPending ? (
+                          <>
+                            <Spinner className="motion-reduce:hidden" />
+                            {t('scheduler.button_plan_renew')}
+                          </>
+                        ) : (
+                          t('scheduler.button_plan_renew')
+                        )}
+                      </Button>
+                    ) : null}
+
+                    <Button
+                      type="button"
+                      variant={currentSchedule.summary.derivedStatus.terminated ? 'default' : 'ghost'}
+                      onClick={() => void deleteSchedule()}
+                      disabled={
+                        !getScheduleQuery.data ||
+                        startScheduleMutationIsPending ||
+                        planSchedule.isPending ||
+                        deleteScheduleMutationIsPending
+                      }
+                      size="lg"
+                      className="w-full"
+                    >
+                      {deleteScheduleMutationIsPending ? (
+                        <>
+                          <Spinner className="motion-reduce:hidden" />
+                          {currentSchedule.summary.derivedStatus.terminated ? t('global.done') : t('global.cancel')}
+                        </>
+                      ) : (
+                        <>{currentSchedule.summary.derivedStatus.terminated ? t('global.done') : t('global.cancel')}</>
+                      )}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {!currentSchedule && !schedulerRunning && (
+          <>
             <Card>
               <CardContent className="space-y-5">
                 <div className="bg-muted/50 flex flex-col items-start justify-between gap-2 rounded-lg border px-4 py-3 sm:flex-row sm:items-center">
@@ -421,53 +449,50 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
                 <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
 
-                {showInsecureScheduleTestingToggle && (
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="switch-use-insecure-schedule-testing"
-                      checked={useInsecureTestingSettings}
-                      onCheckedChange={onInsecureTestingToggleChange}
-                      disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
-                    />
-                    <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
-                      <div className="flex items-center gap-2 font-medium">
-                        Use insecure testing settings
-                        <DevBadge />
-                      </div>
-                      <div className="text-muted-foreground text-sm">
-                        This is completely insecure but makes testing the schedule much faster.
-                      </div>
-                    </Label>
-                  </div>
-                )}
-
-                <SweepDestinationInputs
-                  form={form}
-                  fields={fields}
+                <SweepForm
+                  jars={walletInfo.jars}
+                  addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
+                  debug={isDeveloperMode}
+                  onSubmit={async (values) => {
+                    const parameters: Partial<TumblerParameters> = {
+                      ...formValuesToTumblerParameters(values),
+                      ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
+                    }
+
+                    const body: TumblerPlanRequest = {
+                      force: true,
+                      destinations: values.destinations.map((it) => it.address),
+                      parameters,
+                    }
+
+                    await planSchedule.mutateAsync({
+                      path: { walletname: walletFileName },
+                      body,
+                    })
+                  }}
                 />
-
-                <p className="text-muted-foreground text-sm">{t('scheduler.description_fees')}</p>
-
-                <Button
-                  type="button"
-                  onClick={() => void onOpenScheduleConfirm()}
-                  disabled={isStartDisabled}
-                  size="xxl"
-                  className="w-full"
-                >
-                  {isWaitingSchedulerStart ? (
-                    <>
-                      <Spinner className="motion-reduce:hidden" />
-                      {t('scheduler.button_start')}
-                    </>
-                  ) : (
-                    t('scheduler.button_start')
-                  )}
-                </Button>
               </CardContent>
             </Card>
           </>
+        )}
+
+        {isDeveloperMode && (
+          <Card className="mt-8">
+            <CardHeader className="grid">
+              <DevBadge className="justify-self-end" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <div className="overflow-scroll">
+                <code className="text-destructive">getScheduleQuery.data:</code>
+                <pre className="text-xs">{JSON.stringify(getScheduleQuery.data, null, 2)}</pre>
+              </div>
+              <div className="overflow-scroll">
+                <code className="text-destructive">planSchedule.data:</code>
+                <pre className="text-xs">{JSON.stringify(planSchedule.data, null, 2)}</pre>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </>

@@ -1,3 +1,4 @@
+import { JM_TAKER_UTXO_AGE } from '@/constants/jm'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 
@@ -16,11 +17,11 @@ export interface SweepPreconditionSummary {
 
 const DEFAULT_OPTIONS: SweepPreconditionOptions = {
   minNumberOfUtxos: 1,
-  minConfirmations: 5,
+  minConfirmations: JM_TAKER_UTXO_AGE,
 }
 
 const isUtxoEligible = (utxo: Utxo): boolean => {
-  return !utxo.frozen && !fb.utxo.isLocked(utxo)
+  return !utxo.frozen && !fb.utxo.isFidelityBond(utxo)
 }
 
 const groupByJarIndex = (utxos: Utxo[]): Map<number, Utxo[]> => {
@@ -33,7 +34,7 @@ const groupByJarIndex = (utxos: Utxo[]): Map<number, Utxo[]> => {
   }, new Map<number, Utxo[]>())
 }
 
-const toRetryLockedUtxos = (eligibleUtxos: Utxo[]): Utxo[] => {
+const filterUtxosBlockedByRetryLimit = (eligibleUtxos: Utxo[]): Utxo[] => {
   const utxosByJar = groupByJarIndex(eligibleUtxos)
   const blockedUtxos: Utxo[] = []
 
@@ -47,7 +48,7 @@ const toRetryLockedUtxos = (eligibleUtxos: Utxo[]): Utxo[] => {
   return blockedUtxos
 }
 
-const toNumberOfMissingConfirmations = (utxos: Utxo[], minConfirmations: number): number => {
+const calcMissingConfirmations = (utxos: Utxo[], minConfirmations: number): number => {
   if (utxos.length === 0) {
     return 0
   }
@@ -71,9 +72,9 @@ export const buildSweepPreconditionSummary = (
   const eligibleUtxos = utxos.filter((utxo) => isUtxoEligible(utxo))
   const numberOfMissingUtxos = Math.max(0, mergedOptions.minNumberOfUtxos - eligibleUtxos.length)
   const numberOfMissingConfirmations =
-    numberOfMissingUtxos > 0 ? 0 : toNumberOfMissingConfirmations(eligibleUtxos, mergedOptions.minConfirmations)
+    numberOfMissingUtxos > 0 ? 0 : calcMissingConfirmations(eligibleUtxos, mergedOptions.minConfirmations)
 
-  const retryLockedUtxos = toRetryLockedUtxos(eligibleUtxos)
+  const retryLockedUtxos = filterUtxosBlockedByRetryLimit(eligibleUtxos)
 
   return {
     isFulfilled: numberOfMissingUtxos === 0 && numberOfMissingConfirmations === 0 && retryLockedUtxos.length === 0,

@@ -24,9 +24,9 @@ export const SweepStartConfirmDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('scheduler.confirm_modal.title')}</DialogTitle>
+          <DialogTitle>{t('scheduler.confirm_start_modal.title')}</DialogTitle>
         </DialogHeader>
-        <p className="text-muted-foreground text-sm">{t('scheduler.confirm_modal.body')}</p>
+        <p className="text-muted-foreground text-sm">{t('scheduler.confirm_start_modal.text_body')}</p>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isStarting}>
             {t('modal.confirm_button_reject')}

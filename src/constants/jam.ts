@@ -1,7 +1,13 @@
 import { percentageToFactor, parseSemanticVersion } from '@/lib/utils'
-import type { AmountSats, Milliseconds } from '@/types/global'
+import type { AmountSats, Milliseconds, Seconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
-import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD, JM_WALLET_FILE_EXTENSION } from './jm'
+import {
+  JM_API_AUTH_TOKEN_EXPIRY,
+  JM_DUST_THRESHOLD,
+  JM_MINIMUM_MAKERS_DEFAULT,
+  JM_NG_DEFAULT_TUMBLER_PARAMS,
+  JM_WALLET_FILE_EXTENSION,
+} from './jm'
 import { parseAsIntOrDefault } from './meta-env-utils'
 
 export const APP_DISPLAY_VERSION = (() => {
@@ -100,6 +106,65 @@ export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN: Milliseconds = Math.max(
 export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds = Math.max(
   parseAsIntOrDefault(import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX, 0),
   60_000,
+)
+
+export const JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS: Seconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS, 60 * 60),
+  1,
+)
+const JAM_SWEEP_MAKER_SESSION_IDLE_DEFAULT_TIMEOUT_SECONDS: Seconds =
+  JM_NG_DEFAULT_TUMBLER_PARAMS.maker_session_seconds - 15 * 60
+export const JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS: Seconds = Math.max(
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
+    JAM_SWEEP_MAKER_SESSION_IDLE_DEFAULT_TIMEOUT_SECONDS,
+  ),
+  JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
+)
+
+export const JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT: number = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT, 3),
+  1,
+)
+export const JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT: Seconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT, 3),
+  JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT,
+)
+
+// see https://github.com/joinmarket-ng/joinmarket-ng/blob/0.34.2/tumbler/src/tumbler/plan.py#L176 (last checked 2026-07-22)
+export const JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS = 20
+export const JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS = Math.max(
+  Math.min(
+    parseAsIntOrDefault(import.meta.env.VITE_JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS, JM_MINIMUM_MAKERS_DEFAULT),
+    JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS,
+  ),
+  1,
+)
+
+// see https://github.com/joinmarket-ng/joinmarket-ng/blob/0.34.2/tumbler/src/tumbler/plan.py#L177 (last checked 2026-07-22)
+export const JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS = JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS
+export const JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS = JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS
+
+export const JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR = 2
+export const JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR = 8
+
+export const JAM_SWEEP_DEFAULT_MIN_ROUNDING_CHANCE_PERCENT: number = 0
+export const JAM_SWEEP_DEFAULT_MAX_ROUNDING_CHANCE_PERCENT: number = 100
+
+export const JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT: number = Math.max(
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT,
+    JAM_SWEEP_DEFAULT_MIN_ROUNDING_CHANCE_PERCENT,
+  ),
+  JAM_SWEEP_DEFAULT_MIN_ROUNDING_CHANCE_PERCENT,
+)
+
+export const JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT = Math.max(
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT,
+    JAM_SWEEP_DEFAULT_MAX_ROUNDING_CHANCE_PERCENT,
+  ),
+  JAM_SWEEP_DEFAULT_MIN_ROUNDING_CHANCE_PERCENT,
 )
 
 /**

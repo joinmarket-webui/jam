@@ -452,8 +452,8 @@
   "scheduler": {
     "title": "Programar Limpeza (Experimental)",
     "subtitle": "Execute várias transações usando valores aleatórios e intervalos de tempo para aumentar a sua privacidade e a dos outros. Cada transação agendada é uma transação colaborativa.",
-    "error_starting_schedule_failed": "Falha ao iniciar o agendador.",
-    "error_stopping_schedule_failed": "Falha ao parar agendador.",
+    "error_starting_schedule_failed": "Falha ao iniciar o agendador. Motivo: {{ reason }}",
+    "error_stopping_schedule_failed": "Falha ao parar agendador. Motivo: {{ reason }}",
     "complete_wallet_title": "Carteira Completa",
     "complete_wallet_subtitle": "Isso usará todos os seus fundos não congelados.",
     "description_destination_addresses": "O agendador enviará todos os fundos disponíveis para vários destinos, dividindo-os em partes aleatórias.",
@@ -467,7 +467,7 @@
     "progress_tldr_seconds": "<1>{{ length }}</1> transações agendadas em <3>{{ seconds }}</3> segundos.",
     "progress_tldr_hours": "<1>{{ length }}</1> transações agendadas em <3>{{ hours }}</3> horas.",
     "progress_description": "Esta estimativa é o tempo mínimo de espera. Atrasos adicionais devido a comunicação de rede ou confirmação de transação não são considerados.",
-    "progress_done": "Todas as transações foram concluídas com sucesso. O agendador irá parar em breve.",
+    "progress_done_awaiting_stop": "Todas as transações foram concluídas com sucesso. O agendador irá parar em breve.",
     "precondition": {
       "hint_missing_utxos": "Para executar o agendador você precisa de UTXOs com {{ minConfirmations }} ou mais confirmações. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "O agendador exige que seus UTXOs tenham {{ minConfirmations }} ou mais confirmações. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",

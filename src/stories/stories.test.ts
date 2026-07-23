@@ -135,6 +135,18 @@ const mergeStoryArguments = (metaArguments?: Record<string, unknown>, storyArgum
   ...storyArguments,
 })
 
+type DecoratorFn = (Story: ComponentType<Record<string, unknown>>) => ReactElement
+
+const toArray = <T>(value: T | T[] | undefined): T[] => {
+  if (value === undefined) {
+    return []
+  }
+  if (Array.isArray(value)) {
+    return value
+  }
+  return [value]
+}
+
 describe('storybook stories', () => {
   beforeEach(() => {
     // eslint-disable-next-line compat/compat -- jsdom lacks ResizeObserver, but Radix-powered stories expect it.
@@ -143,6 +155,21 @@ describe('storybook stories', () => {
       observe = vi.fn()
       unobserve = vi.fn()
     }
+
+    // used is-mobile (e.g. sidebar)
+    Object.defineProperty(globalThis, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: unknown) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(), // Deprecated
+        removeListener: vi.fn(), // Deprecated
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    })
   })
 
   it('loads every story module', () => {
@@ -160,7 +187,13 @@ describe('storybook stories', () => {
 
     for (const module of Object.values(modules)) {
       const meta = (
-        module as { default?: { args?: Record<string, unknown>; component?: ComponentType<Record<string, unknown>> } }
+        module as {
+          default?: {
+            args?: Record<string, unknown>
+            component?: ComponentType<Record<string, unknown>>
+            decorators?: Array<DecoratorFn>
+          }
+        }
       ).default
 
       for (const [name, story] of Object.entries(module as Record<string, unknown>)) {
@@ -170,7 +203,7 @@ describe('storybook stories', () => {
 
         const storyConfig = story as {
           args?: Record<string, unknown>
-          decorators?: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement>
+          decorators?: Array<DecoratorFn>
           render?: (args?: Record<string, unknown>) => ReactElement
         }
         let StoryComponent: ComponentType<Record<string, unknown>>
@@ -185,8 +218,7 @@ describe('storybook stories', () => {
           continue
         }
 
-        const decorators: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement> =
-          storyConfig.decorators ?? []
+        const decorators: Array<DecoratorFn> = [...toArray(meta?.decorators), ...toArray(storyConfig.decorators)]
 
         for (const decorator of decorators) {
           const DecoratedStory: ComponentType<Record<string, unknown>> = StoryComponent

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { ScanQrCodeIcon } from 'lucide-react'
-import type { FieldArrayWithId, UseFormReturn } from 'react-hook-form'
+import { PlusCircleIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
+import type { UseFieldArrayReturn, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
@@ -11,19 +11,32 @@ import { Input } from '@/components/ui/input'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { SweepFormValues } from './SweepFormSchema'
 
+type ParentForm = UseFormReturn<SweepFormValues, unknown, SweepFormValues>
+
 interface SweepDestinationInputsProps {
-  form: UseFormReturn<SweepFormValues, unknown, SweepFormValues>
-  fields: Array<FieldArrayWithId<SweepFormValues, 'destinations', 'id'>>
-  disabled: boolean
+  minNumberOfFields: number
+  maxNumberOfFields: number
+  register: ParentForm['register']
+  setValue: ParentForm['setValue']
+  formState: ParentForm['formState']
+  fields: UseFieldArrayReturn<SweepFormValues, 'destinations', 'id'>['fields']
+  disabled?: boolean
+  onClickAppend?: () => void
+  onClickRemove?: (index: number) => void
 }
 
-export const SweepDestinationInputs = ({ form, fields, disabled }: SweepDestinationInputsProps) => {
+export const SweepDestinationInputs = ({
+  minNumberOfFields,
+  maxNumberOfFields,
+  setValue,
+  register,
+  formState: { errors, isSubmitted, touchedFields },
+  fields,
+  disabled,
+  onClickAppend,
+  onClickRemove,
+}: SweepDestinationInputsProps) => {
   const { t } = useTranslation()
-  const {
-    formState: { errors, isSubmitted, touchedFields },
-    register,
-    setValue,
-  } = form
 
   const [qrScannerIndex, setQrScannerIndex] = useState<number>()
 
@@ -36,9 +49,7 @@ export const SweepDestinationInputs = ({ form, fields, disabled }: SweepDestinat
 
   const handleAddressPaste = useCallback(
     (event: React.ClipboardEvent<HTMLInputElement>, index: number) => {
-      const pasted = event.clipboardData.getData('text')
-      if (!pasted.toLowerCase().startsWith('bitcoin:')) return
-
+      const pasted = event.clipboardData.getData('text') ?? ''
       const parsed = parseBip21Uri(pasted)
       if (!parsed) return
 
@@ -75,7 +86,7 @@ export const SweepDestinationInputs = ({ form, fields, disabled }: SweepDestinat
                 <ButtonGroup className="w-full">
                   <Input
                     id={`sweep-destination-${index}`}
-                    {...register(`destinations.${index}.address`)}
+                    {...register(`destinations.${index}.address` as const)}
                     className="font-mono"
                     placeholder={t('scheduler.placeholder_destination_input')}
                     disabled={disabled}
@@ -83,6 +94,12 @@ export const SweepDestinationInputs = ({ form, fields, disabled }: SweepDestinat
                     spellCheck={false}
                     onPaste={(event) => handleAddressPaste(event, index)}
                   />
+                  {index >= minNumberOfFields && onClickRemove ? (
+                    <Button type="button" variant="outline" size="lg" onClick={() => onClickRemove(index)}>
+                      <XIcon />
+                      <span className="sr-only">{t('global.clear')}</span>
+                    </Button>
+                  ) : null}
                   <Button
                     id={`show-qr-scanner-trigger-${index}`}
                     type="button"
@@ -101,6 +118,21 @@ export const SweepDestinationInputs = ({ form, fields, disabled }: SweepDestinat
           )
         })}
       </div>
+      {onClickAppend ? (
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onClickAppend}
+            disabled={disabled || fields.length >= maxNumberOfFields}
+          >
+            <PlusCircleIcon />
+            {/* TODO: i18n */}
+            Add additional destination
+          </Button>
+        </div>
+      ) : null}
     </>
   )
 }

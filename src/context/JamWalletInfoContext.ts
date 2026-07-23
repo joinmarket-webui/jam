@@ -32,7 +32,8 @@ export type FidelityBondSummary = {
 
 export type WalletBalanceSummary = BalanceSummary
 
-export type AddressStaticStatus = 'new' | 'used' | 'reused' | 'cj-out' | 'change-out' | 'non-cj-change' | 'deposit'
+export type AddressStaticStatus =
+  'new' | 'reserved' | 'used' | 'reused' | 'cj-out' | 'change-out' | 'non-cj-change' | 'deposit'
 
 type AddressStatusDynamic = string
 

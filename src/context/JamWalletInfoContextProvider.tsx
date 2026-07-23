@@ -68,7 +68,7 @@ const toAddressSummary = (accountSummary: AccountSummary): AddressSummary => {
       const meta: AddressMeta = {
         jarIndex: account.jarIndex,
         address: entry.address,
-        used: entry.status !== 'new',
+        used: entry.status !== 'new' && entry.status !== 'reserved',
         status: entry.status,
         info: {
           bech32: info.bech32,

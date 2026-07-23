@@ -1,30 +1,40 @@
+import { useState } from 'react'
+import {
+  AlertTriangleIcon,
+  CalendarCheck2Icon,
+  CalendarClockIcon,
+  CheckCircle2Icon,
+  CheckIcon,
+  ClockAlertIcon,
+  CopyIcon,
+  HourglassIcon,
+} from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { cn, shortenStringMiddle } from '@/lib/utils'
+import { DevBadge } from '../dev/DevBadge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
+import { buttonVariants } from '../ui/button-variants'
+import { Item, ItemContent, ItemGroup, ItemTitle } from '../ui/item'
+import { Address } from '../ui/jam/Address'
+import { CopyButton } from '../ui/jam/CopyButton'
+import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
-import type { Schedule, ScheduleEntryState } from './scheduleUtils'
-import { toScheduleProgressSummary } from './scheduleUtils'
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
+import { ScheduleEntryItem } from './ScheduleEntryItem'
+import type { Schedule, ScheduleProgressSummary } from './scheduleUtils'
 
-interface SweepScheduleProgressProps {
-  schedule: Schedule
-  isStopping: boolean
-  onStop: () => Promise<void>
-}
-
-const SweepProgressBar = ({ schedule }: { schedule: Schedule }) => {
-  const progress = toScheduleProgressSummary(schedule)
-
+const SweepProgressBar = ({ progress }: { progress: ScheduleProgressSummary }) => {
   return (
     <div className="bg-muted flex h-3 w-full overflow-hidden rounded-full">
       {progress.steps.map((step, index) => (
         <div
           key={index}
           className={cn('border-r-background h-full border-r-[1px] transition-all last:border-r-0', {
-            'bg-primary/35': !step.isComplete && !step.isActive,
-            'bg-primary motion-safe:animate-pulse': step.isActive,
-            'bg-primary': step.isComplete,
+            'bg-primary/35': !step.completed && !step.active,
+            'bg-primary motion-safe:animate-pulse': step.active,
+            'bg-primary': step.completed,
           })}
           style={{ width: `${step.widthPercent}%` }}
         />
@@ -33,39 +43,27 @@ const SweepProgressBar = ({ schedule }: { schedule: Schedule }) => {
   )
 }
 
-export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepScheduleProgressProps) => {
+const alertTitleComponents = {
+  '1': <span className="font-semibold" />,
+  '3': <span className="font-semibold" />,
+}
+const alertDescriptionWaitingForConfirmationsComponents = {
+  '1': <span className="font-mono" />,
+}
+
+type Tab = 'completed' | 'pending' | 'all'
+
+interface SweepScheduleProgressProps {
+  schedule: Schedule
+  debug?: boolean
+}
+
+export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
-  const progress = toScheduleProgressSummary(schedule)
-  const totalHours = Math.ceil(progress.totalWaitSeconds / 60 / 60)
-  const totalSeconds = Math.ceil(progress.totalWaitSeconds)
-  const highlightedComponents = {
-    '1': <span className="font-semibold" />,
-    '3': <span className="font-semibold" />,
-  }
+  const totalHours = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds / 60 / 60)
+  const totalSeconds = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds)
 
-  const formatWaitTime = (seconds: number): string => {
-    const roundedSeconds = Math.max(0, Math.ceil(seconds))
-    const minutes = Math.floor(roundedSeconds / 60)
-    const remainingSeconds = roundedSeconds % 60
-
-    if (minutes === 0) {
-      return t('scheduler.progress_wait_seconds', { seconds: remainingSeconds })
-    }
-    if (remainingSeconds === 0) {
-      return t('scheduler.progress_wait_minutes', { minutes })
-    }
-    return t('scheduler.progress_wait_minutes_seconds', { minutes, seconds: remainingSeconds })
-  }
-
-  const toScheduleEntryStateText = (state: ScheduleEntryState, txid?: string): string => {
-    if (state === 'confirmed') {
-      return t('scheduler.progress_entry_state_confirmed')
-    }
-    if (state === 'broadcasted') {
-      return t('scheduler.progress_entry_state_waiting_confirmation', { txid: txid ?? '-' })
-    }
-    return t('scheduler.progress_entry_state_pending')
-  }
+  const [activeTab, setActiveTab] = useState<Tab>(() => 'all')
 
   return (
     <Card>
@@ -75,110 +73,310 @@ export const SweepScheduleProgress = ({ schedule, isStopping, onStop }: SweepSch
             <p className="text-sm">
               <Trans
                 i18nKey="scheduler.progress_tldr_seconds"
-                values={{ length: progress.totalTransactions, seconds: totalSeconds }}
-                components={highlightedComponents}
+                values={{ length: schedule.entries.length.toLocaleString(), seconds: totalSeconds.toLocaleString() }}
+                components={alertTitleComponents}
               />
             </p>
           ) : (
             <p className="text-sm">
               <Trans
                 i18nKey="scheduler.progress_tldr_hours"
-                values={{ length: progress.totalTransactions, hours: totalHours }}
-                components={highlightedComponents}
+                values={{ length: schedule.entries.length.toLocaleString(), hours: totalHours.toLocaleString() }}
+                components={alertTitleComponents}
               />
             </p>
           )}
           <p className="text-muted-foreground text-xs">{t('scheduler.progress_description')}</p>
         </div>
 
-        <SweepProgressBar schedule={schedule} />
+        <SweepProgressBar progress={schedule.progress} />
 
-        {progress.isDone ? (
+        {schedule.summary.status.completed ? (
           <Alert variant="success">
-            <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>{t('scheduler.progress_done')}</AlertTitle>
-          </Alert>
-        ) : (
-          <Alert>
-            <Spinner className="motion-reduce:hidden" />
-            <AlertTitle>
-              {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
-              {progress.currentState?.type === 'waiting_before_next' ? (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_wait_before_next"
-                  values={{
-                    current: progress.currentState.currentTransaction,
-                    total: progress.currentState.totalTransactions,
-                    wait: formatWaitTime(progress.currentState.waitSeconds ?? 0),
-                  }}
-                  components={highlightedComponents}
-                />
-              ) : progress.currentState?.type === 'waiting_for_confirmation' ? (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_waiting_confirmation"
-                  values={{
-                    current: progress.currentState.currentTransaction,
-                    total: progress.currentState.totalTransactions,
-                    txid: progress.currentState.txid ?? '-',
-                  }}
-                  components={highlightedComponents}
-                />
-              ) : progress.currentState?.type === 'transaction_confirmed' ? (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_transaction_confirmed"
-                  values={{
-                    current: progress.currentState.currentTransaction,
-                    total: progress.currentState.totalTransactions,
-                  }}
-                  components={highlightedComponents}
-                />
-              ) : (
-                <Trans
-                  i18nKey="scheduler.progress_current_state_creating_next"
-                  values={{
-                    current: progress.currentTransactionIndex + 1,
-                    total: progress.totalTransactions,
-                  }}
-                  components={highlightedComponents}
-                />
-              )}
-            </AlertTitle>
+            <CheckCircle2Icon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep finished successfully.'}</AlertTitle>
             <AlertDescription />
           </Alert>
-        )}
+        ) : null}
 
-        <div className="space-y-2 rounded-lg border p-3">
-          <div className="font-medium">{t('scheduler.progress_schedule_info_title')}</div>
-          <div className="space-y-2">
-            {progress.entries.map((entry) => (
-              <div
-                key={entry.index}
-                className="bg-muted/30 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-md px-2 py-1.5 text-xs"
-              >
-                <div className="font-medium">{t('scheduler.progress_entry_label', { index: entry.index + 1 })}</div>
-                <div className="text-muted-foreground">{toScheduleEntryStateText(entry.state, entry.txid)}</div>
-                <div className="text-muted-foreground">
-                  {entry.isLast
-                    ? t('scheduler.progress_entry_wait_final')
-                    : t('scheduler.progress_entry_wait_before_next', {
-                        wait: formatWaitTime(entry.waitBeforeNextSeconds),
-                      })}
+        {schedule.summary.status.failed ? (
+          <Alert variant="destructive">
+            <AlertTriangleIcon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep failed.'}</AlertTitle>
+            <AlertDescription />
+          </Alert>
+        ) : null}
+
+        {schedule.summary.status.cancelled ? (
+          <Alert variant="warning">
+            <AlertTriangleIcon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep cancelled.'}</AlertTitle>
+            <AlertDescription />
+          </Alert>
+        ) : null}
+
+        {schedule.summary.status.pending ? (
+          <Alert variant="default">
+            <ClockAlertIcon />
+            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep pending.'}</AlertTitle>
+            <AlertDescription />
+          </Alert>
+        ) : null}
+
+        {schedule.summary.status.running ? (
+          <>
+            {/* Keep a stable fallback state so brief polling gaps never leave this header empty. */}
+            {schedule.summary.derivedStatus.value === 'waiting_for_confirmation' ? (
+              <Alert>
+                <HourglassIcon className="motion-safe:animate-pulse" />
+                <AlertTitle>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_waiting_confirmation_title"
+                    values={{
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                      total: schedule.entries.length.toLocaleString(),
+                      txid: schedule.active?.transactionId
+                        ? shortenStringMiddle(schedule.active.transactionId, 12)
+                        : '-',
+                    }}
+                    components={alertTitleComponents}
+                  />
+                </AlertTitle>
+                <AlertDescription>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_waiting_confirmation_description"
+                    values={{
+                      txid: schedule.active?.transactionId
+                        ? shortenStringMiddle(schedule.active.transactionId, 12)
+                        : '-',
+                    }}
+                    components={alertDescriptionWaitingForConfirmationsComponents}
+                  />
+                </AlertDescription>
+              </Alert>
+            ) : schedule.summary.derivedStatus.value === 'waiting_before_next' ? (
+              <Alert>
+                <HourglassIcon className="motion-safe:animate-pulse" />
+                <AlertTitle>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_waiting_start_title"
+                    values={{
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                      total: schedule.entries.length,
+                    }}
+                    components={alertTitleComponents}
+                  />
+                </AlertTitle>
+                <AlertDescription />
+              </Alert>
+            ) : (
+              <Alert>
+                <Spinner className="motion-reduce:hidden" />
+                <AlertTitle>
+                  <Trans
+                    i18nKey="scheduler.progress_current_state_executing_title"
+                    values={{
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
+                      total: schedule.entries.length,
+                    }}
+                    components={alertTitleComponents}
+                  />
+                </AlertTitle>
+                <AlertDescription />
+              </Alert>
+            )}
+          </>
+        ) : null}
+
+        {schedule.summary.startedAt ? (
+          <Item variant="outline">
+            <ItemContent className="grid gap-4 sm:grid-cols-2">
+              <div className="flex min-w-0 items-start gap-4">
+                <CalendarClockIcon className="mt-0.5 shrink-0" />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
+                  <span title={schedule.summary.startedAt.toISOString()}>
+                    {schedule.summary.startedAt.toLocaleString()}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="flex min-w-0 items-start gap-4">
+                <CalendarCheck2Icon className="mt-0.5 shrink-0" />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
+                  {schedule.summary.finishedAt === undefined ? (
+                    '-'
+                  ) : (
+                    <span title={schedule.summary.finishedAt.toISOString()}>
+                      {schedule.summary.finishedAt.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </ItemContent>
+          </Item>
+        ) : null}
 
-        <Button type="button" onClick={() => void onStop()} disabled={isStopping} size="lg" className="w-full">
-          {isStopping ? (
-            <>
-              <Spinner className="motion-reduce:hidden" />
-              {t('scheduler.button_stop')}
-            </>
-          ) : (
-            t('scheduler.button_stop')
-          )}
-        </Button>
+        {schedule.active !== undefined ? (
+          <Accordion type="single" collapsible defaultValue="active">
+            <AccordionItem value="active">
+              <AccordionTrigger>
+                {
+                  /* TODO: i18n */ t('scheduler.section_active_action_title', {
+                    defaultValue: 'Active action',
+                  })
+                }
+              </AccordionTrigger>
+              <AccordionContent
+                className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+              >
+                <ItemGroup className="space-y-2">
+                  <ScheduleEntryItem value={schedule.active} active />
+                </ItemGroup>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        ) : null}
+
+        {schedule.summary.externalDestinations.length === 0 ? null : (
+          <Accordion type="single" collapsible>
+            <AccordionItem value="destinations">
+              <AccordionTrigger>
+                {
+                  /* TODO: i18n */ t('scheduler.section_destinations_title', {
+                    defaultValue: 'Destinations',
+                  })
+                }
+              </AccordionTrigger>
+              <AccordionContent
+                className={cn('flex flex-col gap-2 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+              >
+                <p className="text-muted-foreground">{t('scheduler.description_destination_addresses')}</p>
+                {schedule.summary.externalDestinations.map((value, index) => {
+                  return (
+                    <Item key={index} variant={value.transactionId ? 'muted' : 'outline'}>
+                      <ItemContent className="space-y-2">
+                        <ItemTitle className="flex-col items-start gap-1">
+                          <Label className="font-semibold">{/*TODO: i18n */ 'Address'}</Label>
+                          <Address value={value.address} />
+                        </ItemTitle>
+                        {value.transactionId ? (
+                          <div className="flex flex-col gap-1">
+                            <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-md block font-mono break-all select-all">
+                                {value.transactionId}
+                              </span>
+                              <CopyButton
+                                value={value.transactionId}
+                                text={<CopyIcon />}
+                                successText={<CheckIcon className="text-brand-success" />}
+                                className={cn(buttonVariants({ variant: 'outline', size: 'icon-xs' }), 'shrink-0')}
+                              />
+                            </div>
+                          </div>
+                        ) : null}
+                      </ItemContent>
+                    </Item>
+                  )
+                })}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
+
+        <Accordion type="single" collapsible>
+          <AccordionItem value="details">
+            <AccordionTrigger>
+              {
+                /* TODO: i18n */ t('scheduler.section_details_title', {
+                  defaultValue: 'Schedule details',
+                })
+              }
+            </AccordionTrigger>
+            <AccordionContent
+              className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+            >
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(value as Tab)}
+                className="flex flex-col gap-4"
+              >
+                <TabsList className="mx-auto flex items-center gap-2">
+                  <TabsTrigger value="pending" className="cursor-pointer">
+                    {/* TODO: i18n */}Pending ({schedule.pending.length.toLocaleString()})
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="cursor-pointer">
+                    {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString()})
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className="cursor-pointer">
+                    {/* TODO: i18n */}All ({schedule.entries.length.toLocaleString()})
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              {activeTab === 'completed' ? (
+                schedule.completed.length === 0 ? (
+                  <>
+                    <div className="m-2 flex items-center justify-center gap-2">
+                      No completed actions yet.{/* TODO: i18n */}
+                    </div>
+                  </>
+                ) : (
+                  <ItemGroup className="space-y-2">
+                    {schedule.completed.map((entry, index) => {
+                      return <ScheduleEntryItem key={index} value={entry} active={entry === schedule.active} />
+                    })}
+                  </ItemGroup>
+                )
+              ) : null}
+              {activeTab === 'pending' ? (
+                schedule.pending.length === 0 ? (
+                  <>
+                    <div className="m-2 flex items-center justify-center gap-2">
+                      No pending actions.{/* TODO: i18n */}
+                    </div>
+                  </>
+                ) : (
+                  <ItemGroup className="space-y-2">
+                    {schedule.pending.map((entry, index) => {
+                      return <ScheduleEntryItem key={index} value={entry} active={entry === schedule.active} />
+                    })}
+                  </ItemGroup>
+                )
+              ) : null}
+              {activeTab === 'all' ? (
+                <ItemGroup className="space-y-2">
+                  {schedule.entries.map((entry, index) => {
+                    return <ScheduleEntryItem key={index} value={entry} active={entry === schedule.active} />
+                  })}
+                </ItemGroup>
+              ) : null}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        {debug && (
+          <Card className="mt-8">
+            <CardContent className="flex flex-col gap-2">
+              <Accordion type="single" collapsible>
+                <AccordionItem value="debug">
+                  <AccordionTrigger>
+                    <div>
+                      Debug <DevBadge className="justify-self-end" />
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="overflow-scroll">
+                      <code className="text-destructive">schedule:</code>
+                      <pre className="text-xs">{JSON.stringify(schedule, null, 2)}</pre>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </CardContent>
+          </Card>
+        )}
       </CardContent>
     </Card>
   )

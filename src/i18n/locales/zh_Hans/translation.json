@@ -493,8 +493,8 @@
   "scheduler": {
     "title": "预定扫空（试验性）",
     "subtitle": "使用随机金额和时间间隔执行多次交易，以此增加你和他人的隐私程度。每个预定的交易都是协作式交易。",
-    "error_starting_schedule_failed": "开始调度程序失败。",
-    "error_stopping_schedule_failed": "停止调度程序失败。",
+    "error_starting_schedule_failed": "开始调度程序失败。原因：{{ reason }}",
+    "error_stopping_schedule_failed": "停止调度程序失败。原因：{{ reason }}",
     "complete_wallet_title": "整个钱包",
     "complete_wallet_subtitle": "这将使用你所有解冻的资金。",
     "description_destination_addresses": "调度程序将把所有可用资金随机分配并发送到多个目的地。",
@@ -508,7 +508,7 @@
     "progress_tldr_seconds": "在<3>{{ seconds }}</3>秒的范围内预定了<1>{{ length }}</1>个交易。",
     "progress_tldr_hours": "在<3>{{ hours }}</3>小时的范围内预定了<1>{{ length }}</1>个交易。",
     "progress_description": "此估计是最低等待时间。不计因网络通信或交易确认而造成的其他耽延。",
-    "progress_done": "所有交易都已成功完成。调度程序即将停止。",
+    "progress_done_awaiting_stop": "所有交易都已成功完成。调度程序即将停止。",
     "precondition": {
       "hint_missing_utxos": "要运行调度程序你需要具有至少{{ minConfirmations }}次确认的 UTXOs。$t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "调度程序要求你的 UTXOs 具有至少{{ minConfirmations }}次确认。$t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",

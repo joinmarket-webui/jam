@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { isDevMode } from '@/constants/debugFeatures'
 import { MAX_NUM_COLLABORATORS } from '@/constants/jam'
-import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
+import { JM_MINIMUM_MAKERS_DEFAULT, JM_TAKER_UTXO_AGE } from '@/constants/jm'
 import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { BalanceSummary } from '@/lib/balanceSummary'
@@ -176,7 +176,7 @@ export function SendForm({
     [formState.errors, formState.isValid, formState.isSubmitting],
   )
   const collapsibleFormElementsValid = useMemo(
-    () => errors.numCollaborators === undefined && errors.txFee === undefined,
+    () => [errors.numCollaborators, errors.txFee].every((it) => it === undefined),
     [errors.numCollaborators, errors.txFee],
   )
 
@@ -212,7 +212,9 @@ export function SendForm({
 
   const coinjoinPreconditionSummary = useMemo(() => {
     if (!sourceJar) return undefined
-    return buildSweepPreconditionSummary(sourceJar.utxos)
+    return buildSweepPreconditionSummary(sourceJar.utxos, {
+      minConfirmations: JM_TAKER_UTXO_AGE,
+    })
   }, [sourceJar])
 
   const hasCoinjoinPreconditionWarning = isCoinJoin && coinjoinPreconditionSummary?.isFulfilled === false
@@ -253,9 +255,7 @@ export function SendForm({
 
   const handleAddressPaste = useCallback(
     (event: React.ClipboardEvent<HTMLInputElement>) => {
-      const pasted = event.clipboardData.getData('text')
-      if (!pasted.toLowerCase().startsWith('bitcoin:')) return
-
+      const pasted = event.clipboardData.getData('text') ?? ''
       const parsed = parseBip21Uri(pasted)
       if (!parsed) return
 
@@ -561,7 +561,7 @@ export function SendForm({
               </AccordionTrigger>
 
               <AccordionContent
-                className={cn('flex flex-col gap-6', 'mx-1' /* add x-spacing for input component focus state*/)}
+                className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
               >
                 <div className="flex items-center gap-2">
                   <Switch

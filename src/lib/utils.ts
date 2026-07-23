@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
-import type { BlockHeight, Factor, Milliseconds, MnemonicPhrase } from '@/types/global'
+import type { BlockHeight, Factor, Milliseconds, Minutes, MnemonicPhrase, Seconds } from '@/types/global'
 
 const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
 
@@ -138,8 +138,11 @@ export const tryBtcToSat = (value: string): number | undefined => {
 }
 
 export const SEGWIT_ACTIVATION_BLOCK: BlockHeight = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
-export const AVERAGE_BLOCKS_PER_DAY: number = Math.round((1 / 10) * 60 * 24)
+export const AVERAGE_BLOCKS_PER_HOUR: number = Math.round((1 / 10) * 60)
+export const AVERAGE_BLOCKS_PER_DAY: number = AVERAGE_BLOCKS_PER_HOUR * 24
 export const AVERAGE_BLOCKS_PER_YEAR: number = 365 * AVERAGE_BLOCKS_PER_DAY
+export const MEAN_DURATION_BETWEEN_BLOCKS_MINUTES: Minutes = 60 / AVERAGE_BLOCKS_PER_HOUR
+export const MEAN_DURATION_BETWEEN_BLOCKS_SECONDS: Seconds = MEAN_DURATION_BETWEEN_BLOCKS_MINUTES * 60
 
 //  if applicable, the genesis date can be used as minimum `since` timestamp
 export const BITCOIN_GENESIS_DATE = new Date('2009-01-03T18:15:05Z')
@@ -313,13 +316,13 @@ export const time = (() => {
     from?: Milliseconds
     to: Milliseconds
     locale: string
-  }) => humanReadableTimeInterval(timeInterval({ from, to }), locale || 'en')
+  }) => humanReadableRelativeTimeInterval(timeInterval({ from, to }), locale || 'en')
 
   const timeInterval = ({ from = Date.now(), to }: { from?: Milliseconds; to: Milliseconds }): TimeInterval => {
     return to - from
   }
 
-  const humanReadableTimeInterval = (timeInterval: TimeInterval, locale: string) => {
+  const humanReadableRelativeTimeInterval = (timeInterval: TimeInterval, locale: string) => {
     const rtf = new Intl.RelativeTimeFormat(locale || 'en', { numeric: 'always', style: 'long' })
 
     const sortedUnits = (Object.keys(UNIT_MILLIS) as Unit[])
@@ -340,5 +343,6 @@ export const time = (() => {
   return {
     timeInterval,
     humanReadableDuration,
+    humanReadableRelativeTimeInterval,
   }
 })()

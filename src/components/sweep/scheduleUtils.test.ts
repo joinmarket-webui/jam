@@ -1,74 +1,563 @@
+import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { describe, expect, it } from 'vitest'
-import {
-  isScheduleLikelyCompletedSuccessfully,
-  isScheduleValue,
-  toScheduleProgressSummary,
-  type Schedule,
-} from './scheduleUtils'
+import { toSchedule } from './scheduleUtils'
 
 describe('scheduleUtils', () => {
-  it('identifies valid schedule values', () => {
-    expect(isScheduleValue([[0, 0, 8, 'INTERNAL', 10, 16, 0]])).toBe(true)
-    expect(isScheduleValue(undefined)).toBe(false)
-    expect(isScheduleValue([{}])).toBe(false)
-  })
+  it('creates schedule from tumbler plan', () => {
+    const response: TumblerPlanResponse = {
+      plan_id: 'any',
+      wallet_name: 'wallet.jmdat',
+      status: 'running',
+      destinations: ['external-address'],
+      current_phase: 0,
+      phases: [
+        {
+          kind: 'taker_coinjoin',
+          index: 0,
+          status: 'running',
+          wait_seconds: 20.8818214051562,
+          started_at: '2009-01-03T10:35:52.775747+00:00',
+          finished_at: null,
+          error: null,
+          mixdepth: 0,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 21,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'maker_session',
+          index: 1,
+          status: 'pending',
+          wait_seconds: 3.005975326668475,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: null,
+          amount: null,
+          amount_fraction: null,
+          counterparty_count: null,
+          destination: null,
+          txid: null,
+          duration_seconds: 43200,
+          target_cj_count: null,
+          idle_timeout_seconds: 60,
+          cj_served: 0,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 2,
+          status: 'pending',
+          wait_seconds: 2.14866055202069,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 1,
+          amount: null,
+          amount_fraction: 0.3907,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 3,
+          status: 'pending',
+          wait_seconds: 0.676048133059885,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 1,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'maker_session',
+          index: 4,
+          status: 'pending',
+          wait_seconds: 1.5946546346591093,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: null,
+          amount: null,
+          amount_fraction: null,
+          counterparty_count: null,
+          destination: null,
+          txid: null,
+          duration_seconds: 43200,
+          target_cj_count: null,
+          idle_timeout_seconds: 60,
+          cj_served: 0,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 5,
+          status: 'pending',
+          wait_seconds: 2.9896632224179864,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 2,
+          amount: null,
+          amount_fraction: 0.4218,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 6,
+          status: 'pending',
+          wait_seconds: 40.54038187838071,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 2,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'maker_session',
+          index: 7,
+          status: 'pending',
+          wait_seconds: 6.403509345560395,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: null,
+          amount: null,
+          amount_fraction: null,
+          counterparty_count: null,
+          destination: null,
+          txid: null,
+          duration_seconds: 43200,
+          target_cj_count: null,
+          idle_timeout_seconds: 60,
+          cj_served: 0,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 8,
+          status: 'pending',
+          wait_seconds: 26.647805903403334,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 3,
+          amount: null,
+          amount_fraction: 0.5576,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 9,
+          status: 'pending',
+          wait_seconds: 2.4477304838778844,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 3,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'maker_session',
+          index: 10,
+          status: 'pending',
+          wait_seconds: 10.08820707258785,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: null,
+          amount: null,
+          amount_fraction: null,
+          counterparty_count: null,
+          destination: null,
+          txid: null,
+          duration_seconds: 43200,
+          target_cj_count: null,
+          idle_timeout_seconds: 60,
+          cj_served: 0,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 11,
+          status: 'pending',
+          wait_seconds: 8.619765466535256,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 4,
+          amount: null,
+          amount_fraction: 0.5066,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 12,
+          status: 'pending',
+          wait_seconds: 0,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: 4,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'different-external-address',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+      ],
+      created_at: '2009-01-03T10:35:51.466560+00:00',
+      updated_at: '2009-01-03T10:35:52.775780+00:00',
+      error: null,
+      stale: false,
+    }
 
-  it('creates progress summary from schedule entries', () => {
-    const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 10, 16, 1],
-      [1, 0, 8, 'INTERNAL', 5, 16, 0],
-      [2, 0, 8, 'bc1qdestination', 1, 16, 0],
-    ]
+    const schedule = toSchedule(response, [])
 
-    const summary = toScheduleProgressSummary(schedule)
+    expect(schedule.completed.length).toBe(0)
+    expect(schedule.entries.length).toBe(13)
 
-    expect(summary.totalTransactions).toBe(3)
-    expect(summary.completedTransactions).toBe(1)
-    expect(summary.currentTransactionIndex).toBe(1)
-    expect(summary.isDone).toBe(false)
-    expect(summary.steps).toHaveLength(3)
-    expect(summary.steps[1].isActive).toBe(true)
-    expect(summary.entries).toHaveLength(3)
-    expect(summary.entries[0].state).toBe('confirmed')
-    expect(summary.entries[0].waitBeforeNextSeconds).toBe(600)
-    expect(summary.entries[2].isLast).toBe(true)
+    expect(schedule.active?.index).toBe(0)
+    expect(schedule.active?.transactionId).toBeUndefined()
+    expect(schedule.active?.internal).toBe(true)
+    expect(schedule.active?.isSweep).toBe(true)
+    expect(schedule.active?.jarIndex).toBe(0)
+    expect(schedule.active?.numberOfRequestedCounterparties).toBe(21)
+    expect(schedule.active?.status).toEqual({
+      value: 'running',
+      pending: false,
+      running: true,
+      completed: false,
+      failed: false,
+      cancelled: false,
+      skipped: false,
+    })
+
+    expect(schedule.summary.externalDestinations).toEqual([
+      {
+        address: 'different-external-address',
+      },
+    ])
+
+    expect(schedule.summary.status).toEqual({
+      value: 'running',
+      pending: false,
+      running: true,
+      completed: false,
+      failed: false,
+      cancelled: false,
+    })
   })
 
   it('derives current state while waiting for transaction confirmation', () => {
-    const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 10, 16, 1],
-      [1, 0, 8, 'INTERNAL', 5, 16, '8'.repeat(64)],
-      [2, 0, 8, 'bc1qdestination', 1, 16, 0],
-    ]
+    const response: TumblerPlanResponse = {
+      plan_id: 'any',
+      wallet_name: 'wallet.jmdat',
+      status: 'running',
+      destinations: ['bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'],
+      current_phase: 0,
+      phases: [
+        {
+          kind: 'taker_coinjoin',
+          index: 0,
+          status: 'completed',
+          wait_seconds: 20.8818214051562,
+          started_at: '2009-01-03T10:35:52.775747+00:00',
+          finished_at: null,
+          error: null,
+          mixdepth: 0,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 42,
+          destination: 'INTERNAL',
+          txid: '8'.repeat(64),
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+      ],
+      created_at: '2009-01-03T10:35:51.466560+00:00',
+      updated_at: '2009-01-03T10:35:52.775780+00:00',
+      error: null,
+      stale: false,
+    }
 
-    const summary = toScheduleProgressSummary(schedule)
+    const schedule = toSchedule(response, [])
+    expect(schedule.completed.length).toBe(1)
 
-    expect(summary.currentState?.type).toBe('waiting_for_confirmation')
-    expect(summary.currentState?.currentTransaction).toBe(2)
-    expect(summary.entries[1].state).toBe('broadcasted')
-    expect(summary.entries[1].txid).toBe('8'.repeat(64))
+    expect(schedule.active?.index).toBe(0)
+    expect(schedule.active?.transactionId).toBe('8'.repeat(64))
+    expect(schedule.active?.internal).toBe(true)
+    expect(schedule.active?.isSweep).toBe(true)
+    expect(schedule.active?.jarIndex).toBe(0)
+    expect(schedule.active?.numberOfRequestedCounterparties).toBe(42)
+    expect(schedule.active?.status).toEqual({
+      value: 'completed',
+      pending: false,
+      running: false,
+      completed: true,
+      failed: false,
+      cancelled: false,
+      skipped: false,
+    })
+
+    expect(schedule.summary.derivedStatus).toEqual({
+      value: 'waiting_for_confirmation',
+      terminated: false,
+    })
+    expect(schedule.summary.status).toEqual({
+      value: 'running',
+      pending: false,
+      running: true,
+      completed: false,
+      failed: false,
+      cancelled: false,
+    })
   })
 
   it('derives current state while waiting before the next transaction', () => {
-    const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 2, 16, 1],
-      [1, 0, 8, 'bc1qdestination', 0, 16, 0],
-    ]
+    const response: TumblerPlanResponse = {
+      plan_id: 'any',
+      wallet_name: 'wallet.jmdat',
+      status: 'running',
+      destinations: ['bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'],
+      current_phase: 1,
+      phases: [
+        {
+          kind: 'taker_coinjoin',
+          index: 0,
+          status: 'completed',
+          wait_seconds: 20.8818214051562,
+          started_at: '2009-01-03T10:35:52.775747+00:00',
+          finished_at: '2009-01-03T10:36:17.645587+00:00',
+          error: null,
+          mixdepth: 0,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: null,
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'maker_session',
+          index: 1,
+          status: 'pending',
+          wait_seconds: 3.005975326668475,
+          started_at: null,
+          finished_at: null,
+          error: null,
+          mixdepth: null,
+          amount: null,
+          amount_fraction: null,
+          counterparty_count: null,
+          destination: null,
+          txid: null,
+          duration_seconds: 42,
+          target_cj_count: null,
+          idle_timeout_seconds: 60,
+          cj_served: 0,
+          attempt_count: 0,
+        },
+      ],
+      created_at: '2009-01-03T10:35:51.466560+00:00',
+      updated_at: '2009-01-03T10:35:52.775780+00:00',
+      error: null,
+      stale: false,
+    }
 
-    const summary = toScheduleProgressSummary(schedule)
+    const schedule = toSchedule(response, [])
 
-    expect(summary.currentState?.type).toBe('waiting_before_next')
-    expect(summary.currentState?.currentTransaction).toBe(2)
-    expect(summary.currentState?.waitSeconds).toBe(120)
+    expect(schedule.completed.length).toBe(1)
+    expect(schedule.summary.derivedStatus).toEqual({
+      value: 'waiting_before_next',
+      terminated: false,
+    })
+    expect(schedule.active?.index).toBe(1)
+    expect(schedule.active?.durationSeconds).toBe(42)
   })
 
-  it('falls back to frozen-utxo check when last schedule entry is stale', () => {
-    const schedule: Schedule = [
-      [0, 0, 8, 'INTERNAL', 10, 16, 1],
-      [1, 0, 8, 'bc1qdestination', 0, 16, 0],
-    ]
+  it('derives completed state', () => {
+    const response: TumblerPlanResponse = {
+      plan_id: 'any',
+      wallet_name: 'wallet.jmdat',
+      status: 'completed',
+      destinations: ['final-destination'],
+      current_phase: 4,
+      phases: [
+        {
+          kind: 'taker_coinjoin',
+          index: 0,
+          status: 'completed',
+          wait_seconds: 33.060614864497204,
+          started_at: '2009-01-03T10:37:22.070815+00:00',
+          finished_at: '2009-01-03T10:38:23.012313+00:00',
+          error: null,
+          mixdepth: 2,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: '0c75c7593508f7a3535be252e06ac4274caaab3a26e44d170938a40c2057ba31',
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 1,
+          status: 'completed',
+          wait_seconds: 9.086152239558118,
+          started_at: '2009-01-03T10:45:56.185757+00:00',
+          finished_at: '2009-01-03T10:46:56.547960+00:00',
+          error: null,
+          mixdepth: 0,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: '91b49b8a01a68ffb1638ee52579b83bab29ac3035efc20c4eb90133355c072f4',
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 2,
+          status: 'completed',
+          wait_seconds: 7.629039450908496,
+          started_at: '2009-01-03T10:47:35.670512+00:00',
+          finished_at: '2009-01-03T10:48:33.074154+00:00',
+          error: null,
+          mixdepth: 1,
+          amount: null,
+          amount_fraction: 0.5535,
+          counterparty_count: 1,
+          destination: 'INTERNAL',
+          txid: '556bafc2f01c363b5b40f0920a983d509860abc809562577c3cf45394ef705ca',
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+        {
+          kind: 'taker_coinjoin',
+          index: 9,
+          status: 'completed',
+          wait_seconds: 0,
+          started_at: '2009-01-03T11:13:31.800857+00:00',
+          finished_at: '2009-01-03T11:14:35.691720+00:00',
+          error: null,
+          mixdepth: 4,
+          amount: 0,
+          amount_fraction: null,
+          counterparty_count: 1,
+          destination: 'final-destination',
+          txid: '1f95d0ff8b43645777b60bc23544b955be7e4d8984bb66856747f1fe5674df00',
+          duration_seconds: null,
+          target_cj_count: null,
+          idle_timeout_seconds: null,
+          cj_served: null,
+          attempt_count: 0,
+        },
+      ],
+      created_at: '2009-01-03T10:37:19.808342+00:00',
+      updated_at: '2009-01-03T11:14:35.709755+00:00',
+      error: null,
+      stale: false,
+    }
 
-    expect(isScheduleLikelyCompletedSuccessfully(schedule, false)).toBe(false)
-    expect(isScheduleLikelyCompletedSuccessfully(schedule, true)).toBe(true)
+    const schedule = toSchedule(response, [])
+
+    expect(schedule.completed.length).toBe(4)
+    expect(schedule.summary.derivedStatus).toEqual({
+      value: 'completed',
+      terminated: true,
+    })
+    expect(schedule.active).toBeUndefined()
+
+    expect(schedule.summary.externalDestinations).toEqual([
+      {
+        address: 'final-destination',
+        transactionId: '1f95d0ff8b43645777b60bc23544b955be7e4d8984bb66856747f1fe5674df00',
+      },
+    ])
   })
 })

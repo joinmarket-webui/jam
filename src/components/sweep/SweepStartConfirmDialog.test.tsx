@@ -43,8 +43,8 @@ describe('SweepStartConfirmDialog', () => {
       />,
     )
 
-    expect(screen.getByText('scheduler.confirm_modal.title')).toBeInTheDocument()
-    expect(screen.getByText('scheduler.confirm_modal.body')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_start_modal.title')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_start_modal.text_body')).toBeInTheDocument()
     expect(screen.getByText('modal.confirm_button_reject')).toBeInTheDocument()
     expect(screen.getByText('modal.confirm_button_accept')).toBeInTheDocument()
   })

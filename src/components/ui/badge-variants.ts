@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { JarIndex } from '@/types/global'
 
-const badgeVariants = cva(
+export const badgeVariants = cva(
   'inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden',
   {
     variants: {
@@ -18,6 +18,10 @@ const badgeVariants = cva(
         jar3: 'border-transparent bg-jar3 text-primary-foreground [a&]:hover:bg-jar3/90',
         jar4: 'border-transparent bg-jar4 text-primary-foreground [a&]:hover:bg-jar4/90',
         jarUnknown: 'border-transparent bg-jar-unknown text-primary-foreground [a&]:hover:bg-jar-unknown/90',
+        muted: 'border-transparent bg-muted text-muted-foreground [a&]:hover:bg-muted/90',
+        success: 'border-transparent bg-brand-success text-brand-success-foreground [a&]:hover:bg-brand-success/90',
+        warning: 'border-transparent bg-brand-warning text-brand-warning-foreground [a&]:hover:bg-brand-warning/90',
+        info: 'border-transparent bg-brand-info text-brand-info-foreground [a&]:hover:bg-brand-info/90',
       },
     },
     defaultVariants: {
@@ -26,7 +30,7 @@ const badgeVariants = cva(
   },
 )
 
-type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
+export type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
 
 const JAR_BADGE_VARIANTS: Record<JarIndex, BadgeVariant> = {
   0: 'jar0',
@@ -36,7 +40,5 @@ const JAR_BADGE_VARIANTS: Record<JarIndex, BadgeVariant> = {
   4: 'jar4',
 }
 
-const jarBadgeVariant = (jarIndex?: JarIndex): BadgeVariant | undefined =>
+export const jarBadgeVariant = (jarIndex?: JarIndex): BadgeVariant | undefined =>
   jarIndex === undefined ? undefined : (JAR_BADGE_VARIANTS[jarIndex] ?? 'jarUnknown')
-
-export { badgeVariants, jarBadgeVariant }

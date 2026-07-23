@@ -1,9 +1,11 @@
 import type { TFunction } from 'i18next'
 import { describe, expect, it } from 'vitest'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
+import { percentageToFactor } from '@/lib/utils'
 import {
   buildSweepDestinationValues,
-  getSweepDestinationAddresses,
+  buildSweepFormValuesDefaultValues,
+  formValuesToTumblerParameters,
   sweepFormSchema,
   type SweepFormValues,
 } from './SweepFormSchema'
@@ -12,7 +14,14 @@ const t = ((key: string) => key) as unknown as TFunction<'translation', undefine
 const validRegtestAddress = 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx'
 
 const validate = async (values: SweepFormValues, addressSummary = {} as AddressSummary) => {
-  return await sweepFormSchema(addressSummary, t).validate(values, { abortEarly: false })
+  return await sweepFormSchema(
+    {
+      minNumberOfDestinations: 1,
+      maxNumberOfDestinations: 5,
+      addressSummary,
+    },
+    t,
+  ).validate(values, { abortEarly: false })
 }
 
 describe('sweepFormSchema', () => {
@@ -20,17 +29,10 @@ describe('sweepFormSchema', () => {
     expect(buildSweepDestinationValues(3)).toEqual([{ address: '' }, { address: '' }, { address: '' }])
   })
 
-  it('normalizes destination addresses', () => {
-    expect(
-      getSweepDestinationAddresses({
-        destinations: [{ address: `  ${validRegtestAddress}  ` }],
-      }),
-    ).toEqual([validRegtestAddress])
-  })
-
   it('rejects invalid addresses per destination field', async () => {
     await expect(
       validate({
+        ...buildSweepFormValuesDefaultValues(),
         destinations: [{ address: 'invalid-address' }, { address: '' }],
       }),
     ).rejects.toMatchObject({
@@ -50,6 +52,7 @@ describe('sweepFormSchema', () => {
   it('rejects duplicate destination addresses', async () => {
     await expect(
       validate({
+        ...buildSweepFormValuesDefaultValues(),
         destinations: [{ address: validRegtestAddress }, { address: validRegtestAddress }],
       }),
     ).rejects.toMatchObject({
@@ -77,6 +80,7 @@ describe('sweepFormSchema', () => {
     await expect(
       validate(
         {
+          ...buildSweepFormValuesDefaultValues(),
           destinations: [{ address: usedAddress }],
         },
         addressSummary,
@@ -88,6 +92,22 @@ describe('sweepFormSchema', () => {
           message: 'scheduler.feedback_reused_destination_address',
         }),
       ],
+    })
+  })
+})
+
+describe('formValuesToTumblerParameters', () => {
+  it('rejects reused wallet addresses', () => {
+    const values = buildSweepFormValuesDefaultValues()
+    const parameters = formValuesToTumblerParameters(values)
+
+    expect(parameters).toEqual({
+      include_maker_sessions: values.includeMakerSessions,
+      maker_count_min: values.minNumberOfCollaborators,
+      maker_count_max: values.maxNumberOfCollaborators,
+      rounding_chance: percentageToFactor(values.roundingChanceInPercent, 2),
+      mintxcount: values.minNumberOfTransactionsPerJar,
+      maker_session_idle_timeout_seconds: values.makerSessionIdleTimeoutSeconds,
     })
   })
 })
