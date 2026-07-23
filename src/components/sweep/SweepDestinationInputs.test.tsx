@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import type { FieldArrayWithId, UseFormReturn } from 'react-hook-form'
 import { describe, expect, it, vi } from 'vitest'
 import { SweepDestinationInputs } from './SweepDestinationInputs'
@@ -20,6 +21,7 @@ describe('SweepDestinationInputs', () => {
       isSubmitted: false,
       touchedFields: {},
     },
+    setValue: vi.fn(),
     register: vi.fn((name: string) => ({ name, onBlur: vi.fn(), onChange: vi.fn(), ref: vi.fn() })),
   } as unknown as SweepForm
 
@@ -103,6 +105,44 @@ describe('SweepDestinationInputs', () => {
     expect(inputs[1]).toBeDisabled()
   })
 
+  it('handles bip21 format from paste events', async () => {
+    render(
+      <SweepDestinationInputs
+        minNumberOfFields={fields.length}
+        maxNumberOfFields={fields.length}
+        formState={defaultFormMock.formState}
+        setValue={defaultFormMock.setValue}
+        register={defaultFormMock.register}
+        fields={fields}
+      />,
+    )
+
+    const inputs = screen.getAllByRole('textbox')
+    await act(async () => {
+      await userEvent.click(inputs[0])
+      await userEvent.paste('anything')
+    })
+    expect(defaultFormMock.setValue).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await userEvent.click(inputs[0])
+      await userEvent.paste('bitcoin:')
+    })
+    expect(defaultFormMock.setValue).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await userEvent.click(inputs[1])
+      await userEvent.paste(
+        'bitcoin:bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk?amount=0.0021&label=order%20123&message=regtest',
+      )
+    })
+    expect(defaultFormMock.setValue).toHaveBeenCalledWith(
+      `destinations.1.address`,
+      'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk',
+      { shouldValidate: true },
+    )
+  })
+
   it('adds additional destination inputs', () => {
     const maxNumberOfFields = 3
     const { rerender } = render(
@@ -135,6 +175,9 @@ describe('SweepDestinationInputs', () => {
         register={defaultFormMock.register}
         fields={fields}
         onClickRemove={() => fields.pop()}
+        onClickAppend={() => {
+          /* empty on purpose; wont be called*/
+        }}
       />,
     )
 

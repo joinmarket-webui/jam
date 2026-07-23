@@ -3,9 +3,17 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import test from 'node:test'
 import type { UseFormReturn } from 'react-hook-form'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS } from '@/constants/jam'
+import {
+  JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
+  JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT,
+  JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT,
+} from '@/constants/jam'
+import { JM_NG_DEFAULT_TUMBLER_PARAMS } from '@/constants/jm'
 import type { Jar, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import { percentageToFactor } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import type { SweepFormValues } from './SweepFormSchema'
@@ -309,6 +317,18 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
     name: 'Jar 0',
     utxos: [makeUtxo()],
   }
+  const emptyJar = (index: number): Jar => ({
+    balanceSummary: {
+      calculatedAvailableBalanceInSats: 0,
+      calculatedTotalBalanceInSats: 0,
+      calculatedConfirmedAvailableBalanceInSats: 0,
+      calculatedFrozenOrLockedBalanceInSats: 0,
+    },
+    color: '#ccc',
+    jarIndex: 1,
+    name: `Jar ${index}`,
+    utxos: [],
+  })
 
   return {
     accountSummary: {},
@@ -318,7 +338,7 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
     fidelityBondSummary: { fbOutputs: [] },
     isFetching: false,
     isLoading: false,
-    jars: [jar],
+    jars: [jar, emptyJar(1), emptyJar(2)],
     maxJarAvailableBalance: 100_000,
     refetch: vi.fn(),
     setWaitForUtxosToBeSpent: vi.fn(),
@@ -436,10 +456,20 @@ describe('SweepPage', async () => {
           force: true,
           parameters: {
             include_maker_sessions: true,
-            rounding_chance: expect.any(Number) as number,
-            maker_count_min: expect.any(Number) as number,
-            maker_count_max: expect.any(Number) as number,
-            mintxcount: 2,
+            rounding_chance: expect.toSatisfy(
+              (it: number) =>
+                it >= percentageToFactor(JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT) &&
+                it <= percentageToFactor(JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT),
+            ) as number,
+            maker_count_min: expect.toSatisfy(
+              (it: number) =>
+                it >= JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS && it <= JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+            ) as number,
+            maker_count_max: expect.toSatisfy(
+              (it: number) =>
+                it >= JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS && it <= JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+            ) as number,
+            mintxcount: expect.toSatisfy((it: number) => it >= JM_NG_DEFAULT_TUMBLER_PARAMS.mintxcount) as number,
             maker_session_idle_timeout_seconds: JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
           },
         }),
@@ -648,6 +678,7 @@ describe('SweepPage', async () => {
       fireEvent.click(result.container.querySelector('#switch-use-insecure-schedule-testing')!)
       await waitFor(() => expect(screen.getByRole('button', { name: 'scheduler.button_plan' })).not.toBeDisabled())
 
+      expect(screen.getByRole('button', { name: 'scheduler.button_plan' })).toBeEnabled()
       fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_plan' }))
 
       await waitFor(() => expect(mocks.planTumbler).toHaveBeenCalledTimes(1))

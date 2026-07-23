@@ -11,10 +11,6 @@ import {
   type SweepResolverContext,
   type SweepFormValues,
   buildSweepFormValuesDefaultValues,
-  MIN_MIN_NUMBER_OF_COLLABORATORS,
-  MAX_MAX_NUMBER_OF_COLLABORATORS,
-  MIN_ROUNDING_CHANCE_FACTOR,
-  MAX_ROUNDING_CHANCE_FACTOR,
 } from '@/components/sweep/SweepFormSchema'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -24,11 +20,19 @@ import {
   JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT,
   JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT,
   JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
+  JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT,
+  JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR,
+  JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT,
+  JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR,
 } from '@/constants/jam'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
-import { cn, factorToPercentage } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Card, CardContent, CardHeader } from '../ui/card'
+import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
 import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
 
@@ -69,7 +73,7 @@ export const SweepForm = ({
   const defaultValues = useMemo(() => buildSweepFormValuesDefaultValues(), [])
 
   const [minNumberOfDestinations] = useState(JAM_SWEEP_DESTINATION_ADDRESSES_MIN_COUNT)
-  const [maxNumberOfDestinations] = useState(jars.length)
+  const [maxNumberOfDestinations] = useState(Math.max(minNumberOfDestinations, jars.length))
 
   const schema = useMemo(
     () =>
@@ -113,9 +117,9 @@ export const SweepForm = ({
           address: getNewTestingDestinationAddress(addressSummary),
         })),
       )
-      setValue('minNumberOfCollaborators', 1)
-      setValue('maxNumberOfCollaborators', 1)
-      setValue('minNumberOfTransactionsPerJar', 2)
+      setValue('minNumberOfCollaborators', JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS)
+      setValue('maxNumberOfCollaborators', JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS)
+      setValue('minNumberOfTransactionsPerJar', JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR)
       setValue('makerSessionIdleTimeoutSeconds', JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS)
       void trigger()
     } else {
@@ -203,37 +207,56 @@ export const SweepForm = ({
               </Label>
             </div>
             <div className="flex flex-col justify-center gap-2">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor="slider-min-max-maker" className="flex flex-col items-start gap-0">
-                  {/* TODO: i18n */}
-                  <div className="flex items-center gap-2 font-medium">Number of collaborators</div>
-                  <div className="text-muted-foreground text-sm">
-                    More collaborators are better for privacy, but also increase transaction fees.
+              <div className="space-y-2">
+                <Field
+                  data-invalid={
+                    formState.errors.minNumberOfCollaborators !== undefined ||
+                    formState.errors.maxNumberOfCollaborators !== undefined
+                  }
+                  className="gap-4"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-col items-start gap-0">
+                      <FieldLabel htmlFor="slider-min-max-maker">{/* TODO: i18n */}Number of collaborators</FieldLabel>
+                      <FieldDescription className="text-xs">
+                        {/* TODO: i18n */}More collaborators are better for privacy, but also increase transaction fees.
+                      </FieldDescription>
+                    </div>
+                    <span className="text-foreground">
+                      {formWatch.minNumberOfCollaborators} - {formWatch.maxNumberOfCollaborators}
+                    </span>
                   </div>
-                </Label>
-                <span className="text-foreground">
-                  {formWatch.minNumberOfCollaborators} - {formWatch.maxNumberOfCollaborators}
-                </span>
+                  <Slider
+                    id="slider-min-max-maker"
+                    min={JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS}
+                    max={JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS}
+                    minStepsBetweenThumbs={1}
+                    value={[
+                      formWatch.minNumberOfCollaborators ??
+                        defaultValues?.minNumberOfCollaborators ??
+                        JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
+                      formWatch.maxNumberOfCollaborators ??
+                        defaultValues?.maxNumberOfCollaborators ??
+                        JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+                    ]}
+                    onValueChange={(values: number[]) => {
+                      setValue('minNumberOfCollaborators', values[0])
+                      setValue('maxNumberOfCollaborators', values[1])
+                    }}
+                    disabled={disabled}
+                  />
+                  {formState.errors.minNumberOfCollaborators?.message ? (
+                    <FieldError>
+                      {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid minimum value.
+                    </FieldError>
+                  ) : null}
+                  {formState.errors.maxNumberOfCollaborators?.message ? (
+                    <FieldError>
+                      {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid maximum value.
+                    </FieldError>
+                  ) : null}
+                </Field>
               </div>
-              <Slider
-                id="slider-min-max-maker"
-                min={MIN_MIN_NUMBER_OF_COLLABORATORS}
-                max={MAX_MAX_NUMBER_OF_COLLABORATORS}
-                minStepsBetweenThumbs={1}
-                value={[
-                  formWatch.minNumberOfCollaborators ??
-                    defaultValues?.minNumberOfCollaborators ??
-                    MIN_MIN_NUMBER_OF_COLLABORATORS,
-                  formWatch.maxNumberOfCollaborators ??
-                    defaultValues?.maxNumberOfCollaborators ??
-                    MAX_MAX_NUMBER_OF_COLLABORATORS,
-                ]}
-                onValueChange={(values: number[]) => {
-                  setValue('minNumberOfCollaborators', values[0])
-                  setValue('maxNumberOfCollaborators', values[1])
-                }}
-                disabled={disabled}
-              />
             </div>
             <div className="flex flex-col justify-center gap-2">
               <div className="flex items-center justify-between gap-2">
@@ -248,8 +271,8 @@ export const SweepForm = ({
               </div>
               <Slider
                 id="slider-min-number-of-transactions-per-jar"
-                min={2}
-                max={8}
+                min={JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR}
+                max={JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR}
                 value={
                   formWatch.minNumberOfTransactionsPerJar === undefined
                     ? undefined
@@ -272,8 +295,8 @@ export const SweepForm = ({
               </div>
               <Slider
                 id="slider-rounding-chance-in-percent"
-                min={factorToPercentage(MIN_ROUNDING_CHANCE_FACTOR)}
-                max={factorToPercentage(MAX_ROUNDING_CHANCE_FACTOR)}
+                min={JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT}
+                max={JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT}
                 value={
                   formWatch.roundingChanceInPercent === undefined ? undefined : [formWatch.roundingChanceInPercent]
                 }

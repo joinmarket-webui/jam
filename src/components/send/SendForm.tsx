@@ -255,9 +255,7 @@ export function SendForm({
 
   const handleAddressPaste = useCallback(
     (event: React.ClipboardEvent<HTMLInputElement>) => {
-      const pasted = event.clipboardData.getData('text')
-      if (!pasted.toLowerCase().startsWith('bitcoin:')) return
-
+      const pasted = event.clipboardData.getData('text') ?? ''
       const parsed = parseBip21Uri(pasted)
       if (!parsed) return
 

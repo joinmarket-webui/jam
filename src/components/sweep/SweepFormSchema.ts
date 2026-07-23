@@ -4,12 +4,20 @@ import {
   JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT,
   JAM_SWEEP_MAKER_SESSION_IDLE_MIN_TIMEOUT_SECONDS,
   JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
+  JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT,
+  JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR,
+  JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
+  JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT,
+  JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR,
 } from '@/constants/jam'
-import { JM_MINIMUM_MAKERS_DEFAULT, JM_NG_DEFAULT_TUMBLER_PARAMS, type TumblerParameters } from '@/constants/jm'
+import { JM_NG_DEFAULT_TUMBLER_PARAMS, type TumblerParameters } from '@/constants/jm'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { isValidAddress } from '@/lib/formValidation'
 import { factorToPercentage, isValidNumber, percentageToFactor, pseudoRandomInteger } from '@/lib/utils'
-import type { Factor, Seconds } from '@/types/global'
+import type { Seconds } from '@/types/global'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
 export type SweepFormValues = {
@@ -40,36 +48,38 @@ export type SweepResolverContext = {
   addressSummary: AddressSummary
 }
 
-export const MIN_MIN_NUMBER_OF_COLLABORATORS = Math.max(1, JM_MINIMUM_MAKERS_DEFAULT)
-export const MAX_MAX_NUMBER_OF_COLLABORATORS =
-  MIN_MIN_NUMBER_OF_COLLABORATORS +
-  pseudoRandomInteger(MIN_MIN_NUMBER_OF_COLLABORATORS * 4, MIN_MIN_NUMBER_OF_COLLABORATORS * 5 + 1)
-
-export const MIN_ROUNDING_CHANCE_FACTOR: Factor = 0.1
-export const MAX_ROUNDING_CHANCE_FACTOR: Factor = 0.9
-
 export const buildSweepFormValuesDefaultValues = (): SweepFormValues => {
-  const minNumberOfCollaborators = Math.max(
-    MIN_MIN_NUMBER_OF_COLLABORATORS,
-    JM_NG_DEFAULT_TUMBLER_PARAMS.maker_count_min + pseudoRandomInteger(0, 1),
+  const minNumberOfCollaborators = Math.min(
+    JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+    Math.max(
+      JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
+      JM_NG_DEFAULT_TUMBLER_PARAMS.maker_count_min + pseudoRandomInteger(0, 2),
+    ),
   )
+
   const maxNumberOfCollaborators = Math.min(
-    MAX_MAX_NUMBER_OF_COLLABORATORS,
+    JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
     Math.max(minNumberOfCollaborators + 3, JM_NG_DEFAULT_TUMBLER_PARAMS.maker_count_max + pseudoRandomInteger(-1, 2)),
   )
 
+  const countingChangeInPercent = Math.max(
+    JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT,
+    Math.min(
+      JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT,
+      factorToPercentage(JM_NG_DEFAULT_TUMBLER_PARAMS.rounding_chance) + pseudoRandomInteger(-5, 5),
+    ),
+  )
+
+  const minNumberOfTransactionsPerJar = JM_NG_DEFAULT_TUMBLER_PARAMS.mintxcount + pseudoRandomInteger(0, 1)
   return {
     destinations: buildSweepDestinationValues(JAM_SWEEP_DESTINATION_ADDRESSES_DEFAULT_COUNT),
     useInsecureTestingSettings: false,
     includeMakerSessions: JM_NG_DEFAULT_TUMBLER_PARAMS.include_maker_sessions,
-    roundingChanceInPercent: Math.max(
-      0,
-      Math.min(100, factorToPercentage(JM_NG_DEFAULT_TUMBLER_PARAMS.rounding_chance) + pseudoRandomInteger(-5, 5)),
-    ),
+    roundingChanceInPercent: countingChangeInPercent,
     makerSessionIdleTimeoutSeconds: JAM_SWEEP_MAKER_SESSION_IDLE_TIMEOUT_SECONDS,
     minNumberOfCollaborators,
     maxNumberOfCollaborators,
-    minNumberOfTransactionsPerJar: JM_NG_DEFAULT_TUMBLER_PARAMS.mintxcount,
+    minNumberOfTransactionsPerJar,
   }
 }
 
@@ -156,23 +166,26 @@ export const sweepFormSchema = (
       roundingChanceInPercent: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
-        .min(factorToPercentage(MIN_ROUNDING_CHANCE_FACTOR))
-        .max(factorToPercentage(MAX_ROUNDING_CHANCE_FACTOR))
+        .min(JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT)
+        .max(JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT)
         .required(),
       minNumberOfCollaborators: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
-        .min(1)
+        .min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS)
+        .max(JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS)
         .required(),
       maxNumberOfCollaborators: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
-        .min(1)
+        .min(JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS)
+        .max(JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS)
         .required(),
       minNumberOfTransactionsPerJar: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
-        .min(2)
+        .min(JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR)
+        .max(JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR)
         .required(),
       makerSessionIdleTimeoutSeconds: yup
         .number()

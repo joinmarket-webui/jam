@@ -450,6 +450,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                 <p className="text-muted-foreground text-sm">{t('scheduler.description_destination_addresses')}</p>
 
                 <SweepForm
+                  jars={walletInfo.jars}
                   addressSummary={walletInfo.addressSummary}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
                   debug={isDeveloperMode}

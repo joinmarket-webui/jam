@@ -49,9 +49,7 @@ export const SweepDestinationInputs = ({
 
   const handleAddressPaste = useCallback(
     (event: React.ClipboardEvent<HTMLInputElement>, index: number) => {
-      const pasted = event.clipboardData.getData('text')
-      if (!pasted.toLowerCase().startsWith('bitcoin:')) return
-
+      const pasted = event.clipboardData.getData('text') ?? ''
       const parsed = parseBip21Uri(pasted)
       if (!parsed) return
 
@@ -127,7 +125,7 @@ export const SweepDestinationInputs = ({
             size="sm"
             variant="outline"
             onClick={onClickAppend}
-            disabled={disabled || fields.length > maxNumberOfFields}
+            disabled={disabled || fields.length >= maxNumberOfFields}
           >
             <PlusCircleIcon />
             {/* TODO: i18n */}

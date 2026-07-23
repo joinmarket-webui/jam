@@ -135,6 +135,18 @@ const mergeStoryArguments = (metaArguments?: Record<string, unknown>, storyArgum
   ...storyArguments,
 })
 
+type DecoratorFn = (Story: ComponentType<Record<string, unknown>>) => ReactElement
+
+const toArray = <T>(value: T | T[] | undefined): T[] => {
+  if (value === undefined) {
+    return []
+  }
+  if (Array.isArray(value)) {
+    return value
+  }
+  return [value]
+}
+
 describe('storybook stories', () => {
   beforeEach(() => {
     // eslint-disable-next-line compat/compat -- jsdom lacks ResizeObserver, but Radix-powered stories expect it.
@@ -179,7 +191,7 @@ describe('storybook stories', () => {
           default?: {
             args?: Record<string, unknown>
             component?: ComponentType<Record<string, unknown>>
-            decorators?: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement>
+            decorators?: Array<DecoratorFn>
           }
         }
       ).default
@@ -191,7 +203,7 @@ describe('storybook stories', () => {
 
         const storyConfig = story as {
           args?: Record<string, unknown>
-          decorators?: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement>
+          decorators?: Array<DecoratorFn>
           render?: (args?: Record<string, unknown>) => ReactElement
         }
         let StoryComponent: ComponentType<Record<string, unknown>>
@@ -206,10 +218,7 @@ describe('storybook stories', () => {
           continue
         }
 
-        const decorators: Array<(Story: ComponentType<Record<string, unknown>>) => ReactElement> = [
-          ...(meta?.decorators ?? []),
-          ...(storyConfig.decorators ?? []),
-        ]
+        const decorators: Array<DecoratorFn> = [...toArray(meta?.decorators), ...toArray(storyConfig.decorators)]
 
         for (const decorator of decorators) {
           const DecoratedStory: ComponentType<Record<string, unknown>> = StoryComponent
