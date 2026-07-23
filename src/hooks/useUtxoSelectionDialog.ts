@@ -140,30 +140,42 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
       const result = await applyUtxoSelectionMutateAsync({ utxosToFreeze, utxosToUnfreeze })
 
       if (utxosToFreeze.length > 0) {
+        const fulfilled = result.freezeResult.filter((it) => it.status === 'fulfilled')
         const rejected = result.freezeResult.filter((it) => it.status === 'rejected')
         if (rejected.length === 0) {
-          toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: utxosToFreeze.length }))
+          toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: fulfilled.length }))
         } else {
-          toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length }))
+          const errorMessage = t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length })
+          if (fulfilled.length > 0) {
+            toast.warning(errorMessage)
+          } else {
+            toast.error(errorMessage)
+          }
         }
       }
 
       if (utxosToUnfreeze.length > 0) {
+        const fulfilled = result.unfreezeResult.filter((it) => it.status === 'fulfilled')
         const rejected = result.unfreezeResult.filter((it) => it.status === 'rejected')
         if (rejected.length === 0) {
-          toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: utxosToUnfreeze.length }))
+          toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: fulfilled.length }))
         } else {
-          toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length }))
+          const errorMessage = t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length })
+          if (fulfilled.length > 0) {
+            toast.warning(errorMessage)
+          } else {
+            toast.error(errorMessage)
+          }
         }
       }
 
       setOpen(false)
     } catch (_ignoredOnPurpose) {
       if (utxosToFreeze.length > 0) {
-        toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: utxosToFreeze.length }))
+        toast.error(t('jar_details.utxo_list.toast_freeze_error', { count: utxosToFreeze.length }))
       }
       if (utxosToUnfreeze.length > 0) {
-        toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
+        toast.error(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
       }
     }
   }
