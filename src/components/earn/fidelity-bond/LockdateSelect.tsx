@@ -11,27 +11,24 @@ type LockdateSelectProps = {
   id: string
   value: fb.Lockdate | ''
   onChange: (value: fb.Lockdate | '') => void
+  unavailableValues?: readonly fb.Lockdate[]
 }
 
-export function LockdateSelect({ id, value, onChange }: LockdateSelectProps) {
+export function LockdateSelect({ id, value, onChange, unavailableValues = [] }: LockdateSelectProps) {
   const { t } = useTranslation()
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
+  const unavailableSet = useMemo(() => new Set(unavailableValues), [unavailableValues])
+  const availableLockdateOptions = useMemo(
+    () => lockdateOptions.filter((option) => !unavailableSet.has(option.value)),
+    [lockdateOptions, unavailableSet],
+  )
   const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
   const monthOptions = useMemo(() => getMonthOptions(), [])
 
-  const minLockdate = lockdateOptions.at(0)?.value ?? ''
-  const maxLockdate = lockdateOptions.at(-1)?.value ?? ''
-  const clampLockdate = (lockdate: string): fb.Lockdate | '' => {
-    if (!lockdate || lockdate < minLockdate) return minLockdate || ''
-    if (lockdate > maxLockdate) return maxLockdate || ''
-    return lockdate as fb.Lockdate
-  }
   const selectedYear = value ? value.slice(0, 4) : ''
   const selectedMonth = value ? value.slice(5, 7) : ''
-  const minYear = minLockdate ? Number.parseInt(minLockdate.slice(0, 4), 10) : 0
-  const minMonth = minLockdate ? Number.parseInt(minLockdate.slice(5, 7), 10) : 1
 
   return (
     <>
@@ -43,19 +40,29 @@ export function LockdateSelect({ id, value, onChange }: LockdateSelectProps) {
           <Select
             value={selectedMonth}
             onValueChange={(month) => {
-              const year = selectedYear || String(Number.parseInt(month, 10) >= minMonth ? minYear : minYear + 1)
-              onChange(clampLockdate(`${year}-${month}`))
+              const selectedCandidate = selectedYear ? (`${selectedYear}-${month}` as fb.Lockdate) : undefined
+              const nextValue =
+                selectedCandidate && !unavailableSet.has(selectedCandidate)
+                  ? selectedCandidate
+                  : availableLockdateOptions.find((option) => option.value.endsWith(`-${month}`))?.value
+              onChange(nextValue ?? '')
             }}
           >
             <SelectTrigger id={`${id}-month`} className="h-11 w-full">
               <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_month')} />
             </SelectTrigger>
             <SelectContent>
-              {monthOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {monthOptions.map((option) => {
+                const candidate = selectedYear ? (`${selectedYear}-${option.value}` as fb.Lockdate) : undefined
+                const disabled = candidate
+                  ? !availableLockdateOptions.some((lockdate) => lockdate.value === candidate)
+                  : !availableLockdateOptions.some((lockdate) => lockdate.value.endsWith(`-${option.value}`))
+                return (
+                  <SelectItem key={option.value} value={option.value} disabled={disabled}>
+                    {option.label}
+                  </SelectItem>
+                )
+              })}
             </SelectContent>
           </Select>
         </div>
@@ -66,19 +73,29 @@ export function LockdateSelect({ id, value, onChange }: LockdateSelectProps) {
           <Select
             value={selectedYear}
             onValueChange={(year) => {
-              const month = selectedMonth || String(year === String(minYear) ? minMonth : 1).padStart(2, '0')
-              onChange(clampLockdate(`${year}-${month}`))
+              const selectedCandidate = selectedMonth ? (`${year}-${selectedMonth}` as fb.Lockdate) : undefined
+              const nextValue =
+                selectedCandidate && !unavailableSet.has(selectedCandidate)
+                  ? selectedCandidate
+                  : availableLockdateOptions.find((option) => option.value.startsWith(`${year}-`))?.value
+              onChange(nextValue ?? '')
             }}
           >
             <SelectTrigger id={`${id}-year`} className="h-11 w-full">
               <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_year')} />
             </SelectTrigger>
             <SelectContent>
-              {yearOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {yearOptions.map((option) => {
+                const candidate = selectedMonth ? (`${option.value}-${selectedMonth}` as fb.Lockdate) : undefined
+                const disabled = candidate
+                  ? !availableLockdateOptions.some((lockdate) => lockdate.value === candidate)
+                  : !availableLockdateOptions.some((lockdate) => lockdate.value.startsWith(`${option.value}-`))
+                return (
+                  <SelectItem key={option.value} value={option.value} disabled={disabled}>
+                    {option.label}
+                  </SelectItem>
+                )
+              })}
             </SelectContent>
           </Select>
         </div>

@@ -5,18 +5,25 @@ import type { Utxo } from '@/hooks/useQueryUtxos'
 import { generateLockdateOptions } from './types'
 import { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
-const mocks = vi.hoisted(() => ({
-  directSendMutateAsync: vi.fn(),
-  freezeMutateAsync: vi.fn(),
-  walletInfoRefetch: vi.fn(),
-  toastSuccess: vi.fn(),
-  queryAddress: undefined as string | undefined,
-  walletInfo: {
-    jars: [] as Jar[],
-    fidelityBondSummary: { fbOutputs: [] as Utxo[] },
-    refetch: vi.fn(),
-  },
-}))
+const mocks = vi.hoisted(() => {
+  const addressSummary: Record<string, { status: string }> = {
+    bcrt1qsource: { status: 'cj-out' },
+  }
+  return {
+    directSendMutateAsync: vi.fn(),
+    freezeMutateAsync: vi.fn(),
+    walletInfoRefetch: vi.fn(),
+    toastSuccess: vi.fn(),
+    queryAddress: undefined as string | undefined,
+    isDeveloperMode: false,
+    walletInfo: {
+      jars: [] as Jar[],
+      fidelityBondSummary: { fbOutputs: [] as Utxo[] },
+      addressSummary,
+      refetch: vi.fn(),
+    },
+  }
+})
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   directsendMutation: vi.fn(() => ({ mutationKey: ['directsend'] })),
@@ -59,7 +66,7 @@ vi.mock('@/hooks/useApiClient', () => ({
 
 vi.mock('@/store/jamSettingsStore', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/store/jamSettingsStore')>()),
-  useDeveloperMode: () => ({ enabled: false }),
+  useDeveloperMode: () => ({ enabled: mocks.isDeveloperMode }),
 }))
 
 const utxo = (overrides: Partial<Utxo>): Utxo => ({
@@ -87,8 +94,8 @@ const jar = (jarIndex: number, utxos: Utxo[]): Jar =>
     utxos,
   }) as unknown as Jar
 
-const minLockdateOption = () => {
-  const lockdate = generateLockdateOptions(false).at(0)?.value
+const minLockdateOption = (isDeveloperMode = false) => {
+  const lockdate = generateLockdateOptions(isDeveloperMode).at(0)?.value
   if (!lockdate) throw new Error('Expected a generated lockdate option')
   return lockdate
 }
@@ -101,7 +108,11 @@ describe('useCreateFidelityBondWizard', () => {
     mocks.walletInfoRefetch.mockResolvedValue(undefined)
     mocks.walletInfo.refetch = mocks.walletInfoRefetch
     mocks.queryAddress = 'bcrt1qtimelockdestination'
+    mocks.isDeveloperMode = false
     mocks.walletInfo.fidelityBondSummary = { fbOutputs: [] }
+    mocks.walletInfo.addressSummary = {
+      bcrt1qsource: { status: 'cj-out' },
+    }
     mocks.walletInfo.jars = [
       jar(0, [
         utxo({ utxo: 'small:0', value: 10_000 }),
@@ -118,26 +129,26 @@ describe('useCreateFidelityBondWizard', () => {
     ]
   })
 
-  it('derives selectable utxos and selection totals from wallet state', async () => {
+  it('derives selectable utxos and keeps selection to one utxo', async () => {
     const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
 
     act(() => result.current.setSelectedJarIndex(0))
 
     expect(result.current.availableUtxos.map((entry) => entry.utxo)).toEqual(['large:0', 'small:0'])
 
-    act(() => result.current.selectAllUtxos())
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
 
-    expect(result.current.selectedUtxos.map((entry) => entry.utxo)).toEqual(['large:0', 'small:0'])
-    expect(result.current.totalAmount).toBe(60_000)
-    expect(result.current.utxosToFreeze.map((entry) => entry.utxo)).toEqual([])
+    expect(result.current.selectedUtxos.map((entry) => entry.utxo)).toEqual(['large:0'])
+    expect(result.current.totalAmount).toBe(50_000)
+    expect(result.current.utxosToFreeze.map((entry) => entry.utxo)).toEqual(['small:0'])
     expect(result.current.isUsingAllFunds).toBe(false)
 
-    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[1]))
 
     expect(result.current.selectedUtxos.map((entry) => entry.utxo)).toEqual(['small:0'])
     expect(result.current.utxosToFreeze.map((entry) => entry.utxo)).toEqual(['large:0'])
 
-    act(() => result.current.deselectAllUtxos())
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[1]))
 
     await waitFor(() => expect(result.current.selectedUtxos).toHaveLength(0))
   })
@@ -153,7 +164,7 @@ describe('useCreateFidelityBondWizard', () => {
     expect(result.current.step).toBe('select_utxos')
     expect(result.current.selectedJarIndex).toBe(0)
 
-    act(() => result.current.selectAllUtxos())
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
     await act(async () => result.current.handleNext())
 
     expect(result.current.step).toBe('review')
@@ -212,7 +223,11 @@ describe('useCreateFidelityBondWizard', () => {
     act(() => {
       result.current.setStep('success')
       result.current.setSelectedJarIndex(0)
-      result.current.selectAllUtxos()
+    })
+    act(() => {
+      result.current.toggleUtxoSelection(result.current.availableUtxos[0])
+    })
+    act(() => {
       result.current.handleOpenChange(false)
     })
 
@@ -256,6 +271,31 @@ describe('useCreateFidelityBondWizard', () => {
     expect(result.current.hasDuplicateLockdate).toBeFalsy()
     act(() => result.current.setSelectedLockdate(lockdate))
     expect(result.current.hasDuplicateLockdate).toBe(true)
+    expect(result.current.canProceed()).toBe(false)
+  })
+
+  it('blocks a lock date already used by an expired fidelity bond', () => {
+    mocks.isDeveloperMode = true
+    const expiredLockdate = minLockdateOption(true)
+    const timestampSeconds = Math.floor(new Date(`${expiredLockdate}-01T00:00:00Z`).getTime() / 1000)
+
+    mocks.walletInfo.fidelityBondSummary = {
+      fbOutputs: [
+        utxo({
+          utxo: 'expired-bond:0',
+          value: 100_000,
+          locktime: `${expiredLockdate}-01 00:00:00`,
+          path: `m/84'/1'/0'/0/0:${timestampSeconds}`,
+        }),
+      ],
+    }
+
+    const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+    expect(result.current.existingFbLockdates).toContain(expiredLockdate)
+    act(() => result.current.setSelectedLockdate(expiredLockdate))
+    expect(result.current.hasDuplicateLockdate).toBe(true)
+    expect(result.current.canProceed()).toBe(false)
   })
 
   it('ignores existing fidelity bonds whose locktime cannot be derived', () => {
@@ -282,13 +322,30 @@ describe('useCreateFidelityBondWizard', () => {
     const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
 
     act(() => result.current.setSelectedJarIndex(0))
-    act(() => result.current.selectAllUtxos())
-    expect(result.current.selectedUtxos.map((entry) => entry.utxo)).toEqual(['large:0', 'small:0'])
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+    expect(result.current.selectedUtxos.map((entry) => entry.utxo)).toEqual(['large:0'])
 
     // switch to a jar that does not contain the previously selected ids
     act(() => result.current.setSelectedJarIndex(1))
 
     await waitFor(() => expect(result.current.selectedUtxos).toEqual([]))
+  })
+
+  it('only exposes unfrozen cj-out utxos for fidelity-bond creation', () => {
+    mocks.walletInfo.addressSummary = {
+      bcrt1qcj: { status: 'cj-out' },
+      bcrt1qdeposit: { status: 'deposit' },
+    }
+    mocks.walletInfo.jars = [
+      jar(0, [utxo({ utxo: 'cj:0', address: 'bcrt1qcj' }), utxo({ utxo: 'deposit:0', address: 'bcrt1qdeposit' })]),
+      jar(1, [utxo({ utxo: 'deposit-only:0', address: 'bcrt1qdeposit', mixdepth: 1 })]),
+    ]
+
+    const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+    expect(result.current.jarsWithUtxos.map((entry) => entry.jarIndex)).toEqual([0])
+    act(() => result.current.setSelectedJarIndex(0))
+    expect(result.current.availableUtxos.map((entry) => entry.utxo)).toEqual(['cj:0'])
   })
 
   it('reflects canProceed gating for each step', () => {
@@ -309,7 +366,7 @@ describe('useCreateFidelityBondWizard', () => {
     // select_utxos
     act(() => result.current.setStep('select_utxos'))
     expect(result.current.canProceed()).toBe(false)
-    act(() => result.current.selectAllUtxos())
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
     expect(result.current.canProceed()).toBe(true)
 
     // freeze_utxos always proceeds
@@ -388,19 +445,16 @@ describe('useCreateFidelityBondWizard', () => {
       expect(result.current.step).toBe('select_utxos')
     })
 
-    it('skips freezing and moves straight to review when all utxos are selected', async () => {
+    it('skips freezing and moves straight to review when the selected utxo is the only one in the jar', async () => {
+      mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'only:0', value: 25_000 })])]
       const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
       const lockdate = minLockdateOption()
 
       act(() => result.current.setSelectedLockdate(lockdate))
       await act(async () => result.current.handleNext())
-      expect(result.current.step).toBe('select_jar')
-
-      act(() => result.current.setSelectedJarIndex(0))
-      await act(async () => result.current.handleNext())
       expect(result.current.step).toBe('select_utxos')
 
-      act(() => result.current.selectAllUtxos())
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
       await act(async () => result.current.handleNext())
 
       expect(result.current.step).toBe('review')
@@ -412,7 +466,7 @@ describe('useCreateFidelityBondWizard', () => {
       const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
 
       act(() => result.current.setSelectedJarIndex(0))
-      act(() => result.current.selectAllUtxos())
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
       act(() => result.current.setStep('review'))
       // confirmation not accepted -> trigger() fails the whole form
       await act(async () => result.current.handleNext())
@@ -436,7 +490,7 @@ describe('useCreateFidelityBondWizard', () => {
       const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
 
       act(() => result.current.setSelectedJarIndex(0))
-      act(() => result.current.selectAllUtxos())
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
       act(() => result.current.setStep('select_utxos'))
       act(() => result.current.handleBack())
 
@@ -450,7 +504,7 @@ describe('useCreateFidelityBondWizard', () => {
       const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
 
       act(() => result.current.setSelectedJarIndex(0))
-      act(() => result.current.selectAllUtxos())
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
       act(() => result.current.setStep('select_utxos'))
       act(() => result.current.handleBack())
 
@@ -469,10 +523,11 @@ describe('useCreateFidelityBondWizard', () => {
     })
 
     it('returns from review to select_utxos when nothing was frozen', () => {
+      mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'only:0', value: 25_000 })])]
       const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
 
       act(() => result.current.setSelectedJarIndex(0))
-      act(() => result.current.selectAllUtxos())
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
       act(() => result.current.setStep('review'))
       expect(result.current.utxosToFreeze).toEqual([])
       act(() => result.current.handleBack())

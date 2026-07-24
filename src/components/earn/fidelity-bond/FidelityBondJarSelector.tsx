@@ -13,7 +13,7 @@ export function FidelityBondJarSelector({ selectedJarIndex, onSelect, isJarDisab
   const { jars, walletBalanceSummary } = useJamWalletInfoContext()
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-4">
       {jars.map((jar) => (
         <SelectableJar
           key={jar.jarIndex}

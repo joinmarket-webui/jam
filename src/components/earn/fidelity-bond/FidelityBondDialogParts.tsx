@@ -6,11 +6,12 @@ import { Badge } from '@/components/ui/badge'
 import { jarBadgeVariant } from '@/components/ui/badge-variants'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Address } from '@/components/ui/jam/Address'
+import { Balance } from '@/components/ui/jam/Balance'
 import { CopyButton } from '@/components/ui/jam/CopyButton'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
-import { cn, formatSats } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import type { AmountSats, JarIndex } from '@/types/global'
 
 /** icon + title/subtitle block shown at the top of a wizard step */
@@ -46,8 +47,8 @@ export function InfoCard({
   )
 }
 
-export function SatsAmount({ value, className }: { value: AmountSats; className?: string }) {
-  return <p className={cn('font-mono text-2xl font-bold', className)}>{formatSats(value)}</p>
+export function FidelityBondAmount({ value, className }: { value: AmountSats; className?: string }) {
+  return <Balance valueString={String(value)} className={cn('font-mono text-2xl font-bold', className)} />
 }
 
 export function JarBadge({ jarIndex, name }: { jarIndex: JarIndex | undefined; name?: string }) {

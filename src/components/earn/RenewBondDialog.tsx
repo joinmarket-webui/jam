@@ -16,11 +16,11 @@ import {
   AddressPreview,
   ConfirmationToggle,
   CopyableField,
+  FidelityBondAmount,
   InfoCard,
   InlineLoading,
   JarBadge,
   PendingStep,
-  SatsAmount,
   StepIntro,
   SuccessHeading,
 } from './fidelity-bond/FidelityBondDialogParts'
@@ -145,7 +145,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           <StepIntro icon={CalendarIcon} title={t('earn.fidelity_bond.select_date.description')} />
 
           <InfoCard label={t('earn.fidelity_bond.review_inputs.label_amount')}>
-            <SatsAmount value={utxo.value} className="text-lg" />
+            <FidelityBondAmount value={utxo.value} className="text-lg" />
           </InfoCard>
 
           <LockdateSelect id="renew-lockdate" value={selectedLockdate} onChange={setSelectedLockdate} />
@@ -164,7 +164,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           </div>
 
           <InfoCard highlight label={t('earn.fidelity_bond.review_inputs.label_amount')}>
-            <SatsAmount value={utxo.value} />
+            <FidelityBondAmount value={utxo.value} />
           </InfoCard>
 
           {timelockAddressQuery.isLoading ? (

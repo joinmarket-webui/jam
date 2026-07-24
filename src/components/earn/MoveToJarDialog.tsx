@@ -15,13 +15,12 @@ import type { JarIndex } from '@/types/global'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
   AddressPreview,
-  ConfirmationToggle,
   CopyableField,
+  FidelityBondAmount,
   InfoCard,
   InlineLoading,
   JarBadge,
   PendingStep,
-  SatsAmount,
   StepIntro,
   SuccessHeading,
 } from './fidelity-bond/FidelityBondDialogParts'
@@ -47,7 +46,6 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
   const [step, setStep] = useState<Step>('select_jar')
   const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | undefined>()
-  const [confirmationChecked, setConfirmationChecked] = useState(false)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
 
   const { sweep, isLoading, error, setError, sourceJar } = useFidelityBondSweep({
@@ -80,7 +78,6 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const handleReset = () => {
     setStep('select_jar')
     setSelectedJarIndex(undefined)
-    setConfirmationChecked(false)
     setTxResult(undefined)
     setError(undefined)
   }
@@ -121,7 +118,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
             onBack={() => setStep('select_jar')}
             onCancel={() => handleOpenChange(false)}
             onPrimary={() => void handleSubmit()}
-            primaryDisabled={!confirmationChecked || !destinationAddress}
+            primaryDisabled={!destinationAddress}
             isLoading={isLoading}
             primaryLabel={t('earn.fidelity_bond.move.text_button_submit')}
           />
@@ -147,14 +144,14 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
         <div className="space-y-6">
           <StepIntro icon={UnlockIcon} title={t('earn.fidelity_bond.move.select_jar.description')} />
 
-          <InfoCard label={t('earn.fidelity_bond.review_inputs.label_amount')}>
-            <SatsAmount value={utxo.value} className="text-lg" />
+          <InfoCard label={t('earn.fidelity_bond.move.label_amount')}>
+            <FidelityBondAmount value={utxo.value} className="text-lg" />
           </InfoCard>
 
           <FidelityBondJarSelector
             selectedJarIndex={selectedJarIndex}
             onSelect={setSelectedJarIndex}
-            isJarDisabled={(jar) => jar.jarIndex === utxo.mixdepth}
+            isJarDisabled={() => false}
           />
         </div>
       )}
@@ -170,8 +167,8 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
             </InfoCard>
           </div>
 
-          <InfoCard highlight label={t('earn.fidelity_bond.review_inputs.label_amount')}>
-            <SatsAmount value={utxo.value} />
+          <InfoCard highlight label={t('earn.fidelity_bond.move.label_amount')}>
+            <FidelityBondAmount value={utxo.value} />
           </InfoCard>
 
           {getAddressQuery.isLoading ? (
@@ -186,12 +183,6 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
             <AlertTriangleIcon className="h-4 w-4" />
             <AlertTitle>{t('earn.fidelity_bond.move.confirm_send_modal.title')}</AlertTitle>
           </Alert>
-
-          <ConfirmationToggle
-            id="move-confirmation"
-            checked={confirmationChecked}
-            onCheckedChange={setConfirmationChecked}
-          />
         </div>
       )}
 

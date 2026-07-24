@@ -136,6 +136,10 @@ vi.mock('@/components/ui/jam/CopyButton', () => ({
   CopyButton: ({ value }: ValueProps) => <div data-testid="copy">{value}</div>,
 }))
 
+vi.mock('@/components/ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span>{valueString} sats</span>,
+}))
+
 vi.mock('@/components/ui/label', () => ({ Label: ({ children }: ChildrenProps) => <label>{children}</label> }))
 
 vi.mock('../ui/jam/Address', () => ({

@@ -1,9 +1,7 @@
 import { AlertTriangleIcon, CheckIcon, CalendarIcon, WalletIcon, CoinsIcon, LockIcon } from 'lucide-react'
 import { Trans } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { BitcoinAddressQrCode } from '@/components/ui/jam/BitcoinQrCode'
 import {
   Pagination,
   PaginationContent,
@@ -12,15 +10,16 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import * as fb from '@/lib/fidelityBondUtils'
-import { clamp, cn, formatSats } from '@/lib/utils'
+import { clamp, cn } from '@/lib/utils'
 import {
+  AddressPreview,
   ConfirmationToggle,
   CopyableField,
+  FidelityBondAmount,
   InfoCard,
   InlineLoading,
   JarBadge,
   PendingStep,
-  SatsAmount,
   StepIntro,
   SuccessHeading,
 } from '../fidelity-bond/FidelityBondDialogParts'
@@ -39,7 +38,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     step,
     setSelectedLockdate,
     selectedLockdate,
-    hasDuplicateLockdate,
+    existingFbLockdates,
     selectedJarIndex,
     setSelectedJarIndex,
     jarsWithUtxos,
@@ -48,8 +47,6 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     utxoPage,
     setUtxoPage,
     toggleUtxoSelection,
-    selectAllUtxos,
-    deselectAllUtxos,
     totalAmount,
     isUsingAllFunds,
     utxosToFreeze,
@@ -75,18 +72,12 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             subtitle={t('earn.fidelity_bond.select_date.subtitle')}
           />
 
-          <LockdateSelect id="lockdate" value={selectedLockdate} onChange={setSelectedLockdate} />
-
-          {hasDuplicateLockdate && (
-            <Alert variant="warning">
-              <AlertTriangleIcon className="h-4 w-4" />
-              <AlertDescription>
-                <Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry">
-                  <strong>Warning</strong>: A fidelity bond with the same expiry date already exists.
-                </Trans>
-              </AlertDescription>
-            </Alert>
-          )}
+          <LockdateSelect
+            id="lockdate"
+            value={selectedLockdate}
+            onChange={setSelectedLockdate}
+            unavailableValues={existingFbLockdates}
+          />
         </div>
       )
 
@@ -122,16 +113,6 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             subtitle={t('earn.fidelity_bond.select_utxos.description', { jar: selectedJarIndex })}
           />
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={selectAllUtxos} className="shadow-sm">
-              <CheckIcon className="mr-1 h-3.5 w-3.5" />
-              {t('earn.fidelity_bond.select_utxos.button_select_all')}
-            </Button>
-            <Button variant="outline" onClick={deselectAllUtxos} className="shadow-sm">
-              {t('earn.fidelity_bond.select_utxos.button_deselect_all')}
-            </Button>
-          </div>
-
           <div className="space-y-2">
             {(() => {
               const perPage = 5
@@ -155,7 +136,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                         <CardContent className="flex items-center gap-3 p-3">
                           <div
                             className={cn(
-                              'flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-all',
+                              'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
                               isSelected
                                 ? 'border-primary bg-primary text-primary-foreground'
                                 : 'border-muted-foreground/40',
@@ -172,9 +153,10 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                             </p>
                           </div>
                           <div className="shrink-0 text-right">
-                            <p className="font-mono text-sm font-semibold whitespace-nowrap">
-                              {formatSats(utxo.value)}
-                            </p>
+                            <FidelityBondAmount
+                              value={utxo.value}
+                              className="text-sm font-semibold whitespace-nowrap"
+                            />
                           </div>
                         </CardContent>
                       </Card>
@@ -214,7 +196,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                 <span className="min-w-0 font-medium break-words">
                   {t('earn.fidelity_bond.select_utxos.label_total_selected')}
                 </span>
-                <span className="shrink-0 font-mono text-lg font-bold">{formatSats(totalAmount)}</span>
+                <FidelityBondAmount value={totalAmount} className="shrink-0 text-lg" />
               </div>
             </div>
           )}
@@ -253,7 +235,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                 {selectedUtxos.map((utxo) => (
                   <div key={utxo.utxo} className="flex items-center justify-between py-1 text-sm">
                     <span className="mr-2 flex-1 truncate font-mono text-xs">{utxo.utxo.slice(0, 24)}...</span>
-                    <span className="font-mono font-semibold">{formatSats(utxo.value)}</span>
+                    <FidelityBondAmount value={utxo.value} className="text-sm font-semibold" />
                   </div>
                 ))}
               </div>
@@ -273,7 +255,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                   {utxosToFreeze.map((utxo) => (
                     <div key={utxo.utxo} className="flex items-center justify-between py-1 text-sm">
                       <span className="mr-2 flex-1 truncate font-mono text-xs">{utxo.utxo.slice(0, 24)}...</span>
-                      <span className="font-mono font-semibold">{formatSats(utxo.value)}</span>
+                      <FidelityBondAmount value={utxo.value} className="text-sm font-semibold" />
                     </div>
                   ))}
                 </div>
@@ -297,25 +279,14 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </div>
 
             <InfoCard highlight label={t('earn.fidelity_bond.review_inputs.label_amount')}>
-              <SatsAmount value={totalAmount} />
+              <FidelityBondAmount value={totalAmount} />
             </InfoCard>
           </div>
 
           {timelockAddressQuery.isLoading ? (
             <InlineLoading text={t('earn.fidelity_bond.text_loading')} />
           ) : (
-            address && (
-              <div className="space-y-4">
-                <div className="dark:bg-muted/30 flex justify-center rounded-lg bg-white p-4">
-                  <BitcoinAddressQrCode address={address} amount={totalAmount} width={200} />
-                </div>
-                <CopyableField
-                  label={t('earn.fidelity_bond.review_inputs.label_address')}
-                  value={address}
-                  copiedMessage={t('receive.text_copy_address')}
-                />
-              </div>
-            )
+            address && <AddressPreview label={t('earn.fidelity_bond.review_inputs.label_address')} address={address} />
           )}
 
           <Alert variant="warning">

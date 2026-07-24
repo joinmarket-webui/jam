@@ -13,14 +13,18 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
 
-vi.mock('@/components/ui/jam/BitcoinQrCode', () => ({
-  BitcoinAddressQrCode: () => <div data-testid="qr-code">QR</div>,
-}))
-
 vi.mock('@/lib/utils', () => ({
   cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
   formatSats: (sats: number) => `${sats} sats`,
   clamp: (val: number, min: number, max: number) => Math.min(Math.max(val, min), max),
+}))
+
+vi.mock('@/components/ui/jam/Address', () => ({
+  Address: ({ value }: { value: string }) => <span>{value}</span>,
+}))
+
+vi.mock('@/components/ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span>{valueString} sats</span>,
 }))
 
 vi.mock('@/lib/fidelityBondUtils', () => ({
@@ -70,6 +74,7 @@ const getBaseWizard = (): Wizard =>
     setSelectedLockdate: vi.fn(),
     selectedLockdate: '2025-01',
     hasDuplicateLockdate: false,
+    existingFbLockdates: [],
     selectedJarIndex: 0,
     setSelectedJarIndex: vi.fn(),
     jarsWithUtxos: [],
@@ -78,8 +83,6 @@ const getBaseWizard = (): Wizard =>
     utxoPage: 0,
     setUtxoPage: vi.fn(),
     toggleUtxoSelection: vi.fn(),
-    selectAllUtxos: vi.fn(),
-    deselectAllUtxos: vi.fn(),
     totalAmount: 1000,
     isUsingAllFunds: false,
     utxosToFreeze: [],
@@ -155,7 +158,7 @@ describe('CreateFidelityBondDialogSteps', () => {
 
     expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
     expect(screen.getByText('bc1...')).toBeInTheDocument()
-    expect(screen.getByTestId('qr-code')).toBeInTheDocument()
+    expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument()
   })
 
   it('renders creating step', () => {
@@ -176,11 +179,11 @@ describe('CreateFidelityBondDialogSteps', () => {
     expect(screen.getByText('1234abcd')).toBeInTheDocument()
   })
 
-  it('warns about a duplicate lock date on the select_date step', () => {
+  it('passes existing fidelity-bond lock dates to the date selector', () => {
     const wizard = getBaseWizard()
-    wizard.hasDuplicateLockdate = true
+    wizard.existingFbLockdates = ['2025-01']
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
-    expect(screen.getByTestId('trans-earn.fidelity_bond.select_date.warning_fb_with_same_expiry')).toBeInTheDocument()
+    expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
   })
 
   it('highlights the selected jar and shows the no-jars alert state', () => {

@@ -615,7 +615,7 @@
       },
       "select_utxos": {
         "title": "Select UTXOs",
-        "description": "Select one or more UTXOs from Jar {{ jar }} to use for the fidelity bond.",
+        "description": "Select one CoinJoin output from Jar {{ jar }} to use for the fidelity bond.",
         "button_select_all": "Select All",
         "button_deselect_all": "Deselect All",
         "label_total_selected": "Total Selected",
@@ -689,6 +689,7 @@
       },
       "move": {
         "title": "Unlock Funds",
+        "label_amount": "Amount to unlock",
         "success_text": "Fidelity Bond unlocked successfully!",
         "text_loading": "Loading...",
         "text_sending": "Unlocking...",

@@ -43,10 +43,22 @@ export function useCreateFidelityBondWizard(
   })
 
   const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
+  const existingFbLockdates = useMemo(() => {
+    return walletInfo.fidelityBondSummary.fbOutputs
+      .map((fbUtxo) => {
+        const locktime = fb.utxo.getLocktime(fbUtxo)
+        return locktime ? fb.lockdate.fromTimestamp(locktime) : null
+      })
+      .filter(Boolean) as fb.Lockdate[]
+  }, [walletInfo.fidelityBondSummary.fbOutputs])
+  const availableLockdateOptions = useMemo(
+    () => lockdateOptions.filter((option) => !existingFbLockdates.includes(option.value)),
+    [existingFbLockdates, lockdateOptions],
+  )
   const jarIndexes = useMemo(() => walletInfo.jars.map((jar) => jar.jarIndex), [walletInfo.jars])
   const formSchema = useMemo(
-    () => createFidelityBondFormSchema(lockdateOptions, jarIndexes, t),
-    [lockdateOptions, jarIndexes, t],
+    () => createFidelityBondFormSchema(availableLockdateOptions, jarIndexes, t),
+    [availableLockdateOptions, jarIndexes, t],
   )
   const form = useForm<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>({
     mode: 'onChange',
@@ -85,16 +97,6 @@ export function useCreateFidelityBondWizard(
     })
   }
 
-  const existingFbLockdates = useMemo(() => {
-    return walletInfo.fidelityBondSummary.fbOutputs
-      .filter((fbUtxo) => fb.utxo.isLocked(fbUtxo))
-      .map((fbUtxo) => {
-        const locktime = fb.utxo.getLocktime(fbUtxo)
-        return locktime ? fb.lockdate.fromTimestamp(locktime) : null
-      })
-      .filter(Boolean) as fb.Lockdate[]
-  }, [walletInfo.fidelityBondSummary.fbOutputs])
-
   const hasDuplicateLockdate = selectedLockdate && existingFbLockdates.includes(selectedLockdate)
 
   const selectedJar = useMemo(() => {
@@ -105,20 +107,28 @@ export function useCreateFidelityBondWizard(
   const jarsWithUtxos = useMemo(() => {
     return walletInfo.jars.filter((jar) => {
       // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
-      const availableUtxos = jar.utxos.filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
+      const availableUtxos = jar.utxos.filter(
+        (utxo) =>
+          !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && walletInfo.addressSummary[utxo.address]?.status === 'cj-out',
+      )
       return availableUtxos.length > 0
     })
-  }, [walletInfo.jars])
+  }, [walletInfo.addressSummary, walletInfo.jars])
 
   const availableUtxos = useMemo(() => {
     if (selectedJar === undefined) return []
     return (
       selectedJar.utxos
         // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
-        .filter((utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo))
+        .filter(
+          (utxo) =>
+            !utxo.frozen &&
+            !fb.utxo.isFidelityBond(utxo) &&
+            walletInfo.addressSummary[utxo.address]?.status === 'cj-out',
+        )
         .toSorted((a, b) => b.value - a.value)
     )
-  }, [selectedJar])
+  }, [selectedJar, walletInfo.addressSummary])
 
   const selectedUtxos = useMemo(() => {
     const availableUtxosById = new Map<string, Utxo>(availableUtxos.map((utxo) => [utxo.utxo, utxo]))
@@ -332,20 +342,14 @@ export function useCreateFidelityBondWizard(
   }
 
   const toggleUtxoSelection = (utxo: Utxo) => {
-    // TODO: select/deselect all utxos to the same address
     const isSelected = selectedUtxoIds.includes(utxo.utxo)
-    setSelectedUtxoIds(
-      isSelected ? selectedUtxoIds.filter((utxoId) => utxoId !== utxo.utxo) : [...selectedUtxoIds, utxo.utxo],
-    )
+    setSelectedUtxoIds(isSelected ? [] : [utxo.utxo])
   }
-
-  const selectAllUtxos = () => setSelectedUtxoIds(availableUtxos.map((utxo) => utxo.utxo))
-  const deselectAllUtxos = () => setSelectedUtxoIds([])
 
   const canProceed = () => {
     switch (step) {
       case 'select_date':
-        return !!selectedLockdate
+        return !!selectedLockdate && !hasDuplicateLockdate
       case 'select_jar':
         return selectedJar !== undefined
       case 'select_utxos':
@@ -370,6 +374,7 @@ export function useCreateFidelityBondWizard(
     setSelectedLockdate,
     selectedLockdate,
     hasDuplicateLockdate,
+    existingFbLockdates,
     selectedJarIndex,
     setSelectedJarIndex,
     jarsWithUtxos,
@@ -378,8 +383,6 @@ export function useCreateFidelityBondWizard(
     utxoPage,
     setUtxoPage,
     toggleUtxoSelection,
-    selectAllUtxos,
-    deselectAllUtxos,
     totalAmount,
     isUsingAllFunds,
     utxosToFreeze,
