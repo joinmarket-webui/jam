@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { JAM_REPO_URL } from '@/constants/jam'
 import type { SemanticVersion } from '@/lib/utils'
 import type { WithRequiredProperty } from '@/types/global'
 
@@ -40,7 +41,7 @@ export const BetaWarningDialog = ({
               components={{
                 '1': (
                   <a
-                    href="https://github.com/joinmarket-webui/jam/issues"
+                    href={`${JAM_REPO_URL}/issues`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary underline underline-offset-4"

@@ -26,7 +26,7 @@ import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
-import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
+import { JAM_REPO_URL, JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useFeatures } from '@/hooks/useFeatures'
@@ -211,7 +211,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <SettingsLink
             renderIcon={({ className }) => <GitHubIcon className={className} />}
             title={t('settings.github')}
-            to="https://github.com/joinmarket-webui/jam"
+            to={JAM_REPO_URL}
             external={true}
           />
           {isDevMode() && (

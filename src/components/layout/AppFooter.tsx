@@ -3,6 +3,7 @@ import { BlocksIcon, BookOpenIcon, FileQuestionMarkIcon, ScrollTextIcon } from '
 import { useTranslation, Trans } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
+import { JAM_REPO_URL } from '@/constants/jam'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import { BetaWarningDialog } from './footer/BetaWarningDialog'
 
@@ -98,7 +99,7 @@ export function AppFooter({
                 </span>
               )}
               <a
-                href="https://github.com/joinmarket-webui/jam/tags"
+                href={`${JAM_REPO_URL}/tags`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground underline"
