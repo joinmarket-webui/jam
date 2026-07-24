@@ -125,6 +125,12 @@ export default defineConfig(
           },
         },
       ],
+      'unicorn/number-literal-case': [
+        'error',
+        {
+          hexadecimalValue: 'lowercase',
+        },
+      ],
 
       'unicorn/switch-case-braces': ['off'], // TODO: enable
       'unicorn/no-null': ['off'], // TODO: enable
