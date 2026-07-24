@@ -26,6 +26,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
           // test-only helpers and config
           'src/test/**',
           'src/i18n/testConfig.ts',
+          'src/main.tsx',
         ],
         thresholds: {
           lines: 80,
