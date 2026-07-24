@@ -2,14 +2,12 @@ import { AlertTriangleIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import type { SweepPreconditionSummary } from '@/components/sweep/preconditions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { JAM_JM_RETRIES_DOCS_URL } from '@/constants/jam'
 import { formatSats, shortenStringMiddle } from '@/lib/utils'
 
 interface SweepPreconditionAlertProps {
   summary: SweepPreconditionSummary
 }
-
-const RETRIES_DOCS_URL =
-  'https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/SOURCING-COMMITMENTS.md'
 
 const RetryLockedUtxoList = ({ summary }: SweepPreconditionAlertProps) => {
   const { t } = useTranslation()
@@ -24,7 +22,7 @@ const RetryLockedUtxoList = ({ summary }: SweepPreconditionAlertProps) => {
         i18nKey="scheduler.precondition.hint_missing_retries"
         components={[
           <></>,
-          <a key="retries-doc-link" href={RETRIES_DOCS_URL} target="_blank" rel="noopener noreferrer" />,
+          <a key="retries-doc-link" href={JAM_JM_RETRIES_DOCS_URL} target="_blank" rel="noopener noreferrer" />,
         ]}
       />
       <div className="mt-3 rounded-md border p-2">

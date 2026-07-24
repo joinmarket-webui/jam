@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { JAM_DOCS_URL, JAM_REPO_URL } from '@/constants/jam'
+import { JAM_DOCS_URL, JAM_JMNG_REPO_URL, JAM_REPO_URL } from '@/constants/jam'
 import type { SemanticVersion } from '@/lib/utils'
 import type { WithRequiredProperty } from '@/types/global'
 
@@ -57,7 +57,7 @@ export const BetaWarningDialog = ({
                 ),
                 '3': (
                   <a
-                    href="https://github.com/joinmarket-ng/joinmarket-ng"
+                    href={JAM_JMNG_REPO_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary underline underline-offset-4"

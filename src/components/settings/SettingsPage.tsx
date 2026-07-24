@@ -26,7 +26,7 @@ import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
-import { JAM_DOCS_URL, JAM_REPO_URL, JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
+import { JAM_DOCS_URL, JAM_MATRIX_URL, JAM_REPO_URL, JAM_SEED_MODAL_TIMEOUT, JAM_TELEGRAM_URL } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useFeatures } from '@/hooks/useFeatures'
@@ -188,13 +188,13 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
               <img src="/matrix-logo.png" alt="Matrix" className={cn(className, 'light:invert-0 invert')} />
             )}
             title={t('settings.matrix')}
-            to="https://matrix.to/#/%23jam:bitcoin.kyoto"
+            to={JAM_MATRIX_URL}
             external={true}
           />
           <SettingsLink
             renderIcon={({ className }) => <img src="/telegram-logo.png" alt="Telegram" className={className} />}
             title={t('settings.telegram')}
-            to="https://t.me/JoinMarketWebUI"
+            to={JAM_TELEGRAM_URL}
             external={true}
           />
         </CardContent>
