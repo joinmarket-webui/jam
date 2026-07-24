@@ -47,7 +47,6 @@
   "footer": {
     "warning": "這是測試版軟件。<br /><1>使用前請先閱讀。</1>",
     "warning_alert_title": "警告",
-    "warning_alert_text": "雖然 JoinMarket 已久經測試和檢驗，Jam 卻非如此。它目前還是測試版軟件，因此應謹慎使用。",
     "warning_alert_button_ok": "沒問題。",
     "cheatsheet": "備忘單",
     "connected": "已連接",
@@ -61,7 +60,6 @@
     "splashscreen_description_line1": "你的錢包，你的比特幣。",
     "splashscreen_description_line2": "100%開源和開放設計。",
     "splashscreen_warning_title": "警告",
-    "splashscreen_warning_text": "雖然 JoinMarket 已久經測試和檢驗，Jam 卻非如此。它目前還是測試版軟件，因此請先<2>參閱文檔</2>並謹慎使用。你可以<1>在 GitHub 上幫我們改善這個項目</1>。",
     "screen_1_title": "歡迎來到 Jam for JoinMarket!",
     "screen_1_description": "Jam 是一個 JoinMarket 的用戶界面，JoinMarket 是一個以隱私為中心的軟件解決方案，旨在改善比特幣交易的機密性和隱私性。它的主要重點是促進通過點對點市場創建協作式交易。",
     "screen_2_title": "協作式交易",

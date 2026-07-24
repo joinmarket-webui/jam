@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useQueryJamInfo } from '@/hooks/useQueryJamInfo'
 import { cn } from '@/lib/utils'
 
 type OnboardingStep = {
@@ -56,8 +55,6 @@ interface OnboardingDialogProps {
 
 export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) => {
   const { t } = useTranslation()
-  const { backendName } = useQueryJamInfo()
-  const isJoinmarketNg = backendName?.includes('joinmarket-ng') === true
   const [step, setStep] = useState(0)
 
   const isSplashStep = step === 0
@@ -121,11 +118,7 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
                 </Badge>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   <Trans
-                    i18nKey={
-                      isJoinmarketNg
-                        ? 'onboarding.splashscreen_warning_text_ng'
-                        : 'onboarding.splashscreen_warning_text'
-                    }
+                    i18nKey="onboarding.splashscreen_warning_text_ng"
                     components={{
                       '1': (
                         <a
@@ -138,6 +131,14 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
                       '2': (
                         <a
                           href="https://jamdocs.org"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline underline-offset-4"
+                        />
+                      ),
+                      '3': (
+                        <a
+                          href="https://github.com/joinmarket-ng/joinmarket-ng"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary underline underline-offset-4"

@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,37 +17,70 @@ type BetaWarningDialogProps = WithRequiredProperty<
   'open' | 'onOpenChange'
 > & {
   jamVersion: SemanticVersion
-  joinmarketVersion?: SemanticVersion
+  backendVersion?: SemanticVersion
   backendName?: string
 }
 
 export const BetaWarningDialog = ({
   jamVersion,
-  joinmarketVersion,
+  backendVersion,
   backendName,
   ...dialogProps
 }: BetaWarningDialogProps) => {
   const { t } = useTranslation()
-  const isJoinmarketNg = backendName?.includes('joinmarket-ng') === true
-  const backendDisplayName = backendName ?? 'JoinMarket'
-  const warningText = isJoinmarketNg ? t('footer.warning_alert_text_ng') : t('footer.warning_alert_text')
 
   return (
     <Dialog {...dialogProps}>
       <DialogContent showCloseButton={true}>
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('footer.warning_alert_title')}</DialogTitle>
-          <DialogDescription>{warningText}</DialogDescription>
+          <DialogDescription>
+            <Trans
+              i18nKey="footer.warning_alert_text_ng"
+              components={{
+                '1': (
+                  <a
+                    href="https://github.com/joinmarket-webui/jam/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline underline-offset-4"
+                  />
+                ),
+                '2': (
+                  <a
+                    href="https://jamdocs.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline underline-offset-4"
+                  />
+                ),
+                '3': (
+                  <a
+                    href="https://github.com/joinmarket-ng/joinmarket-ng"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline underline-offset-4"
+                  />
+                ),
+              }}
+            />
+          </DialogDescription>
         </DialogHeader>
         <div className="items-end-safe text-sm">
           <span className="text-muted-foreground">{t('footer.warning_alert_backend')}: </span>
-          <span className="font-mono font-semibold select-all">{backendDisplayName}</span>
+          <span className="font-mono font-semibold select-all" data-testid="BetaWarningDialog#backendName">
+            {backendName || 'unknown'}
+          </span>
           <br />
           <span className="text-muted-foreground">{t('footer.warning_alert_backend_version')}: </span>
-          <span className="font-mono font-semibold select-all">v{joinmarketVersion?.raw || '_unknown'}</span>
+          <span className="font-mono font-semibold select-all" data-testid="BetaWarningDialog#backendVersion">
+            {backendVersion?.raw || 'unknown'}
+          </span>
           <br />
           <span className="text-muted-foreground">{t('footer.warning_alert_jam_version')}: </span>
-          <span className="font-mono font-semibold select-all">v{jamVersion.raw || '_unknown'}</span>
+          <span className="font-mono font-semibold select-all" data-testid="BetaWarningDialog#jamVersion">
+            {jamVersion.raw || 'unknown'}
+          </span>
         </div>
         <DialogFooter>
           <Button onClick={() => dialogProps.onOpenChange(false)}>{t('footer.warning_alert_button_ok')}</Button>

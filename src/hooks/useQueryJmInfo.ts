@@ -1,13 +1,14 @@
+import { useMemo } from 'react'
 import { versionOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { VersionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
-import { useQuery, type UseQueryResult } from '@tanstack/react-query'
+import type { GetInfoResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { useQuery } from '@tanstack/react-query'
 import { useApiClient } from '@/hooks/useApiClient'
 import { parseSemanticVersion, type SemanticVersion } from '@/lib/utils'
 
 type UseQueryJmInfoResult = {
-  version: SemanticVersion | undefined
-  backend: string | undefined
-  queryResult: UseQueryResult<VersionResponse, unknown>
+  info?: Omit<GetInfoResponse, 'version'> & {
+    version: SemanticVersion
+  }
 }
 
 export function useQueryJmInfo(): UseQueryJmInfoResult {
@@ -19,9 +20,16 @@ export function useQueryJmInfo(): UseQueryJmInfoResult {
     gcTime: Number.POSITIVE_INFINITY,
   })
 
-  return {
-    version: queryResult.data ? parseSemanticVersion(queryResult.data.version) : undefined,
-    backend: queryResult.data?.backend,
-    queryResult,
-  }
+  const result = useMemo(() => {
+    return queryResult.data === undefined
+      ? {}
+      : {
+          info: {
+            ...queryResult.data,
+            version: parseSemanticVersion(queryResult.data.version),
+          },
+        }
+  }, [queryResult.data])
+
+  return result
 }

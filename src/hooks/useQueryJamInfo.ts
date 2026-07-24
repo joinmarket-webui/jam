@@ -1,28 +1,25 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import { fetchInfo, type JamInfoResponse } from '@/lib/api/jam'
-import { parseSemanticVersion, type SemanticVersion } from '@/lib/utils'
+import { parseSemanticVersion, UNKNOWN_VERSION, type SemanticVersion } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 
 export type UseQueryJamInfoResult = {
-  info: JamInfoResponse | undefined
-  isJamStandalone: boolean
-  backendName: string | undefined
-  joinmarketVersion: SemanticVersion | undefined
-  queryResult: UseQueryResult<JamInfoResponse, unknown>
+  backendName?: string
+  backendVersion: SemanticVersion
 }
 
 export function useQueryJamInfo(): UseQueryJamInfoResult {
   const token = useStore(authStore, (state) => state.state?.auth?.token)
 
-  const queryResult = useQuery({
+  const { data: standaloneInfo } = useQuery({
     queryKey: ['jam-info'],
     queryFn: async ({ signal }) => {
       if (token === undefined) {
         throw new Error('No authentication token available')
       }
-
       const response = await fetchInfo({
         token,
         signal,
@@ -37,27 +34,23 @@ export function useQueryJamInfo(): UseQueryJamInfoResult {
     enabled: token !== undefined,
     retry: false,
   })
+  const { info: backendInfo } = useQueryJmInfo()
 
-  const jamInfo = queryResult.data
-  const { version: nativeJoinmarketVersion, backend: nativeBackendName } = useQueryJmInfo()
+  const result = useMemo(() => {
+    if (!standaloneInfo && !backendInfo) {
+      return {
+        backendVersion: UNKNOWN_VERSION,
+      }
+    }
 
-  const standaloneJoinmarketVersion = jamInfo?.backend.version
-    ? parseSemanticVersion(jamInfo.backend.version)
-    : undefined
-  const hasStandaloneBackendVersion =
-    standaloneJoinmarketVersion?.raw !== undefined && standaloneJoinmarketVersion.raw !== 'unknown'
-  const isJamStandalone = jamInfo?.backend !== undefined
+    const standaloneVersion = standaloneInfo && parseSemanticVersion(standaloneInfo.backend.version)
+    const standaloneName = standaloneInfo && `jam-standalone (${standaloneInfo.backend.name})`
 
-  const backendName = isJamStandalone ? `jam-standalone (${jamInfo.backend.name})` : nativeBackendName
+    return {
+      backendName: standaloneName ?? backendInfo?.backend,
+      backendVersion: standaloneVersion ?? backendInfo?.version ?? UNKNOWN_VERSION,
+    }
+  }, [standaloneInfo, backendInfo])
 
-  const joinmarketVersion =
-    isJamStandalone && hasStandaloneBackendVersion ? standaloneJoinmarketVersion : nativeJoinmarketVersion
-
-  return {
-    info: jamInfo,
-    isJamStandalone,
-    backendName,
-    joinmarketVersion,
-    queryResult,
-  }
+  return result
 }

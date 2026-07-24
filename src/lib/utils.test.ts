@@ -321,17 +321,17 @@ describe('parseSemanticVersion', () => {
     })
   })
 
-  it('should return UNKNOWN_VERSION for invalid version strings', () => {
-    expect(parseSemanticVersion('invalid')).toEqual(UNKNOWN_VERSION)
-    expect(parseSemanticVersion('1.2')).toEqual(UNKNOWN_VERSION)
-    expect(parseSemanticVersion('1')).toEqual(UNKNOWN_VERSION)
-    expect(parseSemanticVersion('a.b.c')).toEqual(UNKNOWN_VERSION)
-    expect(parseSemanticVersion('')).toEqual(UNKNOWN_VERSION)
+  it('should return UNKNOWN_VERSION with raw string for invalid version strings', () => {
+    expect(parseSemanticVersion('invalid')).toEqual({ ...UNKNOWN_VERSION, raw: 'invalid' })
+    expect(parseSemanticVersion('1.2')).toEqual({ ...UNKNOWN_VERSION, raw: '1.2' })
+    expect(parseSemanticVersion('1')).toEqual({ ...UNKNOWN_VERSION, raw: '1' })
+    expect(parseSemanticVersion('a.b.c')).toEqual({ ...UNKNOWN_VERSION, raw: 'a.b.c' })
+    expect(parseSemanticVersion('')).toEqual({ ...UNKNOWN_VERSION, raw: '' })
   })
 
   it('should handle undefined or null input', () => {
-    expect(parseSemanticVersion(undefined)).toEqual(UNKNOWN_VERSION)
-    expect(parseSemanticVersion(null as unknown as string | undefined)).toEqual(UNKNOWN_VERSION)
+    expect(parseSemanticVersion(undefined)).toEqual({ ...UNKNOWN_VERSION, raw: undefined })
+    expect(parseSemanticVersion(null as unknown as string | undefined)).toEqual({ ...UNKNOWN_VERSION, raw: null })
   })
 })
 

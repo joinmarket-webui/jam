@@ -236,7 +236,10 @@ const versionRegex = new RegExp(/^v?(\d+)\.(\d+)\.(\d+).*$/)
 export const parseSemanticVersion = (raw?: string): SemanticVersion => {
   const result = versionRegex.exec(raw || '')
   if (!result || result.length < 4) {
-    return UNKNOWN_VERSION
+    return {
+      ...UNKNOWN_VERSION,
+      raw,
+    }
   }
 
   return {

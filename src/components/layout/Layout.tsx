@@ -41,7 +41,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const rescanStatus = useRescanStatus()
 
-  const { backendName, joinmarketVersion } = useQueryJamInfo()
+  const { backendName, backendVersion } = useQueryJamInfo()
 
   const { resolvedTheme = JAM_DEFAULT_THEME, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
@@ -104,7 +104,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         websocketInfo={websocket}
         blockHeight={jmSession?.block_height ?? undefined}
         jamVersion={APP_DISPLAY_VERSION}
-        joinmarketVersion={joinmarketVersion}
+        backendVersion={backendVersion}
         backendName={backendName}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}

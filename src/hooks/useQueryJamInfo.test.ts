@@ -26,8 +26,10 @@ vi.mock('@/lib/api/jam', () => ({
 
 vi.mock('@/hooks/useQueryJmInfo', () => ({
   useQueryJmInfo: () => ({
-    version: mocks.nativeVersion,
-    backend: mocks.nativeBackend,
+    info: {
+      version: mocks.nativeVersion,
+      backend: mocks.nativeBackend,
+    },
   }),
 }))
 
@@ -47,10 +49,8 @@ describe('useQueryJamInfo', () => {
 
     const { result } = renderHook(() => useQueryJamInfo())
 
-    expect(result.current.info).toEqual({ backend: { name: 'joinmarket-ng', version: '0.33.0' } })
-    expect(result.current.isJamStandalone).toBe(true)
     expect(result.current.backendName).toBe('jam-standalone (joinmarket-ng)')
-    expect(result.current.joinmarketVersion).toEqual({ raw: '0.33.0', major: 0, minor: 33, patch: 0 })
+    expect(result.current.backendVersion).toEqual({ raw: '0.33.0', major: 0, minor: 33, patch: 0 })
   })
 
   it('keeps info empty without an auth token and resolves native statuses', () => {
@@ -58,10 +58,8 @@ describe('useQueryJamInfo', () => {
 
     const { result } = renderHook(() => useQueryJamInfo())
 
-    expect(result.current.info).toBeUndefined()
-    expect(result.current.isJamStandalone).toBe(false)
     expect(result.current.backendName).toBe('joinmarket-clientserver')
-    expect(result.current.joinmarketVersion).toEqual({ raw: '0.9.12', major: 0, minor: 9, patch: 12 })
+    expect(result.current.backendVersion).toEqual({ raw: '0.9.12', major: 0, minor: 9, patch: 12 })
   })
 
   it('falls back to native version if standalone version is not semantic', () => {
@@ -70,8 +68,7 @@ describe('useQueryJamInfo', () => {
 
     const { result } = renderHook(() => useQueryJamInfo())
 
-    expect(result.current.isJamStandalone).toBe(true)
     expect(result.current.backendName).toBe('jam-standalone (joinmarket-ng)')
-    expect(result.current.joinmarketVersion).toEqual({ raw: '0.9.12', major: 0, minor: 9, patch: 12 })
+    expect(result.current.backendVersion).toEqual({ raw: 'main', major: 0, minor: 0, patch: 0 })
   })
 })

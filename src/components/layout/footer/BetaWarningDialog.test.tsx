@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { parseSemanticVersion } from '@/lib/utils'
 import { BetaWarningDialog } from './BetaWarningDialog'
 
 type ChildrenProps = { children: ReactNode }
@@ -10,6 +11,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  Trans: ({ i18nKey, children }: { i18nKey?: string; children?: React.ReactNode }) => children ?? i18nKey ?? null,
 }))
 
 vi.mock('@/components/ui/dialog', () => ({
@@ -28,59 +30,30 @@ vi.mock('@/components/ui/dialog', () => ({
 }))
 
 describe('BetaWarningDialog', () => {
-  it('renders the clientserver warning and backend details', () => {
-    render(
-      <BetaWarningDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        jamVersion={{ raw: '1.0.0', major: 1, minor: 0, patch: 0 }}
-        joinmarketVersion={{ raw: '0.9.3', major: 0, minor: 9, patch: 3 }}
-        backendName="joinmarket-clientserver"
-      />,
-    )
-
-    expect(screen.getByText('footer.warning_alert_title')).toBeInTheDocument()
-    expect(screen.getByText('footer.warning_alert_text')).toBeInTheDocument()
-    expect(screen.getByText('footer.warning_alert_backend:', { exact: false })).toBeInTheDocument()
-    expect(screen.getByText('footer.warning_alert_backend_version:', { exact: false })).toBeInTheDocument()
-    expect(screen.getByText('footer.warning_alert_jam_version:', { exact: false })).toBeInTheDocument()
-    expect(screen.getByText('joinmarket-clientserver')).toBeInTheDocument()
-    expect(screen.getByText('v1.0.0')).toBeInTheDocument()
-    expect(screen.getByText('v0.9.3')).toBeInTheDocument()
-    expect(screen.getByText('footer.warning_alert_button_ok')).toBeInTheDocument()
-  })
-
   it('renders the joinmarket-ng warning and backend details', () => {
     render(
       <BetaWarningDialog
         open={true}
         onOpenChange={vi.fn()}
-        jamVersion={{ raw: '2.0.0-beta.0', major: 2, minor: 0, patch: 0 }}
-        joinmarketVersion={{ raw: '0.33.0', major: 0, minor: 33, patch: 0 }}
+        jamVersion={parseSemanticVersion('2.0.0-beta.1')}
+        backendVersion={parseSemanticVersion('0.33.0')}
         backendName="joinmarket-ng"
       />,
     )
 
     expect(screen.getByText('footer.warning_alert_text_ng')).toBeInTheDocument()
-    expect(screen.getByText('joinmarket-ng')).toBeInTheDocument()
-    expect(screen.getByText('v2.0.0-beta.0')).toBeInTheDocument()
-    expect(screen.getByText('v0.33.0')).toBeInTheDocument()
+    expect(screen.getByTestId('BetaWarningDialog#backendName')).toHaveTextContent('joinmarket-ng')
+    expect(screen.getByTestId('BetaWarningDialog#backendVersion')).toHaveTextContent('0.33.0')
+    expect(screen.getByTestId('BetaWarningDialog#jamVersion')).toHaveTextContent('2.0.0-beta.1')
   })
 
   it('renders fallback warning and generic backend label when backend is unknown', () => {
-    render(
-      <BetaWarningDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        jamVersion={{ raw: '1.0.0', major: 1, minor: 0, patch: 0 }}
-      />,
-    )
+    render(<BetaWarningDialog open={true} onOpenChange={vi.fn()} jamVersion={parseSemanticVersion('2.0.0')} />)
 
-    expect(screen.getByText('footer.warning_alert_text')).toBeInTheDocument()
-    // Generic fallback when backend info not yet loaded
-    expect(screen.getByText('JoinMarket')).toBeInTheDocument()
-    expect(screen.getByText('v1.0.0')).toBeInTheDocument()
-    expect(screen.getByText('v_unknown')).toBeInTheDocument()
+    expect(screen.getByText('footer.warning_alert_text_ng')).toBeInTheDocument()
+    expect(screen.getByTestId('BetaWarningDialog#backendName')).toHaveTextContent('unknown')
+    expect(screen.getByTestId('BetaWarningDialog#backendVersion')).toHaveTextContent('unknown')
+    expect(screen.getByTestId('BetaWarningDialog#jamVersion')).toHaveTextContent('2.0.0')
   })
 
   it('renders standalone-ng warning with correct display name', () => {
@@ -88,28 +61,15 @@ describe('BetaWarningDialog', () => {
       <BetaWarningDialog
         open={true}
         onOpenChange={vi.fn()}
-        jamVersion={{ raw: '2.0.0-beta.0', major: 2, minor: 0, patch: 0 }}
-        joinmarketVersion={{ raw: '0.33.0', major: 0, minor: 33, patch: 0 }}
+        jamVersion={parseSemanticVersion('2.0.0-beta.0')}
+        backendVersion={parseSemanticVersion('v0.33.0')}
         backendName="jam-standalone (joinmarket-ng)"
       />,
     )
 
     expect(screen.getByText('footer.warning_alert_text_ng')).toBeInTheDocument()
-    expect(screen.getByText('jam-standalone (joinmarket-ng)')).toBeInTheDocument()
-  })
-
-  it('renders standalone-clientserver warning with correct display name', () => {
-    render(
-      <BetaWarningDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        jamVersion={{ raw: '2.0.0-beta.0', major: 2, minor: 0, patch: 0 }}
-        joinmarketVersion={{ raw: '0.9.11', major: 0, minor: 9, patch: 11 }}
-        backendName="jam-standalone (joinmarket-clientserver)"
-      />,
-    )
-
-    expect(screen.getByText('footer.warning_alert_text')).toBeInTheDocument()
-    expect(screen.getByText('jam-standalone (joinmarket-clientserver)')).toBeInTheDocument()
+    expect(screen.getByTestId('BetaWarningDialog#backendName')).toHaveTextContent('jam-standalone (joinmarket-ng)')
+    expect(screen.getByTestId('BetaWarningDialog#backendVersion')).toHaveTextContent('v0.33.0')
+    expect(screen.getByTestId('BetaWarningDialog#jamVersion')).toHaveTextContent('2.0.0-beta.0')
   })
 })
