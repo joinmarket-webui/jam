@@ -34,7 +34,7 @@ export function WalletJarsDetailsOverlay({
         <div className="flex min-h-0 flex-1 overflow-hidden">
           <WalletJarsDetailsContent
             enabled={open}
-            className="flex h-full min-h-0 flex-col overflow-hidden p-2 pt-0"
+            className="flex h-full min-h-0 flex-1 flex-col overflow-scroll p-2 pt-0"
             debug={isDeveloperMode}
             selectedJarIndex={selectedJarIndex}
             walletFileName={walletFileName}
