@@ -50,6 +50,15 @@ describe('ErrorPage', () => {
     expect(screen.getByText('global.errors.reason_unknown')).toBeInTheDocument()
   })
 
+  it('falls back to reason_unknown for a error without message', () => {
+    routeError.mockReturnValue({ message: '' })
+
+    render(<ErrorPage />)
+
+    expect(screen.getByText('error_page.unknown_error.title')).toBeInTheDocument()
+    expect(screen.getByText('global.errors.reason_unknown')).toBeInTheDocument()
+  })
+
   it('falls back to reason_unknown when object has no message', () => {
     routeError.mockReturnValue({ foo: 'bar' })
 

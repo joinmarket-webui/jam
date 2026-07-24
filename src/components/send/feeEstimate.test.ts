@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import type { TFunction } from 'i18next'
 import { describe, expect, it } from 'vitest'
-import { TX_FEE_UNITS, toJamFeeConfigValues, type JamFeeConfigValues } from '@/lib/feeConfig'
+import { TX_FEE_UNITS, toJamFeeConfigValues, type JamFeeConfigValues, type TxFeeUnit } from '@/lib/feeConfig'
 import { estimateMaxCollaboratorFee, useMiningFeeText } from './feeEstimate'
 
 const baseFeeConfig: JamFeeConfigValues = toJamFeeConfigValues({
@@ -92,5 +92,18 @@ describe('useMiningFeeText', () => {
     expect(result.current).toBe(
       'send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized:{"min":"2","max":"3"}',
     )
+  })
+  it('should guard against invalid inputs', () => {
+    expect(() => {
+      renderHook(() =>
+        useMiningFeeText({
+          feeConfigValues: {
+            txFee: { txFeeUnit: 'any' as unknown as TxFeeUnit, txFeeInSatsPerVbyte: 2 },
+            txFeeFactor: 0.5,
+          },
+          t,
+        }),
+      )
+    }).toThrow('This function can only be used with unit `sats/vbyte`')
   })
 })
