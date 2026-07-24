@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
+import type { JarIndex } from '@/types/global'
 import MainWalletPage from './MainWalletPage'
 
 const navigateMock = vi.fn()
@@ -32,8 +33,23 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 }))
 
 vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
-  WalletJarsDetailsOverlay: ({ open }: { open: boolean }) => (
-    <div data-testid="WalletJarsDetailsOverlay">{open ? 'open' : 'closed'}</div>
+  WalletJarsDetailsOverlay: ({
+    open,
+    onOpenChange,
+    selectedJarIndex,
+  }: {
+    open: boolean
+    onOpenChange?: (open: boolean) => void
+    selectedJarIndex?: JarIndex
+  }) => (
+    <div data-testid="WalletJarsDetailsOverlay">
+      {open ? 'open' : 'closed'}
+      <span data-testid="WalletJarsDetailsOverlay#open">{open ? 'open' : 'closed'}</span>
+      <span data-testid="WalletJarsDetailsOverlay#selectedJarIndex">{selectedJarIndex ?? 'undefined'}</span>
+      <button data-testid="WalletJarsDetailsOverlay#onOpenChange" onClick={() => onOpenChange?.(!open)}>
+        Close
+      </button>
+    </div>
   ),
 }))
 
@@ -77,10 +93,20 @@ describe('MainWalletPage', () => {
   it('renders balance and jars, and opens the jar overlay on click', () => {
     render(<MainWalletPage walletFileName={walletFileName} />)
     expect(screen.getByText('5000')).toBeInTheDocument()
-    expect(screen.getByTestId('WalletJarsDetailsOverlay')).toHaveTextContent('closed')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#open')).toHaveTextContent('closed')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#selectedJarIndex')).toHaveTextContent('undefined')
 
-    fireEvent.click(screen.getByText('Jar 0'))
-    expect(screen.getByTestId('WalletJarsDetailsOverlay')).toHaveTextContent('open')
+    fireEvent.click(screen.getByText(jars[0].name))
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#open')).toHaveTextContent('open')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#selectedJarIndex')).toHaveTextContent(String(jars[0].jarIndex))
+
+    fireEvent.click(screen.getByTestId('WalletJarsDetailsOverlay#onOpenChange'))
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#open')).toHaveTextContent('closed')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#selectedJarIndex')).toHaveTextContent('undefined')
+
+    fireEvent.click(screen.getByTestId('WalletJarsDetailsOverlay#onOpenChange'))
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#open')).toHaveTextContent('open')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#selectedJarIndex')).toHaveTextContent('undefined')
   })
 
   it('navigates to deposit and withdraw routes', () => {
