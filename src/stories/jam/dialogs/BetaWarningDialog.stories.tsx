@@ -26,7 +26,16 @@ type Story = StoryObj<typeof BetaWarningDialog>
 export const Default: Story = {
   args: {
     jamVersion: APP_DISPLAY_VERSION,
-    joinmarketVersion: parseSemanticVersion('0.9.12'),
+    backendVersion: parseSemanticVersion('0.34.2'),
+    backendName: 'joinmarket-clientserver',
+  },
+}
+
+export const StandaloneJoinmarketNg: Story = {
+  args: {
+    jamVersion: APP_DISPLAY_VERSION,
+    backendVersion: parseSemanticVersion('0.33.0'),
+    backendName: 'jam-standalone (joinmarket-ng)',
   },
 }
 

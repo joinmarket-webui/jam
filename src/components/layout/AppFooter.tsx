@@ -3,12 +3,16 @@ import { BlocksIcon, BookOpenIcon, FileQuestionMarkIcon, ScrollTextIcon } from '
 import { useTranslation, Trans } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
+import { JAM_REPO_URL } from '@/constants/jam'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import { BetaWarningDialog } from './footer/BetaWarningDialog'
 
 type JmWebsocketInfo = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
 
-type AppFooterProps = Pick<ComponentProps<typeof BetaWarningDialog>, 'jamVersion' | 'joinmarketVersion'> & {
+type AppFooterProps = Pick<
+  ComponentProps<typeof BetaWarningDialog>,
+  'jamVersion' | 'backendVersion' | 'backendName'
+> & {
   blockHeight?: number
   websocketInfo?: JmWebsocketInfo
   onClickCheatsheet: () => void
@@ -20,7 +24,8 @@ export function AppFooter({
   blockHeight,
   websocketInfo,
   jamVersion,
-  joinmarketVersion,
+  backendVersion,
+  backendName,
   onClickCheatsheet,
   onClickOrderbook,
   onClickLogs,
@@ -34,7 +39,8 @@ export function AppFooter({
       <BetaWarningDialog
         open={isShowBetaWarning}
         onOpenChange={setShowBetaWarning}
-        joinmarketVersion={joinmarketVersion}
+        backendVersion={backendVersion}
+        backendName={backendName}
         jamVersion={jamVersion}
       />
       <footer>
@@ -93,7 +99,7 @@ export function AppFooter({
                 </span>
               )}
               <a
-                href="https://github.com/joinmarket-webui/jam/tags"
+                href={`${JAM_REPO_URL}/tags`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground underline"

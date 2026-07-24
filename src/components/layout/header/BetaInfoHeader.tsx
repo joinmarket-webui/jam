@@ -1,4 +1,5 @@
 import { ArrowUpRightIcon } from 'lucide-react'
+import { JAM_REPO_URL } from '@/constants/jam'
 
 export default function BetaInfoHeader() {
   return (
@@ -10,7 +11,7 @@ export default function BetaInfoHeader() {
         <span className="font-bold">Thanks for testing! </span>
         <span className="font-medium">Please report anything that looks off.</span>
         <a
-          href="https://github.com/joinmarket-webui/jam/issues/new?labels=bug,beta&template=bug_report.md"
+          href={`${JAM_REPO_URL}/issues/new?labels=bug,beta&template=bug_report.md`}
           target="_blank"
           rel="noopener noreferrer"
           className="group border-brand-warning-foreground/30 hover:bg-brand-warning-foreground/10 inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 font-semibold transition-colors"

@@ -5,6 +5,13 @@ export interface AuthApiRequestContext {
   signal?: AbortSignal
 }
 
+export type JamInfoResponse = {
+  backend: {
+    name: string
+    version: string
+  }
+}
+
 /**
  * Validate response content type
  */
@@ -19,6 +26,19 @@ const withExpectedContentTypeOrThrow = (response: Response, expectedContentType:
   }
 
   return response
+}
+
+/**
+ * Fetch Jam runtime information from standalone images.
+ * @param token - Authentication token
+ * @param signal - AbortSignal for cancelling requests
+ * @returns Promise<Response>
+ */
+export const fetchInfo = async ({ token, signal }: AuthApiRequestContext) => {
+  return await fetch('/jam/api/v0/info', {
+    headers: { ...buildAuthHeaderMap(token) },
+    signal,
+  }).then((response) => withExpectedContentTypeOrThrow(response, 'application/json'))
 }
 
 /**

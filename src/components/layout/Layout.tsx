@@ -15,8 +15,8 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useJmWebsocketContext } from '@/context/JmWebsocketContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useFeatures } from '@/hooks/useFeatures'
-import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
-import type { WalletFileName } from '@/lib/utils'
+import { useQueryJamInfo } from '@/hooks/useQueryJamInfo'
+import { type WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { LogsOverlay } from '../LogsOverlay'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
@@ -41,7 +41,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const rescanStatus = useRescanStatus()
 
-  const { version: joinmarketVersion } = useQueryJmInfo()
+  const { backendName, backendVersion } = useQueryJamInfo()
 
   const { resolvedTheme = JAM_DEFAULT_THEME, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
@@ -104,7 +104,8 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         websocketInfo={websocket}
         blockHeight={jmSession?.block_height ?? undefined}
         jamVersion={APP_DISPLAY_VERSION}
-        joinmarketVersion={joinmarketVersion}
+        backendVersion={backendVersion}
+        backendName={backendName}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
         onClickLogs={isFeatureEnabled('logs') ? () => setIsLogsOverlayOpen(true) : undefined}

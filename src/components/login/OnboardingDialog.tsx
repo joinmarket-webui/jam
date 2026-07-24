@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { HandshakeIcon, KeyRoundIcon, ShieldCheckIcon, UsersIcon, WalletIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,7 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { JAM_DOCS_URL, JAM_JMNG_REPO_URL, JAM_REPO_URL } from '@/constants/jam'
 import { cn } from '@/lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 type OnboardingStep = {
   titleKey: string
@@ -96,50 +97,65 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
       <DialogContent className="sm:max-w-2xl">
         {isSplashStep ? (
           <>
-            <DialogHeader className="space-y-3 text-left">
+            <DialogHeader>
               <DialogTitle className="text-2xl">{t('onboarding.splashscreen_title')}</DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm">
-                {t('onboarding.splashscreen_subtitle')}
-              </DialogDescription>
+              <DialogDescription>{t('onboarding.splashscreen_subtitle')}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
-              <div className="bg-muted/40 rounded-lg border p-4">
-                <p className="text-sm leading-relaxed">
+              <div className="motion-safe:animate-in fade-in bg-muted/40 flex items-center gap-4 rounded-lg border p-4 transition-all duration-500 hover:-translate-[2px] hover:ring-2">
+                <KeyRoundIcon />
+                <p className="text-lg leading-relaxed font-semibold">
                   {t('onboarding.splashscreen_description_line1')}
-                  <br />
+                </p>
+              </div>
+              <div className="motion-safe:animate-in fade-in bg-muted/40 flex items-center gap-4 rounded-lg border p-4 transition-all duration-500 hover:-translate-[2px] hover:ring-2">
+                <HandshakeIcon />
+                <p className="text-lg leading-relaxed font-semibold">
                   {t('onboarding.splashscreen_description_line2')}
                 </p>
               </div>
+              <div className="motion-safe:animate-in fade-in bg-muted/40 flex items-center gap-4 rounded-lg border p-4 transition-all duration-500 hover:-translate-[2px] hover:ring-2">
+                <ShieldCheckIcon />
+                <p className="text-lg leading-relaxed font-semibold">
+                  {t('onboarding.splashscreen_description_line3')}
+                </p>
+              </div>
 
-              <div className="space-y-2 rounded-lg border p-4">
-                <Badge className="max-w-full whitespace-normal" variant="destructive">
-                  {t('onboarding.splashscreen_warning_title')}
-                </Badge>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+              <Alert variant="warning">
+                <AlertTitle>{t('onboarding.splashscreen_warning_title')}</AlertTitle>
+                <AlertDescription className="text-xs">
                   <Trans
-                    i18nKey="onboarding.splashscreen_warning_text"
+                    i18nKey="onboarding.splashscreen_warning_text_ng"
                     components={{
                       '1': (
                         <a
-                          href="https://github.com/joinmarket-webui/jam/issues"
+                          href={`${JAM_REPO_URL}/issues`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary underline underline-offset-4"
+                          className="font-semibold underline underline-offset-4"
                         />
                       ),
                       '2': (
                         <a
-                          href="https://jamdocs.org"
+                          href={JAM_DOCS_URL}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary underline underline-offset-4"
+                          className="font-semibold underline underline-offset-4"
+                        />
+                      ),
+                      '3': (
+                        <a
+                          href={JAM_JMNG_REPO_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold underline underline-offset-4"
                         />
                       ),
                     }}
                   />
-                </p>
-              </div>
+                </AlertDescription>
+              </Alert>
             </div>
 
             <DialogFooter className="sm:justify-between">

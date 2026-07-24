@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { JAM_DOCS_URL } from '@/constants/jam'
 import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -196,12 +197,7 @@ export const FeeConfigDialog = ({
               Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default
               values when the JoinMarket service restarts, e.g. on a system reboot. For more information, see the
               documentation on fees.
-              <a
-                href="https://jamdocs.org/market/fees/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
+              <a href={`${JAM_DOCS_URL}/market/fees/`} target="_blank" rel="noopener noreferrer" className="underline">
                 see the documentation on fees
               </a>
             </Trans>

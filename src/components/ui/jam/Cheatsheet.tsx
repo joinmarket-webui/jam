@@ -4,6 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { JAM_DOCS_URL } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import type { WithRequiredProperty } from '@/types/global'
 import type { Dialog } from '../dialog'
@@ -76,7 +77,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               Follow the steps below to increase your financial privacy. It is advisable to switch from{' '}
               <a
                 className="font-semibold underline"
-                href="https://jamdocs.org/glossary/#maker"
+                href={`${JAM_DOCS_URL}/glossary/#maker`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -85,7 +86,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               to{' '}
               <a
                 className="font-semibold underline"
-                href="https://jamdocs.org/glossary/#taker"
+                href={`${JAM_DOCS_URL}/glossary/#taker`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -94,7 +95,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               back and forth{''}
               <a
                 className="font-medium underline"
-                href="https://jamdocs.org/interface/00-cheatsheet/"
+                href={`${JAM_DOCS_URL}/interface/00-cheatsheet/`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -180,7 +181,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
                   Still confused?{' '}
                   <a
                     className="font-medium underline"
-                    href="https://jamdocs.org/interface/00-cheatsheet/"
+                    href={`${JAM_DOCS_URL}/interface/00-cheatsheet/`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

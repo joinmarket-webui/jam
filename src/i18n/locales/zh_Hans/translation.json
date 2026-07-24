@@ -47,7 +47,6 @@
   "footer": {
     "warning": "这是测试版软件。<br /><1>使用前请先参阅。</1>",
     "warning_alert_title": "警告",
-    "warning_alert_text": "虽然 JoinMarket 已久经测试和检验，Jam 却非如此。它目前还是测试版软件，因此应谨慎使用。",
     "warning_alert_button_ok": "没问题。",
     "cheatsheet": "备忘单",
     "connected": "已连接",
@@ -59,9 +58,8 @@
     "splashscreen_button_get_started": "开始",
     "splashscreen_button_skip_intro": "跳过入门",
     "splashscreen_description_line1": "你的钱包，你的比特币。",
-    "splashscreen_description_line2": "100%开源和开放设计。",
+    "splashscreen_description_line3": "100%开源和开放设计。",
     "splashscreen_warning_title": "警告",
-    "splashscreen_warning_text": "虽然 JoinMarket 已久经测试和检验，Jam 却非如此。它目前还是测试版软件，因此请先<2>参阅文档</2>并谨慎使用。你可以<1>在 GitHub 上帮我们改善这个项目</1>。",
     "screen_1_title": "欢迎来到 Jam for JoinMarket!",
     "screen_1_description": "Jam 是一个 JoinMarket 的用户界面，JoinMarket 是一个以隐私为中心的软件解决方案，旨在改善比特币交易的机密性和隐私性。它的主要重点是促进通过点对点市场创建协作式交易。",
     "screen_2_title": "协作式交易",

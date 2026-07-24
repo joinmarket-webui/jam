@@ -42,7 +42,6 @@
   "footer": {
     "warning": "Este é um software em beta.<br /><1>Leia isso antes de utilizá-lo.</1>",
     "warning_alert_title": "Atenção",
-    "warning_alert_text": "Enquanto o JoinMarket está sendo testado, Jam está no começo. Estamos em beta, portanto, use com atenção.",
     "warning_alert_button_ok": "Por mim tudo bem.",
     "cheatsheet": "Dicas",
     "connected": "Conectado",
@@ -54,9 +53,8 @@
     "splashscreen_button_get_started": "Vamos começar",
     "splashscreen_button_skip_intro": "Pular introdução",
     "splashscreen_description_line1": "Sua carteira, suas moedas.",
-    "splashscreen_description_line2": "100% open-source & open-design.",
+    "splashscreen_description_line3": "100% open-source & open-design.",
     "splashscreen_warning_title": "Atenção",
-    "splashscreen_warning_text": "Enquanto o JoinMarket está sendo testado, o Jam está no começo. É um software beta, então por favor <2>leia a documentação</2> e use com cuidado. Você pode <1>ajudar a melhorar o projeto no GitHub</1>.",
     "screen_1_title": "Bem-vindo ao Jam do JoinMarket!",
     "screen_1_description": "Jam é uma interface para o JoinMarket, uma solução de software focada em privacidade que visa melhorar a confidencialidade e privacidade de suas transações em bitcoin. Seu foco principal é facilitar a criação de transações colaborativas por meio de um mercado peer-to-peer.",
     "screen_2_title": "Transações Colaborativas",

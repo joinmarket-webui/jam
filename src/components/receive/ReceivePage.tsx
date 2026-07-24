@@ -121,7 +121,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               <Skeleton className="aspect-square w-full max-w-80" />
             ) : getAddressMutation.data?.address ? (
               <BitcoinAddressQrCode
-                className="animate-in fade-in duration-1000"
+                className="animate-in blur-in duration-1000"
                 address={getAddressMutation.data.address}
                 amount={amount}
                 width={QRCODE_WIDTH}
@@ -160,14 +160,18 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 <Skeleton className="h-6 w-[84px]" />
               </div>
             ) : (
-              <div className="animate-in fade-in space-y-2 text-center duration-1000">
+              <div className="space-y-2 text-center">
                 {!getAddressMutation.data?.address ? (
                   <div className="min-h-[64px]" />
                 ) : (
-                  <Address value={getAddressMutation.data.address} className="min-h-[64px] text-xl" copyable={true} />
+                  <Address
+                    value={getAddressMutation.data.address}
+                    className="animate-in blur-in min-h-[64px] text-xl duration-800"
+                    copyable={true}
+                  />
                 )}
                 <Badge
-                  className="min-h-6 text-sm"
+                  className="fade-in min-h-6 text-sm duration-1000"
                   variant={sourceJar ? jarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
                 >
                   {sourceJar ? (

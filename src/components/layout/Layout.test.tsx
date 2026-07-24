@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { WalletFileName } from '@/lib/utils'
+import type { useQueryJamInfo } from '@/hooks/useQueryJamInfo'
+import { parseSemanticVersion, UNKNOWN_VERSION, type WalletFileName } from '@/lib/utils'
 import { Layout } from './Layout'
 
 type SessionState = {
@@ -16,12 +17,14 @@ const mocks = vi.hoisted(() => ({
   pathname: '/',
   setTheme: vi.fn(),
   theme: 'dark',
+  backendInfo: undefined as ReturnType<typeof useQueryJamInfo> | undefined,
 }))
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  Trans: ({ i18nKey, children }: { i18nKey?: string; children?: React.ReactNode }) => children ?? i18nKey ?? null,
 }))
 
 vi.mock('react-router-dom', () => ({
@@ -88,19 +91,21 @@ vi.mock('@/components/layout/AppNavbar', () => ({
 vi.mock('@/components/layout/AppFooter', () => ({
   AppFooter: ({
     blockHeight,
-    joinmarketVersion,
+    backendVersion,
+    backendName,
     onClickCheatsheet,
     onClickLogs,
     onClickOrderbook,
   }: {
     blockHeight?: number
-    joinmarketVersion?: string
+    backendVersion?: { raw?: string }
+    backendName?: string
     onClickCheatsheet: () => void
     onClickLogs?: () => void
     onClickOrderbook: () => void
   }) => (
     <footer>
-      footer:{blockHeight}:{joinmarketVersion}
+      footer;blockHeight:={blockHeight};backenVersion:={backendVersion?.raw};backendName:={backendName}
       <button type="button" onClick={onClickCheatsheet}>
         open-cheatsheet
       </button>
@@ -166,10 +171,15 @@ vi.mock('@/hooks/useFeatures', () => ({
   }),
 }))
 
-vi.mock('@/hooks/useQueryJmInfo', () => ({
-  useQueryJmInfo: () => ({
-    version: 'jm-version',
-  }),
+vi.mock('@/hooks/useQueryJamInfo', () => ({
+  useQueryJamInfo: () => {
+    return (
+      mocks.backendInfo ?? {
+        backendName: 'mocked',
+        backendVersion: UNKNOWN_VERSION,
+      }
+    )
+  },
 }))
 
 vi.mock('@/components/ui/jam/Cheatsheet', () => ({
@@ -203,6 +213,7 @@ describe('Layout', () => {
     mocks.navigate.mockReset()
     mocks.onCheatsheetOpenChange.mockReset()
     mocks.setTheme.mockReset()
+    mocks.backendInfo = undefined
   })
 
   it('wires navbar, footer actions, overlays, and shortcuts', async () => {
@@ -216,8 +227,7 @@ describe('Layout', () => {
     )
 
     expect(screen.getByText('page-content')).toBeInTheDocument()
-    expect(screen.getByText('navbar:dark:test-wallet:9876:123')).toBeInTheDocument()
-    expect(screen.getByText('footer:123:jm-version')).toBeInTheDocument()
+    expect(screen.getByText('footer;blockHeight:=123;backenVersion:=unknown;backendName:=mocked')).toBeInTheDocument()
     expect(screen.getByText('sidebar:right')).toBeInTheDocument()
     expect(screen.getByText('tour-enabled:true')).toBeInTheDocument()
 
@@ -243,6 +253,20 @@ describe('Layout', () => {
 
     fireEvent.keyDown(window, { key: 'l', ctrlKey: true })
     expect(screen.getByText('logs-overlay:false')).toBeInTheDocument()
+  })
+
+  it('uses standalone backend label with native version fallback when standalone version is not semantic', () => {
+    mocks.backendInfo = { backendName: 'joinmarket-ng', backendVersion: parseSemanticVersion('0.34.2') }
+
+    render(
+      <Layout walletFileName={walletFileName} onLogout={vi.fn()} onLockWallet={vi.fn()}>
+        <section>page-content</section>
+      </Layout>,
+    )
+
+    expect(
+      screen.getByText('footer;blockHeight:=123;backenVersion:=0.34.2;backendName:=joinmarket-ng'),
+    ).toBeInTheDocument()
   })
 
   it('disables logs and onboarding when the route or feature state requires it', () => {
