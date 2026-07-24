@@ -31,7 +31,7 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
   }
 
   return (
-    <Card className="w-full">
+    <Card>
       <CardHeader>
         <CardTitle>
           {isExpired ? (
