@@ -18,7 +18,7 @@ describe('hash', () => {
     it('hashPassword error', { timeout: 20_000 }, async () => {
       await expect(async () => {
         return await hashPassword('', '', -1)
-      }).rejects.toThrowError('Failed to hash password: "c" expected integer >= 0, got -1')
+      }).rejects.toThrow('Failed to hash password: "c" expected integer >= 0, got -1')
     })
   })
 })

@@ -28,7 +28,7 @@ describe('utils', () => {
       expect(fb.lockdate.fromTimestamp(Date.UTC(2999, 11))).toBe('2999-12')
       expect(fb.lockdate.fromTimestamp(Date.UTC(10_000, 10))).toBe('10000-11')
 
-      expect(() => fb.lockdate.fromTimestamp(Number.NaN)).toThrowError('Unsupported input: NaN')
+      expect(() => fb.lockdate.fromTimestamp(Number.NaN)).toThrow('Unsupported input: NaN')
     })
 
     it('should convert lockdate to timestamp', () => {
@@ -36,11 +36,11 @@ describe('utils', () => {
       expect(fb.lockdate.toTimestamp('2009-01')).toBe(Date.UTC(2009, 0, 1))
       expect(fb.lockdate.toTimestamp('2999-12')).toBe(Date.UTC(2999, 11))
 
-      expect(() => fb.lockdate.toTimestamp('-1' as fb.Lockdate)).toThrowError('Unsupported format')
-      expect(() => fb.lockdate.toTimestamp('2008-1' as fb.Lockdate)).toThrowError('Unsupported format')
-      expect(() => fb.lockdate.toTimestamp('10000-01' as fb.Lockdate)).toThrowError('Unsupported format')
-      expect(() => fb.lockdate.toTimestamp('' as fb.Lockdate)).toThrowError('Unsupported format')
-      expect(() => fb.lockdate.toTimestamp('any' as fb.Lockdate)).toThrowError('Unsupported format')
+      expect(() => fb.lockdate.toTimestamp('-1' as fb.Lockdate)).toThrow('Unsupported format')
+      expect(() => fb.lockdate.toTimestamp('2008-1' as fb.Lockdate)).toThrow('Unsupported format')
+      expect(() => fb.lockdate.toTimestamp('10000-01' as fb.Lockdate)).toThrow('Unsupported format')
+      expect(() => fb.lockdate.toTimestamp('' as fb.Lockdate)).toThrow('Unsupported format')
+      expect(() => fb.lockdate.toTimestamp('any' as fb.Lockdate)).toThrow('Unsupported format')
     })
 
     it('should silently roll over out-of-range months', () => {

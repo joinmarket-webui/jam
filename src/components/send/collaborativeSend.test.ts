@@ -71,7 +71,7 @@ describe('buildCollaborativeSendRequest', () => {
         ...baseValues(),
         destination: { address: 'invalid', fromJar: undefined },
       }),
-    ).toThrowError('Invalid bitcoin address.')
+    ).toThrow('Invalid bitcoin address.')
   })
 
   it('throws for invalid number of collaborators', () => {
@@ -80,7 +80,7 @@ describe('buildCollaborativeSendRequest', () => {
         ...baseValues(),
         numCollaborators: 0,
       }),
-    ).toThrowError('Invalid number of collaborators.')
+    ).toThrow('Invalid number of collaborators.')
   })
 
   it('throws for invalid source jars', () => {
@@ -89,14 +89,14 @@ describe('buildCollaborativeSendRequest', () => {
         ...baseValues(),
         source: { fromJar: undefined },
       } as unknown as SendFormValues),
-    ).toThrowError('Invalid source jar.')
+    ).toThrow('Invalid source jar.')
 
     expect(() =>
       buildCollaborativeSendRequest({
         ...baseValues(),
         source: { fromJar: -1 },
       }),
-    ).toThrowError('Invalid source jar.')
+    ).toThrow('Invalid source jar.')
   })
 
   it('throws for invalid send amounts', () => {
@@ -105,14 +105,14 @@ describe('buildCollaborativeSendRequest', () => {
         ...baseValues(),
         amount: { isSweep: false, amount: 0, sweepAmount: undefined },
       }),
-    ).toThrowError('Invalid amount.')
+    ).toThrow('Invalid amount.')
 
     expect(() =>
       buildCollaborativeSendRequest({
         ...baseValues(),
         amount: { isSweep: false, amount: 1.5, sweepAmount: undefined },
       }),
-    ).toThrowError('Invalid amount.')
+    ).toThrow('Invalid amount.')
   })
 
   it('throws for invalid transaction fees', () => {
@@ -124,7 +124,7 @@ describe('buildCollaborativeSendRequest', () => {
           txFeeInSatsPerVbyte: 0,
         },
       }),
-    ).toThrowError('Invalid transaction fee.')
+    ).toThrow('Invalid transaction fee.')
   })
 })
 
@@ -188,7 +188,7 @@ describe('buildNonCollaborativeSendRequest', () => {
         isCoinJoin: false,
         amount: undefined,
       } as unknown as SendFormValues),
-    ).toThrowError('Invalid amount given.')
+    ).toThrow('Invalid amount given.')
 
     expect(() =>
       buildNonCollaborativeSendRequest({
@@ -196,7 +196,7 @@ describe('buildNonCollaborativeSendRequest', () => {
         isCoinJoin: false,
         destination: { address: 'invalid', fromJar: undefined },
       }),
-    ).toThrowError('Invalid bitcoin address given.')
+    ).toThrow('Invalid bitcoin address given.')
 
     expect(() =>
       buildNonCollaborativeSendRequest({
@@ -204,7 +204,7 @@ describe('buildNonCollaborativeSendRequest', () => {
         isCoinJoin: false,
         source: { fromJar: undefined },
       } as unknown as SendFormValues),
-    ).toThrowError('Invalid source jar given.')
+    ).toThrow('Invalid source jar given.')
 
     expect(() =>
       buildNonCollaborativeSendRequest({
@@ -216,6 +216,6 @@ describe('buildNonCollaborativeSendRequest', () => {
           sweepAmount: 500_000,
         },
       } as unknown as SendFormValues),
-    ).toThrowError('Invalid amount given for sweep.')
+    ).toThrow('Invalid amount given for sweep.')
   })
 })
