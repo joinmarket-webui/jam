@@ -314,24 +314,24 @@
     "title_fidelity_bonds_zero": "Crea un Fidelity Bond",
     "title_fidelity_bonds_one": "Il tuo Fidelity Bond",
     "title_fidelity_bonds_other": "I tuoi Fidelity Bonds",
-    "subtitle_fidelity_bonds": "Un fidelity bond è un deposito a lunga scadenza che rende deliberatamente costose le identità crittografiche. Bloccando crittograficamente i fondi per una durata specifica, segnali di essere un serio partecipante al mercato e aumenti la possibilità che le tue offerte vengano accettate.",
+    "subtitle_fidelity_bonds": "Un Fidelity Bond è un deposito a lunga scadenza che rende deliberatamente costose le identità crittografiche. Bloccando crittograficamente i fondi per una durata specifica, segnali di essere un serio partecipante al mercato e aumenti la possibilità che le tue offerte vengano accettate.",
     "fidelity_bond": {
       "error_unfreezing_utxos": "Impossibile scongelare gli UTXO.",
       "error_loading_address": "Impossibile caricare l'indirizzo bloccato con time-lock.",
-      "error_creating_fidelity_bond": "La transazione per la creazione del fidelity bond è fallita.",
+      "error_creating_fidelity_bond": "La transazione per la creazione del Fidelity Bond è fallita.",
       "text_loading": "Caricamento...",
       "text_creating": "Creazione...",
       "text_unfreezing": "Scongelando...",
       "select_date": {
         "form_label_year": "Anno",
         "form_label_month": "Mese",
-        "description": "Data di scadenza del fidelity bond:"
+        "description": "Data di scadenza del Fidelity Bond:"
       },
       "select_jar": {
-        "description": "Seleziona un vaso da cui finanziare il fidelity bond."
+        "description": "Seleziona un vaso da cui finanziare il Fidelity Bond."
       },
       "select_utxos": {
-        "description": "Selezionare uno o più UTXO dal vaso {{ jar }} da utilizzare per il fidelity bond.",
+        "description": "Selezionare uno o più UTXO dal vaso {{ jar }} da utilizzare per il Fidelity Bond.",
         "utxo_card": {
           "confirmations": "{{ confs }} Conferme"
         }
@@ -342,7 +342,7 @@
         "description_selected_utxos_to_freeze": "Verranno congelati per rimanere nel vaso {{ jar }}. È possibile scongelarli in qualsiasi momento dopo aver creato il bond."
       },
       "review_inputs": {
-        "text_primary_button": "Crea un fidelity bond",
+        "text_primary_button": "Crea un Fidelity Bond",
         "label_lock_date": "Bloccato fino al",
         "label_jar": "Finanziato da",
         "label_jar_n": "Vaso {{ jar }}",
@@ -350,7 +350,7 @@
         "label_address": "I fondi saranno bloccati e inviati a"
       },
       "create_fidelity_bond": {
-        "success_text": "Fidelity bond creato!",
+        "success_text": "Fidelity Bond creato!",
         "text_primary_button_unfreeze": "Scongela UTXO",
         "label_lock_date": "Bloccato fino al",
         "label_address": "Indirizzo bloccato temporalmente",
@@ -361,8 +361,8 @@
         "done": "UTXO scongelati"
       },
       "confirm_modal": {
-        "title": "Creare il fidelity bond e bloccare i fondi con un time-lock?",
-        "body": "Non sarà possibile spendere i fondi vincolati fino alla scadenza del fidelity bond. La data di scadenza è {{ humanReadableDuration }} il {{date}}."
+        "title": "Creare il Fidelity Bond e bloccare i fondi con un time-lock?",
+        "body": "Non sarà possibile spendere i fondi vincolati fino alla scadenza del Fidelity Bond. La data di scadenza è {{ humanReadableDuration }} il {{date}}."
       },
       "title": "Configura Fidelity Bond",
       "subtitle": "I vostri sats saranno bloccati dal protocollo Bitcoin. È impossibile spostarli prima che il vincolo sia scaduto.",
@@ -385,10 +385,10 @@
         "text_loading": "Caricamento...",
         "text_sending": "Sbloccando...",
         "text_button_submit": "Sblocca fondi",
-        "error_unfreezing_fidelity_bond": "Errore durante lo sblocco del fidelity bond scaduto.",
-        "error_spending_fidelity_bond": "Errore durante lo sblocco del fidelity bond scaduto.",
+        "error_unfreezing_fidelity_bond": "Errore durante lo sblocco del Fidelity Bond scaduto.",
+        "error_spending_fidelity_bond": "Errore durante lo sblocco del Fidelity Bond scaduto.",
         "select_jar": {
-          "description": "Selezionare un vaso in cui spostare il fidelity bond scaduto."
+          "description": "Selezionare un vaso in cui spostare il Fidelity Bond scaduto."
         },
         "confirm_send_modal": {
           "title": "Confermare lo sblocco del Fidelity Bond scaduto"
@@ -408,8 +408,8 @@
       "description": "Le transazioni collaborative aumentano la tua privacy e quella altrui."
     },
     "bond": {
-      "title": "Opzionale: <1>Blocca</1> fondi in un fidelity bond",
-      "description": "Un fidelity bond aumenta notevolmente le possibilità di guadagnare sats."
+      "title": "Opzionale: <1>Blocca</1> fondi in un Fidelity Bond",
+      "description": "Un Fidelity Bond aumenta notevolmente le possibilità di guadagnare sats."
     },
     "earn": {
       "title": "<0>Guadagna</0> sats fornendo liquidità.",

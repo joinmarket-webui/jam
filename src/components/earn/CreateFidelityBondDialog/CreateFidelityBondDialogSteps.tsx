@@ -110,7 +110,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
           <StepIntro
             icon={CoinsIcon}
             title={t('earn.fidelity_bond.select_utxos.title')}
-            subtitle={t('earn.fidelity_bond.select_utxos.description', { jar: selectedJarIndex })}
+            subtitle={t('earn.fidelity_bond.select_utxos.description', { jar: selectedJar?.name ?? selectedJarIndex })}
           />
 
           <div className="space-y-2">
