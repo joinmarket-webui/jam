@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { jarBadgeVariant } from '@/components/ui/badge-variants'
 import { buttonVariants } from '@/components/ui/button-variants'
+import { Item, ItemTitle, ItemDescription, ItemContent, ItemMedia } from '@/components/ui/item'
 import { Address } from '@/components/ui/jam/Address'
 import { Balance } from '@/components/ui/jam/Balance'
 import { CopyButton } from '@/components/ui/jam/CopyButton'
@@ -17,15 +18,15 @@ import type { AmountSats, JarIndex } from '@/types/global'
 /** icon + title/subtitle block shown at the top of a wizard step */
 export function StepIntro({ icon: Icon, title, subtitle }: { icon: LucideIcon; title: string; subtitle?: string }) {
   return (
-    <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
-      <div className="bg-primary/10 rounded-lg p-2">
+    <Item className="bg-muted/50 rounded-lg">
+      <ItemMedia variant="icon" className="bg-primary/10 rounded-lg">
         <Icon className="text-primary h-5 w-5" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-medium">{title}</p>
-        {subtitle && <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>}
-      </div>
-    </div>
+      </ItemMedia>
+      <ItemContent>
+        <ItemTitle>{title}</ItemTitle>
+        <ItemDescription>{subtitle}</ItemDescription>
+      </ItemContent>
+    </Item>
   )
 }
 
