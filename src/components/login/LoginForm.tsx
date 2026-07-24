@@ -96,72 +96,68 @@ export const LoginFormComponent = ({
 
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
-      <div className="space-y-2">
-        <Field data-invalid={errors.walletFileName !== undefined}>
-          <FieldLabel>{t('login.label_wallet')}</FieldLabel>
-          <Select
-            onValueChange={(val: WalletFileName) => setValue('walletFileName', val, { shouldValidate: true })}
-            value={values.walletFileName ?? ''}
-            {...register('walletFileName', {
-              required: true,
-              disabled: disabled || wallets.length === 0,
-            })}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue
-                placeholder={
-                  wallets.length > 0 ? t('login.placeholder_select_wallet') : t('login.placeholder_no_wallets')
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {wallets?.map((wallet) => (
-                <SelectItem key={wallet} value={wallet} className="min-w-0 text-base">
-                  <span className="min-w-0 flex-1 truncate">{shortenStringMiddle(walletDisplayName(wallet), 32)}</span>
-                  {activeWallet === wallet ? (
-                    <span className="text-muted-foreground/50 inline-flex shrink-0 items-center gap-1.5 py-1 text-xs">
-                      <ActivityIndicator active={makerRunning || coinjoinInProgress} />
-                      {t('wallets.wallet_preview.wallet_active')}
-                    </span>
-                  ) : undefined}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
-
-      <div className="space-y-2">
-        <Field data-invalid={errors.password !== undefined}>
-          <FieldLabel htmlFor="login-password">{t('login.label_password')}</FieldLabel>
-          <InputGroup>
-            <InputGroupInput
-              id="login-password"
-              {...register('password', {
-                required: true,
-                disabled,
-              })}
-              type={showPassword ? 'text' : 'password'}
-              placeholder={t('wallets.wallet_preview.placeholder_password')}
-              autoComplete="off"
+      <Field data-invalid={errors.walletFileName !== undefined}>
+        <FieldLabel>{t('login.label_wallet')}</FieldLabel>
+        <Select
+          onValueChange={(val: WalletFileName) => setValue('walletFileName', val, { shouldValidate: true })}
+          value={values.walletFileName ?? ''}
+          {...register('walletFileName', {
+            required: true,
+            disabled: disabled || wallets.length === 0,
+          })}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue
+              placeholder={
+                wallets.length > 0 ? t('login.placeholder_select_wallet') : t('login.placeholder_no_wallets')
+              }
             />
-            <InputGroupAddon align="inline-start">
-              <LockIcon />
-            </InputGroupAddon>
-            <InputGroupAddon align="inline-end">
-              <Button
-                tabIndex={-1}
-                type="button"
-                variant="link"
-                size="icon"
-                onClick={() => setShowPassword((val) => !val)}
-              >
-                {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </Field>
-      </div>
+          </SelectTrigger>
+          <SelectContent>
+            {wallets?.map((wallet) => (
+              <SelectItem key={wallet} value={wallet} className="min-w-0 text-base">
+                <span className="min-w-0 flex-1 truncate">{shortenStringMiddle(walletDisplayName(wallet), 32)}</span>
+                {activeWallet === wallet ? (
+                  <span className="text-muted-foreground/50 inline-flex shrink-0 items-center gap-1.5 py-1 text-xs">
+                    <ActivityIndicator active={makerRunning || coinjoinInProgress} />
+                    {t('wallets.wallet_preview.wallet_active')}
+                  </span>
+                ) : undefined}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+
+      <Field data-invalid={errors.password !== undefined}>
+        <FieldLabel htmlFor="login-password">{t('login.label_password')}</FieldLabel>
+        <InputGroup>
+          <InputGroupInput
+            id="login-password"
+            {...register('password', {
+              required: true,
+              disabled,
+            })}
+            type={showPassword ? 'text' : 'password'}
+            placeholder={t('wallets.wallet_preview.placeholder_password')}
+            autoComplete="off"
+          />
+          <InputGroupAddon align="inline-start">
+            <LockIcon />
+          </InputGroupAddon>
+          <InputGroupAddon align="inline-end">
+            <Button
+              tabIndex={-1}
+              type="button"
+              variant="link"
+              size="icon"
+              onClick={() => setShowPassword((val) => !val)}
+            >
+              {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+      </Field>
 
       <Button type="submit" className="w-full" disabled={disabled || isSubmitting} size="xxl">
         {isSubmitting ? (

@@ -1,4 +1,3 @@
-import type { PropsWithChildren } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -25,20 +24,6 @@ vi.mock('@/components/ui/jam/SelectableJar', () => ({
       {name}
     </button>
   ),
-}))
-
-vi.mock('../dev/DevBadge', () => ({
-  DevBadge: () => <span>dev</span>,
-}))
-
-vi.mock('../ui/jam/CurrencySymbol', () => ({
-  SatSymbol: () => <span>sats</span>,
-}))
-
-vi.mock('../ui/card', () => ({
-  Card: ({ children }: PropsWithChildren) => <div>{children}</div>,
-  CardContent: ({ children }: PropsWithChildren) => <div>{children}</div>,
-  CardHeader: ({ children }: PropsWithChildren) => <div>{children}</div>,
 }))
 
 const jars = [

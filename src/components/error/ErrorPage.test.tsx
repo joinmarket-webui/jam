@@ -18,20 +18,6 @@ vi.mock('react-i18next', () => ({
   Trans: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
 }))
 
-vi.mock('@/components/ui/alert', () => ({
-  Alert: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  AlertDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@/components/ui/jam/PageTitle', () => ({
-  default: ({ title, subtitle }: { title: string; subtitle: string }) => (
-    <div>
-      <span>{title}</span>
-      <span>{subtitle}</span>
-    </div>
-  ),
-}))
-
 describe('ErrorPage', () => {
   it('renders error details when error is an Error instance', () => {
     const error = new Error('boom')

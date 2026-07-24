@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
-import { Field, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { SweepFormValues } from './SweepFormSchema'
@@ -112,8 +112,8 @@ export const SweepDestinationInputs = ({
                     <span className="sr-only">{t('send.qr_scan_title')}</span>
                   </Button>
                 </ButtonGroup>
+                {showFieldError && fieldError && <FieldError>{fieldError}</FieldError>}
               </Field>
-              {showFieldError && fieldError && <div className="text-destructive text-xs">{fieldError}</div>}
             </div>
           )
         })}

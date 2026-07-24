@@ -99,14 +99,6 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
   PageLoading: () => <div>page-loading</div>,
 }))
 
-vi.mock('@/components/ui/jam/PageTitle', () => ({
-  default: ({ title, subtitle }: { title: string; subtitle: string }) => (
-    <h1>
-      {title}:{subtitle}
-    </h1>
-  ),
-}))
-
 vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
 }))
@@ -346,9 +338,9 @@ describe('SendPage', () => {
     jmSessionStore.setState({ state: undefined })
 
     render(<SendPage walletFileName="wallet.jmdat" />)
+    await flushActUpdates()
 
     expect(screen.getByText('page-loading')).toBeInTheDocument()
-    await flushActUpdates()
   })
 
   it('confirms a direct send and stores the transaction result', async () => {
@@ -403,11 +395,12 @@ describe('SendPage', () => {
     expect(mocks.stopCoinjoinRefetch).toHaveBeenCalledWith({ throwOnError: true })
   })
 
-  it('shows the running CoinJoin state with abort button not present', () => {
+  it('shows the running CoinJoin state with abort button not present', async () => {
     mocks.takerRunning = true
     mocks.schedulerRunning = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
+    await flushActUpdates()
 
     expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
     expect(screen.getByText('send-form:true')).toBeInTheDocument()

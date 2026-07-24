@@ -22,7 +22,7 @@ import { AVERAGE_BLOCKS_PER_DAY, AVERAGE_BLOCKS_PER_YEAR, SEGWIT_ACTIVATION_BLOC
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { BlockHeight } from '@/types/global'
-import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
@@ -74,28 +74,25 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className="space-y-4">
       {/* include validation with required or other standard HTML validation rules */}
-      <div className="space-y-2">
-        <Field data-invalid={errors.blockHeight !== undefined}>
-          <FieldLabel htmlFor="inputRescanBlockheight">{t('rescan_chain.label_blockheight')}</FieldLabel>
-          <FieldDescription className="text-xs">{t('rescan_chain.description_blockheight')}</FieldDescription>
-          <InputGroup className="gap-2">
-            <InputGroupInput
-              id="inputRescanBlockheight"
-              {...register('blockHeight', {
-                disabled: disabled || rescanInfo.rescanning,
-              })}
-              placeholder={t('rescan_chain.placeholder_blockheight')}
-              type="number"
-              step={1}
-            />
-            <InputGroupAddon align="inline-start">
-              <PackageSearchIcon />
-            </InputGroupAddon>
-          </InputGroup>
-        </Field>
-
-        {errors.blockHeight?.message && <div className="text-destructive text-xs">{errors.blockHeight.message}</div>}
-      </div>
+      <Field data-invalid={errors.blockHeight !== undefined}>
+        <FieldLabel htmlFor="inputRescanBlockheight">{t('rescan_chain.label_blockheight')}</FieldLabel>
+        <FieldDescription className="text-xs">{t('rescan_chain.description_blockheight')}</FieldDescription>
+        <InputGroup className="gap-2">
+          <InputGroupInput
+            id="inputRescanBlockheight"
+            {...register('blockHeight', {
+              disabled: disabled || rescanInfo.rescanning,
+            })}
+            placeholder={t('rescan_chain.placeholder_blockheight')}
+            type="number"
+            step={1}
+          />
+          <InputGroupAddon align="inline-start">
+            <PackageSearchIcon />
+          </InputGroupAddon>
+        </InputGroup>
+        {errors.blockHeight?.message && <FieldError>{errors.blockHeight.message}</FieldError>}
+      </Field>
 
       <div className="flex flex-wrap gap-2">
         {(currentBlockHeight && currentBlockHeight >= AVERAGE_BLOCKS_PER_DAY) || isDeveloperMode ? (

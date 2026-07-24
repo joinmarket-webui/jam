@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useForm } from 'react-hook-form'
 import { describe, expect, it, vi } from 'vitest'
@@ -7,25 +6,6 @@ import type { CollaboratorFeesFormValues } from './CollaboratorFeesForm.schema'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
-}))
-
-vi.mock('@/components/ui/alert', () => ({
-  Alert: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  AlertDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('../../ui/field', () => ({
-  Field: ({ children, 'data-invalid': invalid }: { children?: ReactNode; 'data-invalid'?: boolean }) => (
-    <div data-invalid={invalid}>{children}</div>
-  ),
-  FieldDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  FieldLabel: ({ children }: { children?: ReactNode }) => <label>{children}</label>,
-}))
-
-vi.mock('../../ui/input-group', () => ({
-  InputGroup: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  InputGroupAddon: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  InputGroupInput: (props: Record<string, unknown>) => <input {...props} />,
 }))
 
 vi.mock('../../ui/jam/CurrencySymbol', () => ({ SatSymbol: () => <span data-testid="sat" /> }))

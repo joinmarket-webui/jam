@@ -1,6 +1,5 @@
 import { createClient } from '@joinmarket-webui/joinmarket-ng-api-ts'
-import type { Client } from '@joinmarket-webui/joinmarket-ng-api-ts/client'
-import type { ClientOptions, UnlockWalletResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { UnlockWalletResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { isDevMode } from '@/constants/debugFeatures'
 import { normalizeAppError } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
@@ -59,9 +58,9 @@ export function unauthorizedResponseInterceptor(response: Response) {
   return response
 }
 
-export const createApiClient = (): Client => {
+export const createApiClient = (): ReturnType<typeof createClient> => {
   const baseUrl = String(import.meta.env.VITE_JM_API_BASE_URL)
-  const clientOptions: ClientOptions = { baseUrl }
+  const clientOptions: Parameters<typeof createClient>[0] = { baseUrl }
 
   console.debug('Setting up JM API client…', clientOptions)
   const client = createClient(clientOptions)

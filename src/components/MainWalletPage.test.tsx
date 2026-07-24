@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
@@ -32,19 +31,9 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   useJars: () => ({ jars }),
 }))
 
-vi.mock('@/lib/utils', () => ({
-  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
-  shortenStringMiddle: (s: string) => s,
-  walletDisplayName: (s: string) => s,
-}))
-
-vi.mock('@/components/ui/jam/ClickableJar', () => ({
-  ClickableJar: ({ name, onClick }: { name: string; onClick: () => void }) => <button onClick={onClick}>{name}</button>,
-}))
-
 vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
   WalletJarsDetailsOverlay: ({ open }: { open: boolean }) => (
-    <div data-testid="overlay">{open ? 'open' : 'closed'}</div>
+    <div data-testid="WalletJarsDetailsOverlay">{open ? 'open' : 'closed'}</div>
   ),
 }))
 
@@ -56,23 +45,6 @@ vi.mock('./ui/jam/Balance', () => ({
 
 vi.mock('./ui/spinner', () => ({
   Spinner: () => <div data-testid="spinner" />,
-}))
-
-vi.mock('@/components/ui/tooltip', () => ({
-  Tooltip: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  TooltipTrigger: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  TooltipContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@/components/ui/alert', () => ({
-  Alert: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  AlertDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
-vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick }: { children?: ReactNode; onClick?: () => void }) => (
-    <button onClick={onClick}>{children}</button>
-  ),
 }))
 
 const walletFileName = 'wallet.jmdat' as WalletFileName
@@ -105,10 +77,10 @@ describe('MainWalletPage', () => {
   it('renders balance and jars, and opens the jar overlay on click', () => {
     render(<MainWalletPage walletFileName={walletFileName} />)
     expect(screen.getByText('5000')).toBeInTheDocument()
-    expect(screen.getByTestId('overlay')).toHaveTextContent('closed')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay')).toHaveTextContent('closed')
 
     fireEvent.click(screen.getByText('Jar 0'))
-    expect(screen.getByTestId('overlay')).toHaveTextContent('open')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay')).toHaveTextContent('open')
   })
 
   it('navigates to deposit and withdraw routes', () => {

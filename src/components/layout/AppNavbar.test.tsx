@@ -18,12 +18,6 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false }),
 }))
 
-vi.mock('@/components/ui/tooltip', () => ({
-  Tooltip: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  TooltipTrigger: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  TooltipContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}))
-
 vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString?: string }) => <span data-testid="balance">{valueString}</span>,
 }))

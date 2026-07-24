@@ -9,10 +9,6 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-vi.mock('@/components/ui/jam/CurrencySymbol', () => ({
-  SatSymbol: (props: Record<string, unknown>) => <span {...props}>sat-symbol</span>,
-}))
-
 vi.mock('../dev/DevBadge', () => ({
   DevBadge: ({ className }: { className?: string }) => <span className={className}>dev-badge</span>,
 }))

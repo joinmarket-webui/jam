@@ -55,12 +55,6 @@ vi.mock('@/components/ui/dialog', () => ({
   DialogTitle: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick }: { children?: ReactNode; onClick?: () => void }) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-}))
-
 const bip21: Bip21ParseResult = { address: 'bc1qscan' } as Bip21ParseResult
 
 const renderDialog = (overrides?: { onScan?: (r: Bip21ParseResult) => void; onOpenChange?: (o: boolean) => void }) =>

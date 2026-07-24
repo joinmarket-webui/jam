@@ -6,14 +6,20 @@ import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import { SendForm } from './SendForm'
 
-const h = vi.hoisted(() => ({
-  getaddressResult: {
-    data: { address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq' },
-    error: undefined as { message: string } | undefined,
-  },
-  toastSuccess: vi.fn<(message: string) => void>(),
-  toastError: vi.fn<(message: string) => void>(),
-}))
+const h = vi.hoisted(() => {
+  const DEFAULT_NEW_DUMMY_ADDRESS_0 = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
+  const DEFAULT_SCAN_DUMMY_ADDRESS_1 = 'bcrt1qt5yxk3xzrx66q9wd5sdyynklqynqcyf7uh74j3'
+  return {
+    DEFAULT_NEW_DUMMY_ADDRESS_0,
+    DEFAULT_SCAN_DUMMY_ADDRESS_1,
+    getaddressResult: {
+      data: { address: DEFAULT_NEW_DUMMY_ADDRESS_0 },
+      error: undefined as { message: string } | undefined,
+    },
+    toastSuccess: vi.fn<(message: string) => void>(),
+    toastError: vi.fn<(message: string) => void>(),
+  }
+})
 
 vi.mock('sonner', () => ({
   toast: {
@@ -104,9 +110,9 @@ describe('SendForm', () => {
       name: 'Jar 0',
       color: '#000',
       balanceSummary: {
-        calculatedAvailableBalanceInSats: 5000,
+        calculatedAvailableBalanceInSats: 4900,
         calculatedTotalBalanceInSats: 5000,
-        calculatedFrozenOrLockedBalanceInSats: 0,
+        calculatedFrozenOrLockedBalanceInSats: 100,
       },
       utxos: [],
     },
@@ -147,7 +153,7 @@ describe('SendForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    h.getaddressResult = { data: { address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq' }, error: undefined }
+    h.getaddressResult = { data: { address: h.DEFAULT_NEW_DUMMY_ADDRESS_0 }, error: undefined }
     h.toastSuccess = vi.fn<(message: string) => void>()
     h.toastError = vi.fn<(message: string) => void>()
   })
@@ -161,42 +167,100 @@ describe('SendForm', () => {
 
   it('selects a source jar', async () => {
     renderForm()
+
     fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
+
     expect(screen.getByRole('button', { name: 'Jar 0' })).toBeInTheDocument()
+
     await flushActUpdates()
   })
 
   it('enables sweep, then clears it, then reselecting the jar resets sweep', async () => {
     renderForm()
+
+    expect(document.querySelector('#send-amount-sweep-from-jar')?.parentElement).toHaveClass('hidden')
+    expect(screen.queryByTestId('balance')).not.toBeInTheDocument()
+
+    const sweepButtonBefore = document.querySelector('#btn-sweep-trigger')
+    expect(sweepButtonBefore).not.toBeEnabled()
+    expect(sweepButtonBefore?.parentElement).not.toHaveClass('hidden')
+
+    const sweepClearButtonBefore = document.querySelector('#btn-sweep-clear-trigger')
+    expect(sweepClearButtonBefore).not.toBeEnabled()
+    expect(sweepClearButtonBefore?.parentElement).toHaveClass('hidden')
+
     fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
 
+    const sweepButtonAfterJarSelect = document.querySelector('#btn-sweep-trigger')
+    expect(sweepButtonAfterJarSelect).toBeEnabled()
+    expect(sweepButtonAfterJarSelect?.parentElement).not.toHaveClass('hidden')
+
+    const sweepClearButtonAfterJarSelect = document.querySelector('#btn-sweep-clear-trigger')
+    expect(sweepClearButtonAfterJarSelect).not.toBeEnabled()
+
     fireEvent.click(document.querySelector('#btn-sweep-trigger')!)
-    expect(document.querySelector('#btn-sweep-clear-trigger')).toBeInTheDocument()
-    expect(
-      document.querySelector('#send-amount-sweep-from-jar')?.closest('[data-slot="button-group"]'),
-    ).toBeInTheDocument()
+
+    expect(document.querySelector('#send-amount-sweep-from-jar')?.parentElement).not.toHaveClass('hidden')
+    expect(await screen.findByTestId('balance')).toBeInTheDocument()
+    expect(await screen.findByTestId('balance')).toHaveTextContent(
+      '' + mockJars[0].balanceSummary.calculatedAvailableBalanceInSats,
+    )
+
+    const sweepButtonAfterTrigger = document.querySelector('#btn-sweep-trigger')
+    expect(sweepButtonAfterTrigger).not.toBeEnabled()
+    expect(sweepButtonAfterTrigger?.parentElement).toHaveClass('hidden')
+
+    const sweepClearButtonAfterSweepTrigger = document.querySelector('#btn-sweep-clear-trigger')
+    expect(sweepClearButtonAfterSweepTrigger).toBeEnabled()
+    expect(sweepClearButtonAfterSweepTrigger?.parentElement).not.toHaveClass('hidden')
 
     // reselect the same jar while sweep is active -> hits the sweep-reset branch
     fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
 
     fireEvent.click(document.querySelector('#btn-sweep-trigger')!)
+
+    expect(document.querySelector('#btn-sweep-trigger')).not.toBeEnabled()
+    expect(document.querySelector('#btn-sweep-clear-trigger')).toBeEnabled()
+    expect(screen.queryByTestId('balance')).toBeInTheDocument()
+
     fireEvent.click(document.querySelector('#btn-sweep-clear-trigger')!)
+
+    expect(document.querySelector('#btn-sweep-trigger')).toBeEnabled()
+    expect(document.querySelector('#btn-sweep-clear-trigger')).not.toBeEnabled()
+    expect(screen.queryByTestId('balance')).not.toBeInTheDocument()
+
     await flushActUpdates()
   })
 
   it('applies a scanned bip21 result', async () => {
     renderForm()
+
+    const inputBefore = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputBefore).toHaveValue('')
+
     fireEvent.click(document.querySelector('#show-qr-scanner-trigger')!)
     fireEvent.click(await screen.findByTestId('qr-scan'))
-    expect(screen.getByText('note')).toBeInTheDocument()
+
+    const inputAfter = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputAfter).toHaveValue('bc1qscan')
+
     await flushActUpdates()
   })
 
   it('selects a destination address from the jar selector', async () => {
     renderForm()
+
+    const inputBefore = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputBefore).toHaveValue('')
+
     fireEvent.click(document.querySelector('#show-address-from-jar-selector-trigger')!)
     fireEvent.click(await screen.findByTestId('jar-confirm'))
+
     await waitFor(() => expect(screen.getByTestId('address')).toBeInTheDocument())
+
+    const inputAfter = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputAfter).toHaveValue(h.DEFAULT_NEW_DUMMY_ADDRESS_0)
+
     expect(
       document.querySelector('#send-destination-address-from-jar')?.closest('[data-slot="button-group"]'),
     ).toBeInTheDocument()
@@ -204,21 +268,37 @@ describe('SendForm', () => {
 
   it('shows an error when the jar selector address lookup fails', async () => {
     h.getaddressResult = {
-      data: { address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq' },
+      data: { address: h.DEFAULT_NEW_DUMMY_ADDRESS_0 },
       error: { message: 'boom' },
     }
     renderForm()
+
+    const inputBefore = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputBefore).toHaveValue('')
+
     fireEvent.click(document.querySelector('#show-address-from-jar-selector-trigger')!)
+
     fireEvent.click(await screen.findByTestId('jar-confirm'))
+
+    const inputAfter = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputAfter).toHaveValue('')
+
     await waitFor(() => expect(h.toastError).toHaveBeenCalledWith('global.errors.error_loading_address_failed'))
   })
 
   it('applies a pasted bip21 uri', async () => {
     renderForm()
-    const input = document.querySelector('#send-destination') as HTMLInputElement
-    fireEvent.paste(input, {
-      clipboardData: { getData: () => 'bitcoin:bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq?amount=0.5' },
+
+    const inputBefore = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputBefore).toHaveValue('')
+
+    fireEvent.paste(inputBefore, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_SCAN_DUMMY_ADDRESS_1}?amount=0.5` },
     })
+
+    const inputAfter = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputAfter).toHaveValue(h.DEFAULT_SCAN_DUMMY_ADDRESS_1)
+
     expect(h.toastSuccess).toHaveBeenCalledWith('send.qr_scan_bip21_applied')
     await flushActUpdates()
   })
@@ -226,7 +306,9 @@ describe('SendForm', () => {
   it('ignores a non-bitcoin paste', () => {
     renderForm()
     const input = document.querySelector('#send-destination') as HTMLInputElement
+
     fireEvent.paste(input, { clipboardData: { getData: () => 'just some text' } })
+
     expect(h.toastSuccess).not.toHaveBeenCalled()
   })
 
@@ -253,15 +335,25 @@ describe('SendForm', () => {
         feeConfigValues={mockFeeConfigValues}
       />,
     )
+
     fireEvent.submit(document.querySelector('form')!)
+
     await flushActUpdates()
   })
 
   it('shows a network badge for a non-mainnet destination address', async () => {
     renderForm()
-    const input = document.querySelector('#send-destination') as HTMLInputElement
-    fireEvent.change(input, { target: { value: 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx' } })
+
+    const inputBefore = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputBefore).toHaveValue('')
+
+    fireEvent.change(inputBefore, { target: { value: 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx' } })
+
+    const inputAfter = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputAfter).toHaveValue('tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx')
+
     expect(screen.getByText('testnet')).toBeInTheDocument()
+
     await flushActUpdates()
   })
 })

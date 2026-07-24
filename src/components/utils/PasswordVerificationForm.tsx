@@ -8,7 +8,7 @@ import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { hashPassword } from '@/lib/hash'
 import { cn, debounce, type WalletFileName } from '@/lib/utils'
-import { Field, FieldLabel } from '../ui/field'
+import { Field, FieldError, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Spinner } from '../ui/spinner'
 
@@ -89,36 +89,33 @@ export const PasswordVerificationForm = ({
 
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
-      <div className="space-y-2">
-        <Field data-invalid={errors.password !== undefined}>
-          <FieldLabel htmlFor="password-verification-input-password">{t(`${i18nKeyPrefix}.label_password`)}</FieldLabel>
-          <InputGroup>
-            <InputGroupInput
-              id="password-verification-input-password"
-              {...register('password', {
-                required: true,
-                disabled,
-              })}
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="off"
-              placeholder={t(`${i18nKeyPrefix}.placeholder_password`)}
-            />
-            <InputGroupAddon align="inline-end">
-              <Button
-                tabIndex={-1}
-                type="button"
-                variant="link"
-                size="icon"
-                onClick={() => setShowPassword((val) => !val)}
-              >
-                {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </Field>
-
-        {errors.password?.message && <div className="text-destructive text-xs">{errors.password.message}</div>}
-      </div>
+      <Field data-invalid={errors.password !== undefined}>
+        <FieldLabel htmlFor="password-verification-input-password">{t(`${i18nKeyPrefix}.label_password`)}</FieldLabel>
+        <InputGroup>
+          <InputGroupInput
+            id="password-verification-input-password"
+            {...register('password', {
+              required: true,
+              disabled,
+            })}
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="off"
+            placeholder={t(`${i18nKeyPrefix}.placeholder_password`)}
+          />
+          <InputGroupAddon align="inline-end">
+            <Button
+              tabIndex={-1}
+              type="button"
+              variant="link"
+              size="icon"
+              onClick={() => setShowPassword((val) => !val)}
+            >
+              {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+            </Button>
+          </InputGroupAddon>
+        </InputGroup>
+        {errors.password?.message && <FieldError>{errors.password.message}</FieldError>}
+      </Field>
 
       <Field
         orientation="horizontal"

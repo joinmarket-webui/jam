@@ -150,10 +150,15 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
       if (rejected.length === 0) {
         toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: fulfilled.length }))
       } else {
-        toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length }))
+        const errorMessage = t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length })
+        if (fulfilled.length > 0) {
+          toast.warning(errorMessage)
+        } else {
+          toast.error(errorMessage)
+        }
       }
     } catch (_ignoredOnPurpose) {
-      toast.warning(t('jar_details.utxo_list.toast_freeze_error', { count: selectedUtxos.length }))
+      toast.error(t('jar_details.utxo_list.toast_freeze_error', { count: selectedUtxos.length }))
     }
   }
 
@@ -176,10 +181,15 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
       if (rejected.length === 0) {
         toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: fulfilled.length }))
       } else {
-        toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length }))
+        const errorMessage = t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length })
+        if (fulfilled.length > 0) {
+          toast.warning(errorMessage)
+        } else {
+          toast.error(errorMessage)
+        }
       }
     } catch (_ignoredOnPurpose) {
-      toast.warning(t('jar_details.utxo_list.toast_unfreeze_error', { count: selectedUtxos.length }))
+      toast.error(t('jar_details.utxo_list.toast_unfreeze_error', { count: selectedUtxos.length }))
     }
   }
 

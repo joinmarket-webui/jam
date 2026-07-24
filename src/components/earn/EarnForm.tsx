@@ -17,7 +17,7 @@ import { cn, factorToPercentage, isValidInteger, isValidNumber } from '@/lib/uti
 import type { AmountSats } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Card, CardContent, CardHeader } from '../ui/card'
-import { Field, FieldDescription, FieldLabel } from '../ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Spinner } from '../ui/spinner'
 
@@ -203,89 +203,81 @@ export function EarnForm({
       />
       <Tabs value={watchOfferType}>
         <TabsContent value={OFFERTYPE_ABS}>
-          <div className="space-y-2">
-            <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
-              <FieldLabel htmlFor="offerAbsoluteFee">
-                {t('earn.label_abs_fee', {
-                  fee: '', // empty on purpose
+          <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
+            <FieldLabel htmlFor="offerAbsoluteFee">
+              {t('earn.label_abs_fee', {
+                fee: '', // empty on purpose
+              })}
+            </FieldLabel>
+            <FieldDescription className="text-xs">{t('earn.description_abs_fee')}</FieldDescription>
+            <InputGroup>
+              <InputGroupInput
+                id="offerAbsoluteFee"
+                {...register('offerAbsoluteFee', {
+                  disabled,
                 })}
-              </FieldLabel>
-              <FieldDescription className="text-xs">{t('earn.description_abs_fee')}</FieldDescription>
-              <InputGroup>
-                <InputGroupInput
-                  id="offerAbsoluteFee"
-                  {...register('offerAbsoluteFee', {
-                    disabled,
-                  })}
-                  type="number"
-                  step={1}
-                />
-                <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
-              </InputGroup>
-            </Field>
-            {errors.offerAbsoluteFee?.message && (
-              <div className="text-destructive text-xs">{errors.offerAbsoluteFee.message}</div>
-            )}
-          </div>
+                type="number"
+                step={1}
+              />
+              <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
+            </InputGroup>
+
+            {errors.offerAbsoluteFee?.message && <FieldError>{errors.offerAbsoluteFee.message}</FieldError>}
+          </Field>
         </TabsContent>
         <TabsContent value={OFFERTYPE_REL}>
-          <div className="space-y-2">
-            <Field data-invalid={errors.offerRelativeFeeInPercent !== undefined}>
-              <FieldLabel htmlFor="offerRelativeFeeInPercent">
-                {t('earn.label_rel_fee', {
-                  fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
+          <Field data-invalid={errors.offerRelativeFeeInPercent !== undefined}>
+            <FieldLabel htmlFor="offerRelativeFeeInPercent">
+              {t('earn.label_rel_fee', {
+                fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
+              })}
+            </FieldLabel>
+            <FieldDescription className="text-xs">{t('earn.description_rel_fee')}</FieldDescription>
+            <InputGroup>
+              <InputGroupInput
+                id="offerRelativeFeeInPercent"
+                {...register('offerRelativeFeeInPercent', {
+                  disabled,
                 })}
-              </FieldLabel>
-              <FieldDescription className="text-xs">{t('earn.description_rel_fee')}</FieldDescription>
-              <InputGroup>
-                <InputGroupInput
-                  id="offerRelativeFeeInPercent"
-                  {...register('offerRelativeFeeInPercent', {
-                    disabled,
-                  })}
-                  type="number"
-                  step={factorToPercentage(JAM.OFFER_FEE_REL_STEP)}
-                />
-                <InputGroupAddon align="inline-start">%</InputGroupAddon>
-              </InputGroup>
-            </Field>
-            {errors.offerRelativeFeeInPercent && (
-              <div className="text-destructive text-xs">{errors.offerRelativeFeeInPercent.message}</div>
-            )}
-          </div>
+                type="number"
+                step={factorToPercentage(JAM.OFFER_FEE_REL_STEP)}
+              />
+              <InputGroupAddon align="inline-start">%</InputGroupAddon>
+            </InputGroup>
+            {errors.offerRelativeFeeInPercent && <FieldError>{errors.offerRelativeFeeInPercent.message}</FieldError>}
+          </Field>
         </TabsContent>
       </Tabs>
 
-      <div className="space-y-2">
-        <Field data-invalid={errors.offerMinAmount !== undefined}>
-          <FieldLabel htmlFor="offerMinAmount">{t('earn.label_min_amount_input')}</FieldLabel>
-          <FieldDescription className="text-xs">{t('earn.description_min_amount_input')}</FieldDescription>
-          <InputGroup>
-            <InputGroupInput
-              id="offerMinAmount"
-              {...register('offerMinAmount', {
-                required: true,
-                disabled,
-              })}
-              type="number"
-              max={offerMinsizeMax}
-              step={1}
-              placeholder={t('earn.placeholder_min_amount_input')}
-            />
-            <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
-          </InputGroup>
-        </Field>
+      <Field data-invalid={errors.offerMinAmount !== undefined}>
+        <FieldLabel htmlFor="offerMinAmount">{t('earn.label_min_amount_input')}</FieldLabel>
+        <FieldDescription className="text-xs">{t('earn.description_min_amount_input')}</FieldDescription>
+        <InputGroup>
+          <InputGroupInput
+            id="offerMinAmount"
+            {...register('offerMinAmount', {
+              required: true,
+              disabled,
+            })}
+            type="number"
+            max={offerMinsizeMax}
+            step={1}
+            placeholder={t('earn.placeholder_min_amount_input')}
+          />
+          <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
+        </InputGroup>
 
         {errors.offerMinAmount && (
-          <div className="text-destructive text-xs">
+          <FieldError>
             {offerMinsizeMax < JAM.OFFER_MINSIZE_MIN ? (
               <>{t('earn.feedback_invalid_min_amount_insufficient_funds')}</>
             ) : (
               <>{errors.offerMinAmount?.message || t('earn.feedback_invalid_min_amount')}</>
             )}
-          </div>
+          </FieldError>
         )}
-      </div>
+      </Field>
+
       <Button
         type="submit"
         variant={disabled && !isWaitingMakerStart ? 'outline' : undefined}

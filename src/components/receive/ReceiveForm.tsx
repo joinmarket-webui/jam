@@ -11,7 +11,7 @@ import { useWalletBalanceSummary, type Jar } from '@/context/JamWalletInfoContex
 import { sourceJarField } from '@/lib/formValidation'
 import { cn, isValidInteger } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
-import { Field, FieldLabel } from '../ui/field'
+import { Field, FieldError, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import type { ReceiveFormValues } from './types'
@@ -89,53 +89,48 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
       className={cn('flex flex-col gap-4', className)}
       noValidate
     >
-      <div className="space-y-2">
-        <Field className="space-y-4" data-invalid={errors.source !== undefined}>
-          <FieldLabel>{t('receive.label_source_jar')}</FieldLabel>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {jars.map((jar, index) => (
-              <SelectableJar
-                key={index}
-                name={jar.name}
-                color={jar.color}
-                totalBalance={jar.balanceSummary.calculatedTotalBalanceInSats}
-                availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
-                frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
-                totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
-                isSelected={values.source?.fromJar === jar.jarIndex}
-                onClick={() => {
-                  setValue('source.fromJar', jar.jarIndex, { shouldValidate: true })
-                }}
-                disabled={disabled || isSubmitting}
-              />
-            ))}
-          </div>
-        </Field>
-        {errors.source?.fromJar?.message && (
-          <div className="text-destructive text-xs">{errors.source.fromJar.message}</div>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Field data-invalid={errors.amount !== undefined}>
-          <FieldLabel htmlFor="receive-amount">{t('receive.label_amount_input')}</FieldLabel>
-          <InputGroup>
-            <InputGroupInput
-              id="receive-amount"
-              {...register('amount', {
-                required: false,
-                disabled,
-              })}
-              type="number"
-              min={1}
-              step={1}
-              placeholder={t('receive.placeholder_amount_input')}
+      <Field className="space-y-4" data-invalid={errors.source !== undefined}>
+        <FieldLabel>{t('receive.label_source_jar')}</FieldLabel>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {jars.map((jar, index) => (
+            <SelectableJar
+              key={index}
+              name={jar.name}
+              color={jar.color}
+              totalBalance={jar.balanceSummary.calculatedTotalBalanceInSats}
+              availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
+              frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
+              totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+              isSelected={values.source?.fromJar === jar.jarIndex}
+              onClick={() => {
+                setValue('source.fromJar', jar.jarIndex, { shouldValidate: true })
+              }}
+              disabled={disabled || isSubmitting}
             />
-            <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
-          </InputGroup>
-        </Field>
-        {errors.amount?.message && <div className="text-destructive text-xs">{errors.amount.message}</div>}
-      </div>
+          ))}
+        </div>
+
+        {errors.source?.fromJar?.message && <FieldError>{errors.source.fromJar.message}</FieldError>}
+      </Field>
+
+      <Field data-invalid={errors.amount !== undefined}>
+        <FieldLabel htmlFor="receive-amount">{t('receive.label_amount_input')}</FieldLabel>
+        <InputGroup>
+          <InputGroupInput
+            id="receive-amount"
+            {...register('amount', {
+              required: false,
+              disabled,
+            })}
+            type="number"
+            min={1}
+            step={1}
+            placeholder={t('receive.placeholder_amount_input')}
+          />
+          <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
+        </InputGroup>
+        {errors.amount?.message && <FieldError>{errors.amount.message}</FieldError>}
+      </Field>
 
       {debug && (
         <Card className="mt-8">

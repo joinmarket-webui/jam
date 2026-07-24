@@ -262,14 +262,6 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
   PageLoading: () => <div>page-loading</div>,
 }))
 
-vi.mock('@/components/ui/jam/PageTitle', () => ({
-  default: ({ subtitle, title }: { subtitle: string; title: string }) => (
-    <h1>
-      {title}:{subtitle}
-    </h1>
-  ),
-}))
-
 vi.mock('@/context/JamWalletInfoContext', () => ({
   useJamWalletInfoContext: () => mocks.walletInfo,
 }))

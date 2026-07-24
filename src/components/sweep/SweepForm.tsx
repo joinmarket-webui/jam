@@ -32,7 +32,7 @@ import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Card, CardContent, CardHeader } from '../ui/card'
-import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel, FieldSet } from '../ui/field'
 import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
 
@@ -191,119 +191,145 @@ export const SweepForm = ({
           <AccordionContent
             className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
           >
-            <div className="flex items-center gap-2">
-              <Switch
-                id="switch-include-maker-sessions"
-                checked={formWatch.includeMakerSessions}
-                onCheckedChange={(checked: boolean) => setValue('includeMakerSessions', checked)}
-                disabled={disabled}
-              />
-              <Label htmlFor="switch-include-maker-sessions" className="flex flex-col items-start gap-0">
-                {/* TODO: i18n */}
-                <div className="flex items-center gap-2 font-medium">Include maker sessions</div>
-                <div className="text-muted-foreground text-sm">
-                  Occasionally switch from taker to maker, which aids privacy.
+            <FieldSet>
+              <Field
+                orientation="horizontal"
+                className="gap-4"
+                data-invalid={formState.errors.includeMakerSessions !== undefined}
+              >
+                <Switch
+                  id="switch-include-maker-sessions"
+                  checked={formWatch.includeMakerSessions}
+                  onCheckedChange={(checked: boolean) => setValue('includeMakerSessions', checked)}
+                  disabled={disabled}
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col items-start gap-0">
+                    <FieldLabel htmlFor="switch-include-maker-sessions">
+                      {/* TODO: i18n */}Include maker sessions
+                    </FieldLabel>
+                    <FieldDescription className="text-xs">
+                      {/* TODO: i18n */}Occasionally switch from taker to maker, which aids privacy.
+                    </FieldDescription>
+                  </div>
                 </div>
-              </Label>
-            </div>
-            <div className="flex flex-col justify-center gap-2">
-              <div className="space-y-2">
-                <Field
-                  data-invalid={
-                    formState.errors.minNumberOfCollaborators !== undefined ||
-                    formState.errors.maxNumberOfCollaborators !== undefined
+                {formState.errors.includeMakerSessions?.message ? (
+                  <FieldError>
+                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid value.
+                  </FieldError>
+                ) : null}
+              </Field>
+
+              <Field
+                className="gap-4"
+                data-invalid={
+                  formState.errors.minNumberOfCollaborators !== undefined ||
+                  formState.errors.maxNumberOfCollaborators !== undefined
+                }
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col items-start gap-0">
+                    <FieldLabel htmlFor="slider-min-max-maker">{/* TODO: i18n */}Number of collaborators</FieldLabel>
+                    <FieldDescription className="text-xs">
+                      {/* TODO: i18n */}More collaborators are better for privacy, but also increase transaction fees.
+                    </FieldDescription>
+                  </div>
+                  <span className="text-foreground">
+                    {formWatch.minNumberOfCollaborators} - {formWatch.maxNumberOfCollaborators}
+                  </span>
+                </div>
+                <Slider
+                  id="slider-min-max-maker"
+                  min={JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS}
+                  max={JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS}
+                  minStepsBetweenThumbs={1}
+                  value={[
+                    formWatch.minNumberOfCollaborators ??
+                      defaultValues?.minNumberOfCollaborators ??
+                      JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
+                    formWatch.maxNumberOfCollaborators ??
+                      defaultValues?.maxNumberOfCollaborators ??
+                      JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
+                  ]}
+                  onValueChange={(values: number[]) => {
+                    setValue('minNumberOfCollaborators', values[0])
+                    setValue('maxNumberOfCollaborators', values[1])
+                  }}
+                  disabled={disabled}
+                />
+                {formState.errors.minNumberOfCollaborators?.message ? (
+                  <FieldError>
+                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid minimum value.
+                  </FieldError>
+                ) : null}
+                {formState.errors.maxNumberOfCollaborators?.message ? (
+                  <FieldError>
+                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid maximum value.
+                  </FieldError>
+                ) : null}
+              </Field>
+
+              <Field className="gap-4" data-invalid={formState.errors.minNumberOfTransactionsPerJar !== undefined}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col items-start gap-0">
+                    <FieldLabel htmlFor="slider-min-number-of-transactions-per-jar">
+                      {/* TODO: i18n */}Transactions per Jar
+                    </FieldLabel>
+                    <FieldDescription className="text-xs">
+                      {/* TODO: i18n */}Minimum number of collaborative transactions per Jar.
+                    </FieldDescription>
+                  </div>
+                  <span className="text-foreground">{formWatch.minNumberOfTransactionsPerJar}</span>
+                </div>
+                <Slider
+                  id="slider-min-number-of-transactions-per-jar"
+                  min={JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR}
+                  max={JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR}
+                  value={
+                    formWatch.minNumberOfTransactionsPerJar === undefined
+                      ? undefined
+                      : [formWatch.minNumberOfTransactionsPerJar]
                   }
-                  className="gap-4"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex flex-col items-start gap-0">
-                      <FieldLabel htmlFor="slider-min-max-maker">{/* TODO: i18n */}Number of collaborators</FieldLabel>
-                      <FieldDescription className="text-xs">
-                        {/* TODO: i18n */}More collaborators are better for privacy, but also increase transaction fees.
-                      </FieldDescription>
-                    </div>
-                    <span className="text-foreground">
-                      {formWatch.minNumberOfCollaborators} - {formWatch.maxNumberOfCollaborators}
-                    </span>
+                  onValueChange={(values: number[]) => setValue('minNumberOfTransactionsPerJar', values[0])}
+                  disabled={disabled}
+                />
+                {formState.errors.minNumberOfTransactionsPerJar?.message ? (
+                  <FieldError>
+                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid value.
+                  </FieldError>
+                ) : null}
+              </Field>
+
+              <Field className="gap-4" data-invalid={formState.errors.roundingChanceInPercent !== undefined}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col items-start gap-0">
+                    <FieldLabel htmlFor="slider-rounding-chance-in-percent">
+                      {/* TODO: i18n */}Round amount probability
+                    </FieldLabel>
+                    <FieldDescription className="text-xs">
+                      {/* TODO: i18n */}Probability that an intermediate transaction output amount is rounded to mimic
+                      human behavior.
+                    </FieldDescription>
                   </div>
-                  <Slider
-                    id="slider-min-max-maker"
-                    min={JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS}
-                    max={JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS}
-                    minStepsBetweenThumbs={1}
-                    value={[
-                      formWatch.minNumberOfCollaborators ??
-                        defaultValues?.minNumberOfCollaborators ??
-                        JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
-                      formWatch.maxNumberOfCollaborators ??
-                        defaultValues?.maxNumberOfCollaborators ??
-                        JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS,
-                    ]}
-                    onValueChange={(values: number[]) => {
-                      setValue('minNumberOfCollaborators', values[0])
-                      setValue('maxNumberOfCollaborators', values[1])
-                    }}
-                    disabled={disabled}
-                  />
-                  {formState.errors.minNumberOfCollaborators?.message ? (
-                    <FieldError>
-                      {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid minimum value.
-                    </FieldError>
-                  ) : null}
-                  {formState.errors.maxNumberOfCollaborators?.message ? (
-                    <FieldError>
-                      {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid maximum value.
-                    </FieldError>
-                  ) : null}
-                </Field>
-              </div>
-            </div>
-            <div className="flex flex-col justify-center gap-2">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor="slider-min-number-of-transactions-per-jar" className="flex flex-col items-start gap-0">
-                  {/* TODO: i18n */}
-                  <div className="flex items-center gap-2 font-medium">Transactions per Jar</div>
-                  <div className="text-muted-foreground text-sm">
-                    Minimum number of collaborative transactions per Jar.
-                  </div>
-                </Label>
-                <span className="text-foreground">{formWatch.minNumberOfTransactionsPerJar}</span>
-              </div>
-              <Slider
-                id="slider-min-number-of-transactions-per-jar"
-                min={JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR}
-                max={JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR}
-                value={
-                  formWatch.minNumberOfTransactionsPerJar === undefined
-                    ? undefined
-                    : [formWatch.minNumberOfTransactionsPerJar]
-                }
-                onValueChange={(values: number[]) => setValue('minNumberOfTransactionsPerJar', values[0])}
-                disabled={disabled}
-              />
-            </div>
-            <div className="flex flex-col justify-center gap-2">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor="slider-rounding-chance-in-percent" className="flex flex-col items-start gap-0">
-                  {/* TODO: i18n */}
-                  <div className="flex items-center gap-2 font-medium">Round amount probability</div>
-                  <div className="text-muted-foreground text-sm">
-                    Probability that an intermediate transaction output amount is rounded to mimic human behavior.
-                  </div>
-                </Label>
-                <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
-              </div>
-              <Slider
-                id="slider-rounding-chance-in-percent"
-                min={JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT}
-                max={JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT}
-                value={
-                  formWatch.roundingChanceInPercent === undefined ? undefined : [formWatch.roundingChanceInPercent]
-                }
-                onValueChange={(values: number[]) => setValue('roundingChanceInPercent', values[0])}
-                disabled={disabled}
-              />
-            </div>
+                  <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
+                </div>
+                <Slider
+                  id="slider-rounding-chance-in-percent"
+                  min={JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT}
+                  max={JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT}
+                  value={
+                    formWatch.roundingChanceInPercent === undefined ? undefined : [formWatch.roundingChanceInPercent]
+                  }
+                  onValueChange={(values: number[]) => setValue('roundingChanceInPercent', values[0])}
+                  disabled={disabled}
+                />
+                {formState.errors.roundingChanceInPercent?.message ? (
+                  <FieldError>
+                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid value.
+                  </FieldError>
+                ) : null}
+              </Field>
+            </FieldSet>
           </AccordionContent>
         </AccordionItem>
       </Accordion>

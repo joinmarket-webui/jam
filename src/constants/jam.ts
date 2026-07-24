@@ -52,8 +52,6 @@ export const CJ_FEE_REL_MAX = percentageToFactor(5) // no enforcement by JM - th
 export const MAX_SWEEP_FEE_CHANGE_MIN = percentageToFactor(50) // no enforcement by JM - should be a "sane" min vaue (too low and users might run into problems on sweeps)
 export const MAX_SWEEP_FEE_CHANGE_MAX = percentageToFactor(100) // TODO: this can also be 200%, why limit it to 100%?
 
-export const MAX_NUM_COLLABORATORS = 99
-
 export const OFFER_FEE_REL_MIN = percentageToFactor(0.0001)
 export const OFFER_FEE_REL_MAX = percentageToFactor(10)
 export const OFFER_FEE_REL_STEP = percentageToFactor(0.0001)
@@ -215,3 +213,5 @@ export const TOTAL_COIN_SUPPLY: AmountSats = Number(
     }
   })()(),
 )
+
+export const MAX_NUM_COLLABORATORS = JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS

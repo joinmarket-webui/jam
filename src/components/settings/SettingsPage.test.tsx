@@ -127,14 +127,6 @@ vi.mock('@/components/settings/LanguageSelector', () => ({
   LanguageSelector: () => <div>language-selector</div>,
 }))
 
-vi.mock('@/components/ui/jam/CurrencySymbol', () => ({
-  CurrencySymbol: ({ className }: { className?: string }) => <span className={className}>currency-symbol</span>,
-}))
-
-vi.mock('@/components/ui/jam/PageTitle', () => ({
-  default: ({ title }: { title: string }) => <h1>{title}</h1>,
-}))
-
 vi.mock('@/components/ui/spinner', () => ({
   Spinner: ({ className }: { className?: string }) => <span className={className}>spinner</span>,
 }))
