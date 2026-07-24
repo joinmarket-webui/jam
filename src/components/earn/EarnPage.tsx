@@ -324,7 +324,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {/* Fidelity Bonds */}
       {walletInfo.fidelityBondSummary.fbOutputs.length === 0 ? (
         <div
-          className={cn({
+          className={cn('mt-8', {
             hidden: jmSession.maker_running || waitingForMakerUpdate || waitingForOfferUpdate,
           })}
         >
@@ -345,31 +345,42 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           </Card>
         </div>
       ) : (
-        <>
+        <div className="mt-8">
           {/* Fidelity Bonds exist */}
           <h2 className="my-2 text-xl font-semibold tracking-tight">
             {t('earn.title_fidelity_bonds', { count: walletInfo.fidelityBondSummary.fbOutputs.length })}
           </h2>
           <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
-          <div className="flex flex-col gap-2">
+          <div className="space-y-4">
             {walletInfo.fidelityBondSummary.fbOutputs.map((it) => {
               const isExpired = !fb.utxo.isLocked(it)
               const actionsEnabled =
                 isExpired &&
                 !jmSession.rescanning &&
                 !jmSession.maker_running &&
+                !jmSession.coinjoin_in_process &&
                 !waitingForMakerUpdate &&
                 !waitingForOfferUpdate &&
                 !walletInfo.isFetching
               return (
                 <FidelityBondCard value={it} key={it.utxo}>
-                  {actionsEnabled && (
+                  {isExpired && (
                     <div className="flex w-full flex-col gap-2 sm:flex-row">
-                      <Button variant="secondary" className="flex-1" onClick={() => setMoveToJarUtxo(it)}>
+                      <Button
+                        variant="secondary"
+                        className="flex-1"
+                        onClick={() => setMoveToJarUtxo(it)}
+                        disabled={!actionsEnabled}
+                      >
                         <UnlockIcon />
                         {t('earn.fidelity_bond.existing.button_spend')}
                       </Button>
-                      <Button variant="default" className="flex-1" onClick={() => setRenewBondUtxo(it)}>
+                      <Button
+                        variant="default"
+                        className="flex-1"
+                        onClick={() => setRenewBondUtxo(it)}
+                        disabled={!actionsEnabled}
+                      >
                         <RefreshCwIcon />
                         {t('earn.fidelity_bond.existing.button_renew')}
                       </Button>
@@ -389,7 +400,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               <DevBadge />
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Fee Configuration Dialog */}
