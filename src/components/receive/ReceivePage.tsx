@@ -121,7 +121,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               <Skeleton className="aspect-square w-full max-w-80" />
             ) : getAddressMutation.data?.address ? (
               <BitcoinAddressQrCode
-                className="animate-in blur-in duration-1000"
+                className="animate-in blur-in-10 duration-800"
                 address={getAddressMutation.data.address}
                 amount={amount}
                 width={QRCODE_WIDTH}
@@ -166,7 +166,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                 ) : (
                   <Address
                     value={getAddressMutation.data.address}
-                    className="animate-in blur-in min-h-[64px] text-xl duration-800"
+                    className="animate-in blur-in-10 min-h-[64px] text-xl duration-800"
                     copyable={true}
                   />
                 )}
