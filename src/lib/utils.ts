@@ -267,6 +267,19 @@ export const clamp = (value: number, lower: number, upper: number) => {
   return Math.min(Math.max(value, lower), upper)
 }
 
+export const uint8ArrayfromHex = (hexString: string) => {
+  const hex = hexString.trim()
+  if (hex.length % 2 !== 0) {
+    throw new Error('Cannot convert hex to Uint8Array: Invalid hex length.')
+  }
+
+  const match = hex.match(/([0-9a-fA-F][0-9a-fA-F])/g)
+  if (match === null || match.length !== hex.length / 2) {
+    throw new Error('Cannot convert hex to Uint8Array: Invalid hex string.')
+  }
+  return Uint8Array.from(match.map((byte) => Number.parseInt(byte, 16)) || [])
+}
+
 // not cryptographically random; returned number is in range [min, max] (both inclusive);
 export const pseudoRandomInteger = (min: number, max: number) => {
   return Math.round(pseudoRandomFloat(min, max))
