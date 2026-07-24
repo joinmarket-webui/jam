@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { JAM_REPO_URL } from '@/constants/jam'
+import { JAM_DOCS_URL, JAM_REPO_URL } from '@/constants/jam'
 import { cn } from '@/lib/utils'
 
 type OnboardingStep = {
@@ -131,7 +131,7 @@ export const OnboardingDialog = ({ open, onOpenChange }: OnboardingDialogProps) 
                       ),
                       '2': (
                         <a
-                          href="https://jamdocs.org"
+                          href={JAM_DOCS_URL}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary underline underline-offset-4"

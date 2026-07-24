@@ -19,6 +19,9 @@ export const JAM_DEFAULT_THEME: 'dark' | 'light' = import.meta.env.VITE_JAM_DEFA
 const JAM_REPO_URL_DEFAULT: string = 'https://github.com/joinmarket-webui/jam'
 export const JAM_REPO_URL: string = (import.meta.env.VITE_JAM_REPO_URL || JAM_REPO_URL_DEFAULT) as string
 
+const JAM_DOCS_URL_DEFAULT: string = 'https://joinmarket-webui.github.io/jamdocs'
+export const JAM_DOCS_URL: string = (import.meta.env.VITE_JAM_DOCS_URL || JAM_DOCS_URL_DEFAULT) as string
+
 export const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 
 export const TX_FEES_FACTOR_MIN = 0 // 0%

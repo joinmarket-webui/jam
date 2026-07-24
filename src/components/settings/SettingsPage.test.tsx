@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { JAM_DOCS_URL } from '@/constants/jam'
 import type { WalletFileName } from '@/lib/utils'
 import { SettingsPage } from './SettingsPage'
 
@@ -277,7 +278,7 @@ describe('SettingsPage', () => {
     })
 
     clickItem('settings.documentation')
-    expect(mocks.open).toHaveBeenCalledWith('https://jamdocs.org', '_blank', 'noreferrer,noopener')
+    expect(mocks.open).toHaveBeenCalledWith(JAM_DOCS_URL, '_blank', 'noreferrer,noopener')
 
     clickItem('Enable developer mode')
     expect(mocks.updateJamSettings).toHaveBeenCalledWith({ developerMode: false })
