@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { AppNavbar } from '@/components/layout/AppNavbar'
+import { factorToPercentage } from '@/lib/utils'
 
 const meta: Meta<typeof AppNavbar> = {
   title: 'Layout/AppNavbar',
@@ -50,7 +51,17 @@ export const RescanInProgress: Story = {
     ...defaults,
     rescanInfo: {
       rescanning: true,
-      progress: 0.21,
+      progressInPercentage: factorToPercentage(0.210123456789, 2).toFixed(1),
+      updatedAt: Date.now(),
+    },
+  },
+}
+
+export const RescanInProgressWithoutPercentage: Story = {
+  args: {
+    ...defaults,
+    rescanInfo: {
+      rescanning: true,
       updatedAt: Date.now(),
     },
   },
