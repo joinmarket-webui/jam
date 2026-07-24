@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { pseudoRandomInteger } from '@/lib/utils'
+import { DUMMY_SEED_PHRASE, pseudoRandomInteger } from '@/lib/utils'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import type { BlockHeight } from '@/types/global'
 import { ImportDetailsForm } from './ImportDetailsForm'
@@ -20,7 +20,7 @@ vi.mock('../ui/accordion', () => ({
   AccordionContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-const VALID_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+const VALID_MNEMONIC = DUMMY_SEED_PHRASE.join(' ')
 
 const typeMnemonic = (value: string) => {
   fireEvent.change(screen.getByPlaceholderText('import_wallet.import_details.placeholder_mnemonic_phrase'), {

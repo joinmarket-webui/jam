@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { SeedPhraseGrid } from '@/components/ui/jam/SeedPhraseGrid'
+import { DUMMY_SEED_PHRASE } from '@/lib/utils'
 
 const meta: Meta<typeof SeedPhraseGrid> = {
   title: 'Jam/SeedPhraseGrid',
@@ -9,9 +10,6 @@ const meta: Meta<typeof SeedPhraseGrid> = {
 export default meta
 
 type Story = StoryObj<typeof SeedPhraseGrid>
-
-const DUMMY_SEED_PHRASE: string[] =
-  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(/\s+/)
 
 export const Default: Story = {
   render: () => <SeedPhraseGrid value={DUMMY_SEED_PHRASE} masked={true} />,

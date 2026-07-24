@@ -23,18 +23,14 @@ const copyToClipboard = async (
 ): Promise<boolean> => {
   // The `navigator.clipboard` API might not be available, e.g. on sites served over HTTP.
   if (!navigator.clipboard) {
-    return copyToClipboardFallback(fallbackInputField)
+    return copyToClipboardFallback(fallbackInputField, errorMessage)
   }
 
   try {
     await navigator.clipboard.writeText(text)
     return true
-  } catch (error: unknown) {
-    if (fallbackInputField) {
-      return copyToClipboardFallback(fallbackInputField, errorMessage)
-    } else {
-      throw error
-    }
+  } catch (_ignoredOnPurpose: unknown) {
+    return copyToClipboardFallback(fallbackInputField, errorMessage)
   }
 }
 
