@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { ThemeToggleButton } from '@/components/ui/jam/ThemeToggleButton'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { SidebarContextProps } from '@/components/ui/use-sidebar'
-import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import type { RescanInfo } from '@/context/JamSessionInfoContext'
 import { cn, shortenStringMiddle } from '@/lib/utils'
@@ -26,6 +25,7 @@ type WalletPreviewProps = {
   walletName: string | null
   totalBalance: AmountSats
   rescanInfo?: RescanInfo
+  development?: boolean
 }
 
 const WalletPreview = ({
@@ -34,6 +34,7 @@ const WalletPreview = ({
   isLoading = false,
   isReloading = false,
   rescanInfo,
+  development = false,
 }: WalletPreviewProps) => {
   const { t } = useTranslation()
   const walletNameTitle = shortenStringMiddle(walletName ?? '...', 12)
@@ -56,7 +57,7 @@ const WalletPreview = ({
             >
               {walletNameTitle}
             </div>
-            {isDevMode() && <DevBadge />}
+            {development && <DevBadge />}
           </div>
           <div className="flex min-h-5 min-w-0 items-center sm:min-w-[150px]">
             {rescanInfo?.rescanning === true ? (
@@ -112,6 +113,7 @@ export function AppNavbar({
   sidebarInfo,
   rescanInfo,
   tooltipSide,
+  development,
 }: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -159,6 +161,7 @@ export function AppNavbar({
         walletName={walletName}
         totalBalance={totalBalance}
         rescanInfo={rescanInfo}
+        development={development}
       />
       <div
         className={cn(

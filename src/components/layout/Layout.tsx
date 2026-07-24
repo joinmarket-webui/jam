@@ -8,6 +8,7 @@ import { AppFooter } from '@/components/layout/AppFooter'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
+import { isDevMode } from '@/constants/debugFeatures'
 import { APP_DISPLAY_VERSION, JAM_DEFAULT_THEME } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useRescanStatus } from '@/context/JamSessionInfoContext'
@@ -98,6 +99,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         sessionInfo={jmSession}
         sidebarInfo={sidebarContext}
         tooltipSide={NAVBAR_TOOLTIP_SIDE}
+        development={isDevMode()}
       />
       <main className="min-w-0 flex-1">{children}</main>
       <AppFooter
