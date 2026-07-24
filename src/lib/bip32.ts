@@ -7,13 +7,17 @@ import { HDKey } from '@scure/bip32'
  * @param path HD key path (m / purpose' / coin_type' / account' / change / address_index), e.g. `m/84'/0'/0'`
  * @returns Extended public key (xpub)
  */
-export function deriveAccountXpub(seed: Uint8Array, path: string): string {
-  const root = HDKey.fromMasterSeed(seed)
+export function deriveAccountXpubFromMasterSeed(seed: Uint8Array, path: string): string {
+  return deriveAccountXpub(HDKey.fromMasterSeed(seed), path)
+}
+/**
+ * Derive account-level xpub from HDKey
+ *
+ * @param root HDKey seed
+ * @param path HD key path (m / purpose' / coin_type' / account' / change / address_index), e.g. `m/84'/0'/0'`
+ * @returns Extended public key (xpub)
+ */
+export function deriveAccountXpub(root: HDKey, path: string): string {
   const key = root.derive(path)
-
-  if (!key.publicExtendedKey) {
-    throw new Error(`Failed to derive extended public key for path ${path}.`)
-  }
-
   return key.publicExtendedKey
 }

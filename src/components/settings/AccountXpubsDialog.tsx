@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, type ComponentProps } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { HDKey } from '@scure/bip32'
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'
@@ -63,11 +64,12 @@ async function deriveAccountXpubsFromSeed(
   const coinType = network === Network.mainnet ? 0 : 1
 
   const seed = await mnemonicToSeed(mnemonicPhrase.join(' '))
+  const root = HDKey.fromMasterSeed(seed)
 
   // Convert to native segwit format (zpub/vpub) and build account info
   return jars.map((jar) => {
     const path = `m/${HD_PATH_PURPOSE}'/${coinType}'/${jar.jarIndex}'`
-    const xpub = deriveAccountXpub(seed, path)
+    const xpub = deriveAccountXpub(root, path)
 
     const xpubs = []
 

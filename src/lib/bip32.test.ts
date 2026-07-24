@@ -1,15 +1,15 @@
 import { mnemonicToSeedSync } from '@scure/bip39'
 import { describe, it, expect } from 'vitest'
-import { deriveAccountXpub } from './bip32'
+import { deriveAccountXpubFromMasterSeed } from './bip32'
 import { DUMMY_SEED_PHRASE } from './utils'
 
 describe('deriveAccountXpub', () => {
   it('should derive account xpubs', () => {
     const seed = mnemonicToSeedSync(DUMMY_SEED_PHRASE.join(' '))
 
-    const xpub32_0 = deriveAccountXpub(seed, `m/44'/0'/0'`)
-    const xpub84_0 = deriveAccountXpub(seed, `m/84'/0'/0'`)
-    const xpub84_4 = deriveAccountXpub(seed, `m/84'/0'/4'`)
+    const xpub32_0 = deriveAccountXpubFromMasterSeed(seed, `m/44'/0'/0'`)
+    const xpub84_0 = deriveAccountXpubFromMasterSeed(seed, `m/84'/0'/0'`)
+    const xpub84_4 = deriveAccountXpubFromMasterSeed(seed, `m/84'/0'/4'`)
 
     expect(xpub32_0).toBe(
       'xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj',
