@@ -88,3 +88,10 @@ export const SweepActive: Story = {
     },
   },
 }
+
+export const Development: Story = {
+  args: {
+    ...defaults,
+    development: true,
+  },
+}
