@@ -45,6 +45,14 @@ describe('useQueryYieldgenReport', () => {
     expect(parserMock).toHaveBeenCalledWith(['a', 'b'])
   })
 
+  it('empty array if yigen_data is undefined', async () => {
+    yieldgenreportMock.mockResolvedValue({ data: { yigen_data: undefined } })
+    renderHook(() => useQueryYieldgenReport())
+
+    await expect(runQueryFn()).resolves.toEqual([])
+    expect(parserMock).toHaveBeenCalledWith([])
+  })
+
   it('returns an empty array on a 404 error', async () => {
     yieldgenreportMock.mockRejectedValue({ status: 404 })
     renderHook(() => useQueryYieldgenReport())
