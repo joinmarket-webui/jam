@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { useQueryJmInfo } from './useQueryJmInfo'
 
 const mocks = vi.hoisted(() => ({
-  data: undefined,
+  data: undefined as { version: string; backend: string } | undefined,
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
