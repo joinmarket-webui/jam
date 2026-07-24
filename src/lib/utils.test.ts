@@ -33,6 +33,7 @@ import {
   shortenStringMiddle,
   median,
   clamp,
+  uint8ArrayfromHex,
 } from './utils'
 import type { WalletFileName } from './utils'
 
@@ -850,6 +851,24 @@ describe('clamp', () => {
 
     expect(clamp(3, 2, 0)).toBe(0)
     expect(clamp(3, 0, 2)).toBe(2)
+  })
+})
+
+describe('uint8ArrayfromHex', () => {
+  it('should convert valid hex strings to Uint8Array', () => {
+    expect(uint8ArrayfromHex('0488b21e')).toEqual(new Uint8Array([0x04, 0x88, 0xb2, 0x1e]))
+    expect(uint8ArrayfromHex('00ff')).toEqual(new Uint8Array([0x00, 0xff]))
+    expect(uint8ArrayfromHex(' 0488b21e  ')).toEqual(new Uint8Array([0x04, 0x88, 0xb2, 0x1e]))
+  })
+
+  it('should throw for invalid hex strings', () => {
+    expect(() => uint8ArrayfromHex(' ')).toThrow('Cannot convert hex to Uint8Array: Invalid hex string.')
+    expect(() => uint8ArrayfromHex('abc')).toThrow('Cannot convert hex to Uint8Array: Invalid hex length.')
+    expect(() => uint8ArrayfromHex(' abc')).toThrow('Cannot convert hex to Uint8Array: Invalid hex length.')
+    expect(() => uint8ArrayfromHex('')).toThrow('Cannot convert hex to Uint8Array: Invalid hex string.')
+    expect(() => uint8ArrayfromHex('  ')).toThrow('Cannot convert hex to Uint8Array: Invalid hex string.')
+    expect(() => uint8ArrayfromHex('zzzz')).toThrow('Cannot convert hex to Uint8Array: Invalid hex string.')
+    expect(() => uint8ArrayfromHex('0 ff')).toThrow('Cannot convert hex to Uint8Array: Invalid hex string.')
   })
 })
 

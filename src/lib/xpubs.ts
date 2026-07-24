@@ -1,20 +1,8 @@
 import { sha256 } from '@noble/hashes/sha2.js'
 import { createBase58check } from '@scure/base'
+import { uint8ArrayfromHex } from '@/lib/utils'
 
 const base58check = createBase58check(sha256)
-
-const uint8ArrayfromHex = (hexString: string) => {
-  const hex = hexString.trim()
-  if (hex.length % 2 !== 0) {
-    throw new Error('Cannot convert hex to Uint8Array: Invalid hex length.')
-  }
-
-  const match = hex.match(/([0-9a-fA-F][0-9a-fA-F])/g)
-  if (match === null || match.length !== hex.length / 2) {
-    throw new Error('Cannot convert hex to Uint8Array: Invalid hex string.')
-  }
-  return Uint8Array.from(match.map((byte) => Number.parseInt(byte, 16)) || [])
-}
 
 // version bytes for extended serialization of public and private keys.
 // taken from https://github.com/satoshilabs/slips/blob/master/slip-0132.md
