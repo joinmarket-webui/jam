@@ -1,3 +1,4 @@
+import { Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import { describe, expect, it } from 'vitest'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
@@ -12,13 +13,19 @@ import {
 
 const t = ((key: string) => key) as unknown as TFunction<'translation', undefined>
 const validRegtestAddress = 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx'
+const validMainnetAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
 
-const validate = async (values: SweepFormValues, addressSummary = {} as AddressSummary) => {
+const validate = async (
+  values: SweepFormValues,
+  addressSummary = {} as AddressSummary,
+  network: Network = Network.regtest,
+) => {
   return await sweepFormSchema(
     {
       minNumberOfDestinations: 1,
       maxNumberOfDestinations: 5,
       addressSummary,
+      network,
     },
     t,
   ).validate(values, { abortEarly: false })
@@ -44,6 +51,22 @@ describe('sweepFormSchema', () => {
         expect.objectContaining({
           path: 'destinations[1].address',
           message: 'scheduler.feedback_invalid_destination_address',
+        }),
+      ],
+    })
+  })
+
+  it('rejects an address from the wrong network', async () => {
+    await expect(
+      validate({
+        ...buildSweepFormValuesDefaultValues(),
+        destinations: [{ address: validMainnetAddress }],
+      }),
+    ).rejects.toMatchObject({
+      inner: [
+        expect.objectContaining({
+          path: 'destinations[0].address',
+          message: 'scheduler.feedback_destination_network_mismatch',
         }),
       ],
     })

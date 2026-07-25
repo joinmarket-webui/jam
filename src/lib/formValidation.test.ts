@@ -11,6 +11,8 @@ import {
 
 const mainnetAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
 const testnetAddress = 'mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn'
+const regtestBech32Address = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
+const regtestLegacyAddressLabeledTestnet = 'mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV'
 
 const addressSummary = {
   [mainnetAddress]: { address: mainnetAddress, used: false },
@@ -35,6 +37,18 @@ describe('isAddressOnNetwork', () => {
 
   it('returns false for unparseable input instead of throwing', () => {
     expect(isAddressOnNetwork('not-an-address', Network.mainnet)).toBe(false)
+  })
+
+  it('treats testnet and regtest as interchangeable for base58 addresses ambiguous between the two', () => {
+    // bech32 regtest addresses are unambiguous and match regtest directly...
+    expect(isAddressOnNetwork(regtestBech32Address, Network.regtest)).toBe(true)
+    // ...but a legacy address on a regtest wallet is labeled "testnet" by the library, so it
+    // must still be accepted when the wallet's detected network is regtest.
+    expect(isAddressOnNetwork(regtestLegacyAddressLabeledTestnet, Network.regtest)).toBe(true)
+    expect(isAddressOnNetwork(regtestLegacyAddressLabeledTestnet, Network.testnet)).toBe(true)
+    // mainnet is never ambiguous with testnet/regtest.
+    expect(isAddressOnNetwork(mainnetAddress, Network.regtest)).toBe(false)
+    expect(isAddressOnNetwork(regtestBech32Address, Network.mainnet)).toBe(false)
   })
 })
 

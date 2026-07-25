@@ -28,7 +28,7 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { isDevMode } from '@/constants/debugFeatures'
 import type { TumblerParameters } from '@/constants/jm'
 import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
-import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useDetectNetwork, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
@@ -65,6 +65,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { rescanInfo, takerInfo, makerInfo } = useJamSessionInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const walletInfo = useJamWalletInfoContext()
+  const { network } = useDetectNetwork()
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
@@ -452,6 +453,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                 <SweepForm
                   jars={walletInfo.jars}
                   addressSummary={walletInfo.addressSummary}
+                  network={network}
                   disabled={isOperationDisabled || isWaitingSchedulerStart || isWaitingSchedulerStop}
                   debug={isDeveloperMode}
                   onSubmit={async (values) => {

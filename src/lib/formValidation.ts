@@ -1,4 +1,4 @@
-import { getAddressInfo, validate as isValidBitcoinAddress, type Network } from 'bitcoin-address-validation'
+import { getAddressInfo, Network, validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import * as yup from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import type { BitcoinAddress, BlockHeight, JarIndex } from '@/types/global'
@@ -11,9 +11,17 @@ import { isValidInteger } from './utils'
 export const isValidAddress = (value: unknown): value is BitcoinAddress =>
   typeof value === 'string' && isValidBitcoinAddress(value)
 
+// Legacy (base58) addresses share the same version bytes on testnet and regtest, so
+// bitcoin-address-validation can't tell them apart and always labels them "testnet" -
+// only bech32 addresses carry a distinct "bcrt1" prefix. Treat the two as interchangeable
+// so a regtest wallet doesn't reject its own legacy-style addresses as "wrong network".
+const AMBIGUOUS_TESTNET_REGTEST_NETWORKS: ReadonlySet<Network> = new Set([Network.testnet, Network.regtest])
+
 export const isAddressOnNetwork = (value: string, network: Network): boolean => {
   try {
-    return getAddressInfo(value).network === network
+    const addressNetwork = getAddressInfo(value).network
+    if (addressNetwork === network) return true
+    return AMBIGUOUS_TESTNET_REGTEST_NETWORKS.has(addressNetwork) && AMBIGUOUS_TESTNET_REGTEST_NETWORKS.has(network)
   } catch (_ignoredOnPurpose) {
     return false
   }
