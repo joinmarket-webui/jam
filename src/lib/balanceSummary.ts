@@ -20,27 +20,42 @@ export type BalanceSummary = {
    * @description Manually calculated frozen or locked balance in sats.
    */
   calculatedFrozenOrLockedBalanceInSats: AmountSats
-}
-
-const calculateFrozenOrLockedBalance = (utxos: Utxo[], refTime: Milliseconds = Date.now()) => {
-  const frozenOrLockedUtxos = utxos.filter((utxo) => utxo.frozen || fb.utxo.isLocked(utxo, refTime))
-  return frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
+  /**
+   * @description Manually calculated sum of balances in Fidelity Bonds (active or expired) in sats.
+   */
+  calculatedFidelityBondBalanceInSats: AmountSats
 }
 
 export const toBalanceSummary = (utxos: Utxo[], now?: Milliseconds): BalanceSummary => {
   const refTime = now !== undefined ? now : Date.now()
-
-  const walletTotalCalculated: AmountSats = utxos.reduce((acc, utxo) => acc + utxo.value, 0)
-  const walletFrozenOrLockedCalculated: AmountSats = calculateFrozenOrLockedBalance(utxos, refTime)
-  const walletAvailableCalculated = walletTotalCalculated - walletFrozenOrLockedCalculated
-  const walletConfirmedAvailableCalculated = utxos
-    .filter((utxo) => !utxo.frozen && !fb.utxo.isLocked(utxo, refTime) && utxo.confirmations > 0)
-    .reduce((acc, utxo) => acc + utxo.value, 0)
-
-  return {
-    calculatedTotalBalanceInSats: walletTotalCalculated,
-    calculatedFrozenOrLockedBalanceInSats: walletFrozenOrLockedCalculated,
-    calculatedAvailableBalanceInSats: walletAvailableCalculated,
-    calculatedConfirmedAvailableBalanceInSats: walletConfirmedAvailableCalculated,
-  }
+  return utxos
+    .map((utxo) => {
+      const isFidelityBond = fb.utxo.isFidelityBond(utxo)
+      const frozenOrLocked = utxo.frozen || (isFidelityBond && fb.utxo.isLocked(utxo, refTime))
+      const available = !frozenOrLocked
+      return {
+        total: utxo.value,
+        available: available ? utxo.value : 0,
+        confirmedAvailable: available && utxo.confirmations > 0 ? utxo.value : 0,
+        frozenOrLocked: frozenOrLocked ? utxo.value : 0,
+        bond: fb.utxo.isFidelityBond(utxo) ? utxo.value : 0,
+      }
+    })
+    .reduce(
+      (acc, info) => ({
+        calculatedTotalBalanceInSats: acc.calculatedTotalBalanceInSats + info.total,
+        calculatedAvailableBalanceInSats: acc.calculatedAvailableBalanceInSats + info.available,
+        calculatedConfirmedAvailableBalanceInSats:
+          acc.calculatedConfirmedAvailableBalanceInSats + info.confirmedAvailable,
+        calculatedFrozenOrLockedBalanceInSats: acc.calculatedFrozenOrLockedBalanceInSats + info.frozenOrLocked,
+        calculatedFidelityBondBalanceInSats: acc.calculatedFidelityBondBalanceInSats + info.bond,
+      }),
+      {
+        calculatedTotalBalanceInSats: 0,
+        calculatedAvailableBalanceInSats: 0,
+        calculatedConfirmedAvailableBalanceInSats: 0,
+        calculatedFrozenOrLockedBalanceInSats: 0,
+        calculatedFidelityBondBalanceInSats: 0,
+      },
+    )
 }
