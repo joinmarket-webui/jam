@@ -20,10 +20,13 @@ export type BalanceSummary = {
    * @description Manually calculated frozen or locked balance in sats.
    */
   calculatedFrozenOrLockedBalanceInSats: AmountSats
-  /**
-   * @description Manually calculated sum of balances in Fidelity Bonds (active or expired) in sats.
-   */
-  calculatedFidelityBondBalanceInSats: AmountSats
+}
+
+export const BALANCE_SUMMARY_EMPTY: BalanceSummary = {
+  calculatedTotalBalanceInSats: 0,
+  calculatedAvailableBalanceInSats: 0,
+  calculatedConfirmedAvailableBalanceInSats: 0,
+  calculatedFrozenOrLockedBalanceInSats: 0,
 }
 
 export const toBalanceSummary = (utxos: Utxo[], now?: Milliseconds): BalanceSummary => {
@@ -48,14 +51,7 @@ export const toBalanceSummary = (utxos: Utxo[], now?: Milliseconds): BalanceSumm
         calculatedConfirmedAvailableBalanceInSats:
           acc.calculatedConfirmedAvailableBalanceInSats + info.confirmedAvailable,
         calculatedFrozenOrLockedBalanceInSats: acc.calculatedFrozenOrLockedBalanceInSats + info.frozenOrLocked,
-        calculatedFidelityBondBalanceInSats: acc.calculatedFidelityBondBalanceInSats + info.bond,
       }),
-      {
-        calculatedTotalBalanceInSats: 0,
-        calculatedAvailableBalanceInSats: 0,
-        calculatedConfirmedAvailableBalanceInSats: 0,
-        calculatedFrozenOrLockedBalanceInSats: 0,
-        calculatedFidelityBondBalanceInSats: 0,
-      },
+      BALANCE_SUMMARY_EMPTY,
     )
 }

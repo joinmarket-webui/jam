@@ -45,7 +45,6 @@ describe('BalanceSummary', () => {
       calculatedAvailableBalanceInSats: 6,
       calculatedConfirmedAvailableBalanceInSats: 1,
       calculatedFrozenOrLockedBalanceInSats: 5,
-      calculatedFidelityBondBalanceInSats: 7,
     })
   })
 
@@ -88,7 +87,6 @@ describe('BalanceSummary', () => {
       calculatedAvailableBalanceInSats: 333333333,
       calculatedConfirmedAvailableBalanceInSats: 111111111,
       calculatedFrozenOrLockedBalanceInSats: 344444444,
-      calculatedFidelityBondBalanceInSats: 0,
     })
   })
 
@@ -139,7 +137,6 @@ describe('BalanceSummary', () => {
       calculatedAvailableBalanceInSats: 5,
       calculatedConfirmedAvailableBalanceInSats: 0,
       calculatedFrozenOrLockedBalanceInSats: 6,
-      calculatedFidelityBondBalanceInSats: 11,
     })
   })
 })

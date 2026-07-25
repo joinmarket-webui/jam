@@ -5,7 +5,7 @@ import { CancelledError, useMutation, useQuery } from '@tanstack/react-query'
 import { getAddressInfo } from 'bitcoin-address-validation'
 import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
 import { useQueryUtxos, type Utxo, type UtxoId } from '@/hooks/useQueryUtxos'
-import { toBalanceSummary } from '@/lib/balanceSummary'
+import { BALANCE_SUMMARY_EMPTY, toBalanceSummary } from '@/lib/balanceSummary'
 import * as fb from '@/lib/fidelityBondUtils'
 import { delayedPromise, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { JarIndex, Milliseconds } from '@/types/global'
@@ -107,7 +107,6 @@ type UtxosByJarIndex = ByJarIndex<Utxo[]>
 type JarTemplateByJarIndex = ByJarIndex<JarTemplate>
 
 const EMPTY_UTXOS: Utxo[] = []
-const EMPTY_BALANCE_SUMMARY = toBalanceSummary(EMPTY_UTXOS)
 
 type JarTemplate = Pick<Jar, 'jarIndex' | 'name' | 'color'>
 const jarTemplates: JarTemplate[] = [
@@ -184,7 +183,7 @@ export const JamWalletInfoContextProvider = ({
     if (!jarPresent) {
       jars.push({
         ...jarTemplate,
-        balanceSummary: EMPTY_BALANCE_SUMMARY,
+        balanceSummary: BALANCE_SUMMARY_EMPTY,
         utxos: EMPTY_UTXOS,
       })
     }
@@ -271,13 +270,13 @@ export const JamWalletInfoContextProvider = ({
 
 // Delaying the poll requests gives the wallet some time to synchronize
 // the utxo set and reduces amount of http requests
-const WAIT_FOR_UTXOS_TO_BE_SPENT_DEFAUL_DELAY: Milliseconds = 1_000
+const WAIT_FOR_UTXOS_TO_BE_SPENT_DEFAULT_DELAY: Milliseconds = 1_000
 
 const useWaitForUtxosToBeSpent = ({
   refetch,
   walletFileName,
   utxos,
-  delay = WAIT_FOR_UTXOS_TO_BE_SPENT_DEFAUL_DELAY,
+  delay = WAIT_FOR_UTXOS_TO_BE_SPENT_DEFAULT_DELAY,
   resetOnErrors = true,
 }: {
   refetch: (options?: WalletRefetchOptions) => Promise<unknown>
