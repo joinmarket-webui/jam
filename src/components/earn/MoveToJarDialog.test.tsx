@@ -64,8 +64,27 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
         utxos: [],
       },
     ],
+    walletBalanceSummary: { calculatedTotalBalanceInSats: 6000 },
     refetch: h.refetch,
   }),
+}))
+
+vi.mock('@/components/ui/jam/SelectableJar', () => ({
+  SelectableJar: ({
+    name,
+    onClick,
+    disabled,
+    isSelected,
+  }: {
+    name?: string
+    onClick?: () => void
+    disabled?: boolean
+    isSelected?: boolean
+  }) => (
+    <button onClick={onClick} disabled={disabled} data-selected={isSelected}>
+      {name}
+    </button>
+  ),
 }))
 
 vi.mock('@/components/ui/dialog', () => ({
@@ -91,6 +110,10 @@ vi.mock('@/components/ui/switch', () => ({
 
 vi.mock('@/components/ui/jam/Address', () => ({
   Address: ({ value }: ValueProps) => <div data-testid="address">{value}</div>,
+}))
+
+vi.mock('@/components/ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span>{valueString} sats</span>,
 }))
 
 vi.mock('@/components/ui/jam/CopyButton', () => ({
@@ -134,6 +157,7 @@ describe('MoveToJarDialog', () => {
     renderDialog()
     expect(screen.getByText('earn.fidelity_bond.move.title')).toBeInTheDocument()
     expect(screen.getByText('earn.fidelity_bond.move.select_jar.description')).toBeInTheDocument()
+    expect(screen.getByText('Jar 0')).toBeEnabled()
     expect(screen.getByText('Jar 1')).toBeInTheDocument()
   })
 
@@ -162,7 +186,6 @@ describe('MoveToJarDialog', () => {
     h.extraUtxos = [{ utxo: 'tx2:0', value: 500, frozen: false }]
     renderDialog()
     goToConfirm()
-    fireEvent.click(screen.getByTestId('confirm-switch'))
     fireEvent.click(screen.getByText('earn.fidelity_bond.move.text_button_submit'))
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.move.success_text')).toBeInTheDocument())
@@ -174,7 +197,6 @@ describe('MoveToJarDialog', () => {
     const frozenUtxo = { ...utxo, frozen: true } as unknown as FidelityBondUtxo
     renderDialog({ utxo: frozenUtxo })
     goToConfirm()
-    fireEvent.click(screen.getByTestId('confirm-switch'))
     fireEvent.click(screen.getByText('earn.fidelity_bond.move.text_button_submit'))
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.move.success_text')).toBeInTheDocument())
@@ -186,7 +208,6 @@ describe('MoveToJarDialog', () => {
     h.mutateAsync = vi.fn<() => Promise<unknown>>().mockRejectedValue(new Error('send failed'))
     renderDialog()
     goToConfirm()
-    fireEvent.click(screen.getByTestId('confirm-switch'))
     fireEvent.click(screen.getByText('earn.fidelity_bond.move.text_button_submit'))
 
     await waitFor(() =>

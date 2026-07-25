@@ -1,19 +1,12 @@
-import { AlertTriangleIcon, ChevronLeftIcon } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
+import { FidelityBondDialogLayout } from '../fidelity-bond/FidelityBondDialogLayout'
+import { WizardStepFooter } from '../fidelity-bond/WizardStepFooter'
 import { CreateFidelityBondDialogSteps } from './CreateFidelityBondDialogSteps'
-import { StepProgress } from './StepProgress'
 import type { CreateFidelityBondDialogProps } from './types'
 import { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
+
+const TOTAL_STEPS = 5
 
 export function CreateFidelityBondDialog({
   open,
@@ -45,14 +38,9 @@ export function CreateFidelityBondDialog({
 
     if (step === 'success') {
       return (
-        <DialogFooter className="gap-3 sm:gap-2">
+        <>
           {frozenUtxos.length > 0 && (
-            <Button
-              variant="outline"
-              className="min-w-32"
-              onClick={() => void handleUnfreezeUtxos()}
-              disabled={unfreezeUtxo.isPending}
-            >
+            <Button variant="outline" onClick={() => void handleUnfreezeUtxos()} disabled={unfreezeUtxo.isPending}>
               {unfreezeUtxo.isPending ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
@@ -63,63 +51,43 @@ export function CreateFidelityBondDialog({
               )}
             </Button>
           )}
-          <Button className="min-w-32" onClick={() => handleOpenChange(false)}>
-            {t('global.done')}
-          </Button>
-        </DialogFooter>
+          <Button onClick={() => handleOpenChange(false)}>{t('global.done')}</Button>
+        </>
       )
     }
 
-    const isLoading = freezeUtxo.isPending || directSend.isPending
-
     return (
-      <DialogFooter className="gap-3 sm:gap-2">
-        {step !== 'select_date' && (
-          <Button variant="ghost" onClick={handleBack} disabled={isLoading}>
-            <ChevronLeftIcon />
-            {t('global.back')}
-          </Button>
-        )}
-        <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)} disabled={isLoading}>
-          {t('global.cancel')}
-        </Button>
-        <Button className="min-w-32" onClick={() => void handleNext()} disabled={!canProceed() || isLoading}>
-          {isLoading && <Spinner className="mr-2 h-4 w-4" />}
-          {step === 'freeze_utxos'
+      <WizardStepFooter
+        onBack={step !== 'select_date' ? handleBack : undefined}
+        onCancel={() => handleOpenChange(false)}
+        onPrimary={() => void handleNext()}
+        primaryDisabled={!canProceed()}
+        isLoading={freezeUtxo.isPending || directSend.isPending}
+        primaryLabel={
+          step === 'freeze_utxos'
             ? utxosToFreeze.length > 0
               ? t('earn.fidelity_bond.freeze_utxos.text_primary_button')
               : t('earn.fidelity_bond.freeze_utxos.text_primary_button_all_frozen')
             : step === 'review'
               ? t('earn.fidelity_bond.review_inputs.text_primary_button')
-              : t('global.next')}
-        </Button>
-      </DialogFooter>
+              : t('global.next')
+        }
+      />
     )
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange} {...dialogProps}>
-      <DialogContent className="max-h-[90dvh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">{t('earn.fidelity_bond.create_fidelity_bond.title')}</DialogTitle>
-          <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>
-        </DialogHeader>
-
-        {step !== 'creating' && step !== 'success' && <StepProgress currentStep={getStepNumber()} totalSteps={5} />}
-
-        {error && (
-          <Alert variant="destructive" className="animate-in fade-in-50">
-            <AlertTriangleIcon className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="py-2">
-          <CreateFidelityBondDialogSteps wizard={wizard} />
-        </div>
-
-        {renderFooter()}
-      </DialogContent>
-    </Dialog>
+    <FidelityBondDialogLayout
+      open={open}
+      onOpenChange={handleOpenChange}
+      title={t('earn.fidelity_bond.create_fidelity_bond.title')}
+      currentStep={step !== 'creating' && step !== 'success' ? getStepNumber() : undefined}
+      totalSteps={TOTAL_STEPS}
+      error={error}
+      footer={renderFooter()}
+      {...dialogProps}
+    >
+      <CreateFidelityBondDialogSteps wizard={wizard} />
+    </FidelityBondDialogLayout>
   )
 }

@@ -31,7 +31,7 @@ vi.mock('./CreateFidelityBondDialogSteps', () => ({
   CreateFidelityBondDialogSteps: () => <div data-testid="steps-component">Steps Component</div>,
 }))
 
-vi.mock('./StepProgress', () => ({
+vi.mock('../fidelity-bond/StepProgress', () => ({
   StepProgress: ({ currentStep }: { currentStep: number }) => <div data-testid="step-progress">{currentStep}</div>,
 }))
 

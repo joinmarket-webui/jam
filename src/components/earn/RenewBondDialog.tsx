@@ -1,51 +1,36 @@
-import { useState, useMemo } from 'react'
-import {
-  directsendMutation,
-  freezeMutation,
-  gettimelockaddressOptions,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { useState } from 'react'
+import { gettimelockaddressOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  AlertTriangleIcon,
-  CalendarIcon,
-  CheckCircle2Icon,
-  CheckIcon,
-  ChevronLeftIcon,
-  CopyIcon,
-  RefreshCwIcon,
-} from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { AlertTriangleIcon, CalendarIcon, RefreshCwIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { buttonVariants } from '@/components/ui/button-variants'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { CopyButton } from '@/components/ui/jam/CopyButton'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Spinner } from '@/components/ui/spinner'
-import { Switch } from '@/components/ui/switch'
-import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
-import { getErrorReason } from '@/lib/errorReason'
+import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
-import { cn, formatSats, type WalletFileName } from '@/lib/utils'
-import { useDeveloperMode } from '@/store/jamSettingsStore'
-import { jarBadgeVariant } from '../ui/badge-variants'
-import { Address } from '../ui/jam/Address'
-import { generateLockdateOptions, getYearOptions, getMonthOptions } from './CreateFidelityBondDialog/types'
+import type { WalletFileName } from '@/lib/utils'
+import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
+import {
+  AddressPreview,
+  ConfirmationToggle,
+  CopyableField,
+  FidelityBondAmount,
+  InfoCard,
+  InlineLoading,
+  JarBadge,
+  PendingStep,
+  StepIntro,
+  SuccessHeading,
+} from './fidelity-bond/FidelityBondDialogParts'
+import { LockdateSelect } from './fidelity-bond/LockdateSelect'
+import { WizardStepFooter } from './fidelity-bond/WizardStepFooter'
+import { useFidelityBondSweep } from './fidelity-bond/useFidelityBondSweep'
 
 type Step = 'select_date' | 'confirm' | 'sending' | 'success'
+
+const WIZARD_STEPS: Step[] = ['select_date', 'confirm']
 
 interface RenewBondDialogProps {
   open: boolean
@@ -57,46 +42,20 @@ interface RenewBondDialogProps {
 export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: RenewBondDialogProps) {
   const { t } = useTranslation()
   const client = useApiClient()
-  const walletInfo = useJamWalletInfoContext()
-  const { enabled: isDeveloperMode } = useDeveloperMode()
 
   const [step, setStep] = useState<Step>('select_date')
   const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')
   const [confirmationChecked, setConfirmationChecked] = useState(false)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
-  const [error, setError] = useState<string | undefined>()
 
-  const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
-  const yearOptions = useMemo(() => getYearOptions(lockdateOptions), [lockdateOptions])
-  const monthOptions = useMemo(() => getMonthOptions(), [])
+  const { sweep, isLoading, error, setError, sourceJar } = useFidelityBondSweep({
+    walletFileName,
+    utxo,
+    unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
+    sendErrorKey: 'earn.fidelity_bond.renew.error_renewing_fidelity_bond',
+  })
 
-  const minLockdate = lockdateOptions.at(0)?.value ?? ''
-  const maxLockdate = lockdateOptions.at(-1)?.value ?? ''
-  const clampLockdate = (lockdate: string): fb.Lockdate | '' => {
-    if (!lockdate || lockdate < minLockdate) return minLockdate || ''
-    if (lockdate > maxLockdate) return maxLockdate || ''
-    return lockdate as fb.Lockdate
-  }
-  const selectedYear = selectedLockdate ? selectedLockdate.slice(0, 4) : ''
-  const selectedMonth = selectedLockdate ? selectedLockdate.slice(5, 7) : ''
-  const minYear = minLockdate ? Number.parseInt(minLockdate.slice(0, 4), 10) : 0
-  const minMonth = minLockdate ? Number.parseInt(minLockdate.slice(5, 7), 10) : 1
-
-  const selectedDateLabel = selectedLockdate
-    ? new Date(fb.lockdate.toTimestamp(selectedLockdate)).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null
-
-  const sourceJar = walletInfo.jars.find((jar) => jar.jarIndex === utxo.mixdepth)
-
-  // UTXOs in the source jar that are NOT this FB — they need to be frozen during sweep
-  const utxosToFreeze = useMemo(() => {
-    if (!sourceJar) return []
-    return sourceJar.utxos.filter((u) => u.utxo !== utxo.utxo && !u.frozen)
-  }, [sourceJar, utxo.utxo])
+  const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
 
   const timelockAddressQuery = useQuery({
     ...gettimelockaddressOptions({
@@ -111,35 +70,9 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     retry: false,
   })
 
-  if (timelockAddressQuery.isError && !error) {
-    setError(t('earn.fidelity_bond.error_loading_address'))
-  }
-
   const destinationAddress = timelockAddressQuery.data?.address
-
-  const freezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('global.errors.error_freezing_utxos')} ${reason}`)
-    },
-  })
-
-  const unfreezeUtxo = useMutation({
-    ...freezeMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.error_unfreezing_utxos')} ${reason}`)
-    },
-  })
-
-  const directSend = useMutation({
-    ...directsendMutation({ client }),
-    onError: (error) => {
-      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-      setError(`${t('earn.fidelity_bond.renew.error_renewing_fidelity_bond')} ${reason}`)
-    },
-  })
+  const displayError =
+    error ?? (timelockAddressQuery.isError ? t('earn.fidelity_bond.error_loading_address') : undefined)
 
   const handleReset = () => {
     setStep('select_date')
@@ -160,350 +93,134 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     if (!destinationAddress) return
 
     setStep('sending')
-    setError(undefined)
-
-    const frozen: Utxo[] = []
-    try {
-      // Freeze other UTXOs in the source jar so only the FB gets swept
-      for (const u of utxosToFreeze) {
-        await freezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': u.utxo, freeze: true },
-        })
-        frozen.push(u)
-      }
-
-      if (utxo.frozen) {
-        await unfreezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': utxo.utxo, freeze: false },
-        })
-      }
-
-      const result = await directSend.mutateAsync({
-        path: { walletname: walletFileName },
-        body: {
-          mixdepth: utxo.mixdepth,
-          amount_sats: 0,
-          destination: destinationAddress,
-        },
-      })
-
+    const swept = await sweep(destinationAddress, (result) => {
       setTxResult(result)
       setStep('success')
       toast.success(t('earn.fidelity_bond.renew.success_text'))
+    })
+    if (!swept) setStep('confirm')
+  }
 
-      // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
-      for (const u of frozen) {
-        try {
-          await unfreezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
-          })
-        } catch {
-          // logged via onError
-        }
-      }
-
-      await walletInfo.refetch()
-    } catch {
-      // Best-effort rollback — unfreeze UTXOs that were frozen before the error
-      for (const u of frozen) {
-        try {
-          await unfreezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
-          })
-        } catch {
-          // logged via onError
-        }
-      }
-      setStep('confirm')
+  const renderFooter = () => {
+    switch (step) {
+      case 'select_date':
+        return (
+          <WizardStepFooter
+            onCancel={() => handleOpenChange(false)}
+            onPrimary={() => setStep('confirm')}
+            primaryDisabled={!selectedLockdate}
+            primaryLabel={t('global.next')}
+          />
+        )
+      case 'confirm':
+        return (
+          <WizardStepFooter
+            onBack={() => setStep('select_date')}
+            onCancel={() => handleOpenChange(false)}
+            onPrimary={() => void handleSubmit()}
+            primaryDisabled={!confirmationChecked || !destinationAddress}
+            isLoading={isLoading}
+            primaryLabel={t('earn.fidelity_bond.renew.text_button_submit')}
+          />
+        )
+      case 'sending':
+        return null
+      case 'success':
+        return <Button onClick={() => handleOpenChange(false)}>{t('global.done')}</Button>
     }
   }
 
-  const isLoading = freezeUtxo.isPending || unfreezeUtxo.isPending || directSend.isPending
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90dvh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">{t('earn.fidelity_bond.renew.title')}</DialogTitle>
-          <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>
-        </DialogHeader>
+    <FidelityBondDialogLayout
+      open={open}
+      onOpenChange={handleOpenChange}
+      title={t('earn.fidelity_bond.renew.title')}
+      currentStep={step === 'sending' || step === 'success' ? undefined : WIZARD_STEPS.indexOf(step)}
+      totalSteps={WIZARD_STEPS.length}
+      error={displayError}
+      footer={renderFooter()}
+    >
+      {step === 'select_date' && (
+        <div className="space-y-6">
+          <StepIntro icon={CalendarIcon} title={t('earn.fidelity_bond.select_date.description')} />
 
-        {error && (
-          <Alert variant="destructive" className="animate-in fade-in-50">
-            <AlertTriangleIcon className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+          <InfoCard label={t('earn.fidelity_bond.review_inputs.label_amount')}>
+            <FidelityBondAmount value={utxo.value} className="text-lg" />
+          </InfoCard>
+
+          <LockdateSelect id="renew-lockdate" value={selectedLockdate} onChange={setSelectedLockdate} />
+        </div>
+      )}
+
+      {step === 'confirm' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <InfoCard label={t('earn.fidelity_bond.review_inputs.label_lock_date')}>
+              <p className="font-semibold">{selectedDateLabel}</p>
+            </InfoCard>
+            <InfoCard label={t('earn.fidelity_bond.review_inputs.label_jar')}>
+              <JarBadge jarIndex={utxo.mixdepth} name={sourceJar?.name} />
+            </InfoCard>
+          </div>
+
+          <InfoCard highlight label={t('earn.fidelity_bond.review_inputs.label_amount')}>
+            <FidelityBondAmount value={utxo.value} />
+          </InfoCard>
+
+          {timelockAddressQuery.isLoading ? (
+            <InlineLoading text={t('earn.fidelity_bond.renew.text_loading')} />
+          ) : (
+            destinationAddress && (
+              <AddressPreview
+                label={t('earn.fidelity_bond.review_inputs.label_address')}
+                address={destinationAddress}
+              />
+            )
+          )}
+
+          <Alert variant="warning">
+            <AlertTriangleIcon />
+            <AlertTitle>{t('earn.fidelity_bond.renew.confirm_send_modal.title')}</AlertTitle>
+            <AlertDescription>
+              {t('earn.fidelity_bond.confirm_modal.body', {
+                /* TODO: fix human readable duration */
+                humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
+                date: selectedDateLabel || '',
+              })}
+            </AlertDescription>
           </Alert>
-        )}
 
-        <div className="py-2">
-          {step === 'select_date' && (
-            <div className="space-y-6">
-              <div className="bg-muted/50 flex items-center gap-3 rounded-lg p-4">
-                <div className="bg-primary/10 rounded-lg p-2">
-                  <CalendarIcon className="text-primary h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{t('earn.fidelity_bond.select_date.description')}</p>
-                </div>
-              </div>
+          <ConfirmationToggle
+            id="renew-confirmation"
+            checked={confirmationChecked}
+            onCheckedChange={setConfirmationChecked}
+          />
+        </div>
+      )}
 
-              <div className="bg-muted/50 rounded-lg p-4">
-                <p className="text-muted-foreground mb-1 text-xs">
-                  {t('earn.fidelity_bond.review_inputs.label_amount')}
-                </p>
-                <p className="font-mono text-lg font-bold">{formatSats(utxo.value)}</p>
-              </div>
+      {step === 'sending' && <PendingStep icon={RefreshCwIcon} title={t('earn.fidelity_bond.renew.text_sending')} />}
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="renew-lockdate-month" className="text-sm font-medium">
-                    {t('earn.fidelity_bond.select_date.form_label_month')}
-                  </Label>
-                  <Select
-                    value={selectedMonth}
-                    onValueChange={(month) => {
-                      const year =
-                        selectedYear || String(Number.parseInt(month, 10) >= minMonth ? minYear : minYear + 1)
-                      const newLockdate = clampLockdate(`${year}-${month}`)
-                      setSelectedLockdate(newLockdate)
-                    }}
-                  >
-                    <SelectTrigger id="renew-lockdate-month" className="h-11 w-full">
-                      <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_month')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {monthOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="renew-lockdate-year" className="text-sm font-medium">
-                    {t('earn.fidelity_bond.select_date.form_label_year')}
-                  </Label>
-                  <Select
-                    value={selectedYear}
-                    onValueChange={(year) => {
-                      const month = selectedMonth || String(year === String(minYear) ? minMonth : 1).padStart(2, '0')
-                      const newLockdate = clampLockdate(`${year}-${month}`)
-                      setSelectedLockdate(newLockdate)
-                    }}
-                  >
-                    <SelectTrigger id="renew-lockdate-year" className="h-11 w-full">
-                      <SelectValue placeholder={t('earn.fidelity_bond.select_date.form_label_year')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {yearOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+      {step === 'success' && (
+        <div className="space-y-6">
+          <SuccessHeading title={t('earn.fidelity_bond.renew.success_text')} />
 
-              {selectedLockdate && (
-                <div className="bg-primary/5 border-primary/20 rounded-lg border p-4">
-                  <p className="text-muted-foreground text-sm">
-                    {t('earn.fidelity_bond.review_inputs.label_lock_date')}
-                  </p>
-                  <p className="mt-1 text-lg font-semibold">{selectedDateLabel}</p>
-                </div>
-              )}
-            </div>
+          {destinationAddress && (
+            <CopyableField
+              label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
+              value={destinationAddress}
+              copiedMessage={t('receive.text_copy_address')}
+            />
           )}
 
-          {step === 'confirm' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-muted-foreground text-xs">
-                    {t('earn.fidelity_bond.review_inputs.label_lock_date')}
-                  </p>
-                  <p className="font-semibold">{selectedDateLabel}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_jar')}</p>
-                  <Badge variant={jarBadgeVariant(utxo.mixdepth)}>
-                    {sourceJar?.name ? (
-                      <>
-                        {sourceJar.name} <span>#{utxo.mixdepth}</span>
-                      </>
-                    ) : (
-                      t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: utxo.mixdepth })
-                    )}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="bg-primary/5 border-primary/20 rounded-lg border p-3">
-                <p className="text-muted-foreground text-xs">{t('earn.fidelity_bond.review_inputs.label_amount')}</p>
-                <p className="font-mono text-2xl font-bold">{formatSats(utxo.value)}</p>
-              </div>
-
-              {timelockAddressQuery.isLoading ? (
-                <div className="text-muted-foreground flex items-center justify-center gap-2 py-4">
-                  <Spinner className="motion-reduce:hidden" />
-                  {t('earn.fidelity_bond.renew.text_loading')}
-                </div>
-              ) : (
-                destinationAddress && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">{t('earn.fidelity_bond.review_inputs.label_address')}</Label>
-                    <div className="bg-muted rounded-lg p-3">
-                      <Address className="text-xs" value={destinationAddress} />
-                    </div>
-                  </div>
-                )
-              )}
-
-              <Alert variant="warning">
-                <AlertTriangleIcon />
-                <AlertTitle>{t('earn.fidelity_bond.renew.confirm_send_modal.title')}</AlertTitle>
-                <AlertDescription>
-                  {t('earn.fidelity_bond.confirm_modal.body', {
-                    /* TODO: fix human readable duration */
-                    humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
-                    date: selectedDateLabel || '',
-                  })}
-                </AlertDescription>
-              </Alert>
-
-              <div className="bg-muted/50 flex items-start gap-3 rounded-lg p-4">
-                <Switch
-                  id="renew-confirmation"
-                  checked={confirmationChecked}
-                  onCheckedChange={(checked) => setConfirmationChecked(checked)}
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <Label htmlFor="renew-confirmation" className="cursor-pointer text-sm font-medium">
-                    {t('earn.fidelity_bond.create_form.confirmation_toggle_title')}
-                  </Label>
-                  <p className="text-muted-foreground text-xs">
-                    {t('earn.fidelity_bond.create_form.confirmation_toggle_subtitle')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {step === 'sending' && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="relative">
-                <Spinner className="h-16 w-16" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <RefreshCwIcon className="text-primary h-6 w-6 animate-pulse" />
-                </div>
-              </div>
-              <p className="mt-6 text-lg font-semibold">{t('earn.fidelity_bond.renew.text_sending')}</p>
-            </div>
-          )}
-
-          {step === 'success' && (
-            <div className="space-y-6">
-              <div className="flex flex-col items-center py-6">
-                <div className="bg-brand-success/10 rounded-full p-4">
-                  <CheckCircle2Icon className="text-brand-success h-16 w-16" />
-                </div>
-                <p className="mt-4 text-xl font-bold">{t('earn.fidelity_bond.renew.success_text')}</p>
-              </div>
-
-              {destinationAddress && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {t('earn.fidelity_bond.create_fidelity_bond.label_address')}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <code className="bg-muted flex-1 rounded-lg p-3 font-mono text-xs break-all">
-                      {destinationAddress}
-                    </code>
-                    <CopyButton
-                      key="copy-address-renew"
-                      value={destinationAddress}
-                      text={<CopyIcon className="h-4 w-4" />}
-                      successText={<CheckIcon className="text-brand-success h-4 w-4" />}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
-                      onSuccess={() => toast.success(t('receive.text_copy_address'))}
-                      onError={() => toast.error(t('global.errors.reason_unknown'))}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {txResult?.txinfo?.txid && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <code className="bg-muted flex-1 rounded-lg p-3 font-mono text-xs break-all">
-                      {txResult.txinfo.txid}
-                    </code>
-                    <CopyButton
-                      key="copy-txid-renew"
-                      value={txResult.txinfo.txid}
-                      text={<CopyIcon className="h-4 w-4" />}
-                      successText={<CheckIcon className="text-brand-success h-4 w-4" />}
-                      className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'h-10 w-10 shrink-0')}
-                      onSuccess={() =>
-                        toast.success(t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id'))
-                      }
-                      onError={() => toast.error(t('global.errors.reason_unknown'))}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+          {txResult?.txinfo?.txid && (
+            <CopyableField
+              label={t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
+              value={txResult.txinfo.txid}
+              copiedMessage={t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id')}
+            />
           )}
         </div>
-
-        {step === 'select_date' && (
-          <DialogFooter className="gap-3 sm:gap-2">
-            <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)}>
-              {t('global.cancel')}
-            </Button>
-            <Button className="min-w-32" disabled={!selectedLockdate} onClick={() => setStep('confirm')}>
-              {t('global.next')}
-            </Button>
-          </DialogFooter>
-        )}
-
-        {step === 'confirm' && (
-          <DialogFooter className="gap-3 sm:gap-2">
-            <Button variant="ghost" onClick={() => setStep('select_date')} disabled={isLoading}>
-              <ChevronLeftIcon className="mr-1 h-4 w-4" />
-              {t('global.back')}
-            </Button>
-            <Button variant="outline" className="min-w-24" onClick={() => handleOpenChange(false)} disabled={isLoading}>
-              {t('global.cancel')}
-            </Button>
-            <Button
-              className="min-w-32"
-              disabled={!confirmationChecked || !destinationAddress || isLoading}
-              onClick={() => void handleSubmit()}
-            >
-              {isLoading && <Spinner className="mr-2 h-4 w-4" />}
-              {t('earn.fidelity_bond.renew.text_button_submit')}
-            </Button>
-          </DialogFooter>
-        )}
-
-        {step === 'success' && (
-          <DialogFooter className="gap-3 sm:gap-2">
-            <Button className="min-w-32" onClick={() => handleOpenChange(false)}>
-              {t('global.done')}
-            </Button>
-          </DialogFooter>
-        )}
-      </DialogContent>
-    </Dialog>
+      )}
+    </FidelityBondDialogLayout>
   )
 }

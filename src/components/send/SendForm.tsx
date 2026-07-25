@@ -304,7 +304,7 @@ export function SendForm({
                 <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
                 {sourceJarLabelButton && <>{sourceJarLabelButton}</>}
               </div>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              <div className="flex flex-1 flex-row flex-wrap items-center justify-center gap-8">
                 {jars.map((jar, index) => (
                   <SelectableJar
                     key={index}
@@ -613,13 +613,15 @@ export function SendForm({
                       ) : null}
                     </Field>
                     {estimatedMaxCollaboratorFee && (
-                      <div className="text-muted-foreground inline-flex items-center text-xs">
-                        <span className="mr-1">{t('send.fee_breakdown.title', { maxCollaboratorFee: '≤' })}</span>
-                        <span className="text-foreground inline-flex items-center gap-1">
-                          <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} />
-                        </span>
-                        <span className="ml-1">
-                          ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
+                      <div className="text-muted-foreground inline-flex items-center">
+                        <span>{t('send.fee_breakdown.title', { maxCollaboratorFee: '≤' })}</span>
+                        <Balance
+                          className="text-foreground font-semibold"
+                          valueString={String(estimatedMaxCollaboratorFee.maxFee)}
+                        />
+
+                        <span className="ml-0.75">
+                          ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount, 2)}%)
                         </span>
                       </div>
                     )}

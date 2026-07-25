@@ -13,20 +13,59 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
 
-vi.mock('@/components/ui/jam/BitcoinQrCode', () => ({
-  BitcoinAddressQrCode: () => <div data-testid="qr-code">QR</div>,
-}))
-
 vi.mock('@/lib/utils', () => ({
   cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
   formatSats: (sats: number) => `${sats} sats`,
   clamp: (val: number, min: number, max: number) => Math.min(Math.max(val, min), max),
 }))
 
+vi.mock('@/components/ui/jam/Address', () => ({
+  Address: ({ value }: { value: string }) => <span>{value}</span>,
+}))
+
+vi.mock('@/components/ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span>{valueString} sats</span>,
+}))
+
 vi.mock('@/lib/fidelityBondUtils', () => ({
   utxo: {
     isFidelityBond: vi.fn(),
   },
+  lockdate: {
+    toDateLabel: () => 'January 1, 2025',
+  },
+}))
+
+vi.mock('@/store/jamSettingsStore', () => ({
+  useDeveloperMode: () => ({ enabled: false }),
+}))
+
+vi.mock('@/context/JamWalletInfoContext', () => ({
+  useJamWalletInfoContext: () => ({
+    jars: [
+      { jarIndex: 0, name: 'Jar 0', color: '#000', balanceSummary: {}, utxos: [] },
+      { jarIndex: 1, name: 'Jar 1', color: '#111', balanceSummary: {}, utxos: [] },
+    ],
+    walletBalanceSummary: { calculatedTotalBalanceInSats: 14000 },
+  }),
+}))
+
+vi.mock('@/components/ui/jam/SelectableJar', () => ({
+  SelectableJar: ({
+    name,
+    onClick,
+    disabled,
+    isSelected,
+  }: {
+    name?: string
+    onClick?: () => void
+    disabled?: boolean
+    isSelected?: boolean
+  }) => (
+    <button onClick={onClick} disabled={disabled} data-selected={isSelected}>
+      {name}
+    </button>
+  ),
 }))
 
 const getBaseWizard = (): Wizard =>
@@ -34,15 +73,8 @@ const getBaseWizard = (): Wizard =>
     step: 'select_date',
     setSelectedLockdate: vi.fn(),
     selectedLockdate: '2025-01',
-    selectedYear: '2025',
-    selectedMonth: '01',
-    minYear: 2024,
-    minMonth: 1,
-    yearOptions: [{ value: '2025', label: '2025' }],
-    monthOptions: [{ value: '01', label: 'Jan' }],
-    clampLockdate: vi.fn((x: unknown) => x),
     hasDuplicateLockdate: false,
-    selectedDateLabel: 'Jan 2025',
+    existingFbLockdates: [],
     selectedJarIndex: 0,
     setSelectedJarIndex: vi.fn(),
     jarsWithUtxos: [],
@@ -51,8 +83,6 @@ const getBaseWizard = (): Wizard =>
     utxoPage: 0,
     setUtxoPage: vi.fn(),
     toggleUtxoSelection: vi.fn(),
-    selectAllUtxos: vi.fn(),
-    deselectAllUtxos: vi.fn(),
     totalAmount: 1000,
     isUsingAllFunds: false,
     utxosToFreeze: [],
@@ -72,7 +102,7 @@ describe('CreateFidelityBondDialogSteps', () => {
 
     expect(screen.getByText('earn.fidelity_bond.select_date.description')).toBeInTheDocument()
     expect(screen.getByText('earn.fidelity_bond.select_date.form_label_month')).toBeInTheDocument()
-    expect(screen.getByText('Jan 2025')).toBeInTheDocument()
+    expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
   })
 
   it('renders select_jar step with jars', () => {
@@ -90,8 +120,9 @@ describe('CreateFidelityBondDialogSteps', () => {
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
 
     expect(screen.getByText('earn.fidelity_bond.select_jar.title')).toBeInTheDocument()
-    expect(screen.getByText('Jar 0')).toBeInTheDocument()
-    expect(screen.getByText('5000 sats')).toBeInTheDocument()
+    // Jar 0 is eligible, Jar 1 has no eligible utxos and is disabled
+    expect(screen.getByText('Jar 0')).toBeEnabled()
+    expect(screen.getByText('Jar 1')).toBeDisabled()
   })
 
   it('renders select_utxos step', () => {
@@ -127,7 +158,7 @@ describe('CreateFidelityBondDialogSteps', () => {
 
     expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
     expect(screen.getByText('bc1...')).toBeInTheDocument()
-    expect(screen.getByTestId('qr-code')).toBeInTheDocument()
+    expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument()
   })
 
   it('renders creating step', () => {
@@ -148,11 +179,11 @@ describe('CreateFidelityBondDialogSteps', () => {
     expect(screen.getByText('1234abcd')).toBeInTheDocument()
   })
 
-  it('warns about a duplicate lock date on the select_date step', () => {
+  it('passes existing fidelity-bond lock dates to the date selector', () => {
     const wizard = getBaseWizard()
-    wizard.hasDuplicateLockdate = true
+    wizard.existingFbLockdates = ['2025-01']
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
-    expect(screen.getByTestId('trans-earn.fidelity_bond.select_date.warning_fb_with_same_expiry')).toBeInTheDocument()
+    expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
   })
 
   it('highlights the selected jar and shows the no-jars alert state', () => {
@@ -177,7 +208,7 @@ describe('CreateFidelityBondDialogSteps', () => {
     ] as unknown as Wizard['jarsWithUtxos']
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
     expect(screen.getByText('Jar 0')).toBeInTheDocument()
-    expect(screen.getByText('Jar 1')).toBeInTheDocument()
+    expect(screen.getByText('Jar 1')).toHaveAttribute('data-selected', 'true')
   })
 
   it('renders select_utxos with a selected utxo, pagination, and the all-funds warning', () => {

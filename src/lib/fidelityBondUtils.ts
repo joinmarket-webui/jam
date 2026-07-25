@@ -51,6 +51,13 @@ export const lockdate = (() => {
     return Date.UTC(year, month - 1, 1)
   }
 
+  const toDateLabel = (lockdate: Lockdate): string =>
+    new Date(toTimestamp(lockdate)).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
   /**
    * Returns a lockdate an initial lockdate in the future.
    *
@@ -74,6 +81,7 @@ export const lockdate = (() => {
   return {
     fromTimestamp,
     toTimestamp,
+    toDateLabel,
     initial,
   }
 })()

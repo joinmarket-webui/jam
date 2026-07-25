@@ -56,7 +56,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 vi.mock('@/lib/errorReason', () => ({ getErrorReason: () => 'reason' }))
 
 vi.mock('@/lib/fidelityBondUtils', () => ({
-  lockdate: { toTimestamp: () => 1_893_456_000_000 },
+  lockdate: { toDateLabel: () => 'January 1, 2030' },
 }))
 
 vi.mock('@/lib/utils', async (importOriginal) => ({
@@ -136,6 +136,10 @@ vi.mock('@/components/ui/jam/CopyButton', () => ({
   CopyButton: ({ value }: ValueProps) => <div data-testid="copy">{value}</div>,
 }))
 
+vi.mock('@/components/ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span>{valueString} sats</span>,
+}))
+
 vi.mock('@/components/ui/label', () => ({ Label: ({ children }: ChildrenProps) => <label>{children}</label> }))
 
 vi.mock('../ui/jam/Address', () => ({
@@ -189,13 +193,13 @@ describe('RenewBondDialog', () => {
   it('selecting a month enables the next button and shows the chosen date', () => {
     renderDialog()
     selectMonth('06')
-    expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
+    expect(screen.getByText('earn.fidelity_bond.select_date.label_selected_lock_date')).toBeInTheDocument()
   })
 
   it('selecting a year computes a clamped lock date', () => {
     renderDialog()
     selectYear('2027')
-    expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
+    expect(screen.getByText('earn.fidelity_bond.select_date.label_selected_lock_date')).toBeInTheDocument()
   })
 
   it('selecting an early month bumps the year forward', () => {
@@ -203,7 +207,7 @@ describe('RenewBondDialog', () => {
     // a month earlier than the minimum month forces year = minYear + 1
     selectMonth('06')
     selectYear('2026')
-    expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
+    expect(screen.getByText('earn.fidelity_bond.select_date.label_selected_lock_date')).toBeInTheDocument()
   })
 
   it('moves to the confirm step and shows the timelock address', () => {
