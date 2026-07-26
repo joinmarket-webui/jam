@@ -783,7 +783,7 @@
     "complete_wallet_subtitle": "This will use all of your non-frozen funds.",
     "description_destination_addresses": "A Scheduled Sweep will send all available funds to multiple destinations, splitting them up in random chunks.",
     "feedback_invalid_destination_address": "Please enter a valid destination address.",
-    "feedback_destination_network_mismatch": "This address does not match your wallet's network.",
+    "feedback_destination_network_mismatch": "$t(send.feedback_destination_network_mismatch)",
     "feedback_reused_destination_address": "This address is already used. To preserve your privacy please choose another one.",
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
