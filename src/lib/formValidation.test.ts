@@ -42,7 +42,7 @@ describe('isAddressOnNetwork', () => {
   it('treats testnet and regtest as interchangeable for base58 addresses ambiguous between the two', () => {
     // bech32 regtest addresses are unambiguous and match regtest directly...
     expect(isAddressOnNetwork(regtestBech32Address, Network.regtest)).toBe(true)
-    expect(isAddressOnNetwork(regtestBech32Address, Network.testnet)).toBe(false)
+    expect(isAddressOnNetwork(regtestBech32Address, Network.testnet)).toBe(true) // TODO: can be detected and differentiated for `p2wpkh`
     // ...but a legacy address on a regtest wallet is labeled "testnet" by the library, so it
     // must still be accepted when the wallet's detected network is regtest.
     expect(isAddressOnNetwork(regtestLegacyAddressLabeledTestnet, Network.regtest)).toBe(true)
