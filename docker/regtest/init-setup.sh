@@ -16,7 +16,9 @@ set -Eeuo pipefail
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 # fund wallet in primary JoinMarket NG container
-. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --unmatured --blocks 3
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --mixdepth 0 --unmatured --blocks 1
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --mixdepth 1 --unmatured --blocks 2 # outputs should be flagged as "reused"
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --mixdepth 4 --unmatured --blocks 1
 
 # fund wallet in ng standalone secondary container
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 50
@@ -37,7 +39,7 @@ dummy_wallet_address2='bcrt1qt5yxk3xzrx66q9wd5sdyynklqynqcyf7uh74j3' # 8th addre
 dummy_wallet_address3='bcrt1qn8804dw5fahuc5cwqteuq5j4xlhk2cnkq7a8kw' # 21st change address of jar E (m/84'/1'/4'/1/21)
 dummy_wallet_address_fb0='bcrt1q7war3lusq3ez633rzzfkp75unfcgrqqcu80sgp0ellhrdvkzxh5swspygk' # 1st fb address (m/84'/1'/0'/2/0)
 dummy_wallet_address_fb959='bcrt1q6rlcknptmqhf4w20928tpz6px4y70960gyupd029c7vx7kdjwt0q46nk9c' # 960th fb address (m/84'/1'/0'/2/959)
-# make block rewards spendable: 100 + 5 (default of `taker_utxo_age`) + 1 = 106
+# make block rewards spendable: 100 + 5 (default of `taker_utxo_age`) + 1 = at least 106 blocks
 . "$script_dir/mine-block.sh" 2 "$dummy_wallet_address1" &>/dev/null
 . "$script_dir/mine-block.sh" 2 "$dummy_wallet_address2" &>/dev/null
 . "$script_dir/mine-block.sh" 2 "$dummy_wallet_address3" &>/dev/null
