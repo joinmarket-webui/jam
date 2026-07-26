@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
+import type { Network } from 'bitcoin-address-validation'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useFieldArray, useForm, useWatch, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -53,6 +54,7 @@ interface SweepFormProps {
   initialValues?: Partial<SweepFormValues>
   jars: Jar[]
   addressSummary: AddressSummary
+  network: Network
   disabled?: boolean
   debug?: boolean
 }
@@ -62,6 +64,7 @@ export const SweepForm = ({
   onSubmit,
   jars,
   addressSummary,
+  network,
   initialValues,
   disabled,
   debug,
@@ -82,10 +85,11 @@ export const SweepForm = ({
           minNumberOfDestinations,
           maxNumberOfDestinations,
           addressSummary,
+          network,
         },
         t,
       ),
-    [minNumberOfDestinations, maxNumberOfDestinations, addressSummary, t],
+    [minNumberOfDestinations, maxNumberOfDestinations, addressSummary, network, t],
   )
   const { formState, reset, register, control, setValue, handleSubmit, trigger } = useForm<
     SweepFormValues,

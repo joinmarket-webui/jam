@@ -264,6 +264,7 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
 
 vi.mock('@/context/JamWalletInfoContext', () => ({
   useJamWalletInfoContext: () => mocks.walletInfo,
+  useDetectNetwork: () => ({ network: 'regtest' }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({

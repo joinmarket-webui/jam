@@ -1,3 +1,4 @@
+import type { Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import * as yup from 'yup'
 import {
@@ -15,7 +16,7 @@ import {
 } from '@/constants/jam'
 import { JM_NG_DEFAULT_TUMBLER_PARAMS, type TumblerParameters } from '@/constants/jm'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
-import { isValidAddress } from '@/lib/formValidation'
+import { isAddressOnNetwork, isValidAddress } from '@/lib/formValidation'
 import { factorToPercentage, isValidNumber, percentageToFactor, pseudoRandomInteger } from '@/lib/utils'
 import type { Seconds } from '@/types/global'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
@@ -115,14 +116,17 @@ export const sweepFormSchema = (
     minNumberOfDestinations,
     maxNumberOfDestinations,
     addressSummary,
+    network,
   }: {
     minNumberOfDestinations: number
     maxNumberOfDestinations: number
     addressSummary: AddressSummary
+    network: Network
   },
   t: TFunction<'translation', undefined>,
 ): yup.ObjectSchema<SweepFormValues> => {
   const invalidDestinationAddressMessage = t('scheduler.feedback_invalid_destination_address')
+  const networkMismatchDestinationAddressMessage = t('scheduler.feedback_destination_network_mismatch')
   const invalidNumberOfDestinationsMessage = t('send.feedback_invalid_number_of_destination_addresses', {
     // TODO: i18n
     defaultValue: 'Please provide between {{ min }} and {{ max }} destination addresses.',
@@ -137,20 +141,20 @@ export const sweepFormSchema = (
         .of(
           yup
             .object({
-              // TODO: use formValidation#destinationAddressField ?
               address: yup
                 .string()
                 .transform((_, originalValue: unknown) =>
                   typeof originalValue === 'string' ? normalizeDestinationAddresses([originalValue])[0] : '',
                 )
                 .defined()
-                .test('valid-sweep-destination', invalidDestinationAddressMessage, function (value) {
-                  if (!isValidAddress(value)) {
-                    return false
-                  }
-
-                  return true
-                }),
+                .test('valid-sweep-destination', invalidDestinationAddressMessage, (value) => isValidAddress(value))
+                // Only run once the address itself is valid, so an invalid address surfaces a
+                // single, correct error instead of also reporting a network mismatch.
+                .test(
+                  'sweep-destination-network-mismatch',
+                  networkMismatchDestinationAddressMessage,
+                  (value) => !isValidAddress(value) || isAddressOnNetwork(value, network),
+                ),
             })
             .required(),
         )
