@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { gettimelockaddressOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, CalendarIcon, RefreshCwIcon } from 'lucide-react'
+import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -11,6 +13,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import type { WalletFileName } from '@/lib/utils'
+import { RENEW_BOND_FORM_DEFAULT_VALUES, renewBondFormSchema, type RenewBondFormValues } from './RenewBondDialog.schema'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
   AddressPreview,
@@ -44,9 +47,25 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   const client = useApiClient()
 
   const [step, setStep] = useState<Step>('select_date')
-  const [selectedLockdate, setSelectedLockdate] = useState<fb.Lockdate | ''>('')
-  const [confirmationChecked, setConfirmationChecked] = useState(false)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<RenewBondFormValues>({
+    mode: 'onChange',
+    defaultValues: RENEW_BOND_FORM_DEFAULT_VALUES,
+    resolver: yupResolver(renewBondFormSchema),
+  })
+  const selectedLockdate = useWatch({ control, name: 'lockdate' })
+  const confirmationChecked = useWatch({
+    control,
+    name: 'confirmationAccepted',
+    defaultValue: false,
+  })
 
   const { sweep, isLoading, error, setError, sourceJar } = useFidelityBondSweep({
     walletFileName,
@@ -76,8 +95,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
   const handleReset = () => {
     setStep('select_date')
-    setSelectedLockdate('')
-    setConfirmationChecked(false)
+    reset(RENEW_BOND_FORM_DEFAULT_VALUES)
     setTxResult(undefined)
     setError(undefined)
   }
@@ -89,7 +107,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     onOpenChange(newOpen)
   }
 
-  const handleSubmit = async () => {
+  const submitRenewal = handleSubmit(async () => {
     if (!destinationAddress) return
 
     setStep('sending')
@@ -99,7 +117,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
       toast.success(t('earn.fidelity_bond.renew.success_text'))
     })
     if (!swept) setStep('confirm')
-  }
+  })
 
   const renderFooter = () => {
     switch (step) {
@@ -117,9 +135,9 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           <WizardStepFooter
             onBack={() => setStep('select_date')}
             onCancel={() => handleOpenChange(false)}
-            onPrimary={() => void handleSubmit()}
+            onPrimary={() => void submitRenewal()}
             primaryDisabled={!confirmationChecked || !destinationAddress}
-            isLoading={isLoading}
+            isLoading={isLoading || isSubmitting}
             primaryLabel={t('earn.fidelity_bond.renew.text_button_submit')}
           />
         )
@@ -148,7 +166,17 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
             <FidelityBondAmount value={utxo.value} className="text-lg" />
           </InfoCard>
 
-          <LockdateSelect id="renew-lockdate" value={selectedLockdate} onChange={setSelectedLockdate} />
+          <LockdateSelect
+            id="renew-lockdate"
+            value={selectedLockdate ?? ''}
+            onChange={(lockdate) =>
+              setValue('lockdate', lockdate || undefined, {
+                shouldDirty: true,
+                shouldTouch: true,
+                shouldValidate: true,
+              })
+            }
+          />
         </div>
       )}
 
@@ -193,7 +221,13 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           <ConfirmationToggle
             id="renew-confirmation"
             checked={confirmationChecked}
-            onCheckedChange={setConfirmationChecked}
+            onCheckedChange={(checked) =>
+              setValue('confirmationAccepted', checked, {
+                shouldDirty: true,
+                shouldTouch: true,
+                shouldValidate: true,
+              })
+            }
           />
         </div>
       )}
