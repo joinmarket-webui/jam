@@ -20,7 +20,7 @@ vi.mock('../ui/jam/SelectableJar', () => ({
     disabled?: boolean
     isSelected?: boolean
   }) => (
-    <button onClick={onClick} disabled={disabled} data-selected={isSelected}>
+    <button type="button" onClick={onClick} disabled={disabled} data-selected={isSelected}>
       {name}
     </button>
   ),
@@ -94,20 +94,23 @@ describe('JarSelectorDialog', () => {
     expect(screen.queryByText('Pick a jar')).not.toBeInTheDocument()
   })
 
-  it('disables the confirm button until a jar is selected', () => {
+  it('disables the confirm button until a jar is selected', async () => {
     renderDialog()
-    const confirm = screen.getByText('modal.confirm_button_accept').closest('button')
+    const confirm = screen.getByRole('button', { name: 'modal.confirm_button_accept' })
     expect(confirm).toBeDisabled()
     fireEvent.click(screen.getByText('Jar 0'))
-    expect(confirm).not.toBeDisabled()
+    await waitFor(() => expect(confirm).not.toBeDisabled())
   })
 
   it('confirms the selected jar', async () => {
     const onConfirm = vi.fn().mockResolvedValue(undefined)
     renderDialog({ onConfirm })
     fireEvent.click(screen.getByText('Jar 0'))
-    fireEvent.click(screen.getByText('modal.confirm_button_accept'))
+    const confirm = screen.getByRole('button', { name: 'modal.confirm_button_accept' })
+    await waitFor(() => expect(confirm).not.toBeDisabled())
+    fireEvent.click(confirm)
     await waitFor(() => expect(onConfirm).toHaveBeenCalledWith(0))
+    await waitFor(() => expect(confirm).toBeDisabled())
   })
 
   it('closes and resets via the reject button', () => {
