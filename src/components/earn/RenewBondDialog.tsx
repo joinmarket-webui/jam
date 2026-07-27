@@ -64,7 +64,6 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   const confirmationChecked = useWatch({
     control,
     name: 'confirmationAccepted',
-    defaultValue: false,
   })
 
   const { sweep, isLoading, error, setError, sourceJar } = useFidelityBondSweep({
