@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddressOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, UnlockIcon } from 'lucide-react'
+import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertTitle } from '@/components/ui/alert'
@@ -11,7 +13,7 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import type { WalletFileName } from '@/lib/utils'
-import type { JarIndex } from '@/types/global'
+import { createMoveToJarFormSchema, type MoveToJarFormValues } from './MoveToJarDialog.schema'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
   AddressPreview,
@@ -45,8 +47,24 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const walletInfo = useJamWalletInfoContext()
 
   const [step, setStep] = useState<Step>('select_jar')
-  const [selectedJarIndex, setSelectedJarIndex] = useState<JarIndex | undefined>()
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
+
+  const availableJarIndexes = useMemo(() => walletInfo.jars.map((jar) => jar.jarIndex), [walletInfo.jars])
+  const formSchema = useMemo(() => createMoveToJarFormSchema(availableJarIndexes), [availableJarIndexes])
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<MoveToJarFormValues>({
+    mode: 'onChange',
+    defaultValues: {
+      destinationJarIndex: undefined,
+    },
+    resolver: yupResolver(formSchema),
+  })
+  const selectedJarIndex = useWatch({ control, name: 'destinationJarIndex' })
 
   const { sweep, isLoading, error, setError, sourceJar } = useFidelityBondSweep({
     walletFileName,
@@ -77,7 +95,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
   const handleReset = () => {
     setStep('select_jar')
-    setSelectedJarIndex(undefined)
+    reset()
     setTxResult(undefined)
     setError(undefined)
   }
@@ -89,8 +107,8 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
     onOpenChange(newOpen)
   }
 
-  const handleSubmit = async () => {
-    if (selectedJarIndex === undefined || !destinationAddress) return
+  const submitMove = handleSubmit(async () => {
+    if (!destinationAddress) return
 
     setStep('sending')
     const swept = await sweep(destinationAddress, (result) => {
@@ -99,7 +117,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
       toast.success(t('earn.fidelity_bond.move.success_text'))
     })
     if (!swept) setStep('confirm')
-  }
+  })
 
   const renderFooter = () => {
     switch (step) {
@@ -117,9 +135,9 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
           <WizardStepFooter
             onBack={() => setStep('select_jar')}
             onCancel={() => handleOpenChange(false)}
-            onPrimary={() => void handleSubmit()}
+            onPrimary={() => void submitMove()}
             primaryDisabled={!destinationAddress}
-            isLoading={isLoading}
+            isLoading={isLoading || isSubmitting}
             primaryLabel={t('earn.fidelity_bond.move.text_button_submit')}
           />
         )
@@ -150,7 +168,13 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
           <FidelityBondJarSelector
             selectedJarIndex={selectedJarIndex}
-            onSelect={setSelectedJarIndex}
+            onSelect={(jarIndex) =>
+              setValue('destinationJarIndex', jarIndex, {
+                shouldDirty: true,
+                shouldTouch: true,
+                shouldValidate: true,
+              })
+            }
             isJarDisabled={() => false}
           />
         </div>
