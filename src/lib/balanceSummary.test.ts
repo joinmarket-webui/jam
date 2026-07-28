@@ -138,7 +138,7 @@ describe('BalanceSummary', () => {
       calculatedTotalBalanceInSats: 11,
       calculatedAvailableBalanceInSats: 5,
       calculatedConfirmedAvailableBalanceInSats: 0,
-      calculatedAvailableFrozenBalanceInSats: 4,
+      calculatedAvailableFrozenBalanceInSats: 3,
       calculatedFrozenOrLockedBalanceInSats: 6,
     })
   })

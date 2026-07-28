@@ -302,13 +302,13 @@ export function SendForm({
         {...sendFormMethods}
       >
         <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
-          <div className="space-y-2">
+          <div className="space-y-4">
             <Field className="space-y-4" data-invalid={errors.source?.fromJar !== undefined}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
                 {sourceJarLabelButton?.(errors.source?.fromJar)}
               </div>
-              <div className="flex flex-1 flex-row flex-wrap items-center justify-center gap-8">
+              <div className="flex flex-1 flex-row flex-wrap items-start justify-around gap-8">
                 {jars.map((jar, index) => {
                   const noFunds =
                     jar.balanceSummary.calculatedAvailableBalanceInSats <= 0 &&
