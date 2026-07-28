@@ -259,7 +259,9 @@ export function SendForm({
 
       event.preventDefault()
       applyBip21Result(parsed)
-      toast.success(t('send.qr_scan_bip21_applied'))
+      if (parsed.fromUri) {
+        toast.success(t('send.qr_scan_bip21_applied'))
+      }
     },
     [applyBip21Result, t],
   )
