@@ -33,7 +33,6 @@ type SeedPhraseDialogProps = WithRequiredProperty<
   autoCloseTimeout: Milliseconds
 }
 
-// TODO: use react-hook-form and yup schema
 export const SeedPhraseDialog = ({
   open,
   onOpenChange,

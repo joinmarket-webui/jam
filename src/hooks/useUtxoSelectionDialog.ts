@@ -1,10 +1,17 @@
 import { useMemo, useState } from 'react'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { freezeMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import type { RowSelectionState } from '@tanstack/react-table'
+import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import type { UtxoSelectionDialogProps } from '@/components/send/UtxoSelectionDialog'
+import {
+  createUtxoSelectionFormSchema,
+  UTXO_SELECTION_FORM_DEFAULT_VALUES,
+  type UtxoSelectionFormValues,
+} from '@/components/send/UtxoSelectionDialog.schema'
 import { useJamWalletInfoContext, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
@@ -26,8 +33,6 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
 
   const { refetch: walletInfoRefetch } = useJamWalletInfoContext()
   const [open, setOpen] = useState(false)
-  const [filter, setFilter] = useState('')
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
   const tableEntries = useMemo(() => {
     return (sourceJar?.utxos || []).map((utxo) => ({
@@ -45,6 +50,26 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     }, {} as RowSelectionState)
   }, [sourceJar?.utxos])
 
+  const selectableUtxoIds = useMemo(
+    () => (sourceJar?.utxos || []).filter((utxo) => !fb.utxo.isFidelityBond(utxo)).map((utxo) => utxo.utxo),
+    [sourceJar?.utxos],
+  )
+  const formSchema = useMemo(() => createUtxoSelectionFormSchema(selectableUtxoIds), [selectableUtxoIds])
+  const {
+    control,
+    getValues,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { isSubmitting: isFormSubmitting },
+  } = useForm<UtxoSelectionFormValues>({
+    mode: 'onChange',
+    defaultValues: UTXO_SELECTION_FORM_DEFAULT_VALUES,
+    resolver: yupResolver(formSchema),
+  })
+  const filter = useWatch({ control, name: 'filter', defaultValue: '' })
+  const rowSelection = useWatch({ control, name: 'rowSelection', defaultValue: {} })
+
   const selectedUtxos = useMemo(() => {
     return (sourceJar?.utxos || []).filter((utxo) => rowSelection[utxo.utxo] === true)
   }, [sourceJar?.utxos, rowSelection])
@@ -56,7 +81,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     retry: false,
   })
 
-  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isSubmitting } = useMutation({
+  const { mutateAsync: applyUtxoSelectionMutateAsync, isPending: isMutationPending } = useMutation({
     mutationFn: async ({ utxosToFreeze, utxosToUnfreeze }: { utxosToFreeze: Utxo[]; utxosToUnfreeze: Utxo[] }) => {
       const [freezeResult, unfreezeResult] = await Promise.all([
         Promise.allSettled(
@@ -94,25 +119,28 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
   const onOpenUtxoSelector = () => {
     if (!sourceJar) return
     toast.dismiss(SEND_AUTO_SELECTION_TOAST_ID)
-    setFilter('')
-    setRowSelection(initialRowSelection)
+    reset({
+      filter: '',
+      rowSelection: initialRowSelection,
+    })
     setOpen(true)
   }
 
-  const onSubmit = async () => {
+  const onSubmit = handleSubmit(async ({ rowSelection: submittedRowSelection }) => {
     if (!sourceJar) return
 
-    const selectedUtxoIds = new Set(selectedUtxos.map((it) => it.utxo))
-    const selectedAddresses = new Set(selectedUtxos.map((it) => it.address))
+    const submittedUtxos = sourceJar.utxos.filter((utxo) => submittedRowSelection[utxo.utxo] === true)
+    const selectedUtxoIds = new Set(submittedUtxos.map((it) => it.utxo))
+    const selectedAddresses = new Set(submittedUtxos.map((it) => it.address))
     const mutableUtxos = sourceJar.utxos.filter((it) => !fb.utxo.isFidelityBond(it))
     const groupedSelectedUtxos = mutableUtxos.filter((it) => selectedAddresses.has(it.address))
     const groupedDeselectedUtxos = mutableUtxos.filter((it) => !selectedAddresses.has(it.address))
     const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
 
-    if (groupedSelectedUtxos.length > selectedUtxos.length) {
+    if (groupedSelectedUtxos.length > submittedUtxos.length) {
       toast.warning(t('jar_details.utxo_list.toast_auto_selection_title'), {
         description: t('jar_details.utxo_list.toast_auto_selected_matching', {
-          count: groupedSelectedUtxos.length - selectedUtxos.length,
+          count: groupedSelectedUtxos.length - submittedUtxos.length,
         }),
         id: SEND_AUTO_SELECTION_TOAST_ID,
       })
@@ -178,7 +206,9 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
         toast.error(t('jar_details.utxo_list.toast_unfreeze_error', { count: utxosToUnfreeze.length }))
       }
     }
-  }
+  })
+
+  const isSubmitting = isFormSubmitting || isMutationPending
 
   const dialogProps: UtxoSelectionDialogProps = {
     open,
@@ -190,11 +220,26 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     enableRowSelection: isSubmitting ? false : undefined,
     onOpenChange: (nextOpen: boolean) => {
       if (isSubmitting) return
+      if (!nextOpen) {
+        reset(UTXO_SELECTION_FORM_DEFAULT_VALUES)
+      }
       setOpen(nextOpen)
     },
-    onFilterChange: setFilter,
-    onRowSelectionChange: setRowSelection,
-    onSubmit,
+    onFilterChange: (nextFilter) =>
+      setValue('filter', nextFilter, {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    onRowSelectionChange: (updater) => {
+      const currentSelection = getValues('rowSelection')
+      const nextSelection = typeof updater === 'function' ? updater(currentSelection) : updater
+      setValue('rowSelection', nextSelection, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      })
+    },
+    onSubmit: async () => onSubmit(),
   }
 
   return {
