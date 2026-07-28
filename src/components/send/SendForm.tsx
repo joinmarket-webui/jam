@@ -9,7 +9,6 @@ import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
-import { isDevMode } from '@/constants/debugFeatures'
 import { MAX_NUM_COLLABORATORS } from '@/constants/jam'
 import { JM_MINIMUM_MAKERS_DEFAULT, JM_TAKER_UTXO_AGE } from '@/constants/jm'
 import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
@@ -94,12 +93,6 @@ const AddressFromJarSelectorDialog = ({
   )
 }
 
-// set the default to one collaborator in dev mode
-const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
-
-// TODO: this value should be dynamic via jm backend settings
-const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
-
 const FieldPrefixSatSymbol = (
   <SatSymbol
     width={'18px'}
@@ -133,7 +126,7 @@ export function SendForm({
   disabled,
   feeConfigValues,
   walletFileName,
-  minNumberOfCollaborators = MIN_NUM_COLLABORATORS,
+  minNumberOfCollaborators = JM_MINIMUM_MAKERS_DEFAULT,
   jars,
   walletBalanceSummary,
   addressSummary,
