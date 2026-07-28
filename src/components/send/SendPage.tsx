@@ -34,6 +34,7 @@ import type { UtxoId } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { getErrorReason } from '@/lib/errorReason'
+import * as fb from '@/lib/fidelityBondUtils'
 import { withMutationDelay } from '@/lib/queryClient'
 import { scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
@@ -114,15 +115,20 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     return jars.find((it) => it.jarIndex === sourceJarIndex)
   }, [jars, sourceJarIndex])
 
-  const utxoSelectionDialog = useUtxoSelectionDialog({
+  const { onOpenUtxoSelector, ...utxoSelectionDialog } = useUtxoSelectionDialog({
     walletFileName,
     sourceJar,
     addressSummary,
   })
 
   const availableUtxosForPayment = useMemo(() => {
-    return (sourceJar?.utxos || []).filter((utxo) => !utxo.frozen).toSorted((a, b) => a.confirmations - b.confirmations)
-  }, [sourceJar])
+    const isCoinJoin = sendFromValuesAwaitingConfirmation?.isCoinJoin ?? true // assume true
+    return (sourceJar?.utxos || [])
+      .filter((utxo) => !utxo.frozen)
+      .filter((utxo) => !fb.utxo.isLocked(utxo))
+      .filter((utxo) => (isCoinJoin ? true : !fb.utxo.isFidelityBond(utxo)))
+      .toSorted((a, b) => a.confirmations - b.confirmations)
+  }, [sourceJar, sendFromValuesAwaitingConfirmation?.isCoinJoin])
 
   const destinationJar = useMemo(() => {
     const destinationJarIndex = sendFromValuesAwaitingConfirmation?.destination?.fromJar
@@ -604,17 +610,22 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               }
               debug={isDeveloperMode}
               onSourceJarChange={setSourceJarIndex}
-              sourceJarLabelButton={
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={utxoSelectionDialog.utxoSelectorDisabled}
-                  onClick={utxoSelectionDialog.onOpenUtxoSelector}
-                >
-                  <ListFilterIcon />
-                  {t('show_utxos.text_select_utxos_tooltip')}
-                </Button>
-              }
+              sourceJarLabelButton={(errors) => {
+                const errorSolvedByUtxoSelection = errors?.fromJar?.type === 'valid-source-jar-must-unfreeze-utxos'
+                const animate = utxoSelectionDialog.dialogProps.open === false && errorSolvedByUtxoSelection
+                return (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={animate ? 'animate-shake' : undefined}
+                    disabled={utxoSelectionDialog.utxoSelectorDisabled}
+                    onClick={onOpenUtxoSelector}
+                  >
+                    <ListFilterIcon className={animate ? 'motion-safe:animate-bounce' : undefined} />
+                    {t('show_utxos.text_select_utxos_tooltip')}
+                  </Button>
+                )
+              }}
             />
           </CardContent>
         </Card>

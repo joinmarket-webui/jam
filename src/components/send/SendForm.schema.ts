@@ -64,11 +64,28 @@ export const createSendFormSchema = (
       .object({
         source: yup
           .object({
-            fromJar: sourceJarField(
-              t('send.feedback_invalid_source_jar'),
-              (jarIndex) =>
-                (jars.find((it) => it.jarIndex === jarIndex)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
-            ),
+            fromJar: sourceJarField(t('send.feedback_invalid_source_jar'), (jarIndex) =>
+              jars.some((it) => it.jarIndex === jarIndex),
+            )
+              .test(
+                'valid-source-jar-must-unfreeze-utxos-test',
+                t('send.feedback_invalid_source_jar_must_unfreeze_utxos'),
+                (jarIndex) => {
+                  const jar = jars.find((it) => it.jarIndex === jarIndex)
+                  if (!jar) return true
+                  if (jar.balanceSummary.calculatedAvailableBalanceInSats > 0) return true
+                  return jar.balanceSummary.calculatedAvailableFrozenBalanceInSats <= 0
+                },
+              )
+              .test(
+                'valid-source-jar-has-funds-test',
+                t('send.feedback_invalid_source_jar_no_available_utxos'),
+                (jarIndex) => {
+                  const jar = jars.find((it) => it.jarIndex === jarIndex)
+                  if (!jar) return true
+                  return jar.balanceSummary.calculatedAvailableBalanceInSats > 0
+                },
+              ),
           })
           .required(),
         destination: yup

@@ -5,7 +5,7 @@ import { getAddressInfo, Network } from 'bitcoin-address-validation'
 import type { AddressInfo } from 'bitcoin-address-validation'
 import { AlertTriangleIcon, BrushCleaningIcon, MilkIcon, ScanQrCodeIcon, XIcon } from 'lucide-react'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
-import type { Resolver, SubmitHandler } from 'react-hook-form'
+import type { FieldErrors, Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import QrScannerDialog from '@/components/ui/QrScannerDialog'
@@ -107,7 +107,7 @@ interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
   onSourceJarChange?: (jarIndex: JarIndex | undefined) => void
-  sourceJarLabelButton?: React.ReactElement
+  sourceJarLabelButton?: (errors?: FieldErrors<{ fromJar: number }>) => React.ReactElement
   minNumberOfCollaborators?: number
   feeConfigValues: JamFeeConfigValues
   walletFileName: WalletFileName
@@ -196,6 +196,15 @@ export function SendForm({
   useEffect(() => {
     onSourceJarChange?.(sourceJarIndex)
   }, [onSourceJarChange, sourceJarIndex])
+
+  useEffect(() => {
+    if (formState.dirtyFields.source?.fromJar) {
+      console.debug(
+        'Validating `source.fromJar` as wallet balance summary changed (e.g. frozen/unfrozen utxos, new transaction, etc.)',
+      )
+      void trigger('source.fromJar')
+    }
+  }, [walletBalanceSummary, trigger, formState.dirtyFields.source?.fromJar])
 
   const destinationJar = useMemo(() => {
     if (destinationJarIndex === undefined) return
@@ -294,40 +303,50 @@ export function SendForm({
       >
         <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
           <div className="space-y-2">
-            <Field className="space-y-4" data-invalid={errors.source !== undefined}>
+            <Field className="space-y-4" data-invalid={errors.source?.fromJar !== undefined}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
-                {sourceJarLabelButton && <>{sourceJarLabelButton}</>}
+                {sourceJarLabelButton?.(errors.source?.fromJar)}
               </div>
               <div className="flex flex-1 flex-row flex-wrap items-center justify-center gap-8">
-                {jars.map((jar, index) => (
-                  <SelectableJar
-                    key={index}
-                    name={jar.name}
-                    color={jar.color}
-                    totalBalance={jar.balanceSummary.calculatedTotalBalanceInSats}
-                    availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
-                    frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
-                    totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
-                    isSelected={sourceJarIndex === jar.jarIndex}
-                    onClick={() => {
-                      setValue('source.fromJar', jar.jarIndex, { shouldValidate: true })
+                {jars.map((jar, index) => {
+                  const noFunds =
+                    jar.balanceSummary.calculatedAvailableBalanceInSats <= 0 &&
+                    jar.balanceSummary.calculatedAvailableFrozenBalanceInSats <= 0
 
-                      if (isSweep === true) {
-                        setValue('amount.isSweep', false, { shouldValidate: true })
-                        setValue('amount.sweepAmount', undefined, { shouldValidate: true })
-                        setValue('amount.amount', undefined, { shouldValidate: true })
-                      }
-                      if (destinationJarIndex === jar.jarIndex) {
-                        setValue('destination.address', '', { shouldValidate: true })
-                        setValue('destination.fromJar', undefined, { shouldValidate: true })
-                      } else if (destinationAddress !== undefined) {
-                        void trigger('destination.address')
-                      }
-                    }}
-                    disabled={disabled || jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
-                  />
-                ))}
+                  return (
+                    <SelectableJar
+                      key={index}
+                      name={jar.name}
+                      color={jar.color}
+                      totalBalance={jar.balanceSummary.calculatedTotalBalanceInSats}
+                      availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
+                      frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
+                      totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+                      isSelected={sourceJarIndex === jar.jarIndex}
+                      onClick={() => {
+                        setValue('source.fromJar', jar.jarIndex, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+
+                        if (isSweep === true) {
+                          setValue('amount.isSweep', false, { shouldValidate: true })
+                          setValue('amount.sweepAmount', undefined, { shouldValidate: true })
+                          setValue('amount.amount', undefined, { shouldValidate: true })
+                        }
+                        if (destinationJarIndex === jar.jarIndex) {
+                          setValue('destination.address', '', { shouldValidate: true })
+                          setValue('destination.fromJar', undefined, { shouldValidate: true })
+                        } else if (destinationAddress !== undefined) {
+                          void trigger('destination.address')
+                        }
+                      }}
+                      disabled={disabled || noFunds}
+                    />
+                  )
+                })}
               </div>
               {errors.source?.fromJar?.message ? <FieldError>{errors.source?.fromJar.message}</FieldError> : null}
             </Field>
