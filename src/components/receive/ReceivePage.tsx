@@ -67,17 +67,18 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     mutationKey: ['receive', ...getaddressQueryKey(getAddressOptions)],
     mutationFn: withMutationDelay(
       async () => {
+        const sourceJarIndex = Number.parseInt(getAddressOptions.path.mixdepth, 10)
         const { data } = await getaddress({
           ...getAddressOptions,
           throwOnError: true,
         })
         return {
           address: data.address,
-          sourceJarIndex: Number.parseInt(getAddressOptions.path.mixdepth, 10),
+          sourceJarIndex,
         }
       },
       {
-        delayAfter: 21,
+        throttle: 210,
       },
     ),
     retry: false,
