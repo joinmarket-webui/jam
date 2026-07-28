@@ -190,6 +190,7 @@ describe('ReceivePage', () => {
 
     expect(screen.getByRole('button', { name: 'receive.button_reveal_address' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'receive.button_new_address' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
     expect(mocks.getAddress).not.toHaveBeenCalled()
   })
 
