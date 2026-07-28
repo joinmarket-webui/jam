@@ -53,6 +53,10 @@ vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
   ),
 }))
 
+vi.mock('./wallet/TxHistoryContent', () => ({
+  TxHistoryContent: () => <div data-testid="TxHistoryContent" />,
+}))
+
 vi.mock('./ui/jam/Balance', () => ({
   Balance: ({ valueString, onClick }: { valueString: string; onClick?: () => void }) => (
     <span onClick={onClick}>{valueString}</span>

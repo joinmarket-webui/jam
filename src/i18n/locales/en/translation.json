@@ -887,5 +887,26 @@
     "subtitle_one": "The selected UTXO is eligible for inclusion in the transaction.",
     "subtitle_other": "The selected UTXOs are eligible for inclusion in the transaction.",
     "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
+  },
+  "tx_history": {
+    "section_title": "Recent Activity",
+    "overlay_title": "Transaction History",
+    "button_view_all": "View All",
+    "button_load_more": "Load More",
+    "empty_history": "No transactions found.",
+    "error_loading": "Failed to load transaction history.",
+    "copy_txid_success": "Transaction ID copied.",
+    "copy_txid_error": "Failed to copy transaction ID.",
+    "column_date": "Date",
+    "column_role": "Type",
+    "column_amount": "Amount",
+    "column_net_fee": "Net Fee",
+    "column_confirmations": "Confs.",
+    "column_txid": "Txid",
+    "role_maker": "Maker",
+    "role_taker": "CoinJoin",
+    "role_send": "Send",
+    "role_deposit": "Deposit",
+    "role_unknown": "Unknown"
   }
 }

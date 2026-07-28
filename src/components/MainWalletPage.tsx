@@ -19,6 +19,8 @@ import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import { Balance } from './ui/jam/Balance'
 import { Spinner } from './ui/spinner'
+import { TxHistoryContent } from './wallet/TxHistoryContent'
+import { TxHistoryOverlay } from './wallet/TxHistoryOverlay'
 import { WalletJarsDetailsOverlay } from './wallet/WalletJarsDetailsOverlay'
 
 interface MainWalletPageProps {
@@ -30,6 +32,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const navigate = useNavigate()
   const [selectedJar, setSelectedJar] = useState<JarObject>()
   const [isWalletJarsDetailsOpen, setIsWalletJarsDetailsOpen] = useState(false)
+  const [isTxHistoryOpen, setIsTxHistoryOpen] = useState(false)
 
   const { toggleDisplayMode } = useJamDisplayContext()
   const { isLoading, isFetching, error, refetch: refetchWalletData } = useJamWalletInfoContext()
@@ -55,6 +58,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
         walletFileName={walletFileName}
         selectedJarIndex={selectedJar?.jarIndex}
       />
+      <TxHistoryOverlay open={isTxHistoryOpen} onOpenChange={setIsTxHistoryOpen} walletFileName={walletFileName} />
       <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
           <p className="text-muted-foreground hover:text-foreground text-xl select-all" title={walletName}>
@@ -152,6 +156,13 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             {t('global.refresh')}
           </Button>
         </div>
+        <TxHistoryContent
+          walletFileName={walletFileName}
+          compact={true}
+          initialLimit={5}
+          onViewAll={() => setIsTxHistoryOpen(true)}
+          className="w-full max-w-6xl"
+        />
       </div>
     </>
   )
