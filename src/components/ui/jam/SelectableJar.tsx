@@ -24,7 +24,7 @@ export const SelectableJar = ({
   return (
     <button
       type="button"
-      className={cn('flex flex-col items-center gap-4', {
+      className={cn('flex flex-col items-center gap-1.5', {
         'cursor-pointer': !disabled,
         'cursor-not-allowed': disabled,
       })}

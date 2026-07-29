@@ -45,7 +45,7 @@ describe('Jar', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByText('balance:' + DUMMY_JAR.balanceSummary.calculatedFrozenOrLockedBalanceInSats).parentNode,
-    ).not.toHaveClass('hidden')
+    ).not.toHaveClass('invisible')
   })
   it('does not render zero frozen balance', () => {
     const frozenBalance: AmountSats = 0
@@ -65,6 +65,6 @@ describe('Jar', () => {
     expect(screen.getByText(DUMMY_JAR.name)).toBeInTheDocument()
     expect(screen.getByText('balance:' + DUMMY_JAR.balanceSummary.calculatedAvailableBalanceInSats)).toBeInTheDocument()
     expect(screen.getByText('balance:' + frozenBalance)).toBeInTheDocument()
-    expect(screen.getByText('balance:' + frozenBalance).parentNode).toHaveClass('hidden')
+    expect(screen.getByText('balance:' + frozenBalance).parentNode).toHaveClass('invisible')
   })
 })
