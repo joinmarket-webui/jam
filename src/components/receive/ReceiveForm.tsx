@@ -91,7 +91,7 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
     >
       <Field className="space-y-4" data-invalid={errors.source !== undefined}>
         <FieldLabel>{t('receive.label_source_jar')}</FieldLabel>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="flex flex-1 flex-row flex-wrap items-start justify-around gap-8">
           {jars.map((jar, index) => (
             <SelectableJar
               key={index}
