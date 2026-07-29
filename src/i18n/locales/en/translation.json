@@ -335,7 +335,7 @@
       "text_info_title": "Keep in mind",
       "text_info_message": "Account-level extended public keys can be imported into watch-only wallets for monitoring. They reveal all addresses in the derivation path. Share them with caution.",
       "button_copy_title": "Copy Extended Public Key for {{account}}",
-      "button_reveal_xpub_qrcode": "Reveal xpub QR-Code"
+      "button_reveal_xpub_qrcode": "Reveal QR-Code"
     },
     "documentation": "Documentation",
     "github": "GitHub",

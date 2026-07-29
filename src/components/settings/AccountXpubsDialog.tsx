@@ -26,6 +26,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
 import type { JarIndex, Milliseconds, MnemonicPhrase, WithRequiredProperty } from '@/types/global'
+import { JarBadge } from '../earn/fidelity-bond/FidelityBondDialogParts'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
@@ -173,9 +174,9 @@ export const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) =>
           <AccordionItem key={index} value={String(account.accountIndex)}>
             <AccordionTrigger className="group/xpub-accordion-trigger flex-wrap px-4 no-underline!">
               <span className="min-w-0 flex-1 flex-col break-words group-hover/xpub-accordion-trigger:underline">
-                {account.accountName}
+                {accountLabel}
               </span>
-              <span className="text-muted-foreground shrink-0 font-mono">{accountLabel}</span>
+              <JarBadge jarIndex={account.accountIndex} name={account.accountName} />
             </AccordionTrigger>
             <AccordionContent className="flex flex-col gap-1 p-4 pt-2">
               <Label className="text-muted-foreground text-sm">
