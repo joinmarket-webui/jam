@@ -76,6 +76,7 @@ export const Selected: Story = {
     frozenOrLockedBalance: 0,
     totalWalletBalance: 500_000,
     isSelected: true,
+    onSelect: () => alert('Selected'),
     onClick: () => alert('Selected jar clicked'),
   },
   parameters: {
@@ -97,6 +98,7 @@ export const Unselected: Story = {
     frozenOrLockedBalance: 0,
     totalWalletBalance: 500_000,
     isSelected: false,
+    onSelect: () => alert('Selected'),
     onClick: () => alert('Unselected jar clicked'),
   },
   parameters: {
@@ -118,6 +120,7 @@ export const EmptyJar: Story = {
     frozenOrLockedBalance: 0,
     totalWalletBalance: 500_000,
     isSelected: false,
+    onSelect: () => alert('Selected'),
     onClick: () => alert('Empty jar clicked'),
   },
   parameters: {
@@ -139,6 +142,7 @@ export const FullJar: Story = {
     frozenOrLockedBalance: 0,
     totalWalletBalance: 500_000,
     isSelected: false,
+    onSelect: () => alert('Selected'),
     onClick: () => alert('Full jar clicked'),
   },
   parameters: {
@@ -161,6 +165,7 @@ export const DisabledJar: Story = {
     totalWalletBalance: 500_000,
     isSelected: false,
     disabled: true,
+    onSelect: () => alert('Selected'),
     onClick: () => alert('Disabled jar clicked'),
   },
   parameters: {
@@ -182,6 +187,7 @@ export const JarGrid: Story = {
     frozenOrLockedBalance: 0,
     totalWalletBalance: 500_000,
     isSelected: true,
+    onSelect: () => alert('Selected'),
     onClick: () => alert('Jar clicked'),
   },
   parameters: {
@@ -216,7 +222,7 @@ export const JarGrid: Story = {
             totalWalletBalance={totalWalletBalance}
             isSelected={jar.isSelected}
             disabled={jar.disabled}
-            onClick={() => alert(`Clicked on ${jar.name}`)}
+            onSelect={() => alert(`Clicked on ${jar.name}`)}
           />
         ))}
       </div>
@@ -235,6 +241,7 @@ export const Interactive: Story = {
     frozenOrLockedBalance: 100_000,
     totalWalletBalance: 500_000,
     isSelected: false,
+    onSelect: () => alert('Selected'),
     onClick: () => alert('Interactive jar clicked'),
   },
   parameters: {

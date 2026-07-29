@@ -610,8 +610,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               }
               debug={isDeveloperMode}
               onSourceJarChange={setSourceJarIndex}
+              onSourceJarClicked={onOpenUtxoSelector}
               sourceJarLabelButton={(errors) => {
-                const errorSolvedByUtxoSelection = errors?.fromJar?.type === 'valid-source-jar-must-unfreeze-utxos'
+                const errorSolvedByUtxoSelection = errors?.fromJar?.type === 'valid-source-jar-must-unfreeze-utxos-test'
                 const animate = utxoSelectionDialog.dialogProps.open === false && errorSolvedByUtxoSelection
                 return (
                   <Button

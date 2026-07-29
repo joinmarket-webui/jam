@@ -102,7 +102,7 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
               frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
               totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
               isSelected={values.source?.fromJar === jar.jarIndex}
-              onClick={() => {
+              onSelect={() => {
                 setValue('source.fromJar', jar.jarIndex, { shouldValidate: true })
               }}
               disabled={disabled || isSubmitting}

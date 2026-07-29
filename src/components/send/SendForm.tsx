@@ -107,6 +107,7 @@ interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
   onSourceJarChange?: (jarIndex: JarIndex | undefined) => void
+  onSourceJarClicked?: (jarIndex: JarIndex | undefined) => void
   sourceJarLabelButton?: (errors?: FieldErrors<{ fromJar: number }>) => React.ReactElement
   minNumberOfCollaborators?: number
   feeConfigValues: JamFeeConfigValues
@@ -122,6 +123,7 @@ export function SendForm({
   className,
   onSubmit,
   onSourceJarChange,
+  onSourceJarClicked,
   sourceJarLabelButton,
   disabled,
   feeConfigValues,
@@ -306,13 +308,15 @@ export function SendForm({
             <Field className="space-y-4" data-invalid={errors.source?.fromJar !== undefined}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <FieldLabel>{t('send.label_source_jar')}</FieldLabel>
-                {sourceJarLabelButton?.(errors.source?.fromJar)}
+                {sourceJarLabelButton?.(errors.source)}
               </div>
               <div className="flex flex-1 flex-row flex-wrap items-start justify-around gap-8">
                 {jars.map((jar, index) => {
                   const noFunds =
                     jar.balanceSummary.calculatedAvailableBalanceInSats <= 0 &&
                     jar.balanceSummary.calculatedAvailableFrozenBalanceInSats <= 0
+
+                  const isSelected = sourceJarIndex === jar.jarIndex
 
                   return (
                     <SelectableJar
@@ -323,8 +327,13 @@ export function SendForm({
                       availableBalance={jar.balanceSummary.calculatedAvailableBalanceInSats}
                       frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
                       totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
-                      isSelected={sourceJarIndex === jar.jarIndex}
+                      isSelected={isSelected}
                       onClick={() => {
+                        if (isSelected) {
+                          onSourceJarClicked?.(sourceJarIndex)
+                        }
+                      }}
+                      onSelect={() => {
                         setValue('source.fromJar', jar.jarIndex, {
                           shouldValidate: true,
                           shouldDirty: true,
