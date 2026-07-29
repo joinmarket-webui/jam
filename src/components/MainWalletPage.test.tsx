@@ -74,6 +74,7 @@ const makeJar = (jarIndex: number, name: string): Jar =>
       calculatedTotalBalanceInSats: 100,
       calculatedAvailableBalanceInSats: 100,
       calculatedFrozenOrLockedBalanceInSats: 0,
+      calculatedAvailableFrozenBalanceInSats: 0,
     },
   }) as unknown as Jar
 

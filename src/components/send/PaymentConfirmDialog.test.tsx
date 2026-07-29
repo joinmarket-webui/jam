@@ -50,6 +50,7 @@ const sourceJar: Jar = {
     calculatedAvailableBalanceInSats: 50_000,
     calculatedTotalBalanceInSats: 50_000,
     calculatedConfirmedAvailableBalanceInSats: 50_000,
+    calculatedAvailableFrozenBalanceInSats: 0,
     calculatedFrozenOrLockedBalanceInSats: 0,
   },
   color: '#e2b86a',
