@@ -26,16 +26,19 @@ export function useFidelityBondMutations({
 
   const freezeUtxo = useMutation({
     ...freezeMutation({ client }),
+    retry: false,
     onError: (error) => setErrorWithReason(error, t('global.errors.error_freezing_utxos')),
   })
 
   const unfreezeUtxo = useMutation({
     ...freezeMutation({ client }),
+    retry: false,
     onError: (error) => setErrorWithReason(error, t(unfreezeErrorKey)),
   })
 
   const directSend = useMutation({
     ...directsendMutation({ client }),
+    retry: false,
     onError: (error) => setErrorWithReason(error, t(sendErrorKey)),
   })
 
