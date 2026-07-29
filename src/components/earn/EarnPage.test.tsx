@@ -328,21 +328,107 @@ describe('EarnPage', () => {
     expect(screen.getByText('earn.alert_waiting_start_title')).toBeInTheDocument()
   })
 
-  it('opens fidelity bond actions', async () => {
-    const user = userEvent.setup()
+  it('display debug output in developer mode', () => {
     mocks.developerMode = true
     mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('fidelity-bond:bond-tx:0')).toBeInTheDocument()
     expect(screen.getByText(/walletInfo\.fidelityBondSummary\.fbOutputs/u)).toBeInTheDocument()
+  })
 
-    await user.click(screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_spend/u }))
+  it('enables creating a fidelity bond', async () => {
+    const user = userEvent.setup()
+
+    expect(mocks.walletInfo.fidelityBondSummary.fbOutputs, 'sanity check').toHaveLength(0)
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
+
+    const createFidelityBondButton = screen.getByRole('button', {
+      name: 'earn.fidelity_bond.create_form.button_create',
+    })
+    expect(createFidelityBondButton).toBeEnabled()
+
+    await user.click(createFidelityBondButton)
+    expect(screen.getByText('create-bond-dialog:true')).toBeInTheDocument()
+  })
+
+  it('disables creating a fidelity bond while rescanning', async () => {
+    const user = userEvent.setup()
+    setSession({
+      rescanning: true,
+    })
+
+    expect(mocks.walletInfo.fidelityBondSummary.fbOutputs, 'sanity check').toHaveLength(0)
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
+
+    const createFidelityBondButton = screen.getByRole('button', {
+      name: 'earn.fidelity_bond.create_form.button_create',
+    })
+    expect(createFidelityBondButton).toBeDisabled()
+
+    await user.click(createFidelityBondButton)
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
+  })
+
+  it('enables fidelity bond actions on existing fidelity bond', async () => {
+    const user = userEvent.setup()
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('fidelity-bond:bond-tx:0')).toBeInTheDocument()
+
+    expect(screen.queryByText('move-to-jar-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('move-to-jar-dialog:true')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:true')).not.toBeInTheDocument()
+
+    const moveToJarButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_spend/u })
+    expect(moveToJarButton).toBeEnabled()
+
+    await user.click(moveToJarButton)
     expect(screen.getByText('move-to-jar-dialog:true')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_renew/u }))
+    const renewButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_renew/u })
+    expect(renewButton).toBeEnabled()
+
+    await user.click(renewButton)
     expect(screen.getByText('renew-bond-dialog:true')).toBeInTheDocument()
+  })
+
+  it('disables fidelity bond actions on existing fidelity bond when rescanning is active', async () => {
+    const user = userEvent.setup()
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
+    setSession({
+      rescanning: true,
+    })
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('move-to-jar-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('move-to-jar-dialog:true')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:true')).not.toBeInTheDocument()
+
+    const moveToJarButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_spend/u })
+    expect(moveToJarButton).toBeDisabled()
+
+    await user.click(moveToJarButton)
+    expect(screen.queryByText('move-to-jar-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('move-to-jar-dialog:true')).not.toBeInTheDocument()
+
+    const renewButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_renew/u })
+    expect(renewButton).toBeDisabled()
+
+    await user.click(renewButton)
+    expect(screen.queryByText('renew-bond-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:true')).not.toBeInTheDocument()
   })
 
   it('shows the coinjoin-in-progress alert', () => {
