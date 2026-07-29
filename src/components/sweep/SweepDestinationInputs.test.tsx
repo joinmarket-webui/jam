@@ -1,17 +1,33 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { FieldArrayWithId, UseFormReturn } from 'react-hook-form'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SweepDestinationInputs } from './SweepDestinationInputs'
 import type { SweepFormValues } from './SweepFormSchema'
 
 type SweepForm = UseFormReturn<SweepFormValues, unknown, SweepFormValues>
 type SweepFields = Array<FieldArrayWithId<SweepFormValues, 'destinations', 'id'>>
 
+const h = vi.hoisted(() => {
+  const DEFAULT_NEW_DUMMY_ADDRESS_0 = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
+  return {
+    DEFAULT_NEW_DUMMY_ADDRESS_0,
+    toastSuccess: vi.fn<(message: string) => void>(),
+  }
+})
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => (options ? `${key} ${JSON.stringify(options)}` : key),
   }),
+}))
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: (message: string) => {
+      h.toastSuccess(message)
+    },
+  },
 }))
 
 describe('SweepDestinationInputs', () => {
@@ -29,6 +45,11 @@ describe('SweepDestinationInputs', () => {
     { id: '1', address: '' },
     { id: '2', address: '' },
   ] as unknown as SweepFields
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    h.toastSuccess = vi.fn<(message: string) => void>()
+  })
 
   it('renders input fields correctly', async () => {
     render(
@@ -118,6 +139,7 @@ describe('SweepDestinationInputs', () => {
     )
 
     const inputs = screen.getAllByRole('textbox')
+    expect(inputs).toHaveLength(fields.length)
     await act(async () => {
       await userEvent.click(inputs[0])
       await userEvent.paste('anything')
@@ -128,7 +150,19 @@ describe('SweepDestinationInputs', () => {
       await userEvent.click(inputs[0])
       await userEvent.paste('bitcoin:')
     })
+
     expect(defaultFormMock.setValue).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await userEvent.click(inputs[0])
+      await userEvent.paste(h.DEFAULT_NEW_DUMMY_ADDRESS_0)
+    })
+
+    expect(defaultFormMock.setValue).toHaveBeenCalledWith(`destinations.0.address`, h.DEFAULT_NEW_DUMMY_ADDRESS_0, {
+      shouldValidate: true,
+    })
+
+    expect(h.toastSuccess).not.toHaveBeenCalled()
 
     await act(async () => {
       await userEvent.click(inputs[1])
@@ -136,11 +170,13 @@ describe('SweepDestinationInputs', () => {
         'bitcoin:bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk?amount=0.0021&label=order%20123&message=regtest',
       )
     })
+
     expect(defaultFormMock.setValue).toHaveBeenCalledWith(
       `destinations.1.address`,
       'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk',
       { shouldValidate: true },
     )
+    expect(h.toastSuccess).toHaveBeenCalledWith('send.qr_scan_bip21_applied')
   })
 
   it('adds additional destination inputs', () => {
