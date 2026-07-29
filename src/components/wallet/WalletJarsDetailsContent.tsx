@@ -6,8 +6,8 @@ import type { TFunction } from 'i18next'
 import { AlertTriangleIcon, RefreshCwIcon, ThermometerSnowflakeIcon, ThermometerSunIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { Balance } from '@/components/ui/jam/Balance'
+import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAccountSummary,
   useAddressSummary,
