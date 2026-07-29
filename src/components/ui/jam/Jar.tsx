@@ -1,7 +1,7 @@
+import { Balance } from '@/components/ui/jam/Balance'
 import type { JarColor } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { Balance } from './Balance'
 import { JarIcon } from './JarIcon'
 
 interface JarProps {

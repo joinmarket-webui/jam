@@ -53,7 +53,7 @@ vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
   ),
 }))
 
-vi.mock('./ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString, onClick }: { valueString: string; onClick?: () => void }) => (
     <span onClick={onClick}>{valueString}</span>
   ),

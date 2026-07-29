@@ -2,12 +2,12 @@ import { useMemo, type PropsWithChildren } from 'react'
 import { ClockIcon, CoinsIcon, CopyIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Balance } from '@/components/ui/jam/Balance'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { time } from '@/lib/utils'
 import { Address } from '../ui/jam/Address'
-import { Balance } from '../ui/jam/Balance'
 
 interface FidelityBondCardProps {
   value: FidelityBondUtxo

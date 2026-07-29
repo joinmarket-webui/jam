@@ -27,7 +27,7 @@ vi.mock('../ui/jam/Address', () => ({
   Address: ({ value }: { value: string }) => <span>address:{value}</span>,
 }))
 
-vi.mock('../ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString: string }) => <span>balance:{valueString}</span>,
 }))
 

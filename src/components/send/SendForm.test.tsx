@@ -55,7 +55,7 @@ vi.mock('../ui/jam/Address', () => ({
   Address: () => <div data-testid="address" />,
 }))
 
-vi.mock('../ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString?: string }) => <div data-testid="balance">{valueString}</div>,
 }))
 

@@ -7,6 +7,7 @@ import { AlertTriangleIcon, RefreshCwIcon, ThermometerSnowflakeIcon, Thermometer
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { Balance } from '@/components/ui/jam/Balance'
 import {
   useAccountSummary,
   useAddressSummary,
@@ -26,7 +27,6 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Input } from '../ui/input'
-import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountDetailsTabContent } from './AccountDetailsTabContent'
