@@ -71,7 +71,7 @@
     ]
   },
   "dependencies": {
-    "@hookform/resolvers": "5.4.0",
+    "@hookform/resolvers": "5.5.7",
     "@joinmarket-webui/joinmarket-ng-api-ts": "1.0.0",
     "@noble/hashes": "2.2.0",
     "@radix-ui/react-accordion": "1.2.20",
