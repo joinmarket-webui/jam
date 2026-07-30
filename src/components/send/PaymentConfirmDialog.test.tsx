@@ -27,7 +27,7 @@ vi.mock('../ui/jam/Address', () => ({
   Address: ({ value }: { value: string }) => <span>address:{value}</span>,
 }))
 
-vi.mock('../ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString: string }) => <span>balance:{valueString}</span>,
 }))
 
@@ -50,6 +50,7 @@ const sourceJar: Jar = {
     calculatedAvailableBalanceInSats: 50_000,
     calculatedTotalBalanceInSats: 50_000,
     calculatedConfirmedAvailableBalanceInSats: 50_000,
+    calculatedAvailableFrozenBalanceInSats: 0,
     calculatedFrozenOrLockedBalanceInSats: 0,
   },
   color: '#e2b86a',

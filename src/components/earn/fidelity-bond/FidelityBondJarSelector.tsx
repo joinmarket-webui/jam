@@ -24,7 +24,7 @@ export function FidelityBondJarSelector({ selectedJarIndex, onSelect, isJarDisab
           frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
           totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
           isSelected={selectedJarIndex === jar.jarIndex}
-          onClick={() => onSelect(jar.jarIndex)}
+          onSelect={() => onSelect(jar.jarIndex)}
           disabled={isJarDisabled(jar)}
         />
       ))}

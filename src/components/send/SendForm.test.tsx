@@ -55,13 +55,13 @@ vi.mock('../ui/jam/Address', () => ({
   Address: () => <div data-testid="address" />,
 }))
 
-vi.mock('../ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString?: string }) => <div data-testid="balance">{valueString}</div>,
 }))
 
 vi.mock('../ui/jam/SelectableJar', () => ({
-  SelectableJar: ({ name, onClick, disabled }: { name?: string; onClick?: () => void; disabled?: boolean }) => (
-    <button onClick={onClick} disabled={disabled}>
+  SelectableJar: ({ name, onSelect, disabled }: { name?: string; onSelect?: () => void; disabled?: boolean }) => (
+    <button onClick={onSelect} disabled={disabled}>
       {name}
     </button>
   ),

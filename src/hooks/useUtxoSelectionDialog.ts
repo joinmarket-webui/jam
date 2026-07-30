@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { freezeMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
@@ -116,7 +116,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     },
   })
 
-  const onOpenUtxoSelector = () => {
+  const onOpenUtxoSelector = useCallback(() => {
     if (!sourceJar) return
     toast.dismiss(SEND_AUTO_SELECTION_TOAST_ID)
     reset({
@@ -124,7 +124,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
       rowSelection: initialRowSelection,
     })
     setOpen(true)
-  }
+  }, [sourceJar, reset, initialRowSelection])
 
   const onSubmit = handleSubmit(async ({ rowSelection: submittedRowSelection }) => {
     if (!sourceJar) return
@@ -239,7 +239,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
         shouldValidate: true,
       })
     },
-    onSubmit: async () => onSubmit(),
+    onSubmit,
   }
 
   return {

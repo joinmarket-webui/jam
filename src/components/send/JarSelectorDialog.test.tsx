@@ -11,16 +11,16 @@ vi.mock('react-i18next', () => ({
 vi.mock('../ui/jam/SelectableJar', () => ({
   SelectableJar: ({
     name,
-    onClick,
+    onSelect,
     disabled,
     isSelected,
   }: {
     name?: string
-    onClick?: () => void
+    onSelect?: () => void
     disabled?: boolean
     isSelected?: boolean
   }) => (
-    <button type="button" onClick={onClick} disabled={disabled} data-selected={isSelected}>
+    <button type="button" onClick={onSelect} disabled={disabled} data-selected={isSelected}>
       {name}
     </button>
   ),

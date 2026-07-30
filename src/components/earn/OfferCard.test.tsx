@@ -18,7 +18,7 @@ vi.mock('@/lib/utils', () => ({
   isRelativeOffer: (type: string) => type === 'sw0relo',
 }))
 
-vi.mock('../ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString?: string }) => <span data-testid="balance">{valueString}</span>,
 }))
 

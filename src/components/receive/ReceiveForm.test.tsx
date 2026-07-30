@@ -19,8 +19,8 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 }))
 
 vi.mock('@/components/ui/jam/SelectableJar', () => ({
-  SelectableJar: ({ name, isSelected, onClick }: { name: string; isSelected: boolean; onClick: () => void }) => (
-    <button type="button" aria-pressed={isSelected} onClick={onClick}>
+  SelectableJar: ({ name, isSelected, onSelect }: { name: string; isSelected: boolean; onSelect: () => void }) => (
+    <button type="button" aria-pressed={isSelected} onClick={onSelect}>
       {name}
     </button>
   ),

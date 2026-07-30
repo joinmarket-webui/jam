@@ -209,11 +209,11 @@ vi.mock('./SendForm', () => ({
     disabled?: boolean
     onSourceJarChange?: (jarIndex: number | undefined) => void
     onSubmit: (values: SendFormValues) => void
-    sourceJarLabelButton?: React.ReactElement
+    sourceJarLabelButton?: () => React.ReactElement
   }) => (
     <div>
       send-form:{String(disabled)}
-      <div>{sourceJarLabelButton}</div>
+      <div>{sourceJarLabelButton?.()}</div>
       <button
         onClick={() => {
           onSourceJarChange?.(0)
@@ -241,6 +241,7 @@ vi.mock('./UtxoSelectionDialog', () => ({
 const balanceSummary = {
   calculatedAvailableBalanceInSats: 20_000,
   calculatedConfirmedAvailableBalanceInSats: 20_000,
+  calculatedAvailableFrozenBalanceInSats: 0,
   calculatedFrozenOrLockedBalanceInSats: 0,
   calculatedTotalBalanceInSats: 20_000,
 }

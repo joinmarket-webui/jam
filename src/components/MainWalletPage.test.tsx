@@ -53,7 +53,7 @@ vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
   ),
 }))
 
-vi.mock('./ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString, onClick }: { valueString: string; onClick?: () => void }) => (
     <span onClick={onClick}>{valueString}</span>
   ),
@@ -74,6 +74,7 @@ const makeJar = (jarIndex: number, name: string): Jar =>
       calculatedTotalBalanceInSats: 100,
       calculatedAvailableBalanceInSats: 100,
       calculatedFrozenOrLockedBalanceInSats: 0,
+      calculatedAvailableFrozenBalanceInSats: 0,
     },
   }) as unknown as Jar
 
