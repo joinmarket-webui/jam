@@ -3,7 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import type { TFunction } from 'i18next'
 import { HandshakeIcon, PercentIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
-import type { Resolver, SubmitHandler } from 'react-hook-form'
+import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
@@ -179,8 +179,7 @@ export function EarnForm({
   } = useForm<EarnFormValues, unknown, EarnFormValues>({
     mode: 'onSubmit',
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
-    // force type (see https://github.com/react-hook-form/resolvers/issues/807)
-    resolver: yupResolver(schema) as Resolver<EarnFormValues, unknown, EarnFormValues>,
+    resolver: yupResolver(schema),
   })
 
   const values = useWatch({ control })
