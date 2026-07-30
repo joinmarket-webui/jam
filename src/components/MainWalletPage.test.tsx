@@ -125,10 +125,10 @@ describe('MainWalletPage', () => {
     expect(refetch).toHaveBeenCalled()
   })
 
-  it('shows a jars spinner while fetching and refreshes on click', () => {
+  it('keeps jars visible and clickable while fetching in the background', () => {
     walletInfo = { ...walletInfo, isFetching: true }
     render(<MainWalletPage walletFileName={walletFileName} />)
-    expect(screen.getByTestId('spinner')).toBeInTheDocument()
+    expect(screen.getByText(jars[0].name)).toBeInTheDocument()
     fireEvent.click(screen.getByText('global.refresh'))
     expect(refetch).toHaveBeenCalled()
   })
