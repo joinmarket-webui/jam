@@ -2,7 +2,8 @@
 import { Suspense, useEffect } from 'react'
 import type { Preview } from '@storybook/react-vite'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
-import { initialize, mswLoader } from 'msw-storybook-addon'
+import { mswLoader } from 'msw-storybook-addon/csf3'
+import { setupWorker } from 'msw/browser'
 import { ThemeProvider } from 'next-themes'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter } from 'react-router-dom'
@@ -16,15 +17,6 @@ import mswHandlers from './msw-handlers'
 
 // needed if you want to use msw on a subpath (e.g. github pages /<repo>)
 const mswServiceWorkerUrl = import.meta.env.STORYBOOK_MSW_SERVICE_WORKER_URL ?? '/mockServiceWorker.js'
-
-// Initialize MSW (https://github.com/mswjs/msw-storybook-addon)
-initialize({
-  onUnhandledRequest: 'bypass',
-  serviceWorker: {
-    url: mswServiceWorkerUrl,
-  },
-  quiet: true,
-})
 
 const locales = [
   { value: 'en', title: 'en' },
@@ -85,12 +77,28 @@ const preview: Preview = {
     viewport: {
       options: { ...MINIMAL_VIEWPORTS, ...INITIAL_VIEWPORTS },
     },
+    // this approach is deprecated as of v3.0.0
+    // but it seems the new approach does not work as expected (404 response for our handlers)
+    // revisit after next update (last checked 2026-07-30)
+    // see: https://github.com/mswjs/msw-storybook-addon/blob/v3.0.0/MIGRATION.md#parametersmsw-is-deprecated-in-favor-of-beforeeach
     msw: {
       handlers: mswHandlers,
     },
   },
   // Provide the MSW addon loader globally
-  loaders: [mswLoader],
+  loaders: [
+    mswLoader(async () => {
+      const worker = setupWorker()
+      await worker.start({
+        onUnhandledRequest: 'bypass',
+        serviceWorker: {
+          url: mswServiceWorkerUrl,
+        },
+        quiet: true,
+      })
+      return worker
+    }),
+  ],
 }
 
 const withTheme = (Story: React.ComponentType, context: GlobalContext) => {
