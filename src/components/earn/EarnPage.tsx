@@ -24,6 +24,7 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
@@ -106,6 +107,8 @@ const NoSpendableBalanceAlert = () => {
   )
 }
 
+const JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED = isDevMode()
+
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
@@ -181,6 +184,19 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const waitingForMakerUpdate = isWaitingMakerStart || isWaitingMakerStop
   const waitingForOfferUpdate = makerRunning && !isCurrentOfferAvailable
+
+  const hasFidelityBond = walletInfo.fidelityBondSummary.fbOutputs.length > 0
+  const isFidelityBondActionsEnabled =
+    jmSession?.rescanning === false &&
+    jmSession.maker_running === false &&
+    jmSession.coinjoin_in_process === false &&
+    !waitingForMakerUpdate &&
+    !waitingForOfferUpdate &&
+    !walletInfo.isFetching
+
+  const isCreateFidelityBondEnabled =
+    isFidelityBondActionsEnabled && (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
+  const showCreateAdditionalFidelityBond = JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED
 
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
@@ -322,7 +338,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       </Card>
 
       {/* Fidelity Bonds */}
-      {walletInfo.fidelityBondSummary.fbOutputs.length === 0 ? (
+      {!hasFidelityBond ? (
         <div
           className={cn('mt-8', {
             hidden: jmSession.maker_running || waitingForMakerUpdate || waitingForOfferUpdate,
@@ -338,7 +354,11 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               <CardAction></CardAction>
             </CardHeader>
             <CardFooter className="gap-2">
-              <Button variant="default" onClick={() => setShowCreateFidelityBondDialog(true)}>
+              <Button
+                variant="default"
+                disabled={!isCreateFidelityBondEnabled}
+                onClick={() => setShowCreateFidelityBondDialog(true)}
+              >
                 {t('earn.fidelity_bond.create_form.button_create')}
               </Button>
             </CardFooter>
@@ -354,14 +374,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           <div className="space-y-4">
             {walletInfo.fidelityBondSummary.fbOutputs.map((it) => {
               const isExpired = !fb.utxo.isLocked(it)
-              const actionsEnabled =
-                isExpired &&
-                !jmSession.rescanning &&
-                !jmSession.maker_running &&
-                !jmSession.coinjoin_in_process &&
-                !waitingForMakerUpdate &&
-                !waitingForOfferUpdate &&
-                !walletInfo.isFetching
+              const actionsEnabled = isExpired && isFidelityBondActionsEnabled
               return (
                 <FidelityBondCard value={it} key={it.utxo}>
                   {isExpired && (
@@ -390,10 +403,14 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               )
             })}
           </div>
-          {/* Existing bonds hide the create button — expose it in developer mode to test multiple bonds */}
-          {isDeveloperMode && (
+
+          {showCreateAdditionalFidelityBond && (
             <div className="mt-2 flex items-center gap-2">
-              <Button variant="outline" onClick={() => setShowCreateFidelityBondDialog(true)}>
+              <Button
+                variant="outline"
+                disabled={!isCreateFidelityBondEnabled}
+                onClick={() => setShowCreateFidelityBondDialog(true)}
+              >
                 <PlusIcon />
                 {t('earn.fidelity_bond.create_form.button_create')}
               </Button>
