@@ -150,7 +150,7 @@
     "jsdom": "29.1.1",
     "lint-staged": "17.2.0",
     "msw": "2.15.0",
-    "msw-storybook-addon": "2.0.7",
+    "msw-storybook-addon": "3.0.0",
     "prettier": "3.9.6",
     "prettier-plugin-tailwindcss": "0.8.1",
     "storybook": "10.5.5",
