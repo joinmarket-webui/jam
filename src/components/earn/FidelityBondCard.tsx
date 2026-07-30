@@ -6,14 +6,15 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
-import { time } from '@/lib/utils'
+import { cn, time } from '@/lib/utils'
 import { Address } from '../ui/jam/Address'
 
 interface FidelityBondCardProps {
   value: FidelityBondUtxo
+  className?: string
 }
 
-export function FidelityBondCard({ value, children }: PropsWithChildren<FidelityBondCardProps>) {
+export function FidelityBondCard({ value, className, children }: PropsWithChildren<FidelityBondCardProps>) {
   const { t, i18n } = useTranslation()
 
   const isExpired = !fb.utxo.isLocked(value)
@@ -31,7 +32,7 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
   }
 
   return (
-    <Card>
+    <Card className={cn('transition-all duration-300 hover:-translate-y-[2px] hover:shadow-md', className)}>
       <CardHeader>
         <CardTitle>
           {isExpired ? (
