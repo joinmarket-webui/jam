@@ -352,6 +352,10 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
 }
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: jmSessionStore.getState().state,
+    updateSessionInfo: vi.fn(),
+  }),
   useJamSessionInfoContext: () => {
     const state = jmSessionStore.getState().state
     return {

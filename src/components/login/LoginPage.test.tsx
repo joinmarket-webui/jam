@@ -61,6 +61,13 @@ vi.mock('sonner', () => ({
   },
 }))
 
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: jmSessionStore.getState().state,
+    updateSessionInfo: vi.fn(),
+  }),
+}))
+
 vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
 }))

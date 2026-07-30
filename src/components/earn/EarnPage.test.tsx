@@ -117,6 +117,13 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
   PageLoading: () => <div>page-loading</div>,
 }))
 
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: jmSessionStore.getState().state,
+    updateSessionInfo: vi.fn(),
+  }),
+}))
+
 vi.mock('@/context/JamWalletInfoContext', () => ({
   useJamWalletInfoContext: () => mocks.walletInfo,
 }))

@@ -49,12 +49,11 @@ import { RootLayout } from './components/layout/RootLayout'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
-import { useJamSessionInfoContext } from './context/JamSessionInfoContext'
+import { useJamSession, useJamSessionInfoContext } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { JmWebsocketContextProvider } from './context/JmWebsocketContextProvider'
 import { getErrorReason } from './lib/errorReason'
-import { jmSessionStore } from './store/jmSessionStore'
 import { jmTxStore, type JmTxInfos } from './store/jmTxStore'
 import type { Milliseconds } from './types/global'
 
@@ -77,13 +76,13 @@ type LockWalletDialogContext = {
   t: TFunction<'translation', undefined>
 }
 
-function App() {
+function AppContent() {
   const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
 
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useJamSession()
 
   const makerRunning = jmSession?.maker_running === true
   const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
@@ -199,16 +198,14 @@ function App() {
           id="protected"
           element={
             <ProtectedRoute authenticated={authenticated}>
-              <JamSessionInfoContextProvider walletFileName={walletFileName!}>
-                <JamWalletInfoContextProvider walletFileName={walletFileName!}>
-                  {walletFileName && (
-                    <>
-                      <WalletInfoAutoReload />
-                    </>
-                  )}
-                  <Outlet />
-                </JamWalletInfoContextProvider>
-              </JamSessionInfoContextProvider>
+              <JamWalletInfoContextProvider walletFileName={walletFileName!}>
+                {walletFileName && (
+                  <>
+                    <WalletInfoAutoReload />
+                  </>
+                )}
+                <Outlet />
+              </JamWalletInfoContextProvider>
             </ProtectedRoute>
           }
         >
@@ -257,27 +254,38 @@ function App() {
       </Route>,
     ),
   )
+
+  return (
+    <>
+      <RefreshApiToken />
+      <RefreshJmSession />
+      {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
+      {lockWalletDialogContext && (
+        <LockWalletConfirmDialog
+          open={lockWalletDialogContext.open}
+          onOpenChange={() => setLockWalletDialogContext(undefined)}
+          onConfirm={() => doOnLockWalletConfirm(lockWalletDialogContext.navigate, lockWalletDialogContext.t)}
+          makerRunning={makerRunning}
+          coinjoinInProgress={coinjoinInProgress}
+        />
+      )}
+      <RouterProvider router={router} />
+      <Toaster closeButton />
+    </>
+  )
+}
+
+function App() {
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
       <JamDisplayContextProvider>
-        <JmWebsocketContextProvider>
-          <QueryClientProvider client={queryClient}>
-            <RefreshApiToken />
-            <RefreshJmSession />
-            {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
-            {lockWalletDialogContext && (
-              <LockWalletConfirmDialog
-                open={lockWalletDialogContext.open}
-                onOpenChange={() => setLockWalletDialogContext(undefined)}
-                onConfirm={() => doOnLockWalletConfirm(lockWalletDialogContext.navigate, lockWalletDialogContext.t)}
-                makerRunning={makerRunning}
-                coinjoinInProgress={coinjoinInProgress}
-              />
-            )}
-            <RouterProvider router={router} />
-            <Toaster closeButton />
-          </QueryClientProvider>
-        </JmWebsocketContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <JamSessionInfoContextProvider>
+            <JmWebsocketContextProvider>
+              <AppContent />
+            </JmWebsocketContextProvider>
+          </JamSessionInfoContextProvider>
+        </QueryClientProvider>
       </JamDisplayContextProvider>
     </ThemeProvider>
   )

@@ -41,17 +41,6 @@ vi.mock('next-themes', () => ({
   }),
 }))
 
-vi.mock('zustand', () => ({
-  useStore: (_store: unknown, selector?: (state: { state: SessionState }) => unknown) => {
-    const state = { state: { block_height: 123 } }
-    return selector ? selector(state) : state
-  },
-}))
-
-vi.mock('@/store/jmSessionStore', () => ({
-  jmSessionStore: 'jm-session-store',
-}))
-
 vi.mock('@/components/layout/AppNavbar', () => ({
   AppNavbar: ({
     onLockWallet,
@@ -136,6 +125,10 @@ vi.mock('@/components/ui/use-sidebar', () => ({
 }))
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: { block_height: 123 } as SessionState,
+    updateSessionInfo: vi.fn(),
+  }),
   useRescanStatus: () => ({
     rescanInfo: undefined,
   }),

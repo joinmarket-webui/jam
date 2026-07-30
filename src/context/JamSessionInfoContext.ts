@@ -1,4 +1,5 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import type { SendFormValues } from '@/components/send/types'
 import type { WalletFileName } from '@/lib/utils'
 import type { Factor } from '@/types/global'
@@ -34,9 +35,11 @@ interface JamSessionInfoContextType {
   takerInfo: TakerInfo
   rescanInfo: RescanInfo
   makerInfo: MakerInfo
+  jmSession?: SessionResponse
   setRescanInfo: Dispatch<SetStateAction<RescanInfo>>
   setCurrentPaymentAttempt: (val: PaymentAttempt) => void
   clearCurrentPaymentAttempt: () => void
+  updateSessionInfo: (val: SessionResponse) => void
 }
 
 export const JamSessionInfoContext = createContext<JamSessionInfoContextType | undefined>(undefined)
@@ -57,4 +60,9 @@ export const useRescanStatus = () => {
 export const useCurrentBlockHeight = () => {
   const { blockHeight } = useJamSessionInfoContext()
   return { currentBlockHeight: blockHeight }
+}
+
+export const useJamSession = () => {
+  const { jmSession, updateSessionInfo } = useJamSessionInfoContext()
+  return { jmSession, updateSessionInfo }
 }

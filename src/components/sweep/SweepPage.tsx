@@ -11,7 +11,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
@@ -27,7 +26,7 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { isDevMode } from '@/constants/debugFeatures'
 import type { TumblerParameters } from '@/constants/jm'
-import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { useJamSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useDetectNetwork, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -35,7 +34,6 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
 import { scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
@@ -63,7 +61,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const { rescanInfo, takerInfo, makerInfo } = useJamSessionInfoContext()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useJamSession()
   const walletInfo = useJamWalletInfoContext()
   const { network } = useDetectNetwork()
   const { enabled: isDeveloperMode } = useDeveloperMode()

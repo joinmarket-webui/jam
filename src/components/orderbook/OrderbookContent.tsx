@@ -4,7 +4,6 @@ import type { RowModel } from '@tanstack/react-table'
 import type { i18n } from 'i18next'
 import { ChevronDownIcon, RefreshCwIcon, PlusIcon, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -23,6 +22,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
+import { useJamSession } from '@/context/JamSessionInfoContext'
 import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
 import { withQueryDelay } from '@/lib/queryClient'
@@ -36,7 +36,6 @@ import {
   time,
 } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
 import { OrderbookChart } from './OrderbookChart'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
@@ -109,7 +108,8 @@ interface OrderbookContentProps {
 export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) => {
   const { t, i18n } = useTranslation()
 
-  const nickname = useStore(jmSessionStore, (state) => state.state?.nickname)
+  const { jmSession } = useJamSession()
+  const nickname = jmSession?.nickname
 
   const [searchInputRaw, setSearchInputRaw] = useState('')
   const [isHighlightMyOffers, setHighlightMyOffers] = useState(false)

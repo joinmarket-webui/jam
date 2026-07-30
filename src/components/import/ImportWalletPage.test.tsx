@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -65,6 +66,24 @@ vi.mock('sonner', () => ({
     loading: mocks.toastLoading,
     success: mocks.toastSuccess,
   },
+}))
+
+type SessionInfoUpdater = (previousState?: SessionResponse) => SessionResponse | undefined
+
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: jmSessionStore.getState().state,
+    updateSessionInfo: (updater: unknown) => {
+      const current = jmSessionStore.getState().state
+      if (typeof updater === 'function') {
+        const updateFn = updater as SessionInfoUpdater
+        const next = updateFn(current)
+        jmSessionStore.setState({ state: next })
+      } else {
+        jmSessionStore.setState({ state: updater as SessionResponse | undefined })
+      }
+    },
+  }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({

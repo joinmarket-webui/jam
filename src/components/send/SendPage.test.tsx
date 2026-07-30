@@ -146,6 +146,10 @@ vi.mock('@/store/jamSettingsStore', () => ({
 }))
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: jmSessionStore.getState().state,
+    updateSessionInfo: vi.fn(),
+  }),
   useJamSessionInfoContext: () => ({
     clearCurrentPaymentAttempt: mocks.clearCurrentPaymentAttempt,
     rescanInfo: { rescanning: false },
