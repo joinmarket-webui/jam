@@ -129,6 +129,10 @@ describe('MainWalletPage', () => {
     walletInfo = { ...walletInfo, isFetching: true }
     render(<MainWalletPage walletFileName={walletFileName} />)
     expect(screen.getByText(jars[0].name)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText(jars[0].name))
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#open')).toHaveTextContent('open')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#selectedJarIndex')).toHaveTextContent(String(jars[0].jarIndex))
     fireEvent.click(screen.getByText('global.refresh'))
     expect(refetch).toHaveBeenCalled()
   })
