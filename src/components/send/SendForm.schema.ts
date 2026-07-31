@@ -21,6 +21,8 @@ export const initialNumberOfCollaborators = (minValue: number): number => {
 export const MIN_SEND_AMOUNT: AmountSats = 292
 export const MAX_SEND_AMOUNT: AmountSats = TOTAL_COIN_SUPPLY
 
+export const ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL = 'valid-source-jar-needs-manual-coin-control-test'
+
 const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   source: undefined,
   destination: undefined,
@@ -68,7 +70,7 @@ export const createSendFormSchema = (
               jars.some((it) => it.jarIndex === jarIndex),
             )
               .test(
-                'valid-source-jar-must-unfreeze-utxos-test',
+                ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL,
                 t('send.feedback_invalid_source_jar_must_unfreeze_utxos'),
                 (jarIndex) => {
                   const jar = jars.find((it) => it.jarIndex === jarIndex)

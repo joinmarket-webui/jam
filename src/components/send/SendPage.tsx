@@ -47,6 +47,7 @@ import { Spinner } from '../ui/spinner'
 import { PaymentAbortDialog } from './PaymentAbortDialog'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
+import { ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL } from './SendForm.schema'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
 import { buildCollaborativeSendRequest, buildNonCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
@@ -612,7 +613,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               onSourceJarChange={setSourceJarIndex}
               onSourceJarClicked={onOpenUtxoSelector}
               sourceJarLabelButton={(errors) => {
-                const errorSolvedByUtxoSelection = errors?.fromJar?.type === 'valid-source-jar-must-unfreeze-utxos-test'
+                const errorSolvedByUtxoSelection = errors?.fromJar?.type === ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL
                 const animate = utxoSelectionDialog.dialogProps.open === false && errorSolvedByUtxoSelection
                 return (
                   <Button
