@@ -149,7 +149,7 @@ describe('createSendFormSchema', () => {
         source: { fromJar: jars[3].jarIndex },
         amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT },
       }),
-    ).rejects.toThrow('send.feedback_invalid_source_jar_must_freeze_fidelity_bonds:{"count":2}')
+    ).rejects.toThrow('send.feedback_invalid_source_jar_must_freeze_fidelity_bond:{"count":2}')
   })
 
   it('rejects reused or source-jar destination addresses', async () => {

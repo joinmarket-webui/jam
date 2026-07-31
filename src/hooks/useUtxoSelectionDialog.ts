@@ -153,7 +153,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     }
 
     // The selected set should remain spendable; everything else becomes frozen.
-    const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen === false)
+    const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen !== true)
     const utxosToUnfreeze = mutableUtxos.filter((it) => selectedAddresses.has(it.address) && it.frozen === true)
 
     if (utxosToFreeze.length === 0 && utxosToUnfreeze.length === 0) {

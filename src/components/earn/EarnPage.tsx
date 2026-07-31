@@ -163,7 +163,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         ? walletInfo.maxJarAvailableBalance >= JAM.OFFER_MINSIZE_MIN
           ? 'missing-utxos'
           : 'missing-confirmations'
-        : null
+        : undefined
 
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
@@ -300,7 +300,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
             isWaitingMakerStart={isWaitingMakerStart}
             offerMinsizeMax={maxConfirmedJarAvailableBalance}
             disabled={
-              earnPreconditionWarning !== null ||
+              earnPreconditionWarning !== undefined ||
               walletInfo.isFetching ||
               isWaitingMakerStart ||
               isWaitingMakerStop ||

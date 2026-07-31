@@ -40,7 +40,7 @@ const makeSummary = (overrides: Partial<SweepPreconditionSummary> = {}): SweepPr
   options: {
     minConfirmations: 5,
     minNumberOfUtxos: 1,
-    maxNonFrozenFidelityBonds: 0,
+    maxNumberOfNonFrozenFidelityBondOutputs: 0,
   },
   retryLockedUtxos: [],
   ...overrides,
@@ -102,10 +102,8 @@ describe('precondition alerts', () => {
       </>,
     )
 
-    expect(
-      screen.getByText('send.coinjoin_precondition.hint_non_frozen_fidelity_bonds:{"count":3}'),
-    ).toBeInTheDocument()
-    expect(screen.getByText('scheduler.precondition.hint_non_frozen_fidelity_bonds:{"count":3}')).toBeInTheDocument()
+    expect(screen.getByText('send.coinjoin_precondition.hint_non_frozen_fidelity_bond:{"count":3}')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.precondition.hint_non_frozen_fidelity_bond:{"count":3}')).toBeInTheDocument()
   })
 
   it('lists retry-locked utxos when retries are the remaining blocker', () => {

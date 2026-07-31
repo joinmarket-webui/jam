@@ -5,7 +5,7 @@ import * as fb from '@/lib/fidelityBondUtils'
 export interface SweepPreconditionOptions {
   minNumberOfUtxos: number
   minConfirmations: number
-  maxNonFrozenFidelityBonds: number
+  maxNumberOfNonFrozenFidelityBondOutputs: number
 }
 
 export interface SweepPreconditionSummary {
@@ -20,7 +20,7 @@ export interface SweepPreconditionSummary {
 export const SWEEP_PRECONDITION_DEFAULT_OPTIONS: SweepPreconditionOptions = Object.freeze({
   minNumberOfUtxos: 1,
   minConfirmations: JM_TAKER_UTXO_AGE,
-  maxNonFrozenFidelityBonds: 0,
+  maxNumberOfNonFrozenFidelityBondOutputs: 0,
 })
 
 const groupByJarIndex = (utxos: Utxo[]): Map<number, Utxo[]> => {
@@ -69,7 +69,7 @@ export const buildSweepPreconditionSummary = (
   }
 
   const { nonFrozenFbUtxos, eligibleUtxos } = utxos
-    .filter((it) => it.frozen === false)
+    .filter((it) => it.frozen !== true)
     .reduce(
       (context, utxo) => {
         if (fb.utxo.isFidelityBond(utxo)) {
@@ -82,7 +82,7 @@ export const buildSweepPreconditionSummary = (
       { nonFrozenFbUtxos: [] as Utxo[], eligibleUtxos: [] as Utxo[] },
     )
 
-  if (nonFrozenFbUtxos.length > mergedOptions.maxNonFrozenFidelityBonds) {
+  if (nonFrozenFbUtxos.length > mergedOptions.maxNumberOfNonFrozenFidelityBondOutputs) {
     return {
       isFulfilled: false,
       options: mergedOptions,

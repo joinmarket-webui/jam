@@ -441,7 +441,8 @@
     "qr_scan_bip21_applied": "Payment request applied.",
     "feedback_invalid_source_jar": "Please select a jar to send from.",
     "feedback_invalid_source_jar_must_unfreeze_utxos": "Please select UTXOs from the source jar.",
-    "feedback_invalid_source_jar_must_freeze_fidelity_bonds": "Please freeze all Fidelity Bonds in the source jar before you continue.",
+    "feedback_invalid_source_jar_must_freeze_fidelity_bond_one": "Please freeze your Fidelity Bond in the source jar before you continue.",
+    "feedback_invalid_source_jar_must_freeze_fidelity_bond_other": "Please freeze all Fidelity Bonds in the source jar before you continue.",
     "feedback_invalid_source_jar_no_available_utxos": "Please select a jar with spendable balance to send from.",
     "feedback_invalid_destination_address": "Please enter a valid destination address.",
     "feedback_destination_network_mismatch": "This address does not match your wallet's network.",
@@ -494,7 +495,8 @@
       "hint_missing_utxos": "To execute a collaborative transaction you need UTXOs with {{ minConfirmations }} or more confirmations in the source jar. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "A collaborative transaction requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Failed at sourcing commitments for this jar too many times in a row. For security reasons, you need a fresh UTXO in the jar to try again. <1>See the documentation</1> for more information.",
-      "hint_non_frozen_fidelity_bonds": "<1>Please freeze all Fidelity Bonds</1> before you continue.",
+      "hint_non_frozen_fidelity_bond_one": "<1>Please freeze your Fidelity Bond</1> before you continue.",
+      "hint_non_frozen_fidelity_bond_other": "<1>Please freeze all Fidelity Bonds</1> before you continue.",
       "nested_hint_wait_for_block": "Select another jar to send from or wait for one more block.",
       "nested_hint_wait_for_block_other": "Select another jar to send from or wait for {{ count }} more blocks.",
       "nested_hint_fund_jar": "Select another jar to send from or fund this jar and wait for one block.",
@@ -557,7 +559,7 @@
       "hint_missing_utxos": "No spendable balance available: <0>Fund your wallet</0> to start earning.",
       "hint_missing_confirmations_one": "Balance is not confirmed yet: Your wallet has available funds, but they need at least one more confirmation before the earn service can start. Please wait for one more block.",
       "hint_missing_confirmations_other": "Balance is not confirmed yet: Your wallet has available funds, but they need at least {{count}} confirmations before the earn service can start. Please wait for {{count}} more blocks.",
-      "hint_non_frozen_fidelity_bonds": "$t(send.coinjoin_precondition.hint_non_frozen_fidelity_bonds)"
+      "hint_non_frozen_fidelity_bond": "$t(send.coinjoin_precondition.hint_non_frozen_fidelity_bond, {\"count\": {{ count }} })"
     },
     "current": {
       "text_offer": "Offer",
@@ -818,7 +820,7 @@
       "hint_missing_utxos": "A Scheduled Sweep needs UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "A Scheduled Sweep requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Failed at sourcing commitments too many times. For security reasons, you need a fresh UTXO in the jar to try again. <1>See the documentation</1> for more information.",
-      "hint_non_frozen_fidelity_bonds": "$t(send.coinjoin_precondition.hint_non_frozen_fidelity_bonds)",
+      "hint_non_frozen_fidelity_bond": "$t(send.coinjoin_precondition.hint_non_frozen_fidelity_bond, {\"count\": {{ count }} })",
       "nested_hint_wait_for_block": "Wait for one more block.",
       "nested_hint_wait_for_block_other": "Wait for {{ count }} more blocks.",
       "nested_hint_fund_wallet": "Fund your wallet and wait for one more block.",

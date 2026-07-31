@@ -28,6 +28,7 @@ export type Jar = {
 
 export type FidelityBondSummary = {
   fbOutputs: FidelityBondUtxo[]
+  // TODO: add `numberOfUnfrozenFbOutputs: number`
 }
 
 export type WalletBalanceSummary = BalanceSummary

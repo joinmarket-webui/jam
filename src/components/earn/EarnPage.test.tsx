@@ -278,6 +278,8 @@ describe('EarnPage', () => {
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('page-loading')).toBeInTheDocument()
+
+    expect(screen.queryByText('submit-earn')).not.toBeInTheDocument()
   })
 
   it('starts earning', async () => {
@@ -286,6 +288,7 @@ describe('EarnPage', () => {
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
     expect(screen.queryByText('earn.precondition.title')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'earn.button_stop' })).not.toBeInTheDocument()
 
     expect(screen.getByText('submit-earn')).toBeEnabled()
 
@@ -311,6 +314,8 @@ describe('EarnPage', () => {
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
+    expect(screen.getByText('submit-earn')).toBeEnabled()
+
     await user.click(screen.getByText('open-fee-config'))
     expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
 
@@ -327,8 +332,11 @@ describe('EarnPage', () => {
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('offer-card:maker-a')).toBeInTheDocument()
     expect(screen.getByText('earn.alert_running')).toBeInTheDocument()
+    expect(screen.getByText('offer-card:maker-a')).toBeInTheDocument()
+
+    expect(screen.getByRole('button', { name: 'earn.button_stop' })).toBeEnabled()
+    expect(screen.getByText('submit-earn')).toBeDisabled()
 
     await user.click(screen.getByRole('button', { name: 'earn.button_stop' }))
     expect(mocks.stopMakerRefetch).toHaveBeenCalledWith({ throwOnError: true })
@@ -447,21 +455,33 @@ describe('EarnPage', () => {
 
   it('shows the coinjoin-in-progress alert', () => {
     setSession({ coinjoin_in_process: true })
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
     expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('shows the waiting-to-stop alert', () => {
     setSession({ maker_running: true })
     mocks.stopMutationState.isSuccess = true
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
     expect(screen.getByText('earn.alert_waiting_stop_title')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('shows the loading-offer alert while the maker runs without an offer', () => {
     setSession({ maker_running: true, offer_list: [] })
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
     expect(screen.getByText('earn.alert_loading_offer')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('warns when the spendable balance is only unconfirmed', () => {
@@ -501,7 +521,7 @@ describe('EarnPage', () => {
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('earn.precondition.title')).toBeInTheDocument()
-    expect(screen.getByText('earn.precondition.hint_non_frozen_fidelity_bonds:{"count":1}')).toBeInTheDocument()
+    expect(screen.getByText('earn.precondition.hint_non_frozen_fidelity_bond:{"count":1}')).toBeInTheDocument()
 
     expect(screen.getByText('submit-earn')).toBeDisabled()
   })
@@ -510,9 +530,14 @@ describe('EarnPage', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const user = userEvent.setup()
     mocks.startMaker.mockRejectedValue(new Error('start boom'))
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('submit-earn')).toBeEnabled()
+
     await user.click(screen.getByText('submit-earn'))
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalled())
+
     errorSpy.mockRestore()
   })
 
@@ -520,7 +545,12 @@ describe('EarnPage', () => {
     const user = userEvent.setup()
     setSession({ maker_running: true, offer_list: [{ cjfee: '250', minsize: '5000', ordertype: 'sw0absoffer' }] })
     mocks.stopMakerRefetch.mockRejectedValue(new Error('stop boom'))
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'earn.button_stop' })).toBeEnabled()
+
     await user.click(screen.getByRole('button', { name: 'earn.button_stop' }))
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalled())
   })

@@ -63,7 +63,7 @@ export const NonFrozenFidelityBondsAlert = ({
         <ul className="list-outside list-disc space-y-2">
           <li>
             <Trans
-              i18nKey="earn.precondition.hint_non_frozen_fidelity_bonds"
+              i18nKey="earn.precondition.hint_non_frozen_fidelity_bond"
               values={{ count: numberOfNonFrozenFidelityBondOutputs }}
               components={{
                 '1': <Link to={routes.walletJarsDetails} className="font-semibold" />,

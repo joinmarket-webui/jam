@@ -159,14 +159,14 @@ export const createSendFormSchema = (
       .required()
       .test((root) => {
         const jar = jars.find((it) => it.jarIndex === root.source.fromJar)
-        const unfrozenFildeityBonds = (jar?.utxos ?? [])
+        const unfrozenFidelityBondOutputs = (jar?.utxos ?? [])
           .filter((it) => fb.utxo.isFidelityBond(it))
           .filter((it) => it.frozen !== true)
 
-        if (unfrozenFildeityBonds.length === 0) return true
+        if (unfrozenFidelityBondOutputs.length === 0) return true
 
-        const errorMessage = t('send.feedback_invalid_source_jar_must_freeze_fidelity_bonds', {
-          count: unfrozenFildeityBonds.length,
+        const errorMessage = t('send.feedback_invalid_source_jar_must_freeze_fidelity_bond', {
+          count: unfrozenFidelityBondOutputs.length,
         })
         return new yup.ValidationError(
           errorMessage,

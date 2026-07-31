@@ -66,7 +66,7 @@ export const SweepPreconditionAlert = ({ summary }: SweepPreconditionAlertProps)
           {summary.numberOfNonFrozenFidelityBondOutputs === 0 ? null : (
             <li>
               <Trans
-                i18nKey="scheduler.precondition.hint_non_frozen_fidelity_bonds"
+                i18nKey="scheduler.precondition.hint_non_frozen_fidelity_bond"
                 values={{ count: summary.numberOfNonFrozenFidelityBondOutputs }}
                 components={{
                   '1': <Link to={routes.walletJarsDetails} className="font-semibold" />,
