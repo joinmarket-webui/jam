@@ -65,6 +65,15 @@ const utxo = (overrides: Partial<Utxo>): Utxo => ({
   ...overrides,
 })
 
+const fbUtxo = (overrides: Partial<Utxo>) =>
+  utxo({
+    utxo: 'fb:0',
+    address: 'bcrt1qaddressfb',
+    locktime: '2999-01-01 00:00:00',
+    path: "m/84'/1'/0'/2/0:32503680000",
+    ...overrides,
+  })
+
 const addressSummary: AddressSummary = {
   bcrt1qaddressa: { status: 'cj-out' },
   bcrt1qaddressb: { status: 'change-out' },
@@ -76,15 +85,10 @@ const sourceJar = {
   color: '#e2b86a',
   balanceSummary: {},
   utxos: [
-    utxo({ utxo: 'a:0', address: 'bcrt1qaddressa', frozen: false, label: 'keep together' }),
+    utxo({ utxo: 'a:0', address: 'bcrt1qaddressa', label: 'keep together' }),
     utxo({ utxo: 'a:1', address: 'bcrt1qaddressa', frozen: true }),
-    utxo({ utxo: 'b:0', address: 'bcrt1qaddressb', frozen: false }),
-    utxo({
-      utxo: 'fb:0',
-      address: 'bcrt1qaddressfb',
-      locktime: '2999-01-01 00:00:00',
-      path: "m/84'/1'/0'/0/9:32503680000",
-    }),
+    utxo({ utxo: 'b:0', address: 'bcrt1qaddressb' }),
+    fbUtxo({}),
   ],
 } as unknown as Jar
 
@@ -162,15 +166,16 @@ describe('useUtxoSelectionDialog', () => {
       path: { walletname: 'wallet.jmdat' },
       body: { 'utxo-string': 'a:1', freeze: false },
     })
-    expect(mocks.toastSuccess).toHaveBeenCalledWith('jar_details.utxo_list.toast_freeze_success:1')
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('jar_details.utxo_list.toast_freeze_success:2')
     expect(mocks.toastSuccess).toHaveBeenCalledWith('jar_details.utxo_list.toast_unfreeze_success:1')
+    expect(mocks.walletInfoRefetch).toHaveBeenCalledOnce()
     await waitFor(() => expect(result.current.dialogProps.open).toBe(false))
   })
 
   it('closes without mutations when selection does not change freeze state', async () => {
     const jarWithoutFrozenGroupedUtxos = {
       ...sourceJar,
-      utxos: sourceJar.utxos.filter((entry) => entry.utxo !== 'a:1'),
+      utxos: [utxo({ utxo: 'a:0' }), utxo({ utxo: 'b:0' })],
     }
     const { result } = renderHook(() =>
       useUtxoSelectionDialog({
@@ -185,6 +190,40 @@ describe('useUtxoSelectionDialog', () => {
 
     expect(mocks.freezeOrUnfreeze).not.toHaveBeenCalled()
     expect(mocks.walletInfoRefetch).not.toHaveBeenCalled()
+    expect(result.current.dialogProps.open).toBe(false)
+  })
+
+  it('does not pre-select fidelity bonds and freezes unfrozen fidelity bonds by default', async () => {
+    const jarWithUnfrozenFidelityBond = {
+      ...sourceJar,
+      utxos: [
+        utxo({ utxo: 'a:0' }),
+        fbUtxo({ utxo: 'b:0', address: 'fb0', frozen: false }),
+        fbUtxo({ utxo: 'c:0', address: 'fb1', frozen: true }),
+      ],
+    }
+    const { result } = renderHook(() =>
+      useUtxoSelectionDialog({
+        walletFileName: 'wallet.jmdat',
+        sourceJar: jarWithUnfrozenFidelityBond,
+        addressSummary,
+      }),
+    )
+
+    act(() => result.current.onOpenUtxoSelector())
+    await act(async () => result.current.dialogProps.onSubmit())
+
+    expect(mocks.freezeOrUnfreeze).toHaveBeenCalledExactlyOnceWith({
+      body: {
+        freeze: true,
+        'utxo-string': 'b:0',
+      },
+      path: {
+        walletname: 'wallet.jmdat',
+      },
+    })
+
+    expect(mocks.walletInfoRefetch).toHaveBeenCalledOnce()
     expect(result.current.dialogProps.open).toBe(false)
   })
 })
