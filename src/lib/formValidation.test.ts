@@ -9,7 +9,7 @@ import {
   sourceJarField,
 } from './formValidation'
 
-const mainnetAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
+const mainnetAddress = '1BitcoinEaterAddressDontSend8MUo1T'
 const testnetAddress = 'mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn'
 const regtestBech32Address = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
 const regtestLegacyAddressLabeledTestnet = 'mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV'
