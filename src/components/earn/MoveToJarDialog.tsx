@@ -113,6 +113,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
     setStep('sending')
     const txResult = await sweep({
       destination: destinationAddress,
+      tryFreezeAfterBroadcast: false,
     })
 
     setTxResult(txResult)

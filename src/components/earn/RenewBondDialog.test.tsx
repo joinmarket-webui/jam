@@ -248,6 +248,7 @@ describe('RenewBondDialog', () => {
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.renew.success_text')).toBeInTheDocument())
     expect(screen.getAllByText('abcd1234').length).toBeGreaterThan(0)
+
     expect(h.refetch).toHaveBeenCalled()
   })
 
@@ -259,8 +260,35 @@ describe('RenewBondDialog', () => {
     fireEvent.click(screen.getByText('earn.fidelity_bond.renew.text_button_submit'))
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.renew.success_text')).toBeInTheDocument())
-    const calls = h.freezeAsync.mock.calls as unknown as Array<[{ body?: { freeze?: boolean } }]>
-    expect(calls.some((call) => call[0]?.body?.freeze === false)).toBe(true)
+    const calls = h.freezeAsync.mock.calls as unknown as Array<
+      [{ body?: { 'utxo-string'?: string; freeze?: boolean } }]
+    >
+    expect(
+      calls.some((call) => call[0]?.body?.['utxo-string'] === frozenUtxo.utxo && call[0]?.body?.freeze === false),
+    ).toBe(true)
+  })
+
+  it('freezes a fidelity bond after sending', async () => {
+    const frozenUtxo = { ...utxo, frozen: true } as unknown as FidelityBondUtxo
+    render(<RenewBondDialog open onOpenChange={vi.fn()} walletFileName={'test.jmdat'} utxo={frozenUtxo} />)
+    goToConfirm()
+    fireEvent.click(screen.getByTestId('confirm-switch'))
+    fireEvent.click(screen.getByText('earn.fidelity_bond.renew.text_button_submit'))
+
+    await waitFor(() => expect(screen.getByText('earn.fidelity_bond.renew.success_text')).toBeInTheDocument())
+
+    const calls = h.freezeAsync.mock.calls as unknown as Array<
+      [{ body?: { 'utxo-string'?: string; freeze?: boolean } }]
+    >
+    // unfreezes the expired fb utxo
+    expect(
+      calls.some((call) => call[0]?.body?.['utxo-string'] === frozenUtxo.utxo && call[0]?.body?.freeze === false),
+    ).toBe(true)
+
+    // freezes the renewed fb utxo
+    expect(
+      calls.some((call) => call[0]?.body?.['utxo-string'] === 'abcd1234:0' && call[0]?.body?.freeze === true),
+    ).toBe(true)
   })
 
   it('returns to the confirm step when sending fails', async () => {

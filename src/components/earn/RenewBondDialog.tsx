@@ -113,6 +113,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
     const txResult = await sweep({
       destination: destinationAddress,
+      tryFreezeAfterBroadcast: true,
     })
 
     setTxResult(txResult)
