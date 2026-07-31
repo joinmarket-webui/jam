@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
+import { JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY } from '@/constants/jam'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import { delayedPromise, type WalletFileName } from '@/lib/utils'
@@ -81,26 +82,6 @@ export function useFidelityBondSweep({
           },
         })
 
-        if (tryFreezeAfterBroadcast) {
-          try {
-            await delayedPromise(1_000) // provide some time for the backend to catch up, small delay of 1s seems to be enough
-            const fbUtxoId = `${result.txinfo.txid}:0` // sent with a sweep, so it is a single output
-            await freezeUtxo.mutateAsync({
-              path: { walletname: walletFileName },
-              body: { 'utxo-string': fbUtxoId, freeze: true },
-              throwOnError: true,
-            })
-          } catch (_ignoredOnPurpose: unknown) {
-            console.warn('Error while freezing Fidelity Bond UTXO - continueing.')
-          }
-        }
-
-        try {
-          await onBroadcastSuccess?.(result)
-        } catch (error: unknown) {
-          console.warn('onBroadcastSuccess failed', error)
-        }
-
         // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
         for (const u of frozen) {
           try {
@@ -113,6 +94,27 @@ export function useFidelityBondSweep({
             // only debug output
             console.debug('Error while unfreezing previously frozen UTXO.')
           }
+        }
+
+        if (tryFreezeAfterBroadcast) {
+          try {
+            await delayedPromise(JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY)
+
+            const fbUtxoId = `${result.txinfo.txid}:0` // sent with a sweep, so it is a single output
+            await freezeUtxo.mutateAsync({
+              path: { walletname: walletFileName },
+              body: { 'utxo-string': fbUtxoId, freeze: true },
+              throwOnError: true,
+            })
+          } catch (_ignoredOnPurpose: unknown) {
+            console.warn('Error while freezing Fidelity Bond UTXO - continuing.')
+          }
+        }
+
+        try {
+          await onBroadcastSuccess?.(result)
+        } catch (error: unknown) {
+          console.warn('onBroadcastSuccess failed', error)
         }
 
         await walletInfoRefetch()

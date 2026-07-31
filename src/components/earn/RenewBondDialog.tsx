@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
@@ -113,7 +114,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
 
     const txResult = await sweep({
       destination: destinationAddress,
-      tryFreezeAfterBroadcast: true,
+      tryFreezeAfterBroadcast: JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS,
     })
 
     setTxResult(txResult)
