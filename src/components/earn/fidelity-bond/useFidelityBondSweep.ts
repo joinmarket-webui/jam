@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { useMutation } from '@tanstack/react-query'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import type { WalletFileName } from '@/lib/utils'
@@ -22,13 +23,13 @@ export function useFidelityBondSweep({
   unfreezeErrorKey: string
   sendErrorKey: string
 }) {
-  const walletInfo = useJamWalletInfoContext()
+  const { jars, refetch: walletInfoRefetch } = useJamWalletInfoContext()
   const { freezeUtxo, unfreezeUtxo, directSend, error, setError } = useFidelityBondMutations({
     unfreezeErrorKey,
     sendErrorKey,
   })
 
-  const sourceJar = walletInfo.jars.find((jar) => jar.jarIndex === utxo.mixdepth)
+  const sourceJar = jars.find((jar) => jar.jarIndex === utxo.mixdepth)
 
   // UTXOs in the source jar that are NOT this FB — they need to be frozen during sweep
   const utxosToFreeze = useMemo(() => {
@@ -41,69 +42,80 @@ export function useFidelityBondSweep({
    * before the frozen UTXOs are restored. Returns false when the sweep failed
    * (after a best-effort rollback).
    */
-  const sweep = async (destination: string, onBroadcast: (result: DirectSendResponse) => void): Promise<boolean> => {
-    setError(undefined)
+  const { isPending, mutateAsync: sweep } = useMutation({
+    mutationFn: async ({
+      destination,
+      onBroadcastSuccess,
+    }: {
+      destination: string
+      onBroadcastSuccess?: (result: DirectSendResponse) => Promise<void>
+    }): Promise<DirectSendResponse | undefined> => {
+      setError(undefined)
 
-    const frozen: Utxo[] = []
-    try {
-      // Freeze other UTXOs in the source jar so only the FB gets swept
-      for (const u of utxosToFreeze) {
-        await freezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': u.utxo, freeze: true },
-        })
-        frozen.push(u)
-      }
+      const frozen: Utxo[] = []
+      try {
+        // Freeze other UTXOs in the source jar so only the FB gets swept
+        for (const u of utxosToFreeze) {
+          await freezeUtxo.mutateAsync({
+            path: { walletname: walletFileName },
+            body: { 'utxo-string': u.utxo, freeze: true },
+          })
+          frozen.push(u)
+        }
 
-      if (utxo.frozen) {
-        await unfreezeUtxo.mutateAsync({
-          path: { walletname: walletFileName },
-          body: { 'utxo-string': utxo.utxo, freeze: false },
-        })
-      }
-
-      const result = await directSend.mutateAsync({
-        path: { walletname: walletFileName },
-        body: {
-          mixdepth: utxo.mixdepth,
-          amount_sats: 0,
-          destination,
-        },
-      })
-
-      onBroadcast(result)
-
-      // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
-      for (const u of frozen) {
-        try {
+        if (utxo.frozen) {
           await unfreezeUtxo.mutateAsync({
             path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
+            body: { 'utxo-string': utxo.utxo, freeze: false },
           })
-        } catch {
-          // logged via onError
         }
-      }
 
-      await walletInfo.refetch()
-      return true
-    } catch {
-      // Best-effort rollback — unfreeze UTXOs that were frozen before the error
-      for (const u of frozen) {
-        try {
-          await unfreezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: false },
-          })
-        } catch {
-          // logged via onError
+        const result = await directSend.mutateAsync({
+          path: { walletname: walletFileName },
+          body: {
+            mixdepth: utxo.mixdepth,
+            amount_sats: 0, // 0 := sweep!
+            destination,
+          },
+        })
+
+        await onBroadcastSuccess?.(result)
+
+        // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
+        for (const u of frozen) {
+          try {
+            await unfreezeUtxo.mutateAsync({
+              path: { walletname: walletFileName },
+              body: { 'utxo-string': u.utxo, freeze: false },
+              throwOnError: true,
+            })
+          } catch (_ignoredOnPurpose: unknown) {
+            // only debug output
+            console.debug('Error while unfreezing previously frozen UTXO.')
+          }
         }
+
+        await walletInfoRefetch()
+        return result
+      } catch (_ignoredOnPurpose: unknown) {
+        // Best-effort rollback — unfreeze UTXOs that were frozen before the error
+        for (const u of frozen) {
+          try {
+            await unfreezeUtxo.mutateAsync({
+              path: { walletname: walletFileName },
+              body: { 'utxo-string': u.utxo, freeze: false },
+              throwOnError: true,
+            })
+          } catch (_ignoredOnPurpose: unknown) {
+            // only debug output
+            console.debug('Error while unfreezing previously frozen UTXO in error handling.')
+          }
+        }
+        return undefined
       }
-      return false
-    }
-  }
+    },
+    retry: false,
+  })
 
-  const isLoading = freezeUtxo.isPending || unfreezeUtxo.isPending || directSend.isPending
-
-  return { sweep, isLoading, error, setError, sourceJar }
+  return { sweep, isLoading: isPending, error, setError, sourceJar }
 }

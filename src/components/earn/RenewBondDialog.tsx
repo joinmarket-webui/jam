@@ -110,12 +110,18 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     if (!destinationAddress) return
 
     setStep('sending')
-    const swept = await sweep(destinationAddress, (result) => {
-      setTxResult(result)
+
+    const txResult = await sweep({
+      destination: destinationAddress,
+    })
+
+    setTxResult(txResult)
+    if (txResult) {
       setStep('success')
       toast.success(t('earn.fidelity_bond.renew.success_text'))
-    })
-    if (!swept) setStep('confirm')
+    } else {
+      setStep('confirm')
+    }
   })
 
   const renderFooter = () => {

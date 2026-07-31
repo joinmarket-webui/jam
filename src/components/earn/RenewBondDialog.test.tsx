@@ -4,13 +4,15 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { RenewBondDialog } from './RenewBondDialog'
 
+type MutationOptions = { mutationFn: (input: unknown) => Promise<unknown> }
+
 type ChildrenProps = { children?: ReactNode }
 type ValueProps = { value: string }
 
 const h = vi.hoisted(() => ({
-  queryReturn: { data: undefined as { address: string } | undefined, isLoading: false, isError: false },
-  mutateAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'abcd1234' } }),
-  isPending: false,
+  fetchAddressQueryData: { data: undefined as { address: string } | undefined, isLoading: false, isError: false },
+  directSendAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'abcd1234' } }),
+  freezeAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue({}),
   refetch: vi.fn(),
   utxoFrozen: false,
   extraUtxos: [] as Array<{ utxo: string; value: number; frozen: boolean }>,
@@ -24,13 +26,16 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => h.queryReturn,
-  useMutation: () => ({ mutateAsync: h.mutateAsync, isPending: h.isPending }),
+  useQuery: () => h.fetchAddressQueryData,
+  useMutation: vi.fn((options: MutationOptions) => ({
+    isPending: false,
+    mutateAsync: async (input: unknown) => await options.mutationFn(input),
+  })),
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
-  directsendMutation: vi.fn(() => ({})),
-  freezeMutation: vi.fn(() => ({})),
+  directsendMutation: vi.fn(() => ({ mutationFn: h.directSendAsync })),
+  freezeMutation: vi.fn(() => ({ mutationFn: h.freezeAsync })),
   gettimelockaddressOptions: vi.fn(() => ({ queryKey: ['mock'], queryFn: vi.fn() })),
 }))
 
@@ -176,9 +181,9 @@ const goToConfirm = () => {
 describe('RenewBondDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    h.queryReturn = { data: { address: 'bc1timelock' }, isLoading: false, isError: false }
-    h.mutateAsync = vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'abcd1234' } })
-    h.isPending = false
+    h.fetchAddressQueryData = { data: { address: 'bc1timelock' }, isLoading: false, isError: false }
+    h.directSendAsync = vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'abcd1234' } })
+    h.freezeAsync = vi.fn<() => Promise<unknown>>().mockResolvedValue({})
     h.utxoFrozen = false
     h.extraUtxos = []
     h.selectHandlers = []
@@ -217,22 +222,27 @@ describe('RenewBondDialog', () => {
   })
 
   it('shows a loading spinner while the timelock address loads', () => {
-    h.queryReturn = { data: undefined, isLoading: true, isError: false }
+    h.fetchAddressQueryData = { data: undefined, isLoading: true, isError: false }
     renderDialog()
     goToConfirm()
     expect(screen.getByText('earn.fidelity_bond.renew.text_loading')).toBeInTheDocument()
   })
 
   it('shows an error alert when the address query fails', () => {
-    h.queryReturn = { data: undefined, isLoading: false, isError: true }
+    h.fetchAddressQueryData = { data: undefined, isLoading: false, isError: true }
     renderDialog()
     expect(screen.getByText('earn.fidelity_bond.error_loading_address')).toBeInTheDocument()
   })
 
   it('completes the renew flow and reaches the success step', async () => {
     h.extraUtxos = [{ utxo: 'tx2:0', value: 500, frozen: false }]
+
     renderDialog()
+
+    expect(screen.queryByText('earn.fidelity_bond.renew.success_text')).not.toBeInTheDocument()
+
     goToConfirm()
+
     fireEvent.click(screen.getByTestId('confirm-switch'))
     fireEvent.click(screen.getByText('earn.fidelity_bond.renew.text_button_submit'))
 
@@ -249,13 +259,13 @@ describe('RenewBondDialog', () => {
     fireEvent.click(screen.getByText('earn.fidelity_bond.renew.text_button_submit'))
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.renew.success_text')).toBeInTheDocument())
-    const calls = h.mutateAsync.mock.calls as unknown as Array<[{ body?: { freeze?: boolean } }]>
+    const calls = h.freezeAsync.mock.calls as unknown as Array<[{ body?: { freeze?: boolean } }]>
     expect(calls.some((call) => call[0]?.body?.freeze === false)).toBe(true)
   })
 
   it('returns to the confirm step when sending fails', async () => {
     h.extraUtxos = [{ utxo: 'tx2:0', value: 500, frozen: false }]
-    h.mutateAsync = vi.fn<() => Promise<unknown>>().mockRejectedValue(new Error('send failed'))
+    h.directSendAsync = vi.fn<() => Promise<unknown>>().mockRejectedValue(new Error('send failed'))
     renderDialog()
     goToConfirm()
     fireEvent.click(screen.getByTestId('confirm-switch'))

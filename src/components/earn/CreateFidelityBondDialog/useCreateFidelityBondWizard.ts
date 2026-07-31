@@ -287,7 +287,7 @@ export function useCreateFidelityBondWizard(
         path: { walletname: walletFileName },
         body: {
           mixdepth: selectedJar.jarIndex,
-          amount_sats: 0,
+          amount_sats: 0, // 0 := sweep!
           destination: address,
         },
       })
