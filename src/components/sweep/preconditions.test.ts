@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { buildSweepPreconditionSummary } from './preconditions'
 
-const utxo = (overrides: Partial<Utxo>): Utxo => {
+const makeUtxo = (overrides: Partial<Utxo>): Utxo => {
   return {
     utxo: 'txid:0',
     address: 'bc1qexampleaddress000000000000000000000000000',
@@ -22,45 +22,72 @@ const utxo = (overrides: Partial<Utxo>): Utxo => {
 
 describe('buildSweepPreconditionSummary', () => {
   it('returns fulfilled when at least one eligible utxo is available', () => {
-    const summary = buildSweepPreconditionSummary([utxo({})])
+    const summary = buildSweepPreconditionSummary([makeUtxo({})])
 
     expect(summary.isFulfilled).toBe(true)
     expect(summary.numberOfMissingUtxos).toBe(0)
+    expect(summary.numberOfNonFrozenFidelityBondOutputs).toBe(0)
     expect(summary.numberOfMissingConfirmations).toBe(0)
     expect(summary.retryLockedUtxos).toHaveLength(0)
   })
 
   it('reports missing confirmations when all eligible utxos are too new', () => {
-    const summary = buildSweepPreconditionSummary([utxo({ confirmations: 2 })], { minConfirmations: 5 })
+    const summary = buildSweepPreconditionSummary([makeUtxo({ confirmations: 2 })], { minConfirmations: 5 })
 
     expect(summary.isFulfilled).toBe(false)
+    expect(summary.numberOfNonFrozenFidelityBondOutputs).toBe(0)
     expect(summary.numberOfMissingUtxos).toBe(0)
     expect(summary.numberOfMissingConfirmations).toBe(3)
+    expect(summary.retryLockedUtxos).toHaveLength(0)
   })
 
   it('reports retry-locked utxos when one jar has no retries left', () => {
     const summary = buildSweepPreconditionSummary([
-      utxo({ utxo: 'a:0', mixdepth: 0, tries_remaining: 0 }),
-      utxo({ utxo: 'b:0', mixdepth: 0, tries_remaining: 0 }),
-      utxo({ utxo: 'c:0', mixdepth: 1, tries_remaining: 1 }),
+      makeUtxo({ utxo: 'a:0', mixdepth: 0, tries_remaining: 0 }),
+      makeUtxo({ utxo: 'b:0', mixdepth: 0, tries_remaining: 0 }),
+      makeUtxo({ utxo: 'c:0', mixdepth: 1, tries_remaining: 1 }),
     ])
 
     expect(summary.isFulfilled).toBe(false)
+    expect(summary.numberOfNonFrozenFidelityBondOutputs).toBe(0)
+    expect(summary.numberOfMissingUtxos).toBe(0)
+    expect(summary.numberOfMissingConfirmations).toBe(0)
     expect(summary.retryLockedUtxos.map((it) => it.utxo)).toEqual(['a:0', 'b:0'])
   })
 
-  it('ignores frozen or timelocked utxos when counting eligibility', () => {
+  it('ignores frozen utxos when counting eligibility', () => {
     const summary = buildSweepPreconditionSummary([
-      utxo({ utxo: 'a:0', frozen: true }),
-      utxo({
+      makeUtxo({ utxo: 'a:0', frozen: true }),
+      makeUtxo({
         utxo: 'b:0',
         locktime: '2999-01-01 00:00:00',
         path: "m/84'/0'/0'/0/0:32503680000",
+        frozen: true,
       }),
     ])
 
     expect(summary.isFulfilled).toBe(false)
+    expect(summary.numberOfNonFrozenFidelityBondOutputs).toBe(0)
     expect(summary.numberOfMissingUtxos).toBe(1)
     expect(summary.numberOfMissingConfirmations).toBe(0)
+    expect(summary.retryLockedUtxos).toHaveLength(0)
+  })
+
+  it('report non-frozen fidelity bonds', () => {
+    const summary = buildSweepPreconditionSummary([
+      makeUtxo({ utxo: 'a:0', frozen: true }),
+      makeUtxo({
+        utxo: 'b:0',
+        locktime: '2999-01-01 00:00:00',
+        path: "m/84'/0'/0'/0/0:32503680000",
+        frozen: false,
+      }),
+    ])
+
+    expect(summary.isFulfilled).toBe(false)
+    expect(summary.numberOfNonFrozenFidelityBondOutputs).toBe(1)
+    expect(summary.numberOfMissingUtxos).toBe(0)
+    expect(summary.numberOfMissingConfirmations).toBe(0)
+    expect(summary.retryLockedUtxos).toHaveLength(0)
   })
 })

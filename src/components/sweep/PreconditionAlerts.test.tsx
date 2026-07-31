@@ -8,11 +8,15 @@ import type { SweepPreconditionSummary } from './preconditions'
 vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey }: { i18nKey: string }) => <span>{i18nKey}</span>,
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
   }),
 }))
 
-const retryLockedUtxo = {
+vi.mock('@/components/ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString?: string }) => <span data-testid="balance">{valueString}sats</span>,
+}))
+
+const retryLockedUtxo: Utxo = {
   address: 'bc1qretry',
   confirmations: 12,
   frozen: false,
@@ -20,18 +24,22 @@ const retryLockedUtxo = {
   locktime: undefined,
   mixdepth: 0,
   path: '',
+  tries: 3,
+  external: false,
   tries_remaining: 0,
   utxo: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef:0',
   value: 123_456,
-} as unknown as Utxo
+}
 
 const makeSummary = (overrides: Partial<SweepPreconditionSummary> = {}): SweepPreconditionSummary => ({
   isFulfilled: false,
   numberOfMissingConfirmations: 0,
   numberOfMissingUtxos: 0,
+  numberOfNonFrozenFidelityBondOutputs: 0,
   options: {
     minConfirmations: 5,
     minNumberOfUtxos: 1,
+    maxNonFrozenFidelityBonds: 0,
   },
   retryLockedUtxos: [],
   ...overrides,
@@ -57,8 +65,8 @@ describe('precondition alerts', () => {
       </>,
     )
 
-    expect(screen.getByText('send.coinjoin_precondition.hint_missing_utxos')).toBeInTheDocument()
-    expect(screen.getByText('scheduler.precondition.hint_missing_utxos')).toBeInTheDocument()
+    expect(screen.getByText('send.coinjoin_precondition.hint_missing_utxos:{"minConfirmations":5}')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.precondition.hint_missing_utxos:{"minConfirmations":5}')).toBeInTheDocument()
   })
 
   it('shows missing confirmation warnings for send and sweep flows', () => {
@@ -71,8 +79,32 @@ describe('precondition alerts', () => {
       </>,
     )
 
-    expect(screen.getByText('send.coinjoin_precondition.hint_missing_confirmations')).toBeInTheDocument()
-    expect(screen.getByText('scheduler.precondition.hint_missing_confirmations')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'send.coinjoin_precondition.hint_missing_confirmations:{"minConfirmations":5,"amountOfMissingConfirmations":3}',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'scheduler.precondition.hint_missing_confirmations:{"minConfirmations":5,"amountOfMissingConfirmations":3}',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('shows non-frozen fidelity bond warnings for send and sweep flows', () => {
+    const summary = makeSummary({ numberOfNonFrozenFidelityBondOutputs: 3 })
+
+    render(
+      <>
+        <SendCoinjoinPreconditionAlert summary={summary} />
+        <SweepPreconditionAlert summary={summary} />
+      </>,
+    )
+
+    expect(
+      screen.getByText('send.coinjoin_precondition.hint_non_frozen_fidelity_bonds:{"count":3}'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('scheduler.precondition.hint_non_frozen_fidelity_bonds:{"count":3}')).toBeInTheDocument()
   })
 
   it('lists retry-locked utxos when retries are the remaining blocker', () => {
@@ -88,7 +120,6 @@ describe('precondition alerts', () => {
     expect(screen.getByText('send.coinjoin_precondition.hint_missing_retries')).toBeInTheDocument()
     expect(screen.getByText('scheduler.precondition.hint_missing_retries')).toBeInTheDocument()
     expect(screen.getAllByText('global.utxos')).toHaveLength(2)
-    expect(screen.getAllByText('jar 0')).toHaveLength(2)
-    expect(screen.getAllByText('123,456 sats')).toHaveLength(2)
+    expect(screen.getAllByText('123456sats')).toHaveLength(2)
   })
 })
