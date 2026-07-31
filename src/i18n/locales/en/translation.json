@@ -494,7 +494,7 @@
       "hint_missing_utxos": "To execute a collaborative transaction you need UTXOs with {{ minConfirmations }} or more confirmations in the source jar. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "A collaborative transaction requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Failed at sourcing commitments for this jar too many times in a row. For security reasons, you need a fresh UTXO in the jar to try again. <1>See the documentation</1> for more information.",
-      "hint_non_frozen_fidelity_bonds": "Please freeze all Fidelity Bonds before you continue.",
+      "hint_non_frozen_fidelity_bonds": "<1>Please freeze all Fidelity Bonds</1> before you continue.",
       "nested_hint_wait_for_block": "Select another jar to send from or wait for one more block.",
       "nested_hint_wait_for_block_other": "Select another jar to send from or wait for {{ count }} more blocks.",
       "nested_hint_fund_jar": "Select another jar to send from or fund this jar and wait for one block.",
@@ -533,10 +533,6 @@
     "alert_start_failed": "Error while starting the earn process. Reason: {{ reason }}",
     "alert_loading_offer": "Loading offer...",
     "alert_running": "Offering sats to earn more sats...",
-    "alert_unconfirmed_balance_title": "Balance is not confirmed yet",
-    "alert_unconfirmed_balance_description": "Your wallet has available funds, but they need at least one confirmation before the earn service can start. This should update automatically after the next block.",
-    "alert_no_spendable_balance_title": "No spendable balance available",
-    "alert_no_spendable_balance_description": "<0>Fund your wallet</0> to start earning.",
     "radio_abs_offer_label": "Absolute offer",
     "radio_rel_offer_label": "Relative offer",
     "label_rel_fee": "Relative fee {{ fee }}",
@@ -556,6 +552,13 @@
     "text_starting": "Starting",
     "text_stopping": "Stopping",
     "button_show_report": "Show earnings report",
+    "precondition": {
+      "title": "Earn preconditions are not fulfilled",
+      "hint_missing_utxos": "No spendable balance available: <0>Fund your wallet</0> to start earning.",
+      "hint_missing_confirmations_one": "Balance is not confirmed yet: Your wallet has available funds, but they need at least one more confirmation before the earn service can start. Please wait for one more block.",
+      "hint_missing_confirmations_other": "Balance is not confirmed yet: Your wallet has available funds, but they need at least {{count}} confirmations before the earn service can start. Please wait for {{count}} more blocks.",
+      "hint_non_frozen_fidelity_bonds": "$t(send.coinjoin_precondition.hint_non_frozen_fidelity_bonds)"
+    },
     "current": {
       "text_offer": "Offer",
       "text_cjfee": "Fee",

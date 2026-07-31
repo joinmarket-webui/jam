@@ -82,9 +82,8 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
-  Trans: ({ children, i18nKey }: { children?: React.ReactNode; i18nKey?: string }) => (
-    <span>{children ?? i18nKey}</span>
-  ),
+  Trans: ({ i18nKey, values }: { i18nKey: string; values?: unknown }) =>
+    values ? `${i18nKey}:${JSON.stringify(values)}` : i18nKey,
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
   }),
@@ -166,6 +165,7 @@ vi.mock('./EarnForm', () => ({
     <div>
       earn-form:{String(disabled)}:{String(debug)}
       <button
+        disabled={disabled}
         onClick={() =>
           void onSubmit({
             offerMinAmount: 50_000,
@@ -217,17 +217,20 @@ const balanceSummary = {
   calculatedTotalBalanceInSats: 100_000_000,
 }
 
-const expiredBond = {
+const expiredBond: FidelityBondUtxo = {
   address: 'bc1qbond',
   confirmations: 12,
   frozen: false,
   label: '',
-  locktime: '1970-01-01 00:00:00',
+  locktime: '2000-01-01 00:00:00',
   path: "m/84'/1'/0':1",
   tries_remaining: 3,
   utxo: 'bond-tx:0',
   value: 50_000,
-} as unknown as FidelityBondUtxo
+  tries: 3,
+  external: false,
+  mixdepth: 0,
+}
 
 const setSession = (overrides: Record<string, unknown> = {}) => {
   jmSessionStore.setState({
@@ -277,19 +280,17 @@ describe('EarnPage', () => {
     expect(screen.getByText('page-loading')).toBeInTheDocument()
   })
 
-  it('starts earning and opens fee/report dialogs', async () => {
+  it('starts earning', async () => {
     const user = userEvent.setup()
-    mocks.feeConfigMissing = true
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
-    await user.click(screen.getByText('open-fee-config'))
-    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+    expect(screen.queryByText('earn.precondition.title')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'earn.button_show_report' }))
-    expect(screen.getByText('earn-report:true')).toBeInTheDocument()
+    expect(screen.getByText('submit-earn')).toBeEnabled()
 
     await user.click(screen.getByText('submit-earn'))
+
     await waitFor(() => expect(mocks.startMaker).toHaveBeenCalled())
     expect(mocks.startMaker).toHaveBeenCalledWith({
       body: {
@@ -302,6 +303,19 @@ describe('EarnPage', () => {
       path: { walletname: 'wallet.jmdat' },
     })
     expect(mocks.scrollToTop).toHaveBeenCalled()
+  })
+
+  it('opens fee/report dialogs', async () => {
+    const user = userEvent.setup()
+    mocks.feeConfigMissing = true
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByText('open-fee-config'))
+    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'earn.button_show_report' }))
+    expect(screen.getByText('earn-report:true')).toBeInTheDocument()
   })
 
   it('shows running maker offer and stops it', async () => {
@@ -453,15 +467,43 @@ describe('EarnPage', () => {
   it('warns when the spendable balance is only unconfirmed', () => {
     mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
     mocks.walletInfo.maxJarAvailableBalance = 100_000_000
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
-    expect(screen.getByText('earn.alert_unconfirmed_balance_title')).toBeInTheDocument()
+
+    expect(screen.getByText('earn.precondition.title')).toBeInTheDocument()
+    expect(screen.getByText('earn.precondition.hint_missing_confirmations:{"count":1}')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('warns when there is no spendable balance at all', () => {
     mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
     mocks.walletInfo.maxJarAvailableBalance = 0
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
-    expect(screen.getByText('earn.alert_no_spendable_balance_title')).toBeInTheDocument()
+
+    expect(screen.getByText('earn.precondition.title')).toBeInTheDocument()
+    expect(screen.getByText('earn.precondition.hint_missing_utxos')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
+  })
+
+  it('warns when there are unfrozen fidelity bonds', () => {
+    mocks.walletInfo.fidelityBondSummary = {
+      fbOutputs: [
+        {
+          ...expiredBond,
+          frozen: false,
+        },
+      ],
+    }
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('earn.precondition.title')).toBeInTheDocument()
+    expect(screen.getByText('earn.precondition.hint_non_frozen_fidelity_bonds:{"count":1}')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('shows an error toast when starting the maker fails', async () => {

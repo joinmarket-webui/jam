@@ -1,9 +1,11 @@
 import { AlertTriangleIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import type { SweepPreconditionSummary } from '@/components/sweep/preconditions'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Balance } from '@/components/ui/jam/Balance'
 import { JAM_JM_RETRIES_DOCS_URL } from '@/constants/jam'
+import { routes } from '@/constants/routes'
 import { shortenStringMiddle } from '@/lib/utils'
 import { JarBadge } from '../earn/fidelity-bond/FidelityBondDialogParts'
 
@@ -63,9 +65,13 @@ export const SendCoinjoinPreconditionAlert = ({ summary }: SendCoinjoinPrecondit
         <ul className="list-outside list-disc space-y-2">
           {summary.numberOfNonFrozenFidelityBondOutputs === 0 ? null : (
             <li>
-              {t('send.coinjoin_precondition.hint_non_frozen_fidelity_bonds', {
-                count: summary.numberOfNonFrozenFidelityBondOutputs,
-              })}
+              <Trans
+                i18nKey="send.coinjoin_precondition.hint_non_frozen_fidelity_bonds"
+                values={{ count: summary.numberOfNonFrozenFidelityBondOutputs }}
+                components={{
+                  '1': <Link to={routes.walletJarsDetails} className="font-semibold" />,
+                }}
+              />
             </li>
           )}
           {summary.numberOfMissingUtxos === 0 ? null : (

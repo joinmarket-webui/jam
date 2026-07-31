@@ -6,7 +6,8 @@ import { SweepPreconditionAlert } from './SweepPreconditionAlert'
 import type { SweepPreconditionSummary } from './preconditions'
 
 vi.mock('react-i18next', () => ({
-  Trans: ({ i18nKey }: { i18nKey: string }) => <span>{i18nKey}</span>,
+  Trans: ({ i18nKey, values }: { i18nKey: string; values?: unknown }) =>
+    values ? `${i18nKey}:${JSON.stringify(values)}` : i18nKey,
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
   }),
