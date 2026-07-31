@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import { BALANCE_SUMMARY_EMPTY } from '@/lib/balanceSummary'
 import { generateLockdateOptions } from './types'
 import { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
@@ -90,7 +91,7 @@ const jar = (jarIndex: number, utxos: Utxo[]): Jar =>
     jarIndex,
     name: `Jar ${jarIndex}`,
     color: '#808080',
-    balanceSummary: {},
+    balanceSummary: BALANCE_SUMMARY_EMPTY,
     utxos,
   }) as unknown as Jar
 
