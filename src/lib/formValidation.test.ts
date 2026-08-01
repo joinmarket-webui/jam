@@ -53,8 +53,8 @@ describe('isAddressOnNetwork', () => {
   })
 
   it('treats testnet and regtest as interchangeable for ambiguous base58 addresses', () => {
-    // A base58 (legacy/p2sh) address on a regtest wallet is labeled "testnet" by the library
-    // because the two share version bytes, so it must still be accepted on regtest.
+    // A base58 (P2PKH here; P2SH shares the trait) address on a regtest wallet is labeled "testnet"
+    // by the library because the two share version bytes, so it must still be accepted on regtest.
     expect(isAddressOnNetwork(regtestLegacyAddressLabeledTestnet, Network.regtest)).toBe(true)
     expect(isAddressOnNetwork(regtestLegacyAddressLabeledTestnet, Network.testnet)).toBe(true)
     // mainnet is never ambiguous with testnet/regtest.
