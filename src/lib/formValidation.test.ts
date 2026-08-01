@@ -13,6 +13,9 @@ const mainnetAddress = '1BitcoinEaterAddressDontSend8MUo1T'
 const testnetAddress = 'mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn'
 const regtestBech32Address = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
 const testnetBech32Address = 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
+// bech32m/taproot pair - same witness program, differing only by HRP (tb1p vs bcrt1p)
+const testnetTaprootAddress = 'tb1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vq47zagq'
+const regtestTaprootAddress = 'bcrt1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqc8gma6'
 const regtestLegacyAddressLabeledTestnet = 'mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV'
 
 const addressSummary = {
@@ -40,16 +43,24 @@ describe('isAddressOnNetwork', () => {
     expect(isAddressOnNetwork('not-an-address', Network.mainnet)).toBe(false)
   })
 
-  it('distinguishes testnet and regtest for bech32 addresses via their distinct HRP', () => {
-    // bech32 addresses carry a network-specific prefix (tb1 vs bcrt1), so each is only
+  it('distinguishes testnet and regtest for bech32 and bech32m addresses via their distinct HRP', () => {
+    // bech32/bech32m addresses carry a network-specific prefix (tb1 vs bcrt1), so each is only
     // valid on its own network - a regtest address must not pass on a testnet wallet, nor vice versa.
+    // bech32 (segwit v0):
     expect(isAddressOnNetwork(regtestBech32Address, Network.regtest)).toBe(true)
     expect(isAddressOnNetwork(regtestBech32Address, Network.testnet)).toBe(false)
     expect(isAddressOnNetwork(testnetBech32Address, Network.testnet)).toBe(true)
     expect(isAddressOnNetwork(testnetBech32Address, Network.regtest)).toBe(false)
-    // ...and neither passes on mainnet.
+    // bech32m (taproot):
+    expect(isAddressOnNetwork(regtestTaprootAddress, Network.regtest)).toBe(true)
+    expect(isAddressOnNetwork(regtestTaprootAddress, Network.testnet)).toBe(false)
+    expect(isAddressOnNetwork(testnetTaprootAddress, Network.testnet)).toBe(true)
+    expect(isAddressOnNetwork(testnetTaprootAddress, Network.regtest)).toBe(false)
+    // ...and none pass on mainnet.
     expect(isAddressOnNetwork(regtestBech32Address, Network.mainnet)).toBe(false)
     expect(isAddressOnNetwork(testnetBech32Address, Network.mainnet)).toBe(false)
+    expect(isAddressOnNetwork(regtestTaprootAddress, Network.mainnet)).toBe(false)
+    expect(isAddressOnNetwork(testnetTaprootAddress, Network.mainnet)).toBe(false)
   })
 
   it('treats testnet and regtest as interchangeable for ambiguous base58 addresses', () => {
