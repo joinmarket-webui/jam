@@ -29,7 +29,6 @@ import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop }
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import type { Milliseconds } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
 import { EarnForm, type EarnFormValues } from './EarnForm'
@@ -39,15 +38,6 @@ import { MoveToJarDialog } from './MoveToJarDialog'
 import { OfferCard } from './OfferCard'
 import { RenewBondDialog } from './RenewBondDialog'
 import { EarnReportOverlay } from './report/EarnReportOverlay'
-
-// In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
-// Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
-// There is currently no way to know for sure - adding a delay at least mitigates the problem.
-// 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
-const MAKER_STOP_RESPONSE_DELAY: Milliseconds = 2_000
-
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
-const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
 
 const toStartMakerRequest = (values: EarnFormValues): StartMakerRequest => {
   // both fee properties need to be provided.
@@ -99,7 +89,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const stopMakerQuery = useQuery({
     ...stopMakerQueryOptions,
     queryFn: withQueryDelay(stopMakerQueryOptions.queryFn, {
-      delayAfter: MAKER_STOP_RESPONSE_DELAY,
+      delayAfter: JAM.MAKER_STOP_RESPONSE_DELAY,
     }),
     enabled: false,
     retry: false,
@@ -167,8 +157,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
-    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
-    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
+    refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   const onStop = async () => {

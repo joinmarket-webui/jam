@@ -1,6 +1,7 @@
 import { percentageToFactor, parseSemanticVersion } from '@/lib/utils'
 import type { AmountSats, Milliseconds, Seconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
+import { isDevMode } from './debugFeatures'
 import {
   JM_API_AUTH_TOKEN_EXPIRY,
   JM_DUST_THRESHOLD,
@@ -76,6 +77,45 @@ export const JAM_RESCAN_PROGRESS_DEFAULT_INTERVAL: Milliseconds = 21_000
 export const JAM_RESCAN_PROGRESS_INTERVAL: Milliseconds = Math.max(
   parseAsIntOrDefault(import.meta.env.VITE_JAM_RESCAN_PROGRESS_INTERVAL, JAM_RESCAN_PROGRESS_DEFAULT_INTERVAL),
   JAM_RESCAN_PROGRESS_MIN_INTERVAL,
+)
+
+export const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL, 3_000),
+  1_000,
+)
+export const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_WAIT_FOR_UPDATE_SESSION_POLLING_DELAY, 1_000),
+  1,
+)
+
+export const RUNNING_COINJOIN_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_COINJOIN_POLLING_INTERVAL, 5_000),
+  1_000,
+)
+export const RUNNING_COINJOIN_POLLING_DELAY: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_COINJOIN_POLLING_DELAY, 1_000),
+  1,
+)
+
+export const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_SCHEDULE_POLLING_INTERVAL, isDevMode() ? 5_000 : 10_000),
+  1_000,
+)
+
+/**
+ * In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
+ * Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
+ * There is currently no way to know for sure - adding a delay at least mitigates the problem.
+ * 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
+ */
+export const MAKER_STOP_RESPONSE_DELAY: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_MAKER_STOP_RESPONSE_DELAY, 2_000),
+  1,
+)
+
+export const JMWALLETD_LOGS_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_JMWALLETD_LOGS_POLLING_INTERVAL, 2_500),
+  500,
 )
 
 const JAM_SEED_MODAL_MIN_TIMEOUT: Milliseconds = 5_000
