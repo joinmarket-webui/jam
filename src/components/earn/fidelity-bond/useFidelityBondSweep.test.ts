@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
 // `useFidelityBondSweep` only talks to the network through these two hooks —
 // mock at that boundary and let the hook's own orchestration logic run for real.
 vi.mock('@tanstack/react-query', () => ({
-  useMutation: vi.fn((options: { mutationFn: (vars: unknown) => Promise<unknown> }) => ({
+  useMutation: vi.fn((options: { mutationFn: (variables: unknown) => Promise<unknown> }) => ({
     mutateAsync: options.mutationFn,
     isPending: false,
   })),
@@ -62,11 +62,10 @@ const utxo = (overrides: Partial<Utxo>): Utxo => ({
   ...overrides,
 })
 
-const bondUtxo = (overrides: Partial<FidelityBondUtxo>): FidelityBondUtxo =>
-  ({
-    ...utxo({ utxo: 'bond:0', frozen: true, ...overrides }),
-    locktime: '2999-01-01 00:00:00',
-  }) as FidelityBondUtxo
+const bondUtxo = (overrides: Partial<FidelityBondUtxo>): FidelityBondUtxo => ({
+  ...utxo({ utxo: 'bond:0', frozen: true, ...overrides }),
+  locktime: '2999-01-01 00:00:00',
+})
 
 const jar = (jarIndex: number, utxos: Utxo[]): Jar =>
   ({
