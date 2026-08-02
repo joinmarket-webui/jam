@@ -11,16 +11,21 @@ import { isValidInteger } from './utils'
 export const isValidAddress = (value: unknown): value is BitcoinAddress =>
   typeof value === 'string' && isValidBitcoinAddress(value)
 
-// Legacy (base58) addresses share the same version bytes on testnet and regtest, so
-// bitcoin-address-validation can't tell them apart and always labels them "testnet" -
-// only bech32 addresses carry a distinct "bcrt1" prefix. Treat the two as interchangeable
-// so a regtest wallet doesn't reject its own legacy-style addresses as "wrong network".
+// Base58 addresses (p2pkh/p2sh) share the same version bytes on testnet and regtest, so
+// bitcoin-address-validation can't tell them apart and always labels them "testnet".
+// Treat the two as interchangeable for those so a regtest wallet doesn't reject its own
+// legacy-style addresses as "wrong network". Bech32 addresses are excluded below because
+// their distinct HRP (tb1 vs bcrt1) already identifies the network unambiguously.
 const AMBIGUOUS_TESTNET_REGTEST_NETWORKS: ReadonlySet<Network> = new Set([Network.testnet, Network.regtest])
 
 export const isAddressOnNetwork = (value: string, network: Network): boolean => {
   try {
-    const addressNetwork = getAddressInfo(value).network
+    const { network: addressNetwork, bech32 } = getAddressInfo(value)
     if (addressNetwork === network) return true
+    // Bech32/bech32m addresses carry a distinct HRP per network (tb1 vs bcrt1), so they are
+    // already identified correctly - don't relax them, or a bcrt1… (regtest) address would
+    // wrongly pass on a testnet wallet and vice versa. Only base58 addresses are ambiguous.
+    if (bech32) return false
     return AMBIGUOUS_TESTNET_REGTEST_NETWORKS.has(addressNetwork) && AMBIGUOUS_TESTNET_REGTEST_NETWORKS.has(network)
   } catch (_ignoredOnPurpose) {
     return false
