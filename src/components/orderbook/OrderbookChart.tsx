@@ -27,8 +27,8 @@ const bucketByFeeRange = (entries: OrderTableEntry[]): FeeBucket[] => {
     const count = absoluteOffers.filter((offer) => offer.fee.value >= min && offer.fee.value < max).length
     const label =
       max === Number.POSITIVE_INFINITY
-        ? `${min.toLocaleString()}+`
-        : `${min.toLocaleString()} – ${max.toLocaleString()}`
+        ? `${min.toLocaleString('en-US')}+`
+        : `${min.toLocaleString('en-US')} – ${max.toLocaleString('en-US')}`
     return { label, min, max, count }
   }).filter((bucket) => bucket.count > 0)
 }

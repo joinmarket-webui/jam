@@ -64,17 +64,17 @@ export const useMiningFeeText = ({
 
       if (minFeeSatsPerVByte.toFixed(fractionDigits) === maxFeeSatsPerVByte.toFixed(fractionDigits)) {
         return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
-          value: minFeeSatsPerVByte.toLocaleString(undefined, {
+          value: minFeeSatsPerVByte.toLocaleString('en-US', {
             maximumFractionDigits: Math.log10(1_000),
           }),
         })
       }
 
       return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
-        min: minFeeSatsPerVByte.toLocaleString(undefined, {
+        min: minFeeSatsPerVByte.toLocaleString('en-US', {
           maximumFractionDigits: fractionDigits,
         }),
-        max: maxFeeSatsPerVByte.toLocaleString(undefined, {
+        max: maxFeeSatsPerVByte.toLocaleString('en-US', {
           maximumFractionDigits: fractionDigits,
         }),
       })

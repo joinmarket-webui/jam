@@ -37,7 +37,10 @@ const rescanFormSchema = (currentBlockHeight: BlockHeight | undefined, t: TFunct
         currentBlockHeight: currentBlockHeight,
         messages: {
           invalid: ({ min, max }) =>
-            t('rescan_chain.feedback_invalid_blockheight', { min: min.toLocaleString(), max: max.toLocaleString() }),
+            t('rescan_chain.feedback_invalid_blockheight', {
+              min: min.toLocaleString('en-US'),
+              max: max.toLocaleString('en-US'),
+            }),
         },
       }),
     })
@@ -112,7 +115,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
             disabled={disabled || isSubmitting || rescanInfo.rescanning}
           >
             {/* TODO: i18n */}
-            Last {AVERAGE_BLOCKS_PER_DAY.toLocaleString()} blocks (~24 hours)
+            Last {AVERAGE_BLOCKS_PER_DAY.toLocaleString('en-US')} blocks (~24 hours)
           </Button>
         ) : null}
 
@@ -133,7 +136,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
             disabled={disabled || isSubmitting || rescanInfo.rescanning}
           >
             {/* TODO: i18n */}
-            Last {AVERAGE_BLOCKS_PER_YEAR.toLocaleString()} blocks (~1 year)
+            Last {AVERAGE_BLOCKS_PER_YEAR.toLocaleString('en-US')} blocks (~1 year)
           </Button>
         ) : null}
 
@@ -152,7 +155,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
                 disabled={disabled || isSubmitting || rescanInfo.rescanning}
               >
                 {/* TODO: i18n */}
-                From block #{SEGWIT_ACTIVATION_BLOCK.toLocaleString()}
+                From block #{SEGWIT_ACTIVATION_BLOCK.toLocaleString('en-US')}
               </Button>
             </TooltipTrigger>
             <TooltipContent>Segwit Activation Block</TooltipContent>

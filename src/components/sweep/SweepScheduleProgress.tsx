@@ -73,7 +73,10 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
             <p className="text-sm">
               <Trans
                 i18nKey="scheduler.progress_tldr_seconds"
-                values={{ length: schedule.entries.length.toLocaleString(), seconds: totalSeconds.toLocaleString() }}
+                values={{
+                  length: schedule.entries.length.toLocaleString('en-US'),
+                  seconds: totalSeconds.toLocaleString('en-US'),
+                }}
                 components={alertTitleComponents}
               />
             </p>
@@ -81,7 +84,10 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
             <p className="text-sm">
               <Trans
                 i18nKey="scheduler.progress_tldr_hours"
-                values={{ length: schedule.entries.length.toLocaleString(), hours: totalHours.toLocaleString() }}
+                values={{
+                  length: schedule.entries.length.toLocaleString('en-US'),
+                  hours: totalHours.toLocaleString('en-US'),
+                }}
                 components={alertTitleComponents}
               />
             </p>
@@ -133,8 +139,8 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                   <Trans
                     i18nKey="scheduler.progress_current_state_waiting_confirmation_title"
                     values={{
-                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
-                      total: schedule.entries.length.toLocaleString(),
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString('en-US') : undefined,
+                      total: schedule.entries.length.toLocaleString('en-US'),
                       txid: schedule.active?.transactionId
                         ? shortenStringMiddle(schedule.active.transactionId, 12)
                         : '-',
@@ -161,8 +167,8 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                   <Trans
                     i18nKey="scheduler.progress_current_state_waiting_start_title"
                     values={{
-                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
-                      total: schedule.entries.length,
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString('en-US') : undefined,
+                      total: schedule.entries.length.toLocaleString('en-US'),
                     }}
                     components={alertTitleComponents}
                   />
@@ -176,8 +182,8 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                   <Trans
                     i18nKey="scheduler.progress_current_state_executing_title"
                     values={{
-                      current: schedule.active ? (schedule.active.index + 1).toLocaleString() : undefined,
-                      total: schedule.entries.length,
+                      current: schedule.active ? (schedule.active.index + 1).toLocaleString('en-US') : undefined,
+                      total: schedule.entries.length.toLocaleString('en-US'),
                     }}
                     components={alertTitleComponents}
                   />
@@ -196,7 +202,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                 <div className="min-w-0 flex-1 space-y-1">
                   <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
                   <span title={schedule.summary.startedAt.toISOString()}>
-                    {schedule.summary.startedAt.toLocaleString()}
+                    {schedule.summary.startedAt.toLocaleString('en-US')}
                   </span>
                 </div>
               </div>
@@ -208,7 +214,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
                     '-'
                   ) : (
                     <span title={schedule.summary.finishedAt.toISOString()}>
-                      {schedule.summary.finishedAt.toLocaleString()}
+                      {schedule.summary.finishedAt.toLocaleString('en-US')}
                     </span>
                   )}
                 </div>
@@ -305,13 +311,13 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
               >
                 <TabsList className="mx-auto flex items-center gap-2">
                   <TabsTrigger value="pending" className="cursor-pointer">
-                    {/* TODO: i18n */}Pending ({schedule.pending.length.toLocaleString()})
+                    {/* TODO: i18n */}Pending ({schedule.pending.length.toLocaleString('en-US')})
                   </TabsTrigger>
                   <TabsTrigger value="completed" className="cursor-pointer">
-                    {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString()})
+                    {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString('en-US')})
                   </TabsTrigger>
                   <TabsTrigger value="all" className="cursor-pointer">
-                    {/* TODO: i18n */}All ({schedule.entries.length.toLocaleString()})
+                    {/* TODO: i18n */}All ({schedule.entries.length.toLocaleString('en-US')})
                   </TabsTrigger>
                 </TabsList>
               </Tabs>

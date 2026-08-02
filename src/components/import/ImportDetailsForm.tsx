@@ -87,8 +87,8 @@ const isBip39Mnemonic = (value: string) => {
 
 const importDetailsFormSchema = (currentBlockHeight: BlockHeight | undefined, t: TFunction) => {
   const invalidGaplimitMessage = t('import_wallet.import_details.feedback_invalid_gaplimit', {
-    min: MIN_GAPLIMIT_VALUE.toLocaleString(),
-    max: MAX_GAPLIMIT_VALUE.toLocaleString(),
+    min: MIN_GAPLIMIT_VALUE.toLocaleString('en-US'),
+    max: MAX_GAPLIMIT_VALUE.toLocaleString('en-US'),
   })
   return yup
     .object({
@@ -108,8 +108,8 @@ const importDetailsFormSchema = (currentBlockHeight: BlockHeight | undefined, t:
         messages: {
           invalid: ({ min, max }) =>
             t('import_wallet.import_details.feedback_invalid_blockheight', {
-              min: min.toLocaleString(),
-              max: max.toLocaleString(),
+              min: min.toLocaleString('en-US'),
+              max: max.toLocaleString('en-US'),
             }),
         },
       }),

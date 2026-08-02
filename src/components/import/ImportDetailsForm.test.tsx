@@ -77,7 +77,7 @@ describe('ImportDetailsForm', () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          `import_wallet.import_details.feedback_invalid_blockheight {"min":"0","max":"${currentBlockHeight.toLocaleString()}"}`,
+          `import_wallet.import_details.feedback_invalid_blockheight {"min":"0","max":"${currentBlockHeight.toLocaleString('en-US')}"}`,
         ),
       ).toBeInTheDocument(),
     )

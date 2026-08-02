@@ -73,7 +73,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
               'text-muted-foreground': value.status.skipped,
             })}
           >
-            {t('scheduler.progress_entry_label', { index: (value.index + 1).toLocaleString() })}
+            {t('scheduler.progress_entry_label', { index: (value.index + 1).toLocaleString('en-US') })}
           </ItemTitle>
           <ItemDescription>
             {
@@ -81,7 +81,9 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
               value.kind === 'taker_coinjoin' ? (
                 <Trans
                   i18nKey="A collaborative transaction as <1>taker</1> with {{numberOfRequestedCounterparties}} counterparties"
-                  values={{ numberOfRequestedCounterparties: value.numberOfRequestedCounterparties?.toLocaleString() }}
+                  values={{
+                    numberOfRequestedCounterparties: value.numberOfRequestedCounterparties?.toLocaleString('en-US'),
+                  }}
                   components={{
                     '1': <span className="font-semibold" />,
                   }}
@@ -119,7 +121,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
             <CalendarClockIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
-              <span title={value.startedAt.toISOString()}>{value.startedAt.toLocaleString()}</span>
+              <span title={value.startedAt.toISOString()}>{value.startedAt.toLocaleString('en-US')}</span>
             </div>
           </div>
         ) : null}
@@ -131,7 +133,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
               {value.finishedAt === undefined ? (
                 '-'
               ) : (
-                <span title={value.finishedAt.toISOString()}>{value.finishedAt.toLocaleString()}</span>
+                <span title={value.finishedAt.toISOString()}>{value.finishedAt.toLocaleString('en-US')}</span>
               )}
             </div>
           </div>
@@ -143,7 +145,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Source Jar'}</Label>
               <Badge variant={jarBadgeVariant(value.jar.jarIndex)}>
-                {value.jar.name} <span className="text-xs">#{value.jar.jarIndex.toLocaleString()}</span>
+                {value.jar.name} <span className="text-xs">#{value.jar.jarIndex.toLocaleString('en-US')}</span>
               </Badge>
             </div>
           </div>
@@ -154,7 +156,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
             <UsersIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
               <Label className="font-semibold">{/*TODO: i18n */ 'Request collaborators'}</Label>
-              {value.numberOfRequestedCounterparties.toLocaleString()}
+              {value.numberOfRequestedCounterparties.toLocaleString('en-US')}
             </div>
           </div>
         ) : null}

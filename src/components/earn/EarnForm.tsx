@@ -152,15 +152,15 @@ export function EarnForm({
             .min(
               JAM.OFFER_MINSIZE_MIN,
               t('earn.feedback_invalid_min_amount_range', {
-                minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
-                minAmountMax: offerMinsizeMax.toLocaleString(),
+                minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString('en-US'),
+                minAmountMax: offerMinsizeMax.toLocaleString('en-US'),
               }),
             )
             .max(
               offerMinsizeMax,
               t('earn.feedback_invalid_min_amount_range', {
-                minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
-                minAmountMax: offerMinsizeMax.toLocaleString(),
+                minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString('en-US'),
+                minAmountMax: offerMinsizeMax.toLocaleString('en-US'),
               }),
             )
             .required(t('earn.feedback_invalid_min_amount')),
