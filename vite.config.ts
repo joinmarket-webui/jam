@@ -78,6 +78,18 @@ export default defineConfig((config): UserConfig => {
         '@': path.resolve(import.meta.dirname, './src'),
       },
     },
+    build: {
+      rolldownOptions: {
+        output: {
+          minify: {
+            compress: {
+              dropConsole: buildOrPreview,
+              dropDebugger: buildOrPreview,
+            },
+          },
+        },
+      },
+    },
     server: {
       ...server,
       open: true,
