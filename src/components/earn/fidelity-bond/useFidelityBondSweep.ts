@@ -56,6 +56,7 @@ export function useFidelityBondSweep({
       setError(undefined)
 
       const frozen: Utxo[] = []
+      let bondWasUnfrozen = false
       try {
         // Freeze other UTXOs in the source jar so only the FB gets swept
         for (const u of utxosToFreeze) {
@@ -71,6 +72,7 @@ export function useFidelityBondSweep({
             path: { walletname: walletFileName },
             body: { 'utxo-string': utxo.utxo, freeze: false },
           })
+          bondWasUnfrozen = true
         }
 
         const result = await directSend.mutateAsync({
@@ -133,6 +135,20 @@ export function useFidelityBondSweep({
             console.debug('Error while unfreezing previously frozen UTXO in error handling.')
           }
         }
+
+        // Best-effort rollback — re-freeze the bond if we unfroze it before the error
+        if (bondWasUnfrozen) {
+          try {
+            await freezeUtxo.mutateAsync({
+              path: { walletname: walletFileName },
+              body: { 'utxo-string': utxo.utxo, freeze: true },
+              throwOnError: true,
+            })
+          } catch (_ignoredOnPurpose: unknown) {
+            console.debug('Error while re-freezing fidelity bond UTXO in error handling.')
+          }
+        }
+
         return undefined
       }
     },
