@@ -118,18 +118,42 @@ describe('EarnReportContent', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders loading and empty report states', () => {
+  it('renders loading and report states', () => {
     mocks.isLoading = true
+    mocks.isRefetching = false
+    mocks.entries = []
     const { rerender } = render(<EarnReportContent enabled />)
 
     expect(screen.getByText('spinner')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.refresh' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.download' })).not.toBeInTheDocument()
 
     mocks.isLoading = false
+    mocks.isRefetching = true
     mocks.entries = []
     rerender(<EarnReportContent enabled />)
 
     expect(screen.getByText('earn.alert_empty_report')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /earn\.report\.text_button_download_csv/u })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'global.refresh' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'global.download' })).toBeDisabled()
+
+    mocks.isLoading = false
+    mocks.isRefetching = false
+    mocks.entries = []
+    rerender(<EarnReportContent enabled />)
+
+    expect(screen.queryByText('earn.alert_empty_report')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'global.refresh' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'global.download' })).toBeDisabled()
+
+    mocks.isLoading = false
+    mocks.isRefetching = false
+    mocks.entries = [entry({ earnedAmount: 100, notes: 'first maker note' })]
+    rerender(<EarnReportContent enabled />)
+
+    expect(screen.queryByText('earn.alert_empty_report')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'global.refresh' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'global.download' })).toBeEnabled()
   })
 
   it('summarizes, filters, refreshes, paginates, and exports report rows', async () => {
@@ -152,24 +176,34 @@ describe('EarnReportContent', () => {
     expect(screen.getByText('chart:3')).toBeInTheDocument()
     expect(screen.getByText('balance:600')).toBeInTheDocument()
     expect(screen.getAllByText('balance:300').length).toBeGreaterThan(0)
-    expect(screen.getByText(/earn\.report\.text_report_summary:\{"count":3\}/u)).toBeInTheDocument()
+    expect(screen.getByText('earn.report.text_report_summary:{"count":3}')).toBeInTheDocument()
+    expect(screen.queryByText(/earn\.report\.text_report_summary_filtered:/u)).not.toBeInTheDocument()
     expect(screen.getByText('first maker note')).toBeInTheDocument()
 
     fireEvent.change(screen.getByPlaceholderText('earn.report.placeholder_search'), {
       target: { value: 'second' },
     })
-    expect(screen.getByText(/earn\.report\.text_report_summary_filtered/u)).toBeInTheDocument()
+
+    expect(screen.queryByText(/earn\.report\.text_report_summary:/u)).not.toBeInTheDocument()
+    expect(screen.getByText('earn.report.text_report_summary_filtered:{"count":1}')).toBeInTheDocument()
     expect(screen.queryByText('first maker note')).not.toBeInTheDocument()
     expect(screen.getByText('second maker note')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /earn\.report\.text_button_download_csv/u }))
+    const downloadButton = screen.getByRole('button', { name: 'global.download' })
+    expect(downloadButton).toBeEnabled()
+
+    fireEvent.click(downloadButton)
     expect(mocks.createObjectURL).toHaveBeenCalled()
     expect(anchorClick).toHaveBeenCalled()
 
     fireEvent.click(screen.getByRole('button', { name: 'first-page' }))
     fireEvent.click(screen.getByRole('button', { name: 'show-all' }))
     fireEvent.click(screen.getByRole('button', { name: 'show-page-size' }))
-    fireEvent.click(screen.getByRole('button', { name: '' }))
+
+    const refreshButton = screen.getByRole('button', { name: 'global.refresh' })
+    expect(refreshButton).toBeEnabled()
+
+    fireEvent.click(refreshButton)
 
     await waitFor(() => expect(mocks.refetch).toHaveBeenCalled())
     createElement.mockRestore()
@@ -180,9 +214,11 @@ describe('EarnReportContent', () => {
 
     render(<EarnReportContent enabled />)
 
+    expect(screen.getByText('dev-badge')).toBeInTheDocument()
+    expect(screen.getByText('earn.report.text_report_summary:{"count":3}')).toBeInTheDocument()
+
     fireEvent.click(screen.getByRole('button', { name: /earn\.report\.text_button_generate_demo_report/u }))
 
-    expect(screen.getByText('dev-badge')).toBeInTheDocument()
-    expect(screen.getByText(/earn\.report\.text_report_summary:\{"count":4\}/u)).toBeInTheDocument()
+    expect(screen.getByText('earn.report.text_report_summary:{"count":4}')).toBeInTheDocument()
   })
 })

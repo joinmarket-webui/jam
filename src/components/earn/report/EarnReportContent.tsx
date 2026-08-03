@@ -220,14 +220,21 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 value={globalFilter}
                 onChange={(event) => table.setGlobalFilter(event.target.value)}
                 className="pl-8"
+                disabled={!enabled}
               />
             </div>
-            <Button variant="outline" size="icon" onClick={() => void refetch()} disabled={isRefetching}>
-              <RefreshCwIcon className={isRefetching ? 'animate-spin' : ''} />
+            <Button variant="outline" onClick={() => void refetch()} disabled={!enabled || isRefetching}>
+              <RefreshCwIcon className={isRefetching ? 'animate-spin' : undefined} />
+              <span className="hidden sm:inline">{t('global.refresh')}</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={downloadCsv} disabled={allEntries.length === 0}>
-              <DownloadIcon />
-              {t('earn.report.text_button_download_csv')}
+            <Button
+              className="hover:[&>svg]:motion-safe:animate-bounce"
+              variant="outline"
+              onClick={downloadCsv}
+              disabled={!enabled || allEntries.length === 0}
+            >
+              <DownloadIcon className="group/download" />
+              <span className="hidden sm:inline">{t('global.download')}</span>
             </Button>
 
             <span className="text-muted-foreground ml-2 text-sm font-normal">

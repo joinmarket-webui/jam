@@ -185,7 +185,7 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
             disabled={isLoadingRefresh}
             title={t('global.refresh')}
           >
-            <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
+            <RefreshCwIcon className={isLoadingRefresh ? 'animate-spin' : undefined} />
             <span className="hidden sm:inline">{t('global.refresh')}</span>
           </Button>
         </div>
