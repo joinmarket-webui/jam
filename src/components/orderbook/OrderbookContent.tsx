@@ -87,7 +87,7 @@ const offerToTableEntry = (
     maximumSize: String(offer.maxsize || 0),
     bondValue: {
       value: offer.fidelity_bond_value || 0,
-      displayValue: Math.floor(offer.fidelity_bond_value || 0).toLocaleString('en-US'),
+      displayValue: Math.floor(offer.fidelity_bond_value || 0).toLocaleString(),
       locktime: fidelityBond?.locktime,
       displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
       displayExpiresIn: fidelityBond?.locktime

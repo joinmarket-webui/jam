@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
+import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import {
   cn,
   debounce,
@@ -36,24 +37,6 @@ import {
   uint8ArrayfromHex,
 } from './utils'
 import type { WalletFileName } from './utils'
-
-const withRuntimeLocale = (locale: string, callback: () => void) => {
-  /* eslint-disable unicorn/no-this-outside-of-class -- mocking Number.prototype.toLocaleString requires `this` */
-  const numberToLocaleStringMock = vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (
-    this: number,
-    locales,
-    options,
-  ) {
-    return Intl.NumberFormat(locales ?? locale, options).format(this)
-  })
-  /* eslint-enable unicorn/no-this-outside-of-class */
-
-  try {
-    callback()
-  } finally {
-    numberToLocaleStringMock.mockRestore()
-  }
-}
 
 describe('cn', () => {
   it('should merge class names correctly', () => {
@@ -502,8 +485,10 @@ describe('formatBtc', () => {
   })
 
   it('should handle large BTC values', () => {
-    expect(formatBtc(21000000)).toBe('21,000,000.00000000')
-    expect(formatBtc(100.99999999)).toBe('100.99999999')
+    withRuntimeLocale('en-US', () => {
+      expect(formatBtc(21000000)).toBe('21,000,000.00000000')
+      expect(formatBtc(100.99999999)).toBe('100.99999999')
+    })
   })
 
   it('should handle very small BTC values', () => {
@@ -555,9 +540,11 @@ describe('getBtcParts', () => {
 
 describe('formatSats', () => {
   it('should format satoshi values with locale-specific thousands separators', () => {
-    expect(formatSats(1000)).toBe('1,000')
-    expect(formatSats(1000000)).toBe('1,000,000')
-    expect(formatSats(100000000)).toBe('100,000,000') // 1 BTC in sats
+    withRuntimeLocale('en-US', () => {
+      expect(formatSats(1000)).toBe('1,000')
+      expect(formatSats(1000000)).toBe('1,000,000')
+      expect(formatSats(100000000)).toBe('100,000,000') // 1 BTC in sats
+    })
   })
 
   it('should handle small satoshi values', () => {
@@ -568,13 +555,17 @@ describe('formatSats', () => {
   })
 
   it('should handle large satoshi values', () => {
-    expect(formatSats(2100000000000000)).toBe('2,100,000,000,000,000') // 21M BTC in sats
-    expect(formatSats(12345678901)).toBe('12,345,678,901')
+    withRuntimeLocale('en-US', () => {
+      expect(formatSats(2100000000000000)).toBe('2,100,000,000,000,000') // 21M BTC in sats
+      expect(formatSats(12345678901)).toBe('12,345,678,901')
+    })
   })
 
   it('should handle negative satoshi values', () => {
-    expect(formatSats(-1000)).toBe('-1,000')
-    expect(formatSats(-1234567)).toBe('-1,234,567')
+    withRuntimeLocale('en-US', () => {
+      expect(formatSats(-1000)).toBe('-1,000')
+      expect(formatSats(-1234567)).toBe('-1,234,567')
+    })
   })
 
   it('should follow runtime locale when no explicit locale is provided', () => {

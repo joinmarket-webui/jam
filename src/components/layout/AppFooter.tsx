@@ -94,7 +94,7 @@ export function AppFooter({
                 <span className="flex items-center gap-1">
                   <BlocksIcon className="size-3" />
                   <span className="break-keep slashed-zero tabular-nums select-all">
-                    {blockHeight.toLocaleString('en-US')}
+                    {blockHeight.toLocaleString()}
                   </span>
                 </span>
               )}
