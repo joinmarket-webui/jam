@@ -16,6 +16,14 @@ ${'*'.repeat(42)}/`,
   'color:#e2b86a;font-size:14px;',
 )
 
+setTimeout(() => {
+  console.log('%cWarning!', 'color:oklch(0.577 0.245 27.325);font-size:48px;font-weight:bold;')
+  console.log(
+    "%cYou opened the browser console, a developer tool. Don't enter or paste code you do not understand. Never share your seed phrase or any other info with anyone. If someone told you to do this, it is very likely a scam.",
+    'color:oklch(0.777 0.245 27.325);font-size:16px;',
+  )
+}, 2_100)
+
 createRoot(document.querySelector('#root')!).render(
   <StrictMode>
     <App />
