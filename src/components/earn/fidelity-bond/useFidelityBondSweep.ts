@@ -57,6 +57,8 @@ export function useFidelityBondSweep({
 
       const frozen: Utxo[] = []
       let bondWasUnfrozen = false
+      let sweepBroadcasted = false
+
       try {
         // Freeze other UTXOs in the source jar so only the FB gets swept
         for (const u of utxosToFreeze) {
@@ -83,6 +85,7 @@ export function useFidelityBondSweep({
             destination,
           },
         })
+        sweepBroadcasted = true
 
         // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
         for (const u of frozen) {
@@ -119,7 +122,6 @@ export function useFidelityBondSweep({
           console.warn('onBroadcastSuccess failed', error)
         }
 
-        await walletInfoRefetch()
         return result
       } catch (_ignoredOnPurpose: unknown) {
         // Best-effort rollback — unfreeze UTXOs that were frozen before the error
@@ -136,8 +138,9 @@ export function useFidelityBondSweep({
           }
         }
 
-        // Best-effort rollback — re-freeze the bond if we unfroze it before the error
-        if (bondWasUnfrozen) {
+        // re-freeze the bond if it was unfrozen before the error. skip once the
+        // sweep already broadcast, the bond utxo is spent by then
+        if (bondWasUnfrozen && !sweepBroadcasted) {
           try {
             await freezeUtxo.mutateAsync({
               path: { walletname: walletFileName },
@@ -150,6 +153,15 @@ export function useFidelityBondSweep({
         }
 
         return undefined
+      } finally {
+        
+        if (sweepBroadcasted) {
+          try {
+            await walletInfoRefetch()
+          } catch (error: unknown) {
+            console.warn('Error while refetching wallet info after sweep.', error)
+          }
+        }
       }
     },
     retry: false,

@@ -179,4 +179,30 @@ describe('useFidelityBondSweep', () => {
     )
     expect(mocks.walletInfoRefetch).toHaveBeenCalled()
   })
+
+  it('does not re-freeze the bond if the sweep broadcast but the refetch after it fails', async () => {
+    const bond = bondUtxo({ mixdepth: 0 })
+    mocks.walletInfo.jars = [jar(0, [bond])]
+    mocks.directSendMutateAsync.mockResolvedValue({ txinfo: { txid: 'renewed-tx' } })
+    mocks.walletInfoRefetch.mockRejectedValue(new Error('refetch failed'))
+
+    const { result } = renderHook(() =>
+      useFidelityBondSweep({
+        walletFileName: 'wallet.jmdat',
+        utxo: bond,
+        unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
+        sendErrorKey: 'earn.fidelity_bond.renew.error_renewing_fidelity_bond',
+      }),
+    )
+
+    const txResult = await result.current.sweep({
+      destination: 'bcrt1qdestination',
+      tryFreezeAfterBroadcast: false,
+    })
+
+    expect(txResult).toEqual({ txinfo: { txid: 'renewed-tx' } })
+    expect(mocks.freezeMutateAsync).not.toHaveBeenCalledWith(
+      expect.objectContaining({ body: { 'utxo-string': 'bond:0', freeze: true } }),
+    )
+  })
 })
