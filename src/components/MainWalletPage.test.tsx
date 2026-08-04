@@ -146,4 +146,17 @@ describe('MainWalletPage', () => {
     fireEvent.click(screen.getByText('5000'))
     expect(toggleDisplayMode).toHaveBeenCalled()
   })
+
+  it('expands and collapses transaction history via accordion toggle button', () => {
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    expect(screen.queryByTestId('TxHistoryContent')).not.toBeInTheDocument()
+
+    const toggleButton = screen.getByTitle('tx_history.expand_history')
+    fireEvent.click(toggleButton)
+    expect(screen.getByTestId('TxHistoryContent')).toBeInTheDocument()
+
+    const collapseButton = screen.getByTitle('tx_history.collapse_history')
+    fireEvent.click(collapseButton)
+    expect(screen.queryByTestId('TxHistoryContent')).not.toBeInTheDocument()
+  })
 })

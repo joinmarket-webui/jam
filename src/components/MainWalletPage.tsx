@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DownloadIcon, InfoIcon, RefreshCwIcon, UploadIcon } from 'lucide-react'
+import { ChevronDownIcon, DownloadIcon, InfoIcon, RefreshCwIcon, UploadIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -33,6 +33,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const [selectedJar, setSelectedJar] = useState<JarObject>()
   const [isWalletJarsDetailsOpen, setIsWalletJarsDetailsOpen] = useState(false)
   const [isTxHistoryOpen, setIsTxHistoryOpen] = useState(false)
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
 
   const { toggleDisplayMode } = useJamDisplayContext()
   const { isLoading, isFetching, error, refetch: refetchWalletData } = useJamWalletInfoContext()
@@ -91,7 +92,33 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
               {t('current_wallet.button_withdraw')}
             </Button>
           </div>
+
+          <div className="my-6 flex w-full max-w-4xl items-center gap-3">
+            <div className="bg-border h-px flex-1" />
+            <Button
+              variant="outline"
+              size="icon"
+              className="border-border bg-background size-8 shrink-0 rounded-full"
+              onClick={() => setIsHistoryExpanded((previous) => !previous)}
+              title={isHistoryExpanded ? t('tx_history.collapse_history') : t('tx_history.expand_history')}
+            >
+              <ChevronDownIcon
+                className={cn('size-4 transition-transform duration-200', isHistoryExpanded && 'rotate-180')}
+              />
+            </Button>
+            <div className="bg-border h-px flex-1" />
+          </div>
         </div>
+
+        {isHistoryExpanded && (
+          <TxHistoryContent
+            walletFileName={walletFileName}
+            compact={true}
+            initialLimit={5}
+            onViewAll={() => void navigate(routes.txHistory)}
+            className="w-full max-w-6xl"
+          />
+        )}
 
         {error ? (
           <Alert variant="destructive" className="mb-4 max-w-xl">
@@ -156,13 +183,6 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             {t('global.refresh')}
           </Button>
         </div>
-        <TxHistoryContent
-          walletFileName={walletFileName}
-          compact={true}
-          initialLimit={5}
-          onViewAll={() => setIsTxHistoryOpen(true)}
-          className="w-full max-w-6xl"
-        />
       </div>
     </>
   )

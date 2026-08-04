@@ -80,6 +80,9 @@
     "item_jars": {
       "label": "Jars"
     },
+    "item_history": {
+      "label": "Transaction History"
+    },
     "item_tour": {
       "label": "Tour"
     },
@@ -901,24 +904,28 @@
     "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
   },
   "tx_history": {
+    "title": "Transaction History",
     "section_title": "Recent Activity",
     "overlay_title": "Transaction History",
     "button_view_all": "View All",
     "button_load_more": "Load More",
+    "button_generate_demo_entry": "Add Demo Entry",
+    "button_reload_title": "Reload",
+    "expand_history": "Show transaction history",
+    "collapse_history": "Hide transaction history",
     "empty_history": "No transactions found.",
     "error_loading": "Failed to load transaction history.",
     "copy_txid_success": "Transaction ID copied.",
     "copy_txid_error": "Failed to copy transaction ID.",
-    "column_date": "Date",
-    "column_role": "Type",
-    "column_amount": "Amount",
-    "column_net_fee": "Net Fee",
-    "column_confirmations": "Confs.",
-    "column_txid": "Transaction",
-    "role_maker": "Maker",
-    "role_taker": "CoinJoin",
-    "role_send": "Send",
-    "role_deposit": "Deposit",
-    "role_unknown": "Unknown"
+    "column_title_date": "Date",
+    "column_title_role": "Type",
+    "column_title_amount": "Amount",
+    "column_title_net_fee": "Net Fee",
+    "column_title_confirmations": "Confs.",
+    "column_title_txid": "Transaction",
+    "label_role_maker": "Maker",
+    "label_role_taker": "Taker",
+    "label_role_send": "Send",
+    "label_role_deposit": "Deposit"
   }
 }

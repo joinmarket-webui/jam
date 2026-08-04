@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { wallethistoryOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { HistoryEntry, WalletHistoryResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
@@ -19,6 +20,7 @@ interface UseQueryWalletHistoryProps {
   walletFileName: WalletFileName
   limit?: number
   enabled?: boolean
+  utxosHashHex?: string
 }
 
 const EMPTY_HISTORY: HistoryEntry[] = []
@@ -27,6 +29,7 @@ export function useQueryWalletHistory({
   walletFileName,
   limit,
   enabled = true,
+  utxosHashHex = '',
 }: UseQueryWalletHistoryProps): UseQueryWalletHistoryResult {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
@@ -35,6 +38,9 @@ export function useQueryWalletHistory({
     client,
     path: { walletname: walletFileName || '' },
     query: { limit },
+    meta: {
+      cacheBuster: utxosHashHex,
+    },
   })
 
   const queryResult = useQuery({
@@ -45,6 +51,14 @@ export function useQueryWalletHistory({
     }),
     enabled: enabled && !!walletFileName && !!jmSession,
   })
+
+  const { refetch } = queryResult
+
+  useEffect(() => {
+    if (utxosHashHex && enabled) {
+      void refetch()
+    }
+  }, [utxosHashHex, enabled, refetch])
 
   return {
     history: queryResult.data?.history ?? EMPTY_HISTORY,

@@ -72,10 +72,10 @@ describe('TxHistoryTable', () => {
   it('renders history rows and sorts by date', () => {
     render(<TxHistoryTable history={[mockDeposit, mockSend]} />)
 
-    expect(screen.getByText('tx_history.role_deposit')).toBeInTheDocument()
-    expect(screen.getByText('tx_history.role_send')).toBeInTheDocument()
+    expect(screen.getByText('tx_history.label_role_deposit')).toBeInTheDocument()
+    expect(screen.getByText('tx_history.label_role_send')).toBeInTheDocument()
 
-    const dateHeader = screen.getByText('tx_history.column_date')
+    const dateHeader = screen.getByText('tx_history.column_title_date')
     fireEvent.click(dateHeader)
     expect(dateHeader).toBeInTheDocument()
   })
@@ -98,11 +98,11 @@ describe('TxHistoryTable', () => {
   it('sorts columns correctly', () => {
     render(<TxHistoryTable history={[mockDeposit, mockSend, mockFailed]} />)
 
-    fireEvent.click(screen.getByText('tx_history.column_amount'))
-    fireEvent.click(screen.getByText('tx_history.column_net_fee'))
-    fireEvent.click(screen.getByText('tx_history.column_confirmations'))
-    fireEvent.click(screen.getByText('tx_history.column_role'))
+    fireEvent.click(screen.getByText('tx_history.column_title_amount'))
+    fireEvent.click(screen.getByText('tx_history.column_title_net_fee'))
+    fireEvent.click(screen.getByText('tx_history.column_title_confirmations'))
+    fireEvent.click(screen.getByText('tx_history.column_title_role'))
 
-    expect(screen.getByText('tx_history.role_taker')).toBeInTheDocument()
+    expect(screen.getByText('tx_history.label_role_taker')).toBeInTheDocument()
   })
 })

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -49,7 +49,7 @@ const historyRole = (entry: HistoryEntry): KnownHistoryRole | undefined => {
 
 const roleLabel = (entry: HistoryEntry, t: TFunction) => {
   const role = historyRole(entry)
-  return role ? t(`tx_history.role_${role}`) : t('tx_history.role_unknown')
+  return role ? t(`tx_history.label_role_${role}`) : entry.role || ''
 }
 
 const dateTimeValue = (value: string) => {
@@ -106,7 +106,7 @@ const TxHistoryTableRow = ({ row }: { row: Row<HistoryEntry> }) => {
 const txHistoryTableColumns = (t: TFunction) => {
   return [
     columnHelper.accessor('timestamp', {
-      header: () => t('tx_history.column_date'),
+      header: () => t('tx_history.column_title_date'),
       sortingFn: (a, b) => dateTimeValue(a.original.timestamp) - dateTimeValue(b.original.timestamp),
       cell: (info) => <span className="text-nowrap">{formatDateTime(info.getValue())}</span>,
       meta: {
@@ -114,7 +114,7 @@ const txHistoryTableColumns = (t: TFunction) => {
       },
     }),
     columnHelper.accessor('role', {
-      header: () => t('tx_history.column_role'),
+      header: () => t('tx_history.column_title_role'),
       sortingFn: (a, b) => roleLabel(a.original, t).localeCompare(roleLabel(b.original, t)),
       cell: (info) => {
         const role = historyRole(info.row.original)
@@ -124,7 +124,7 @@ const txHistoryTableColumns = (t: TFunction) => {
       },
     }),
     columnHelper.accessor('cj_amount', {
-      header: () => t('tx_history.column_amount'),
+      header: () => t('tx_history.column_title_amount'),
       sortingFn: (a, b) => (a.original.cj_amount ?? 0) - (b.original.cj_amount ?? 0),
       cell: (info) => <Balance valueString={String(info.getValue() ?? 0)} />,
       meta: {
@@ -133,7 +133,7 @@ const txHistoryTableColumns = (t: TFunction) => {
       },
     }),
     columnHelper.accessor('net_fee', {
-      header: () => t('tx_history.column_net_fee'),
+      header: () => t('tx_history.column_title_net_fee'),
       sortingFn: (a, b) => (a.original.net_fee ?? 0) - (b.original.net_fee ?? 0),
       cell: (info) => <Balance valueString={String(info.getValue() ?? 0)} />,
       meta: {
@@ -142,7 +142,7 @@ const txHistoryTableColumns = (t: TFunction) => {
       },
     }),
     columnHelper.accessor('confirmations', {
-      header: () => t('tx_history.column_confirmations'),
+      header: () => t('tx_history.column_title_confirmations'),
       sortingFn: (a, b) => (a.original.confirmations ?? 0) - (b.original.confirmations ?? 0),
       cell: (info) => <>{info.getValue() ?? 0}</>,
       meta: {
@@ -151,7 +151,7 @@ const txHistoryTableColumns = (t: TFunction) => {
       },
     }),
     columnHelper.accessor('txid', {
-      header: () => t('tx_history.column_txid'),
+      header: () => t('tx_history.column_title_txid'),
       cell: (info) => {
         const txid = info.getValue() ?? ''
         return txid ? (
@@ -201,10 +201,21 @@ interface TxHistoryTableProps {
 export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps) => {
   const { t } = useTranslation()
   const [sorting, setSorting] = useState<SortingState>([{ id: 'timestamp', desc: true }])
+  const [isShowAll, setIsShowAll] = useState(false)
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: compact ? 5 : ITEMS_PER_PAGE,
   })
+
+  useEffect(() => {
+    if (isShowAll) {
+      setPagination((previous) => ({
+        ...previous,
+        pageSize: Math.max(1, history.length),
+        pageIndex: 0,
+      }))
+    }
+  }, [history.length, isShowAll])
 
   const columns = useMemo(() => txHistoryTableColumns(t), [t])
 
@@ -286,11 +297,17 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
         <TablePagination
           currentPage={table.getState().pagination.pageIndex + 1}
           totalPages={table.getPageCount()}
-          itemsPerPage={pagination.pageSize}
+          itemsPerPage={isShowAll ? -1 : pagination.pageSize}
           totalItems={table.getFilteredRowModel().rows.length}
           onPageChange={(page) => table.setPageIndex(page - 1)}
           onItemsPerPageChange={(newItemsPerPage) => {
-            table.setPageSize(newItemsPerPage === -1 ? history.length || 1 : newItemsPerPage)
+            if (newItemsPerPage === -1) {
+              setIsShowAll(true)
+              table.setPageSize(history.length || 1)
+            } else {
+              setIsShowAll(false)
+              table.setPageSize(newItemsPerPage)
+            }
             table.setPageIndex(0)
           }}
         />

@@ -18,7 +18,7 @@ export function TxHistoryOverlay({ open, onOpenChange, walletFileName, ...dialog
     <Dialog open={open} onOpenChange={() => onOpenChange(false)} {...dialogProps}>
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-dvh max-h-dvh! max-w-screen! flex-col overflow-hidden rounded-none border-none">
         <DialogHeader className="px-2">
-          <DialogTitle className="sr-only flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2">
             <PageTitle title={t('tx_history.overlay_title')} />
           </DialogTitle>
         </DialogHeader>
