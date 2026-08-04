@@ -28,17 +28,16 @@ import type { TFunction } from 'i18next'
 import { ChevronDownIcon, SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { Balance } from '@/components/ui/jam/Balance'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
-import * as fb from '@/lib/fidelityBondUtils'
 import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Checkbox } from '../ui/checkbox'
 import { Address } from '../ui/jam/Address'
-import { Balance } from '../ui/jam/Balance'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 
@@ -147,14 +146,12 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
       ),
     },
     columnHelper.accessor('utxo.frozen', {
-      header: () => <div className="flex items-center"></div>,
-      sortingFn: (a, b) => {
-        const val = (a.original.utxo.frozen ? 1 : 0) - (b.original.utxo.frozen ? 1 : 0)
+      header: () => <></>,
+      sortingFn: ({ original: { utxo: a } }, { original: { utxo: b } }) => {
+        const val = (a.frozen ? 1 : 0) - (b.frozen ? 1 : 0)
         if (val !== 0) return val
         // tie-break using confirmations
-        const aid = Number(a.original.utxo.confirmations)
-        const bid = Number(b.original.utxo.confirmations)
-        return aid - bid
+        return a.confirmations - b.confirmations
       },
       cell: (info) => {
         return (
@@ -172,14 +169,12 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
       },
     }),
     columnHelper.accessor('utxo.value', {
-      header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
-      sortingFn: (a, b) => {
-        const val = a.original.utxo.value - b.original.utxo.value
+      header: () => t('jar_details.utxo_list.column_title_balance'),
+      sortingFn: ({ original: { utxo: a } }, { original: { utxo: b } }) => {
+        const val = a.value - b.value
         if (val !== 0) return val
         // tie-break using confirmations
-        const aid = Number(a.original.utxo.confirmations)
-        const bid = Number(b.original.utxo.confirmations)
-        return aid - bid
+        return a.confirmations - b.confirmations
       },
       cell: (info) => <Balance valueString={String(info.getValue())} />,
       meta: {
@@ -189,17 +184,21 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
     }),
     columnHelper.accessor('utxo.confirmations', {
       header: () => t('jar_details.utxo_list.column_title_confirmations'),
-      cell: (info) => <>{info.getValue()}</>,
+      cell: (info) => <span className="slashed-zero tabular-nums">{info.getValue()}</span>,
       meta: {
         numeric: true,
-        align: 'center',
+        align: 'right',
       },
     }),
     columnHelper.accessor('tags', {
       header: () => t('jar_details.utxo_list.column_title_label_and_status'),
-      cell: (info) => (
+      cell: ({
+        row: {
+          original: { tags },
+        },
+      }) => (
         <div className="flex items-center gap-2">
-          {info.row.original.tags.map((it, index) => {
+          {tags.map((it, index) => {
             const tooltipKey = `jar_details.utxo_list.utxo_tag_tooltip_${it.value.replaceAll(':', '_')}`
             const tooltip = t(tooltipKey)
             const hasTooltip = tooltip !== tooltipKey
@@ -214,7 +213,7 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
       enableSorting: false,
     }),
     columnHelper.accessor<'utxo.address', UtxoTableEntry['utxo']['address']>('utxo.address', {
-      header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
+      header: () => t('jar_details.utxo_list.column_title_address'),
       sortingFn: (a, b) => {
         const val = a.original.utxo.address.localeCompare(b.original.utxo.address)
         if (val !== 0) return val
@@ -249,9 +248,9 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
   ]
 }
 
-const defaultRowSelection: RowSelectionOptions<UtxoTableEntry>['enableRowSelection'] = (row: Row<UtxoTableEntry>) => {
-  return !fb.utxo.isFidelityBond(row.original.utxo)
-}
+const defaultRowSelection: RowSelectionOptions<UtxoTableEntry>['enableRowSelection'] = (
+  _ignoredOnPurpose: Row<UtxoTableEntry>,
+) => true
 
 interface JarUtxosTableProps {
   globalFilter?: string

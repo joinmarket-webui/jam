@@ -55,13 +55,13 @@ vi.mock('../ui/jam/Address', () => ({
   Address: () => <div data-testid="address" />,
 }))
 
-vi.mock('../ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString?: string }) => <div data-testid="balance">{valueString}</div>,
 }))
 
 vi.mock('../ui/jam/SelectableJar', () => ({
-  SelectableJar: ({ name, onClick, disabled }: { name?: string; onClick?: () => void; disabled?: boolean }) => (
-    <button onClick={onClick} disabled={disabled}>
+  SelectableJar: ({ name, onSelect, disabled }: { name?: string; onSelect?: () => void; disabled?: boolean }) => (
+    <button onClick={onSelect} disabled={disabled}>
       {name}
     </button>
   ),
@@ -286,7 +286,7 @@ describe('SendForm', () => {
     await waitFor(() => expect(h.toastError).toHaveBeenCalledWith('global.errors.error_loading_address_failed'))
   })
 
-  it('applies a pasted bip21 uri', async () => {
+  it('applies a pasted bip21 uri and shows success toast', async () => {
     renderForm()
 
     const inputBefore = document.querySelector('#send-destination') as HTMLInputElement
@@ -303,11 +303,23 @@ describe('SendForm', () => {
     await flushActUpdates()
   })
 
-  it('ignores a non-bitcoin paste', () => {
+  it('ignores a non-bitcoin-uri paste', () => {
     renderForm()
     const input = document.querySelector('#send-destination') as HTMLInputElement
 
     fireEvent.paste(input, { clipboardData: { getData: () => 'just some text' } })
+
+    expect(h.toastSuccess).not.toHaveBeenCalled()
+  })
+
+  it('applies pasted address and does show success toast', () => {
+    renderForm()
+    const inputBefore = document.querySelector('#send-destination') as HTMLInputElement
+
+    fireEvent.paste(inputBefore, { clipboardData: { getData: () => h.DEFAULT_SCAN_DUMMY_ADDRESS_1 } })
+
+    const inputAfter = document.querySelector('#send-destination') as HTMLInputElement
+    expect(inputAfter).toHaveValue(h.DEFAULT_SCAN_DUMMY_ADDRESS_1)
 
     expect(h.toastSuccess).not.toHaveBeenCalled()
   })

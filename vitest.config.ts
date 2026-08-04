@@ -3,7 +3,7 @@ import { playwright } from '@vitest/browser-playwright'
 import path from 'node:path'
 import { mergeConfig } from 'vite'
 import { ConfigEnv, coverageConfigDefaults, defineConfig, type ViteUserConfig } from 'vitest/config'
-import viteConfig from './vite.config'
+import viteConfig from './vite.config.ts'
 
 export default defineConfig((args: ConfigEnv): ViteUserConfig => {
   return mergeConfig(viteConfig(args), {
@@ -41,7 +41,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
           plugins: [
             // The plugin will run tests for the stories defined in your Storybook config
             // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-            storybookTest({ configDir: path.resolve(__dirname, './.storybook') }),
+            storybookTest({ configDir: path.resolve(import.meta.dirname, './.storybook') }),
           ],
           test: {
             name: 'storybook',
@@ -69,7 +69,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
           },
           resolve: {
             alias: {
-              '@': path.resolve(__dirname, './src'),
+              '@': path.resolve(import.meta.dirname, './src'),
             },
           },
         },

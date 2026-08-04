@@ -1,7 +1,10 @@
 import { Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import { describe, expect, it, vi } from 'vitest'
+import { JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS, JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS } from '@/constants/jam'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
+import type { Utxo } from '@/hooks/useQueryUtxos'
+import { toBalanceSummary } from '@/lib/balanceSummary'
 import { TX_FEE_UNITS, toJamFeeConfigValues } from '@/lib/feeConfig'
 import {
   createSendFormSchema,
@@ -10,32 +13,58 @@ import {
   toSendFormDefaultValues,
 } from './SendForm.schema'
 
-const t = vi.fn((key: string) => key) as unknown as TFunction<'translation', undefined>
+const t = vi.fn((key: string, options?: Record<string, unknown>) =>
+  options ? `${key}:${JSON.stringify(options)}` : key,
+) as unknown as TFunction<'translation', undefined>
 
-const validMainnetAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
-const sourceJarAddress = '1CounterpartyXXXXXXXXXXXXXXXUWLpVr'
+const validMainnetAddress = '1BitcoinEaterAddressDontSend8MUo1T'
+const validRegtestAddress = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
+const sourceJarAddress = '1BitcoinEaterAddressDontSendDHyNcX'
+
+const utxo = (overrides: Partial<Utxo>): Utxo => ({
+  utxo: 'tx:0',
+  address: 'bcrt1qsource',
+  path: "m/84'/1'/0'/0/0",
+  label: '',
+  value: 100_000,
+  tries: 0,
+  tries_remaining: 3,
+  external: false,
+  mixdepth: 0,
+  confirmations: 6,
+  frozen: false,
+  locktime: undefined,
+  ...overrides,
+})
+
+const fbUtxo = (overrides: Partial<Utxo>) =>
+  utxo({
+    locktime: '2999-01-01 00:00:00',
+    path: "m/84'/1'/0'/2/0:32503680000",
+    ...overrides,
+  })
+
+const jar = (jarIndex: number, utxos: Utxo[]): Jar =>
+  ({
+    jarIndex,
+    name: `Jar ${jarIndex}`,
+    color: '#808080',
+    balanceSummary: toBalanceSummary(utxos),
+    utxos,
+  }) as unknown as Jar
 
 const jars = [
-  {
-    jarIndex: 0,
-    balanceSummary: {
-      calculatedAvailableBalanceInSats: 10_000,
-    },
-  },
-  {
-    jarIndex: 1,
-    balanceSummary: {
-      calculatedAvailableBalanceInSats: 0,
-    },
-  },
+  jar(0, [utxo({ value: 10_000 })]),
+  jar(1, []),
+  jar(2, [utxo({ value: 21_000, frozen: true })]),
+  jar(3, [
+    utxo({ value: 42_000 }),
+    fbUtxo({ utxo: 'non-frozen-fb:0', value: 21_000, frozen: false }),
+    fbUtxo({ utxo: 'non-frozen-fb:1', value: 29_000, frozen: false }),
+  ]),
 ] as Jar[]
 
 const addressSummary = {
-  [validMainnetAddress]: {
-    address: validMainnetAddress,
-    jarIndex: 2,
-    used: false,
-  },
   [sourceJarAddress]: {
     address: sourceJarAddress,
     jarIndex: 0,
@@ -81,20 +110,46 @@ describe('toSendFormDefaultValues', () => {
 })
 
 describe('createSendFormSchema', () => {
-  const schema = createSendFormSchema(jars, addressSummary, 3, Network.mainnet, t)
+  const schema = createSendFormSchema(
+    jars,
+    addressSummary,
+    JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS,
+    Network.mainnet,
+    t,
+  )
 
   it('accepts a valid coinjoin send', async () => {
     await expect(schema.validate(validFormValues)).resolves.toMatchObject(validFormValues)
   })
 
-  it('rejects unavailable source jars', async () => {
+  it('rejects source jars with zero balance', async () => {
     await expect(
       schema.validate({
         ...validFormValues,
-        source: { fromJar: 1 },
+        source: { fromJar: jars[1].jarIndex },
         amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT },
       }),
     ).rejects.toThrow('send.feedback_invalid_source_jar')
+  })
+
+  it('rejects source jars without unfrozen balance', async () => {
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        source: { fromJar: jars[2].jarIndex },
+        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT },
+      }),
+    ).rejects.toThrow('send.feedback_invalid_source_jar_must_unfreeze_utxos')
+  })
+
+  it('rejects source jars without unfrozen fidelity bonds', async () => {
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        source: { fromJar: jars[3].jarIndex },
+        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT },
+      }),
+    ).rejects.toThrow('send.feedback_invalid_source_jar_must_freeze_fidelity_bond:{"count":2}')
   })
 
   it('rejects reused or source-jar destination addresses', async () => {
@@ -131,13 +186,30 @@ describe('createSendFormSchema', () => {
         destination: { address: sourceJarAddress },
       }),
     ).rejects.toThrow('send.feedback_address_from_source_jar')
+
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        destination: { address: validRegtestAddress },
+      }),
+    ).rejects.toThrow('send.feedback_destination_network_mismatch')
+
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        destination: { address: 'invalid' },
+      }),
+    ).rejects.toThrow('send.feedback_invalid_destination_address')
   })
 
   it('rejects invalid amounts and clears collaborators for direct sends', async () => {
     await expect(
       schema.validate({
         ...validFormValues,
-        amount: { isSweep: false, amount: 11_000 },
+        amount: {
+          isSweep: false,
+          amount: jars[validFormValues.source.fromJar].balanceSummary.calculatedTotalBalanceInSats + 1,
+        },
       }),
     ).rejects.toThrow('send.feedback_amount_exceeds_balance')
 
@@ -145,12 +217,35 @@ describe('createSendFormSchema', () => {
       schema.validate({
         ...validFormValues,
         isCoinJoin: false,
-        numCollaborators: 4,
+        numCollaborators: 10,
       }),
     ).resolves.toMatchObject({
       isCoinJoin: false,
       numCollaborators: null,
     })
+  })
+
+  it('rejects invalid number of collaborators', async () => {
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        numCollaborators: JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS - 1,
+      }),
+    ).rejects.toThrow('send.error_invalid_num_collaborators:{"minNumCollaborators":4,"maxNumCollaborators":20}')
+
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        numCollaborators: JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS + 1,
+      }),
+    ).rejects.toThrow('send.error_invalid_num_collaborators:{"minNumCollaborators":4,"maxNumCollaborators":20}')
+
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        numCollaborators: null,
+      }),
+    ).rejects.toThrow('send.error_invalid_num_collaborators:{"minNumCollaborators":4,"maxNumCollaborators":20}')
   })
 
   it('supports sweep sends with a sweep amount', async () => {

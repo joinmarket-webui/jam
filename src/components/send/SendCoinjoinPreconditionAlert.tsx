@@ -1,9 +1,13 @@
 import { AlertTriangleIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import type { SweepPreconditionSummary } from '@/components/sweep/preconditions'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Balance } from '@/components/ui/jam/Balance'
 import { JAM_JM_RETRIES_DOCS_URL } from '@/constants/jam'
-import { formatSats, shortenStringMiddle } from '@/lib/utils'
+import { routes } from '@/constants/routes'
+import { shortenStringMiddle } from '@/lib/utils'
+import { JarBadge } from '../earn/fidelity-bond/FidelityBondDialogParts'
 
 interface SendCoinjoinPreconditionAlertProps {
   summary: SweepPreconditionSummary
@@ -12,27 +16,32 @@ interface SendCoinjoinPreconditionAlertProps {
 const RetryLockedUtxoList = ({ summary }: SendCoinjoinPreconditionAlertProps) => {
   const { t } = useTranslation()
 
-  if (summary.retryLockedUtxos.length === 0) {
-    return null
-  }
-
   return (
     <>
       <Trans
         i18nKey="send.coinjoin_precondition.hint_missing_retries"
-        components={[
-          <></>,
-          <a key="retries-doc-link" href={JAM_JM_RETRIES_DOCS_URL} target="_blank" rel="noopener noreferrer" />,
-        ]}
+        components={{
+          '1': (
+            <a
+              key="retries-doc-link"
+              className="font-semibold"
+              href={JAM_JM_RETRIES_DOCS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          ),
+        }}
       />
-      <div className="mt-3 rounded-md border p-2">
+      <div className="mt-3 p-2">
         <div className="mb-2 text-xs font-semibold">{t('global.utxos')}</div>
-        <ul className="space-y-1">
+        <ul className="list-inside list-[circle] space-y-2">
           {summary.retryLockedUtxos.map((utxo) => (
-            <li key={utxo.utxo} className="bg-muted/50 rounded-sm px-2 py-1 font-mono text-xs">
-              <span className="mr-2 font-semibold">jar {utxo.mixdepth}</span>
-              <span className="mr-2">{formatSats(utxo.value)} sats</span>
-              <span>{shortenStringMiddle(utxo.utxo, 26)}</span>
+            <li key={utxo.utxo} className="space-x-2">
+              <span className="slashed-zero tabular-nums">
+                <JarBadge jarIndex={utxo.mixdepth} />
+              </span>
+              <span className="font-mono select-all">{shortenStringMiddle(utxo.utxo, 26)}</span>
+              <Balance valueString={String(utxo.value)} />
             </li>
           ))}
         </ul>
@@ -48,36 +57,40 @@ export const SendCoinjoinPreconditionAlert = ({ summary }: SendCoinjoinPrecondit
     return null
   }
 
-  if (summary.numberOfMissingUtxos > 0) {
-    return (
-      <Alert variant="warning">
-        <AlertTriangleIcon />
-        <AlertDescription>
-          {t('send.coinjoin_precondition.hint_missing_utxos', { minConfirmations: summary.options.minConfirmations })}
-        </AlertDescription>
-      </Alert>
-    )
-  }
-
-  if (summary.numberOfMissingConfirmations > 0) {
-    return (
-      <Alert variant="warning">
-        <AlertTriangleIcon />
-        <AlertDescription>
-          {t('send.coinjoin_precondition.hint_missing_confirmations', {
-            minConfirmations: summary.options.minConfirmations,
-            amountOfMissingConfirmations: summary.numberOfMissingConfirmations,
-          })}
-        </AlertDescription>
-      </Alert>
-    )
-  }
-
   return (
     <Alert variant="warning">
       <AlertTriangleIcon />
+      <AlertTitle>{t('send.coinjoin_precondition.title')}</AlertTitle>
       <AlertDescription>
-        <RetryLockedUtxoList summary={summary} />
+        <ul className="list-outside list-disc space-y-2">
+          {summary.numberOfNonFrozenFidelityBondOutputs === 0 ? null : (
+            <li>
+              <Trans
+                i18nKey="send.coinjoin_precondition.hint_non_frozen_fidelity_bond"
+                values={{ count: summary.numberOfNonFrozenFidelityBondOutputs }}
+                components={{
+                  '1': <Link to={routes.walletJarsDetails} className="font-semibold" />,
+                }}
+              />
+            </li>
+          )}
+          {summary.numberOfMissingUtxos === 0 ? null : (
+            <li>
+              {t('send.coinjoin_precondition.hint_missing_utxos', {
+                minConfirmations: summary.options.minConfirmations,
+              })}
+            </li>
+          )}
+          {summary.numberOfMissingConfirmations === 0 ? null : (
+            <li>
+              {t('send.coinjoin_precondition.hint_missing_confirmations', {
+                minConfirmations: summary.options.minConfirmations,
+                amountOfMissingConfirmations: summary.numberOfMissingConfirmations,
+              })}
+            </li>
+          )}
+          {summary.retryLockedUtxos.length === 0 ? null : <li>{<RetryLockedUtxoList summary={summary} />}</li>}
+        </ul>
       </AlertDescription>
     </Alert>
   )

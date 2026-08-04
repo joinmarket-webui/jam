@@ -5,8 +5,13 @@ import type { AccountMeta, AccountSummary, AddressMeta, AddressSummary, Jar } fr
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { WalletJarsDetailsContent } from './WalletJarsDetailsContent'
 
-const walletInfoRefetch = vi.hoisted(() => vi.fn())
-const toastMocks = vi.hoisted(() => ({ success: vi.fn(), warning: vi.fn() }))
+const { walletInfoRefetch, toastMocks, ...mocks } = vi.hoisted(() => ({
+  walletInfoRefetch: vi.fn(),
+  toastMocks: { success: vi.fn(), warning: vi.fn() },
+  rescanning: false,
+  takerRunning: false,
+  makerRunning: false,
+}))
 
 vi.mock('sonner', () => ({
   toast: {
@@ -46,8 +51,16 @@ vi.mock('../ui/jam/Address', () => ({
   Address: ({ value }: { value: string }) => <span>{value}</span>,
 }))
 
-vi.mock('../ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString: string }) => <span>{valueString}</span>,
+}))
+
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSessionInfoContext: () => ({
+    takerInfo: { running: mocks.takerRunning },
+    rescanInfo: { rescanning: mocks.rescanning },
+    makerInfo: { running: mocks.makerRunning },
+  }),
 }))
 
 const makeUtxo = (overrides: Partial<Utxo>): Utxo =>
@@ -69,6 +82,7 @@ const jars: Jar[] = [
       calculatedAvailableBalanceInSats: 12_000,
       calculatedConfirmedAvailableBalanceInSats: 12_000,
       calculatedFrozenOrLockedBalanceInSats: 0,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedTotalBalanceInSats: 12_000,
     },
     color: '#e2b86a',
@@ -81,6 +95,7 @@ const jars: Jar[] = [
       calculatedAvailableBalanceInSats: 5_000,
       calculatedConfirmedAvailableBalanceInSats: 5_000,
       calculatedFrozenOrLockedBalanceInSats: 0,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedTotalBalanceInSats: 5_000,
     },
     color: '#3b5ba9',
@@ -93,6 +108,7 @@ const jars: Jar[] = [
       calculatedAvailableBalanceInSats: 8_000,
       calculatedConfirmedAvailableBalanceInSats: 8_000,
       calculatedFrozenOrLockedBalanceInSats: 8_000,
+      calculatedAvailableFrozenBalanceInSats: 8_000,
       calculatedTotalBalanceInSats: 8_000,
     },
     color: '#5ba93b',
@@ -146,32 +162,51 @@ describe('WalletJarsDetailsContent', () => {
     walletInfoRefetch.mockResolvedValue({})
     toastMocks.success.mockReset()
     toastMocks.warning.mockReset()
+    mocks.rescanning = false
+    mocks.takerRunning = false
+    mocks.makerRunning = false
+    // vi.resetAllMocks()
+  })
+
+  it('renders successfully', () => {
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" />)
+
+    const jarTab = screen.getByRole('tab', { name: jars[0].name })
+    expect(jarTab).toHaveAttribute('data-state', 'active')
+    expect(screen.getByText('bc1qwallet-a')).toBeInTheDocument()
   })
 
   it('renders selected jar UTXOs and debug details', async () => {
     const user = userEvent.setup()
+    const jar = jars[1]
 
-    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} debug />)
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={jar.jarIndex} debug />)
 
-    expect(screen.getByRole('tab', { name: 'One' })).toHaveAttribute('data-state', 'active')
+    const jarTab = screen.getByRole('tab', { name: jar.name })
+    expect(jarTab).toHaveAttribute('data-state', 'active')
     expect(screen.getByText('bc1qwallet-b')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('tab', { name: /Dev/u }))
+    const devTab = screen.getByRole('tab', { name: /Dev/u })
+    await user.click(devTab)
     expect(screen.getByText('activeJar:')).toBeInTheDocument()
   })
 
   it('switches jars with keyboard shortcuts and shows missing account information', async () => {
     const user = userEvent.setup()
+    const jar = jars[1]
 
-    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} />)
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={jar.jarIndex} />)
 
     expect(screen.getByText('bc1qwallet-b')).toBeInTheDocument()
 
     await user.keyboard('{ArrowLeft}')
+
     expect(screen.getByText('bc1qwallet-a')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('tab', { name: 'One' }))
+    await user.click(screen.getByRole('tab', { name: jar.name }))
+
     await user.click(screen.getByRole('tab', { name: 'jar_details.title_tab_jar_details' }))
+
     expect(screen.getByText('jar_details.utxo_list.alert_no_account_info_title')).toBeInTheDocument()
   })
 
@@ -180,7 +215,10 @@ describe('WalletJarsDetailsContent', () => {
 
     render(<WalletJarsDetailsContent enabled={false} walletFileName="wallet.jmdat" selectedJarIndex={0} />)
 
+    expect(screen.getByText('bc1qwallet-a')).toBeInTheDocument()
+
     await user.keyboard('{ArrowRight}')
+
     expect(screen.getByText('bc1qwallet-a')).toBeInTheDocument()
   })
 
@@ -192,7 +230,11 @@ describe('WalletJarsDetailsContent', () => {
   it('refreshes wallet info from the utxos tab', async () => {
     const user = userEvent.setup()
     render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} />)
-    await user.click(screen.getByRole('button', { name: 'global.refresh' }))
+
+    const refreshButton = screen.getByRole('button', { name: 'global.refresh' })
+    expect(refreshButton).toBeEnabled()
+
+    await user.click(refreshButton)
     expect(walletInfoRefetch).toHaveBeenCalled()
   })
 
@@ -200,11 +242,18 @@ describe('WalletJarsDetailsContent', () => {
     const user = userEvent.setup()
     render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} />)
 
+    const freezeButton = screen.getByRole('button', { name: 'jar_details.utxo_list.button_freeze' })
+    expect(freezeButton).toBeDisabled()
+
     const dataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('bc1qwallet-b'))!
     await user.click(within(dataRow).getByRole('checkbox'))
 
-    await user.click(screen.getByRole('button', { name: 'jar_details.utxo_list.button_freeze' }))
-    await waitFor(() => expect(toastMocks.success).toHaveBeenCalled())
+    expect(freezeButton).toBeEnabled()
+
+    await user.click(freezeButton)
+    await waitFor(() =>
+      expect(toastMocks.success).toHaveBeenCalledWith('jar_details.utxo_list.toast_freeze_success:{"count":1}'),
+    )
     expect(walletInfoRefetch).toHaveBeenCalled()
   })
 
@@ -212,10 +261,39 @@ describe('WalletJarsDetailsContent', () => {
     const user = userEvent.setup()
     render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={2} />)
 
+    const unfreezeButton = screen.getByRole('button', { name: 'jar_details.utxo_list.button_unfreeze' })
+    expect(unfreezeButton).toBeDisabled()
+
     const dataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('bc1qwallet-c'))!
     await user.click(within(dataRow).getByRole('checkbox'))
 
-    await user.click(screen.getByRole('button', { name: 'jar_details.utxo_list.button_unfreeze' }))
-    await waitFor(() => expect(toastMocks.success).toHaveBeenCalled())
+    expect(unfreezeButton).toBeEnabled()
+
+    await user.click(unfreezeButton)
+    await waitFor(() =>
+      expect(toastMocks.success).toHaveBeenCalledWith('jar_details.utxo_list.toast_unfreeze_success:{"count":1}'),
+    )
+    expect(walletInfoRefetch).toHaveBeenCalled()
+  })
+
+  it.each(['taker', 'maker', 'rescan'])('disables freeze/unfreeze if rescan/maker/taker is running', async (value) => {
+    const user = userEvent.setup()
+    mocks.takerRunning = value === 'taker'
+    mocks.makerRunning = value === 'maker'
+    mocks.rescanning = value === 'rescan'
+
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} />)
+
+    const freezeButton = screen.getByRole('button', { name: 'jar_details.utxo_list.button_freeze' })
+    expect(freezeButton).toBeDisabled()
+
+    const unfreezeButton = screen.getByRole('button', { name: 'jar_details.utxo_list.button_unfreeze' })
+    expect(unfreezeButton).toBeDisabled()
+
+    const dataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('bc1qwallet-b'))!
+    await user.click(within(dataRow).getByRole('checkbox'))
+
+    expect(freezeButton).toBeDisabled()
+    expect(unfreezeButton).toBeDisabled()
   })
 })

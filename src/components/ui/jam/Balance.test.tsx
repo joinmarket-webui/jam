@@ -3,8 +3,8 @@ import '@testing-library/jest-dom/vitest'
 import { render as reactRender, screen, type RenderOptions } from '@testing-library/react'
 import user from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
+import { Balance } from '@/components/ui/jam/Balance'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
-import { Balance } from './Balance'
 
 const render = (ui: React.ReactNode, options?: Omit<RenderOptions, 'queries'>) => {
   const providers = ({ children }: { children: React.ReactNode }) => {

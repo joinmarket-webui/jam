@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => {
 
   return {
     developerMode: false,
+    rescanning: false,
     getAddress: vi.fn(),
     defaultJars,
     jars: defaultJars,
@@ -107,6 +108,12 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   }),
 }))
 
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRescanStatus: () => ({
+    rescanInfo: { rescanning: mocks.rescanning },
+  }),
+}))
+
 vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
 }))
@@ -148,6 +155,7 @@ vi.mock('./ReceiveForm', () => ({
 describe('ReceivePage', () => {
   beforeEach(() => {
     mocks.developerMode = false
+    mocks.rescanning = false
     mocks.jars = mocks.defaultJars
     mocks.getAddress.mockReset()
     mocks.getAddress.mockResolvedValue({ data: { address: 'bc1qexample' } })
@@ -173,6 +181,17 @@ describe('ReceivePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
     expect(mocks.getAddress).toHaveBeenCalledTimes(2)
     await flushActUpdates()
+  })
+
+  it('prevents loading addresses while rescanning', () => {
+    mocks.rescanning = true
+
+    render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByRole('button', { name: 'receive.button_reveal_address' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'receive.button_new_address' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
+    expect(mocks.getAddress).not.toHaveBeenCalled()
   })
 
   it('uses a secondary jar badge when no jar is available', () => {

@@ -116,16 +116,19 @@ export const OrderbookTable = ({
       columnHelper.accessor<'type', OrderTableEntry['type']>('type', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
         sortingFn: (a, b) => a.original.type.displayValue.localeCompare(b.original.type.displayValue),
-        cell: (info) => (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant={info.getValue().badgeColor}>{info.getValue().displayValue}</Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{info.getValue().tooltip}</p>
-            </TooltipContent>
-          </Tooltip>
-        ),
+        cell: (info) => {
+          const value = info.getValue()
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant={value.badgeColor}>{value.displayValue}</Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{value.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          )
+        },
         meta: {
           align: 'center',
           alphabetic: true,
@@ -140,12 +143,18 @@ export const OrderbookTable = ({
           }
           return a.original.fee.value - b.original.fee.value
         },
-        cell: (info) => {
-          const entry = info.row.original
-          return entry.fee.displayValue.includes('%') ? (
-            <span className="font-mono">{entry.fee.displayValue}</span>
+        cell: ({
+          row: {
+            original: {
+              type: { isAbsolute },
+              fee,
+            },
+          },
+        }) => {
+          return isAbsolute ? (
+            <span className="slashed-zero tabular-nums">{fee.displayValue}</span>
           ) : (
-            <Balance valueString={entry.fee.displayValue} />
+            <Balance valueString={fee.displayValue} />
           )
         },
         meta: {
@@ -184,26 +193,29 @@ export const OrderbookTable = ({
       columnHelper.accessor('bondValue', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
         sortingFn: (a, b) => a.original.bondValue.value - b.original.bondValue.value,
-        cell: (info) => {
-          const entry = info.row.original
-          return entry.bondValue.value > 0 ? (
+        cell: ({
+          row: {
+            original: { bondValue },
+          },
+        }) => {
+          return bondValue.value > 0 ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="cursor-help">{entry.bondValue.displayValue}</span>
+                <span className="cursor-help slashed-zero tabular-nums">{bondValue.displayValue}</span>
               </TooltipTrigger>
               <TooltipContent>
                 <div>
-                  <Balance valueString={String(entry.bondValue.amount || 0)} convertToUnit="btc" />
-                  {entry.bondValue.displayLocktime && (
+                  <Balance valueString={String(bondValue.amount || 0)} convertToUnit="btc" />
+                  {bondValue.displayLocktime && (
                     <div className="mt-1 text-xs">
-                      {entry.bondValue.displayLocktime} ({entry.bondValue.displayExpiresIn})
+                      {bondValue.displayLocktime} ({bondValue.displayExpiresIn})
                     </div>
                   )}
                 </div>
               </TooltipContent>
             </Tooltip>
           ) : (
-            <>{entry.bondValue.displayValue}</>
+            <>{bondValue.displayValue}</>
           )
         },
         meta: {

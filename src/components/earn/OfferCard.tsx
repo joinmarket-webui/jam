@@ -42,7 +42,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
   const { t } = useTranslation()
 
   return (
-    <Card className={cn('w-full', className)}>
+    <Card className={cn('transition-all duration-300 hover:-translate-y-[2px] hover:shadow-md', className)}>
       <CardHeader>
         <CardTitle>{t('earn.current.text_offer')}</CardTitle>
         <CardDescription></CardDescription>

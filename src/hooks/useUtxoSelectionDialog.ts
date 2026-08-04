@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { freezeMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
@@ -50,10 +50,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     }, {} as RowSelectionState)
   }, [sourceJar?.utxos])
 
-  const selectableUtxoIds = useMemo(
-    () => (sourceJar?.utxos || []).filter((utxo) => !fb.utxo.isFidelityBond(utxo)).map((utxo) => utxo.utxo),
-    [sourceJar?.utxos],
-  )
+  const selectableUtxoIds = useMemo(() => (sourceJar?.utxos || []).map((utxo) => utxo.utxo), [sourceJar?.utxos])
   const formSchema = useMemo(() => createUtxoSelectionFormSchema(selectableUtxoIds), [selectableUtxoIds])
   const {
     control,
@@ -116,7 +113,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     },
   })
 
-  const onOpenUtxoSelector = () => {
+  const onOpenUtxoSelector = useCallback(() => {
     if (!sourceJar) return
     toast.dismiss(SEND_AUTO_SELECTION_TOAST_ID)
     reset({
@@ -124,7 +121,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
       rowSelection: initialRowSelection,
     })
     setOpen(true)
-  }
+  }, [sourceJar, reset, initialRowSelection])
 
   const onSubmit = handleSubmit(async ({ rowSelection: submittedRowSelection }) => {
     if (!sourceJar) return
@@ -132,7 +129,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     const submittedUtxos = sourceJar.utxos.filter((utxo) => submittedRowSelection[utxo.utxo] === true)
     const selectedUtxoIds = new Set(submittedUtxos.map((it) => it.utxo))
     const selectedAddresses = new Set(submittedUtxos.map((it) => it.address))
-    const mutableUtxos = sourceJar.utxos.filter((it) => !fb.utxo.isFidelityBond(it))
+    const mutableUtxos = sourceJar.utxos
     const groupedSelectedUtxos = mutableUtxos.filter((it) => selectedAddresses.has(it.address))
     const groupedDeselectedUtxos = mutableUtxos.filter((it) => !selectedAddresses.has(it.address))
     const userDeselectedUtxos = mutableUtxos.filter((it) => !selectedUtxoIds.has(it.utxo))
@@ -156,7 +153,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
     }
 
     // The selected set should remain spendable; everything else becomes frozen.
-    const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen === false)
+    const utxosToFreeze = mutableUtxos.filter((it) => !selectedAddresses.has(it.address) && it.frozen !== true)
     const utxosToUnfreeze = mutableUtxos.filter((it) => selectedAddresses.has(it.address) && it.frozen === true)
 
     if (utxosToFreeze.length === 0 && utxosToUnfreeze.length === 0) {
@@ -239,7 +236,7 @@ export const useUtxoSelectionDialog = ({ walletFileName, sourceJar, addressSumma
         shouldValidate: true,
       })
     },
-    onSubmit: async () => onSubmit(),
+    onSubmit,
   }
 
   return {

@@ -6,6 +6,8 @@ import type { TFunction } from 'i18next'
 import { AlertTriangleIcon, RefreshCwIcon, ThermometerSnowflakeIcon, ThermometerSunIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { Balance } from '@/components/ui/jam/Balance'
+import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAccountSummary,
   useAddressSummary,
@@ -25,7 +27,6 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Button } from '../ui/button'
 import { ButtonGroup } from '../ui/button-group'
 import { Input } from '../ui/input'
-import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountDetailsTabContent } from './AccountDetailsTabContent'
@@ -57,6 +58,7 @@ interface UtxosContentProps {
 
 export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
+  const { takerInfo, rescanInfo, makerInfo } = useJamSessionInfoContext()
   const { refetch: walletInfoRefetch, isFetching: walletInfoIsFetching } = useJamWalletInfoContext()
 
   const client = useApiClient()
@@ -127,8 +129,12 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
     return tableEntries.filter((entry) => entry.tags.some((tag) => tag.value === 'reused')).length
   }, [tableEntries])
 
-  // TODO: makerRunning, takerRunner, rescanRunning, etc.
-  const operationsEnabled = enabled && !(walletInfoIsFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
+  const operationsEnabled =
+    enabled &&
+    !makerInfo.running &&
+    !takerInfo.running &&
+    !rescanInfo.rescanning &&
+    !(walletInfoIsFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
   const enableRowSelection = enabled && !(freezeUtxos.isPending || unfreezeUtxos.isPending)
 
   const onFreezeClick = async () => {

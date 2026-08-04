@@ -19,6 +19,7 @@ import {
   type Table as TableType,
 } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
+import { Balance } from '@/components/ui/jam/Balance'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { AccountBranch } from '@/context/JamWalletInfoContext'
@@ -26,7 +27,6 @@ import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress, HdPath } from '@/types/global'
 import { Address } from '../ui/jam/Address'
-import { Balance } from '../ui/jam/Balance'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 

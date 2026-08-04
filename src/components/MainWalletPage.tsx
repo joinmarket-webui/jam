@@ -120,7 +120,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             </Tooltip>
           </div>
           <div className="flex min-h-[128px] items-center justify-center gap-4">
-            {isFetching ? (
+            {isLoading ? (
               <div className="flex flex-1 items-center justify-center gap-2 py-8">
                 <Spinner className="motion-reduce:hidden" />
                 {t('global.loading')}

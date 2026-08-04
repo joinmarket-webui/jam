@@ -82,9 +82,8 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
-  Trans: ({ children, i18nKey }: { children?: React.ReactNode; i18nKey?: string }) => (
-    <span>{children ?? i18nKey}</span>
-  ),
+  Trans: ({ i18nKey, values }: { i18nKey: string; values?: unknown }) =>
+    values ? `${i18nKey}:${JSON.stringify(values)}` : i18nKey,
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
   }),
@@ -166,6 +165,7 @@ vi.mock('./EarnForm', () => ({
     <div>
       earn-form:{String(disabled)}:{String(debug)}
       <button
+        disabled={disabled}
         onClick={() =>
           void onSubmit({
             offerMinAmount: 50_000,
@@ -217,17 +217,20 @@ const balanceSummary = {
   calculatedTotalBalanceInSats: 100_000_000,
 }
 
-const expiredBond = {
+const expiredBond: FidelityBondUtxo = {
   address: 'bc1qbond',
   confirmations: 12,
   frozen: false,
   label: '',
-  locktime: '1970-01-01 00:00:00',
+  locktime: '2000-01-01 00:00:00',
   path: "m/84'/1'/0':1",
   tries_remaining: 3,
   utxo: 'bond-tx:0',
   value: 50_000,
-} as unknown as FidelityBondUtxo
+  tries: 3,
+  external: false,
+  mixdepth: 0,
+}
 
 const setSession = (overrides: Record<string, unknown> = {}) => {
   jmSessionStore.setState({
@@ -275,21 +278,22 @@ describe('EarnPage', () => {
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('page-loading')).toBeInTheDocument()
+
+    expect(screen.queryByText('submit-earn')).not.toBeInTheDocument()
   })
 
-  it('starts earning and opens fee/report dialogs', async () => {
+  it('starts earning', async () => {
     const user = userEvent.setup()
-    mocks.feeConfigMissing = true
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
-    await user.click(screen.getByText('open-fee-config'))
-    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+    expect(screen.queryByText('earn.precondition.title')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'earn.button_stop' })).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'earn.button_show_report' }))
-    expect(screen.getByText('earn-report:true')).toBeInTheDocument()
+    expect(screen.getByText('submit-earn')).toBeEnabled()
 
     await user.click(screen.getByText('submit-earn'))
+
     await waitFor(() => expect(mocks.startMaker).toHaveBeenCalled())
     expect(mocks.startMaker).toHaveBeenCalledWith({
       body: {
@@ -304,6 +308,21 @@ describe('EarnPage', () => {
     expect(mocks.scrollToTop).toHaveBeenCalled()
   })
 
+  it('opens fee/report dialogs', async () => {
+    const user = userEvent.setup()
+    mocks.feeConfigMissing = true
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('submit-earn')).toBeEnabled()
+
+    await user.click(screen.getByText('open-fee-config'))
+    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'earn.button_show_report' }))
+    expect(screen.getByText('earn-report:true')).toBeInTheDocument()
+  })
+
   it('shows running maker offer and stops it', async () => {
     const user = userEvent.setup()
     setSession({
@@ -313,8 +332,11 @@ describe('EarnPage', () => {
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('offer-card:maker-a')).toBeInTheDocument()
     expect(screen.getByText('earn.alert_running')).toBeInTheDocument()
+    expect(screen.getByText('offer-card:maker-a')).toBeInTheDocument()
+
+    expect(screen.getByRole('button', { name: 'earn.button_stop' })).toBeEnabled()
+    expect(screen.getByText('submit-earn')).toBeDisabled()
 
     await user.click(screen.getByRole('button', { name: 'earn.button_stop' }))
     expect(mocks.stopMakerRefetch).toHaveBeenCalledWith({ throwOnError: true })
@@ -328,63 +350,194 @@ describe('EarnPage', () => {
     expect(screen.getByText('earn.alert_waiting_start_title')).toBeInTheDocument()
   })
 
-  it('opens fidelity bond actions', async () => {
-    const user = userEvent.setup()
+  it('display debug output in developer mode', () => {
     mocks.developerMode = true
     mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('fidelity-bond:bond-tx:0')).toBeInTheDocument()
     expect(screen.getByText(/walletInfo\.fidelityBondSummary\.fbOutputs/u)).toBeInTheDocument()
+  })
 
-    await user.click(screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_spend/u }))
+  it('enables creating a fidelity bond', async () => {
+    const user = userEvent.setup()
+
+    expect(mocks.walletInfo.fidelityBondSummary.fbOutputs, 'sanity check').toHaveLength(0)
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
+
+    const createFidelityBondButton = screen.getByRole('button', {
+      name: 'earn.fidelity_bond.create_form.button_create',
+    })
+    expect(createFidelityBondButton).toBeEnabled()
+
+    await user.click(createFidelityBondButton)
+    expect(screen.getByText('create-bond-dialog:true')).toBeInTheDocument()
+  })
+
+  it('disables creating a fidelity bond while rescanning', async () => {
+    const user = userEvent.setup()
+    setSession({
+      rescanning: true,
+    })
+
+    expect(mocks.walletInfo.fidelityBondSummary.fbOutputs, 'sanity check').toHaveLength(0)
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
+
+    const createFidelityBondButton = screen.getByRole('button', {
+      name: 'earn.fidelity_bond.create_form.button_create',
+    })
+    expect(createFidelityBondButton).toBeDisabled()
+
+    await user.click(createFidelityBondButton)
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
+  })
+
+  it('enables fidelity bond actions on existing fidelity bond', async () => {
+    const user = userEvent.setup()
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('fidelity-bond:bond-tx:0')).toBeInTheDocument()
+
+    expect(screen.queryByText('move-to-jar-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('move-to-jar-dialog:true')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:true')).not.toBeInTheDocument()
+
+    const moveToJarButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_spend/u })
+    expect(moveToJarButton).toBeEnabled()
+
+    await user.click(moveToJarButton)
     expect(screen.getByText('move-to-jar-dialog:true')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_renew/u }))
+    const renewButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_renew/u })
+    expect(renewButton).toBeEnabled()
+
+    await user.click(renewButton)
     expect(screen.getByText('renew-bond-dialog:true')).toBeInTheDocument()
+  })
+
+  it('disables fidelity bond actions on existing fidelity bond when rescanning is active', async () => {
+    const user = userEvent.setup()
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
+    setSession({
+      rescanning: true,
+    })
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('move-to-jar-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('move-to-jar-dialog:true')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:true')).not.toBeInTheDocument()
+
+    const moveToJarButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_spend/u })
+    expect(moveToJarButton).toBeDisabled()
+
+    await user.click(moveToJarButton)
+    expect(screen.queryByText('move-to-jar-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('move-to-jar-dialog:true')).not.toBeInTheDocument()
+
+    const renewButton = screen.getByRole('button', { name: /earn\.fidelity_bond\.existing\.button_renew/u })
+    expect(renewButton).toBeDisabled()
+
+    await user.click(renewButton)
+    expect(screen.queryByText('renew-bond-dialog:false')).not.toBeInTheDocument()
+    expect(screen.queryByText('renew-bond-dialog:true')).not.toBeInTheDocument()
   })
 
   it('shows the coinjoin-in-progress alert', () => {
     setSession({ coinjoin_in_process: true })
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
     expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('shows the waiting-to-stop alert', () => {
     setSession({ maker_running: true })
     mocks.stopMutationState.isSuccess = true
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
     expect(screen.getByText('earn.alert_waiting_stop_title')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('shows the loading-offer alert while the maker runs without an offer', () => {
     setSession({ maker_running: true, offer_list: [] })
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
     expect(screen.getByText('earn.alert_loading_offer')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('warns when the spendable balance is only unconfirmed', () => {
     mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
     mocks.walletInfo.maxJarAvailableBalance = 100_000_000
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
-    expect(screen.getByText('earn.alert_unconfirmed_balance_title')).toBeInTheDocument()
+
+    expect(screen.getByText('earn.precondition.title')).toBeInTheDocument()
+    expect(screen.getByText('earn.precondition.hint_missing_confirmations:{"count":1}')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('warns when there is no spendable balance at all', () => {
     mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
     mocks.walletInfo.maxJarAvailableBalance = 0
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
-    expect(screen.getByText('earn.alert_no_spendable_balance_title')).toBeInTheDocument()
+
+    expect(screen.getByText('earn.precondition.title')).toBeInTheDocument()
+    expect(screen.getByText('earn.precondition.hint_missing_utxos')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
+  })
+
+  it('warns when there are unfrozen fidelity bonds', () => {
+    mocks.walletInfo.fidelityBondSummary = {
+      fbOutputs: [
+        {
+          ...expiredBond,
+          frozen: false,
+        },
+      ],
+    }
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('earn.precondition.title')).toBeInTheDocument()
+    expect(screen.getByText('earn.precondition.hint_non_frozen_fidelity_bond:{"count":1}')).toBeInTheDocument()
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
   })
 
   it('shows an error toast when starting the maker fails', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const user = userEvent.setup()
     mocks.startMaker.mockRejectedValue(new Error('start boom'))
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('submit-earn')).toBeEnabled()
+
     await user.click(screen.getByText('submit-earn'))
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalled())
+
     errorSpy.mockRestore()
   })
 
@@ -392,7 +545,12 @@ describe('EarnPage', () => {
     const user = userEvent.setup()
     setSession({ maker_running: true, offer_list: [{ cjfee: '250', minsize: '5000', ordertype: 'sw0absoffer' }] })
     mocks.stopMakerRefetch.mockRejectedValue(new Error('stop boom'))
+
     render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('submit-earn')).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'earn.button_stop' })).toBeEnabled()
+
     await user.click(screen.getByRole('button', { name: 'earn.button_stop' }))
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalled())
   })

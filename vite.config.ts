@@ -75,7 +75,19 @@ export default defineConfig((config): UserConfig => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(import.meta.dirname, './src'),
+      },
+    },
+    build: {
+      rolldownOptions: {
+        output: {
+          minify: {
+            compress: {
+              dropConsole: buildOrPreview,
+              dropDebugger: buildOrPreview,
+            },
+          },
+        },
       },
     },
     server: {

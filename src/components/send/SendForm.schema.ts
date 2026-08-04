@@ -5,6 +5,7 @@ import { MAX_NUM_COLLABORATORS, TOTAL_COIN_SUPPLY } from '@/constants/jam'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
+import * as fb from '@/lib/fidelityBondUtils'
 import { destinationAddressField, sourceJarField } from '@/lib/formValidation'
 import { isValidInteger, pseudoRandomInteger } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
@@ -20,6 +21,8 @@ export const initialNumberOfCollaborators = (minValue: number): number => {
 // min amount joinmarket is able to send (without erroring, last check with v0.9.11 on 2026-04-26)
 export const MIN_SEND_AMOUNT: AmountSats = 292
 export const MAX_SEND_AMOUNT: AmountSats = TOTAL_COIN_SUPPLY
+
+export const ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL = 'valid-source-jar-needs-manual-coin-control-test'
 
 const FORM_INPUT_DEFAULT_VALUES: Partial<SendFormValues> = {
   source: undefined,
@@ -64,11 +67,28 @@ export const createSendFormSchema = (
       .object({
         source: yup
           .object({
-            fromJar: sourceJarField(
-              t('send.feedback_invalid_source_jar'),
-              (jarIndex) =>
-                (jars.find((it) => it.jarIndex === jarIndex)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
-            ),
+            fromJar: sourceJarField(t('send.feedback_invalid_source_jar'), (jarIndex) =>
+              jars.some((it) => it.jarIndex === jarIndex),
+            )
+              .test(
+                ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL,
+                t('send.feedback_invalid_source_jar_must_unfreeze_utxos'),
+                (jarIndex) => {
+                  const jar = jars.find((it) => it.jarIndex === jarIndex)
+                  if (!jar) return true
+                  if (jar.balanceSummary.calculatedAvailableBalanceInSats > 0) return true
+                  return jar.balanceSummary.calculatedAvailableFrozenBalanceInSats <= 0
+                },
+              )
+              .test(
+                'valid-source-jar-has-funds-test',
+                t('send.feedback_invalid_source_jar_no_available_utxos'),
+                (jarIndex) => {
+                  const jar = jars.find((it) => it.jarIndex === jarIndex)
+                  if (!jar) return true
+                  return jar.balanceSummary.calculatedAvailableBalanceInSats > 0
+                },
+              ),
           })
           .required(),
         destination: yup
@@ -137,7 +157,26 @@ export const createSendFormSchema = (
       // eslint-disable-next-line unicorn/prefer-spread -- false positive
       .concat(createTxFeeFormSchema({ t }))
       .required()
-      .test('address-not-from-source-jar-test', function (root) {
+      .test((root) => {
+        const jar = jars.find((it) => it.jarIndex === root.source.fromJar)
+        const unfrozenFidelityBondOutputs = (jar?.utxos ?? [])
+          .filter((it) => fb.utxo.isFidelityBond(it))
+          .filter((it) => it.frozen !== true)
+
+        if (unfrozenFidelityBondOutputs.length === 0) return true
+
+        const errorMessage = t('send.feedback_invalid_source_jar_must_freeze_fidelity_bond', {
+          count: unfrozenFidelityBondOutputs.length,
+        })
+        return new yup.ValidationError(
+          errorMessage,
+          root.destination.address,
+          'source.fromJar',
+          ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL,
+          true,
+        )
+      })
+      .test((root) => {
         // Note: `fromJar` might still be `undefined` at this point
         if (root.source.fromJar === undefined) return true
         const addressIsFromSourceJar = addressSummary[root.destination.address]?.jarIndex === root.source.fromJar
@@ -145,9 +184,15 @@ export const createSendFormSchema = (
 
         const errorMessage = t('send.feedback_address_from_source_jar')
 
-        return new yup.ValidationError(errorMessage, root.destination.address, 'destination.address', undefined, true)
+        return new yup.ValidationError(
+          errorMessage,
+          root.destination.address,
+          'destination.address',
+          'address-not-from-source-jar-test',
+          true,
+        )
       })
-      .test('amount-exceeds-balance-test', function (root) {
+      .test((root) => {
         if (root.amount.isSweep) return true
         if (root.amount.amount === undefined || root.amount.amount === null) return true
 
@@ -161,7 +206,7 @@ export const createSendFormSchema = (
           t('send.feedback_amount_exceeds_balance'),
           root.amount.amount,
           'amount.amount',
-          undefined,
+          'amount-exceeds-balance-test',
           true,
         )
       })

@@ -8,7 +8,7 @@ import {
   JM_NG_DEFAULT_TUMBLER_PARAMS,
   JM_WALLET_FILE_EXTENSION,
 } from './jm'
-import { parseAsIntOrDefault } from './meta-env-utils'
+import { parseAsBooleanOrDefault, parseAsIntOrDefault } from './meta-env-utils'
 
 export const APP_DISPLAY_VERSION = (() => {
   return parseSemanticVersion(packageInfoVersion)
@@ -181,6 +181,23 @@ export const JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT = Math.max(
     JAM_SWEEP_DEFAULT_MAX_ROUNDING_CHANCE_PERCENT,
   ),
   JAM_SWEEP_DEFAULT_MIN_ROUNDING_CHANCE_PERCENT,
+)
+
+const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT = true
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS = parseAsBooleanOrDefault(
+  import.meta.env.VITE_JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS,
+  JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT,
+)
+
+// provide some time for the backend to catch up after fb is created, small delay of ~1s seems to be enough
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT_DELAY: Milliseconds = 1000
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_MIN_DELAY: Milliseconds = 21
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY = Math.max(
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY,
+    JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT_DELAY,
+  ),
+  JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_MIN_DELAY,
 )
 
 /**

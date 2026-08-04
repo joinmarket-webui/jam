@@ -5,6 +5,7 @@ import * as fb from '@/lib/fidelityBondUtils'
 export interface SweepPreconditionOptions {
   minNumberOfUtxos: number
   minConfirmations: number
+  maxNumberOfNonFrozenFidelityBondOutputs: number
 }
 
 export interface SweepPreconditionSummary {
@@ -12,17 +13,15 @@ export interface SweepPreconditionSummary {
   options: SweepPreconditionOptions
   numberOfMissingUtxos: number
   numberOfMissingConfirmations: number
+  numberOfNonFrozenFidelityBondOutputs: number
   retryLockedUtxos: Utxo[]
 }
 
-const DEFAULT_OPTIONS: SweepPreconditionOptions = {
+export const SWEEP_PRECONDITION_DEFAULT_OPTIONS: SweepPreconditionOptions = Object.freeze({
   minNumberOfUtxos: 1,
   minConfirmations: JM_TAKER_UTXO_AGE,
-}
-
-const isUtxoEligible = (utxo: Utxo): boolean => {
-  return !utxo.frozen && !fb.utxo.isFidelityBond(utxo)
-}
+  maxNumberOfNonFrozenFidelityBondOutputs: 0,
+})
 
 const groupByJarIndex = (utxos: Utxo[]): Map<number, Utxo[]> => {
   return utxos.reduce((acc, utxo) => {
@@ -65,11 +64,35 @@ export const buildSweepPreconditionSummary = (
   options: Partial<SweepPreconditionOptions> = {},
 ): SweepPreconditionSummary => {
   const mergedOptions: SweepPreconditionOptions = {
-    ...DEFAULT_OPTIONS,
+    ...SWEEP_PRECONDITION_DEFAULT_OPTIONS,
     ...options,
   }
 
-  const eligibleUtxos = utxos.filter((utxo) => isUtxoEligible(utxo))
+  const { nonFrozenFbUtxos, eligibleUtxos } = utxos
+    .filter((it) => it.frozen !== true)
+    .reduce(
+      (context, utxo) => {
+        if (fb.utxo.isFidelityBond(utxo)) {
+          context.nonFrozenFbUtxos.push(utxo)
+        } else {
+          context.eligibleUtxos.push(utxo)
+        }
+        return context
+      },
+      { nonFrozenFbUtxos: [] as Utxo[], eligibleUtxos: [] as Utxo[] },
+    )
+
+  if (nonFrozenFbUtxos.length > mergedOptions.maxNumberOfNonFrozenFidelityBondOutputs) {
+    return {
+      isFulfilled: false,
+      options: mergedOptions,
+      numberOfNonFrozenFidelityBondOutputs: nonFrozenFbUtxos.length,
+      numberOfMissingUtxos: 0,
+      numberOfMissingConfirmations: 0,
+      retryLockedUtxos: [],
+    }
+  }
+
   const numberOfMissingUtxos = Math.max(0, mergedOptions.minNumberOfUtxos - eligibleUtxos.length)
   const numberOfMissingConfirmations =
     numberOfMissingUtxos > 0 ? 0 : calcMissingConfirmations(eligibleUtxos, mergedOptions.minConfirmations)
@@ -79,6 +102,7 @@ export const buildSweepPreconditionSummary = (
   return {
     isFulfilled: numberOfMissingUtxos === 0 && numberOfMissingConfirmations === 0 && retryLockedUtxos.length === 0,
     options: mergedOptions,
+    numberOfNonFrozenFidelityBondOutputs: 0,
     numberOfMissingUtxos,
     numberOfMissingConfirmations,
     retryLockedUtxos,

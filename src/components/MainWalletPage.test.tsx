@@ -57,7 +57,7 @@ vi.mock('./wallet/TxHistoryContent', () => ({
   TxHistoryContent: () => <div data-testid="TxHistoryContent" />,
 }))
 
-vi.mock('./ui/jam/Balance', () => ({
+vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString, onClick }: { valueString: string; onClick?: () => void }) => (
     <span onClick={onClick}>{valueString}</span>
   ),
@@ -78,6 +78,7 @@ const makeJar = (jarIndex: number, name: string): Jar =>
       calculatedTotalBalanceInSats: 100,
       calculatedAvailableBalanceInSats: 100,
       calculatedFrozenOrLockedBalanceInSats: 0,
+      calculatedAvailableFrozenBalanceInSats: 0,
     },
   }) as unknown as Jar
 
@@ -128,10 +129,14 @@ describe('MainWalletPage', () => {
     expect(refetch).toHaveBeenCalled()
   })
 
-  it('shows a jars spinner while fetching and refreshes on click', () => {
+  it('keeps jars visible and clickable while fetching in the background', () => {
     walletInfo = { ...walletInfo, isFetching: true }
     render(<MainWalletPage walletFileName={walletFileName} />)
-    expect(screen.getByTestId('spinner')).toBeInTheDocument()
+    expect(screen.getByText(jars[0].name)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText(jars[0].name))
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#open')).toHaveTextContent('open')
+    expect(screen.getByTestId('WalletJarsDetailsOverlay#selectedJarIndex')).toHaveTextContent(String(jars[0].jarIndex))
     fireEvent.click(screen.getByText('global.refresh'))
     expect(refetch).toHaveBeenCalled()
   })

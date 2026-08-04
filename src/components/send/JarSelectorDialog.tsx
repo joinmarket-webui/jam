@@ -90,7 +90,7 @@ export default function JarSelectorDialog({
                   frozenOrLockedBalance={jar.balanceSummary.calculatedFrozenOrLockedBalanceInSats}
                   totalWalletBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                   isSelected={selectedJarIndex === jar.jarIndex}
-                  onClick={() =>
+                  onSelect={() =>
                     setValue('jarIndex', jar.jarIndex, {
                       shouldDirty: true,
                       shouldTouch: true,

@@ -1,4 +1,4 @@
-import { Network } from 'bitcoin-address-validation'
+import { getAddressInfo, Network } from 'bitcoin-address-validation'
 import { describe, expect, it } from 'vitest'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import {
@@ -9,21 +9,37 @@ import {
   sourceJarField,
 } from './formValidation'
 
-const mainnetAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
+const mainnetAddress = '1BitcoinEaterAddressDontSend8MUo1T'
 const testnetAddress = 'mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn'
 const regtestBech32Address = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
-const regtestLegacyAddressLabeledTestnet = 'mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV'
+const testnetBech32Address = 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
+// bech32m/taproot pair - same witness program, differing only by HRP (tb1p vs bcrt1p)
+const testnetTaprootAddress = 'tb1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vq47zagq'
+const regtestTaprootAddress = 'bcrt1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqc8gma6'
+const regtestLegacyAddressLabelledTestnet = 'mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV'
 
 const addressSummary = {
   [mainnetAddress]: { address: mainnetAddress, used: false },
 } as unknown as AddressSummary
 
 describe('isValidAddress', () => {
-  it('accepts a valid address and rejects everything else', () => {
-    expect(isValidAddress(mainnetAddress)).toBe(true)
+  it.each([
+    mainnetAddress,
+    testnetAddress,
+    regtestBech32Address,
+    testnetBech32Address,
+    testnetTaprootAddress,
+    regtestTaprootAddress,
+    regtestLegacyAddressLabelledTestnet,
+  ])('accepts valid addresses', (address) => {
+    expect(isValidAddress(address)).toBe(true)
+  })
+
+  it('reject invalid addresses', () => {
     expect(isValidAddress('not-an-address')).toBe(false)
     expect(isValidAddress('')).toBe(false)
     expect(isValidAddress(undefined)).toBe(false)
+    expect(isValidAddress(null)).toBe(false)
     expect(isValidAddress(42)).toBe(false)
   })
 })
@@ -32,6 +48,7 @@ describe('isAddressOnNetwork', () => {
   it('matches the address network', () => {
     expect(isAddressOnNetwork(mainnetAddress, Network.mainnet)).toBe(true)
     expect(isAddressOnNetwork(mainnetAddress, Network.testnet)).toBe(false)
+    expect(isAddressOnNetwork(testnetAddress, Network.mainnet)).toBe(false)
     expect(isAddressOnNetwork(testnetAddress, Network.testnet)).toBe(true)
   })
 
@@ -39,17 +56,33 @@ describe('isAddressOnNetwork', () => {
     expect(isAddressOnNetwork('not-an-address', Network.mainnet)).toBe(false)
   })
 
-  it('treats testnet and regtest as interchangeable for base58 addresses ambiguous between the two', () => {
-    // bech32 regtest addresses are unambiguous and match regtest directly...
+  it('distinguishes testnet and regtest for bech32 and bech32m addresses via their distinct HRP', () => {
+    // bech32/bech32m addresses carry a network-specific prefix (tb1 vs bcrt1), so each is only
+    // valid on its own network - a regtest address must not pass on a testnet wallet, nor vice versa.
+    // bech32 (segwit v0):
     expect(isAddressOnNetwork(regtestBech32Address, Network.regtest)).toBe(true)
-    expect(isAddressOnNetwork(regtestBech32Address, Network.testnet)).toBe(true) // TODO: can be detected and differentiated for `p2wpkh`
-    // ...but a legacy address on a regtest wallet is labeled "testnet" by the library, so it
-    // must still be accepted when the wallet's detected network is regtest.
-    expect(isAddressOnNetwork(regtestLegacyAddressLabeledTestnet, Network.regtest)).toBe(true)
-    expect(isAddressOnNetwork(regtestLegacyAddressLabeledTestnet, Network.testnet)).toBe(true)
-    // mainnet is never ambiguous with testnet/regtest.
-    expect(isAddressOnNetwork(mainnetAddress, Network.regtest)).toBe(false)
+    expect(isAddressOnNetwork(regtestBech32Address, Network.testnet)).toBe(false)
+    expect(isAddressOnNetwork(testnetBech32Address, Network.testnet)).toBe(true)
+    expect(isAddressOnNetwork(testnetBech32Address, Network.regtest)).toBe(false)
+    // bech32m (taproot):
+    expect(isAddressOnNetwork(regtestTaprootAddress, Network.regtest)).toBe(true)
+    expect(isAddressOnNetwork(regtestTaprootAddress, Network.testnet)).toBe(false)
+    expect(isAddressOnNetwork(testnetTaprootAddress, Network.testnet)).toBe(true)
+    expect(isAddressOnNetwork(testnetTaprootAddress, Network.regtest)).toBe(false)
+    // ...and none pass on mainnet.
     expect(isAddressOnNetwork(regtestBech32Address, Network.mainnet)).toBe(false)
+    expect(isAddressOnNetwork(testnetBech32Address, Network.mainnet)).toBe(false)
+    expect(isAddressOnNetwork(regtestTaprootAddress, Network.mainnet)).toBe(false)
+    expect(isAddressOnNetwork(testnetTaprootAddress, Network.mainnet)).toBe(false)
+  })
+
+  it('treats testnet and regtest as interchangeable for ambiguous base58 addresses', () => {
+    expect(getAddressInfo(regtestLegacyAddressLabelledTestnet).network, 'sanity check').toBe(Network.testnet)
+
+    // A base58 (P2PKH here; P2SH shares the trait) address on a regtest wallet is labeled "testnet"
+    // by the library because the two share version bytes, so it must still be accepted on regtest.
+    expect(isAddressOnNetwork(regtestLegacyAddressLabelledTestnet, Network.regtest)).toBe(true)
+    expect(isAddressOnNetwork(regtestLegacyAddressLabelledTestnet, Network.testnet)).toBe(true)
   })
 })
 

@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Balance } from '@/components/ui/jam/Balance'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -36,7 +37,6 @@ import {
 } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { Balance } from '../ui/jam/Balance'
 import { Spinner } from '../ui/spinner'
 import { OrderbookChart } from './OrderbookChart'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
@@ -87,7 +87,7 @@ const offerToTableEntry = (
     maximumSize: String(offer.maxsize || 0),
     bondValue: {
       value: offer.fidelity_bond_value || 0,
-      displayValue: String((offer.fidelity_bond_value || 0).toFixed(0)),
+      displayValue: Math.floor(offer.fidelity_bond_value || 0).toLocaleString(),
       locktime: fidelityBond?.locktime,
       displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
       displayExpiresIn: fidelityBond?.locktime
