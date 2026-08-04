@@ -36,7 +36,7 @@ type StatusBadgeVariant = NonNullable<Parameters<typeof StatusBadge>[0]['variant
 
 const ROLE_VARIANT: Record<KnownHistoryRole, StatusBadgeVariant> = {
   maker: 'cj-out',
-  taker: 'default',
+  taker: 'cj-change',
   send: 'used-empty',
   deposit: 'deposit',
 }
