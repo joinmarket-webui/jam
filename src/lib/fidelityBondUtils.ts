@@ -98,6 +98,9 @@ export const utxo = (() => {
 
   const isFidelityBond = (utxo: Utxo): utxo is FidelityBondUtxo => !!utxo.locktime
 
+  const isEligibleForCreation = (utxo: Utxo, addressStatus?: string) =>
+    !utxo.frozen && !isFidelityBond(utxo) && addressStatus === 'cj-out'
+
   const getLocktime = (utxo: Utxo): Milliseconds | null => {
     if (!isFidelityBond(utxo)) return null
 
@@ -115,5 +118,14 @@ export const utxo = (() => {
     return locktime !== null && locktime >= refTime
   }
 
-  return { isEqual, isInList, utxosToFreeze, allAreFrozen, isFidelityBond, isLocked, getLocktime }
+  return {
+    isEqual,
+    isInList,
+    utxosToFreeze,
+    allAreFrozen,
+    isFidelityBond,
+    isEligibleForCreation,
+    isLocked,
+    getLocktime,
+  }
 })()

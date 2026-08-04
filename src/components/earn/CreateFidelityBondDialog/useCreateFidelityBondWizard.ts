@@ -111,9 +111,8 @@ export function useCreateFidelityBondWizard(
   const jarsWithUtxos = useMemo(() => {
     return walletInfo.jars.filter((jar) => {
       // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
-      const availableUtxos = jar.utxos.filter(
-        (utxo) =>
-          !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && walletInfo.addressSummary[utxo.address]?.status === 'cj-out',
+      const availableUtxos = jar.utxos.filter((utxo) =>
+        fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status),
       )
       return availableUtxos.length > 0
     })
@@ -124,12 +123,7 @@ export function useCreateFidelityBondWizard(
     return (
       selectedJar.utxos
         // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
-        .filter(
-          (utxo) =>
-            !utxo.frozen &&
-            !fb.utxo.isFidelityBond(utxo) &&
-            walletInfo.addressSummary[utxo.address]?.status === 'cj-out',
-        )
+        .filter((utxo) => fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status))
         .toSorted((a, b) => b.value - a.value)
     )
   }, [selectedJar, walletInfo.addressSummary])
