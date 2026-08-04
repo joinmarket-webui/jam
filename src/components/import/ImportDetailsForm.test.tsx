@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { DUMMY_SEED_PHRASE, pseudoRandomInteger } from '@/lib/utils'
 import { flushActUpdates } from '@/test/flushActUpdates'
+import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import type { BlockHeight } from '@/types/global'
 import { ImportDetailsForm } from './ImportDetailsForm'
 
@@ -64,24 +65,26 @@ describe('ImportDetailsForm', () => {
   })
 
   it('warns and does not submit when the blockheight is larger than current blockheight', async () => {
-    const onSubmit = vi.fn()
-    const currentBlockHeight = pseudoRandomInteger(1, Number.MAX_SAFE_INTEGER - 1)
-    render(
-      <ImportDetailsForm
-        onSubmit={onSubmit}
-        sessionInfo={{ ...mockedSessionInfo, block_height: currentBlockHeight }}
-      />,
-    )
-    typeBlockheight(currentBlockHeight + 1)
-    fireEvent.submit(document.querySelector('form')!)
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          `import_wallet.import_details.feedback_invalid_blockheight {"min":"0","max":"${currentBlockHeight.toLocaleString()}"}`,
-        ),
-      ).toBeInTheDocument(),
-    )
-    expect(onSubmit).not.toHaveBeenCalled()
+    await withRuntimeLocale('en-US', async () => {
+      const onSubmit = vi.fn()
+      const currentBlockHeight = pseudoRandomInteger(1, Number.MAX_SAFE_INTEGER - 1)
+      render(
+        <ImportDetailsForm
+          onSubmit={onSubmit}
+          sessionInfo={{ ...mockedSessionInfo, block_height: currentBlockHeight }}
+        />,
+      )
+      typeBlockheight(currentBlockHeight + 1)
+      fireEvent.submit(document.querySelector('form')!)
+      await waitFor(() =>
+        expect(
+          screen.getByText(
+            `import_wallet.import_details.feedback_invalid_blockheight {"min":"0","max":"${currentBlockHeight.toLocaleString()}"}`,
+          ),
+        ).toBeInTheDocument(),
+      )
+      expect(onSubmit).not.toHaveBeenCalled()
+    })
   })
 
   it('submits when all values are valid', async () => {
