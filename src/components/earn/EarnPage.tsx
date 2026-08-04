@@ -2,14 +2,22 @@ import { useEffect, useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { FileTextIcon, HourglassIcon, PlusIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import {
+  AlertTriangleIcon,
+  FileTextIcon,
+  HourglassIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  ShuffleIcon,
+  UnlockIcon,
+} from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
-import { Alert, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
@@ -130,6 +138,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const waitingForOfferUpdate = makerRunning && !isCurrentOfferAvailable
 
   const hasFidelityBond = walletInfo.fidelityBondSummary.fbOutputs.length > 0
+  const hasEligibleFidelityBondUtxo = useMemo(
+    () =>
+      walletInfo.jars.some((jar) =>
+        jar.utxos.some((utxo) => fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status)),
+      ),
+    [walletInfo.addressSummary, walletInfo.jars],
+  )
   const isFidelityBondActionsEnabled =
     jmSession?.rescanning === false &&
     jmSession.maker_running === false &&
@@ -139,7 +154,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     !walletInfo.isFetching
 
   const isCreateFidelityBondEnabled =
-    isFidelityBondActionsEnabled && (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
+    isFidelityBondActionsEnabled &&
+    hasEligibleFidelityBondUtxo &&
+    (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
   const showCreateAdditionalFidelityBond = JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED
 
   const numberOfNonFrozenFidelityBondOutputs = !hasFidelityBond
@@ -319,6 +336,17 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
               <CardAction></CardAction>
             </CardHeader>
+            {!hasEligibleFidelityBondUtxo && (
+              <CardContent>
+                <Alert variant="warning">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('earn.fidelity_bond.create_form.alert_no_eligible_utxos_title')}</AlertTitle>
+                  <AlertDescription>
+                    {t('earn.fidelity_bond.create_form.alert_no_eligible_utxos_description')}
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            )}
             <CardFooter className="gap-2">
               <Button
                 variant="default"

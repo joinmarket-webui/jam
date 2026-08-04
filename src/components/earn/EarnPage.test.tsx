@@ -2,7 +2,8 @@ import type React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
+import type { Jar } from '@/context/JamWalletInfoContext'
+import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { EarnFormValues } from './EarnForm'
 import { EarnPage } from './EarnPage'
@@ -26,17 +27,11 @@ const mocks = vi.hoisted(() => ({
   toastInfo: vi.fn(),
   toastSuccess: vi.fn(),
   walletInfo: {
+    addressSummary: {},
     fidelityBondSummary: { fbOutputs: [] as FidelityBondUtxo[] },
     isFetching: false,
     isLoading: false,
-    jars: [] as Array<{
-      balanceSummary: {
-        calculatedAvailableBalanceInSats: number
-        calculatedConfirmedAvailableBalanceInSats: number
-        calculatedFrozenOrLockedBalanceInSats: number
-        calculatedTotalBalanceInSats: number
-      }
-    }>,
+    jars: [] as Jar[],
     maxJarAvailableBalance: 100_000_000,
   },
 }))
@@ -212,10 +207,34 @@ vi.mock('./report/EarnReportOverlay', () => ({
 
 const balanceSummary = {
   calculatedAvailableBalanceInSats: 100_000_000,
+  calculatedAvailableFrozenBalanceInSats: 0,
   calculatedConfirmedAvailableBalanceInSats: 100_000_000,
   calculatedFrozenOrLockedBalanceInSats: 0,
   calculatedTotalBalanceInSats: 100_000_000,
 }
+
+const eligibleUtxo: Utxo = {
+  address: 'bcrt1qcj',
+  confirmations: 12,
+  external: false,
+  frozen: false,
+  label: '',
+  locktime: undefined,
+  mixdepth: 0,
+  path: "m/84'/1'/0'/0/0",
+  tries: 3,
+  tries_remaining: 3,
+  utxo: 'eligible:0',
+  value: 100_000,
+}
+
+const makeJar = (balanceOverrides = {}): Jar => ({
+  balanceSummary: { ...balanceSummary, ...balanceOverrides },
+  color: '#e2b86a',
+  jarIndex: 0,
+  name: 'Jar 0',
+  utxos: [eligibleUtxo],
+})
 
 const expiredBond: FidelityBondUtxo = {
   address: 'bc1qbond',
@@ -264,10 +283,13 @@ describe('EarnPage', () => {
     mocks.toastError.mockReset()
     mocks.toastInfo.mockReset()
     mocks.toastSuccess.mockReset()
+    mocks.walletInfo.addressSummary = {
+      [eligibleUtxo.address]: { status: 'cj-out' },
+    }
     mocks.walletInfo.fidelityBondSummary = { fbOutputs: [] }
     mocks.walletInfo.isFetching = false
     mocks.walletInfo.isLoading = false
-    mocks.walletInfo.jars = [{ balanceSummary }]
+    mocks.walletInfo.jars = [makeJar()]
     mocks.walletInfo.maxJarAvailableBalance = 100_000_000
     setSession()
   })
@@ -375,6 +397,26 @@ describe('EarnPage', () => {
 
     await user.click(createFidelityBondButton)
     expect(screen.getByText('create-bond-dialog:true')).toBeInTheDocument()
+  })
+
+  it('explains when no UTXO is eligible for fidelity-bond creation', async () => {
+    const user = userEvent.setup()
+    mocks.walletInfo.addressSummary = {
+      [eligibleUtxo.address]: { status: 'deposit' },
+    }
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('earn.fidelity_bond.create_form.alert_no_eligible_utxos_title')).toBeInTheDocument()
+    expect(screen.getByText('earn.fidelity_bond.create_form.alert_no_eligible_utxos_description')).toBeInTheDocument()
+
+    const createFidelityBondButton = screen.getByRole('button', {
+      name: 'earn.fidelity_bond.create_form.button_create',
+    })
+    expect(createFidelityBondButton).toBeDisabled()
+
+    await user.click(createFidelityBondButton)
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
   })
 
   it('disables creating a fidelity bond while rescanning', async () => {
@@ -485,7 +527,7 @@ describe('EarnPage', () => {
   })
 
   it('warns when the spendable balance is only unconfirmed', () => {
-    mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
+    mocks.walletInfo.jars = [makeJar({ calculatedConfirmedAvailableBalanceInSats: 0 })]
     mocks.walletInfo.maxJarAvailableBalance = 100_000_000
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
@@ -497,7 +539,7 @@ describe('EarnPage', () => {
   })
 
   it('warns when there is no spendable balance at all', () => {
-    mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
+    mocks.walletInfo.jars = [makeJar({ calculatedConfirmedAvailableBalanceInSats: 0 })]
     mocks.walletInfo.maxJarAvailableBalance = 0
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
