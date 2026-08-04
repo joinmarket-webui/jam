@@ -3,8 +3,8 @@ import { RefreshCwIcon, DownloadIcon, ArrowDownIcon, SearchIcon, XIcon } from 'l
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { cn, delayedPromise } from '@/lib/utils'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 
 interface LogViewerProps {
   fileName: string
@@ -143,32 +143,43 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
 
   return (
     <Card className="flex flex-1 flex-col overflow-hidden pb-0">
-      <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="font-mono break-all select-all">{fileName}</CardTitle>
+      <CardHeader className="flex flex-col justify-center gap-4 md:flex-row md:items-center md:justify-between">
+        <CardTitle className="font-mono break-all break-keep select-all">{fileName}</CardTitle>
         {/* Search + action buttons */}
-        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap">
-          <div className="relative min-w-0 flex-1 sm:max-w-[360px] sm:min-w-[220px]">
-            <SearchIcon className="text-muted-foreground absolute top-1/2 left-2 h-4 w-4 -translate-y-1/2" />
-            <Input
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+          <InputGroup className="min-w-[120px] flex-1 sm:max-w-[360px] sm:min-w-[220px]">
+            <InputGroupInput
+              className="text-xs sm:text-sm"
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
-              className="h-9 pr-8 pl-8 text-xs"
               placeholder={t('logs.placeholder_search')}
               aria-label={t('logs.label_search')}
             />
-            {searchValue.length > 0 && (
+            <InputGroupAddon align="inline-start">
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2"
                 onClick={() => setSearchValue('')}
                 title={t('global.clear')}
+                className={searchValue.length === 0 ? 'invisible' : undefined}
               >
-                <XIcon className="h-4 w-4" />
+                <XIcon />
               </Button>
-            )}
-          </div>
+            </InputGroupAddon>
+          </InputGroup>
+          <Button
+            variant="outline"
+            onClick={() => void handleRefresh()}
+            disabled={isLoadingRefresh}
+            title={t('global.refresh')}
+          >
+            <RefreshCwIcon className={isLoadingRefresh ? 'animate-spin' : undefined} />
+            <span className="hidden sm:inline">{t('global.refresh')}</span>
+          </Button>
           <Button
             className="hover:[&>svg]:motion-safe:animate-bounce"
             variant="outline"
@@ -178,15 +189,6 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
           >
             <DownloadIcon className="group/download" />
             <span className="hidden sm:inline">{t('global.download')}</span>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => void handleRefresh()}
-            disabled={isLoadingRefresh}
-            title={t('global.refresh')}
-          >
-            <RefreshCwIcon className={isLoadingRefresh ? 'animate-spin' : undefined} />
-            <span className="hidden sm:inline">{t('global.refresh')}</span>
           </Button>
         </div>
       </CardHeader>

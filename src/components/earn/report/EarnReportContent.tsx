@@ -11,14 +11,14 @@ import {
   type SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon } from 'lucide-react'
+import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { useQueryYieldgenReport, type EarnReportEntry } from '@/components/earn/report/hooks/useQueryYieldgenReport'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Balance } from '@/components/ui/jam/Balance'
 import { SortIcon } from '@/components/ui/jam/SortIcon'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
@@ -212,30 +212,46 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
           <EarnReportChart entries={allEntries} />
 
           {/* Toolbar: search + refresh */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative min-w-[12rem] flex-1">
-              <SearchIcon className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-              <Input
-                placeholder={t('earn.report.placeholder_search')}
-                value={globalFilter}
-                onChange={(event) => table.setGlobalFilter(event.target.value)}
-                className="pl-8"
-                disabled={!enabled}
-              />
+          <div className="flex w-full flex-wrap items-center justify-end gap-2">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <InputGroup className="min-w-[120px] flex-1 sm:max-w-[360px] sm:min-w-[220px]">
+                <InputGroupInput
+                  className="text-xs sm:text-sm"
+                  value={globalFilter}
+                  onChange={(event) => table.setGlobalFilter(event.target.value)}
+                  placeholder={t('earn.report.placeholder_search')}
+                />
+                <InputGroupAddon align="inline-start">
+                  <SearchIcon />
+                </InputGroupAddon>
+                <InputGroupAddon align="inline-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => table.setGlobalFilter('')}
+                    title={t('global.clear')}
+                    className={globalFilter.length === 0 ? 'invisible' : undefined}
+                  >
+                    <XIcon />
+                  </Button>
+                </InputGroupAddon>
+              </InputGroup>
+
+              <Button variant="outline" onClick={() => void refetch()} disabled={!enabled || isRefetching}>
+                <RefreshCwIcon className={isRefetching ? 'animate-spin' : undefined} />
+                <span className="hidden sm:inline">{t('global.refresh')}</span>
+              </Button>
+              <Button
+                className="hover:[&>svg]:motion-safe:animate-bounce"
+                variant="outline"
+                onClick={downloadCsv}
+                disabled={!enabled || allEntries.length === 0}
+              >
+                <DownloadIcon className="group/download" />
+                <span className="hidden sm:inline">{t('global.download')}</span>
+              </Button>
             </div>
-            <Button variant="outline" onClick={() => void refetch()} disabled={!enabled || isRefetching}>
-              <RefreshCwIcon className={isRefetching ? 'animate-spin' : undefined} />
-              <span className="hidden sm:inline">{t('global.refresh')}</span>
-            </Button>
-            <Button
-              className="hover:[&>svg]:motion-safe:animate-bounce"
-              variant="outline"
-              onClick={downloadCsv}
-              disabled={!enabled || allEntries.length === 0}
-            >
-              <DownloadIcon className="group/download" />
-              <span className="hidden sm:inline">{t('global.download')}</span>
-            </Button>
 
             <span className="text-muted-foreground ml-2 text-sm font-normal">
               {globalFilter === ''
@@ -243,7 +259,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 : t('earn.report.text_report_summary_filtered', { count: table.getFilteredRowModel().rows.length })}
             </span>
             {isDeveloperMode ? (
-              <Button variant="outline" size="sm" onClick={addDemoEntry}>
+              <Button className="min-w-0 shrink overflow-hidden" variant="outline" onClick={addDemoEntry}>
                 <PlusIcon />
                 {t('earn.report.text_button_generate_demo_report')}
                 <DevBadge />
