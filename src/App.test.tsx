@@ -78,7 +78,6 @@ vi.mock('@/store/jamSettingsStore', () => ({
 
 vi.mock('@/constants/debugFeatures', () => ({
   isDebugFeatureEnabled: () => true,
-  isDevMode: () => false,
 }))
 
 vi.mock('@tanstack/react-query', () => ({

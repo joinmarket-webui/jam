@@ -1,7 +1,6 @@
 import { percentageToFactor, parseSemanticVersion } from '@/lib/utils'
 import type { AmountSats, Milliseconds, Seconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
-import { isDevMode } from './debugFeatures'
 import {
   JM_API_AUTH_TOKEN_EXPIRY,
   JM_DUST_THRESHOLD,
@@ -98,7 +97,7 @@ export const RUNNING_COINJOIN_POLLING_DELAY: Milliseconds = Math.max(
 )
 
 export const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = Math.max(
-  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_SCHEDULE_POLLING_INTERVAL, isDevMode() ? 5_000 : 10_000),
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_SCHEDULE_POLLING_INTERVAL, 10_000),
   1_000,
 )
 
