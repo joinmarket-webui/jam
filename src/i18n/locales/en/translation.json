@@ -914,7 +914,7 @@
     "column_amount": "Amount",
     "column_net_fee": "Net Fee",
     "column_confirmations": "Confs.",
-    "column_txid": "Txid",
+    "column_txid": "Transaction",
     "role_maker": "Maker",
     "role_taker": "CoinJoin",
     "role_send": "Send",
