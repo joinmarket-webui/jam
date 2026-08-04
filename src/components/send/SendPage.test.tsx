@@ -34,6 +34,9 @@ const mocks = vi.hoisted(() => ({
   walletInfoIsFetching: false,
   walletInfoIsLoading: false,
   waitForUtxosToBeSpent: [] as string[],
+  hasOrders: true,
+  orderbookIsLoading: false,
+  orderbookError: null as Error | null,
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
@@ -73,8 +76,20 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
+  Trans: ({ i18nKey, values }: { i18nKey: string; values?: unknown }) =>
+    values ? `${i18nKey}:${JSON.stringify(values)}` : i18nKey,
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
+  }),
+}))
+
+vi.mock('@/hooks/useQueryOrderbook', () => ({
+  useQueryOrderbook: () => ({
+    hasOrders: mocks.hasOrders,
+    queryResult: {
+      isLoading: mocks.orderbookIsLoading,
+      error: mocks.orderbookError,
+    },
   }),
 }))
 
@@ -331,6 +346,9 @@ describe('SendPage', () => {
     mocks.walletInfoIsFetching = false
     mocks.walletInfoIsLoading = false
     mocks.waitForUtxosToBeSpent = []
+    mocks.hasOrders = true
+    mocks.orderbookIsLoading = false
+    mocks.orderbookError = null
     jmSessionStore.setState({
       state: {
         coinjoin_in_process: false,

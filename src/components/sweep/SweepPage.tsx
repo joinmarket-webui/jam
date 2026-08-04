@@ -23,6 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { OrderbookEmptyAlert } from '@/components/ui/jam/OrderbookEmptyAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import * as JAM from '@/constants/jam'
@@ -31,6 +32,7 @@ import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useDetectNetwork, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
 import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
@@ -72,6 +74,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
   const [alertMessage, setAlertMessage] = useState<string>()
+  const { hasOrders, queryResult: orderbookQueryResult } = useQueryOrderbook()
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
@@ -282,6 +285,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
         {feeConfigValidation.maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
+        )}
+
+        {!orderbookQueryResult.isLoading && !orderbookQueryResult.error && !hasOrders && (
+          <OrderbookEmptyAlert className="mb-4" />
         )}
 
         {alertMessage && (
