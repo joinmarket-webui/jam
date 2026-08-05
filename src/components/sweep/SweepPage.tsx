@@ -25,7 +25,7 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { isDevMode } from '@/constants/debugFeatures'
+import * as JAM from '@/constants/jam'
 import type { TumblerParameters } from '@/constants/jm'
 import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useDetectNetwork, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
@@ -36,7 +36,6 @@ import { getErrorReason } from '@/lib/errorReason'
 import { scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import type { Milliseconds } from '@/types/global'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
 import { SweepForm } from './SweepForm'
@@ -45,11 +44,6 @@ import { formValuesToTumblerParameters } from './SweepFormSchema'
 interface SweepPageProps {
   walletFileName: WalletFileName
 }
-
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
-const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
-
-const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = isDevMode() ? 5_000 : 10_000
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   time_lambda_seconds: 10,
@@ -87,7 +81,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     refetchInterval: (query) => {
       const schedulerRunning = takerInfo.running && takerInfo.scheduler.running
       const currentScheduleStillActive = query.state.data && !isPlanTerminated(query.state.data)
-      return schedulerRunning || currentScheduleStillActive ? RUNNING_SCHEDULE_POLLING_INTERVAL : false
+      return schedulerRunning || currentScheduleStillActive ? JAM.RUNNING_SCHEDULE_POLLING_INTERVAL : false
     },
     refetchIntervalInBackground: true,
     retry: false,
@@ -208,8 +202,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   useRefreshSession({
     enabled: isWaitingSchedulerStart || isWaitingSchedulerStop,
-    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
-    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
+    refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   useEffect(() => {

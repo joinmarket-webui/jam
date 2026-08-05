@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import * as JAM from '@/constants/jam'
 import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAddressSummary,
@@ -204,14 +205,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   useRefreshSession({
     enabled: isWaitingCoinjoinStart || isWaitingCoinjoinStop,
-    refetchInterval: 3_000,
-    refetchDelay: 1_000,
+    refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   useRefreshSession({
     enabled: takerRunning,
-    refetchInterval: 5_000,
-    refetchDelay: 1_000,
+    refetchInterval: JAM.RUNNING_COINJOIN_POLLING_INTERVAL,
+    refetchDelay: JAM.RUNNING_COINJOIN_POLLING_DELAY,
   })
 
   useEffect(() => {
