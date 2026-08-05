@@ -145,6 +145,10 @@ vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: true }),
 }))
 
+vi.mock('@/context/JamDisplayContext', () => ({
+  useJamDisplayContext: () => ({ addressChunkingEnabled: false }),
+}))
+
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSessionInfoContext: () => ({
     clearCurrentPaymentAttempt: mocks.clearCurrentPaymentAttempt,

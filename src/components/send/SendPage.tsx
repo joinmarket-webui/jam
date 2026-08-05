@@ -44,6 +44,7 @@ import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Spinner } from '../ui/spinner'
+import { ActiveCollaborativeSendAlert } from './ActiveCollaborativeSendAlert'
 import { PaymentAbortDialog } from './PaymentAbortDialog'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
@@ -504,42 +505,13 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             )
         }
         {takerRunning && !isWaitingCoinjoinStop && (
-          <Alert variant="warning">
-            <HourglassIcon className="motion-safe:animate-pulse" />
-            <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
-            <AlertDescription className="flex flex-col gap-2">
-              {currentPaymentAttempt && (
-                <pre className="max-w-full overflow-x-auto">
-                  {JSON.stringify(
-                    {
-                      sourceJar: currentPaymentAttempt.data.source.fromJar,
-                      destinationJar: currentPaymentAttempt.data.destination.fromJar,
-                      destinationAddress: currentPaymentAttempt.data.destination.address,
-                      isSweep: currentPaymentAttempt.data.amount.isSweep === true,
-                      amount:
-                        currentPaymentAttempt.data.amount.isSweep === true
-                          ? currentPaymentAttempt.data.amount.sweepAmount
-                          : currentPaymentAttempt.data.amount.amount,
-                      numCollaborators: currentPaymentAttempt.data.numCollaborators,
-                    },
-                    null,
-                    2,
-                  )}
-                </pre>
-              )}
-              {takerRunning && !schedulerRunning ? (
-                <div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowAbortCoinjoinDialog(true)}
-                    disabled={isWaitingCoinjoinStop}
-                  >
-                    {t('global.abort')}
-                  </Button>
-                </div>
-              ) : null}
-            </AlertDescription>
-          </Alert>
+          <ActiveCollaborativeSendAlert
+            paymentAttempt={currentPaymentAttempt}
+            jars={jars}
+            isWaitingCoinjoinStop={isWaitingCoinjoinStop}
+            schedulerRunning={schedulerRunning}
+            onAbort={() => setShowAbortCoinjoinDialog(true)}
+          />
         )}
 
         {triggerNonCollaborativeTransaction.error ? (
