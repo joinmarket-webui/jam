@@ -154,7 +154,8 @@ export function useFidelityBondSweep({
 
         return undefined
       } finally {
-        
+        // refetch only if the sweep broadcast, and don't let a refetch error
+        // get treated as a sweep failure
         if (sweepBroadcasted) {
           try {
             await walletInfoRefetch()
