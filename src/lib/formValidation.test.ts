@@ -7,6 +7,8 @@ import {
   isReusedAddress,
   isValidAddress,
   sourceJarField,
+  blockHeightField,
+  INPUT_BLOCK_HEIGHT_MIN,
 } from './formValidation'
 
 const mainnetAddress = '1BitcoinEaterAddressDontSend8MUo1T'
@@ -162,5 +164,45 @@ describe('destinationAddressField', () => {
     })
 
     expect(() => reusedSchema.validateSync(mainnetAddress)).toThrow('reused')
+  })
+})
+
+describe('blockHeightField', () => {
+  const invalidMsg = ({ min, max }: { min: number; max: number }) => `Invalid blockheight ${min}-${max}`
+
+  it('handles currentBlockHeight = 0', () => {
+    const schema = blockHeightField({ currentBlockHeight: 0, messages: { invalid: invalidMsg } })
+    // min should be 0, max should be 0
+    expect(schema.isValidSync(0)).toBe(true)
+    expect(schema.isValidSync(1)).toBe(false)
+  })
+
+  it('handles currentBlockHeight = undefined', () => {
+    const schema = blockHeightField({ currentBlockHeight: undefined, messages: { invalid: invalidMsg } })
+    // min should be 0, max should be Number.MAX_SAFE_INTEGER
+    expect(schema.isValidSync(0)).toBe(true)
+    expect(schema.isValidSync(100)).toBe(true)
+    expect(schema.isValidSync(Number.MAX_SAFE_INTEGER + 1)).toBe(false)
+  })
+
+  it('handles currentBlockHeight = null', () => {
+    // @ts-expect-error Intentionally pass null to test JS boundary cases
+    const schema = blockHeightField({ currentBlockHeight: null, messages: { invalid: invalidMsg } })
+    expect(schema.isValidSync(0)).toBe(true)
+    expect(schema.isValidSync(100)).toBe(true)
+  })
+
+  it('handles currentBlockHeight > minBlockHeight', () => {
+    const schema = blockHeightField({ currentBlockHeight: 100, messages: { invalid: invalidMsg } })
+    // min should be 0, max should be 100
+    expect(schema.isValidSync(50)).toBe(true)
+    expect(schema.isValidSync(100)).toBe(true)
+    expect(schema.isValidSync(101)).toBe(false)
+  })
+
+  it('handles currentBlockHeight == minBlockHeight (0)', () => {
+    const schema = blockHeightField({ currentBlockHeight: INPUT_BLOCK_HEIGHT_MIN, messages: { invalid: invalidMsg } })
+    expect(schema.isValidSync(INPUT_BLOCK_HEIGHT_MIN)).toBe(true)
+    expect(schema.isValidSync(INPUT_BLOCK_HEIGHT_MIN + 1)).toBe(false)
   })
 })
