@@ -138,13 +138,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const waitingForOfferUpdate = makerRunning && !isCurrentOfferAvailable
 
   const hasFidelityBond = walletInfo.fidelityBondSummary.fbOutputs.length > 0
-  const hasEligibleFidelityBondUtxo = useMemo(
-    () =>
-      walletInfo.jars.some((jar) =>
-        jar.utxos.some((utxo) => fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status)),
-      ),
-    [walletInfo.addressSummary, walletInfo.jars],
-  )
   const isFidelityBondActionsEnabled =
     jmSession?.rescanning === false &&
     jmSession.maker_running === false &&
@@ -155,7 +148,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const isCreateFidelityBondEnabled =
     isFidelityBondActionsEnabled &&
-    hasEligibleFidelityBondUtxo &&
+    walletInfo.hasEligibleFidelityBondUtxo &&
     (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
   const showCreateAdditionalFidelityBond = JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED
 
@@ -336,7 +329,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
               <CardAction></CardAction>
             </CardHeader>
-            {!hasEligibleFidelityBondUtxo && (
+            {!walletInfo.hasEligibleFidelityBondUtxo && (
               <CardContent>
                 <Alert variant="warning">
                   <AlertTriangleIcon />

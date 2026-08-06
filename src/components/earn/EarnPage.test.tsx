@@ -29,6 +29,7 @@ const mocks = vi.hoisted(() => ({
   walletInfo: {
     addressSummary: {},
     fidelityBondSummary: { fbOutputs: [] as FidelityBondUtxo[] },
+    hasEligibleFidelityBondUtxo: true,
     isFetching: false,
     isLoading: false,
     jars: [] as Jar[],
@@ -287,6 +288,7 @@ describe('EarnPage', () => {
       [eligibleUtxo.address]: { status: 'cj-out' },
     }
     mocks.walletInfo.fidelityBondSummary = { fbOutputs: [] }
+    mocks.walletInfo.hasEligibleFidelityBondUtxo = true
     mocks.walletInfo.isFetching = false
     mocks.walletInfo.isLoading = false
     mocks.walletInfo.jars = [makeJar()]
@@ -401,9 +403,7 @@ describe('EarnPage', () => {
 
   it('explains when no UTXO is eligible for fidelity-bond creation', async () => {
     const user = userEvent.setup()
-    mocks.walletInfo.addressSummary = {
-      [eligibleUtxo.address]: { status: 'deposit' },
-    }
+    mocks.walletInfo.hasEligibleFidelityBondUtxo = false
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
