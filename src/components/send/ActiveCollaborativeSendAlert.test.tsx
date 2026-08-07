@@ -47,7 +47,7 @@ const sampleJars: Jar[] = [
 ]
 
 const sampleAttempt: PaymentAttempt = {
-  createdAt: 1000,
+  createdAt: 1_000,
   utxosHashHex: 'abc123hash',
   walletFileName: 'testwallet.jmdat',
   data: {
@@ -66,8 +66,7 @@ describe('ActiveCollaborativeSendAlert', () => {
       <ActiveCollaborativeSendAlert
         paymentAttempt={sampleAttempt}
         jars={sampleJars}
-        isWaitingCoinjoinStop={false}
-        schedulerRunning={false}
+        isAborting={false}
         onAbort={vi.fn()}
       />,
     )
@@ -93,8 +92,7 @@ describe('ActiveCollaborativeSendAlert', () => {
       <ActiveCollaborativeSendAlert
         paymentAttempt={internalAttempt}
         jars={sampleJars}
-        isWaitingCoinjoinStop={false}
-        schedulerRunning={false}
+        isAborting={false}
         onAbort={vi.fn()}
       />,
     )
@@ -111,8 +109,7 @@ describe('ActiveCollaborativeSendAlert', () => {
       <ActiveCollaborativeSendAlert
         paymentAttempt={sampleAttempt}
         jars={sampleJars}
-        isWaitingCoinjoinStop={false}
-        schedulerRunning={false}
+        isAborting={false}
         onAbort={onAbort}
       />,
     )
@@ -121,27 +118,12 @@ describe('ActiveCollaborativeSendAlert', () => {
     expect(onAbort).toHaveBeenCalledTimes(1)
   })
 
-  it('hides abort button when scheduler is running', () => {
-    render(
-      <ActiveCollaborativeSendAlert
-        paymentAttempt={sampleAttempt}
-        jars={sampleJars}
-        isWaitingCoinjoinStop={false}
-        schedulerRunning={true}
-        onAbort={vi.fn()}
-      />,
-    )
-
-    expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
-  })
-
   it('disables abort button when stopping coinjoin', () => {
     render(
       <ActiveCollaborativeSendAlert
         paymentAttempt={sampleAttempt}
         jars={sampleJars}
-        isWaitingCoinjoinStop={true}
-        schedulerRunning={false}
+        isAborting={true}
         onAbort={vi.fn()}
       />,
     )

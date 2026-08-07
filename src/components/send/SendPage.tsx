@@ -504,12 +504,19 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               </>
             )
         }
-        {takerRunning && !isWaitingCoinjoinStop && (
+
+        {schedulerRunning && (
+          <Alert variant="warning">
+            <HourglassIcon className="motion-safe:animate-pulse" />
+            <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
+          </Alert>
+        )}
+
+        {takerRunning && !schedulerRunning && (
           <ActiveCollaborativeSendAlert
             paymentAttempt={currentPaymentAttempt}
             jars={jars}
-            isWaitingCoinjoinStop={isWaitingCoinjoinStop}
-            schedulerRunning={schedulerRunning}
+            isAborting={isWaitingCoinjoinStop}
             onAbort={() => setShowAbortCoinjoinDialog(true)}
           />
         )}
