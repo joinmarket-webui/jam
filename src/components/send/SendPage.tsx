@@ -514,7 +514,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
         {takerRunning && !schedulerRunning && (
           <ActiveCollaborativeSendAlert
-            paymentAttempt={currentPaymentAttempt}
+            paymentAttempt={
+              currentPaymentAttempt && currentPaymentAttempt.data.isCoinJoin ? currentPaymentAttempt : undefined
+            }
             jars={jars}
             isAborting={isWaitingCoinjoinStop}
             onAbort={() => setShowAbortCoinjoinDialog(true)}

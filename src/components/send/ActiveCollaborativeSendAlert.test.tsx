@@ -1,3 +1,5 @@
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -48,11 +50,11 @@ const sampleJars: Jar[] = [
 
 const sampleAttempt: PaymentAttempt = {
   createdAt: 1_000,
-  utxosHashHex: 'abc123hash',
-  walletFileName: 'testwallet.jmdat',
+  utxosHashHex: bytesToHex(sha256(hexToBytes('00'))),
+  walletFileName: 'test.jmdat',
   data: {
-    amount: { amount: 25_000, isSweep: false as const, sweepAmount: undefined },
-    destination: { address: 'bc1qdestinationaddress123456789', fromJar: undefined },
+    amount: { amount: 21_000, isSweep: false as const, sweepAmount: undefined },
+    destination: { address: 'bcrt1qdestinationaddress123456789', fromJar: undefined },
     isCoinJoin: true,
     numCollaborators: 5,
     source: { fromJar: 0 as const },
@@ -74,7 +76,7 @@ describe('ActiveCollaborativeSendAlert', () => {
     expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
     expect(screen.getByText('Jar Zero')).toBeInTheDocument()
     expect(screen.getByText('#0')).toBeInTheDocument()
-    expect(screen.getByText(/bc1qdestinationaddress123456789/u)).toBeInTheDocument()
+    expect(screen.getByText(/bcrt1qdestinationaddress123456789/u)).toBeInTheDocument()
     expect(screen.getAllByText('5').length).toBeGreaterThan(0)
     expect(screen.getByRole('button', { name: 'global.abort' })).toBeInTheDocument()
   })
