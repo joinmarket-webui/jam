@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
-import { UsersIcon } from 'lucide-react'
+import { MilkIcon, UsersIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { jarBadgeVariant } from '@/components/ui/badge-variants'
 import { Button } from '@/components/ui/button'
@@ -10,6 +9,9 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { CookingPotIcon } from '@/components/ui/jam/CookingPotIcon'
 import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
+import { cn } from '@/lib/utils'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemHeader, ItemTitle } from '../ui/item'
+import { Label } from '../ui/label'
 
 export interface ActiveCollaborativeSendAlertProps {
   paymentAttempt?: PaymentAttempt
@@ -39,105 +41,104 @@ export const ActiveCollaborativeSendAlert = ({
   }, [jars, data])
 
   return (
-    <Alert variant="warning" className="motion-safe:animate-in blur-in p-4 md:p-6">
-      <div className="mb-4 flex items-center gap-2.5">
-        <AlertTitle className="text-base">{t('send.text_coinjoin_already_running')}</AlertTitle>
-      </div>
+    <>
+      <Item
+        variant="outline"
+        className={cn({
+          //'ring-brand-success ring-1': value.status.completed,
+          //'ring-destructive ring-1': value.status.failed,
+          'ring-ring/50 ring-2': true,
+        })}
+      >
+        <ItemHeader className="mb-4">
+          <div>
+            <ItemTitle className="text-base">{t('send.text_coinjoin_already_running')}</ItemTitle>
+            <ItemDescription></ItemDescription>
+          </div>
+        </ItemHeader>
 
-      <AlertDescription className="mt-2">
-        <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-12">
-          <div className="border-border/40 flex justify-center border-b pb-4 lg:col-span-3 lg:border-r lg:border-b-0 lg:pr-6 lg:pb-0">
+        <ItemContent className="flex flex-col gap-2 md:flex-row md:gap-8">
+          <div className="col-span-full flex justify-center md:col-span-1">
             <CookingPotIcon
               className="animate-pulse"
               sourceJarIndex={data?.source?.fromJar}
               destinationJarIndex={data?.destination?.fromJar}
             />
           </div>
-
-          <div className="space-y-4 lg:col-span-9">
-            {data && (
-              <div className="border-border/50 bg-card/60 overflow-hidden rounded-xl border p-4 shadow-xs md:p-5">
-                <div className="grid grid-cols-[110px_1fr] items-center gap-x-3 gap-y-3.5 text-sm">
-                  <span className="text-muted-foreground font-medium">
-                    {t('send.confirm_send_modal.label_source_jar')}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={jarBadgeVariant(sourceJar?.jarIndex ?? data.source.fromJar)}>
-                      {sourceJar?.name ? (
-                        <>
-                          {sourceJar.name} <span>#{sourceJar.jarIndex}</span>
-                        </>
-                      ) : (
-                        <span>Jar #{data.source.fromJar}</span>
-                      )}
-                    </Badge>
-                  </div>
-
-                  <span className="text-muted-foreground font-medium">
-                    {t('send.confirm_send_modal.label_recipient')}
-                  </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {destinationJar !== undefined && (
-                      <Badge variant={jarBadgeVariant(destinationJar.jarIndex)}>
-                        {destinationJar.name ? (
-                          <>
-                            {destinationJar.name} <span>#{destinationJar.jarIndex}</span>
-                          </>
-                        ) : (
-                          <span>Jar #{destinationJar.jarIndex}</span>
-                        )}
+          {data && (
+            <>
+              <div className="grid grid-cols-1 gap-4">
+                {sourceJar ? (
+                  <div className="flex min-w-0 items-start gap-4">
+                    <MilkIcon className="mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <Label className="font-semibold">{t('send.confirm_send_modal.label_source_jar')}</Label>
+                      <Badge variant={jarBadgeVariant(sourceJar.jarIndex)}>
+                        {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex.toLocaleString()}</span>
                       </Badge>
-                    )}
-                    {data.destination.address ? (
-                      <Address
-                        className="text-muted-foreground font-mono text-xs"
-                        value={data.destination.address}
-                        copyable={true}
-                      />
-                    ) : (
-                      destinationJar === undefined && <span className="text-muted-foreground">-</span>
-                    )}
+                    </div>
                   </div>
+                ) : null}
 
-                  <span className="text-muted-foreground font-medium">{t('send.confirm_send_modal.label_amount')}</span>
-                  <div className="flex flex-col gap-2 font-medium sm:flex-row sm:items-center">
-                    {data.amount.isSweep ? (
-                      <>
-                        <Badge
-                          variant="outline"
-                          className="border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-400"
-                        >
+                <div className="flex min-w-0 items-start gap-4">
+                  <UsersIcon className="mt-0.5 shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <Label className="font-semibold">
+                      {t('send.confirm_send_modal.label_amount')}
+                      {data.amount.isSweep ? (
+                        <Badge variant="outline" className="text-xs">
                           Sweep
                         </Badge>
-                        <Balance valueString={String(data.amount.sweepAmount ?? 0)} />
-                      </>
+                      ) : null}
+                    </Label>
+                    {data.amount.isSweep ? (
+                      <Balance valueString={String(data.amount.sweepAmount)} />
                     ) : (
                       <Balance valueString={String(data.amount.amount)} />
                     )}
                   </div>
+                </div>
 
-                  {data.numCollaborators !== undefined && (
-                    <>
-                      <span className="text-muted-foreground font-medium">
-                        {t('send.confirm_send_modal.label_num_collaborators')}
-                      </span>
-                      <div className="flex items-center gap-1.5 font-medium">
-                        <UsersIcon className="text-muted-foreground size-4 shrink-0" />
-                        <span>{data.numCollaborators}</span>
-                      </div>
-                    </>
-                  )}
+                {data.numCollaborators !== undefined ? (
+                  <div className="flex min-w-0 items-start gap-4">
+                    <UsersIcon className="mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <Label className="font-semibold">{t('send.confirm_send_modal.label_num_collaborators')}</Label>
+                      {data.numCollaborators.toLocaleString()}
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="col-span-full flex min-w-0 items-start gap-4">
+                  <UsersIcon className="mt-0.5 shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <Label className="font-semibold">{t('send.confirm_send_modal.label_recipient')}</Label>
+                    {destinationJar && (
+                      <Badge variant={jarBadgeVariant(destinationJar.jarIndex)}>
+                        {destinationJar.name}{' '}
+                        <span className="text-xs">#{destinationJar.jarIndex.toLocaleString()}</span>
+                      </Badge>
+                    )}
+                    <Address
+                      className="text-muted-foreground font-mono text-xs"
+                      value={data.destination.address}
+                      copyable={true}
+                    />
+                  </div>
                 </div>
               </div>
-            )}
-            <div className="pt-1">
-              <Button variant="outline" onClick={onAbort} disabled={isAborting}>
-                {t('global.abort')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </AlertDescription>
-    </Alert>
+            </>
+          )}
+        </ItemContent>
+
+        <ItemFooter>
+          <ItemActions>
+            <Button type="button" variant="outline" onClick={onAbort} disabled={isAborting}>
+              {t('global.abort')}
+            </Button>
+          </ItemActions>
+        </ItemFooter>
+      </Item>
+    </>
   )
 }
