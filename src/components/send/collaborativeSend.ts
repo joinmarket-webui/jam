@@ -30,7 +30,7 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
   if (data.source?.fromJar === undefined) {
     throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
   }
-  if (data.amount.isSweep === true && data.amount.amount !== undefined) {
+  if (data.amount.isSweep === true && data.amount.amount != null) {
     throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given for sweep.')
   }
 

@@ -157,6 +157,22 @@ describe('buildNonCollaborativeSendRequest', () => {
     expect(request.amount_sats).toBe(0)
   })
 
+  it('maps sweep direct sends to amount_sats=0 when amount is null (real form-schema shape)', () => {
+    // SendForm.schema.ts transforms amount.amount to `null` (not `undefined`) once isSweep is true,
+    // which is what react-hook-form actually submits in production
+    const request = buildNonCollaborativeSendRequest({
+      ...baseValues(),
+      isCoinJoin: false,
+      amount: {
+        isSweep: true,
+        amount: null as unknown as undefined,
+        sweepAmount: 500_000,
+      },
+    })
+
+    expect(request.amount_sats).toBe(0)
+  })
+
   it('passes direct-send txfee values', () => {
     expect(
       buildNonCollaborativeSendRequest({
