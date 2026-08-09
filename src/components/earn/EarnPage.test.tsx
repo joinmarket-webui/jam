@@ -377,7 +377,10 @@ describe('EarnPage', () => {
     })
     mocks.orderbookData.mockReturnValue({
       offers: [{ counterparty: 'maker-a', oid: 7, fidelity_bond_value: 42_000 }],
-      fidelitybonds: [{ counterparty: 'maker-a', amount: 100_000, locktime: 1_800_000_000 }],
+      fidelitybonds: [
+        { counterparty: 'maker-a', amount: 50_000, locktime: 1_700_000_000 },
+        { counterparty: 'maker-a', amount: 100_000, locktime: 1_800_000_000 },
+      ],
     })
 
     render(<EarnPage walletFileName="wallet.jmdat" />)

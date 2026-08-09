@@ -94,7 +94,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   )
   const currentOrderbookFidelityBond =
     Number(currentOrderbookOffer?.fidelity_bond_value) > 0
-      ? orderbookQuery.data?.fidelitybonds?.find((bond) => bond.counterparty === jmSession?.nickname)
+      ? orderbookQuery.data?.fidelitybonds?.findLast((bond) => bond.counterparty === jmSession?.nickname)
       : undefined
   const orderbookStatus =
     !jmSession?.nickname || orderbookQuery.isLoading
