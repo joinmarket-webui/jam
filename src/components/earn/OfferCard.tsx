@@ -156,7 +156,7 @@ export function OfferCard({
               <Label className="font-semibold">{t('earn.current.text_fidelity_bond')}</Label>
               <div className="text-muted-foreground flex flex-wrap gap-x-4 text-sm">
                 <span>
-                  {t('earn.current.text_bond_value')}: {Math.floor(bondValue).toLocaleString('en-US')}
+                  {t('earn.current.text_bond_value')}: {Math.floor(bondValue).toLocaleString()}
                 </span>
                 {fidelityBond && (
                   <span>
