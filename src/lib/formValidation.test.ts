@@ -168,18 +168,21 @@ describe('destinationAddressField', () => {
 })
 
 describe('blockHeightField', () => {
-  const invalidMsg = ({ min, max }: { min: number; max: number }) => `Invalid blockheight ${min}-${max}`
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
+  const invalidMessage = ({ min, max }: { min: number; max: number }) => `Invalid blockheight ${min}-${max}`
 
   it('handles currentBlockHeight = 0', () => {
-    const schema = blockHeightField({ currentBlockHeight: 0, messages: { invalid: invalidMsg } })
+    const schema = blockHeightField({ currentBlockHeight: 0, messages: { invalid: invalidMessage } })
     // min should be 0, max should be 0
+    expect(schema.isValidSync(-1)).toBe(false)
     expect(schema.isValidSync(0)).toBe(true)
     expect(schema.isValidSync(1)).toBe(false)
   })
 
   it('handles currentBlockHeight = undefined', () => {
-    const schema = blockHeightField({ currentBlockHeight: undefined, messages: { invalid: invalidMsg } })
+    const schema = blockHeightField({ currentBlockHeight: undefined, messages: { invalid: invalidMessage } })
     // min should be 0, max should be Number.MAX_SAFE_INTEGER
+    expect(schema.isValidSync(-1)).toBe(false)
     expect(schema.isValidSync(0)).toBe(true)
     expect(schema.isValidSync(100)).toBe(true)
     expect(schema.isValidSync(Number.MAX_SAFE_INTEGER + 1)).toBe(false)
@@ -187,21 +190,28 @@ describe('blockHeightField', () => {
 
   it('handles currentBlockHeight = null', () => {
     // @ts-expect-error Intentionally pass null to test JS boundary cases
-    const schema = blockHeightField({ currentBlockHeight: null, messages: { invalid: invalidMsg } })
+    const schema = blockHeightField({ currentBlockHeight: null, messages: { invalid: invalidMessage } })
+    expect(schema.isValidSync(-1)).toBe(false)
     expect(schema.isValidSync(0)).toBe(true)
     expect(schema.isValidSync(100)).toBe(true)
   })
 
   it('handles currentBlockHeight > minBlockHeight', () => {
-    const schema = blockHeightField({ currentBlockHeight: 100, messages: { invalid: invalidMsg } })
+    const schema = blockHeightField({ currentBlockHeight: 100, messages: { invalid: invalidMessage } })
     // min should be 0, max should be 100
+    expect(schema.isValidSync(-1)).toBe(false)
+    expect(schema.isValidSync(0)).toBe(true)
     expect(schema.isValidSync(50)).toBe(true)
     expect(schema.isValidSync(100)).toBe(true)
     expect(schema.isValidSync(101)).toBe(false)
   })
 
   it('handles currentBlockHeight == minBlockHeight (0)', () => {
-    const schema = blockHeightField({ currentBlockHeight: INPUT_BLOCK_HEIGHT_MIN, messages: { invalid: invalidMsg } })
+    const schema = blockHeightField({
+      currentBlockHeight: INPUT_BLOCK_HEIGHT_MIN,
+      messages: { invalid: invalidMessage },
+    })
+    expect(schema.isValidSync(INPUT_BLOCK_HEIGHT_MIN - 1)).toBe(false)
     expect(schema.isValidSync(INPUT_BLOCK_HEIGHT_MIN)).toBe(true)
     expect(schema.isValidSync(INPUT_BLOCK_HEIGHT_MIN + 1)).toBe(false)
   })
