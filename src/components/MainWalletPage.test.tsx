@@ -32,6 +32,12 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   useJars: () => ({ jars }),
 }))
 
+vi.mock('@/store/jamSettingsStore', () => ({
+  usePreviewFeatures: () => ({
+    'tx-history': true,
+  }),
+}))
+
 vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
   WalletJarsDetailsOverlay: ({
     open,

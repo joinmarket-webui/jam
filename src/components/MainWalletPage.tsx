@@ -17,6 +17,7 @@ import {
 import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
+import { usePreviewFeatures } from '@/store/jamSettingsStore'
 import { Balance } from './ui/jam/Balance'
 import { Spinner } from './ui/spinner'
 import { TxHistoryContent } from './wallet/TxHistoryContent'
@@ -30,6 +31,7 @@ interface MainWalletPageProps {
 export default function MainWalletPage({ walletFileName }: MainWalletPageProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const previewFeatures = usePreviewFeatures()
   const [selectedJar, setSelectedJar] = useState<JarObject>()
   const [isWalletJarsDetailsOpen, setIsWalletJarsDetailsOpen] = useState(false)
   const [isTxHistoryOpen, setIsTxHistoryOpen] = useState(false)
@@ -59,7 +61,10 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
         walletFileName={walletFileName}
         selectedJarIndex={selectedJar?.jarIndex}
       />
-      <TxHistoryOverlay open={isTxHistoryOpen} onOpenChange={setIsTxHistoryOpen} walletFileName={walletFileName} />
+      {previewFeatures?.['tx-history'] === true ? (
+        <TxHistoryOverlay open={isTxHistoryOpen} onOpenChange={setIsTxHistoryOpen} walletFileName={walletFileName} />
+      ) : null}
+
       <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
           <p className="text-muted-foreground hover:text-foreground text-xl select-all" title={walletName}>
@@ -93,21 +98,24 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             </Button>
           </div>
 
-          <div className="my-6 flex w-full max-w-4xl items-center gap-3">
-            <div className="bg-border h-px flex-1" />
-            <Button
-              variant="outline"
-              size="icon"
-              className="border-border bg-background size-8 shrink-0 rounded-full"
-              onClick={() => setIsHistoryExpanded((previous) => !previous)}
-              title={isHistoryExpanded ? t('tx_history.collapse_history') : t('tx_history.expand_history')}
-            >
-              <ChevronDownIcon
-                className={cn('size-4 transition-transform duration-200', isHistoryExpanded && 'rotate-180')}
-              />
-            </Button>
-            <div className="bg-border h-px flex-1" />
-          </div>
+          {previewFeatures?.['tx-history'] === true ? (
+            <div className="my-6 flex w-full max-w-4xl items-center gap-3">
+              <div className="bg-border h-px flex-1" />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="border-border bg-background size-8 shrink-0 rounded-full"
+                onClick={() => setIsHistoryExpanded((previous) => !previous)}
+                title={isHistoryExpanded ? t('tx_history.collapse_history') : t('tx_history.expand_history')}
+              >
+                <ChevronDownIcon
+                  className={cn('size-4 transition-transform duration-200', isHistoryExpanded && 'rotate-180')}
+                />
+              </Button>
+              <div className="bg-border h-px flex-1" />
+            </div>
+          ) : null}
         </div>
 
         {isHistoryExpanded && (
@@ -115,7 +123,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             walletFileName={walletFileName}
             compact={true}
             initialLimit={5}
-            onViewAll={() => void navigate(routes.txHistory)}
+            onViewAll={() => setIsTxHistoryOpen(true)}
             className="w-full max-w-6xl"
           />
         )}

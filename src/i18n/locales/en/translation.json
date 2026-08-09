@@ -81,7 +81,7 @@
       "label": "Jars"
     },
     "item_history": {
-      "label": "Transaction History"
+      "label": "History"
     },
     "item_tour": {
       "label": "Tour"
@@ -904,9 +904,9 @@
     "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
   },
   "tx_history": {
-    "title": "Transaction History",
+    "title": "Transaction History (Experimental)",
     "section_title": "Recent Activity",
-    "overlay_title": "Transaction History",
+    "overlay_title": "Transaction History (Experimental)",
     "button_view_all": "View All",
     "button_load_more": "Load More",
     "button_generate_demo_entry": "Add Demo Entry",

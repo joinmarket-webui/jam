@@ -117,6 +117,7 @@ export const TxHistoryContent = ({
       {!compact && combinedHistory.length >= limit ? (
         <div className="flex justify-center">
           <Button
+            type="button"
             variant="outline"
             onClick={() => setLimit((current) => current + 10)}
             disabled={queryResult.isFetching}
