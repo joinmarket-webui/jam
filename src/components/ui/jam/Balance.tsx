@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type MouseEvent, type MouseEventHandler, type PropsWithChildren } from 'react'
 import { SnowflakeIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { cn, satsToBtc, tryBtcToSat, isValidNumber, getBtcParts, formatSats } from '@/lib/utils'
@@ -23,6 +24,8 @@ type ElementWithSymbolsProps = PropsWithChildren<{
   frozenSymbol?: boolean
   className?: string
   onClick?: MouseEventHandler
+  'aria-label'?: string
+  'aria-pressed'?: boolean
 }>
 
 const ElementWithSymbols = ({
@@ -33,23 +36,40 @@ const ElementWithSymbols = ({
   className,
   children,
   onClick,
+  'aria-label': ariaLabel,
+  'aria-pressed': ariaPressed,
 }: ElementWithSymbolsProps) => {
-  return (
-    <span
-      className={cn(
-        'balance-hook inline-flex items-center',
-        {
-          'text-brand-info': frozen,
-        },
-        className,
-      )}
-      onClick={onClick}
-    >
+  const sharedClassName = cn(
+    'balance-hook inline-flex items-center',
+    {
+      'text-brand-info': frozen,
+    },
+    className,
+  )
+
+  const content = (
+    <>
       {children}
       {showSymbol && symbol}
       {frozen && frozenSymbol && FROZEN_SYMBOL}
-    </span>
+    </>
   )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className={cn(sharedClassName, 'appearance-none border-0 bg-transparent p-0')}
+        onClick={onClick}
+        aria-label={ariaLabel}
+        aria-pressed={ariaPressed}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return <span className={sharedClassName}>{content}</span>
 }
 
 const DECIMAL_POINT_CHAR = '.'
@@ -156,6 +176,7 @@ export const BalanceComponent = ({
   enableVisibilityToggle,
   ...props
 }: BalanceComponentProps) => {
+  const { t } = useTranslation()
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
   const displayMode = useMemo<DisplayMode>(() => {
     return isBalanceVisible ? (convertToUnit ?? 'default') : 'hidden'
@@ -173,18 +194,25 @@ export const BalanceComponent = ({
       setIsBalanceVisible((current) => !current)
     }
     const onClickHandler = enableVisibilityToggle === false ? undefined : toggleVisibility
+    const isInteractive = Boolean(onClickHandler || props.onClick)
 
     return {
       ...props,
       className: cn(props.className, {
-        'cursor-pointer': onClickHandler || props.onClick,
+        'cursor-pointer': isInteractive,
       }),
-      onClick: (event: MouseEvent<HTMLSpanElement>) => {
-        onClickHandler?.(event)
-        props.onClick?.(event)
-      },
+      onClick: isInteractive
+        ? (event: MouseEvent<HTMLButtonElement>) => {
+            onClickHandler?.(event)
+            props.onClick?.(event)
+          }
+        : undefined,
+      'aria-label': onClickHandler
+        ? t(isBalanceVisible ? 'settings.hide_balance' : 'settings.show_balance')
+        : undefined,
+      'aria-pressed': onClickHandler ? !isBalanceVisible : undefined,
     }
-  }, [props, enableVisibilityToggle])
+  }, [props, enableVisibilityToggle, isBalanceVisible, t])
 
   const element = useMemo(() => {
     if (displayMode === 'hidden') {

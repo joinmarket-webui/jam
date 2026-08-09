@@ -5,6 +5,7 @@ import user from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { Balance } from '@/components/ui/jam/Balance'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
+import '@/i18n/config'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 
 const render = (ui: React.ReactNode, options?: Omit<RenderOptions, 'queries'>) => {
@@ -220,5 +221,52 @@ describe('<Balance />', () => {
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+  })
+
+  it('should render the visibility toggle as a keyboard-focusable button with an accessible name', () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    const toggleButton = screen.getByRole('button', { name: 'Show balance' })
+    expect(toggleButton).toBeInTheDocument()
+    expect(toggleButton).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('should update the accessible name and aria-pressed after toggling', async () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    await user.click(screen.getByRole('button', { name: 'Show balance' }))
+
+    const toggleButton = screen.getByRole('button', { name: 'Hide balance' })
+    expect(toggleButton).toBeInTheDocument()
+    expect(toggleButton).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('should toggle visibility via keyboard (Enter)', async () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Show balance' })).toHaveFocus()
+
+    await user.keyboard('{Enter}')
+
+    expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+  })
+
+  it('should toggle visibility via keyboard (Space)', async () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Show balance' })).toHaveFocus()
+
+    await user.keyboard(' ')
+
+    expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+  })
+
+  it('should not render a focusable button when the visibility toggle is disabled', () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} enableVisibilityToggle={false} />)
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 })
