@@ -3,8 +3,15 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { isDevMode } from '@/constants/debugFeatures'
 import type { Currency } from '@/types/global'
 
+type PreviewFeatures = {
+  'tx-history'?: boolean
+  // add more entries on demand
+  // 'myCoolNewFeature'?: boolean
+}
+
 export type JamSettings = {
   developerMode: boolean
+  previewFeatures: PreviewFeatures | undefined
   privateMode: boolean
   addressChunking: boolean
   currencyUnit: Currency
@@ -19,6 +26,7 @@ interface JamSettingsStoreState {
 
 const initial: JamSettings = {
   developerMode: isDevMode(),
+  previewFeatures: isDevMode() ? {} : undefined,
   privateMode: false,
   addressChunking: true,
   currencyUnit: 'sats',
@@ -42,4 +50,8 @@ export const jamSettingsStore = createStore<JamSettingsStoreState>()(
 export const useDeveloperMode = () => {
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   return { enabled: isDeveloperMode }
+}
+
+export const usePreviewFeatures = () => {
+  return useStore(jamSettingsStore, (state) => state.state.previewFeatures)
 }
