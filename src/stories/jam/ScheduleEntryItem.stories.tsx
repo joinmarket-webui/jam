@@ -2,6 +2,7 @@ import type { TumblerPhaseResponse } from '@joinmarket-webui/joinmarket-ng-api-t
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ScheduleEntryItem } from '@/components/sweep/ScheduleEntryItem'
 import { toScheduleEntry } from '@/components/sweep/scheduleUtils'
+import type { Jar } from '@/context/JamWalletInfoContext'
 
 const meta: Meta<typeof ScheduleEntryItem> = {
   title: 'Jam/ScheduleEntryItem',
@@ -12,6 +13,22 @@ export default meta
 
 type Story = StoryObj<typeof ScheduleEntryItem>
 
+const jars: Jar[] = [
+  {
+    balanceSummary: {
+      calculatedAvailableBalanceInSats: 100_000,
+      calculatedConfirmedAvailableBalanceInSats: 100_000,
+      calculatedAvailableFrozenBalanceInSats: 0,
+      calculatedFrozenOrLockedBalanceInSats: 0,
+      calculatedTotalBalanceInSats: 100_000,
+    },
+    color: '#e2b86a',
+    jarIndex: 0,
+    name: 'Jar Zero',
+    utxos: [],
+  },
+]
+
 const takerPhase: TumblerPhaseResponse = {
   kind: 'taker_coinjoin',
   index: 0,
@@ -20,7 +37,7 @@ const takerPhase: TumblerPhaseResponse = {
   started_at: '2026-07-19T10:35:52.775747+00:00',
   finished_at: null,
   error: null,
-  mixdepth: 0,
+  mixdepth: jars[0].jarIndex,
   amount: 0,
   amount_fraction: null,
   counterparty_count: 21,
@@ -54,9 +71,28 @@ const makerPhase: TumblerPhaseResponse = {
   attempt_count: 0,
 }
 
+export const Maker: Story = {
+  args: {
+    value: toScheduleEntry(makerPhase, jars),
+  },
+}
+
 export const Active: Story = {
   args: {
-    value: toScheduleEntry(takerPhase, []),
+    value: toScheduleEntry(takerPhase, jars),
+    active: true,
+  },
+}
+
+export const ActiveExternal: Story = {
+  args: {
+    value: toScheduleEntry(
+      {
+        ...takerPhase,
+        destination: 'bcrt1qdestinationaddress123456789',
+      },
+      jars,
+    ),
     active: true,
   },
 }
@@ -68,7 +104,7 @@ export const Running: Story = {
         ...takerPhase,
         status: 'running',
       },
-      [],
+      jars,
     ),
     active: false,
   },
@@ -81,7 +117,7 @@ export const Pending: Story = {
         ...takerPhase,
         status: 'pending',
       },
-      [],
+      jars,
     ),
     active: false,
   },
@@ -93,8 +129,9 @@ export const Completed: Story = {
       {
         ...takerPhase,
         status: 'completed',
+        finished_at: '2026-07-19T10:35:52.775747+00:00',
       },
-      [],
+      jars,
     ),
     active: false,
   },
@@ -107,7 +144,7 @@ export const Skipped: Story = {
         ...takerPhase,
         status: 'skipped',
       },
-      [],
+      jars,
     ),
     active: false,
   },
@@ -120,7 +157,7 @@ export const Cancelled: Story = {
         ...takerPhase,
         status: 'cancelled',
       },
-      [],
+      jars,
     ),
     active: false,
   },
@@ -134,14 +171,8 @@ export const Failed: Story = {
         status: 'failed',
         error: 'Error description',
       },
-      [],
+      jars,
     ),
     active: false,
-  },
-}
-
-export const Maker: Story = {
-  args: {
-    value: toScheduleEntry(makerPhase, []),
   },
 }

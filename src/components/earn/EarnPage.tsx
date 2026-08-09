@@ -279,7 +279,12 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       <Card
         className={cn({
           hidden: jmSession.maker_running && !waitingForOfferUpdate,
-          'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate,
+          'blur-[2px]':
+            isWaitingMakerStop ||
+            waitingForOfferUpdate ||
+            jmSession.maker_running ||
+            jmSession.coinjoin_in_process ||
+            jmSession.rescanning,
         })}
       >
         <CardContent>
