@@ -56,6 +56,9 @@ export function useFidelityBondSweep({
       setError(undefined)
 
       const frozen: Utxo[] = []
+      let bondWasUnfrozen = false
+      let sweepBroadcasted = false
+
       try {
         // Freeze other UTXOs in the source jar so only the FB gets swept
         for (const u of utxosToFreeze) {
@@ -71,6 +74,7 @@ export function useFidelityBondSweep({
             path: { walletname: walletFileName },
             body: { 'utxo-string': utxo.utxo, freeze: false },
           })
+          bondWasUnfrozen = true
         }
 
         const result = await directSend.mutateAsync({
@@ -81,6 +85,7 @@ export function useFidelityBondSweep({
             destination,
           },
         })
+        sweepBroadcasted = true
 
         // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
         for (const u of frozen) {
@@ -117,7 +122,6 @@ export function useFidelityBondSweep({
           console.warn('onBroadcastSuccess failed', error)
         }
 
-        await walletInfoRefetch()
         return result
       } catch (_ignoredOnPurpose: unknown) {
         // Best-effort rollback — unfreeze UTXOs that were frozen before the error
@@ -133,7 +137,32 @@ export function useFidelityBondSweep({
             console.debug('Error while unfreezing previously frozen UTXO in error handling.')
           }
         }
+
+        // re-freeze the bond if it was unfrozen before the error. skip once the
+        // sweep already broadcast, the bond utxo is spent by then
+        if (bondWasUnfrozen && !sweepBroadcasted) {
+          try {
+            await freezeUtxo.mutateAsync({
+              path: { walletname: walletFileName },
+              body: { 'utxo-string': utxo.utxo, freeze: true },
+              throwOnError: true,
+            })
+          } catch (_ignoredOnPurpose: unknown) {
+            console.debug('Error while re-freezing fidelity bond UTXO in error handling.')
+          }
+        }
+
         return undefined
+      } finally {
+        // refetch only if the sweep broadcast, and don't let a refetch error
+        // get treated as a sweep failure
+        if (sweepBroadcasted) {
+          try {
+            await walletInfoRefetch()
+          } catch (error: unknown) {
+            console.warn('Error while refetching wallet info after sweep.', error)
+          }
+        }
       }
     },
     retry: false,
