@@ -16,6 +16,8 @@ import {
   UnfoldHorizontalIcon,
   KeyRoundIcon,
   HandCoinsIcon,
+  SparklesIcon,
+  HistoryIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -214,6 +216,35 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             to={JAM_REPO_URL}
             external={true}
           />
+          <Separator className="opacity-50" />
+          <SettingSwitch
+            icon={SparklesIcon}
+            title={/* TODO: i18n */ 'Enable Feature Preview'}
+            disabled={!isDevMode()}
+            checked={!!jamSettings.state.previewFeatures}
+            onCheckedChange={(checked) => {
+              jamSettings.update({ previewFeatures: checked ? {} : undefined })
+            }}
+          />
+          {!!jamSettings.state.previewFeatures && (
+            <>
+              <Separator className="opacity-50" />
+              <SettingSwitch
+                icon={HistoryIcon}
+                title={/* TODO: i18n */ 'Transaction History (Experimental)'}
+                disabled={!isDevMode()}
+                checked={!!jamSettings.state.previewFeatures?.['tx-history'] === true}
+                onCheckedChange={(checked) => {
+                  jamSettings.update({
+                    previewFeatures: {
+                      ...jamSettings.state.previewFeatures,
+                      'tx-history': checked,
+                    },
+                  })
+                }}
+              />
+            </>
+          )}
           {isDevMode() && (
             <>
               <Separator className="opacity-50" />

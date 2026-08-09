@@ -13,6 +13,7 @@ export const routes = {
   orderbook: '/orderbook',
   logs: '/logs',
   walletJarsDetails: '/wallet/jars',
+  txHistory: '/wallet/history',
   /* walletList: '/', wallet: '/wallet' */
   __dev: '/dev',
   __devErrorExample: '/dev/error-example',

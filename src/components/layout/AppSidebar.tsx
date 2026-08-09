@@ -6,6 +6,7 @@ import {
   CurlyBracesIcon,
   DownloadIcon,
   HandCoinsIcon,
+  HistoryIcon,
   LogsIcon,
   MilkIcon,
   NotebookTabsIcon,
@@ -40,14 +41,16 @@ import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
-import { useDeveloperMode } from '@/store/jamSettingsStore'
+import { useDeveloperMode, usePreviewFeatures } from '@/store/jamSettingsStore'
 import { DevBadge } from '../dev/DevBadge'
+import { Badge } from '../ui/badge'
 
 export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
   const { t } = useTranslation()
   const { toggleSidebar } = useSidebar()
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
+  const previewFeatures = usePreviewFeatures()
 
   const { isFeatureEnabled } = useFeatures()
   const mainItems = useMemo(
@@ -94,8 +97,18 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         url: routes.walletJarsDetails,
         icon: MilkIcon,
       },
+      ...(previewFeatures?.['tx-history'] !== true
+        ? []
+        : [
+            {
+              title: t('sidebar.item_history.label'),
+              url: routes.txHistory,
+              icon: HistoryIcon,
+              preview: true,
+            },
+          ]),
     ],
-    [t],
+    [t, previewFeatures],
   )
 
   const settingsItems = useMemo(
@@ -180,6 +193,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
+                      {item.preview ? <Badge variant="muted">{/* TODO: i18n */ 'Preview'}</Badge> : null}
                     </Link>
                   </SidebarMenuButton>
                   {item.subitems?.length && (
