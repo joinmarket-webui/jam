@@ -33,7 +33,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import { scrollToTop, type WalletFileName } from '@/lib/utils'
+import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
@@ -62,7 +62,14 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
-  const { rescanInfo, takerInfo, makerInfo } = useJamSessionInfoContext()
+  const {
+    rescanInfo,
+    makerInfo: { running: makerRunning },
+    takerInfo: {
+      running: takerRunning,
+      scheduler: { running: schedulerRunning },
+    },
+  } = useJamSessionInfoContext()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const walletInfo = useJamWalletInfoContext()
   const { network } = useDetectNetwork()
@@ -85,7 +92,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       path: { walletname: walletFileName },
     }),
     refetchInterval: (query) => {
-      const schedulerRunning = takerInfo.running && takerInfo.scheduler.running
       const currentScheduleStillActive = query.state.data && !isPlanTerminated(query.state.data)
       return schedulerRunning || currentScheduleStillActive ? RUNNING_SCHEDULE_POLLING_INTERVAL : false
     },
@@ -195,14 +201,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
 
-  const schedulerRunning = takerInfo.scheduler.running
   const isWaitingSchedulerStart =
     startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
-  const waitingForTumblerStatus = takerInfo.running && getScheduleQuery.isPending
+  const waitingForTumblerStatus = takerRunning && getScheduleQuery.isPending
   const singleCoinJoinRunning =
-    takerInfo.running && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
-  const makerRunning = makerInfo.running === true
-  const collaborativeOperationRunning = makerRunning || takerInfo.running
+    takerRunning && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
 
   const isWaitingSchedulerStop = stopScheduleMutationIsPending || (stopScheduleMutationIsSuccess && schedulerRunning)
 
@@ -226,8 +229,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const isOperationDisabled =
     feeConfigValidation.maxFeesConfigMissing ||
-    collaborativeOperationRunning ||
+    makerRunning ||
+    takerRunning ||
     rescanInfo.rescanning ||
+    makerRunning ||
     !preconditionSummary.isFulfilled
 
   const isStartDisabled =
@@ -295,14 +300,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         {singleCoinJoinRunning && (
           <Alert variant="warning">
             <HourglassIcon className="motion-safe:animate-pulse" />
-            <AlertDescription>{t('send.text_coinjoin_already_running')}</AlertDescription>
+            <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
           </Alert>
         )}
 
         {makerRunning && (
           <Alert variant="warning">
             <HourglassIcon className="motion-safe:animate-pulse" />
-            <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
+            <AlertTitle>{t('send.text_maker_running')}</AlertTitle>
           </Alert>
         )}
 
@@ -436,7 +441,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
         {!currentSchedule && !schedulerRunning && (
           <>
-            <Card>
+            <Card
+              className={cn('transition-all duration-500', {
+                'blur-[2px]': takerRunning || makerRunning,
+              })}
+            >
               <CardContent className="space-y-5">
                 <div className="bg-muted/50 flex flex-col items-start justify-between gap-2 rounded-lg border px-4 py-3 sm:flex-row sm:items-center">
                   <div className="min-w-0">

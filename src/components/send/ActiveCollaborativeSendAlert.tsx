@@ -133,7 +133,7 @@ export const ActiveCollaborativeSendAlert = ({
 
         <ItemFooter>
           <ItemActions>
-            <Button type="button" variant="outline" onClick={onAbort} disabled={isAborting}>
+            <Button type="button" variant="destructive" onClick={onAbort} disabled={isAborting}>
               {t('global.abort')}
             </Button>
           </ItemActions>
