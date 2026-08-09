@@ -22,6 +22,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import * as OrderbookApi from '@/lib/api/orderbook'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
@@ -80,6 +81,29 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
   const isCurrentOfferAvailable = jmSession?.offer_list && jmSession.offer_list.length > 0
+  const currentOffer = jmSession?.offer_list?.[0]
+
+  const orderbookQuery = useQuery({
+    queryKey: ['orderbook'],
+    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, { throttle: 210 }),
+    enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
+    refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+  })
+  const currentOrderbookOffer = orderbookQuery.data?.offers.find(
+    (offer) => offer.counterparty === jmSession?.nickname && String(offer.oid) === String(currentOffer?.oid),
+  )
+  const currentOrderbookFidelityBond =
+    Number(currentOrderbookOffer?.fidelity_bond_value) > 0
+      ? orderbookQuery.data?.fidelitybonds?.find((bond) => bond.counterparty === jmSession?.nickname)
+      : undefined
+  const orderbookStatus =
+    !jmSession?.nickname || orderbookQuery.isLoading
+      ? 'checking'
+      : orderbookQuery.isError
+        ? 'error'
+        : currentOrderbookOffer
+          ? 'visible'
+          : 'missing'
 
   const stopMakerQueryOptions = stopmakerOptions({
     client,
@@ -261,6 +285,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           className="motion-safe:animate-in blur-in"
           value={jmSession.offer_list[0]}
           nickname={jmSession.nickname}
+          orderbookStatus={orderbookStatus}
+          orderbookOffer={currentOrderbookOffer}
+          fidelityBond={currentOrderbookFidelityBond}
         >
           <Button type="button" onClick={() => void onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (

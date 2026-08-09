@@ -10,6 +10,11 @@ import { EarnPage } from './EarnPage'
 const mocks = vi.hoisted(() => ({
   developerMode: false,
   feeConfigMissing: false,
+  orderbookData: vi.fn<() => unknown>(),
+  orderbookQueryState: {
+    isError: false,
+    isLoading: false,
+  },
   scrollToTop: vi.fn(),
   startMaker: vi.fn(),
   startMutationState: {
@@ -76,9 +81,13 @@ vi.mock('@tanstack/react-query', () => ({
       reset: vi.fn(),
     }
   }),
-  useQuery: vi.fn(() => ({
-    refetch: mocks.stopMakerRefetch,
-  })),
+  useQuery: vi.fn((options: { queryKey?: unknown[] }) =>
+    options.queryKey?.[0] === 'orderbook'
+      ? { ...mocks.orderbookQueryState, data: mocks.orderbookData() }
+      : {
+          refetch: mocks.stopMakerRefetch,
+        },
+  ),
 }))
 
 vi.mock('react-i18next', () => ({
@@ -194,9 +203,24 @@ vi.mock('./MoveToJarDialog', () => ({
 }))
 
 vi.mock('./OfferCard', () => ({
-  OfferCard: ({ children, nickname }: { children?: React.ReactNode; nickname?: string }) => (
+  OfferCard: ({
+    children,
+    nickname,
+    orderbookStatus,
+    orderbookOffer,
+    fidelityBond,
+  }: {
+    children?: React.ReactNode
+    nickname?: string
+    orderbookStatus?: string
+    orderbookOffer?: { fidelity_bond_value?: number }
+    fidelityBond?: { amount?: number }
+  }) => (
     <div>
       offer-card:{nickname}
+      <span>orderbook-status:{orderbookStatus}</span>
+      <span>bond-value:{orderbookOffer?.fidelity_bond_value}</span>
+      <span>bond-amount:{fidelityBond?.amount}</span>
       {children}
     </div>
   ),
@@ -251,6 +275,10 @@ describe('EarnPage', () => {
   beforeEach(() => {
     mocks.developerMode = false
     mocks.feeConfigMissing = false
+    mocks.orderbookData.mockReset()
+    mocks.orderbookData.mockReturnValue(undefined)
+    mocks.orderbookQueryState.isError = false
+    mocks.orderbookQueryState.isLoading = false
     mocks.scrollToTop.mockReset()
     mocks.startMaker.mockReset()
     mocks.startMaker.mockResolvedValue({})
@@ -340,6 +368,23 @@ describe('EarnPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'earn.button_stop' }))
     expect(mocks.stopMakerRefetch).toHaveBeenCalledWith({ throwOnError: true })
+  })
+
+  it('shows the current offer and fidelity bond from the local orderbook', () => {
+    setSession({
+      maker_running: true,
+      offer_list: [{ oid: 7, cjfee: '250', minsize: '5000', ordertype: 'sw0absoffer' }],
+    })
+    mocks.orderbookData.mockReturnValue({
+      offers: [{ counterparty: 'maker-a', oid: 7, fidelity_bond_value: 42_000 }],
+      fidelitybonds: [{ counterparty: 'maker-a', amount: 100_000, locktime: 1_800_000_000 }],
+    })
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('orderbook-status:visible')).toBeInTheDocument()
+    expect(screen.getByText('bond-value:42000')).toBeInTheDocument()
+    expect(screen.getByText('bond-amount:100000')).toBeInTheDocument()
   })
 
   it('shows waiting states while maker updates', () => {
