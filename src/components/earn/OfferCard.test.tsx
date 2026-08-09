@@ -79,4 +79,39 @@ describe('OfferCard', () => {
 
     expect(screen.getByTestId('child')).toBeInTheDocument()
   })
+
+  it('shows whether the offer is visible in the local orderbook', () => {
+    const { rerender } = render(<OfferCard value={baseOffer} nickname="JMBot" orderbookStatus="visible" />)
+
+    expect(screen.getByText('earn.current.text_orderbook_visible')).toBeInTheDocument()
+
+    rerender(<OfferCard value={baseOffer} nickname="JMBot" orderbookStatus="missing" />)
+    expect(screen.getByText('earn.current.text_orderbook_missing')).toBeInTheDocument()
+  })
+
+  it('shows the advertised fidelity bond details', () => {
+    render(
+      <OfferCard
+        value={baseOffer}
+        nickname="JMBot"
+        orderbookStatus="visible"
+        orderbookOffer={{
+          counterparty: 'JMBot',
+          oid: 123,
+          ordertype: 'sw0absoffer',
+          minsize: 10_000,
+          maxsize: 50_000,
+          txfee: 500,
+          cjfee: 1_000,
+          fidelity_bond_value: 42_000,
+        }}
+        fidelityBond={{ counterparty: 'JMBot', amount: 100_000, locktime: 1_800_000_000 }}
+      />,
+    )
+
+    expect(screen.getByText('earn.current.text_fidelity_bond')).toBeInTheDocument()
+    expect(screen.getByText('earn.current.text_bond_value: 42,000')).toBeInTheDocument()
+    expect(screen.getByText('100000')).toBeInTheDocument()
+    expect(screen.getByText(/earn\.current\.text_bond_locktime/u)).toBeInTheDocument()
+  })
 })
