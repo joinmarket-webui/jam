@@ -278,7 +278,6 @@ describe('<JamWalletInfoContextProvider />', () => {
  */
 const combinedUtxosHashReference = (utxoList: Utxo[]): string => {
   const utxoIds = utxoList.map((it) => hexToBytes(it.utxo.split(':', 1)[0]))
-  // eslint-disable-next-line unicorn/no-array-reduce
   const combinedUtxoIds = new Uint8Array(utxoIds.reduce((acc, current) => [...acc, ...current], [] as number[]))
   return bytesToHex(sha256(combinedUtxoIds))
 }
@@ -298,7 +297,7 @@ describe('combinedUtxosHash — optimized vs reference (regression)', () => {
     let captured = ''
     render(
       <JamWalletInfoContextProvider walletFileName="testing.jmdat">
-        <CaptureWalletInfo onContext={(ctx) => (captured = ctx.utxosHashHex)} />
+        <CaptureWalletInfo onContext={(context) => (captured = context.utxosHashHex)} />
       </JamWalletInfoContextProvider>,
     )
     return captured
