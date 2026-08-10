@@ -85,24 +85,31 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const isCurrentOrderbookOffer = (offer: OrderbookApi.OrderbookOffer) =>
     offer.counterparty === jmSession?.nickname && String(offer.oid) === String(currentOffer?.oid)
 
-  const orderbookQuery = useQuery({
+  const {
+    data: orderbookData,
+    isFetching: orderbookIsFetching,
+    isError: orderbookIsError,
+  } = useQuery({
     queryKey: ['orderbook'],
-    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, { delayBefore: 1_000 }),
+    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
+      // avoid flickering and let user briefly know that something is happening in the background
+      delayBefore: 1_000,
+    }),
     enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
     refetchInterval: (query) =>
       query.state.error || !query.state.data?.offers.some((offer) => isCurrentOrderbookOffer(offer))
         ? JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL
         : JAM.VISIBLE_ORDERBOOK_POLLING_INTERVAL,
   })
-  const currentOrderbookOffer = orderbookQuery.data?.offers.find((offer) => isCurrentOrderbookOffer(offer))
+  const currentOrderbookOffer = orderbookData?.offers.find((offer) => isCurrentOrderbookOffer(offer))
   const currentOrderbookFidelityBond =
     Number(currentOrderbookOffer?.fidelity_bond_value) > 0
-      ? orderbookQuery.data?.fidelitybonds?.findLast((bond) => bond.counterparty === jmSession?.nickname)
+      ? orderbookData?.fidelitybonds?.findLast((bond) => bond.counterparty === jmSession?.nickname)
       : undefined
   const orderbookStatus =
-    !jmSession?.nickname || orderbookQuery.isLoading
+    !jmSession?.nickname || orderbookIsFetching
       ? 'checking'
-      : orderbookQuery.isError
+      : orderbookIsError
         ? 'error'
         : currentOrderbookOffer
           ? 'visible'
