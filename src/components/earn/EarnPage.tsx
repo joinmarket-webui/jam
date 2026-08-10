@@ -85,7 +85,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const orderbookQuery = useQuery({
     queryKey: ['orderbook'],
-    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, { throttle: 210 }),
+    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, { delayBefore: 1_000 }),
     enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
     refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
   })
