@@ -96,6 +96,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       delayBefore: 1_000,
     }),
     enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
+    staleTime: Number.POSITIVE_INFINITY,
     refetchInterval: (query) =>
       query.state.error || !query.state.data?.offers.some((offer) => isCurrentOrderbookOffer(offer))
         ? JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL
