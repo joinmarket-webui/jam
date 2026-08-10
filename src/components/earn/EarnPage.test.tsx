@@ -2,6 +2,7 @@ import type React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import * as JAM from '@/constants/jam'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { EarnFormValues } from './EarnForm'
@@ -11,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   developerMode: false,
   feeConfigMissing: false,
   orderbookData: vi.fn<() => unknown>(),
+  orderbookQueryOptions: vi.fn(),
   orderbookQueryState: {
     isError: false,
     isLoading: false,
@@ -81,13 +83,13 @@ vi.mock('@tanstack/react-query', () => ({
       reset: vi.fn(),
     }
   }),
-  useQuery: vi.fn((options: { queryKey?: unknown[] }) =>
-    options.queryKey?.[0] === 'orderbook'
-      ? { ...mocks.orderbookQueryState, data: mocks.orderbookData() }
-      : {
-          refetch: mocks.stopMakerRefetch,
-        },
-  ),
+  useQuery: vi.fn((options: { queryKey?: unknown[] }) => {
+    if (options.queryKey?.[0] === 'orderbook') {
+      mocks.orderbookQueryOptions(options)
+      return { ...mocks.orderbookQueryState, data: mocks.orderbookData() }
+    }
+    return { refetch: mocks.stopMakerRefetch }
+  }),
 }))
 
 vi.mock('react-i18next', () => ({
@@ -277,6 +279,7 @@ describe('EarnPage', () => {
     mocks.feeConfigMissing = false
     mocks.orderbookData.mockReset()
     mocks.orderbookData.mockReturnValue(undefined)
+    mocks.orderbookQueryOptions.mockReset()
     mocks.orderbookQueryState.isError = false
     mocks.orderbookQueryState.isLoading = false
     mocks.scrollToTop.mockReset()
@@ -388,6 +391,31 @@ describe('EarnPage', () => {
     expect(screen.getByText('orderbook-status:visible')).toBeInTheDocument()
     expect(screen.getByText('bond-value:42000')).toBeInTheDocument()
     expect(screen.getByText('bond-amount:100000')).toBeInTheDocument()
+  })
+
+  it('polls until the current offer is visible, then slows down', () => {
+    setSession({
+      maker_running: true,
+      offer_list: [{ oid: 7, cjfee: '250', minsize: '5000', ordertype: 'sw0absoffer' }],
+    })
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    const { refetchInterval } = mocks.orderbookQueryOptions.mock.calls[0][0] as {
+      refetchInterval: (query: {
+        state: {
+          data?: { offers: Array<{ counterparty: string; oid: number }> }
+          error?: Error | null
+        }
+      }) => number
+    }
+    const visibleData = { offers: [{ counterparty: 'maker-a', oid: 7 }] }
+
+    expect(refetchInterval({ state: {} })).toBe(JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL)
+    expect(refetchInterval({ state: { data: visibleData } })).toBe(JAM.VISIBLE_ORDERBOOK_POLLING_INTERVAL)
+    expect(refetchInterval({ state: { data: visibleData, error: new Error('offline') } })).toBe(
+      JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL,
+    )
   })
 
   it('shows waiting states while maker updates', () => {
