@@ -87,6 +87,15 @@ export const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = Math.max(
   1,
 )
 
+export const WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL, 15_000),
+  1_000,
+)
+export const VISIBLE_ORDERBOOK_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_VISIBLE_ORDERBOOK_POLLING_INTERVAL, 120_000),
+  1_000,
+)
+
 export const RUNNING_COINJOIN_POLLING_INTERVAL: Milliseconds = Math.max(
   parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_COINJOIN_POLLING_INTERVAL, 5_000),
   1_000,

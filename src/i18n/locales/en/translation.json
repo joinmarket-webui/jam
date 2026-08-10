@@ -572,7 +572,14 @@
       "text_txfee": "Transaction Fee",
       "text_offer_id": "Offer ID",
       "text_offer_type_absolute": "absolute",
-      "text_offer_type_relative": "relative"
+      "text_offer_type_relative": "relative",
+      "text_orderbook_checking": "Checking local orderbook...",
+      "text_orderbook_visible": "Visible in local orderbook",
+      "text_orderbook_missing": "Not found in local orderbook yet",
+      "text_orderbook_error": "Could not check local orderbook",
+      "text_fidelity_bond": "Fidelity Bond",
+      "text_bond_value": "Bond value",
+      "text_bond_locktime": "locked until {{date}}"
     },
     "report": {
       "title": "Earnings Report",

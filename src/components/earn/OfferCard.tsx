@@ -1,11 +1,22 @@
 import type { PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import type { TFunction } from 'i18next'
-import { FingerprintIcon, HandCoinsIcon, Maximize2Icon, Minimize2Icon } from 'lucide-react'
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  FingerprintIcon,
+  HandCoinsIcon,
+  Maximize2Icon,
+  Minimize2Icon,
+  PickaxeIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import type { OrderbookFidelityBond, OrderbookOffer } from '@/lib/api/orderbook'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
 import { Balance } from '../ui/jam/Balance'
 import { Label } from '../ui/label'
@@ -36,16 +47,50 @@ interface OfferCardProps {
   className?: string
   value: Offer
   nickname: SessionResponse['nickname']
+  orderbookStatus?: 'checking' | 'visible' | 'missing' | 'error'
+  orderbookOffer?: OrderbookOffer
+  fidelityBond?: OrderbookFidelityBond
 }
 
-export function OfferCard({ className, value, nickname, children }: PropsWithChildren<OfferCardProps>) {
+const orderbookStatusEntry = (value: OfferCardProps['orderbookStatus'], t: TFunction) => {
+  return value === 'visible'
+    ? { icon: CircleCheckIcon, text: t('earn.current.text_orderbook_visible'), variant: 'success' as const }
+    : value === 'missing'
+      ? { icon: SearchIcon, text: t('earn.current.text_orderbook_missing'), variant: 'warning' as const }
+      : value === 'error'
+        ? { icon: CircleAlertIcon, text: t('earn.current.text_orderbook_error'), variant: 'destructive' as const }
+        : value === 'checking'
+          ? { icon: SearchIcon, text: t('earn.current.text_orderbook_checking'), variant: 'muted' as const }
+          : undefined
+}
+
+export function OfferCard({
+  className,
+  value,
+  nickname,
+  orderbookStatus,
+  orderbookOffer,
+  fidelityBond,
+  children,
+}: PropsWithChildren<OfferCardProps>) {
   const { t } = useTranslation()
+  const bondValue = Number(orderbookOffer?.fidelity_bond_value) || 0
+
+  const offerInOrderbookStatus = orderbookStatusEntry(orderbookStatus, t)
+  const bondWarning = bondValue === 0 || orderbookOffer?.fidelity_bond_verification_stale === true
 
   return (
     <Card className={cn('transition-all duration-300 hover:-translate-y-[2px] hover:shadow-md', className)}>
       <CardHeader>
         <CardTitle>{t('earn.current.text_offer')}</CardTitle>
-        <CardDescription></CardDescription>
+        <CardDescription>
+          {offerInOrderbookStatus && (
+            <Badge className="whitespace-normal" variant={offerInOrderbookStatus.variant}>
+              <offerInOrderbookStatus.icon className="shrink-0" />
+              {offerInOrderbookStatus.text}
+            </Badge>
+          )}
+        </CardDescription>
         <CardAction>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -100,12 +145,52 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
           </div>
         </div>
         {!!value?.txfee && (
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col">
+          <div className="flex min-w-0 items-start gap-4">
+            <PickaxeIcon className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1">
               <Label className="font-semibold">{t('earn.current.text_txfee')}</Label>
               <span className="text-muted-foreground text-sm">
                 <Balance valueString={String(value?.txfee || '0')} />
               </span>
+            </div>
+          </div>
+        )}
+        {fidelityBond !== undefined && (
+          <div className="flex min-w-0 items-start gap-4 sm:col-span-full">
+            <ShieldCheckIcon
+              className={cn('mt-0.5 shrink-0', {
+                'text-brand-success': bondValue > 0,
+                'text-brand-warning': bondWarning,
+              })}
+            />
+            <div className="min-w-0 flex-1">
+              <Label
+                className={cn('font-semibold', {
+                  'text-brand-success': bondValue > 0,
+                  'text-brand-warning': bondWarning,
+                })}
+              >
+                {t('earn.current.text_fidelity_bond')}
+              </Label>
+              <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
+                  <span className={bondValue <= 0 ? 'text-muted-foreground' : undefined}>
+                    {t('earn.current.text_bond_value')}: {Math.floor(bondValue).toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-muted-foreground">
+                  <Balance valueString={String(fidelityBond.amount)} />
+                  <span className="text-muted-foreground">
+                    {t('earn.current.text_bond_locktime', {
+                      date: new Date(fidelityBond.locktime * 1_000).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }),
+                    })}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}

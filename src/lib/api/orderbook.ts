@@ -5,11 +5,18 @@ export interface OrderbookOffer {
   counterparty: string
   oid: number
   ordertype: OfferType
-  minsize: AmountSats | null | undefined
-  maxsize: AmountSats | null | undefined
-  txfee: number | null | undefined
-  cjfee: number | null | undefined
-  fidelity_bond_value: number | null | undefined
+  minsize?: AmountSats | null
+  maxsize?: AmountSats | null
+  txfee?: number | null
+  cjfee?: number | null
+  fidelity_bond_value?: number | null
+  fidelity_bond_verification_stale?: boolean | null
+  directory_nodes?: string[] | null
+  directly_reachable?: boolean | null
+  // TODO: many more fields, e.g.:
+  // fidelity_bond_value
+  // fidelity_bond_verified
+  // features	{ neutrino_compat: true, nick_auth: true, peerlist_features: true, … }
 }
 
 export interface OrderbookFidelityBond {
