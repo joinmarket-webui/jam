@@ -1,3 +1,5 @@
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 import { render, screen, waitFor } from '@testing-library/react'
 import { Network } from 'bitcoin-address-validation'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -267,5 +269,75 @@ describe('<JamWalletInfoContextProvider />', () => {
     await waitFor(() => expect(mocks.utxosRefetch).toHaveBeenCalledWith({ throwOnError: true }))
     expect(mocks.displayWalletRefetch).toHaveBeenCalledWith({ throwOnError: true })
     expect(balanceSummary?.calculatedTotalBalanceInSats).toBe(25_000)
+  })
+})
+
+/**
+ * Reference implementation of the old O(n²) combinedUtxosHash logic.
+ * Used only in tests to verify the optimized implementation is a drop-in replacement.
+ */
+const combinedUtxosHashReference = (utxoList: Utxo[]): string => {
+  const utxoIds = utxoList.map((it) => hexToBytes(it.utxo.split(':', 1)[0]))
+  // eslint-disable-next-line unicorn/no-array-reduce
+  const combinedUtxoIds = new Uint8Array(utxoIds.reduce((acc, current) => [...acc, ...current], [] as number[]))
+  return bytesToHex(sha256(combinedUtxoIds))
+}
+
+describe('combinedUtxosHash — optimized vs reference (regression)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.waitQueryError = null
+    mocks.walletInfo = undefined
+    mocks.utxosRefetch.mockResolvedValue({ data: { utxos: [] } })
+    mocks.displayWalletRefetch.mockResolvedValue({ data: { walletinfo: undefined } })
+  })
+
+  /** Render the provider with the given UTXO list and capture the computed utxosHashHex. */
+  const captureHash = (utxoList: Utxo[]): string => {
+    mocks.utxos = utxoList
+    let captured = ''
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(ctx) => (captured = ctx.utxosHashHex)} />
+      </JamWalletInfoContextProvider>,
+    )
+    return captured
+  }
+
+  it('produces the same hash for an empty UTXO list', () => {
+    const utxoList: Utxo[] = []
+    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+  })
+
+  it('produces the same hash for a single UTXO', () => {
+    const utxoList = [utxo({ utxo: `${txid('a')}:0` })]
+    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+  })
+
+  it('produces the same hash for multiple UTXOs', () => {
+    const utxoList = [
+      utxo({ utxo: `${txid('a')}:0` }),
+      utxo({ utxo: `${txid('b')}:1` }),
+      utxo({ utxo: `${txid('c')}:2` }),
+    ]
+    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+  })
+
+  it('produces the same hash for UTXOs whose txid bytes vary across the full byte range', () => {
+    const utxoList = [
+      utxo({ utxo: `${txid('1')}:0` }),
+      utxo({ utxo: `${'ab'.repeat(32)}:3` }),
+      utxo({ utxo: `${'ff'.repeat(32)}:7` }),
+    ]
+    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+  })
+
+  it('produces the same hash for a large UTXO set (50 entries)', () => {
+    const chars = '0123456789abcdef'
+    const utxoList = Array.from({ length: 50 }, (_, i) => {
+      const ch = chars[i % chars.length]
+      return utxo({ utxo: `${ch.repeat(64)}:${i}`, mixdepth: i % 5 })
+    })
+    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
   })
 })

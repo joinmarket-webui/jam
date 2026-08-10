@@ -131,7 +131,13 @@ interface JamWalletInfoContextProviderProps {
 
 const combinedUtxosHash = (utxos: Utxo[]) => {
   const utxoIds = utxos.map((it) => hexToBytes(it.utxo.split(':', 1)[0]))
-  const combinedUtxoIds = new Uint8Array(utxoIds.reduce((acc, current) => [...acc, ...current], [] as number[]))
+  const totalLength = utxoIds.reduce((sum, current) => sum + current.length, 0)
+  const combinedUtxoIds = new Uint8Array(totalLength)
+  let offset = 0
+  for (const current of utxoIds) {
+    combinedUtxoIds.set(current, offset)
+    offset += current.length
+  }
   return sha256(combinedUtxoIds)
 }
 
