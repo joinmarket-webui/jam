@@ -209,6 +209,35 @@ describe('EarnReportContent', () => {
     createElement.mockRestore()
   })
 
+  it('exports all filtered rows regardless of pagination', async () => {
+    mocks.entries = Array.from({ length: 30 }, (_, index) =>
+      entry({
+        notes: `maker note ${index + 1}`,
+        timestamp: new Date(Date.UTC(2026, 0, index + 1, 12)),
+      }),
+    )
+
+    render(<EarnReportContent enabled />)
+
+    expect(screen.getByText('pagination:30')).toBeInTheDocument()
+    expect(screen.getAllByText(/maker note/u)).toHaveLength(25)
+
+    fireEvent.click(screen.getByRole('button', { name: 'global.download' }))
+
+    const blob = mocks.createObjectURL.mock.calls[0]?.[0]
+    expect(blob).toBeInstanceOf(Blob)
+    if (!blob) {
+      throw new Error('CSV blob was not created')
+    }
+
+    const csv = await blob.text()
+    const lines = csv.trim().split('\n')
+
+    expect(lines).toHaveLength(31)
+    expect(lines[1]).toContain('2026-01-30T12:00:00.000Z')
+    expect(lines.at(-1)).toContain('2026-01-01T12:00:00.000Z')
+  })
+
   it('adds demo rows in developer mode', () => {
     mocks.developerMode = true
 
