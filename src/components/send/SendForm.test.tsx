@@ -20,7 +20,7 @@ const h = vi.hoisted(() => {
     toastError: vi.fn<(message: string) => void>(),
     hasOrders: true,
     orderbookIsLoading: false,
-    orderbookError: null as Error | null,
+    orderbookError: false,
   }
 })
 
@@ -29,7 +29,7 @@ vi.mock('@/hooks/useQueryOrderbook', () => ({
     hasOrders: h.hasOrders,
     queryResult: {
       isLoading: h.orderbookIsLoading,
-      error: h.orderbookError,
+      isError: h.orderbookError,
     },
   }),
 }))
@@ -181,7 +181,7 @@ describe('SendForm', () => {
     h.toastError = vi.fn<(message: string) => void>()
     h.hasOrders = true
     h.orderbookIsLoading = false
-    h.orderbookError = null
+    h.orderbookError = false
   })
 
   it('renders the core fields', () => {
@@ -410,7 +410,7 @@ describe('SendForm', () => {
     expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
 
     h.orderbookIsLoading = false
-    h.orderbookError = new Error('fail')
+    h.orderbookError = true
     rerender(
       <SendForm
         onSubmit={vi.fn()}

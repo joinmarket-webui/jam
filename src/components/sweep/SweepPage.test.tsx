@@ -109,7 +109,7 @@ const mocks = vi.hoisted(() => ({
   walletInfo: undefined as WalletInfo | undefined,
   hasOrders: true,
   orderbookIsLoading: false,
-  orderbookError: null as Error | null,
+  orderbookError: false,
 }))
 
 vi.mock('@/hooks/useQueryOrderbook', () => ({
@@ -117,7 +117,7 @@ vi.mock('@/hooks/useQueryOrderbook', () => ({
     hasOrders: mocks.hasOrders,
     queryResult: {
       isLoading: mocks.orderbookIsLoading,
-      error: mocks.orderbookError,
+      isError: mocks.orderbookError,
     },
   }),
 }))
@@ -418,7 +418,7 @@ describe('SweepPage', async () => {
     mocks.walletInfo = makeWalletInfo()
     mocks.hasOrders = true
     mocks.orderbookIsLoading = false
-    mocks.orderbookError = null
+    mocks.orderbookError = false
     setSession()
 
     vi.clearAllMocks()
@@ -755,7 +755,7 @@ describe('SweepPage', async () => {
       expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
 
       mocks.orderbookIsLoading = false
-      mocks.orderbookError = new Error('fail')
+      mocks.orderbookError = true
       rerender(<SweepPage walletFileName="wallet.jmdat" />)
       expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
     })

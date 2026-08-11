@@ -4,6 +4,10 @@ import { useQueryOrderbook } from './useQueryOrderbook'
 
 const queryMock = vi.fn<(options: unknown) => unknown>()
 
+vi.mock('@/lib/queryClient', () => ({
+  withQueryDelay: (queryFn: unknown) => queryFn,
+}))
+
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (options: unknown): unknown => queryMock(options),
 }))
@@ -17,7 +21,7 @@ describe('useQueryOrderbook', () => {
     const mockOrderbook = {
       offers: [{ counterparty: 'maker1' }],
     }
-    queryMock.mockReturnValue({ data: mockOrderbook, isLoading: false, error: null })
+    queryMock.mockReturnValue({ data: mockOrderbook, isLoading: false, isError: false })
 
     const { result } = renderHook(() => useQueryOrderbook())
 
@@ -26,7 +30,7 @@ describe('useQueryOrderbook', () => {
   })
 
   it('returns hasOrders: false when orderbook offers array is empty', () => {
-    queryMock.mockReturnValue({ data: { offers: [] }, isLoading: false, error: null })
+    queryMock.mockReturnValue({ data: { offers: [] }, isLoading: false, isError: false })
 
     const { result } = renderHook(() => useQueryOrderbook())
 
@@ -34,7 +38,7 @@ describe('useQueryOrderbook', () => {
   })
 
   it('returns hasOrders: false when data is undefined', () => {
-    queryMock.mockReturnValue({ data: undefined, isLoading: false, error: null })
+    queryMock.mockReturnValue({ data: undefined, isLoading: false, isError: false })
 
     const { result } = renderHook(() => useQueryOrderbook())
 
