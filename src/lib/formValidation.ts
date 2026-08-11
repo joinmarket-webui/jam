@@ -121,7 +121,7 @@ export const blockHeightField = ({
   }
 }) => {
   const minBlockHeight = Math.min(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight || INPUT_BLOCK_HEIGHT_MIN)
-  const maxBlockheight = Math.max(minBlockHeight, currentBlockHeight || INPUT_BLOCK_HEIGHT_MAX)
+  const maxBlockheight = Math.max(minBlockHeight, currentBlockHeight ?? INPUT_BLOCK_HEIGHT_MAX)
   const invalidBlockheightMessage = invalid({ min: minBlockHeight, max: maxBlockheight })
 
   return yup

@@ -24,6 +24,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import * as OrderbookApi from '@/lib/api/orderbook'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
@@ -82,6 +83,40 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
   const isCurrentOfferAvailable = jmSession?.offer_list && jmSession.offer_list.length > 0
+  const currentOffer = jmSession?.offer_list?.[0]
+  const isCurrentOrderbookOffer = (offer: OrderbookApi.OrderbookOffer) =>
+    offer.counterparty === jmSession?.nickname && String(offer.oid) === String(currentOffer?.oid)
+
+  const {
+    data: orderbookData,
+    isFetching: orderbookIsFetching,
+    isError: orderbookIsError,
+  } = useQuery({
+    queryKey: ['orderbook'],
+    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
+      // avoid flickering and let user briefly know that something is happening in the background
+      delayBefore: 1_000,
+    }),
+    enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
+    staleTime: Number.POSITIVE_INFINITY,
+    refetchInterval: (query) =>
+      query.state.error || !query.state.data?.offers.some((offer) => isCurrentOrderbookOffer(offer))
+        ? JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL
+        : JAM.VISIBLE_ORDERBOOK_POLLING_INTERVAL,
+  })
+  const currentOrderbookOffer = orderbookData?.offers.find((offer) => isCurrentOrderbookOffer(offer))
+  const currentOrderbookFidelityBond =
+    Number(currentOrderbookOffer?.fidelity_bond_value) > 0
+      ? orderbookData?.fidelitybonds?.findLast((bond) => bond.counterparty === jmSession?.nickname)
+      : undefined
+  const orderbookStatus =
+    !jmSession?.nickname || orderbookIsFetching
+      ? 'checking'
+      : orderbookIsError
+        ? 'error'
+        : currentOrderbookOffer
+          ? 'visible'
+          : 'missing'
 
   const stopMakerQueryOptions = stopmakerOptions({
     client,
@@ -265,6 +300,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           className="motion-safe:animate-in blur-in"
           value={jmSession.offer_list[0]}
           nickname={jmSession.nickname}
+          orderbookStatus={orderbookStatus}
+          orderbookOffer={currentOrderbookOffer}
+          fidelityBond={currentOrderbookFidelityBond}
         >
           <Button type="button" onClick={() => void onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (
@@ -283,7 +321,12 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       <Card
         className={cn({
           hidden: jmSession.maker_running && !waitingForOfferUpdate,
-          'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate,
+          'blur-[2px]':
+            isWaitingMakerStop ||
+            waitingForOfferUpdate ||
+            jmSession.maker_running ||
+            jmSession.coinjoin_in_process ||
+            jmSession.rescanning,
         })}
       >
         <CardContent>

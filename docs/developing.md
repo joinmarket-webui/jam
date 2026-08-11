@@ -26,7 +26,7 @@ If your separately running joinmarket-ng services use different ports, you can o
 JAM_BACKEND=joinmarket-ng \
 JMWALLETD_API_PORT=28183 \
 JMWALLETD_WEBSOCKET_PORT=28283 \
-JMOBWATCH_PORT=8080 \
+JMOBWATCH_PORT=8000 \
 npm run dev
 ```
 

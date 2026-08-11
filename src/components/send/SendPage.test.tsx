@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
   schedulerRunning: false,
+  makerRunning: false,
   toastError: vi.fn(),
   toastInfo: vi.fn(),
   toastSuccess: vi.fn(),
@@ -145,6 +146,10 @@ vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: true }),
 }))
 
+vi.mock('@/context/JamDisplayContext', () => ({
+  useJamDisplayContext: () => ({ addressChunkingEnabled: false }),
+}))
+
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSessionInfoContext: () => ({
     clearCurrentPaymentAttempt: mocks.clearCurrentPaymentAttempt,
@@ -156,6 +161,9 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
       scheduler: {
         running: mocks.schedulerRunning,
       },
+    },
+    makerInfo: {
+      running: mocks.makerRunning,
     },
   }),
 }))
@@ -510,15 +518,7 @@ describe('SendPage', () => {
   })
 
   it('shows the maker running warning', async () => {
-    jmSessionStore.setState({
-      state: {
-        coinjoin_in_process: false,
-        maker_running: true,
-        session: true,
-        wallet_name: 'wallet.jmdat',
-        rescanning: false,
-      },
-    })
+    mocks.makerRunning = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 

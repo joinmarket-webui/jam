@@ -77,6 +77,9 @@ vi.mock('@/hooks/useFeatures', () => ({
 
 vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: mocks.developerMode }),
+  usePreviewFeatures: () => ({
+    'tx-history': true,
+  }),
 }))
 
 vi.mock('../dev/DevBadge', () => ({

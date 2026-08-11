@@ -48,6 +48,7 @@ import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { RootLayout } from './components/layout/RootLayout'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
+import { TxHistoryPage } from './components/wallet/TxHistoryPage'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
 import { useJamSessionInfoContext } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
@@ -240,6 +241,7 @@ function App() {
               path={routes.walletJarsDetails}
               element={<WalletJarsDetailsPage walletFileName={walletFileName!} />}
             />
+            <Route path={routes.txHistory} element={<TxHistoryPage walletFileName={walletFileName!} />} />
             {isDeveloperMode && isDebugFeatureEnabled('devPage') && (
               <Route
                 id="dev-page"
