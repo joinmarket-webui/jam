@@ -1,5 +1,6 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { fetchOrderbook, type OrderbookResponse } from '@/lib/api/orderbook'
+import { withQueryDelay } from '@/lib/queryClient'
 
 export type UseQueryOrderbookResult = {
   hasOrders: boolean
@@ -9,7 +10,11 @@ export type UseQueryOrderbookResult = {
 export function useQueryOrderbook(): UseQueryOrderbookResult {
   const queryResult = useQuery({
     queryKey: ['orderbook-precheck'],
-    queryFn: fetchOrderbook,
+    queryFn: withQueryDelay(fetchOrderbook, {
+      // avoid flickering and let user briefly know that something is happening in the background
+      delayBefore: 1_000,
+    }),
+    staleTime: 30 * 1_000,
     retry: false,
   })
 

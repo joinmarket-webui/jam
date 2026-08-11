@@ -186,7 +186,12 @@ export function SendForm({
 
   const {
     hasOrders,
-    queryResult: { isLoading: orderbookCheckIsLoading, isError: orderbookCheckIsError },
+    queryResult: {
+      isLoading: orderbookCheckIsLoading,
+      isFetching: orderbookCheckIsFetching,
+      isError: orderbookCheckIsError,
+      refetch: orderbookRefetch,
+    },
   } = useQueryOrderbook()
 
   const destinationAddressInfo = useMemo(() => {
@@ -369,7 +374,9 @@ export function SendForm({
             {hasCoinjoinPreconditionWarning && coinjoinPreconditionSummary && (
               <SendCoinjoinPreconditionAlert summary={coinjoinPreconditionSummary} />
             )}
-            {isCoinJoin && !orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && <OrderbookEmptyAlert />}
+            {isCoinJoin && !orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && (
+              <OrderbookEmptyAlert isChecking={orderbookCheckIsFetching} onCheckClick={orderbookRefetch} />
+            )}
           </div>
 
           <div className="space-y-2">

@@ -20,11 +20,27 @@ vi.mock('react-router-dom', () => ({
 }))
 
 describe('OrderbookEmptyAlert', () => {
-  it('renders title, description and link to orderbook page', () => {
-    render(<OrderbookEmptyAlert />)
+  it('renders title, description, button and link to orderbook page', () => {
+    render(<OrderbookEmptyAlert isChecking={false} onCheckClick={async () => {}} />)
 
     expect(screen.getByText('orderbook.alert_precheck_empty_title')).toBeInTheDocument()
     expect(screen.getByText(/orderbook.alert_precheck_empty_description/u)).toBeInTheDocument()
     expect(screen.getByRole('link')).toHaveAttribute('href', '/orderbook')
+
+    const actionCheck = screen.getByRole('button', { name: 'orderbook.alert_precheck_empty_text_button_check' })
+    expect(actionCheck).toBeEnabled()
+
+    const actionChecking = screen.queryByRole('button', { name: 'orderbook.alert_precheck_empty_text_button_checking' })
+    expect(actionChecking).not.toBeInTheDocument()
+  })
+
+  it('disables button while checking', () => {
+    render(<OrderbookEmptyAlert isChecking={true} onCheckClick={async () => {}} />)
+
+    const actionChecking = screen.getByRole('button', { name: 'orderbook.alert_precheck_empty_text_button_checking' })
+    expect(actionChecking).toBeDisabled()
+
+    const actionCheck = screen.queryByRole('button', { name: 'orderbook.alert_precheck_empty_text_button_check' })
+    expect(actionCheck).not.toBeInTheDocument()
   })
 })

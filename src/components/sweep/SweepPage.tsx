@@ -76,7 +76,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [alertMessage, setAlertMessage] = useState<string>()
   const {
     hasOrders,
-    queryResult: { isLoading: orderbookCheckIsLoading, isError: orderbookCheckIsError },
+    queryResult: {
+      isLoading: orderbookCheckIsLoading,
+      isError: orderbookCheckIsError,
+      isFetching: orderbookCheckIsFetching,
+      refetch: orderbookRefetch,
+    },
   } = useQueryOrderbook()
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
@@ -290,7 +295,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
 
-        {!orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && <OrderbookEmptyAlert className="mb-4" />}
+        {!orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && (
+          <OrderbookEmptyAlert isChecking={orderbookCheckIsFetching} onCheckClick={orderbookRefetch} />
+        )}
 
         {alertMessage && (
           <Alert variant="destructive">
