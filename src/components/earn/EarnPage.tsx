@@ -2,17 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  AlertTriangleIcon,
-  FileTextIcon,
-  HourglassIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  ShuffleIcon,
-  UnlockIcon,
-} from 'lucide-react'
+import { FileTextIcon, HourglassIcon, InfoIcon, PlusIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
@@ -25,6 +18,7 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
+import { routes } from '@/constants/routes'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -331,11 +325,17 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
             </CardHeader>
             {!walletInfo.hasEligibleFidelityBondUtxo && (
               <CardContent>
-                <Alert variant="warning">
-                  <AlertTriangleIcon />
+                <Alert variant="default">
+                  <InfoIcon />
                   <AlertTitle>{t('earn.fidelity_bond.create_form.alert_no_eligible_utxos_title')}</AlertTitle>
                   <AlertDescription>
-                    {t('earn.fidelity_bond.create_form.alert_no_eligible_utxos_description')}
+                    <Trans
+                      i18nKey="earn.fidelity_bond.create_form.alert_no_eligible_utxos_description"
+                      components={{
+                        '1': <Link to={routes.send} className="font-semibold" />,
+                        '3': <Link to={routes.walletJarsDetails} className="font-semibold" />,
+                      }}
+                    />
                   </AlertDescription>
                 </Alert>
               </CardContent>
