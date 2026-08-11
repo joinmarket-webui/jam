@@ -305,12 +305,29 @@ describe('combinedUtxosHash — optimized vs reference (regression)', () => {
 
   it('produces the same hash for an empty UTXO list', () => {
     const utxoList: Utxo[] = []
-    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+    const actual = captureHash(utxoList)
+    expect(actual).toBe(combinedUtxosHashReference(utxoList))
+    expect(actual).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
   })
 
   it('produces the same hash for a single UTXO', () => {
     const utxoList = [utxo({ utxo: `${txid('a')}:0` })]
-    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+    const actual = captureHash(utxoList)
+    expect(actual).toBe(combinedUtxosHashReference(utxoList))
+    expect(actual).toBe('e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e')
+  })
+
+  it('is okay for it to produce the same hash for different output in same txid', () => {
+    const utxoList0 = [utxo({ utxo: `${txid('a')}:0` })]
+    const actual0 = captureHash(utxoList0)
+    expect(actual0).toBe(combinedUtxosHashReference(utxoList0))
+    expect(actual0).toBe('e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e')
+
+    const utxoList1 = [utxo({ utxo: `${txid('a')}:1` })]
+    const actual1 = captureHash(utxoList1)
+    expect(actual1).toBe(combinedUtxosHashReference(utxoList1))
+    expect(actual1).toBe('e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e')
+    expect(actual1).toBe(actual0)
   })
 
   it('produces the same hash for multiple UTXOs', () => {
@@ -319,7 +336,10 @@ describe('combinedUtxosHash — optimized vs reference (regression)', () => {
       utxo({ utxo: `${txid('b')}:1` }),
       utxo({ utxo: `${txid('c')}:2` }),
     ]
-    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+
+    const actual = captureHash(utxoList)
+    expect(actual).toBe(combinedUtxosHashReference(utxoList))
+    expect(actual).toBe('6bdaf8651d78f983ab7ce864414ace095b2942cbe5ff43deade48d51aa34b2cd')
   })
 
   it('produces the same hash for UTXOs whose txid bytes vary across the full byte range', () => {

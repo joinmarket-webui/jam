@@ -1,6 +1,6 @@
 import { useMemo, useState, type Dispatch, type PropsWithChildren, type SetStateAction } from 'react'
 import { sha256 } from '@noble/hashes/sha2.js'
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
+import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js'
 import { CancelledError, useMutation, useQuery } from '@tanstack/react-query'
 import { getAddressInfo } from 'bitcoin-address-validation'
 import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
@@ -131,13 +131,7 @@ interface JamWalletInfoContextProviderProps {
 
 const combinedUtxosHash = (utxos: Utxo[]) => {
   const utxoIds = utxos.map((it) => hexToBytes(it.utxo.split(':', 1)[0]))
-  const totalLength = utxoIds.reduce((sum, current) => sum + current.length, 0)
-  const combinedUtxoIds = new Uint8Array(totalLength)
-  let offset = 0
-  for (const current of utxoIds) {
-    combinedUtxoIds.set(current, offset)
-    offset += current.length
-  }
+  const combinedUtxoIds = concatBytes(...utxoIds)
   return sha256(combinedUtxoIds)
 }
 
