@@ -28,10 +28,16 @@ export const SettingItem = ({
   hasInteractiveChild = false,
   children,
 }: SettingsItemProps) => {
-  const className = cx('flex w-full min-w-0 items-center justify-between gap-2 py-2 text-left', {
-    'hover:bg-muted/50 -mx-2 cursor-pointer rounded-md px-2': !disabled,
+  const rowClassName = cx('flex min-w-0 items-center justify-between gap-2 py-2', {
+    'hover:bg-muted/50 cursor-pointer rounded-md px-2': !disabled,
     'cursor-not-allowed opacity-60': disabled,
   })
+  // The row bleeds into the card padding so the hover background spans the full width.
+  // A block `div` with `width: auto` gets this from the negative margin alone, but a
+  // `button` does not stretch to its parent, and once `w-full` pins the width the
+  // negative margin no longer widens it. Keeping the bleed on a wrapper makes `w-full`
+  // resolve against the widened box, so both variants end up the same size.
+  const bleedClassName = cx({ '-mx-2': !disabled })
 
   const content = (
     <>
@@ -52,19 +58,21 @@ export const SettingItem = ({
   // focus, Enter/Space activation and the correct role for free.
   if (action && !hasInteractiveChild) {
     return (
-      <button
-        type="button"
-        className={cx(className, 'appearance-none border-0 bg-transparent')}
-        onClick={() => void action()}
-        disabled={disabled}
-      >
-        {content}
-      </button>
+      <div className={bleedClassName}>
+        <button
+          type="button"
+          className={cx(rowClassName, 'w-full appearance-none border-0 bg-transparent text-left')}
+          onClick={() => void action()}
+          disabled={disabled}
+        >
+          {content}
+        </button>
+      </div>
     )
   }
 
   return (
-    <div className={className} onClick={!disabled && action ? () => void action() : undefined}>
+    <div className={cx(bleedClassName, rowClassName)} onClick={!disabled && action ? () => void action() : undefined}>
       {content}
     </div>
   )
