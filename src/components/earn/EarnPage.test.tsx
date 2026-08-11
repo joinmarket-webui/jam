@@ -79,13 +79,21 @@ vi.mock('@tanstack/react-query', () => ({
       reset: vi.fn(),
     }
   }),
-  useQuery: vi.fn((options: { queryKey?: unknown[] }) => {
-    if (options.queryKey?.[0] === 'orderbook') {
-      mocks.orderbookQueryOptions(options)
-      return { ...mocks.orderbookQueryState, data: mocks.orderbookData() }
-    }
+  useQuery: vi.fn(() => {
     return { refetch: mocks.stopMakerRefetch }
   }),
+}))
+
+vi.mock('@/hooks/useQueryOrderbook', () => ({
+  useQueryOrderbook: (options: unknown) => {
+    mocks.orderbookQueryOptions(options)
+    return {
+      queryResult: {
+        data: mocks.orderbookData(),
+        ...mocks.orderbookQueryState,
+      },
+    }
+  },
 }))
 
 vi.mock('react-i18next', () => ({
