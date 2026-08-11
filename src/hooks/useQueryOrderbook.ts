@@ -7,15 +7,18 @@ export type UseQueryOrderbookResult = {
   queryResult: UseQueryResult<OrderbookResponse, unknown>
 }
 
-export function useQueryOrderbook(): UseQueryOrderbookResult {
+export function useQueryOrderbook(
+  options: Omit<Parameters<typeof useQuery<OrderbookResponse>>[0], 'queryFn' | 'queryKey'> = {},
+): UseQueryOrderbookResult {
   const queryResult = useQuery({
     queryKey: ['orderbook-precheck'],
     queryFn: withQueryDelay(fetchOrderbook, {
       // avoid flickering and let user briefly know that something is happening in the background
       delayBefore: 1_000,
     }),
-    staleTime: 30 * 1_000,
     retry: false,
+    staleTime: 30 * 1_000,
+    ...options,
   })
 
   return {

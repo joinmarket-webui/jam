@@ -22,6 +22,7 @@ import { routes } from '@/constants/routes'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import * as OrderbookApi from '@/lib/api/orderbook'
@@ -88,15 +89,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     offer.counterparty === jmSession?.nickname && String(offer.oid) === String(currentOffer?.oid)
 
   const {
-    data: orderbookData,
-    isFetching: orderbookIsFetching,
-    isError: orderbookIsError,
-  } = useQuery({
-    queryKey: ['orderbook'],
-    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
-      // avoid flickering and let user briefly know that something is happening in the background
-      delayBefore: 1_000,
-    }),
+    queryResult: { data: orderbookData, isFetching: orderbookIsFetching, isError: orderbookIsError },
+  } = useQueryOrderbook({
     enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
     staleTime: Number.POSITIVE_INFINITY,
     refetchInterval: (query) =>
@@ -104,6 +98,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         ? JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL
         : JAM.VISIBLE_ORDERBOOK_POLLING_INTERVAL,
   })
+
   const currentOrderbookOffer = orderbookData?.offers.find((offer) => isCurrentOrderbookOffer(offer))
   const currentOrderbookFidelityBond =
     Number(currentOrderbookOffer?.fidelity_bond_value) > 0
