@@ -684,6 +684,8 @@
       "create_form": {
         "confirmation_toggle_title": "I have reviewed my inputs carefully",
         "confirmation_toggle_subtitle": "I understand that the locked funds will be inaccessible for the given duration",
+        "alert_no_eligible_utxos_title": "No eligible UTXOs",
+        "alert_no_eligible_utxos_description": "A Fidelity Bond must be funded by an unfrozen collaborative transaction output (cj-out). <1>Complete a collaborative transaction</1> or <3>unfreeze an eligible UTXO</3> to continue.",
         "button_create": "Create Fidelity Bond"
       },
       "existing": {

@@ -198,6 +198,9 @@ export const JamWalletInfoContextProvider = ({
       : toAccountSummary(displayWalletQuery.walletInfo)
   const addressSummary =
     displayWalletQuery.walletInfo === undefined ? EMPTY_ADDRESS_SUMMARY : toAddressSummary(accountSummary)
+  const hasEligibleFidelityBondUtxo = utxos.some((utxo) =>
+    fb.utxo.isEligibleForCreation(utxo, addressSummary[utxo.address]?.status),
+  )
 
   const detectedNetwork = useMemo(() => {
     const eligibleAddress = Object.values(addressSummary).find((it) => it.info !== undefined)
@@ -248,6 +251,7 @@ export const JamWalletInfoContextProvider = ({
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     walletBalanceSummary: walletBalanceSummary,
     maxJarAvailableBalance,
+    hasEligibleFidelityBondUtxo,
     fidelityBondSummary,
     addressSummary,
     accountSummary,

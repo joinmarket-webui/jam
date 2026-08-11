@@ -331,6 +331,7 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
     detectedNetwork: null,
     error: null,
     fidelityBondSummary: { fbOutputs: [] },
+    hasEligibleFidelityBondUtxo: false,
     isFetching: false,
     isLoading: false,
     jars: [jar, emptyJar(1), emptyJar(2)],
