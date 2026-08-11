@@ -2,7 +2,9 @@ import type React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
+import * as JAM from '@/constants/jam'
+import type { Jar } from '@/context/JamWalletInfoContext'
+import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { EarnFormValues } from './EarnForm'
 import { EarnPage } from './EarnPage'
@@ -10,6 +12,12 @@ import { EarnPage } from './EarnPage'
 const mocks = vi.hoisted(() => ({
   developerMode: false,
   feeConfigMissing: false,
+  orderbookData: vi.fn<() => unknown>(),
+  orderbookQueryOptions: vi.fn(),
+  orderbookQueryState: {
+    isError: false,
+    isLoading: false,
+  },
   scrollToTop: vi.fn(),
   startMaker: vi.fn(),
   startMutationState: {
@@ -26,17 +34,12 @@ const mocks = vi.hoisted(() => ({
   toastInfo: vi.fn(),
   toastSuccess: vi.fn(),
   walletInfo: {
+    addressSummary: {},
     fidelityBondSummary: { fbOutputs: [] as FidelityBondUtxo[] },
+    hasEligibleFidelityBondUtxo: true,
     isFetching: false,
     isLoading: false,
-    jars: [] as Array<{
-      balanceSummary: {
-        calculatedAvailableBalanceInSats: number
-        calculatedConfirmedAvailableBalanceInSats: number
-        calculatedFrozenOrLockedBalanceInSats: number
-        calculatedTotalBalanceInSats: number
-      }
-    }>,
+    jars: [] as Jar[],
     maxJarAvailableBalance: 100_000_000,
   },
 }))
@@ -76,9 +79,13 @@ vi.mock('@tanstack/react-query', () => ({
       reset: vi.fn(),
     }
   }),
-  useQuery: vi.fn(() => ({
-    refetch: mocks.stopMakerRefetch,
-  })),
+  useQuery: vi.fn((options: { queryKey?: unknown[] }) => {
+    if (options.queryKey?.[0] === 'orderbook') {
+      mocks.orderbookQueryOptions(options)
+      return { ...mocks.orderbookQueryState, data: mocks.orderbookData() }
+    }
+    return { refetch: mocks.stopMakerRefetch }
+  }),
 }))
 
 vi.mock('react-i18next', () => ({
@@ -194,9 +201,24 @@ vi.mock('./MoveToJarDialog', () => ({
 }))
 
 vi.mock('./OfferCard', () => ({
-  OfferCard: ({ children, nickname }: { children?: React.ReactNode; nickname?: string }) => (
+  OfferCard: ({
+    children,
+    nickname,
+    orderbookStatus,
+    orderbookOffer,
+    fidelityBond,
+  }: {
+    children?: React.ReactNode
+    nickname?: string
+    orderbookStatus?: string
+    orderbookOffer?: { fidelity_bond_value?: number }
+    fidelityBond?: { amount?: number }
+  }) => (
     <div>
       offer-card:{nickname}
+      <span>orderbook-status:{orderbookStatus}</span>
+      <span>bond-value:{orderbookOffer?.fidelity_bond_value}</span>
+      <span>bond-amount:{fidelityBond?.amount}</span>
       {children}
     </div>
   ),
@@ -212,10 +234,34 @@ vi.mock('./report/EarnReportOverlay', () => ({
 
 const balanceSummary = {
   calculatedAvailableBalanceInSats: 100_000_000,
+  calculatedAvailableFrozenBalanceInSats: 0,
   calculatedConfirmedAvailableBalanceInSats: 100_000_000,
   calculatedFrozenOrLockedBalanceInSats: 0,
   calculatedTotalBalanceInSats: 100_000_000,
 }
+
+const eligibleUtxo: Utxo = {
+  address: 'bcrt1qcj',
+  confirmations: 12,
+  external: false,
+  frozen: false,
+  label: '',
+  locktime: undefined,
+  mixdepth: 0,
+  path: "m/84'/1'/0'/0/0",
+  tries: 3,
+  tries_remaining: 3,
+  utxo: 'eligible:0',
+  value: 100_000,
+}
+
+const makeJar = (balanceOverrides = {}): Jar => ({
+  balanceSummary: { ...balanceSummary, ...balanceOverrides },
+  color: '#e2b86a',
+  jarIndex: 0,
+  name: 'Jar 0',
+  utxos: [eligibleUtxo],
+})
 
 const expiredBond: FidelityBondUtxo = {
   address: 'bc1qbond',
@@ -251,6 +297,11 @@ describe('EarnPage', () => {
   beforeEach(() => {
     mocks.developerMode = false
     mocks.feeConfigMissing = false
+    mocks.orderbookData.mockReset()
+    mocks.orderbookData.mockReturnValue(undefined)
+    mocks.orderbookQueryOptions.mockReset()
+    mocks.orderbookQueryState.isError = false
+    mocks.orderbookQueryState.isLoading = false
     mocks.scrollToTop.mockReset()
     mocks.startMaker.mockReset()
     mocks.startMaker.mockResolvedValue({})
@@ -264,10 +315,14 @@ describe('EarnPage', () => {
     mocks.toastError.mockReset()
     mocks.toastInfo.mockReset()
     mocks.toastSuccess.mockReset()
+    mocks.walletInfo.addressSummary = {
+      [eligibleUtxo.address]: { status: 'cj-out' },
+    }
     mocks.walletInfo.fidelityBondSummary = { fbOutputs: [] }
+    mocks.walletInfo.hasEligibleFidelityBondUtxo = true
     mocks.walletInfo.isFetching = false
     mocks.walletInfo.isLoading = false
-    mocks.walletInfo.jars = [{ balanceSummary }]
+    mocks.walletInfo.jars = [makeJar()]
     mocks.walletInfo.maxJarAvailableBalance = 100_000_000
     setSession()
   })
@@ -342,6 +397,51 @@ describe('EarnPage', () => {
     expect(mocks.stopMakerRefetch).toHaveBeenCalledWith({ throwOnError: true })
   })
 
+  it('shows the current offer and fidelity bond from the local orderbook', () => {
+    setSession({
+      maker_running: true,
+      offer_list: [{ oid: 7, cjfee: '250', minsize: '5000', ordertype: 'sw0absoffer' }],
+    })
+    mocks.orderbookData.mockReturnValue({
+      offers: [{ counterparty: 'maker-a', oid: 7, fidelity_bond_value: 42_000 }],
+      fidelitybonds: [
+        { counterparty: 'maker-a', amount: 50_000, locktime: 1_700_000_000 },
+        { counterparty: 'maker-a', amount: 100_000, locktime: 1_800_000_000 },
+      ],
+    })
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('orderbook-status:visible')).toBeInTheDocument()
+    expect(screen.getByText('bond-value:42000')).toBeInTheDocument()
+    expect(screen.getByText('bond-amount:100000')).toBeInTheDocument()
+  })
+
+  it('polls until the current offer is visible, then slows down', () => {
+    setSession({
+      maker_running: true,
+      offer_list: [{ oid: 7, cjfee: '250', minsize: '5000', ordertype: 'sw0absoffer' }],
+    })
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    const { refetchInterval } = mocks.orderbookQueryOptions.mock.calls[0][0] as {
+      refetchInterval: (query: {
+        state: {
+          data?: { offers: Array<{ counterparty: string; oid: number }> }
+          error?: Error | null
+        }
+      }) => number
+    }
+    const visibleData = { offers: [{ counterparty: 'maker-a', oid: 7 }] }
+
+    expect(refetchInterval({ state: {} })).toBe(JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL)
+    expect(refetchInterval({ state: { data: visibleData } })).toBe(JAM.VISIBLE_ORDERBOOK_POLLING_INTERVAL)
+    expect(refetchInterval({ state: { data: visibleData, error: new Error('offline') } })).toBe(
+      JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL,
+    )
+  })
+
   it('shows waiting states while maker updates', () => {
     mocks.startMutationState.isSuccess = true
 
@@ -375,6 +475,24 @@ describe('EarnPage', () => {
 
     await user.click(createFidelityBondButton)
     expect(screen.getByText('create-bond-dialog:true')).toBeInTheDocument()
+  })
+
+  it('explains when no UTXO is eligible for fidelity-bond creation', async () => {
+    const user = userEvent.setup()
+    mocks.walletInfo.hasEligibleFidelityBondUtxo = false
+
+    render(<EarnPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('earn.fidelity_bond.create_form.alert_no_eligible_utxos_title')).toBeInTheDocument()
+    expect(screen.getByText('earn.fidelity_bond.create_form.alert_no_eligible_utxos_description')).toBeInTheDocument()
+
+    const createFidelityBondButton = screen.getByRole('button', {
+      name: 'earn.fidelity_bond.create_form.button_create',
+    })
+    expect(createFidelityBondButton).toBeDisabled()
+
+    await user.click(createFidelityBondButton)
+    expect(screen.getByText('create-bond-dialog:false')).toBeInTheDocument()
   })
 
   it('disables creating a fidelity bond while rescanning', async () => {
@@ -485,7 +603,7 @@ describe('EarnPage', () => {
   })
 
   it('warns when the spendable balance is only unconfirmed', () => {
-    mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
+    mocks.walletInfo.jars = [makeJar({ calculatedConfirmedAvailableBalanceInSats: 0 })]
     mocks.walletInfo.maxJarAvailableBalance = 100_000_000
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
@@ -497,7 +615,7 @@ describe('EarnPage', () => {
   })
 
   it('warns when there is no spendable balance at all', () => {
-    mocks.walletInfo.jars = [{ balanceSummary: { ...balanceSummary, calculatedConfirmedAvailableBalanceInSats: 0 } }]
+    mocks.walletInfo.jars = [makeJar({ calculatedConfirmedAvailableBalanceInSats: 0 })]
     mocks.walletInfo.maxJarAvailableBalance = 0
 
     render(<EarnPage walletFileName="wallet.jmdat" />)

@@ -84,6 +84,7 @@ interface JamWalletInfoContextType {
   walletName: string | null
   walletBalanceSummary: WalletBalanceSummary
   maxJarAvailableBalance: AmountSats
+  hasEligibleFidelityBondUtxo: boolean
   fidelityBondSummary: FidelityBondSummary
   addressSummary: AddressSummary
   accountSummary: AccountSummary

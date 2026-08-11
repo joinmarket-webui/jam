@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { FileTextIcon, HourglassIcon, PlusIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
+import { FileTextIcon, HourglassIcon, InfoIcon, PlusIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
-import { Alert, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
@@ -17,11 +18,13 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
+import { routes } from '@/constants/routes'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import * as OrderbookApi from '@/lib/api/orderbook'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
@@ -80,6 +83,40 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
   const isCurrentOfferAvailable = jmSession?.offer_list && jmSession.offer_list.length > 0
+  const currentOffer = jmSession?.offer_list?.[0]
+  const isCurrentOrderbookOffer = (offer: OrderbookApi.OrderbookOffer) =>
+    offer.counterparty === jmSession?.nickname && String(offer.oid) === String(currentOffer?.oid)
+
+  const {
+    data: orderbookData,
+    isFetching: orderbookIsFetching,
+    isError: orderbookIsError,
+  } = useQuery({
+    queryKey: ['orderbook'],
+    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
+      // avoid flickering and let user briefly know that something is happening in the background
+      delayBefore: 1_000,
+    }),
+    enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
+    staleTime: Number.POSITIVE_INFINITY,
+    refetchInterval: (query) =>
+      query.state.error || !query.state.data?.offers.some((offer) => isCurrentOrderbookOffer(offer))
+        ? JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL
+        : JAM.VISIBLE_ORDERBOOK_POLLING_INTERVAL,
+  })
+  const currentOrderbookOffer = orderbookData?.offers.find((offer) => isCurrentOrderbookOffer(offer))
+  const currentOrderbookFidelityBond =
+    Number(currentOrderbookOffer?.fidelity_bond_value) > 0
+      ? orderbookData?.fidelitybonds?.findLast((bond) => bond.counterparty === jmSession?.nickname)
+      : undefined
+  const orderbookStatus =
+    !jmSession?.nickname || orderbookIsFetching
+      ? 'checking'
+      : orderbookIsError
+        ? 'error'
+        : currentOrderbookOffer
+          ? 'visible'
+          : 'missing'
 
   const stopMakerQueryOptions = stopmakerOptions({
     client,
@@ -139,7 +176,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     !walletInfo.isFetching
 
   const isCreateFidelityBondEnabled =
-    isFidelityBondActionsEnabled && (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
+    isFidelityBondActionsEnabled &&
+    walletInfo.hasEligibleFidelityBondUtxo &&
+    (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
   const showCreateAdditionalFidelityBond = JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED
 
   const numberOfNonFrozenFidelityBondOutputs = !hasFidelityBond
@@ -261,6 +300,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           className="motion-safe:animate-in blur-in"
           value={jmSession.offer_list[0]}
           nickname={jmSession.nickname}
+          orderbookStatus={orderbookStatus}
+          orderbookOffer={currentOrderbookOffer}
+          fidelityBond={currentOrderbookFidelityBond}
         >
           <Button type="button" onClick={() => void onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (
@@ -324,6 +366,23 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
               <CardAction></CardAction>
             </CardHeader>
+            {!walletInfo.hasEligibleFidelityBondUtxo && (
+              <CardContent>
+                <Alert variant="default">
+                  <InfoIcon />
+                  <AlertTitle>{t('earn.fidelity_bond.create_form.alert_no_eligible_utxos_title')}</AlertTitle>
+                  <AlertDescription>
+                    <Trans
+                      i18nKey="earn.fidelity_bond.create_form.alert_no_eligible_utxos_description"
+                      components={{
+                        '1': <Link to={routes.send} className="font-semibold" />,
+                        '3': <Link to={routes.walletJarsDetails} className="font-semibold" />,
+                      }}
+                    />
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            )}
             <CardFooter className="gap-2">
               <Button
                 variant="default"

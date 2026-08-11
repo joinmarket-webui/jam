@@ -75,7 +75,7 @@ const utxo = (overrides: Partial<Utxo>): Utxo => ({
   ...overrides,
 })
 
-const walletInfo = (): WalletInfoApiObject =>
+const walletInfo = (status = 'new'): WalletInfoApiObject =>
   ({
     wallet_name: 'testing.jmdat',
     total_balance: '0',
@@ -89,7 +89,7 @@ const walletInfo = (): WalletInfoApiObject =>
               {
                 address,
                 hd_path: "m/84'/1'/0'/0/0",
-                status: 'new',
+                status,
                 label: '',
                 balance: 0,
                 used_count: 0,
@@ -145,6 +145,7 @@ describe('<JamWalletInfoContextProvider />', () => {
     expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4, 7])
     expect(context?.jars.find((jar) => jar.jarIndex === 7)?.name).toBe('Jar #7')
     expect(context?.fidelityBondSummary.fbOutputs.map((entry) => entry.utxo)).toEqual([`${txid('c')}:2`])
+    expect(context?.hasEligibleFidelityBondUtxo).toBe(false)
     expect(context?.accountSummary[0].branches[0]).toMatchObject({
       type: 'external addresses',
       derivation: "m/84'/1'/0'/0",
@@ -158,6 +159,19 @@ describe('<JamWalletInfoContextProvider />', () => {
     expect(context?.isLoading).toBe(false)
     expect(context?.isFetching).toBe(false)
     expect(context?.error).toBeNull()
+  })
+
+  it('reports when an eligible fidelity-bond UTXO is available', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.walletInfo = walletInfo('cj-out')
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.hasEligibleFidelityBondUtxo).toBe(true)
   })
 
   it('handles malformed accounts, missing branches, and entries without a status', () => {
