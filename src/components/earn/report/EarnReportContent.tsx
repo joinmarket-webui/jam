@@ -144,11 +144,11 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   }, [isShowAll, allEntries.length, table])
 
   const visibleRows = table.getRowModel().rows
+  const exportRows = table.getSortedRowModel().rows
 
-  // Export visible entries as CSV
   const downloadCsv = useCallback(() => {
     const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
-    const rows = visibleRows.map((row) =>
+    const rows = exportRows.map((row) =>
       [
         row.original.timestamp.toISOString(),
         row.original.cjTotalAmount ?? '',
@@ -170,7 +170,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
-  }, [visibleRows])
+  }, [exportRows])
 
   const earnedTotal = useMemo(() => sumEarned(allEntries, BITCOIN_GENESIS_DATE), [allEntries])
 
