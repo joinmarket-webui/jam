@@ -74,7 +74,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
   const [alertMessage, setAlertMessage] = useState<string>()
-  const { hasOrders, queryResult: orderbookQueryResult } = useQueryOrderbook()
+  const {
+    hasOrders,
+    queryResult: { isLoading: orderbookCheckIsLoading, isError: orderbookCheckIsError },
+  } = useQueryOrderbook()
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
@@ -287,9 +290,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
 
-        {!orderbookQueryResult.isLoading && !orderbookQueryResult.error && !hasOrders && (
-          <OrderbookEmptyAlert className="mb-4" />
-        )}
+        {!orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && <OrderbookEmptyAlert className="mb-4" />}
 
         {alertMessage && (
           <Alert variant="destructive">

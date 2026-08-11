@@ -184,7 +184,10 @@ export function SendForm({
   const isCoinJoin = useWatch({ control, name: 'isCoinJoin' })
   const collaboratorCount = useWatch({ control, name: 'numCollaborators' })
 
-  const { hasOrders, queryResult: orderbookQueryResult } = useQueryOrderbook()
+  const {
+    hasOrders,
+    queryResult: { isLoading: orderbookCheckIsLoading, isError: orderbookCheckIsError },
+  } = useQueryOrderbook()
 
   const destinationAddressInfo = useMemo(() => {
     try {
@@ -366,9 +369,7 @@ export function SendForm({
             {hasCoinjoinPreconditionWarning && coinjoinPreconditionSummary && (
               <SendCoinjoinPreconditionAlert summary={coinjoinPreconditionSummary} />
             )}
-            {isCoinJoin && !orderbookQueryResult.isLoading && !orderbookQueryResult.error && !hasOrders && (
-              <OrderbookEmptyAlert />
-            )}
+            {isCoinJoin && !orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && <OrderbookEmptyAlert />}
           </div>
 
           <div className="space-y-2">
