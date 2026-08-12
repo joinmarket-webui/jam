@@ -1,9 +1,9 @@
 import type { PropsWithChildren, ReactNode } from 'react'
-import { cx } from 'class-variance-authority'
 import { ExternalLinkIcon } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
 type SettingsItemProps = PropsWithChildren<{
   icon?: LucideIcon
@@ -28,7 +28,7 @@ export const SettingItem = ({
   hasInteractiveChild = false,
   children,
 }: SettingsItemProps) => {
-  const rowClassName = cx('flex min-w-0 items-center justify-between gap-2 py-2', {
+  const rowClassName = cn('flex min-w-0 items-center justify-between gap-2 py-2', {
     'hover:bg-muted/50 cursor-pointer rounded-md px-2': !disabled,
     'cursor-not-allowed opacity-60': disabled,
   })
@@ -37,7 +37,7 @@ export const SettingItem = ({
   // `button` does not stretch to its parent, and once `w-full` pins the width the
   // negative margin no longer widens it. Keeping the bleed on a wrapper makes `w-full`
   // resolve against the widened box, so both variants end up the same size.
-  const bleedClassName = cx({ '-mx-2': !disabled })
+  const bleedClassName = !disabled ? '-mx-2' : undefined
 
   const content = (
     <>
@@ -61,7 +61,7 @@ export const SettingItem = ({
       <div className={bleedClassName}>
         <button
           type="button"
-          className={cx(rowClassName, 'w-full appearance-none border-0 bg-transparent text-left')}
+          className={cn(rowClassName, 'w-full appearance-none border-0 bg-transparent text-left')}
           onClick={() => void action()}
           disabled={disabled}
         >
@@ -72,7 +72,7 @@ export const SettingItem = ({
   }
 
   return (
-    <div className={cx(bleedClassName, rowClassName)} onClick={!disabled && action ? () => void action() : undefined}>
+    <div className={cn(bleedClassName, rowClassName)} onClick={!disabled && action ? () => void action() : undefined}>
       {content}
     </div>
   )
