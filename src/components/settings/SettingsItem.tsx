@@ -29,7 +29,8 @@ export const SettingsItem = ({
   children,
 }: SettingsItemProps) => {
   const rowClassName = cn('flex min-w-0 items-center justify-between gap-2 py-2', {
-    'hover:bg-muted/50 cursor-pointer rounded-md px-2': !disabled,
+    'hover:bg-muted/50 cursor-pointer': !disabled && action,
+    'rounded-md px-2': !disabled,
     'cursor-not-allowed opacity-60': disabled,
   })
   // The row bleeds into the card padding so the hover background spans the full width.
