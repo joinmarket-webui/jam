@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, type ComponentProps } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { cx } from 'class-variance-authority'
 import { AlertTriangleIcon, ClockIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -17,7 +16,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
-import type { WalletFileName } from '@/lib/utils'
+import { cn, type WalletFileName } from '@/lib/utils'
 import type { Milliseconds, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
@@ -189,13 +188,13 @@ export const SeedPhraseDialog = ({
             <DialogFooter>
               <div className="flex w-full items-center justify-between">
                 <div
-                  className={cx('text-muted-foreground flex items-center gap-1 text-sm', {
+                  className={cn('text-muted-foreground flex items-center gap-1 text-sm', {
                     'text-destructive! animate-pulse': secondsLeft <= 10,
                   })}
                 >
                   <ClockIcon className="h-4 w-4" />
                   <span
-                    className={cx('mt-0.5 font-mono', {
+                    className={cn('mt-0.5 font-mono', {
                       hidden: secondsLeft < 1,
                     })}
                   >
