@@ -18,6 +18,7 @@ import {
   HandCoinsIcon,
   SparklesIcon,
   HistoryIcon,
+  LanguagesIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -36,9 +37,9 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { LanguageSelector } from '../ui/jam/LanguageSelector'
 import { Spinner } from '../ui/spinner'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
-import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem, SettingsLink, SettingSwitch } from './SettingsItem'
 import { FeeConfigDialog } from './fees/FeeConfigDialog'
@@ -117,7 +118,9 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             displayToggle={false}
           />
           <Separator className="opacity-50" />
-          <LanguageSelector />
+          <SettingItem icon={LanguagesIcon} title={t('settings.label_select_language')}>
+            <LanguageSelector />
+          </SettingItem>
         </CardContent>
       </Card>
 

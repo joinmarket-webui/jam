@@ -38,6 +38,8 @@ vi.mock('@/components/ui/select', () => ({
   SelectTrigger: ({ children }: ChildrenProps) => <div>{children}</div>,
   SelectValue: ({ placeholder }: { placeholder?: string }) => <div data-testid="select-value">{placeholder}</div>,
   SelectContent: ({ children }: ChildrenProps) => <div>{children}</div>,
+  SelectGroup: ({ children }: ChildrenProps) => <div>{children}</div>,
+  SelectLabel: ({ children }: ChildrenProps) => <div>{children}</div>,
   SelectItem: ({ children, value }: ChildrenProps & { value: string }) => (
     <div data-testid={`select-item-${value}`}>{children}</div>
   ),
