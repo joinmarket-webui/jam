@@ -19,7 +19,7 @@ type SettingsItemProps = PropsWithChildren<{
   hasInteractiveChild?: boolean
 }>
 
-export const SettingItem = ({
+export const SettingsItem = ({
   icon: Icon,
   renderIcon,
   title,
@@ -87,7 +87,7 @@ export const SettingsLink = ({ to, external = false, ...props }: SettingsLinkPro
   const navigate = useNavigate()
 
   return (
-    <SettingItem
+    <SettingsItem
       {...props}
       action={async () => {
         if (external) {
@@ -98,7 +98,7 @@ export const SettingsLink = ({ to, external = false, ...props }: SettingsLinkPro
       }}
     >
       {external && <ExternalLinkIcon className="text-muted-foreground size-3.5" />}
-    </SettingItem>
+    </SettingsItem>
   )
 }
 
@@ -107,13 +107,13 @@ type SettingsSwitchProps = Omit<SettingsItemProps, 'children' | 'action' | 'hasI
   onCheckedChange?: (checked: boolean) => void
   displayToggle?: boolean
 }
-export const SettingSwitch = ({ checked, onCheckedChange, displayToggle = true, ...props }: SettingsSwitchProps) => {
+export const SettingsSwitch = ({ checked, onCheckedChange, displayToggle = true, ...props }: SettingsSwitchProps) => {
   return (
     // With a visible toggle the `Switch` is the focusable control and the row stays a
     // wrapper. Without one the row itself has to be the button, or the setting cannot be
     // reached by keyboard at all.
-    <SettingItem {...props} action={() => onCheckedChange?.(!checked)} hasInteractiveChild={displayToggle}>
+    <SettingsItem {...props} action={() => onCheckedChange?.(!checked)} hasInteractiveChild={displayToggle}>
       {displayToggle && <Switch checked={checked} onCheckedChange={onCheckedChange} disabled={props.disabled} />}
-    </SettingItem>
+    </SettingsItem>
   )
 }
