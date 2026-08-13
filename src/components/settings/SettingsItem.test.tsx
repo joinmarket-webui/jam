@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import user from '@testing-library/user-event'
 import { KeyRoundIcon } from 'lucide-react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { SettingItem, SettingsLink, SettingSwitch } from './SettingsItem'
+import { SettingsItem, SettingsLink, SettingsSwitch } from './SettingsItem'
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
@@ -29,32 +29,32 @@ vi.mock('@/components/ui/switch', () => ({
   ),
 }))
 
-describe('SettingItem', () => {
+describe('SettingsItem', () => {
   beforeEach(() => {
     mocks.navigate.mockReset()
     mocks.open.mockReset()
   })
 
   it('renders title and icon', () => {
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" />)
 
     expect(screen.getByText('settings.show_seed')).toBeInTheDocument()
   })
 
   it('exposes an actionable row as a button', () => {
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" action={vi.fn()} />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" action={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: 'settings.show_seed' })).toBeInTheDocument()
   })
 
   it('does not render a button without an action', () => {
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" />)
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('is reachable by keyboard', async () => {
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" action={vi.fn()} />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" action={vi.fn()} />)
 
     await user.tab()
 
@@ -63,7 +63,7 @@ describe('SettingItem', () => {
 
   it('triggers the action on Enter', async () => {
     const action = vi.fn()
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" action={action} />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" action={action} />)
 
     await user.tab()
     await user.keyboard('{Enter}')
@@ -73,7 +73,7 @@ describe('SettingItem', () => {
 
   it('triggers the action on Space', async () => {
     const action = vi.fn()
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" action={action} />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" action={action} />)
 
     await user.tab()
     await user.keyboard(' ')
@@ -83,7 +83,7 @@ describe('SettingItem', () => {
 
   it('triggers the action on click', async () => {
     const action = vi.fn()
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" action={action} />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" action={action} />)
 
     await user.click(screen.getByRole('button', { name: 'settings.show_seed' }))
 
@@ -92,7 +92,7 @@ describe('SettingItem', () => {
 
   it('does not trigger the action while disabled', async () => {
     const action = vi.fn()
-    render(<SettingItem icon={KeyRoundIcon} title="settings.show_seed" action={action} disabled={true} />)
+    render(<SettingsItem icon={KeyRoundIcon} title="settings.show_seed" action={action} disabled={true} />)
 
     const item = screen.getByRole('button', { name: 'settings.show_seed' })
     expect(item).toBeDisabled()
@@ -106,9 +106,9 @@ describe('SettingItem', () => {
 
   it('stays a wrapper when children provide their own control', () => {
     render(
-      <SettingItem icon={KeyRoundIcon} title="settings.show_seed" action={vi.fn()} hasInteractiveChild={true}>
+      <SettingsItem icon={KeyRoundIcon} title="settings.show_seed" action={vi.fn()} hasInteractiveChild={true}>
         <button type="button">child-control</button>
-      </SettingItem>,
+      </SettingsItem>,
     )
 
     // no button is nested inside another button
@@ -147,7 +147,7 @@ describe('SettingSwitch', () => {
   it('is keyboard operable via the row when no toggle is displayed', async () => {
     const onCheckedChange = vi.fn()
     render(
-      <SettingSwitch
+      <SettingsSwitch
         icon={KeyRoundIcon}
         title="settings.hide_balance"
         checked={false}
@@ -165,7 +165,7 @@ describe('SettingSwitch', () => {
   it('is keyboard operable via the toggle when one is displayed', async () => {
     const onCheckedChange = vi.fn()
     render(
-      <SettingSwitch
+      <SettingsSwitch
         icon={KeyRoundIcon}
         title="settings.use_address_chunking_enabled"
         checked={false}
