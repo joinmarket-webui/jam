@@ -1,22 +1,28 @@
 import { useState, useMemo, useEffect } from 'react'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
+  columnFilteringFeature,
+  columnVisibilityFeature,
   createColumnHelper,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowPinningFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
   type SortingState,
   type PaginationState,
-  type ColumnDef,
-  useReactTable,
   type RowPinningState,
   type RowSelectionState,
-  type VisibilityState,
+  type ColumnVisibilityState,
   type FilterFn,
-  type FilterFnOption,
   type Table as TableType,
+  type ColumnDef,
 } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
@@ -58,21 +64,35 @@ export interface OrderTableEntry {
   }
 }
 
-const columnHelper = createColumnHelper<OrderTableEntry>()
-
-const fuzzyFilter: FilterFn<OrderTableEntry> = (row, columnId, value, addMeta) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fuzzyFilter: FilterFn<any, OrderTableEntry> = (row, columnId, value, addMeta) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
   const itemRank = rankItem(row.getValue(columnId), value)
-  addMeta({ itemRank })
+  addMeta?.({ itemRank })
   return itemRank.passed
 }
+
+export const orderbookTableFeatures = tableFeatures({
+  rowSortingFeature,
+  columnFilteringFeature,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowPinningFeature,
+  columnVisibilityFeature,
+  sortedRowModel: createSortedRowModel(),
+  filteredRowModel: createFilteredRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+})
+
+const columnHelper = createColumnHelper<typeof orderbookTableFeatures, OrderTableEntry>()
 
 interface OrderbookTableProps {
   globalFilter?: string
   tableEntries: OrderTableEntry[]
   selectedEntries: OrderTableEntry[]
   pinnedEntries: OrderTableEntry[]
-  onChange?: (table: TableType<OrderTableEntry>) => void
+  onChange?: (table: TableType<typeof orderbookTableFeatures, OrderTableEntry>) => void
 }
 
 export const OrderbookTable = ({
@@ -89,11 +109,11 @@ export const OrderbookTable = ({
   const [isShowAll, setIsShowAll] = useState(false)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<OrderTableEntry, any>[]>(
+  const columns = useMemo<ColumnDef<typeof orderbookTableFeatures, OrderTableEntry, any>[]>(
     () => [
       columnHelper.accessor('counterparty', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_counterparty')}</div>,
-        sortingFn: (a, b) => {
+        sortFn: (a, b) => {
           const val = a.original.counterparty.localeCompare(b.original.counterparty)
           if (val !== 0) return val
           // tie-break using orderId
@@ -113,11 +133,11 @@ export const OrderbookTable = ({
           numeric: true,
         },
       }),
-      columnHelper.accessor<'type', OrderTableEntry['type']>('type', {
+      columnHelper.accessor('type', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
-        sortingFn: (a, b) => a.original.type.displayValue.localeCompare(b.original.type.displayValue),
+        sortFn: (a, b) => a.original.type.displayValue.localeCompare(b.original.type.displayValue),
         cell: (info) => {
-          const value = info.getValue()
+          const value = info.getValue() as OrderTableEntry['type']
           return (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -137,7 +157,7 @@ export const OrderbookTable = ({
       columnHelper.accessor('fee', {
         header: () => <div className="flex items-center justify-end">{t('orderbook.table.heading_fee')}</div>,
         // Custom sorting: absolute before relative, then by fee value
-        sortingFn: (a, b) => {
+        sortFn: (a, b) => {
           if (a.original.type.isAbsolute !== b.original.type.isAbsolute) {
             return a.original.type.isAbsolute ? -1 : 1
           }
@@ -162,28 +182,28 @@ export const OrderbookTable = ({
           numeric: true,
         },
       }),
-      columnHelper.accessor<'minimumSize', OrderTableEntry['minimumSize']>('minimumSize', {
+      columnHelper.accessor('minimumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
-        sortingFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
-        cell: (info) => <Balance valueString={info.getValue()} />,
+        sortFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
+        cell: (info) => <Balance valueString={String(info.getValue())} />,
         meta: {
           align: 'right',
           numeric: true,
         },
       }),
-      columnHelper.accessor<'maximumSize', OrderTableEntry['maximumSize']>('maximumSize', {
+      columnHelper.accessor('maximumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
-        sortingFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
-        cell: (info) => <Balance valueString={info.getValue()} />,
+        sortFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
+        cell: (info) => <Balance valueString={String(info.getValue())} />,
         meta: {
           align: 'right',
           numeric: true,
         },
       }),
-      columnHelper.accessor<'minerFeeContribution', OrderTableEntry['minerFeeContribution']>('minerFeeContribution', {
+      columnHelper.accessor('minerFeeContribution', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
-        sortingFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
-        cell: (info) => <Balance valueString={info.getValue()} />,
+        sortFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
+        cell: (info) => <Balance valueString={String(info.getValue())} />,
         enableHiding: true,
         meta: {
           align: 'right',
@@ -192,7 +212,7 @@ export const OrderbookTable = ({
       }),
       columnHelper.accessor('bondValue', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
-        sortingFn: (a, b) => a.original.bondValue.value - b.original.bondValue.value,
+        sortFn: (a, b) => a.original.bondValue.value - b.original.bondValue.value,
         cell: ({
           row: {
             original: { bondValue },
@@ -226,19 +246,17 @@ export const OrderbookTable = ({
     ],
     [t],
   )
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ minerFeeContribution: false })
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({ minerFeeContribution: false })
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [rowPinning, setRowPinning] = useState<RowPinningState>({
     top: [],
     bottom: [],
   })
 
-  const table = useReactTable<OrderTableEntry>({
+  const table = useTable<typeof orderbookTableFeatures, OrderTableEntry>({
+    features: orderbookTableFeatures,
     data: tableEntries,
     columns,
-    filterFns: {
-      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
-    },
     state: {
       globalFilter,
       sorting,
@@ -247,7 +265,7 @@ export const OrderbookTable = ({
       rowSelection,
       columnVisibility,
     },
-    globalFilterFn: 'fuzzy' as FilterFnOption<OrderTableEntry>,
+    globalFilterFn: fuzzyFilter,
     keepPinnedRows: true,
     enableRowSelection: true,
     autoResetPageIndex: true,
@@ -256,31 +274,30 @@ export const OrderbookTable = ({
     onRowPinningChange: setRowPinning,
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   })
 
   useEffect(() => {
     table.resetRowPinning(true)
-    table.getPrePaginationRowModel().rows.forEach((row) => {
+    table.getPrePaginatedRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
-  }, [table, pinnedEntries])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pinnedEntries])
 
   useEffect(() => {
     table.resetRowSelection(true)
-    table.getPrePaginationRowModel().rows.forEach((row) => {
+    table.getPrePaginatedRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
-  }, [table, highlightedEntries])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightedEntries])
 
   useEffect(() => {
     if (isShowAll) {
       table.setPageSize(tableEntries.length || 1)
     }
-  }, [isShowAll, tableEntries.length, table])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isShowAll, tableEntries.length])
 
   const tableTopRows = () => {
     try {
@@ -308,8 +325,9 @@ export const OrderbookTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const alignCenter = header.column.columnDef.meta?.align === 'center'
-                  const alignRight = header.column.columnDef.meta?.align === 'right'
+                  const meta = header.column.columnDef.meta as { align?: string } | undefined
+                  const alignCenter = meta?.align === 'center'
+                  const alignRight = meta?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -326,7 +344,7 @@ export const OrderbookTable = ({
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
                           'font-bold': header.column.getIsSorted(),
-                          'text-muted-foreground': table.getState().sorting.length > 0 && !header.column.getIsSorted(),
+                          'text-muted-foreground': table.state.sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -342,8 +360,9 @@ export const OrderbookTable = ({
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                 {row.getVisibleCells().map((cell) => {
-                  const alignCenter = cell.column.columnDef.meta?.align === 'center'
-                  const alignRight = cell.column.columnDef.meta?.align === 'right'
+                  const meta = cell.column.columnDef.meta as { align?: string } | undefined
+                  const alignCenter = meta?.align === 'center'
+                  const alignRight = meta?.align === 'right'
                   return (
                     <TableCell
                       key={cell.id}
@@ -362,8 +381,9 @@ export const OrderbookTable = ({
               return (
                 <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                   {row.getVisibleCells().map((cell) => {
-                    const alignCenter = cell.column.columnDef.meta?.align === 'center'
-                    const alignRight = cell.column.columnDef.meta?.align === 'right'
+                    const meta = cell.column.columnDef.meta as { align?: string } | undefined
+                    const alignCenter = meta?.align === 'center'
+                    const alignRight = meta?.align === 'right'
                     return (
                       <TableCell
                         key={cell.id}
@@ -384,7 +404,7 @@ export const OrderbookTable = ({
       </div>
 
       <TablePagination
-        currentPage={table.getState().pagination.pageIndex + 1}
+        currentPage={table.state.pagination.pageIndex + 1}
         totalPages={table.getPageCount()}
         itemsPerPage={isShowAll ? -1 : pagination.pageSize}
         totalItems={table.getFilteredRowModel().rows.length}

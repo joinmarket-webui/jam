@@ -1,21 +1,27 @@
 import { useState, useMemo, useEffect } from 'react'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
+  columnFilteringFeature,
+  columnVisibilityFeature,
   createColumnHelper,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowPinningFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
   type SortingState,
   type PaginationState,
-  type ColumnDef,
-  useReactTable,
   type RowPinningState,
   type RowSelectionState,
-  type VisibilityState,
+  type ColumnDef,
+  type ColumnVisibilityState,
   type FilterFn,
-  type FilterFnOption,
   type Table as TableType,
 } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
@@ -42,21 +48,35 @@ export type BranchEntryTableRow = BranchEntryApiObject & {
   tags: UtxoTag[]
 }
 
-const columnHelper = createColumnHelper<BranchEntryTableRow>()
-
-const fuzzyFilter: FilterFn<BranchEntryTableRow> = (row, columnId, value, addMeta) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fuzzyFilter: FilterFn<any, BranchEntryTableRow> = (row, columnId, value, addMeta) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
   const itemRank = rankItem(row.getValue(columnId), value)
-  addMeta({ itemRank })
+  addMeta?.({ itemRank })
   return itemRank.passed
 }
+
+export const branchEntryTableFeatures = tableFeatures({
+  rowSortingFeature,
+  columnFilteringFeature,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowPinningFeature,
+  columnVisibilityFeature,
+  sortedRowModel: createSortedRowModel(),
+  filteredRowModel: createFilteredRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+})
+
+const columnHelper = createColumnHelper<typeof branchEntryTableFeatures, BranchEntryTableRow>()
 
 interface BranchEntryTableProps {
   globalFilter?: string
   tableEntries: BranchEntryTableRow[]
   selectedEntries: BranchEntryTableRow[]
   pinnedEntries: BranchEntryTableRow[]
-  onChange?: (table: TableType<BranchEntryTableRow>) => void
+  onChange?: (table: TableType<typeof branchEntryTableFeatures, BranchEntryTableRow>) => void
 }
 
 export const BranchEntryTable = ({
@@ -73,11 +93,11 @@ export const BranchEntryTable = ({
   const [isShowAll, setIsShowAll] = useState(false)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<BranchEntryTableRow, any>[]>(
+  const columns = useMemo<ColumnDef<typeof branchEntryTableFeatures, BranchEntryTableRow, any>[]>(
     () => [
       columnHelper.accessor('derivationIndex', {
         header: () => <div className="flex items-center">{/* TODO: i18n */}</div>,
-        sortingFn: (a, b) => {
+        sortFn: (a, b) => {
           return a.original.derivationIndex - b.original.derivationIndex
         },
         cell: (info) => (
@@ -91,19 +111,19 @@ export const BranchEntryTable = ({
           numeric: true,
         },
       }),
-      columnHelper.accessor<'address', BranchEntryTableRow['address']>('address', {
+      columnHelper.accessor('address', {
         header: () => (
           <div className="flex items-center">
             {t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_address')}
           </div>
         ),
-        sortingFn: (a, b) => {
+        sortFn: (a, b) => {
           const val = a.original.address.localeCompare(b.original.address)
           if (val !== 0) return val
           // tie-break using derivationIndex
           return a.original.derivationIndex - b.original.derivationIndex
         },
-        cell: (info) => <Address value={info.getValue()} className="text-sm" copyable={true} />,
+        cell: (info) => <Address value={String(info.getValue())} className="text-sm" copyable={true} />,
         meta: {
           alphabetic: true,
         },
@@ -114,7 +134,7 @@ export const BranchEntryTable = ({
             {t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_balance')}
           </div>
         ),
-        sortingFn: (a, b) => {
+        sortFn: (a, b) => {
           const val = a.original.balance - b.original.balance
           if (val !== 0) return val
           // tie-break using derivationIndex
@@ -147,7 +167,7 @@ export const BranchEntryTable = ({
     ],
     [t],
   )
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({
     minerFeeContribution: false,
   })
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -156,12 +176,10 @@ export const BranchEntryTable = ({
     bottom: [],
   })
 
-  const table = useReactTable<BranchEntryTableRow>({
+  const table = useTable<typeof branchEntryTableFeatures, BranchEntryTableRow>({
+    features: branchEntryTableFeatures,
     data: tableEntries,
     columns,
-    filterFns: {
-      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
-    },
     state: {
       globalFilter,
       sorting,
@@ -170,7 +188,7 @@ export const BranchEntryTable = ({
       rowSelection,
       columnVisibility,
     },
-    globalFilterFn: 'fuzzy' as FilterFnOption<BranchEntryTableRow>,
+    globalFilterFn: fuzzyFilter,
     keepPinnedRows: true,
     enableRowSelection: true,
     autoResetPageIndex: true,
@@ -179,10 +197,6 @@ export const BranchEntryTable = ({
     onRowPinningChange: setRowPinning,
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   })
 
   useEffect(() => {
@@ -190,20 +204,23 @@ export const BranchEntryTable = ({
     table.getRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
-  }, [table, pinnedEntries])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pinnedEntries])
 
   useEffect(() => {
     table.resetRowSelection(true)
     table.getRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
-  }, [table, highlightedEntries])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightedEntries])
 
   useEffect(() => {
     if (isShowAll) {
       table.setPageSize(tableEntries.length || 1)
     }
-  }, [isShowAll, tableEntries.length, table])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isShowAll, tableEntries.length])
 
   const tableTopRows = () => {
     try {
@@ -220,7 +237,8 @@ export const BranchEntryTable = ({
     if (onChange) {
       onChange(table)
     }
-  }, [table, onChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onChange, tableEntries])
 
   return (
     <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
@@ -231,8 +249,9 @@ export const BranchEntryTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const alignCenter = header.column.columnDef.meta?.align === 'center'
-                  const alignRight = header.column.columnDef.meta?.align === 'right'
+                  const meta = header.column.columnDef.meta as { align?: string } | undefined
+                  const alignCenter = meta?.align === 'center'
+                  const alignRight = meta?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -249,7 +268,7 @@ export const BranchEntryTable = ({
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
                           'font-bold': header.column.getIsSorted(),
-                          'text-muted-foreground': table.getState().sorting.length > 0 && !header.column.getIsSorted(),
+                          'text-muted-foreground': table.state.sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -265,8 +284,9 @@ export const BranchEntryTable = ({
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                 {row.getVisibleCells().map((cell) => {
-                  const alignCenter = cell.column.columnDef.meta?.align === 'center'
-                  const alignRight = cell.column.columnDef.meta?.align === 'right'
+                  const meta = cell.column.columnDef.meta as { align?: string } | undefined
+                  const alignCenter = meta?.align === 'center'
+                  const alignRight = meta?.align === 'right'
                   return (
                     <TableCell
                       key={cell.id}
@@ -285,8 +305,9 @@ export const BranchEntryTable = ({
               return (
                 <TableRow key={row.id} className={row.getIsSelected() ? 'bg-brand-warning/25!' : ''}>
                   {row.getVisibleCells().map((cell) => {
-                    const alignCenter = cell.column.columnDef.meta?.align === 'center'
-                    const alignRight = cell.column.columnDef.meta?.align === 'right'
+                    const meta = cell.column.columnDef.meta as { align?: string } | undefined
+                    const alignCenter = meta?.align === 'center'
+                    const alignRight = meta?.align === 'right'
                     return (
                       <TableCell
                         key={cell.id}
@@ -307,7 +328,7 @@ export const BranchEntryTable = ({
       </div>
 
       <TablePagination
-        currentPage={table.getState().pagination.pageIndex + 1}
+        currentPage={table.state.pagination.pageIndex + 1}
         totalPages={table.getPageCount()}
         itemsPerPage={isShowAll ? -1 : pagination.pageSize}
         totalItems={table.getFilteredRowModel().rows.length}

@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  columnFilteringFeature,
+  columnVisibilityFeature,
   createColumnHelper,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
   flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
   type ColumnDef,
   type PaginationState,
   type SortingState,
-  useReactTable,
 } from '@tanstack/react-table'
 import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -48,13 +53,24 @@ const generateDemoEntry = () => {
   }
 }
 
+const earnReportTableFeatures = tableFeatures({
+  rowSortingFeature,
+  columnFilteringFeature,
+  globalFilteringFeature,
+  columnVisibilityFeature,
+  rowPaginationFeature,
+  sortedRowModel: createSortedRowModel(),
+  filteredRowModel: createFilteredRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+})
+
 const MILLISECONDS_IN_A_DAY: Milliseconds = 24 * 60 * 60 * 1_000
 const MILLISECONDS_IN_30_DAYS: Milliseconds = 30 * MILLISECONDS_IN_A_DAY
 const MILLISECONDS_IN_90_DAYS: Milliseconds = 90 * MILLISECONDS_IN_A_DAY
 
 const ITEMS_PER_PAGE = 25
 
-const columnHelper = createColumnHelper<EarnReportEntry>()
+const columnHelper = createColumnHelper<typeof earnReportTableFeatures, EarnReportEntry>()
 
 interface EarnReportContentProps {
   className?: string
@@ -80,11 +96,11 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   const allEntries = useMemo(() => [...(entries ?? []), ...demoEntries], [entries, demoEntries])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<EarnReportEntry, any>[]>(
+  const columns = useMemo<ColumnDef<typeof earnReportTableFeatures, EarnReportEntry, any>[]>(
     () => [
       columnHelper.accessor('timestamp', {
         header: () => t('earn.report.heading_timestamp'),
-        sortingFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
+        sortFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
         cell: (info) => {
           const ts = info.getValue() as Date
           return <span title={ts.toISOString()}>{ts.toLocaleString()}</span>
@@ -119,7 +135,8 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     [t],
   )
 
-  const table = useReactTable<EarnReportEntry>({
+  const table = useTable({
+    features: earnReportTableFeatures,
     data: allEntries,
     columns,
     state: {
@@ -131,17 +148,14 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     autoResetPageIndex: true,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   })
 
   useEffect(() => {
     if (isShowAll) {
       table.setPageSize(allEntries.length || 1)
     }
-  }, [isShowAll, allEntries.length, table])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isShowAll, allEntries.length])
 
   const visibleRows = table.getRowModel().rows
   const exportRows = table.getSortedRowModel().rows
@@ -283,7 +297,8 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                       <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map((header) => {
                           const canSort = header.column.getCanSort()
-                          const alignRight = header.column.columnDef.meta?.align === 'right'
+                          const meta = header.column.columnDef.meta as { align?: string } | undefined
+                          const alignRight = meta?.align === 'right'
                           return (
                             <TableHead
                               key={header.id}
@@ -291,7 +306,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                               onClick={canSort ? () => header.column.toggleSorting() : undefined}
                             >
                               <div
-                                className={`flex items-center gap-2 ${alignRight ? 'justify-end' : ''} ${canSort ? 'cursor-pointer select-none' : ''} ${header.column.getIsSorted() ? 'font-bold' : ''} ${table.getState().sorting.length > 0 && !header.column.getIsSorted() ? 'text-muted-foreground' : ''}`}
+                                className={`flex items-center gap-2 ${alignRight ? 'justify-end' : ''} ${canSort ? 'cursor-pointer select-none' : ''} ${header.column.getIsSorted() ? 'font-bold' : ''} ${table.state.sorting.length > 0 && !header.column.getIsSorted() ? 'text-muted-foreground' : ''}`}
                               >
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                                 {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
@@ -306,7 +321,8 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                     {visibleRows.map((row) => (
                       <TableRow key={row.id}>
                         {row.getVisibleCells().map((cell) => {
-                          const alignRight = cell.column.columnDef.meta?.align === 'right'
+                          const meta = cell.column.columnDef.meta as { align?: string } | undefined
+                          const alignRight = meta?.align === 'right'
                           return (
                             <TableCell key={cell.id} className={alignRight ? 'text-right' : ''}>
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -320,7 +336,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
               </div>
 
               <TablePagination
-                currentPage={table.getState().pagination.pageIndex + 1}
+                currentPage={table.state.pagination.pageIndex + 1}
                 totalPages={table.getPageCount()}
                 itemsPerPage={isShowAll ? -1 : pagination.pageSize}
                 totalItems={table.getFilteredRowModel().rows.length}
