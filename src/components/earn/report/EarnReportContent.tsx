@@ -204,7 +204,14 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
           <EarnReportChart entries={allEntries} />
 
           {/* Toolbar: search + refresh */}
-          <div className="flex w-full flex-wrap items-center justify-end gap-2">
+          <div className="flex w-full flex-col items-start justify-center gap-2 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-sm">
+                {globalFilter.length === 0
+                  ? t('earn.report.text_report_summary', { count: allEntries.length })
+                  : t('earn.report.text_report_summary_filtered', { count: table.getFilteredRowModel().rows.length })}
+              </p>
+            </div>
             <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
               <InputGroup className="min-w-[120px] flex-1 sm:max-w-[360px] sm:min-w-[220px]">
                 <InputGroupInput
@@ -243,20 +250,15 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 <DownloadIcon className="group/download" />
                 <span className="hidden sm:inline">{t('global.download')}</span>
               </Button>
-            </div>
 
-            <span className="text-muted-foreground ml-2 text-sm font-normal">
-              {globalFilter === ''
-                ? t('earn.report.text_report_summary', { count: allEntries.length })
-                : t('earn.report.text_report_summary_filtered', { count: table.getFilteredRowModel().rows.length })}
-            </span>
-            {isDeveloperMode ? (
-              <Button className="min-w-0 shrink overflow-hidden" variant="outline" onClick={addDemoEntry}>
-                <PlusIcon />
-                {t('earn.report.text_button_generate_demo_report')}
-                <DevBadge />
-              </Button>
-            ) : undefined}
+              {isDeveloperMode ? (
+                <Button className="min-w-0 shrink overflow-hidden" variant="outline" onClick={addDemoEntry}>
+                  <PlusIcon />
+                  {t('earn.report.text_button_generate_demo_report')}
+                  <DevBadge />
+                </Button>
+              ) : undefined}
+            </div>
           </div>
 
           {/* Table or empty state */}

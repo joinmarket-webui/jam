@@ -238,111 +238,6 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
 
   return (
     <div className={cn('flex min-h-0 w-full min-w-0 flex-1 flex-col space-y-3', className)}>
-      <div className="flex w-full flex-col items-start justify-center gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <p className="text-muted-foreground text-sm">
-            {globalFilter.length === 0
-              ? t('orderbook.text_orderbook_summary', summary)
-              : t('orderbook.text_orderbook_summary_filtered', summary)}
-          </p>
-        </div>
-
-        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          <InputGroup className="min-w-[120px] flex-1 sm:max-w-[360px] sm:min-w-[220px]">
-            <InputGroupInput
-              className="text-xs sm:text-sm"
-              value={globalFilter}
-              onChange={(event) => setGlobalFilter(event.target.value)}
-              placeholder={t('orderbook.placeholder_search')}
-            />
-            <InputGroupAddon align="inline-start">
-              <SearchIcon />
-            </InputGroupAddon>
-            <InputGroupAddon align="inline-end">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setGlobalFilter('')}
-                title={t('global.clear')}
-                className={globalFilter.length === 0 ? 'invisible' : undefined}
-              >
-                <XIcon />
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void refetchOrderbookData()}
-            disabled={isFetchingOrderbookData}
-            title={t('global.refresh')}
-          >
-            <RefreshCwIcon className={isFetchingOrderbookData ? 'motion-safe:animate-spin' : undefined} />
-            <span className="hidden sm:inline">{t('global.refresh')}</span>
-          </Button>
-
-          {showDemoButton && (
-            <Button
-              type="button"
-              className="w-full min-w-0 justify-center overflow-hidden text-xs sm:w-auto"
-              variant="outline"
-              onClick={__dev_generateDemoReportEntryButton}
-              disabled={isFetchingOrderbookData}
-            >
-              <PlusIcon className="size-3" />
-              <span className="truncate">Add Demo Entry</span>
-              <DevBadge className="shrink-0" />
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Controls */}
-      {nickname && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-start gap-4">
-            <Switch
-              className="mt-0.5 shrink-0"
-              id="highlight-my-offers"
-              checked={isHighlightMyOffers}
-              onCheckedChange={(checked) => setHighlightMyOffers(checked)}
-              disabled={isFetchingOrderbookData}
-            />
-            <Label htmlFor="highlight-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
-              <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
-              {myOffers.length === 0 ? (
-                <div className="text-muted-foreground text-sm">{t('orderbook.text_highlight_own_orders_subtitle')}</div>
-              ) : undefined}
-            </Label>
-          </div>
-
-          {myOffers.length > 0 && (
-            <div className="flex items-start gap-4">
-              <Switch
-                className="mt-0.5 shrink-0"
-                id="pin-my-offers"
-                checked={isPinMyOffers}
-                onCheckedChange={(checked) => {
-                  setPinMyOffers(checked)
-                  if (checked) {
-                    setHighlightMyOffers(true)
-                  }
-                }}
-                disabled={isFetchingOrderbookData}
-              />
-              <Label htmlFor="pin-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
-                <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
-                <div className="text-muted-foreground text-sm">
-                  {t('orderbook.text_pin_to_top_own_orders_subtitle')}
-                </div>
-              </Label>
-            </div>
-          )}
-        </div>
-      )}
-
       {marketSummary && (
         <Card className="overflow-hidden">
           <CardHeader className="pb-2">
@@ -403,6 +298,112 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           </CardContent>
         </Card>
       )}
+
+      {/* Controls */}
+      {nickname && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-start gap-4">
+            <Switch
+              className="mt-0.5 shrink-0"
+              id="highlight-my-offers"
+              checked={isHighlightMyOffers}
+              onCheckedChange={(checked) => setHighlightMyOffers(checked)}
+              disabled={isFetchingOrderbookData}
+            />
+            <Label htmlFor="highlight-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
+              <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
+              {myOffers.length === 0 ? (
+                <div className="text-muted-foreground text-sm">{t('orderbook.text_highlight_own_orders_subtitle')}</div>
+              ) : undefined}
+            </Label>
+          </div>
+
+          {myOffers.length > 0 && (
+            <div className="flex items-start gap-4">
+              <Switch
+                className="mt-0.5 shrink-0"
+                id="pin-my-offers"
+                checked={isPinMyOffers}
+                onCheckedChange={(checked) => {
+                  setPinMyOffers(checked)
+                  if (checked) {
+                    setHighlightMyOffers(true)
+                  }
+                }}
+                disabled={isFetchingOrderbookData}
+              />
+              <Label htmlFor="pin-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
+                <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
+                <div className="text-muted-foreground text-sm">
+                  {t('orderbook.text_pin_to_top_own_orders_subtitle')}
+                </div>
+              </Label>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Toolbar: search + refresh */}
+      <div className="flex w-full flex-col items-start justify-center gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
+          <p className="text-muted-foreground text-sm">
+            {globalFilter.length === 0
+              ? t('orderbook.text_orderbook_summary', summary)
+              : t('orderbook.text_orderbook_summary_filtered', summary)}
+          </p>
+        </div>
+
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <InputGroup className="min-w-[120px] flex-1 sm:max-w-[360px] sm:min-w-[220px]">
+            <InputGroupInput
+              className="text-xs sm:text-sm"
+              value={globalFilter}
+              onChange={(event) => setGlobalFilter(event.target.value)}
+              placeholder={t('orderbook.placeholder_search')}
+            />
+            <InputGroupAddon align="inline-start">
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setGlobalFilter('')}
+                title={t('global.clear')}
+                className={globalFilter.length === 0 ? 'invisible' : undefined}
+              >
+                <XIcon />
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void refetchOrderbookData()}
+            disabled={isFetchingOrderbookData}
+            title={t('global.refresh')}
+          >
+            <RefreshCwIcon className={isFetchingOrderbookData ? 'motion-safe:animate-spin' : undefined} />
+            <span className="hidden sm:inline">{t('global.refresh')}</span>
+          </Button>
+
+          {showDemoButton && (
+            <Button
+              type="button"
+              className="w-full min-w-0 justify-center overflow-hidden text-xs sm:w-auto"
+              variant="outline"
+              onClick={__dev_generateDemoReportEntryButton}
+              disabled={isFetchingOrderbookData}
+            >
+              <PlusIcon className="size-3" />
+              <span className="truncate">Add Demo Entry</span>
+              <DevBadge className="shrink-0" />
+            </Button>
+          )}
+        </div>
+      </div>
 
       {isLoadingInitially ? (
         <div className="py-12">
