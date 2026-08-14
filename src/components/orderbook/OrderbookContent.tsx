@@ -39,7 +39,8 @@ import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
 import { OrderbookChart } from './OrderbookChart'
-import { OrderbookTable, orderbookTableFeatures, type OrderTableEntry } from './OrderbookTable'
+import { OrderbookTable } from './OrderbookTable'
+import { orderbookTableFeatures, type OrderTableEntry } from './OrderbookTable.schema'
 
 const offerToTableEntry = (
   offer: OrderbookOffer,

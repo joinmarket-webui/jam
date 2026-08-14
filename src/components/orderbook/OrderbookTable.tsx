@@ -1,19 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
-  columnFilteringFeature,
-  columnVisibilityFeature,
   createColumnHelper,
-  createFilteredRowModel,
-  createPaginatedRowModel,
-  createSortedRowModel,
   flexRender,
-  globalFilteringFeature,
-  rowPaginationFeature,
-  rowPinningFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  tableFeatures,
   useTable,
   type SortingState,
   type PaginationState,
@@ -22,7 +11,6 @@ import {
   type ColumnVisibilityState,
   type FilterFn,
   type RowModel,
-  type ColumnDef,
 } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
@@ -31,59 +19,18 @@ import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import type { AmountSats } from '@/types/global'
 import { SortIcon } from '../ui/jam/SortIcon'
+import { orderbookTableFeatures, type OrderTableEntry } from './OrderbookTable.schema'
+
+export type { OrderTableEntry } from './OrderbookTable.schema'
 
 const ITEMS_PER_PAGE = 25
 
-export interface OrderTableEntry {
-  counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
-  orderId: string // example: "0" (not unique!)
-  type: {
-    value: string // original value, example: 'sw0reloffer', 'swreloffer', 'reloffer', 'sw0absoffer', 'swabsoffer', 'absoffer'
-    displayValue: string // example: "absolute" or "relative" (respecting i18n)
-    badgeColor: Parameters<typeof Badge>[0]['variant']
-    tooltip?: 'Native SW Absolute Fee' | 'Native SW Relative Fee' | string
-    isAbsolute: boolean
-    isRelative: boolean
-  }
-  fee: {
-    value: number
-    displayValue: string // example: "250" (abs offers) or "0.000100%" (rel offers)
-  }
-  minerFeeContribution: string // example: "0"
-  minimumSize: string // example: "27300"
-  maximumSize: string // example: "237499972700"
-  bondValue: {
-    value: number
-    displayValue: string // example: "0" (no fb) or "114557102085.28133"
-    locktime?: number
-    displayLocktime?: string
-    displayExpiresIn?: string
-    amount?: AmountSats
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const fuzzyFilter: FilterFn<any, OrderTableEntry> = (row, columnId, value, addMeta) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
-  const itemRank = rankItem(row.getValue(columnId), value)
+const fuzzyFilter: FilterFn<typeof orderbookTableFeatures, OrderTableEntry> = (row, columnId, value, addMeta) => {
+  const itemRank = rankItem(row.getValue(columnId), value as string)
   addMeta?.({ itemRank })
   return itemRank.passed
 }
-
-export const orderbookTableFeatures = tableFeatures({
-  rowSortingFeature,
-  columnFilteringFeature,
-  globalFilteringFeature,
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowPinningFeature,
-  columnVisibilityFeature,
-  sortedRowModel: createSortedRowModel(),
-  filteredRowModel: createFilteredRowModel(),
-  paginatedRowModel: createPaginatedRowModel(),
-})
 
 const columnHelper = createColumnHelper<typeof orderbookTableFeatures, OrderTableEntry>()
 
@@ -108,142 +55,142 @@ export const OrderbookTable = ({
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: ITEMS_PER_PAGE })
   const [isShowAll, setIsShowAll] = useState(false)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<typeof orderbookTableFeatures, OrderTableEntry, any>[]>(
-    () => [
-      columnHelper.accessor('counterparty', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_counterparty')}</div>,
-        sortFn: (a, b) => {
-          const val = a.original.counterparty.localeCompare(b.original.counterparty)
-          if (val !== 0) return val
-          // tie-break using orderId
-          const aid = Number(a.original.orderId)
-          const bid = Number(b.original.orderId)
-          return aid - bid
-        },
-        cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
-        meta: {
-          alphabetic: true,
-        },
-      }),
-      columnHelper.accessor('orderId', {
-        header: () => t('orderbook.table.heading_order_id'),
-        cell: (info) => <span>{info.getValue()}</span>,
-        meta: {
-          numeric: true,
-        },
-      }),
-      columnHelper.accessor('type', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
-        sortFn: (a, b) => a.original.type.displayValue.localeCompare(b.original.type.displayValue),
-        cell: (info) => {
-          const value = info.getValue() as OrderTableEntry['type']
-          return (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant={value.badgeColor}>{value.displayValue}</Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{value.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          )
-        },
-        meta: {
-          align: 'center',
-          alphabetic: true,
-        },
-      }),
-      columnHelper.accessor('fee', {
-        header: () => <div className="flex items-center justify-end">{t('orderbook.table.heading_fee')}</div>,
-        // Custom sorting: absolute before relative, then by fee value
-        sortFn: (a, b) => {
-          if (a.original.type.isAbsolute !== b.original.type.isAbsolute) {
-            return a.original.type.isAbsolute ? -1 : 1
-          }
-          return a.original.fee.value - b.original.fee.value
-        },
-        cell: ({
-          row: {
-            original: {
-              type: { isAbsolute },
-              fee,
+  const columns = useMemo(
+    () =>
+      columnHelper.columns([
+        columnHelper.accessor('counterparty', {
+          header: () => <div className="flex items-center">{t('orderbook.table.heading_counterparty')}</div>,
+          sortFn: (a, b) => {
+            const val = a.original.counterparty.localeCompare(b.original.counterparty)
+            if (val !== 0) return val
+            // tie-break using orderId
+            const aid = Number(a.original.orderId)
+            const bid = Number(b.original.orderId)
+            return aid - bid
+          },
+          cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
+          meta: {
+            alphabetic: true,
+          },
+        }),
+        columnHelper.accessor('orderId', {
+          header: () => t('orderbook.table.heading_order_id'),
+          cell: (info) => <span>{info.getValue()}</span>,
+          meta: {
+            numeric: true,
+          },
+        }),
+        columnHelper.accessor('type', {
+          header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
+          sortFn: (a, b) => a.original.type.displayValue.localeCompare(b.original.type.displayValue),
+          cell: (info) => {
+            const value = info.getValue()
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant={value.badgeColor}>{value.displayValue}</Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{value.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )
+          },
+          meta: {
+            align: 'center',
+            alphabetic: true,
+          },
+        }),
+        columnHelper.accessor('fee', {
+          header: () => <div className="flex items-center justify-end">{t('orderbook.table.heading_fee')}</div>,
+          // Custom sorting: absolute before relative, then by fee value
+          sortFn: (a, b) => {
+            if (a.original.type.isAbsolute !== b.original.type.isAbsolute) {
+              return a.original.type.isAbsolute ? -1 : 1
+            }
+            return a.original.fee.value - b.original.fee.value
+          },
+          cell: ({
+            row: {
+              original: {
+                type: { isAbsolute },
+                fee,
+              },
             },
+          }) => {
+            return isAbsolute ? (
+              <span className="slashed-zero tabular-nums">{fee.displayValue}</span>
+            ) : (
+              <Balance valueString={fee.displayValue} />
+            )
           },
-        }) => {
-          return isAbsolute ? (
-            <span className="slashed-zero tabular-nums">{fee.displayValue}</span>
-          ) : (
-            <Balance valueString={fee.displayValue} />
-          )
-        },
-        meta: {
-          align: 'right',
-          numeric: true,
-        },
-      }),
-      columnHelper.accessor('minimumSize', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
-        sortFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
-        cell: (info) => <Balance valueString={String(info.getValue())} />,
-        meta: {
-          align: 'right',
-          numeric: true,
-        },
-      }),
-      columnHelper.accessor('maximumSize', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
-        sortFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
-        cell: (info) => <Balance valueString={String(info.getValue())} />,
-        meta: {
-          align: 'right',
-          numeric: true,
-        },
-      }),
-      columnHelper.accessor('minerFeeContribution', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
-        sortFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
-        cell: (info) => <Balance valueString={String(info.getValue())} />,
-        enableHiding: true,
-        meta: {
-          align: 'right',
-          numeric: true,
-        },
-      }),
-      columnHelper.accessor('bondValue', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
-        sortFn: (a, b) => a.original.bondValue.value - b.original.bondValue.value,
-        cell: ({
-          row: {
-            original: { bondValue },
+          meta: {
+            align: 'right',
+            numeric: true,
           },
-        }) => {
-          return bondValue.value > 0 ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="cursor-help slashed-zero tabular-nums">{bondValue.displayValue}</span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div>
-                  <Balance valueString={String(bondValue.amount || 0)} convertToUnit="btc" />
-                  {bondValue.displayLocktime && (
-                    <div className="mt-1 text-xs">
-                      {bondValue.displayLocktime} ({bondValue.displayExpiresIn})
-                    </div>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <>{bondValue.displayValue}</>
-          )
-        },
-        meta: {
-          numeric: true,
-          align: 'right',
-        },
-      }),
-    ],
+        }),
+        columnHelper.accessor('minimumSize', {
+          header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
+          sortFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
+          cell: (info) => <Balance valueString={String(info.getValue())} />,
+          meta: {
+            align: 'right',
+            numeric: true,
+          },
+        }),
+        columnHelper.accessor('maximumSize', {
+          header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
+          sortFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
+          cell: (info) => <Balance valueString={String(info.getValue())} />,
+          meta: {
+            align: 'right',
+            numeric: true,
+          },
+        }),
+        columnHelper.accessor('minerFeeContribution', {
+          header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
+          sortFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
+          cell: (info) => <Balance valueString={String(info.getValue())} />,
+          enableHiding: true,
+          meta: {
+            align: 'right',
+            numeric: true,
+          },
+        }),
+        columnHelper.accessor('bondValue', {
+          header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
+          sortFn: (a, b) => a.original.bondValue.value - b.original.bondValue.value,
+          cell: ({
+            row: {
+              original: { bondValue },
+            },
+          }) => {
+            return bondValue.value > 0 ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-help slashed-zero tabular-nums">{bondValue.displayValue}</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div>
+                    <Balance valueString={String(bondValue.amount || 0)} convertToUnit="btc" />
+                    {bondValue.displayLocktime && (
+                      <div className="mt-1 text-xs">
+                        {bondValue.displayLocktime} ({bondValue.displayExpiresIn})
+                      </div>
+                    )}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <>{bondValue.displayValue}</>
+            )
+          },
+          meta: {
+            numeric: true,
+            align: 'right',
+          },
+        }),
+      ]),
     [t],
   )
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({ minerFeeContribution: false })
@@ -262,7 +209,7 @@ export const OrderbookTable = ({
     getPrePaginatedRowModel,
     resetRowPinning,
     ...table
-  } = useTable<typeof orderbookTableFeatures, OrderTableEntry>({
+  } = useTable({
     features: orderbookTableFeatures,
     data: tableEntries,
     columns,
@@ -348,7 +295,7 @@ export const OrderbookTable = ({
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
                           'font-bold': header.column.getIsSorted(),
-                          'text-muted-foreground': table.state.sorting.length > 0 && !header.column.getIsSorted(),
+                          'text-muted-foreground': sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -408,7 +355,7 @@ export const OrderbookTable = ({
       </div>
 
       <TablePagination
-        currentPage={table.state.pagination.pageIndex + 1}
+        currentPage={pagination.pageIndex + 1}
         totalPages={getPageCount()}
         itemsPerPage={isShowAll ? -1 : pagination.pageSize}
         totalItems={getFilteredRowModel().rows.length}

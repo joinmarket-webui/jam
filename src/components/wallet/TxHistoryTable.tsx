@@ -1,17 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  columnVisibilityFeature,
   createColumnHelper,
-  createExpandedRowModel,
-  createPaginatedRowModel,
-  createSortedRowModel,
   flexRender,
-  rowExpandingFeature,
-  rowPaginationFeature,
-  rowSortingFeature,
-  tableFeatures,
   useTable,
-  type ColumnDef,
   type PaginationState,
   type Row,
   type SortingState,
@@ -32,18 +23,9 @@ import { Balance } from '../ui/jam/Balance'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
+import { txHistoryTableFeatures } from './TxHistoryTable.schema'
 
 const ITEMS_PER_PAGE = 25
-
-export const txHistoryTableFeatures = tableFeatures({
-  rowSortingFeature,
-  rowPaginationFeature,
-  rowExpandingFeature,
-  columnVisibilityFeature,
-  sortedRowModel: createSortedRowModel(),
-  paginatedRowModel: createPaginatedRowModel(),
-  expandedRowModel: createExpandedRowModel(),
-})
 
 type KnownHistoryRole = 'maker' | 'taker' | 'send' | 'deposit'
 type StatusBadgeVariant = NonNullable<Parameters<typeof StatusBadge>[0]['variant']>
@@ -118,11 +100,8 @@ const TxHistoryTableRow = ({ row }: { row: Row<typeof txHistoryTableFeatures, Hi
   )
 }
 
-const txHistoryTableColumns = (
-  t: TFunction,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): ColumnDef<typeof txHistoryTableFeatures, HistoryEntry, any>[] => {
-  return [
+const txHistoryTableColumns = (t: TFunction) =>
+  columnHelper.columns([
     columnHelper.accessor('timestamp', {
       header: () => t('tx_history.column_title_date'),
       sortFn: (a, b) => dateTimeValue(a.original.timestamp) - dateTimeValue(b.original.timestamp),
@@ -208,8 +187,7 @@ const txHistoryTableColumns = (
       },
       enableSorting: false,
     }),
-  ]
-}
+  ])
 
 interface TxHistoryTableProps {
   history: HistoryEntry[]
@@ -227,7 +205,7 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
 
   const columns = useMemo(() => txHistoryTableColumns(t), [t])
 
-  const table = useTable({
+  const { setPageSize, setPageIndex, getPageCount, getFilteredRowModel, ...table } = useTable({
     features: txHistoryTableFeatures,
     data: history,
     columns,
@@ -245,9 +223,9 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
 
   useEffect(() => {
     if (isShowAll) {
-      table.setPageSize(history.length || 1)
+      setPageSize(history.length || 1)
     }
-  }, [history.length, isShowAll, table])
+  }, [setPageSize, isShowAll, history.length])
 
   if (history.length === 0) {
     return (
@@ -285,7 +263,7 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
                           'font-bold': header.column.getIsSorted(),
-                          'text-muted-foreground': table.state.sorting.length > 0 && !header.column.getIsSorted(),
+                          'text-muted-foreground': sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -307,20 +285,20 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
 
       {!compact && (
         <TablePagination
-          currentPage={table.state.pagination.pageIndex + 1}
-          totalPages={table.getPageCount()}
+          currentPage={pagination.pageIndex + 1}
+          totalPages={getPageCount()}
           itemsPerPage={isShowAll ? -1 : pagination.pageSize}
-          totalItems={table.getFilteredRowModel().rows.length}
-          onPageChange={(page) => table.setPageIndex(page - 1)}
+          totalItems={getFilteredRowModel().rows.length}
+          onPageChange={(page) => setPageIndex(page - 1)}
           onItemsPerPageChange={(newItemsPerPage) => {
             if (newItemsPerPage === -1) {
               setIsShowAll(true)
-              table.setPageSize(history.length || 1)
+              setPageSize(history.length || 1)
             } else {
               setIsShowAll(false)
-              table.setPageSize(newItemsPerPage)
+              setPageSize(newItemsPerPage)
             }
-            table.setPageIndex(0)
+            setPageIndex(0)
           }}
         />
       )}

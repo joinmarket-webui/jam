@@ -1,18 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  columnFilteringFeature,
-  columnVisibilityFeature,
   createColumnHelper,
-  createFilteredRowModel,
-  createPaginatedRowModel,
-  createSortedRowModel,
   flexRender,
-  globalFilteringFeature,
-  rowPaginationFeature,
-  rowSortingFeature,
-  tableFeatures,
   useTable,
-  type ColumnDef,
   type PaginationState,
   type SortingState,
 } from '@tanstack/react-table'
@@ -33,6 +23,7 @@ import { BITCOIN_GENESIS_DATE, cn, pseudoRandomFloat, pseudoRandomInteger } from
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
+import { earnReportTableFeatures } from './EarnReportContent.schema'
 
 const sumEarned = (entries: EarnReportEntry[], since: Date): AmountSats => {
   return entries.filter((entry) => entry.timestamp >= since).reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
@@ -52,17 +43,6 @@ const generateDemoEntry = () => {
     notes: null,
   }
 }
-
-const earnReportTableFeatures = tableFeatures({
-  rowSortingFeature,
-  columnFilteringFeature,
-  globalFilteringFeature,
-  columnVisibilityFeature,
-  rowPaginationFeature,
-  sortedRowModel: createSortedRowModel(),
-  filteredRowModel: createFilteredRowModel(),
-  paginatedRowModel: createPaginatedRowModel(),
-})
 
 const MILLISECONDS_IN_A_DAY: Milliseconds = 24 * 60 * 60 * 1_000
 const MILLISECONDS_IN_30_DAYS: Milliseconds = 30 * MILLISECONDS_IN_A_DAY
@@ -95,43 +75,58 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
 
   const allEntries = useMemo(() => [...(entries ?? []), ...demoEntries], [entries, demoEntries])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<typeof earnReportTableFeatures, EarnReportEntry, any>[]>(
-    () => [
-      columnHelper.accessor('timestamp', {
-        header: () => t('earn.report.heading_timestamp'),
-        sortFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
-        cell: (info) => {
-          const ts = info.getValue() as Date
-          return <span title={ts.toISOString()}>{ts.toLocaleString()}</span>
-        },
-      }),
-      columnHelper.accessor('earnedAmount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_earned')}</div>,
-        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('cjTotalAmount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_cj_amount')}</div>,
-        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('inputCount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_count')}</div>,
-        cell: (info) => <span>{info.getValue() as number}</span>,
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('inputAmount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_value')}</div>,
-        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('notes', {
-        header: () => t('earn.report.heading_notes'),
-        enableSorting: false,
-        cell: (info) => <span className="text-muted-foreground max-w-[200px] truncate text-xs">{info.getValue()}</span>,
-      }),
-    ],
+  const columns = useMemo(
+    () =>
+      columnHelper.columns([
+        columnHelper.accessor('timestamp', {
+          header: () => t('earn.report.heading_timestamp'),
+          sortFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
+          cell: (info) => {
+            const ts = info.getValue()
+            return <span title={ts.toISOString()}>{ts.toLocaleString()}</span>
+          },
+        }),
+        columnHelper.accessor('earnedAmount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_earned')}</div>,
+          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('cjTotalAmount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_cj_amount')}</div>,
+          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('inputCount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_count')}</div>,
+          cell: (info) => <span>{info.getValue()}</span>,
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('inputAmount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_value')}</div>,
+          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('fee', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_tx_fee')}</div>,
+          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('confirmationDuration', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_confirm_time')}</div>,
+          cell: (info) => {
+            const value = info.getValue()
+            return <span>{value != null ? t('earn.report.text_confirm_minutes', { count: value }) : undefined}</span>
+          },
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('notes', {
+          header: () => t('earn.report.heading_notes'),
+          enableSorting: false,
+          cell: (info) => (
+            <span className="text-muted-foreground max-w-[200px] truncate text-xs">{info.getValue()}</span>
+          ),
+        }),
+      ]),
     [t],
   )
 

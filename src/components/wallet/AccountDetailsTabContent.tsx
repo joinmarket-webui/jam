@@ -7,12 +7,12 @@ import { statusTags } from '@/lib/tags'
 import { tryBtcToSat, isValidInteger } from '@/lib/utils'
 import type { HdPath } from '@/types/global'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
+import { BranchEntryTable } from './BranchEntryTable'
 import {
-  BranchEntryTable,
   branchEntryTableFeatures,
   type BranchEntryApiObject,
   type BranchEntryTableRow,
-} from './BranchEntryTable'
+} from './BranchEntryTable.schema'
 
 const HIDE_EMPTY_BRANCHES = true
 
@@ -67,8 +67,8 @@ const BranchAccordionContent = ({ value }: BranchAccordionContentProps) => {
       selectedEntries={[]}
       pinnedEntries={[]}
       globalFilter={''}
-      onChange={(table) => {
-        setTableRowModel(table.getFilteredRowModel())
+      onChange={(filteredRowModel) => {
+        setTableRowModel(filteredRowModel)
       }}
     />
   )
