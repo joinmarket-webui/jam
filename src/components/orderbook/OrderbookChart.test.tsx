@@ -42,6 +42,7 @@ describe('OrderbookChart', () => {
           offer('bob', 0.00009, 'relative'),
           offer('mallory', 0.0001, 'relative', 0),
           offer('dave', 0.2, 'relative'),
+          offer('erin', 0, 'absolute'),
           offer('carol', 100, 'absolute'),
         ]}
       />,
@@ -54,10 +55,16 @@ describe('OrderbookChart', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'orderbook.chart_tooltip_above {"count":1}' })).toBeInTheDocument()
+    expect(screen.getAllByText('10%+').length).toBeGreaterThan(0)
 
     await user.click(screen.getByRole('button', { name: 'orderbook.chart_absolute_offers' }))
 
-    expect(screen.getByText('orderbook.chart_exact_summary {"exact":1,"total":1}')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.chart_exact_summary {"exact":2,"total":2}')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'orderbook.chart_tooltip {"fee":"0","exact":1,"near":0}',
+      }),
+    ).toBeInTheDocument()
     expect(screen.getByText('orderbook.chart_absolute_axis')).toBeInTheDocument()
   })
 })

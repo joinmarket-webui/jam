@@ -789,7 +789,7 @@
     "chart_title": "Fee Quantization Bands",
     "chart_relative_offers": "Relative offers",
     "chart_absolute_offers": "Absolute offers",
-    "chart_no_bonded_makers": "No bonded makers in the orderbook yet.",
+    "chart_no_bonded_makers": "No bonded makers in this offer view yet.",
     "chart_exact_summary": "{{ exact }} of {{ total }} bonded makers advertise an exact grid fee.",
     "chart_tooltip": "{{ exact }} exactly at {{ fee }}; {{ near }} below it",
     "chart_tooltip_above": "{{ count }} above the largest quantum",

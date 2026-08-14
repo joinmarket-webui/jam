@@ -54,9 +54,10 @@ const bucketByQuantizationBand = (entries: OrderTableEntry[], mode: FeeMode) => 
 }
 
 const formatFee = (mode: FeeMode, fee?: number) => {
-  if (fee === undefined) return '> max'
-  if (mode === 'relative') return `${factorToPercentage(fee)}%`
-  return fee === 0 ? 'free' : fee.toLocaleString()
+  const value = fee ?? FEE_GRIDS[mode].at(-1)
+  if (value === undefined) return ''
+  const label = mode === 'relative' ? `${factorToPercentage(value)}%` : value.toLocaleString()
+  return fee === undefined ? `${label}+` : label
 }
 
 interface OrderbookChartProps {
