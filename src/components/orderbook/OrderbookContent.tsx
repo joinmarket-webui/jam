@@ -392,13 +392,13 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           {showDemoButton && (
             <Button
               type="button"
-              className="w-full min-w-0 justify-center overflow-hidden text-xs sm:w-auto"
+              className="overflow-hidde min-w-0 shrink"
               variant="outline"
               onClick={__dev_generateDemoReportEntryButton}
               disabled={isFetchingOrderbookData}
             >
-              <PlusIcon className="size-3" />
-              <span className="truncate">Add Demo Entry</span>
+              <PlusIcon />
+              <span className="hidden sm:inline">Add Demo Entry</span>
               <DevBadge className="shrink-0" />
             </Button>
           )}

@@ -246,7 +246,7 @@ describe('EarnReportContent', () => {
     expect(screen.getByText('dev-badge')).toBeInTheDocument()
     expect(screen.getByText('earn.report.text_report_summary:{"count":3}')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /earn\.report\.text_button_generate_demo_report/u }))
+    fireEvent.click(screen.getByRole('button', { name: /Add Demo Entry/u }))
 
     expect(screen.getByText('earn.report.text_report_summary:{"count":4}')).toBeInTheDocument()
   })

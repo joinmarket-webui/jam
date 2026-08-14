@@ -43,7 +43,15 @@ export const TxHistoryContent = ({
   const [demoEntries, setDemoEntries] = useState<HistoryEntry[]>([])
   const utxosHashHex = useSafeUtxosHashHex()
 
-  const { history, queryResult } = useQueryWalletHistory({
+  const {
+    history,
+    queryResult: {
+      isFetching: historyIsFetching,
+      isLoading: historyIsLoading,
+      error: historyError,
+      refetch: historyRefetch,
+    },
+  } = useQueryWalletHistory({
     walletFileName,
     limit,
     enabled,
@@ -59,9 +67,9 @@ export const TxHistoryContent = ({
         <div className="flex flex-wrap items-center gap-2">
           {isDeveloperMode && (
             <Button
-              className="min-w-0 justify-center text-xs"
+              type="button"
+              className="overflow-hidde min-w-0 shrink"
               variant="outline"
-              size="sm"
               onClick={() => {
                 const demoEntry: HistoryEntry = {
                   timestamp: new Date().toISOString(),
@@ -73,39 +81,40 @@ export const TxHistoryContent = ({
                 }
                 setDemoEntries((previous) => [demoEntry, ...previous])
               }}
-              disabled={queryResult.isFetching}
+              disabled={historyIsFetching}
             >
-              <PlusIcon className="size-3" />
-              <span className="truncate">{t('tx_history.button_generate_demo_entry')}</span>
+              <PlusIcon />
+              <span className="hidden sm:inline">Add Demo Entry</span>
               <DevBadge className="shrink-0" />
             </Button>
           )}
 
           <Button
+            type="button"
             variant="outline"
-            size="sm"
-            onClick={() => void queryResult.refetch()}
-            disabled={queryResult.isFetching}
+            onClick={() => void historyRefetch()}
+            disabled={historyIsFetching}
+            title={t('global.refresh')}
           >
-            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': queryResult.isFetching })} />
-            <span className="truncate">{t('global.refresh')}</span>
+            <RefreshCwIcon className={historyIsFetching ? 'motion-safe:animate-spin' : undefined} />
+            <span className="hidden sm:inline">{t('global.refresh')}</span>
           </Button>
 
           {compact && onViewAll ? (
-            <Button size="sm" variant="outline" onClick={onViewAll}>
+            <Button type="button" variant="outline" onClick={onViewAll} title={t('tx_history.button_view_all')}>
               <ListIcon />
-              {t('tx_history.button_view_all')}
+              <span className="hidden sm:inline">{t('tx_history.button_view_all')}</span>
             </Button>
           ) : null}
         </div>
       </div>
 
-      {queryResult.isLoading ? (
+      {historyIsLoading ? (
         <div className="flex min-h-32 items-center justify-center gap-2">
           <Spinner className="motion-reduce:hidden" />
           {t('global.loading')}
         </div>
-      ) : queryResult.error ? (
+      ) : historyError ? (
         <Alert variant="destructive">
           <AlertTriangleIcon />
           <AlertDescription>{t('tx_history.error_loading')}</AlertDescription>
@@ -120,9 +129,9 @@ export const TxHistoryContent = ({
             type="button"
             variant="outline"
             onClick={() => setLimit((current) => current + 10)}
-            disabled={queryResult.isFetching}
+            disabled={historyIsFetching}
           >
-            {queryResult.isFetching ? <Spinner /> : undefined}
+            {historyIsFetching ? <Spinner /> : undefined}
             {t('tx_history.button_load_more')}
           </Button>
         </div>

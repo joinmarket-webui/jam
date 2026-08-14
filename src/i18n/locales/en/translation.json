@@ -596,7 +596,6 @@
       "heading_input_value": "My Input Amount",
       "heading_earned": "Earned",
       "heading_notes": "Notes",
-      "text_button_generate_demo_report": "Generate demo entry",
       "stats": {
         "earned_total": "Earned (total)",
         "earned_90days": "Earned (90 days)",
@@ -929,7 +928,6 @@
     "overlay_title": "Transaction History (Experimental)",
     "button_view_all": "View All",
     "button_load_more": "Load More",
-    "button_generate_demo_entry": "Add Demo Entry",
     "expand_history": "Show transaction history",
     "collapse_history": "Hide transaction history",
     "empty_history": "No transactions found.",

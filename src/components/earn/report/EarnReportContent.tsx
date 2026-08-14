@@ -237,7 +237,12 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 </InputGroupAddon>
               </InputGroup>
 
-              <Button variant="outline" onClick={() => void refetch()} disabled={!enabled || isRefetching}>
+              <Button
+                variant="outline"
+                onClick={() => void refetch()}
+                disabled={!enabled || isRefetching}
+                title={t('global.refresh')}
+              >
                 <RefreshCwIcon className={isRefetching ? 'animate-spin' : undefined} />
                 <span className="hidden sm:inline">{t('global.refresh')}</span>
               </Button>
@@ -254,8 +259,8 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
               {isDeveloperMode ? (
                 <Button className="min-w-0 shrink overflow-hidden" variant="outline" onClick={addDemoEntry}>
                   <PlusIcon />
-                  {t('earn.report.text_button_generate_demo_report')}
-                  <DevBadge />
+                  <span className="hidden sm:inline">Add Demo Entry</span>
+                  <DevBadge className="shrink-0" />
                 </Button>
               ) : undefined}
             </div>
