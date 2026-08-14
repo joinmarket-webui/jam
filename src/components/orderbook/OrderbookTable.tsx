@@ -21,7 +21,7 @@ import {
   type RowSelectionState,
   type ColumnVisibilityState,
   type FilterFn,
-  type Table as TableType,
+  type RowModel,
   type ColumnDef,
 } from '@tanstack/react-table'
 import { useTranslation } from 'react-i18next'
@@ -92,7 +92,7 @@ interface OrderbookTableProps {
   tableEntries: OrderTableEntry[]
   selectedEntries: OrderTableEntry[]
   pinnedEntries: OrderTableEntry[]
-  onChange?: (table: TableType<typeof orderbookTableFeatures, OrderTableEntry>) => void
+  onChange?: (table: RowModel<typeof orderbookTableFeatures, OrderTableEntry>) => void
 }
 
 export const OrderbookTable = ({
@@ -253,7 +253,16 @@ export const OrderbookTable = ({
     bottom: [],
   })
 
-  const table = useTable<typeof orderbookTableFeatures, OrderTableEntry>({
+  const {
+    setPageSize,
+    setPageIndex,
+    getPageCount,
+    getFilteredRowModel,
+    resetRowSelection,
+    getPrePaginatedRowModel,
+    resetRowPinning,
+    ...table
+  } = useTable<typeof orderbookTableFeatures, OrderTableEntry>({
     features: orderbookTableFeatures,
     data: tableEntries,
     columns,
@@ -277,27 +286,24 @@ export const OrderbookTable = ({
   })
 
   useEffect(() => {
-    table.resetRowPinning(true)
-    table.getPrePaginatedRowModel().rows.forEach((row) => {
+    resetRowPinning(true)
+    getPrePaginatedRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pinnedEntries])
+  }, [resetRowPinning, getPrePaginatedRowModel, pinnedEntries])
 
   useEffect(() => {
-    table.resetRowSelection(true)
-    table.getPrePaginatedRowModel().rows.forEach((row) => {
+    resetRowSelection(true)
+    getPrePaginatedRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [highlightedEntries])
+  }, [resetRowSelection, getPrePaginatedRowModel, highlightedEntries])
 
   useEffect(() => {
     if (isShowAll) {
-      table.setPageSize(tableEntries.length || 1)
+      setPageSize(tableEntries.length || 1)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShowAll, tableEntries.length])
+  }, [setPageSize, isShowAll, tableEntries.length])
 
   const tableTopRows = () => {
     try {
@@ -311,10 +317,8 @@ export const OrderbookTable = ({
   }
 
   useEffect(() => {
-    if (onChange) {
-      onChange(table)
-    }
-  }, [table, onChange])
+    onChange?.(getFilteredRowModel())
+  }, [getFilteredRowModel, onChange])
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
@@ -405,19 +409,19 @@ export const OrderbookTable = ({
 
       <TablePagination
         currentPage={table.state.pagination.pageIndex + 1}
-        totalPages={table.getPageCount()}
+        totalPages={getPageCount()}
         itemsPerPage={isShowAll ? -1 : pagination.pageSize}
-        totalItems={table.getFilteredRowModel().rows.length}
-        onPageChange={(page) => table.setPageIndex(page - 1)}
+        totalItems={getFilteredRowModel().rows.length}
+        onPageChange={(page) => setPageIndex(page - 1)}
         onItemsPerPageChange={(newItemsPerPage) => {
           if (newItemsPerPage === -1) {
             setIsShowAll(true)
-            table.setPageSize(tableEntries.length || 1)
+            setPageSize(tableEntries.length || 1)
           } else {
             setIsShowAll(false)
-            table.setPageSize(newItemsPerPage)
+            setPageSize(newItemsPerPage)
           }
-          table.setPageIndex(0)
+          setPageIndex(0)
         }}
       />
     </div>

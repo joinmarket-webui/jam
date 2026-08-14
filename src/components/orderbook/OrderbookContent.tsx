@@ -447,8 +447,8 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           selectedEntries={highlightedOffers}
           pinnedEntries={pinnedToTopOffers}
           globalFilter={searchInputRaw}
-          onChange={(table) => {
-            setTableRowModel(table.getFilteredRowModel())
+          onChange={(filteredRowModel) => {
+            setTableRowModel(filteredRowModel)
           }}
         />
       )}

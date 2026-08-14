@@ -135,7 +135,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     [t],
   )
 
-  const table = useTable({
+  const { setPageSize, getSortedRowModel, ...table } = useTable({
     features: earnReportTableFeatures,
     data: allEntries,
     columns,
@@ -152,17 +152,13 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
 
   useEffect(() => {
     if (isShowAll) {
-      table.setPageSize(allEntries.length || 1)
+      setPageSize(allEntries.length || 1)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShowAll, allEntries.length])
-
-  const visibleRows = table.getRowModel().rows
-  const exportRows = table.getSortedRowModel().rows
+  }, [setPageSize, isShowAll, allEntries.length])
 
   const downloadCsv = useCallback(() => {
     const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
-    const rows = exportRows.map((row) =>
+    const rows = getSortedRowModel().rows.map((row) =>
       [
         row.original.timestamp.toISOString(),
         row.original.cjTotalAmount ?? '',
@@ -184,7 +180,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
-  }, [exportRows])
+  }, [getSortedRowModel])
 
   const earnedTotal = useMemo(() => sumEarned(allEntries, BITCOIN_GENESIS_DATE), [allEntries])
 
@@ -318,7 +314,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                     ))}
                   </TableHeader>
                   <TableBody>
-                    {visibleRows.map((row) => (
+                    {table.getRowModel().rows.map((row) => (
                       <TableRow key={row.id}>
                         {row.getVisibleCells().map((cell) => {
                           const meta = cell.column.columnDef.meta as { align?: string } | undefined
@@ -344,10 +340,10 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 onItemsPerPageChange={(newItemsPerPage) => {
                   if (newItemsPerPage === -1) {
                     setIsShowAll(true)
-                    table.setPageSize(allEntries.length || 1)
+                    setPageSize(allEntries.length || 1)
                   } else {
                     setIsShowAll(false)
-                    table.setPageSize(newItemsPerPage)
+                    setPageSize(newItemsPerPage)
                   }
                   table.setPageIndex(0)
                 }}
