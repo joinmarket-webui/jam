@@ -2,22 +2,13 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { RowModel } from '@tanstack/react-table'
 import type { i18n } from 'i18next'
-import { ChevronDownIcon, RefreshCwIcon, PlusIcon, AlertCircleIcon } from 'lucide-react'
+import { RefreshCwIcon, PlusIcon, AlertCircleIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { ButtonGroup } from '@/components/ui/button-group'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { Balance } from '@/components/ui/jam/Balance'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -37,6 +28,7 @@ import {
 } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Spinner } from '../ui/spinner'
 import { OrderbookChart } from './OrderbookChart'
 import { OrderbookTable } from './OrderbookTable'
@@ -112,7 +104,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
 
   const nickname = useStore(jmSessionStore, (state) => state.state?.nickname)
 
-  const [searchInputRaw, setSearchInputRaw] = useState('')
+  const [globalFilter, setGlobalFilter] = useState('')
   const [isHighlightMyOffers, setHighlightMyOffers] = useState(false)
   const [isPinMyOffers, setPinMyOffers] = useState(false)
 
@@ -142,14 +134,6 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
     setDemoOffers((val) => [...val, randomOffer])
   }
 
-  const { isFetching: isFetchingOrderbookRefresh, refetch: refetchOrderbookRefresh } = useQuery({
-    queryKey: ['orderbook-refresh'],
-    queryFn: withQueryDelay(OrderbookApi.refreshOrderbook, {
-      throttle: 210,
-    }),
-    enabled: false, // invoke manually only!
-  })
-
   const {
     data: orderbookData,
     isLoading: isLoadingInitially,
@@ -163,8 +147,6 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
     }),
     enabled,
   })
-
-  const isFetching = isFetchingOrderbookData || isFetchingOrderbookRefresh
 
   const tableEntries = useMemo(() => {
     const realOffers = orderbookData?.offers || []
@@ -232,14 +214,6 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
     }
   }, [tableRowModel])
 
-  const handleClearAndReload = async () => {
-    await refetchOrderbookRefresh().then(() => refetchOrderbookData())
-  }
-
-  const handleReload = async () => {
-    await refetchOrderbookData()
-  }
-
   if (error) {
     return (
       <div className={cn('w-full min-w-0 space-y-3', className)}>
@@ -253,8 +227,8 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
             </AlertDescription>
           </Alert>
 
-          <Button variant="ghost" onClick={() => void refetchOrderbookData()} disabled={isFetching}>
-            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
+          <Button variant="ghost" onClick={() => void refetchOrderbookData()} disabled={isFetchingOrderbookData}>
+            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetchingOrderbookData })} />
             {t('global.retry')}
           </Button>
         </div>
@@ -267,62 +241,61 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       <div className="flex w-full flex-col items-start justify-center gap-2 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
           <p className="text-muted-foreground text-sm">
-            {searchInputRaw === ''
+            {globalFilter.length === 0
               ? t('orderbook.text_orderbook_summary', summary)
               : t('orderbook.text_orderbook_summary_filtered', summary)}
           </p>
         </div>
 
-        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <InputGroup className="min-w-[120px] flex-1 sm:max-w-[360px] sm:min-w-[220px]">
+            <InputGroupInput
+              className="text-xs sm:text-sm"
+              value={globalFilter}
+              onChange={(event) => setGlobalFilter(event.target.value)}
+              placeholder={t('orderbook.placeholder_search')}
+            />
+            <InputGroupAddon align="inline-start">
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setGlobalFilter('')}
+                title={t('global.clear')}
+                className={globalFilter.length === 0 ? 'invisible' : undefined}
+              >
+                <XIcon />
+              </Button>
+            </InputGroupAddon>
+          </InputGroup>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void refetchOrderbookData()}
+            disabled={isFetchingOrderbookData}
+            title={t('global.refresh')}
+          >
+            <RefreshCwIcon className={isFetchingOrderbookData ? 'motion-safe:animate-spin' : undefined} />
+            <span className="hidden sm:inline">{t('global.refresh')}</span>
+          </Button>
+
           {showDemoButton && (
             <Button
+              type="button"
               className="w-full min-w-0 justify-center overflow-hidden text-xs sm:w-auto"
               variant="outline"
-              size="sm"
               onClick={__dev_generateDemoReportEntryButton}
-              disabled={isFetching}
+              disabled={isFetchingOrderbookData}
             >
               <PlusIcon className="size-3" />
               <span className="truncate">Add Demo Entry</span>
               <DevBadge className="shrink-0" />
             </Button>
           )}
-
-          <ButtonGroup className="w-full min-w-0 sm:w-auto">
-            <Button
-              variant="outline"
-              className="min-w-0 flex-1 justify-center rounded-r-none sm:flex-none"
-              size="sm"
-              onClick={() => void handleReload()}
-              disabled={isFetching}
-            >
-              <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
-              <span className="truncate">{t('orderbook.button_reload_title')}</span>
-            </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="shrink-0" variant="outline" size="sm" disabled={isFetching}>
-                  <ChevronDownIcon />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-52">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => void handleClearAndReload()} disabled={isFetching}>
-                    {t('orderbook.button_refresh_text')}
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </ButtonGroup>
-
-          <Input
-            placeholder={t('orderbook.placeholder_search')}
-            value={searchInputRaw}
-            onChange={(event) => setSearchInputRaw(event.target.value)}
-            className="w-full min-w-0 sm:w-64"
-            disabled={isFetching}
-          />
         </div>
       </div>
 
@@ -335,7 +308,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
               id="highlight-my-offers"
               checked={isHighlightMyOffers}
               onCheckedChange={(checked) => setHighlightMyOffers(checked)}
-              disabled={isFetching}
+              disabled={isFetchingOrderbookData}
             />
             <Label htmlFor="highlight-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
               <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
@@ -357,7 +330,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                     setHighlightMyOffers(true)
                   }
                 }}
-                disabled={isFetching}
+                disabled={isFetchingOrderbookData}
               />
               <Label htmlFor="pin-my-offers" className="min-w-0 flex-1 flex-col items-start gap-0">
                 <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
@@ -447,7 +420,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           tableEntries={tableEntries}
           selectedEntries={highlightedOffers}
           pinnedEntries={pinnedToTopOffers}
-          globalFilter={searchInputRaw}
+          globalFilter={globalFilter}
           onChange={(filteredRowModel) => {
             setTableRowModel(filteredRowModel)
           }}

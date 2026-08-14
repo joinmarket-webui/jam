@@ -88,7 +88,7 @@ export const TxHistoryContent = ({
             disabled={queryResult.isFetching}
           >
             <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': queryResult.isFetching })} />
-            <span className="truncate">{t('tx_history.button_reload_title')}</span>
+            <span className="truncate">{t('global.refresh')}</span>
           </Button>
 
           {compact && onViewAll ? (
