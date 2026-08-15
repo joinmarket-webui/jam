@@ -19,6 +19,7 @@ import {
   SparklesIcon,
   HistoryIcon,
   LanguagesIcon,
+  PenLineIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -42,6 +43,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingsItem, SettingsLink, SettingsSwitch } from './SettingsItem'
+import { SignMessageDialog } from './SignMessageDialog'
 import { FeeConfigDialog } from './fees/FeeConfigDialog'
 
 interface SettingPageProps {
@@ -61,6 +63,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showXpubsDialog, setShowXpubsDialog] = useState(false)
+  const [showSignMessageDialog, setShowSignMessageDialog] = useState(false)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isFeatureEnabled } = useFeatures()
@@ -156,6 +159,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             title={t('settings.show_xpubs')}
             action={() => setShowXpubsDialog(true)}
             disabled={hashedPassword === undefined}
+          />
+          <Separator className="opacity-50" />
+          <SettingsItem
+            icon={PenLineIcon}
+            title={t('settings.sign_message')}
+            action={() => setShowSignMessageDialog(true)}
           />
           <Separator className="opacity-50" />
           <SettingsItem
@@ -310,6 +319,11 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
         </>
       )}
+      <SignMessageDialog
+        walletFileName={walletFileName}
+        open={showSignMessageDialog}
+        onOpenChange={setShowSignMessageDialog}
+      />
     </div>
   )
 }

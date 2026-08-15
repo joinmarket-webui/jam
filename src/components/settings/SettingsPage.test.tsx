@@ -126,6 +126,15 @@ vi.mock('@/components/settings/AccountXpubsDialog', () => ({
     ) : null,
 }))
 
+vi.mock('./SignMessageDialog', () => ({
+  SignMessageDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
+    open ? (
+      <button type="button" onClick={() => onOpenChange(false)}>
+        sign-message-dialog
+      </button>
+    ) : null,
+}))
+
 vi.mock('@/components/ui/jam/LanguageSelector', () => ({
   LanguageSelector: () => <div>language-selector</div>,
 }))
@@ -247,6 +256,9 @@ describe('SettingsPage', () => {
 
     clickItem('settings.show_xpubs')
     expect(screen.getByText('xpubs-dialog')).toBeInTheDocument()
+
+    clickItem('settings.sign_message')
+    expect(screen.getByText('sign-message-dialog')).toBeInTheDocument()
 
     clickItem('settings.button_lock_wallet')
 
