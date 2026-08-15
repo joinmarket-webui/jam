@@ -20,6 +20,7 @@ import {
   HistoryIcon,
   LanguagesIcon,
   FlaskConicalIcon,
+  PenLineIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -45,6 +46,7 @@ import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingsItem, SettingsLink, SettingsSwitch } from './SettingsItem'
+import { SignMessageDialog } from './SignMessageDialog'
 import { FeeConfigDialog } from './fees/FeeConfigDialog'
 
 const GitHubIcon = ({ className }: { className: string }) => (
@@ -78,12 +80,14 @@ export const SettingsPage = ({ walletFileName, onLockWallet, initialTab = 'basic
       </PageTitle>
 
       {tab === 'basic' && <SettingsBasicContent walletFileName={walletFileName} onLockWallet={onLockWallet} />}
-      {tab === 'advanced' && <SettingsAdvancedContent />}
+      {tab === 'advanced' && <SettingsAdvancedContent walletFileName={walletFileName} />}
     </div>
   )
 }
 
-export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPageProps) => {
+type SettingBasicContentProps = Pick<SettingPageProps, 'walletFileName' | 'onLockWallet'>
+
+export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingBasicContentProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
@@ -268,13 +272,22 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPa
   )
 }
 
-export const SettingsAdvancedContent = () => {
+
+type SettingsAdvancedContentProps = Pick<SettingPageProps, 'walletFileName'>
+
+export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedContentProps) => {
   const { t } = useTranslation()
   const { addressChunkingEnabled, toggleAddressChunking } = useJamDisplayContext()
+  const [showSignMessageDialog, setShowSignMessageDialog] = useState(false)
   const jamSettings = useStore(jamSettingsStore)
 
   return (
     <>
+      <SignMessageDialog
+        walletFileName={walletFileName}
+        open={showSignMessageDialog}
+        onOpenChange={setShowSignMessageDialog}
+      />
       {/* Advanced Display Settings */}
       <Card>
         <CardHeader>
@@ -313,6 +326,12 @@ export const SettingsAdvancedContent = () => {
           <CardDescription className="text-xs">{t('settings.section_description_expert_features')}</CardDescription>
         </CardHeader>
         <CardContent>
+          <Separator className="opacity-50" />
+          <SettingsItem
+            icon={PenLineIcon}
+            title={t('settings.sign_message')}
+            action={() => setShowSignMessageDialog(true)}
+          />
           <SettingsSwitch
             icon={SparklesIcon}
             title={t(
