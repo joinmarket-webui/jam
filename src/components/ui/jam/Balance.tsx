@@ -157,6 +157,8 @@ type BalanceComponentProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'
   showBalance?: boolean
   enableVisibilityToggle?: boolean
   hiddenAmountPlaceholder: HiddenBalanceProps['hiddenAmountPlaceholder']
+  fractionalPartSpacing?: boolean
+  highlightSignificantDigits?: boolean
 }
 
 /**
