@@ -287,6 +287,7 @@ export const SweepForm = ({
                 </div>
                 <Slider
                   id="slider-min-number-of-transactions-per-jar"
+                  withInput
                   min={JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR}
                   max={JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR}
                   value={
@@ -319,6 +320,7 @@ export const SweepForm = ({
                 </div>
                 <Slider
                   id="slider-rounding-chance-in-percent"
+                  withInput
                   min={JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT}
                   max={JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT}
                   value={

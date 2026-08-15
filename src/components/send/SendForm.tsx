@@ -640,6 +640,7 @@ export function SendForm({
                       </div>
                       <Slider
                         id="send-num-collaborators"
+                        withInput
                         min={minNumberOfCollaborators}
                         max={MAX_NUM_COLLABORATORS}
                         value={values.numCollaborators === undefined ? undefined : [values.numCollaborators]}

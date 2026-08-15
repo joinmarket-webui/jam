@@ -62,3 +62,13 @@ export const Multiple: Story = {
     defaultValue: [33, 66],
   },
 }
+
+/**
+ * Use the `withInput` prop to render a companion numeric input next to the slider,
+ * letting users type a value manually. Only available for single-thumb sliders.
+ */
+export const WithInput: Story = {
+  args: {
+    withInput: true,
+  },
+}
