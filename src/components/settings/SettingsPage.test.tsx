@@ -59,6 +59,9 @@ vi.mock('next-themes', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
+    i18n: {
+      resolvedLanguage: 'en',
+    },
     t: (key: string) => key,
   }),
 }))
@@ -123,7 +126,7 @@ vi.mock('@/components/settings/AccountXpubsDialog', () => ({
     ) : null,
 }))
 
-vi.mock('@/components/settings/LanguageSelector', () => ({
+vi.mock('@/components/ui/jam/LanguageSelector', () => ({
   LanguageSelector: () => <div>language-selector</div>,
 }))
 

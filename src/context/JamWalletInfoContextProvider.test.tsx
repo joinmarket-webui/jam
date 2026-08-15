@@ -1,3 +1,5 @@
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 import { render, screen, waitFor } from '@testing-library/react'
 import { Network } from 'bitcoin-address-validation'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -75,7 +77,7 @@ const utxo = (overrides: Partial<Utxo>): Utxo => ({
   ...overrides,
 })
 
-const walletInfo = (): WalletInfoApiObject =>
+const walletInfo = (status = 'new'): WalletInfoApiObject =>
   ({
     wallet_name: 'testing.jmdat',
     total_balance: '0',
@@ -89,7 +91,7 @@ const walletInfo = (): WalletInfoApiObject =>
               {
                 address,
                 hd_path: "m/84'/1'/0'/0/0",
-                status: 'new',
+                status,
                 label: '',
                 balance: 0,
                 used_count: 0,
@@ -145,6 +147,7 @@ describe('<JamWalletInfoContextProvider />', () => {
     expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4, 7])
     expect(context?.jars.find((jar) => jar.jarIndex === 7)?.name).toBe('Jar #7')
     expect(context?.fidelityBondSummary.fbOutputs.map((entry) => entry.utxo)).toEqual([`${txid('c')}:2`])
+    expect(context?.hasEligibleFidelityBondUtxo).toBe(false)
     expect(context?.accountSummary[0].branches[0]).toMatchObject({
       type: 'external addresses',
       derivation: "m/84'/1'/0'/0",
@@ -158,6 +161,19 @@ describe('<JamWalletInfoContextProvider />', () => {
     expect(context?.isLoading).toBe(false)
     expect(context?.isFetching).toBe(false)
     expect(context?.error).toBeNull()
+  })
+
+  it('reports when an eligible fidelity-bond UTXO is available', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.walletInfo = walletInfo('cj-out')
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.hasEligibleFidelityBondUtxo).toBe(true)
   })
 
   it('handles malformed accounts, missing branches, and entries without a status', () => {
@@ -267,5 +283,94 @@ describe('<JamWalletInfoContextProvider />', () => {
     await waitFor(() => expect(mocks.utxosRefetch).toHaveBeenCalledWith({ throwOnError: true }))
     expect(mocks.displayWalletRefetch).toHaveBeenCalledWith({ throwOnError: true })
     expect(balanceSummary?.calculatedTotalBalanceInSats).toBe(25_000)
+  })
+})
+
+/**
+ * Reference implementation of the old O(n²) combinedUtxosHash logic.
+ * Used only in tests to verify the optimized implementation is a drop-in replacement.
+ */
+const combinedUtxosHashReference = (utxoList: Utxo[]): string => {
+  const utxoIds = utxoList.map((it) => hexToBytes(it.utxo.split(':', 1)[0]))
+  const combinedUtxoIds = new Uint8Array(utxoIds.reduce((acc, current) => [...acc, ...current], [] as number[]))
+  return bytesToHex(sha256(combinedUtxoIds))
+}
+
+describe('combinedUtxosHash — optimized vs reference (regression)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.waitQueryError = null
+    mocks.walletInfo = undefined
+    mocks.utxosRefetch.mockResolvedValue({ data: { utxos: [] } })
+    mocks.displayWalletRefetch.mockResolvedValue({ data: { walletinfo: undefined } })
+  })
+
+  /** Render the provider with the given UTXO list and capture the computed utxosHashHex. */
+  const captureHash = (utxoList: Utxo[]): string => {
+    mocks.utxos = utxoList
+    let captured = ''
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(context) => (captured = context.utxosHashHex)} />
+      </JamWalletInfoContextProvider>,
+    )
+    return captured
+  }
+
+  it('produces the same hash for an empty UTXO list', () => {
+    const utxoList: Utxo[] = []
+    const actual = captureHash(utxoList)
+    expect(actual).toBe(combinedUtxosHashReference(utxoList))
+    expect(actual).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+  })
+
+  it('produces the same hash for a single UTXO', () => {
+    const utxoList = [utxo({ utxo: `${txid('a')}:0` })]
+    const actual = captureHash(utxoList)
+    expect(actual).toBe(combinedUtxosHashReference(utxoList))
+    expect(actual).toBe('e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e')
+  })
+
+  it('is okay for it to produce the same hash for different output in same txid', () => {
+    const utxoList0 = [utxo({ utxo: `${txid('a')}:0` })]
+    const actual0 = captureHash(utxoList0)
+    expect(actual0).toBe(combinedUtxosHashReference(utxoList0))
+    expect(actual0).toBe('e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e')
+
+    const utxoList1 = [utxo({ utxo: `${txid('a')}:1` })]
+    const actual1 = captureHash(utxoList1)
+    expect(actual1).toBe(combinedUtxosHashReference(utxoList1))
+    expect(actual1).toBe('e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e')
+    expect(actual1).toBe(actual0)
+  })
+
+  it('produces the same hash for multiple UTXOs', () => {
+    const utxoList = [
+      utxo({ utxo: `${txid('a')}:0` }),
+      utxo({ utxo: `${txid('b')}:1` }),
+      utxo({ utxo: `${txid('c')}:2` }),
+    ]
+
+    const actual = captureHash(utxoList)
+    expect(actual).toBe(combinedUtxosHashReference(utxoList))
+    expect(actual).toBe('6bdaf8651d78f983ab7ce864414ace095b2942cbe5ff43deade48d51aa34b2cd')
+  })
+
+  it('produces the same hash for UTXOs whose txid bytes vary across the full byte range', () => {
+    const utxoList = [
+      utxo({ utxo: `${txid('1')}:0` }),
+      utxo({ utxo: `${'ab'.repeat(32)}:3` }),
+      utxo({ utxo: `${'ff'.repeat(32)}:7` }),
+    ]
+    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
+  })
+
+  it('produces the same hash for a large UTXO set (50 entries)', () => {
+    const chars = '0123456789abcdef'
+    const utxoList = Array.from({ length: 50 }, (_, i) => {
+      const ch = chars[i % chars.length]
+      return utxo({ utxo: `${ch.repeat(64)}:${i}`, mixdepth: i % 5 })
+    })
+    expect(captureHash(utxoList)).toBe(combinedUtxosHashReference(utxoList))
   })
 })

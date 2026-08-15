@@ -180,6 +180,19 @@ describe('utils', () => {
       expect(fb.utxo.allAreFrozen(utxos)).toBe(false)
     })
 
+    it('should identify UTXOs eligible for fidelity-bond creation', () => {
+      expect(fb.utxo.isEligibleForCreation(makeUtxo('foo:0'), 'cj-out')).toBe(true)
+      expect(fb.utxo.isEligibleForCreation(makeUtxo('foo:0', '', true), 'cj-out')).toBe(false)
+      expect(fb.utxo.isEligibleForCreation(makeUtxo('foo:0'), 'deposit')).toBe(false)
+      expect(fb.utxo.isEligibleForCreation(makeUtxo('foo:0'))).toBe(false)
+
+      const fidelityBond = {
+        ...makeUtxo('foo:0'),
+        locktime: '2999-01-01 00:00:00',
+      } as Utxo
+      expect(fb.utxo.isEligibleForCreation(fidelityBond, 'cj-out')).toBe(false)
+    })
+
     describe('isLocked', () => {
       const now = Date.UTC(2009, 0, 3)
 

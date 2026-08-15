@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseAsIntOrDefault } from './meta-env-utils'
+import { parseAsIntOrDefault, parseAsBooleanOrDefault } from './meta-env-utils'
 
 describe('parseAsIntOrDefault', () => {
   it('should parse input as int or default', () => {
@@ -21,5 +21,29 @@ describe('parseAsIntOrDefault', () => {
     expect(parseAsIntOrDefault(String(Number.NaN), 21)).toBe(21)
     expect(parseAsIntOrDefault(Number.MAX_SAFE_INTEGER + 1, 21)).toBe(21)
     expect(parseAsIntOrDefault(Number.MIN_SAFE_INTEGER - 1, 21)).toBe(21)
+  })
+})
+
+describe('parseAsBooleanOrDefault', () => {
+  it('should parse input as boolean or default', () => {
+    expect(parseAsBooleanOrDefault('true', false)).toBe(true)
+    expect(parseAsBooleanOrDefault('yes', false)).toBe(true)
+    expect(parseAsBooleanOrDefault('1', false)).toBe(true)
+    expect(parseAsBooleanOrDefault('false', true)).toBe(false)
+    expect(parseAsBooleanOrDefault('no', true)).toBe(false)
+    expect(parseAsBooleanOrDefault('0', true)).toBe(false)
+
+    expect(parseAsBooleanOrDefault(true, false)).toBe(true)
+    expect(parseAsBooleanOrDefault(false, true)).toBe(false)
+
+    expect(parseAsBooleanOrDefault(1, false)).toBe(true)
+    expect(parseAsBooleanOrDefault(0, true)).toBe(false)
+
+    expect(parseAsBooleanOrDefault(undefined, true)).toBe(true)
+    expect(parseAsBooleanOrDefault('', true)).toBe(true)
+    expect(parseAsBooleanOrDefault(null, true)).toBe(true)
+    expect(parseAsBooleanOrDefault(String(Number.NaN), true)).toBe(true)
+    expect(parseAsBooleanOrDefault(Number.MAX_SAFE_INTEGER + 1, true)).toBe(true)
+    expect(parseAsBooleanOrDefault(Number.MIN_SAFE_INTEGER - 1, true)).toBe(true)
   })
 })

@@ -169,8 +169,6 @@ export const withJamWalletInfoContext = (Story: React.ComponentType) => {
   )
 }
 
-
-
 export const decorators = [
   withTheme,
   withMemoryRouter,

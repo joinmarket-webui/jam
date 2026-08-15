@@ -13,7 +13,7 @@ describe('buildDestinationErrors', () => {
   })
 
   it('reports duplicate addresses', () => {
-    const validAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
+    const validAddress = '1BitcoinEaterAddressDontSend8MUo1T'
     const errors = buildDestinationErrors([validAddress, validAddress, validAddress], {}, t)
 
     expect(errors).toEqual([
@@ -24,8 +24,8 @@ describe('buildDestinationErrors', () => {
   })
 
   it('reports reused addresses from wallet history', () => {
-    const usedAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
-    const freshAddress = '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy'
+    const usedAddress = '1BitcoinEaterAddressDontSend8MUo1T'
+    const freshAddress = '1BitcoinEaterAddressDontSendDHyNcX'
     const addressSummary = {
       [usedAddress]: {
         used: true,

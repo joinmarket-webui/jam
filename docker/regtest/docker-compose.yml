@@ -156,6 +156,8 @@ services:
       TOR__SOCKS_HOST: tor
       TOR__SOCKS_PORT: 9050
       LOGGING__LEVEL: DEBUG
+      ORDERBOOK_WATCHER__HTTP_HOST: 0.0.0.0
+      ORDERBOOK_WATCHER__HTTP_PORT: 8000
     expose:
       - 8000
     ports:

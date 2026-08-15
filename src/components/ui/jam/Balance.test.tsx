@@ -5,6 +5,8 @@ import user from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { Balance } from '@/components/ui/jam/Balance'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
+import '@/i18n/config'
+import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 
 const render = (ui: React.ReactNode, options?: Omit<RenderOptions, 'queries'>) => {
   const providers = ({ children }: { children: React.ReactNode }) => {
@@ -35,11 +37,13 @@ describe('<Balance />', () => {
   })
 
   it('should render balance in SATS', () => {
-    render(<Balance valueString={'123.456'} convertToUnit="sats" showBalance={true} />)
-    expect(screen.getByTestId('sats-amount')).toHaveTextContent(`12,345,600,000`)
-    expect(screen.getByTestId('sats-symbol')).toBeVisible()
-    expect(screen.queryByTestId('bitcoin-symbol')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('frozen-symbol')).not.toBeInTheDocument()
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'123.456'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId('sats-amount')).toHaveTextContent(`12,345,600,000`)
+      expect(screen.getByTestId('sats-symbol')).toBeVisible()
+      expect(screen.queryByTestId('bitcoin-symbol')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('frozen-symbol')).not.toBeInTheDocument()
+    })
   })
 
   it('should render a string BTC value correctly as BTC', () => {
@@ -49,9 +53,11 @@ describe('<Balance />', () => {
   })
 
   it('should render a string BTC value correctly as SATS', () => {
-    render(<Balance valueString={'123.03224961'} convertToUnit="sats" showBalance={true} />)
-    expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`12,303,224,961`)
-    expect(screen.getByTestId('sats-symbol')).toBeVisible()
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'123.03224961'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`12,303,224,961`)
+      expect(screen.getByTestId('sats-symbol')).toBeVisible()
+    })
   })
 
   it('should render a zero string BTC value correctly as BTC', () => {
@@ -65,23 +71,31 @@ describe('<Balance />', () => {
   })
 
   it('should render a large string BTC value correctly as BTC', () => {
-    render(<Balance valueString={'20999999.97690000'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`20,999,999.97690000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'20999999.97690000'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`20,999,999.97690000`)
+    })
   })
 
   it('should render a large string BTC value correctly as SATS', () => {
-    render(<Balance valueString={'20999999.97690000'} convertToUnit="sats" showBalance={true} />)
-    expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,099,999,997,690,000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'20999999.97690000'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,099,999,997,690,000`)
+    })
   })
 
   it('should render a max string BTC value correctly as BTC', () => {
-    render(<Balance valueString={'21000000.00000000'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`21,000,000.00000000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'21000000.00000000'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`21,000,000.00000000`)
+    })
   })
 
   it('should render a max string BTC value correctly as SATS', () => {
-    render(<Balance valueString={'21000000.00000000'} convertToUnit="sats" showBalance={true} />)
-    expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,100,000,000,000,000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'21000000.00000000'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,100,000,000,000,000`)
+    })
   })
 
   it('should render a string SATS value correctly as SATS', () => {
@@ -105,23 +119,31 @@ describe('<Balance />', () => {
   })
 
   it('should render a large string SATS value correctly as BTC', () => {
-    render(<Balance valueString={'2099999997690000'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`20,999,999.97690000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'2099999997690000'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`20,999,999.97690000`)
+    })
   })
 
   it('should render a large string SATS value correctly as SATS', () => {
-    render(<Balance valueString={'2099999997690000'} convertToUnit="sats" showBalance={true} />)
-    expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,099,999,997,690,000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'2099999997690000'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,099,999,997,690,000`)
+    })
   })
 
   it('should render a max string SATS value correctly as BTC', () => {
-    render(<Balance valueString={'2100000000000000'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`21,000,000.00000000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'2100000000000000'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`21,000,000.00000000`)
+    })
   })
 
   it('should render a max string SATS value correctly as SATS', () => {
-    render(<Balance valueString={'2100000000000000'} convertToUnit="sats" showBalance={true} />)
-    expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,100,000,000,000,000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'2100000000000000'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,100,000,000,000,000`)
+    })
   })
 
   it('should render frozen balance in BTC', () => {
@@ -132,10 +154,12 @@ describe('<Balance />', () => {
   })
 
   it('should render frozen balance in SATS', () => {
-    render(<Balance valueString={'123.456'} convertToUnit="sats" showBalance={true} frozen={true} />)
-    expect(screen.getByTestId('sats-amount')).toHaveTextContent(`12,345,600,000`)
-    expect(screen.getByTestId('sats-symbol')).toBeVisible()
-    expect(screen.getByTestId('frozen-symbol')).toBeVisible()
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'123.456'} convertToUnit="sats" showBalance={true} frozen={true} />)
+      expect(screen.getByTestId('sats-amount')).toHaveTextContent(`12,345,600,000`)
+      expect(screen.getByTestId('sats-symbol')).toBeVisible()
+      expect(screen.getByTestId('frozen-symbol')).toBeVisible()
+    })
   })
 
   it('should render balance without symbol', () => {
@@ -197,5 +221,52 @@ describe('<Balance />', () => {
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+  })
+
+  it('should render the visibility toggle as a keyboard-focusable button with an accessible name', () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    const toggleButton = screen.getByRole('button', { name: 'Show balance' })
+    expect(toggleButton).toBeInTheDocument()
+    expect(toggleButton).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('should update the accessible name and aria-pressed after toggling', async () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    await user.click(screen.getByRole('button', { name: 'Show balance' }))
+
+    const toggleButton = screen.getByRole('button', { name: 'Hide balance' })
+    expect(toggleButton).toBeInTheDocument()
+    expect(toggleButton).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('should toggle visibility via keyboard (Enter)', async () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Show balance' })).toHaveFocus()
+
+    await user.keyboard('{Enter}')
+
+    expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+  })
+
+  it('should toggle visibility via keyboard (Space)', async () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Show balance' })).toHaveFocus()
+
+    await user.keyboard(' ')
+
+    expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+  })
+
+  it('should not render a focusable button when the visibility toggle is disabled', () => {
+    render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} enableVisibilityToggle={false} />)
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 })

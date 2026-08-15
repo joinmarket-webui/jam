@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
   schedulerRunning: false,
+  makerRunning: false,
   toastError: vi.fn(),
   toastInfo: vi.fn(),
   toastSuccess: vi.fn(),
@@ -33,6 +34,9 @@ const mocks = vi.hoisted(() => ({
   walletInfoIsFetching: false,
   walletInfoIsLoading: false,
   waitForUtxosToBeSpent: [] as string[],
+  hasOrders: true,
+  orderbookIsLoading: false,
+  orderbookError: null as Error | null,
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
@@ -72,8 +76,20 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
+  Trans: ({ i18nKey, values }: { i18nKey: string; values?: unknown }) =>
+    values ? `${i18nKey}:${JSON.stringify(values)}` : i18nKey,
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => (options ? `${key}:${JSON.stringify(options)}` : key),
+  }),
+}))
+
+vi.mock('@/hooks/useQueryOrderbook', () => ({
+  useQueryOrderbook: () => ({
+    hasOrders: mocks.hasOrders,
+    queryResult: {
+      isLoading: mocks.orderbookIsLoading,
+      error: mocks.orderbookError,
+    },
   }),
 }))
 
@@ -145,6 +161,10 @@ vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: true }),
 }))
 
+vi.mock('@/context/JamDisplayContext', () => ({
+  useJamDisplayContext: () => ({ addressChunkingEnabled: false }),
+}))
+
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSession: () => ({
     jmSession: jmSessionStore.getState().state,
@@ -160,6 +180,9 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
       scheduler: {
         running: mocks.schedulerRunning,
       },
+    },
+    makerInfo: {
+      running: mocks.makerRunning,
     },
   }),
 }))
@@ -327,6 +350,9 @@ describe('SendPage', () => {
     mocks.walletInfoIsFetching = false
     mocks.walletInfoIsLoading = false
     mocks.waitForUtxosToBeSpent = []
+    mocks.hasOrders = true
+    mocks.orderbookIsLoading = false
+    mocks.orderbookError = null
     jmSessionStore.setState({
       state: {
         coinjoin_in_process: false,
@@ -514,15 +540,7 @@ describe('SendPage', () => {
   })
 
   it('shows the maker running warning', async () => {
-    jmSessionStore.setState({
-      state: {
-        coinjoin_in_process: false,
-        maker_running: true,
-        session: true,
-        wallet_name: 'wallet.jmdat',
-        rescanning: false,
-      },
-    })
+    mocks.makerRunning = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 

@@ -107,6 +107,19 @@ const mocks = vi.hoisted(() => ({
   stopState: { isPending: false, isSuccess: false },
   toastError: vi.fn(),
   walletInfo: undefined as WalletInfo | undefined,
+  hasOrders: true,
+  orderbookIsLoading: false,
+  orderbookError: false,
+}))
+
+vi.mock('@/hooks/useQueryOrderbook', () => ({
+  useQueryOrderbook: () => ({
+    hasOrders: mocks.hasOrders,
+    queryResult: {
+      isLoading: mocks.orderbookIsLoading,
+      isError: mocks.orderbookError,
+    },
+  }),
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
@@ -331,6 +344,7 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
     detectedNetwork: null,
     error: null,
     fidelityBondSummary: { fbOutputs: [] },
+    hasEligibleFidelityBondUtxo: false,
     isFetching: false,
     isLoading: false,
     jars: [jar, emptyJar(1), emptyJar(2)],
@@ -407,6 +421,9 @@ describe('SweepPage', async () => {
     mocks.stopState = { isPending: false, isSuccess: false }
     mocks.toastError.mockReset()
     mocks.walletInfo = makeWalletInfo()
+    mocks.hasOrders = true
+    mocks.orderbookIsLoading = false
+    mocks.orderbookError = false
     setSession()
 
     vi.clearAllMocks()
@@ -723,6 +740,29 @@ describe('SweepPage', async () => {
       fireEvent.click(toggle)
       expect(toggle).not.toBeChecked()
       await flushActUpdates()
+    })
+  })
+
+  describe('Orderbook Precheck', () => {
+    it('shows empty orderbook warning when orderbook has no offers', () => {
+      mocks.hasOrders = false
+
+      render(<SweepPage walletFileName="wallet.jmdat" />)
+
+      expect(screen.getByText('orderbook.alert_precheck_empty_title')).toBeInTheDocument()
+    })
+
+    it('does not show empty orderbook warning when orderbook is loading or has error', () => {
+      mocks.hasOrders = false
+      mocks.orderbookIsLoading = true
+
+      const { rerender } = render(<SweepPage walletFileName="wallet.jmdat" />)
+      expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
+
+      mocks.orderbookIsLoading = false
+      mocks.orderbookError = true
+      rerender(<SweepPage walletFileName="wallet.jmdat" />)
+      expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
     })
   })
 })

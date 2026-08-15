@@ -6,11 +6,15 @@ import { useQuery } from '@tanstack/react-query'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import {
+  JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS,
+  JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY,
+} from '@/constants/jam'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
-import type { WalletFileName } from '@/lib/utils'
+import { delayedPromise, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
 import { useFidelityBondMutations } from '../fidelity-bond/useFidelityBondMutations'
@@ -106,10 +110,8 @@ export function useCreateFidelityBondWizard(
 
   const jarsWithUtxos = useMemo(() => {
     return walletInfo.jars.filter((jar) => {
-      // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
-      const availableUtxos = jar.utxos.filter(
-        (utxo) =>
-          !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && walletInfo.addressSummary[utxo.address]?.status === 'cj-out',
+      const availableUtxos = jar.utxos.filter((utxo) =>
+        fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status),
       )
       return availableUtxos.length > 0
     })
@@ -117,17 +119,9 @@ export function useCreateFidelityBondWizard(
 
   const availableUtxos = useMemo(() => {
     if (selectedJar === undefined) return []
-    return (
-      selectedJar.utxos
-        // TODO: let's allow selecting frozen utxos - unfreeze them before sending the transaction
-        .filter(
-          (utxo) =>
-            !utxo.frozen &&
-            !fb.utxo.isFidelityBond(utxo) &&
-            walletInfo.addressSummary[utxo.address]?.status === 'cj-out',
-        )
-        .toSorted((a, b) => b.value - a.value)
-    )
+    return selectedJar.utxos
+      .filter((utxo) => fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status))
+      .toSorted((a, b) => b.value - a.value)
   }, [selectedJar, walletInfo.addressSummary])
 
   const selectedUtxos = useMemo(() => {
@@ -283,17 +277,15 @@ export function useCreateFidelityBondWizard(
     setStep('creating')
 
     try {
+      // TODO: refactor: use the sweep functionality from `useFidelityBondSweep` here
       const result = await directSend.mutateAsync({
         path: { walletname: walletFileName },
         body: {
           mixdepth: selectedJar.jarIndex,
-          amount_sats: 0,
+          amount_sats: 0, // 0 := sweep!
           destination: address,
         },
       })
-      setTxResult(result)
-      setStep('success')
-      toast.success(t('earn.fidelity_bond.create_fidelity_bond.success_text'))
 
       // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
       for (const utxo of frozenUtxos) {
@@ -301,11 +293,32 @@ export function useCreateFidelityBondWizard(
           await unfreezeUtxo.mutateAsync({
             path: { walletname: walletFileName },
             body: { 'utxo-string': utxo.utxo, freeze: false },
+            throwOnError: true,
           })
-        } catch {
-          // logged via onError
+        } catch (_ignoredOnPurpose: unknown) {
+          // only debug output
+          console.debug('Error while unfreezing previously frozen UTXO.')
         }
       }
+
+      // freeze resulting fidelity bond output
+      if (JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS) {
+        try {
+          await delayedPromise(JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY)
+          const fbUtxoId = `${result.txinfo.txid}:0` // sent with a sweep, so it is a single output
+          await freezeUtxo.mutateAsync({
+            path: { walletname: walletFileName },
+            body: { 'utxo-string': fbUtxoId, freeze: true },
+            throwOnError: true,
+          })
+        } catch (_ignoredOnPurpose: unknown) {
+          console.warn('Error while freezing Fidelity Bond UTXO - continuing.')
+        }
+      }
+
+      setTxResult(result)
+      setStep('success')
+      toast.success(t('earn.fidelity_bond.create_fidelity_bond.success_text'))
 
       await walletInfo.refetch()
     } catch {
@@ -316,8 +329,9 @@ export function useCreateFidelityBondWizard(
             path: { walletname: walletFileName },
             body: { 'utxo-string': utxo.utxo, freeze: false },
           })
-        } catch {
-          // logged via onError
+        } catch (_ignoredOnPurpose: unknown) {
+          // only debug output
+          console.debug('Error while unfreezing previously frozen UTXO in error handling.')
         }
       }
       setFrozenUtxos([])

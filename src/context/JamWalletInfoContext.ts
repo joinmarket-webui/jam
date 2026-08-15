@@ -28,6 +28,7 @@ export type Jar = {
 
 export type FidelityBondSummary = {
   fbOutputs: FidelityBondUtxo[]
+  // TODO: add `numberOfUnfrozenFbOutputs: number`
 }
 
 export type WalletBalanceSummary = BalanceSummary
@@ -83,6 +84,7 @@ interface JamWalletInfoContextType {
   walletName: string | null
   walletBalanceSummary: WalletBalanceSummary
   maxJarAvailableBalance: AmountSats
+  hasEligibleFidelityBondUtxo: boolean
   fidelityBondSummary: FidelityBondSummary
   addressSummary: AddressSummary
   accountSummary: AccountSummary

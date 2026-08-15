@@ -22,19 +22,20 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Balance } from '@/components/ui/jam/Balance'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { OrderbookEmptyAlert } from '@/components/ui/jam/OrderbookEmptyAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
-import { isDevMode } from '@/constants/debugFeatures'
+import * as JAM from '@/constants/jam'
 import type { TumblerParameters } from '@/constants/jm'
 import { useJamSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useDetectNetwork, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import { scrollToTop, type WalletFileName } from '@/lib/utils'
+import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import type { Milliseconds } from '@/types/global'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
 import { SweepForm } from './SweepForm'
@@ -43,11 +44,6 @@ import { formValuesToTumblerParameters } from './SweepFormSchema'
 interface SweepPageProps {
   walletFileName: WalletFileName
 }
-
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
-const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
-
-const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = isDevMode() ? 5_000 : 10_000
 
 const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
   time_lambda_seconds: 10,
@@ -60,7 +56,14 @@ const INSECURE_SCHEDULE_TUMBLER_OPTIONS: Partial<TumblerParameters> = {
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
-  const { rescanInfo, takerInfo, makerInfo } = useJamSessionInfoContext()
+  const {
+    rescanInfo,
+    makerInfo: { running: makerRunning },
+    takerInfo: {
+      running: takerRunning,
+      scheduler: { running: schedulerRunning },
+    },
+  } = useJamSessionInfoContext()
   const { jmSession } = useJamSession()
   const walletInfo = useJamWalletInfoContext()
   const { network } = useDetectNetwork()
@@ -69,6 +72,15 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
   const [alertMessage, setAlertMessage] = useState<string>()
+  const {
+    hasOrders,
+    queryResult: {
+      isLoading: orderbookCheckIsLoading,
+      isError: orderbookCheckIsError,
+      isFetching: orderbookCheckIsFetching,
+      refetch: orderbookRefetch,
+    },
+  } = useQueryOrderbook()
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
@@ -83,9 +95,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       path: { walletname: walletFileName },
     }),
     refetchInterval: (query) => {
-      const schedulerRunning = takerInfo.running && takerInfo.scheduler.running
       const currentScheduleStillActive = query.state.data && !isPlanTerminated(query.state.data)
-      return schedulerRunning || currentScheduleStillActive ? RUNNING_SCHEDULE_POLLING_INTERVAL : false
+      return schedulerRunning || currentScheduleStillActive ? JAM.RUNNING_SCHEDULE_POLLING_INTERVAL : false
     },
     refetchIntervalInBackground: true,
     retry: false,
@@ -193,21 +204,18 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
 
-  const schedulerRunning = takerInfo.scheduler.running
   const isWaitingSchedulerStart =
     startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
-  const waitingForTumblerStatus = takerInfo.running && getScheduleQuery.isPending
+  const waitingForTumblerStatus = takerRunning && getScheduleQuery.isPending
   const singleCoinJoinRunning =
-    takerInfo.running && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
-  const makerRunning = makerInfo.running === true
-  const collaborativeOperationRunning = makerRunning || takerInfo.running
+    takerRunning && !schedulerRunning && !isWaitingSchedulerStart && !waitingForTumblerStatus
 
   const isWaitingSchedulerStop = stopScheduleMutationIsPending || (stopScheduleMutationIsSuccess && schedulerRunning)
 
   useRefreshSession({
     enabled: isWaitingSchedulerStart || isWaitingSchedulerStop,
-    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
-    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
+    refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   useEffect(() => {
@@ -224,8 +232,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const isOperationDisabled =
     feeConfigValidation.maxFeesConfigMissing ||
-    collaborativeOperationRunning ||
+    makerRunning ||
+    takerRunning ||
     rescanInfo.rescanning ||
+    makerRunning ||
     !preconditionSummary.isFulfilled
 
   const isStartDisabled =
@@ -283,6 +293,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
 
+        {!orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && (
+          <OrderbookEmptyAlert isChecking={orderbookCheckIsFetching} onCheckClick={orderbookRefetch} />
+        )}
+
         {alertMessage && (
           <Alert variant="destructive">
             <AlertTitle>{t('global.error')}</AlertTitle>
@@ -293,14 +307,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         {singleCoinJoinRunning && (
           <Alert variant="warning">
             <HourglassIcon className="motion-safe:animate-pulse" />
-            <AlertDescription>{t('send.text_coinjoin_already_running')}</AlertDescription>
+            <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
           </Alert>
         )}
 
         {makerRunning && (
           <Alert variant="warning">
             <HourglassIcon className="motion-safe:animate-pulse" />
-            <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
+            <AlertTitle>{t('send.text_maker_running')}</AlertTitle>
           </Alert>
         )}
 
@@ -434,7 +448,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
         {!currentSchedule && !schedulerRunning && (
           <>
-            <Card>
+            <Card
+              className={cn('transition-all duration-500', {
+                'blur-[2px]': takerRunning || makerRunning,
+              })}
+            >
               <CardContent className="space-y-5">
                 <div className="bg-muted/50 flex flex-col items-start justify-between gap-2 rounded-lg border px-4 py-3 sm:flex-row sm:items-center">
                   <div className="min-w-0">

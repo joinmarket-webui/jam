@@ -18,8 +18,21 @@ const h = vi.hoisted(() => {
     },
     toastSuccess: vi.fn<(message: string) => void>(),
     toastError: vi.fn<(message: string) => void>(),
+    hasOrders: true,
+    orderbookIsLoading: false,
+    orderbookError: false,
   }
 })
+
+vi.mock('@/hooks/useQueryOrderbook', () => ({
+  useQueryOrderbook: () => ({
+    hasOrders: h.hasOrders,
+    queryResult: {
+      isLoading: h.orderbookIsLoading,
+      isError: h.orderbookError,
+    },
+  }),
+}))
 
 vi.mock('sonner', () => ({
   toast: {
@@ -33,10 +46,20 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
+  Trans: ({ i18nKey }: { i18nKey: string }) => <span>{i18nKey}</span>,
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => key + (options ? ' ' + JSON.stringify(options) : ''),
   }),
 }))
+
+vi.stubGlobal(
+  'ResizeObserver',
+  class ResizeObserver {
+    observe = vi.fn()
+    unobserve = vi.fn()
+    disconnect = vi.fn()
+  },
+)
 
 vi.mock('@/context/JamWalletInfoContext', () => ({
   useDetectNetwork: () => ({ network: 'mainnet' }),
@@ -156,6 +179,9 @@ describe('SendForm', () => {
     h.getaddressResult = { data: { address: h.DEFAULT_NEW_DUMMY_ADDRESS_0 }, error: undefined }
     h.toastSuccess = vi.fn<(message: string) => void>()
     h.toastError = vi.fn<(message: string) => void>()
+    h.hasOrders = true
+    h.orderbookIsLoading = false
+    h.orderbookError = false
   })
 
   it('renders the core fields', () => {
@@ -367,5 +393,50 @@ describe('SendForm', () => {
     expect(screen.getByText('testnet')).toBeInTheDocument()
 
     await flushActUpdates()
+  })
+
+  it('shows empty orderbook warning when collaborative send is selected and orderbook is empty', () => {
+    h.hasOrders = false
+    renderForm()
+
+    expect(screen.getByText('orderbook.alert_precheck_empty_title')).toBeInTheDocument()
+  })
+
+  it('does not show empty orderbook warning when orderbook is loading or has error', () => {
+    h.hasOrders = false
+    h.orderbookIsLoading = true
+
+    const { rerender } = renderForm()
+    expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
+
+    h.orderbookIsLoading = false
+    h.orderbookError = true
+    rerender(
+      <SendForm
+        onSubmit={vi.fn()}
+        walletFileName="test.jmdat"
+        jars={mockJars}
+        walletBalanceSummary={mockBalanceSummary}
+        addressSummary={mockAddressSummary}
+        feeConfigValues={mockFeeConfigValues}
+      />,
+    )
+    expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
+  })
+
+  it('does not show empty orderbook warning when non-collaborative send is selected', () => {
+    h.hasOrders = false
+    renderForm()
+
+    expect(screen.getByText('orderbook.alert_precheck_empty_title')).toBeInTheDocument()
+
+    const optionsAccordion = screen.getByRole('button', { name: /send.sending_options/i })
+    fireEvent.click(optionsAccordion)
+
+    const collaborativeSwitch = document.querySelector('#switch-is-collaborative-transaction')
+    expect(collaborativeSwitch).toBeInTheDocument()
+    fireEvent.click(collaborativeSwitch!)
+
+    expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
   })
 })

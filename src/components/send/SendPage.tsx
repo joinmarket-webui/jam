@@ -19,6 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import * as JAM from '@/constants/jam'
 import { useJamSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAddressSummary,
@@ -35,16 +36,18 @@ import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withMutationDelay } from '@/lib/queryClient'
-import { scrollToTop, type WalletFileName } from '@/lib/utils'
+import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Spinner } from '../ui/spinner'
+import { ActiveCollaborativeSendAlert } from './ActiveCollaborativeSendAlert'
 import { PaymentAbortDialog } from './PaymentAbortDialog'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
+import { ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL } from './SendForm.schema'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
 import { buildCollaborativeSendRequest, buildNonCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
@@ -81,7 +84,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     setWaitForUtxosToBeSpent,
   } = useJamWalletInfoContext()
   const { jmSession } = useJamSession()
+  const jmSessionActive = !!jmSession
   const {
+    makerInfo: { running: makerRunning },
     takerInfo: {
       running: takerRunning,
       currentPaymentAttempt,
@@ -201,14 +206,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   useRefreshSession({
     enabled: isWaitingCoinjoinStart || isWaitingCoinjoinStop,
-    refetchInterval: 3_000,
-    refetchDelay: 1_000,
+    refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   useRefreshSession({
     enabled: takerRunning,
-    refetchInterval: 5_000,
-    refetchDelay: 1_000,
+    refetchInterval: JAM.RUNNING_COINJOIN_POLLING_INTERVAL,
+    refetchDelay: JAM.RUNNING_COINJOIN_POLLING_DELAY,
   })
 
   useEffect(() => {
@@ -365,7 +370,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     await stopCoinjoinMutationMutateAsync()
   }
 
-  if (!jmSession || walletInfoIsLoading) {
+  if (!jmSessionActive || walletInfoIsLoading) {
     return <PageLoading />
   }
 
@@ -407,7 +412,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         {feeConfigValidation.maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
-        {jmSession?.maker_running === true && (
+        {makerRunning === true && (
           <Alert variant="warning">
             <HourglassIcon className="motion-safe:animate-pulse" />
             <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
@@ -443,100 +448,75 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
            * If data `takerCurrentAttempt` is not present, no message is shown
            * when the taker service stops - this is not ideal, but okay.
            */
-          currentPaymentAttempt !== undefined &&
-            currentPaymentAttempt.data.isCoinJoin &&
-            !isWaitingCoinjoinStart &&
-            takerRunning === false && (
-              <>
-                {walletInfoIsFetching ? (
-                  <>
-                    <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
-                      <Spinner className="motion-reduce:hidden" />
-                      <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
+          currentPaymentAttempt?.data.isCoinJoin === true && !isWaitingCoinjoinStart && takerRunning === false && (
+            <>
+              {walletInfoIsFetching ? (
+                <>
+                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                    <Spinner className="motion-reduce:hidden" />
+                    <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
+                  </Alert>
+                </>
+              ) : (
+                <>
+                  {currentPaymentAttempt.utxosHashHex === utxosHashHex ? (
+                    <Alert variant="warning">
+                      <AlertTriangleIcon />
+                      <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
+                      <AlertDescription className="flex flex-col gap-2">
+                        <div>{t('send.alert_collaborative_ended_description')}</div>
+                        <div>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              clearCurrentPaymentAttempt()
+                            }}
+                          >
+                            {t('global.done')}
+                          </Button>
+                        </div>
+                      </AlertDescription>
                     </Alert>
-                  </>
-                ) : (
-                  <>
-                    {currentPaymentAttempt.utxosHashHex === utxosHashHex ? (
-                      <Alert variant="warning">
-                        <AlertTriangleIcon />
-                        <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
-                        <AlertDescription className="flex flex-col gap-2">
-                          <div>{t('send.alert_collaborative_ended_description')}</div>
-                          <div>
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                clearCurrentPaymentAttempt()
-                              }}
-                            >
-                              {t('global.done')}
-                            </Button>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
-                    ) : (
-                      <Alert variant="success">
-                        <CheckCircle2Icon />
-                        <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
-                        <AlertDescription className="flex flex-col gap-2">
-                          <div>{t('send.alert_collaborative_completed_description')}</div>
-                          <div>
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                setFormId((current) => current + 1)
-                                clearCurrentPaymentAttempt()
-                              }}
-                            >
-                              {t('global.done')}
-                            </Button>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </>
-                )}
-              </>
-            )
+                  ) : (
+                    <Alert variant="success">
+                      <CheckCircle2Icon />
+                      <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
+                      <AlertDescription className="flex flex-col gap-2">
+                        <div>{t('send.alert_collaborative_completed_description')}</div>
+                        <div>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setFormId((current) => current + 1)
+                              clearCurrentPaymentAttempt()
+                            }}
+                          >
+                            {t('global.done')}
+                          </Button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </>
+              )}
+            </>
+          )
         }
-        {takerRunning && !isWaitingCoinjoinStop && (
+
+        {schedulerRunning && (
           <Alert variant="warning">
             <HourglassIcon className="motion-safe:animate-pulse" />
             <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
-            <AlertDescription className="flex flex-col gap-2">
-              {currentPaymentAttempt && (
-                <pre className="max-w-full overflow-x-auto">
-                  {JSON.stringify(
-                    {
-                      sourceJar: currentPaymentAttempt.data.source.fromJar,
-                      destinationJar: currentPaymentAttempt.data.destination.fromJar,
-                      destinationAddress: currentPaymentAttempt.data.destination.address,
-                      isSweep: currentPaymentAttempt.data.amount.isSweep === true,
-                      amount:
-                        currentPaymentAttempt.data.amount.isSweep === true
-                          ? currentPaymentAttempt.data.amount.sweepAmount
-                          : currentPaymentAttempt.data.amount.amount,
-                      numCollaborators: currentPaymentAttempt.data.numCollaborators,
-                    },
-                    null,
-                    2,
-                  )}
-                </pre>
-              )}
-              {takerRunning && !schedulerRunning ? (
-                <div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowAbortCoinjoinDialog(true)}
-                    disabled={isWaitingCoinjoinStop}
-                  >
-                    {t('global.abort')}
-                  </Button>
-                </div>
-              ) : null}
-            </AlertDescription>
           </Alert>
+        )}
+
+        {takerRunning && !schedulerRunning && (
+          <ActiveCollaborativeSendAlert
+            paymentAttempt={currentPaymentAttempt?.data.isCoinJoin === true ? currentPaymentAttempt : undefined}
+            jars={jars}
+            isAborting={isWaitingCoinjoinStop}
+            onAbort={() => setShowAbortCoinjoinDialog(true)}
+          />
         )}
 
         {triggerNonCollaborativeTransaction.error ? (
@@ -583,7 +563,11 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </>
         )}
 
-        <Card>
+        <Card
+          className={cn('transition-all duration-500', {
+            'blur-[2px]': currentPaymentAttempt !== undefined || takerRunning || schedulerRunning || makerRunning,
+          })}
+        >
           <CardContent>
             <SendForm
               key={formId}
@@ -595,7 +579,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
-                jmSession?.maker_running === true ||
+                makerRunning ||
                 takerRunning ||
                 rescanInfo.rescanning ||
                 isWaitingCoinjoinStart ||
@@ -610,7 +594,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               onSourceJarChange={setSourceJarIndex}
               onSourceJarClicked={onOpenUtxoSelector}
               sourceJarLabelButton={(errors) => {
-                const errorSolvedByUtxoSelection = errors?.fromJar?.type === 'valid-source-jar-must-unfreeze-utxos-test'
+                const errorSolvedByUtxoSelection = errors?.fromJar?.type === ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL
                 const animate = utxoSelectionDialog.dialogProps.open === false && errorSolvedByUtxoSelection
                 return (
                   <Button

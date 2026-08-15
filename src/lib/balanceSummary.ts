@@ -26,13 +26,13 @@ export type BalanceSummary = {
   calculatedFrozenOrLockedBalanceInSats: AmountSats
 }
 
-export const BALANCE_SUMMARY_EMPTY: BalanceSummary = {
+export const BALANCE_SUMMARY_EMPTY: BalanceSummary = Object.freeze({
   calculatedTotalBalanceInSats: 0,
   calculatedAvailableBalanceInSats: 0,
   calculatedConfirmedAvailableBalanceInSats: 0,
   calculatedAvailableFrozenBalanceInSats: 0,
   calculatedFrozenOrLockedBalanceInSats: 0,
-}
+})
 
 export const toBalanceSummary = (utxos: Utxo[], now?: Milliseconds): BalanceSummary => {
   const refTime = now !== undefined ? now : Date.now()

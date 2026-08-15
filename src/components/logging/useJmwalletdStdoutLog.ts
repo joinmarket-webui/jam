@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
+import * as JAM from '@/constants/jam'
 import { fetchLog } from '@/lib/api/jam'
 import { getErrorReason } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
@@ -38,7 +39,7 @@ export function useJmwalletdStdoutLog({ enabled = true }: UseJmwalletdStdoutLogP
     refetchInterval: (query) => {
       if (!enabled || token === undefined) return false
       if (query.state.error) return false
-      return 2_500
+      return JAM.JMWALLETD_LOGS_POLLING_INTERVAL
     },
     // Keep previous data during refetch to prevent content flicker on slower networks.
     placeholderData: (previousData) => previousData,

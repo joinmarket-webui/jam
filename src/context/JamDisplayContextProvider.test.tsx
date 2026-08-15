@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import { useJamDisplayContext } from './JamDisplayContext'
 import { JamDisplayContextProvider } from './JamDisplayContextProvider'
 
@@ -24,16 +25,18 @@ describe('JamDisplayContextProvider', () => {
   })
 
   it('should format amounts with the current display settings', () => {
-    render(
-      <JamDisplayContextProvider>
-        <DisplayProbe />
-      </JamDisplayContextProvider>,
-    )
+    withRuntimeLocale('en-US', () => {
+      render(
+        <JamDisplayContextProvider>
+          <DisplayProbe />
+        </JamDisplayContextProvider>,
+      )
 
-    expect(screen.getByTestId('default-amount')).toHaveTextContent('123,456,789')
-    expect(screen.getByTestId('btc-amount')).toHaveTextContent('1.23456789')
-    expect(screen.getByTestId('hidden-amount')).toHaveTextContent('*****')
-    expect(screen.getByTestId('sats-symbol')).toBeInTheDocument()
+      expect(screen.getByTestId('default-amount')).toHaveTextContent('123,456,789')
+      expect(screen.getByTestId('btc-amount')).toHaveTextContent('1.23456789')
+      expect(screen.getByTestId('hidden-amount')).toHaveTextContent('*****')
+      expect(screen.getByTestId('sats-symbol')).toBeInTheDocument()
+    })
   })
 
   it('should hide default amounts when privacy mode is enabled', () => {

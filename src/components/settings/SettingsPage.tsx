@@ -16,6 +16,9 @@ import {
   UnfoldHorizontalIcon,
   KeyRoundIcon,
   HandCoinsIcon,
+  SparklesIcon,
+  HistoryIcon,
+  LanguagesIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -23,8 +26,10 @@ import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
+import { LanguageSelector } from '@/components/ui/jam/LanguageSelector'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Separator } from '@/components/ui/separator'
+import { Spinner } from '@/components/ui/spinner'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { JAM_DOCS_URL, JAM_MATRIX_URL, JAM_REPO_URL, JAM_SEED_MODAL_TIMEOUT, JAM_TELEGRAM_URL } from '@/constants/jam'
 import { routes } from '@/constants/routes'
@@ -34,11 +39,9 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { Spinner } from '../ui/spinner'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
-import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
-import { SettingItem, SettingsLink, SettingSwitch } from './SettingsItem'
+import { SettingsItem, SettingsLink, SettingsSwitch } from './SettingsItem'
 import { FeeConfigDialog } from './fees/FeeConfigDialog'
 
 interface SettingPageProps {
@@ -79,7 +82,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <CardTitle>{t('settings.section_title_display')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <SettingSwitch
+          <SettingsSwitch
             icon={isPrivate ? EyeIcon : EyeOffIcon}
             title={t(isPrivate ? 'settings.show_balance' : 'settings.hide_balance')}
             checked={isPrivate}
@@ -87,7 +90,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             displayToggle={false}
           />
           <Separator className="opacity-50" />
-          <SettingSwitch
+          <SettingsSwitch
             renderIcon={({ className }) => <CurrencySymbol currency={currency} className={className} />}
             title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
             checked={currency === 'btc'}
@@ -95,7 +98,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             displayToggle={false}
           />
           <Separator className="opacity-50" />
-          <SettingSwitch
+          <SettingsSwitch
             icon={addressChunkingEnabled === true ? UnfoldHorizontalIcon : FoldHorizontalIcon}
             title={t(
               addressChunkingEnabled === true
@@ -107,7 +110,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             displayToggle={true}
           />
           <Separator className="opacity-50" />
-          <SettingSwitch
+          <SettingsSwitch
             icon={resolvedTheme === 'dark' ? SunIcon : MoonIcon}
             title={resolvedTheme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
             checked={resolvedTheme === 'dark'}
@@ -115,7 +118,9 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             displayToggle={false}
           />
           <Separator className="opacity-50" />
-          <LanguageSelector />
+          <SettingsItem icon={LanguagesIcon} title={t('settings.label_select_language')}>
+            <LanguageSelector />
+          </SettingsItem>
         </CardContent>
       </Card>
 
@@ -125,7 +130,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <CardTitle>{t('settings.section_title_market')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <SettingItem
+          <SettingsItem
             icon={HandCoinsIcon}
             title={t('settings.show_fee_config')}
             action={() => setShowFeeConfigDialog(true)}
@@ -139,21 +144,21 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
-          <SettingItem
+          <SettingsItem
             icon={KeyRoundIcon}
             title={t('settings.show_seed')}
             action={() => setShowSeedDialog(true)}
             disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
-          <SettingItem
+          <SettingsItem
             icon={BookKeyIcon}
             title={t('settings.show_xpubs')}
             action={() => setShowXpubsDialog(true)}
             disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
-          <SettingItem
+          <SettingsItem
             renderIcon={({ className }) =>
               lockWalletMutation.isPending ? (
                 <Spinner className={className} />
@@ -214,10 +219,39 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             to={JAM_REPO_URL}
             external={true}
           />
+          <Separator className="opacity-50" />
+          <SettingsSwitch
+            icon={SparklesIcon}
+            title={/* TODO: i18n */ 'Enable Feature Preview'}
+            disabled={!isDevMode()}
+            checked={!!jamSettings.state.previewFeatures}
+            onCheckedChange={(checked) => {
+              jamSettings.update({ previewFeatures: checked ? {} : undefined })
+            }}
+          />
+          {!!jamSettings.state.previewFeatures && (
+            <>
+              <Separator className="opacity-50" />
+              <SettingsSwitch
+                icon={HistoryIcon}
+                title={/* TODO: i18n */ 'Transaction History (Experimental)'}
+                disabled={!isDevMode()}
+                checked={!!jamSettings.state.previewFeatures?.['tx-history'] === true}
+                onCheckedChange={(checked) => {
+                  jamSettings.update({
+                    previewFeatures: {
+                      ...jamSettings.state.previewFeatures,
+                      'tx-history': checked,
+                    },
+                  })
+                }}
+              />
+            </>
+          )}
           {isDevMode() && (
             <>
               <Separator className="opacity-50" />
-              <SettingSwitch
+              <SettingsSwitch
                 icon={TerminalIcon}
                 title="Enable developer mode"
                 disabled={!isDevMode()}

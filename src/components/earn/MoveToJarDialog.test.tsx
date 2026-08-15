@@ -4,17 +4,20 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { MoveToJarDialog } from './MoveToJarDialog'
 
+type MutationOptions = { mutationFn: (input: unknown) => Promise<unknown> }
+
 type ChildrenProps = { children: ReactNode }
 type DialogProps = ChildrenProps & { open?: boolean; onOpenChange?: (open: boolean) => void }
 type ValueProps = { value: string }
 
 const h = vi.hoisted(() => ({
-  queryReturn: {
+  fetchAddressQueryData: {
     data: undefined as { address?: string } | undefined,
     isLoading: false,
     isError: false,
   },
-  mutateAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'movetxid99' } }),
+  directSendAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'movetxid99' } }),
+  freezeAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue({}),
   isPending: false,
   refetch: vi.fn(),
   extraUtxos: [] as Array<{ utxo: string; value: number; frozen: boolean }>,
@@ -27,13 +30,16 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => h.queryReturn,
-  useMutation: () => ({ mutateAsync: h.mutateAsync, isPending: h.isPending }),
+  useQuery: () => h.fetchAddressQueryData,
+  useMutation: vi.fn((options: MutationOptions) => ({
+    isPending: false,
+    mutateAsync: async (input: unknown) => await options.mutationFn(input),
+  })),
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
-  directsendMutation: vi.fn(() => ({})),
-  freezeMutation: vi.fn(() => ({})),
+  directsendMutation: vi.fn(() => ({ mutationFn: h.directSendAsync })),
+  freezeMutation: vi.fn(() => ({ mutationFn: h.freezeAsync })),
   getaddressOptions: vi.fn(() => ({ queryKey: ['mock'], queryFn: vi.fn() })),
 }))
 
@@ -146,8 +152,9 @@ const goToConfirm = () => {
 
 describe('MoveToJarDialog', () => {
   beforeEach(() => {
-    h.queryReturn = { data: { address: 'bc111' }, isLoading: false, isError: false }
-    h.mutateAsync = vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'movetxid99' } })
+    h.fetchAddressQueryData = { data: { address: 'bc111' }, isLoading: false, isError: false }
+    h.directSendAsync = vi.fn<() => Promise<unknown>>().mockResolvedValue({ txinfo: { txid: 'movetxid99' } })
+    h.freezeAsync = vi.fn<() => Promise<unknown>>().mockResolvedValue({})
     h.isPending = false
     h.refetch = vi.fn()
     h.extraUtxos = []
@@ -169,14 +176,14 @@ describe('MoveToJarDialog', () => {
   })
 
   it('shows a loading indicator while the destination address loads', () => {
-    h.queryReturn = { data: undefined, isLoading: true, isError: false }
+    h.fetchAddressQueryData = { data: undefined, isLoading: true, isError: false }
     renderDialog()
     goToConfirm()
     expect(screen.getByText('earn.fidelity_bond.move.text_loading')).toBeInTheDocument()
   })
 
   it('shows an error alert when the address query fails', () => {
-    h.queryReturn = { data: undefined, isLoading: false, isError: true }
+    h.fetchAddressQueryData = { data: undefined, isLoading: false, isError: true }
     renderDialog()
     goToConfirm()
     expect(screen.getByText('global.errors.error_loading_address_failed')).toBeInTheDocument()
@@ -200,12 +207,12 @@ describe('MoveToJarDialog', () => {
     fireEvent.click(screen.getByText('earn.fidelity_bond.move.text_button_submit'))
 
     await waitFor(() => expect(screen.getByText('earn.fidelity_bond.move.success_text')).toBeInTheDocument())
-    const calls = h.mutateAsync.mock.calls as unknown as Array<[{ body?: { freeze?: boolean } }]>
+    const calls = h.freezeAsync.mock.calls as unknown as Array<[{ body?: { freeze?: boolean } }]>
     expect(calls.some((call) => call[0]?.body?.freeze === false)).toBe(true)
   })
 
   it('returns to the confirm step when sending fails', async () => {
-    h.mutateAsync = vi.fn<() => Promise<unknown>>().mockRejectedValue(new Error('send failed'))
+    h.directSendAsync = vi.fn<() => Promise<unknown>>().mockRejectedValue(new Error('send failed'))
     renderDialog()
     goToConfirm()
     fireEvent.click(screen.getByText('earn.fidelity_bond.move.text_button_submit'))

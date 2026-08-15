@@ -32,6 +32,12 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   useJars: () => ({ jars }),
 }))
 
+vi.mock('@/store/jamSettingsStore', () => ({
+  usePreviewFeatures: () => ({
+    'tx-history': true,
+  }),
+}))
+
 vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
   WalletJarsDetailsOverlay: ({
     open,
@@ -51,6 +57,10 @@ vi.mock('./wallet/WalletJarsDetailsOverlay', () => ({
       </button>
     </div>
   ),
+}))
+
+vi.mock('./wallet/TxHistoryContent', () => ({
+  TxHistoryContent: () => <div data-testid="TxHistoryContent" />,
 }))
 
 vi.mock('@/components/ui/jam/Balance', () => ({
@@ -141,5 +151,18 @@ describe('MainWalletPage', () => {
     render(<MainWalletPage walletFileName={walletFileName} />)
     fireEvent.click(screen.getByText('5000'))
     expect(toggleDisplayMode).toHaveBeenCalled()
+  })
+
+  it('expands and collapses transaction history via accordion toggle button', () => {
+    render(<MainWalletPage walletFileName={walletFileName} />)
+    expect(screen.queryByTestId('TxHistoryContent')).not.toBeInTheDocument()
+
+    const toggleButton = screen.getByTitle('tx_history.expand_history')
+    fireEvent.click(toggleButton)
+    expect(screen.getByTestId('TxHistoryContent')).toBeInTheDocument()
+
+    const collapseButton = screen.getByTitle('tx_history.collapse_history')
+    fireEvent.click(collapseButton)
+    expect(screen.queryByTestId('TxHistoryContent')).not.toBeInTheDocument()
   })
 })

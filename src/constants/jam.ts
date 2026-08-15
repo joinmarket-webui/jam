@@ -8,7 +8,7 @@ import {
   JM_NG_DEFAULT_TUMBLER_PARAMS,
   JM_WALLET_FILE_EXTENSION,
 } from './jm'
-import { parseAsIntOrDefault } from './meta-env-utils'
+import { parseAsBooleanOrDefault, parseAsIntOrDefault } from './meta-env-utils'
 
 export const APP_DISPLAY_VERSION = (() => {
   return parseSemanticVersion(packageInfoVersion)
@@ -76,6 +76,54 @@ export const JAM_RESCAN_PROGRESS_DEFAULT_INTERVAL: Milliseconds = 21_000
 export const JAM_RESCAN_PROGRESS_INTERVAL: Milliseconds = Math.max(
   parseAsIntOrDefault(import.meta.env.VITE_JAM_RESCAN_PROGRESS_INTERVAL, JAM_RESCAN_PROGRESS_DEFAULT_INTERVAL),
   JAM_RESCAN_PROGRESS_MIN_INTERVAL,
+)
+
+export const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL, 3_000),
+  1_000,
+)
+export const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_WAIT_FOR_UPDATE_SESSION_POLLING_DELAY, 1_000),
+  1,
+)
+
+export const WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL, 15_000),
+  1_000,
+)
+export const VISIBLE_ORDERBOOK_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_VISIBLE_ORDERBOOK_POLLING_INTERVAL, 120_000),
+  1_000,
+)
+
+export const RUNNING_COINJOIN_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_COINJOIN_POLLING_INTERVAL, 5_000),
+  1_000,
+)
+export const RUNNING_COINJOIN_POLLING_DELAY: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_COINJOIN_POLLING_DELAY, 1_000),
+  1,
+)
+
+export const RUNNING_SCHEDULE_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_RUNNING_SCHEDULE_POLLING_INTERVAL, 10_000),
+  1_000,
+)
+
+/**
+ * In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
+ * Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
+ * There is currently no way to know for sure - adding a delay at least mitigates the problem.
+ * 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
+ */
+export const MAKER_STOP_RESPONSE_DELAY: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_MAKER_STOP_RESPONSE_DELAY, 2_000),
+  1,
+)
+
+export const JMWALLETD_LOGS_POLLING_INTERVAL: Milliseconds = Math.max(
+  parseAsIntOrDefault(import.meta.env.VITE_JAM_JMWALLETD_LOGS_POLLING_INTERVAL, 2_500),
+  500,
 )
 
 const JAM_SEED_MODAL_MIN_TIMEOUT: Milliseconds = 5_000
@@ -181,6 +229,23 @@ export const JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT = Math.max(
     JAM_SWEEP_DEFAULT_MAX_ROUNDING_CHANCE_PERCENT,
   ),
   JAM_SWEEP_DEFAULT_MIN_ROUNDING_CHANCE_PERCENT,
+)
+
+const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT = true
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS = parseAsBooleanOrDefault(
+  import.meta.env.VITE_JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS,
+  JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT,
+)
+
+// provide some time for the backend to catch up after fb is created, small delay of ~1s seems to be enough
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT_DELAY: Milliseconds = 1000
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_MIN_DELAY: Milliseconds = 21
+export const JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY = Math.max(
+  parseAsIntOrDefault(
+    import.meta.env.VITE_JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY,
+    JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DEFAULT_DELAY,
+  ),
+  JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_MIN_DELAY,
 )
 
 /**

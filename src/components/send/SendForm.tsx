@@ -14,6 +14,7 @@ import { MAX_NUM_COLLABORATORS } from '@/constants/jam'
 import { JM_MINIMUM_MAKERS_DEFAULT, JM_TAKER_UTXO_AGE } from '@/constants/jm'
 import { useDetectNetwork, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
@@ -32,6 +33,7 @@ import { Input } from '../ui/input'
 import { inputVariants } from '../ui/input-variants'
 import { Address } from '../ui/jam/Address'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
+import { OrderbookEmptyAlert } from '../ui/jam/OrderbookEmptyAlert'
 import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
@@ -181,6 +183,16 @@ export function SendForm({
   const isSweep = useWatch({ control, name: 'amount.isSweep' })
   const isCoinJoin = useWatch({ control, name: 'isCoinJoin' })
   const collaboratorCount = useWatch({ control, name: 'numCollaborators' })
+
+  const {
+    hasOrders,
+    queryResult: {
+      isLoading: orderbookCheckIsLoading,
+      isFetching: orderbookCheckIsFetching,
+      isError: orderbookCheckIsError,
+      refetch: orderbookRefetch,
+    },
+  } = useQueryOrderbook()
 
   const destinationAddressInfo = useMemo(() => {
     try {
@@ -361,6 +373,9 @@ export function SendForm({
             </Field>
             {hasCoinjoinPreconditionWarning && coinjoinPreconditionSummary && (
               <SendCoinjoinPreconditionAlert summary={coinjoinPreconditionSummary} />
+            )}
+            {isCoinJoin && !orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && (
+              <OrderbookEmptyAlert isChecking={orderbookCheckIsFetching} onCheckClick={orderbookRefetch} />
             )}
           </div>
 

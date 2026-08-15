@@ -1,9 +1,10 @@
 import { useState, type ComponentProps } from 'react'
-import { RefreshCwIcon, WalletIcon } from 'lucide-react'
+import { LanguagesIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { LanguageSelectorDropdownMenu } from '@/components/ui/jam/LanguageSelector'
 import { WalletLoadErrorAlert } from '@/components/ui/jam/WalletLoadErrorAlert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -71,22 +72,36 @@ export const LoginCard = ({
     <>
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2">
-          <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            {listWalletsFetching ? (
-              <Spinner className="size-6" />
-            ) : (
+          <div className="mb-4 grid w-full grid-cols-3">
+            <div></div>
+
+            <Button
+              type="button"
+              variant="default"
+              size="icon-xxl"
+              className="bg-primary/10 text-primary/80 hover:text-primary self-center justify-self-center rounded-full"
+              title={t('global.refresh')}
+              aria-label={t('global.refresh')}
+              onClick={() => void onReloadClick()}
+              disabled={listWalletsFetching}
+            >
+              {listWalletsFetching ? <Spinner className="size-6" /> : <WalletIcon className="size-5" />}
+              <span className="sr-only">{t('global.refresh')}</span>
+            </Button>
+
+            <LanguageSelectorDropdownMenu align="end">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="text-primary h-10 w-10 rounded-full"
-                title={t('global.retry')}
-                aria-label={t('global.retry')}
-                onClick={() => void onReloadClick()}
+                aria-label={t('settings.label_select_language_aria_label')}
+                title={t('settings.label_select_language_title')}
+                className="self-start justify-self-end"
               >
-                <WalletIcon />
+                <LanguagesIcon className="size-5" />
+                <span className="sr-only">{t('settings.label_select_language')}</span>
               </Button>
-            )}
+            </LanguageSelectorDropdownMenu>
           </div>
           <CardTitle className="text-center text-2xl font-bold break-words">{t('login.title')}</CardTitle>
           {listWalletsLoading ? (
@@ -103,7 +118,7 @@ export const LoginCard = ({
           ) : null}
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="flex flex-col gap-6">
           {listWalletsError ? (
             <>
               <WalletLoadErrorAlert reason={getErrorReason(listWalletsError, t('global.errors.reason_unknown'))} />

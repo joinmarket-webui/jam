@@ -80,6 +80,9 @@
     "item_jars": {
       "label": "Jars"
     },
+    "item_history": {
+      "label": "History"
+    },
     "item_tour": {
       "label": "Tour"
     },
@@ -290,6 +293,8 @@
     "use_address_chunking_enabled": "Address display chunking enabled",
     "use_address_chunking_disabled": "Address display chunking disabled",
     "label_select_language": "Language",
+    "label_select_language_title": "Select language",
+    "label_select_language_aria_label": "$t(settings.label_select_language_title)",
     "show_seed": "Show seed phrase",
     "show_xpubs": "Show account xpubs",
     "reveal_seed": "Reveal seed phrase",
@@ -441,6 +446,8 @@
     "qr_scan_bip21_applied": "Payment request applied.",
     "feedback_invalid_source_jar": "Please select a jar to send from.",
     "feedback_invalid_source_jar_must_unfreeze_utxos": "Please select UTXOs from the source jar.",
+    "feedback_invalid_source_jar_must_freeze_fidelity_bond_one": "Please freeze your Fidelity Bond in the source jar before you continue.",
+    "feedback_invalid_source_jar_must_freeze_fidelity_bond_other": "Please freeze all Fidelity Bonds in the source jar before you continue.",
     "feedback_invalid_source_jar_no_available_utxos": "Please select a jar with spendable balance to send from.",
     "feedback_invalid_destination_address": "Please enter a valid destination address.",
     "feedback_destination_network_mismatch": "This address does not match your wallet's network.",
@@ -489,9 +496,12 @@
       "text_body": "Are you sure you want to abort the collaborative transaction?"
     },
     "coinjoin_precondition": {
+      "title": "Collaborative Transaction preconditions are not fulfilled",
       "hint_missing_utxos": "To execute a collaborative transaction you need UTXOs with {{ minConfirmations }} or more confirmations in the source jar. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "A collaborative transaction requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
-      "hint_missing_retries": "Failed at sourcing commitments for this jar too many times in a row. For security reasons, you need a fresh UTXO in the jar to try again. See <1>the docs</1> for more information.",
+      "hint_missing_retries": "Failed at sourcing commitments for this jar too many times in a row. For security reasons, you need a fresh UTXO in the jar to try again. <1>See the documentation</1> for more information.",
+      "hint_non_frozen_fidelity_bond_one": "<1>Please freeze your Fidelity Bond</1> before you continue.",
+      "hint_non_frozen_fidelity_bond_other": "<1>Please freeze all Fidelity Bonds</1> before you continue.",
       "nested_hint_wait_for_block": "Select another jar to send from or wait for one more block.",
       "nested_hint_wait_for_block_other": "Select another jar to send from or wait for {{ count }} more blocks.",
       "nested_hint_fund_jar": "Select another jar to send from or fund this jar and wait for one block.",
@@ -530,10 +540,6 @@
     "alert_start_failed": "Error while starting the earn process. Reason: {{ reason }}",
     "alert_loading_offer": "Loading offer...",
     "alert_running": "Offering sats to earn more sats...",
-    "alert_unconfirmed_balance_title": "Balance is not confirmed yet",
-    "alert_unconfirmed_balance_description": "Your wallet has available funds, but they need at least one confirmation before the earn service can start. This should update automatically after the next block.",
-    "alert_no_spendable_balance_title": "No spendable balance available",
-    "alert_no_spendable_balance_description": "<0>Fund your wallet</0> to start earning.",
     "radio_abs_offer_label": "Absolute offer",
     "radio_rel_offer_label": "Relative offer",
     "label_rel_fee": "Relative fee {{ fee }}",
@@ -553,6 +559,13 @@
     "text_starting": "Starting",
     "text_stopping": "Stopping",
     "button_show_report": "Show earnings report",
+    "precondition": {
+      "title": "Earn preconditions are not fulfilled",
+      "hint_missing_utxos": "No spendable balance available: <0>Fund your wallet</0> to start earning.",
+      "hint_missing_confirmations_one": "Balance is not confirmed yet: Your wallet has available funds, but they need at least one more confirmation before the earn service can start. Please wait for one more block.",
+      "hint_missing_confirmations_other": "Balance is not confirmed yet: Your wallet has available funds, but they need at least {{count}} confirmations before the earn service can start. Please wait for {{count}} more blocks.",
+      "hint_non_frozen_fidelity_bond": "$t(send.coinjoin_precondition.hint_non_frozen_fidelity_bond, {\"count\": {{ count }} })"
+    },
     "current": {
       "text_offer": "Offer",
       "text_cjfee": "Fee",
@@ -561,7 +574,14 @@
       "text_txfee": "Transaction Fee",
       "text_offer_id": "Offer ID",
       "text_offer_type_absolute": "absolute",
-      "text_offer_type_relative": "relative"
+      "text_offer_type_relative": "relative",
+      "text_orderbook_checking": "Checking local orderbook...",
+      "text_orderbook_visible": "Visible in local orderbook",
+      "text_orderbook_missing": "Not found in local orderbook yet",
+      "text_orderbook_error": "Could not check local orderbook",
+      "text_fidelity_bond": "Fidelity Bond",
+      "text_bond_value": "Bond value",
+      "text_bond_locktime": "locked until {{date}}"
     },
     "report": {
       "title": "Earnings Report",
@@ -577,7 +597,6 @@
       "heading_earned": "Earned",
       "heading_notes": "Notes",
       "text_button_generate_demo_report": "Generate demo entry",
-      "text_button_download_csv": "Download",
       "stats": {
         "earned_total": "Earned (total)",
         "earned_90days": "Earned (90 days)",
@@ -667,6 +686,8 @@
       "create_form": {
         "confirmation_toggle_title": "I have reviewed my inputs carefully",
         "confirmation_toggle_subtitle": "I understand that the locked funds will be inaccessible for the given duration",
+        "alert_no_eligible_utxos_title": "No eligible UTXOs",
+        "alert_no_eligible_utxos_description": "A Fidelity Bond must be funded by an unfrozen collaborative transaction output (cj-out). <1>Complete a collaborative transaction</1> or <3>unfreeze an eligible UTXO</3> to continue.",
         "button_create": "Create Fidelity Bond"
       },
       "existing": {
@@ -743,6 +764,10 @@
     "text_orderbook_summary_filtered_one": "found {{ count }} offer by {{ counterpartyCount }} counterparty",
     "text_orderbook_summary_filtered_other": "found {{ count }} offers by {{ counterpartyCount }} counterparties",
     "alert_empty_orderbook": "Orderbook is empty",
+    "alert_precheck_empty_title": "No active makers found",
+    "alert_precheck_empty_description": "Your local Orderbook appears to be empty right now. Collaborative transactions might fail. Please check <1>your local Orderbook</1>.",
+    "alert_precheck_empty_text_button_check": "Check again",
+    "alert_precheck_empty_text_button_checking": "Checking...",
     "error_loading_orderbook_failed": "Error while loading the orderbook. Your current local setup might not support fetching the orderbook. Reason: {{ reason }}",
     "text_offer_type_absolute": "absolute",
     "text_offer_type_relative": "relative",
@@ -808,9 +833,11 @@
     "progress_entry_wait_before_next_title": "Wait period before next action",
     "progress_done_awaiting_stop": "All actions completed successfully. The Scheduled Sweep will stop soon.",
     "precondition": {
+      "title": "Scheduled Sweep preconditions are not fulfilled",
       "hint_missing_utxos": "A Scheduled Sweep needs UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "A Scheduled Sweep requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
-      "hint_missing_retries": "Failed at sourcing commitments too many times. For security reasons, you need a fresh UTXO in the jar to try again. See <1>the docs</1> for more information.",
+      "hint_missing_retries": "Failed at sourcing commitments too many times. For security reasons, you need a fresh UTXO in the jar to try again. <1>See the documentation</1> for more information.",
+      "hint_non_frozen_fidelity_bond": "$t(send.coinjoin_precondition.hint_non_frozen_fidelity_bond, {\"count\": {{ count }} })",
       "nested_hint_wait_for_block": "Wait for one more block.",
       "nested_hint_wait_for_block_other": "Wait for {{ count }} more blocks.",
       "nested_hint_fund_wallet": "Fund your wallet and wait for one more block.",
@@ -889,5 +916,30 @@
     "subtitle_one": "The selected UTXO is eligible for inclusion in the transaction.",
     "subtitle_other": "The selected UTXOs are eligible for inclusion in the transaction.",
     "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
+  },
+  "tx_history": {
+    "title": "Transaction History (Experimental)",
+    "section_title": "Recent Activity",
+    "overlay_title": "Transaction History (Experimental)",
+    "button_view_all": "View All",
+    "button_load_more": "Load More",
+    "button_generate_demo_entry": "Add Demo Entry",
+    "button_reload_title": "Reload",
+    "expand_history": "Show transaction history",
+    "collapse_history": "Hide transaction history",
+    "empty_history": "No transactions found.",
+    "error_loading": "Failed to load transaction history.",
+    "copy_txid_success": "Transaction ID copied.",
+    "copy_txid_error": "Failed to copy transaction ID.",
+    "column_title_date": "Date",
+    "column_title_role": "Type",
+    "column_title_amount": "Amount",
+    "column_title_net_fee": "Net Fee",
+    "column_title_confirmations": "Confs.",
+    "column_title_txid": "Transaction",
+    "label_role_maker": "Maker",
+    "label_role_taker": "Taker",
+    "label_role_send": "Send",
+    "label_role_deposit": "Deposit"
   }
 }

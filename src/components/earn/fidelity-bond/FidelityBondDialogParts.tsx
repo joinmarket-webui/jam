@@ -52,6 +52,7 @@ export function FidelityBondAmount({ value, className }: { value: AmountSats; cl
   return <Balance valueString={String(value)} className={cn('font-mono text-2xl font-bold', className)} />
 }
 
+/* TODO: move component to different namespace */
 export function JarBadge({ jarIndex, name }: { jarIndex: JarIndex | undefined; name?: string }) {
   const { t } = useTranslation()
   return (
@@ -61,7 +62,7 @@ export function JarBadge({ jarIndex, name }: { jarIndex: JarIndex | undefined; n
           {name} <span>#{jarIndex}</span>
         </>
       ) : (
-        /* TODO: i18n - move key to different namespace*/
+        /* TODO: i18n - move key to different namespace */
         t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: jarIndex })
       )}
     </Badge>

@@ -32,7 +32,6 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
-import * as fb from '@/lib/fidelityBondUtils'
 import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
@@ -249,9 +248,9 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
   ]
 }
 
-const defaultRowSelection: RowSelectionOptions<UtxoTableEntry>['enableRowSelection'] = (row: Row<UtxoTableEntry>) => {
-  return !fb.utxo.isFidelityBond(row.original.utxo)
-}
+const defaultRowSelection: RowSelectionOptions<UtxoTableEntry>['enableRowSelection'] = (
+  _ignoredOnPurpose: Row<UtxoTableEntry>,
+) => true
 
 interface JarUtxosTableProps {
   globalFilter?: string

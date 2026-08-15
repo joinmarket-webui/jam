@@ -2,15 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
 import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  AlertTriangleIcon,
-  FileTextIcon,
-  HourglassIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  ShuffleIcon,
-  UnlockIcon,
-} from 'lucide-react'
+import { FileTextIcon, HourglassIcon, InfoIcon, PlusIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -30,32 +22,25 @@ import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import * as OrderbookApi from '@/lib/api/orderbook'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import type { Milliseconds } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
 import { EarnForm, type EarnFormValues } from './EarnForm'
+import { NonFrozenFidelityBondsAlert, NoSpendableBalanceAlert, UnconfirmedBalanceAlert } from './EarnPreconditionAlerts'
 import { FidelityBondCard } from './FidelityBondCard'
 import { MoveToJarDialog } from './MoveToJarDialog'
 import { OfferCard } from './OfferCard'
 import { RenewBondDialog } from './RenewBondDialog'
 import { EarnReportOverlay } from './report/EarnReportOverlay'
-
-// In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
-// Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
-// There is currently no way to know for sure - adding a delay at least mitigates the problem.
-// 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
-const MAKER_STOP_RESPONSE_DELAY: Milliseconds = 2_000
-
-const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
-const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
 
 const toStartMakerRequest = (values: EarnFormValues): StartMakerRequest => {
   // both fee properties need to be provided.
@@ -75,37 +60,6 @@ interface EarnPageProps {
   walletFileName: WalletFileName
 }
 
-const UnconfirmedBalanceAlert = () => {
-  const { t } = useTranslation()
-
-  return (
-    <Alert variant="warning" className="mb-4">
-      <AlertTriangleIcon />
-      <AlertTitle>{t('earn.alert_unconfirmed_balance_title')}</AlertTitle>
-      <AlertDescription>{t('earn.alert_unconfirmed_balance_description')}</AlertDescription>
-    </Alert>
-  )
-}
-
-const NoSpendableBalanceAlert = () => {
-  const { t } = useTranslation()
-
-  return (
-    <Alert variant="warning" className="mb-4">
-      <AlertTriangleIcon />
-      <AlertTitle>{t('earn.alert_no_spendable_balance_title')}</AlertTitle>
-      <AlertDescription>
-        <Trans i18nKey="earn.alert_no_spendable_balance_description">
-          <Link to={routes.receive} className="font-semibold">
-            Fund your wallet
-          </Link>
-          to start earning.
-        </Trans>
-      </AlertDescription>
-    </Alert>
-  )
-}
-
 const JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED = isDevMode()
 
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
@@ -120,12 +74,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const maxConfirmedJarAvailableBalance = useMemo(() => {
     return Math.max(0, ...walletInfo.jars.map((jar) => jar.balanceSummary.calculatedConfirmedAvailableBalanceInSats))
   }, [walletInfo.jars])
-  const earnBalanceWarning =
-    !walletInfo.isFetching && maxConfirmedJarAvailableBalance < JAM.OFFER_MINSIZE_MIN
-      ? walletInfo.maxJarAvailableBalance >= JAM.OFFER_MINSIZE_MIN
-        ? 'unconfirmed'
-        : 'unavailable'
-      : null
 
   const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
   const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
@@ -135,6 +83,34 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
   const isCurrentOfferAvailable = jmSession?.offer_list && jmSession.offer_list.length > 0
+  const currentOffer = jmSession?.offer_list?.[0]
+  const isCurrentOrderbookOffer = (offer: OrderbookApi.OrderbookOffer) =>
+    offer.counterparty === jmSession?.nickname && String(offer.oid) === String(currentOffer?.oid)
+
+  const {
+    queryResult: { data: orderbookData, isFetching: orderbookIsFetching, isError: orderbookIsError },
+  } = useQueryOrderbook({
+    enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
+    staleTime: Number.POSITIVE_INFINITY,
+    refetchInterval: (query) =>
+      query.state.error || !query.state.data?.offers.some((offer) => isCurrentOrderbookOffer(offer))
+        ? JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL
+        : JAM.VISIBLE_ORDERBOOK_POLLING_INTERVAL,
+  })
+
+  const currentOrderbookOffer = orderbookData?.offers.find((offer) => isCurrentOrderbookOffer(offer))
+  const currentOrderbookFidelityBond =
+    Number(currentOrderbookOffer?.fidelity_bond_value) > 0
+      ? orderbookData?.fidelitybonds?.findLast((bond) => bond.counterparty === jmSession?.nickname)
+      : undefined
+  const orderbookStatus =
+    !jmSession?.nickname || orderbookIsFetching
+      ? 'checking'
+      : orderbookIsError
+        ? 'error'
+        : currentOrderbookOffer
+          ? 'visible'
+          : 'missing'
 
   const stopMakerQueryOptions = stopmakerOptions({
     client,
@@ -144,7 +120,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const stopMakerQuery = useQuery({
     ...stopMakerQueryOptions,
     queryFn: withQueryDelay(stopMakerQueryOptions.queryFn, {
-      delayAfter: MAKER_STOP_RESPONSE_DELAY,
+      delayAfter: JAM.MAKER_STOP_RESPONSE_DELAY,
     }),
     enabled: false,
     retry: false,
@@ -194,13 +170,28 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     !walletInfo.isFetching
 
   const isCreateFidelityBondEnabled =
-    isFidelityBondActionsEnabled && (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
+    isFidelityBondActionsEnabled &&
+    walletInfo.hasEligibleFidelityBondUtxo &&
+    (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
   const showCreateAdditionalFidelityBond = JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED
+
+  const numberOfNonFrozenFidelityBondOutputs = !hasFidelityBond
+    ? 0
+    : walletInfo.fidelityBondSummary.fbOutputs.filter((it) => it.frozen !== true).length
+
+  const earnPreconditionWarning =
+    numberOfNonFrozenFidelityBondOutputs > 0
+      ? 'non-frozen-fb-present'
+      : !walletInfo.isFetching && maxConfirmedJarAvailableBalance < JAM.OFFER_MINSIZE_MIN
+        ? walletInfo.maxJarAvailableBalance >= JAM.OFFER_MINSIZE_MIN
+          ? 'missing-utxos'
+          : 'missing-confirmations'
+        : undefined
 
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
-    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
-    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
+    refetchInterval: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: JAM.WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   const onStop = async () => {
@@ -279,6 +270,18 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </Alert>
       )}
 
+      {!isWaitingMakerStart && !isWaitingMakerStop && !jmSession.maker_running && earnPreconditionWarning && (
+        <>
+          {earnPreconditionWarning === 'non-frozen-fb-present' ? (
+            <NonFrozenFidelityBondsAlert numberOfNonFrozenFidelityBondOutputs={numberOfNonFrozenFidelityBondOutputs} />
+          ) : null}
+          {earnPreconditionWarning === 'missing-utxos' ? (
+            <UnconfirmedBalanceAlert numberOfMissingConfirmations={1} />
+          ) : null}
+          {earnPreconditionWarning === 'missing-confirmations' ? <NoSpendableBalanceAlert /> : null}
+        </>
+      )}
+
       <div className="flex justify-end">
         <Button variant="outline" onClick={() => setShowEarnReport(true)}>
           <FileTextIcon />
@@ -291,6 +294,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           className="motion-safe:animate-in blur-in"
           value={jmSession.offer_list[0]}
           nickname={jmSession.nickname}
+          orderbookStatus={orderbookStatus}
+          orderbookOffer={currentOrderbookOffer}
+          fidelityBond={currentOrderbookFidelityBond}
         >
           <Button type="button" onClick={() => void onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (
@@ -309,21 +315,23 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       <Card
         className={cn({
           hidden: jmSession.maker_running && !waitingForOfferUpdate,
-          'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate,
+          'blur-[2px]':
+            isWaitingMakerStop ||
+            waitingForOfferUpdate ||
+            jmSession.maker_running ||
+            jmSession.coinjoin_in_process ||
+            jmSession.rescanning,
         })}
       >
         <CardContent>
           <p className="text-muted-foreground mb-4 text-sm">{t('earn.market_explainer')}</p>
-
-          {earnBalanceWarning === 'unconfirmed' && <UnconfirmedBalanceAlert />}
-          {earnBalanceWarning === 'unavailable' && <NoSpendableBalanceAlert />}
 
           <EarnForm
             onSubmit={onSubmit}
             isWaitingMakerStart={isWaitingMakerStart}
             offerMinsizeMax={maxConfirmedJarAvailableBalance}
             disabled={
-              earnBalanceWarning !== null ||
+              earnPreconditionWarning !== undefined ||
               walletInfo.isFetching ||
               isWaitingMakerStart ||
               isWaitingMakerStop ||
@@ -352,6 +360,23 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
               <CardAction></CardAction>
             </CardHeader>
+            {!walletInfo.hasEligibleFidelityBondUtxo && (
+              <CardContent>
+                <Alert variant="default">
+                  <InfoIcon />
+                  <AlertTitle>{t('earn.fidelity_bond.create_form.alert_no_eligible_utxos_title')}</AlertTitle>
+                  <AlertDescription>
+                    <Trans
+                      i18nKey="earn.fidelity_bond.create_form.alert_no_eligible_utxos_description"
+                      components={{
+                        '1': <Link to={routes.send} className="font-semibold" />,
+                        '3': <Link to={routes.walletJarsDetails} className="font-semibold" />,
+                      }}
+                    />
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            )}
             <CardFooter className="gap-2">
               <Button
                 variant="default"

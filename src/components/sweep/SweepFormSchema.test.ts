@@ -13,7 +13,7 @@ import {
 
 const t = ((key: string) => key) as unknown as TFunction<'translation', undefined>
 const validRegtestAddress = 'bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx'
-const validMainnetAddress = '1BoatSLRHtKNngkdXEeobR76b53LETtpyT'
+const validMainnetAddress = '1BitcoinEaterAddressDontSend8MUo1T'
 
 const validate = async (
   values: SweepFormValues,
