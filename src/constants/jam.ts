@@ -52,7 +52,7 @@ export const CJ_FEE_REL_MAX: Factor = percentageToFactor(5) // no enforcement by
 export const MAX_SWEEP_FEE_CHANGE_MIN: Factor = percentageToFactor(50) // no enforcement by JM - should be a "sane" min vaue (too low and users might run into problems on sweeps)
 export const MAX_SWEEP_FEE_CHANGE_MAX: Factor = percentageToFactor(100) // TODO: this can also be 200%, why limit it to 100%?
 
-const OFFER_FEE_BANDS: {
+export const OFFER_FEE_BANDS: {
   relative: Factor[]
   absolute: AmountSats[]
 } = {

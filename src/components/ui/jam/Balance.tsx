@@ -39,13 +39,7 @@ const ElementWithSymbols = ({
   'aria-label': ariaLabel,
   'aria-pressed': ariaPressed,
 }: ElementWithSymbolsProps) => {
-  const sharedClassName = cn(
-    'balance-hook inline-flex items-center',
-    {
-      'text-brand-info': frozen,
-    },
-    className,
-  )
+  const sharedClassName = cn('balance-hook inline-flex items-center', frozen ? 'text-brand-info' : undefined, className)
 
   const content = (
     <>
@@ -126,14 +120,14 @@ interface SatsBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'chi
   highlightSignificantDigits?: boolean
 }
 
-const SatsBalance = ({ value, highlightSignificantDigits = true, ...props }: SatsBalanceProps) => {
+const SatsBalance = ({ value, highlightSignificantDigits = true, className, ...props }: SatsBalanceProps) => {
   return (
     <ElementWithSymbols symbol={SAT_SYMBOL} {...props}>
       <span
+        data-testid="sats-amount"
         className={cn('slashed-zero tabular-nums select-all', {
           [styles.satsAmountColor]: highlightSignificantDigits,
-        })}
-        data-testid="sats-amount"
+        }, className)}
         data-raw-value={value}
       >
         {formatSats(value)}

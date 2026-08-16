@@ -547,6 +547,7 @@
     "feedback_invalid_rel_fee": "Please provide a relative fee between {{feeRelPercentageMin}} and {{feeRelPercentageMax}}.",
     "label_abs_fee": "Absolute fee {{ fee }}",
     "description_abs_fee": "The fee to charge others, as an absolute amount denominated in sats.",
+    "text_abs_fee_zero": "Free",
     "feedback_invalid_abs_fee": "Invalid absolute fee.",
     "label_min_amount_input": "Minimum amount",
     "description_min_amount_input": "The minimum size of your offer. You will not participate in collaborative transactions below this amount.",

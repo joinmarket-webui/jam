@@ -6,20 +6,21 @@ import { useForm, useWatch } from 'react-hook-form'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
+import { DevBadge } from '@/components/dev/DevBadge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { Balance } from '@/components/ui/jam/Balance'
 import { SatSymbol } from '@/components/ui/jam/CurrencySymbol'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage, isValidInteger, isValidNumber } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { DevBadge } from '../dev/DevBadge'
-import { Card, CardContent, CardHeader } from '../ui/card'
-import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
-import { Spinner } from '../ui/spinner'
 
 const FieldPrefixSatSymbol = (
   <SatSymbol
@@ -90,8 +91,8 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
   const id = useId()
 
   return (
-    <RadioGroup className="flex flex-col items-stretch justify-center gap-2 sm:flex-row sm:items-center" {...props}>
-      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px] sm:max-w-50">
+    <RadioGroup className="flex flex-wrap items-center items-stretch justify-center gap-2" {...props}>
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
         <RadioGroupItem
           value={OFFERTYPE_ABS}
           id={`${id}-sw0absoffer`}
@@ -104,7 +105,7 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
           </Label>
         </div>
       </div>
-      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px] sm:max-w-50">
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
         <RadioGroupItem
           value={OFFERTYPE_REL}
           id={`${id}-sw0reloffer`}
@@ -174,7 +175,6 @@ export function EarnForm({
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
-    getValues,
     setValue,
   } = useForm<EarnFormValues, unknown, EarnFormValues>({
     mode: 'onSubmit',
@@ -184,6 +184,8 @@ export function EarnForm({
 
   const values = useWatch({ control })
   const watchOfferType = useWatch({ control, name: 'offerType' })
+  const watchOfferAbsoluteFee = useWatch({ control, name: 'offerAbsoluteFee' })
+  const watchOfferRelativeFeeInPercent = useWatch({ control, name: 'offerRelativeFeeInPercent' })
 
   const doOnSubmit = handleSubmit(onSubmit)
 
@@ -205,11 +207,45 @@ export function EarnForm({
           <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
             <FieldLabel htmlFor="offerAbsoluteFee">
               {t('earn.label_abs_fee', {
-                fee: '', // empty on purpose
+                fee:
+                  watchOfferAbsoluteFee !== undefined
+                    ? `(${watchOfferAbsoluteFee === 0 ? t('earn.text_abs_fee_zero') : `${watchOfferAbsoluteFee.toLocaleString()} sats`})`
+                    : '',
               })}
             </FieldLabel>
             <FieldDescription className="text-xs">{t('earn.description_abs_fee')}</FieldDescription>
-            <InputGroup>
+
+            <div className="align-center flex flex-wrap justify-center gap-1.5">
+              {JAM.OFFER_FEE_BANDS.absolute.map((it, index) => {
+                return (
+                  <Button
+                    key={index}
+                    type="button"
+                    variant={it === watchOfferAbsoluteFee ? 'default' : 'outline'}
+                    className="min-w-25 sm:min-w-50"
+                    onClick={() =>
+                      setValue('offerAbsoluteFee', it, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    {it === 0 ? (
+                      t('earn.text_abs_fee_zero')
+                    ) : (
+                      <Balance
+                        className="select-none"
+                        valueString={String(it)}
+                        showBalance={true}
+                        enableVisibilityToggle={false}
+                      />
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+            <InputGroup className="hidden">
               <InputGroupInput
                 id="offerAbsoluteFee"
                 {...register('offerAbsoluteFee', {
@@ -220,7 +256,6 @@ export function EarnForm({
               />
               <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
             </InputGroup>
-
             {errors.offerAbsoluteFee?.message && <FieldError>{errors.offerAbsoluteFee.message}</FieldError>}
           </Field>
         </TabsContent>
@@ -228,11 +263,35 @@ export function EarnForm({
           <Field data-invalid={errors.offerRelativeFeeInPercent !== undefined}>
             <FieldLabel htmlFor="offerRelativeFeeInPercent">
               {t('earn.label_rel_fee', {
-                fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
+                fee: watchOfferRelativeFeeInPercent !== undefined ? `(${watchOfferRelativeFeeInPercent}%)` : '',
               })}
             </FieldLabel>
             <FieldDescription className="text-xs">{t('earn.description_rel_fee')}</FieldDescription>
-            <InputGroup>
+
+            <div className="align-center flex flex-wrap justify-center gap-1.5">
+              {JAM.OFFER_FEE_BANDS.relative
+                .map((it) => factorToPercentage(it))
+                .map((it, index) => {
+                  return (
+                    <Button
+                      key={index}
+                      type="button"
+                      variant={it === watchOfferRelativeFeeInPercent ? 'default' : 'outline'}
+                      className="min-w-25 sm:min-w-33"
+                      onClick={() =>
+                        setValue('offerRelativeFeeInPercent', it, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                          shouldValidate: true,
+                        })
+                      }
+                    >
+                      {it.toLocaleString()}%
+                    </Button>
+                  )
+                })}
+            </div>
+            <InputGroup className="hidden">
               <InputGroupInput
                 id="offerRelativeFeeInPercent"
                 {...register('offerRelativeFeeInPercent', {
