@@ -246,6 +246,7 @@ export function EarnForm({
                     type="button"
                     variant={it === watchOfferAbsoluteFee ? 'default' : 'outline'}
                     className="min-w-25 sm:min-w-50"
+                    disabled={disabled}
                     onClick={() =>
                       setValue('offerAbsoluteFee', it, {
                         shouldDirty: true,
@@ -301,6 +302,7 @@ export function EarnForm({
                       type="button"
                       variant={it === watchOfferRelativeFeeInPercent ? 'default' : 'outline'}
                       className="min-w-25 sm:min-w-33"
+                      disabled={disabled}
                       onClick={() =>
                         setValue('offerRelativeFeeInPercent', it, {
                           shouldDirty: true,

@@ -233,7 +233,17 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
+      <div className="flex flex-col items-center gap-2 sm:flex-row">
+        <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
+
+        <div className="flex justify-end">
+          <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
+          <Button variant="outline" onClick={() => setShowEarnReport(true)}>
+            <FileTextIcon />
+            {t('earn.button_show_report')}
+          </Button>
+        </div>
+      </div>
 
       {feeConfigValidation.maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
@@ -282,13 +292,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           {earnPreconditionWarning === 'missing-confirmations' ? <NoSpendableBalanceAlert /> : null}
         </>
       )}
-
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={() => setShowEarnReport(true)}>
-          <FileTextIcon />
-          {t('earn.button_show_report')}
-        </Button>
-      </div>
 
       {jmSession.offer_list && jmSession.offer_list.length > 0 && (
         <OfferCard
@@ -497,8 +500,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           </CardContent>
         </Card>
       )}
-
-      <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
     </div>
   )
 }
