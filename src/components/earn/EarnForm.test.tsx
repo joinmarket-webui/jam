@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { OFFER_FEE_ABS_DEFAULT, OFFER_MINSIZE_DEFAULT } from '@/constants/jam'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import { EarnForm } from './EarnForm'
 
 vi.mock('react-i18next', () => ({
@@ -35,7 +36,9 @@ describe('EarnForm', () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
 
-    render(<EarnForm isWaitingMakerStart={false} offerMinsizeMax={100_000_000} onSubmit={onSubmit} />)
+    render(
+      <EarnForm isWaitingMakerStart={false} offerMinsizeMax={100_000_000} onSubmit={onSubmit} fidelityBonds={[]} />,
+    )
 
     expect(screen.getByLabelText('earn.label_abs_fee')).toBeInTheDocument()
     expect(screen.getByLabelText('earn.label_min_amount_input')).toBeInTheDocument()
@@ -56,7 +59,18 @@ describe('EarnForm', () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
 
-    render(<EarnForm isWaitingMakerStart={false} offerMinsizeMax={100_000_000} onSubmit={onSubmit} />)
+    render(
+      <EarnForm
+        isWaitingMakerStart={false}
+        offerMinsizeMax={100_000_000}
+        onSubmit={onSubmit}
+        fidelityBonds={[
+          {
+            utxo: 'txid:0',
+          } as unknown as Utxo,
+        ]}
+      />,
+    )
 
     await user.click(screen.getByLabelText('earn.radio_rel_offer_label'))
     await user.clear(screen.getByLabelText('earn.label_rel_fee'))
@@ -79,7 +93,7 @@ describe('EarnForm', () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
 
-    render(<EarnForm isWaitingMakerStart={false} offerMinsizeMax={1} onSubmit={onSubmit} />)
+    render(<EarnForm isWaitingMakerStart={false} offerMinsizeMax={1} onSubmit={onSubmit} fidelityBonds={[]} />)
 
     await user.click(screen.getByRole('button', { name: 'earn.button_start' }))
 
@@ -91,7 +105,15 @@ describe('EarnForm', () => {
     // wrap in async act so react-hook-form's deferred mount validation settles
     // inside act (otherwise it updates formState after the test → act warning)
     await act(async () => {
-      render(<EarnForm debug isWaitingMakerStart={true} offerMinsizeMax={100_000_000} onSubmit={vi.fn()} />)
+      render(
+        <EarnForm
+          debug
+          isWaitingMakerStart={true}
+          offerMinsizeMax={100_000_000}
+          onSubmit={vi.fn()}
+          fidelityBonds={[]}
+        />,
+      )
       await Promise.resolve()
     })
     expect(screen.getByRole('button', { name: /earn.text_starting/ })).toBeDisabled()
@@ -101,7 +123,15 @@ describe('EarnForm', () => {
     // wrap in async act so react-hook-form's deferred mount validation settles
     // inside act (otherwise it updates formState after the test → act warning)
     await act(async () => {
-      render(<EarnForm disabled isWaitingMakerStart={false} offerMinsizeMax={100_000_000} onSubmit={vi.fn()} />)
+      render(
+        <EarnForm
+          disabled
+          isWaitingMakerStart={false}
+          offerMinsizeMax={100_000_000}
+          onSubmit={vi.fn()}
+          fidelityBonds={[]}
+        />,
+      )
       await Promise.resolve()
     })
     expect(screen.getByRole('button', { name: 'earn.button_start' })).toBeDisabled()
@@ -111,7 +141,15 @@ describe('EarnForm', () => {
     // wrap in async act so react-hook-form's deferred mount validation settles
     // inside act (otherwise it updates formState after the test → act warning)
     await act(async () => {
-      render(<EarnForm debug isWaitingMakerStart={false} offerMinsizeMax={100_000_000} onSubmit={vi.fn()} />)
+      render(
+        <EarnForm
+          debug
+          isWaitingMakerStart={false}
+          offerMinsizeMax={100_000_000}
+          onSubmit={vi.fn()}
+          fidelityBonds={[]}
+        />,
+      )
       await Promise.resolve()
     })
 

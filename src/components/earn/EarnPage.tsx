@@ -330,6 +330,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           <EarnForm
             onSubmit={onSubmit}
             isWaitingMakerStart={isWaitingMakerStart}
+            fidelityBonds={walletInfo.fidelityBondSummary.fbOutputs}
             offerMinsizeMax={maxConfirmedJarAvailableBalance}
             disabled={
               earnPreconditionWarning !== undefined ||

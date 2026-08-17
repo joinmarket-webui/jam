@@ -19,6 +19,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn, factorToPercentage, isValidInteger, isValidNumber } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 
@@ -49,7 +50,7 @@ const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
   offerMinAmount: JAM.OFFER_MINSIZE_DEFAULT,
 }
 
-const earnFormBaseSchema = (t: TFunction) => {
+const earnFormBaseSchema = (fidelityBonds: Utxo[], t: TFunction) => {
   const invalidRelativeFeeMessage = t('earn.feedback_invalid_rel_fee', {
     feeRelPercentageMin: `${factorToPercentage(JAM.OFFER_FEE_REL_MIN)}%`,
     feeRelPercentageMax: `${factorToPercentage(JAM.OFFER_FEE_REL_MAX)}%`,
@@ -57,7 +58,16 @@ const earnFormBaseSchema = (t: TFunction) => {
 
   return yup
     .object({
-      offerType: yup.string<OfferType>().default(FORM_INPUT_DEFAULT_VALUES.offerType).required(),
+      offerType: yup
+        .string<OfferType>()
+        .default(FORM_INPUT_DEFAULT_VALUES.offerType)
+        .required()
+        .test('valid-offer-type-test', t('earn.feedback_invalid_offer_type_bondless_maker'), (value) => {
+          if (fidelityBonds.length === 0) {
+            return value === OFFERTYPE_ABS
+          }
+          return true
+        }),
       offerAbsoluteFee: yup
         .number()
         .integer(t('earn.feedback_invalid_abs_fee'))
@@ -67,7 +77,13 @@ const earnFormBaseSchema = (t: TFunction) => {
           then: (schema) =>
             schema
               .min(JAM.OFFER_FEE_ABS_MIN, t('earn.feedback_invalid_abs_fee'))
-              .required(t('earn.feedback_invalid_abs_fee')),
+              .required(t('earn.feedback_invalid_abs_fee'))
+              .test('valid-absolute-fee-test', t('earn.feedback_invalid_abs_fee_bondless_maker'), (value) => {
+                if (fidelityBonds.length === 0) {
+                  return value === 0
+                }
+                return true
+              }),
           otherwise: (schema) => schema.nullable().optional(),
         }),
       offerRelativeFeeInPercent: yup
@@ -79,7 +95,10 @@ const earnFormBaseSchema = (t: TFunction) => {
             schema
               .min(factorToPercentage(JAM.OFFER_FEE_REL_MIN), invalidRelativeFeeMessage)
               .max(factorToPercentage(JAM.OFFER_FEE_REL_MAX), invalidRelativeFeeMessage)
-              .required(invalidRelativeFeeMessage),
+              .required(invalidRelativeFeeMessage)
+              .test('valid-relate-fee-test', t('earn.feedback_invalid_rel_fee_bondless_maker'), () => {
+                return fidelityBonds.length > 0
+              }),
           otherwise: (schema) => schema.nullable().optional(),
         }),
     })
@@ -125,6 +144,7 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
 interface EarnFormProps {
   className?: string
   isWaitingMakerStart: boolean
+  fidelityBonds: Utxo[]
   onSubmit: SubmitHandler<EarnFormValues>
   offerMinsizeMax: AmountSats
   disabled?: boolean
@@ -134,6 +154,7 @@ interface EarnFormProps {
 export function EarnForm({
   className,
   isWaitingMakerStart,
+  fidelityBonds,
   onSubmit,
   disabled,
   offerMinsizeMax,
@@ -144,7 +165,7 @@ export function EarnForm({
   const schema = useMemo(
     () =>
       // eslint-disable-next-line unicorn/prefer-spread -- false positive
-      earnFormBaseSchema(t).concat(
+      earnFormBaseSchema(fidelityBonds, t).concat(
         yup.object({
           offerMinAmount: yup
             .number()
@@ -167,7 +188,7 @@ export function EarnForm({
             .required(t('earn.feedback_invalid_min_amount')),
         }),
       ),
-    [t, offerMinsizeMax],
+    [t, fidelityBonds, offerMinsizeMax],
   )
 
   const {
@@ -191,17 +212,21 @@ export function EarnForm({
 
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
-      <OfferTypeInput
-        disabled={disabled}
-        defaultValue={FORM_INPUT_DEFAULT_VALUES.offerType}
-        onValueChange={(value) => {
-          setValue('offerType', value, {
-            shouldValidate: true, // trigger validation
-            shouldTouch: true, // update touched fields form state
-            shouldDirty: true, // update dirty and dirty fields form state
-          })
-        }}
-      />
+      <Field data-invalid={errors.offerType !== undefined}>
+        <OfferTypeInput
+          disabled={disabled}
+          defaultValue={FORM_INPUT_DEFAULT_VALUES.offerType}
+          onValueChange={(value) => {
+            setValue('offerType', value, {
+              shouldValidate: true, // trigger validation
+              shouldTouch: true, // update touched fields form state
+              shouldDirty: true, // update dirty and dirty fields form state
+            })
+          }}
+        />
+
+        {errors.offerType?.message && <FieldError>{errors.offerType.message}</FieldError>}
+      </Field>
       <Tabs value={watchOfferType}>
         <TabsContent value={OFFERTYPE_ABS}>
           <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
