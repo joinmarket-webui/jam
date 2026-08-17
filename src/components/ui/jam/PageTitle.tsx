@@ -17,7 +17,7 @@ const PageTitle = ({ title, subtitle, variant = 'default', center = false }: Pag
       })}
     >
       <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight">{title}</h1>
-      {subtitle && <p className="text-muted-foreground mb-2 text-sm">{subtitle}</p>}
+      {subtitle && <p className="text-muted-foreground mb-2 text-sm text-balance">{subtitle}</p>}
     </div>
   )
 }
