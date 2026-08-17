@@ -41,6 +41,9 @@ describe('EarnForm', () => {
     )
 
     expect(screen.getByLabelText('earn.label_abs_fee')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'earn.earn_options' }))
+
     expect(screen.getByLabelText('earn.label_min_amount_input')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'earn.button_start' }))
@@ -75,8 +78,12 @@ describe('EarnForm', () => {
     await user.click(screen.getByLabelText('earn.radio_rel_offer_label'))
     await user.clear(screen.getByLabelText('earn.label_rel_fee'))
     await user.type(screen.getByLabelText('earn.label_rel_fee'), String(0.5))
+
+    await user.click(screen.getByRole('button', { name: 'earn.earn_options' }))
+
     await user.clear(screen.getByLabelText('earn.label_min_amount_input'))
     await user.type(screen.getByLabelText('earn.label_min_amount_input'), String(50_000))
+
     await user.click(screen.getByRole('button', { name: 'earn.button_start' }))
 
     expect(onSubmit).toHaveBeenCalledWith(
@@ -95,6 +102,8 @@ describe('EarnForm', () => {
 
     render(<EarnForm isWaitingMakerStart={false} offerMinsizeMax={1} onSubmit={onSubmit} fidelityBonds={[]} />)
 
+    await user.click(screen.getByRole('button', { name: 'earn.earn_options' }))
+
     await user.click(screen.getByRole('button', { name: 'earn.button_start' }))
 
     expect(await screen.findByText('earn.feedback_invalid_min_amount_insufficient_funds')).toBeInTheDocument()
@@ -106,13 +115,7 @@ describe('EarnForm', () => {
     // inside act (otherwise it updates formState after the test → act warning)
     await act(async () => {
       render(
-        <EarnForm
-          debug
-          isWaitingMakerStart={true}
-          offerMinsizeMax={100_000_000}
-          onSubmit={vi.fn()}
-          fidelityBonds={[]}
-        />,
+        <EarnForm isWaitingMakerStart={true} offerMinsizeMax={100_000_000} onSubmit={vi.fn()} fidelityBonds={[]} />,
       )
       await Promise.resolve()
     })
@@ -135,26 +138,5 @@ describe('EarnForm', () => {
       await Promise.resolve()
     })
     expect(screen.getByRole('button', { name: 'earn.button_start' })).toBeDisabled()
-  })
-
-  it('renders debug state', async () => {
-    // wrap in async act so react-hook-form's deferred mount validation settles
-    // inside act (otherwise it updates formState after the test → act warning)
-    await act(async () => {
-      render(
-        <EarnForm
-          debug
-          isWaitingMakerStart={false}
-          offerMinsizeMax={100_000_000}
-          onSubmit={vi.fn()}
-          fidelityBonds={[]}
-        />,
-      )
-      await Promise.resolve()
-    })
-
-    expect(screen.getByText('dev-badge')).toBeInTheDocument()
-    expect(screen.getByText('isValid:')).toBeInTheDocument()
-    expect(screen.getByText('values:')).toBeInTheDocument()
   })
 })

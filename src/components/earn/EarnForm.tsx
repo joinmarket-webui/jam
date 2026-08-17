@@ -1,14 +1,12 @@
 import { useId, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import type { TFunction } from 'i18next'
-import { HandshakeIcon, PercentIcon } from 'lucide-react'
+import { AlertTriangleIcon, HandshakeIcon, PercentIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
-import { DevBadge } from '@/components/dev/DevBadge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Balance } from '@/components/ui/jam/Balance'
@@ -22,6 +20,7 @@ import type { OfferType } from '@/constants/jm'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn, factorToPercentage, isValidInteger, isValidNumber } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 
 const FieldPrefixSatSymbol = (
   <SatSymbol
@@ -148,7 +147,6 @@ interface EarnFormProps {
   onSubmit: SubmitHandler<EarnFormValues>
   offerMinsizeMax: AmountSats
   disabled?: boolean
-  debug?: boolean
 }
 
 export function EarnForm({
@@ -158,7 +156,6 @@ export function EarnForm({
   onSubmit,
   disabled,
   offerMinsizeMax,
-  debug = false,
 }: EarnFormProps) {
   const { t } = useTranslation()
 
@@ -195,7 +192,7 @@ export function EarnForm({
     control,
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting },
     setValue,
   } = useForm<EarnFormValues, unknown, EarnFormValues>({
     mode: 'onSubmit',
@@ -203,10 +200,11 @@ export function EarnForm({
     resolver: yupResolver(schema),
   })
 
-  const values = useWatch({ control })
   const watchOfferType = useWatch({ control, name: 'offerType' })
   const watchOfferAbsoluteFee = useWatch({ control, name: 'offerAbsoluteFee' })
   const watchOfferRelativeFeeInPercent = useWatch({ control, name: 'offerRelativeFeeInPercent' })
+
+  const collapsibleFormElementsValid = [errors.offerMinAmount].every((it) => it === undefined)
 
   const doOnSubmit = handleSubmit(onSubmit)
 
@@ -332,34 +330,53 @@ export function EarnForm({
         </TabsContent>
       </Tabs>
 
-      <Field data-invalid={errors.offerMinAmount !== undefined}>
-        <FieldLabel htmlFor="offerMinAmount">{t('earn.label_min_amount_input')}</FieldLabel>
-        <FieldDescription className="text-xs">{t('earn.description_min_amount_input')}</FieldDescription>
-        <InputGroup>
-          <InputGroupInput
-            id="offerMinAmount"
-            {...register('offerMinAmount', {
-              required: true,
-              disabled,
+      <Accordion type="single" collapsible>
+        <AccordionItem value="options">
+          <AccordionTrigger
+            className={cn({
+              'text-destructive': !collapsibleFormElementsValid,
             })}
-            type="number"
-            max={offerMinsizeMax}
-            step={1}
-            placeholder={t('earn.placeholder_min_amount_input')}
-          />
-          <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
-        </InputGroup>
+          >
+            <div className="flex items-center gap-2">
+              {!collapsibleFormElementsValid ? <AlertTriangleIcon /> : null}
+              {t('earn.earn_options')}
+            </div>
+          </AccordionTrigger>
 
-        {errors.offerMinAmount && (
-          <FieldError>
-            {offerMinsizeMax < JAM.OFFER_MINSIZE_MIN ? (
-              <>{t('earn.feedback_invalid_min_amount_insufficient_funds')}</>
-            ) : (
-              <>{errors.offerMinAmount?.message || t('earn.feedback_invalid_min_amount')}</>
-            )}
-          </FieldError>
-        )}
-      </Field>
+          <AccordionContent
+            className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
+          >
+            <Field data-invalid={errors.offerMinAmount !== undefined}>
+              <FieldLabel htmlFor="offerMinAmount">{t('earn.label_min_amount_input')}</FieldLabel>
+              <FieldDescription className="text-xs">{t('earn.description_min_amount_input')}</FieldDescription>
+              <InputGroup>
+                <InputGroupInput
+                  id="offerMinAmount"
+                  {...register('offerMinAmount', {
+                    required: true,
+                    disabled,
+                  })}
+                  type="number"
+                  max={offerMinsizeMax}
+                  step={1}
+                  placeholder={t('earn.placeholder_min_amount_input')}
+                />
+                <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
+              </InputGroup>
+
+              {errors.offerMinAmount && (
+                <FieldError>
+                  {offerMinsizeMax < JAM.OFFER_MINSIZE_MIN ? (
+                    <>{t('earn.feedback_invalid_min_amount_insufficient_funds')}</>
+                  ) : (
+                    <>{errors.offerMinAmount?.message || t('earn.feedback_invalid_min_amount')}</>
+                  )}
+                </FieldError>
+              )}
+            </Field>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <Button
         type="submit"
@@ -377,24 +394,6 @@ export function EarnForm({
           <>{t('earn.button_start')}</>
         )}
       </Button>
-
-      {debug && (
-        <Card className="mt-8">
-          <CardHeader className="grid">
-            <DevBadge className="justify-self-end" />
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <div className="overflow-scroll">
-              <code className="text-destructive">isValid:</code>
-              <pre className="text-xs">{JSON.stringify(isValid, null, 2)}</pre>
-            </div>
-            <div className="overflow-scroll">
-              <code className="text-destructive">values:</code>
-              <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </form>
   )
 }
