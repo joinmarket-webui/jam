@@ -1,7 +1,7 @@
 import { useId, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import type { TFunction } from 'i18next'
-import { AlertTriangleIcon, HandshakeIcon, PercentIcon } from 'lucide-react'
+import { AlertTriangleIcon, GiftIcon, HandshakeIcon, PercentIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import * as JAM from '@/constants/jam'
-import type { OfferType } from '@/constants/jm'
+import { OFFERTYPE_ABS, OFFERTYPE_REL, type OfferType } from '@/constants/jm'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn, factorToPercentage, isValidInteger, isValidNumber } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
@@ -32,18 +32,17 @@ const FieldPrefixSatSymbol = (
   />
 )
 
-const OFFERTYPE_ABS: OfferType = 'sw0absoffer'
-const OFFERTYPE_REL: OfferType = 'sw0reloffer'
+const OFFERTYPE_FREE = '__free'
 
 export interface EarnFormValues {
-  offerType: OfferType
+  offerType: OfferType | '__free'
   offerAbsoluteFee?: AmountSats
   offerRelativeFeeInPercent?: number
   offerMinAmount: AmountSats
 }
 
 const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
-  offerType: OFFERTYPE_ABS,
+  offerType: OFFERTYPE_FREE,
   offerRelativeFeeInPercent: factorToPercentage(JAM.OFFER_FEE_REL_DEFAULT),
   offerAbsoluteFee: JAM.OFFER_FEE_ABS_DEFAULT,
   offerMinAmount: JAM.OFFER_MINSIZE_DEFAULT,
@@ -58,12 +57,12 @@ const earnFormBaseSchema = (fidelityBonds: Utxo[], t: TFunction) => {
   return yup
     .object({
       offerType: yup
-        .string<OfferType>()
+        .string<OfferType | '__free'>()
         .default(FORM_INPUT_DEFAULT_VALUES.offerType)
         .required()
         .test('valid-offer-type-test', t('earn.feedback_invalid_offer_type_bondless_maker'), (value) => {
           if (fidelityBonds.length === 0) {
-            return value === OFFERTYPE_ABS
+            return value === OFFERTYPE_FREE
           }
           return true
         }),
@@ -104,34 +103,55 @@ const earnFormBaseSchema = (fidelityBonds: Utxo[], t: TFunction) => {
     .required()
 }
 
-const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
+const OfferTypeInput = ({
+  className,
+  ...props
+}: Omit<React.ComponentProps<typeof RadioGroup>, 'onValueChange'> & {
+  onValueChange: (value: OfferType | '__free') => void
+}) => {
   const { t } = useTranslation()
   const id = useId()
 
   return (
-    <RadioGroup className="flex flex-wrap items-center items-stretch justify-center gap-2" {...props}>
-      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
+    <RadioGroup
+      className={cn('flex flex-wrap items-center items-stretch justify-center gap-1.5', className)}
+      {...props}
+    >
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex min-w-42 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
         <RadioGroupItem
-          value={OFFERTYPE_ABS}
-          id={`${id}-sw0absoffer`}
+          value={OFFERTYPE_FREE}
+          id={`${id}-${OFFERTYPE_FREE}`}
           className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
         />
-        <div className="grid grow justify-items-center gap-2">
+        <div className="grid grow justify-items-center gap-1.5">
+          <GiftIcon />
+          <Label htmlFor={`${id}-${OFFERTYPE_FREE}`} className="justify-center">
+            {t('earn.radio_free_offer_label')}
+          </Label>
+        </div>
+      </div>
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex min-w-42 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
+        <RadioGroupItem
+          value={OFFERTYPE_ABS}
+          id={`${id}-${OFFERTYPE_ABS}`}
+          className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
+        />
+        <div className="grid grow justify-items-center gap-1.5">
           <HandshakeIcon />
-          <Label htmlFor={`${id}-sw0absoffer`} className="justify-center">
+          <Label htmlFor={`${id}-${OFFERTYPE_ABS}`} className="justify-center">
             {t('earn.radio_abs_offer_label')}
           </Label>
         </div>
       </div>
-      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex min-w-42 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
         <RadioGroupItem
           value={OFFERTYPE_REL}
-          id={`${id}-sw0reloffer`}
+          id={`${id}-${OFFERTYPE_REL}`}
           className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
         />
-        <div className="grid grow justify-items-center gap-2">
+        <div className="grid grow justify-items-center gap-1.5">
           <PercentIcon />
-          <Label htmlFor={`${id}-sw0reloffer`} className="justify-center">
+          <Label htmlFor={`${id}-${OFFERTYPE_REL}`} className="justify-center">
             {t('earn.radio_rel_offer_label')}
           </Label>
         </div>
@@ -212,7 +232,6 @@ export function EarnForm({
     <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
       <Field data-invalid={errors.offerType !== undefined}>
         <OfferTypeInput
-          disabled={disabled}
           defaultValue={FORM_INPUT_DEFAULT_VALUES.offerType}
           onValueChange={(value) => {
             setValue('offerType', value, {
@@ -221,9 +240,11 @@ export function EarnForm({
               shouldDirty: true, // update dirty and dirty fields form state
             })
           }}
+          disabled={disabled}
         />
-
-        {errors.offerType?.message && <FieldError>{errors.offerType.message}</FieldError>}
+        {errors.offerType?.message && (
+          <FieldError className="flex justify-center">{errors.offerType.message}</FieldError>
+        )}
       </Field>
       <Tabs value={watchOfferType}>
         <TabsContent value={OFFERTYPE_ABS}>

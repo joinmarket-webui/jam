@@ -32,7 +32,7 @@ describe('EarnForm', () => {
     )
   })
 
-  it('submits the default absolute-fee offer values', async () => {
+  it('submits the default free-fee offer values', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
 
@@ -40,18 +40,55 @@ describe('EarnForm', () => {
       <EarnForm isWaitingMakerStart={false} offerMinsizeMax={100_000_000} onSubmit={onSubmit} fidelityBonds={[]} />,
     )
 
-    expect(screen.getByLabelText('earn.label_abs_fee')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'earn.earn_options' }))
-
-    expect(screen.getByLabelText('earn.label_min_amount_input')).toBeInTheDocument()
-
     await user.click(screen.getByRole('button', { name: 'earn.button_start' }))
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         offerAbsoluteFee: OFFER_FEE_ABS_DEFAULT,
         offerMinAmount: OFFER_MINSIZE_DEFAULT,
+        offerType: '__free',
+      }),
+      expect.anything(),
+    )
+  })
+
+  it('switches to absolute fees and submits the edited values', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+
+    render(
+      <EarnForm
+        isWaitingMakerStart={false}
+        offerMinsizeMax={100_000_000}
+        onSubmit={onSubmit}
+        fidelityBonds={[
+          {
+            utxo: 'txid:0',
+          } as unknown as Utxo,
+        ]}
+      />,
+    )
+
+    expect(screen.queryByLabelText('earn.label_abs_fee')).not.toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('earn.radio_abs_offer_label'))
+
+    expect(screen.getByLabelText('earn.label_abs_fee')).toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText('earn.label_abs_fee'))
+    await user.type(screen.getByLabelText('earn.label_abs_fee'), String(21))
+
+    await user.click(screen.getByRole('button', { name: 'earn.earn_options' }))
+
+    await user.clear(screen.getByLabelText('earn.label_min_amount_input'))
+    await user.type(screen.getByLabelText('earn.label_min_amount_input'), String(50_000))
+
+    await user.click(screen.getByRole('button', { name: 'earn.button_start' }))
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        offerMinAmount: 50_000,
+        offerAbsoluteFee: 21,
         offerType: 'sw0absoffer',
       }),
       expect.anything(),
@@ -75,7 +112,12 @@ describe('EarnForm', () => {
       />,
     )
 
+    expect(screen.queryByLabelText('earn.label_rel_fee')).not.toBeInTheDocument()
+
     await user.click(screen.getByLabelText('earn.radio_rel_offer_label'))
+
+    expect(screen.getByLabelText('earn.label_rel_fee')).toBeInTheDocument()
+
     await user.clear(screen.getByLabelText('earn.label_rel_fee'))
     await user.type(screen.getByLabelText('earn.label_rel_fee'), String(0.5))
 

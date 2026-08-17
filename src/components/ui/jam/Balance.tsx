@@ -125,9 +125,13 @@ const SatsBalance = ({ value, highlightSignificantDigits = true, className, ...p
     <ElementWithSymbols symbol={SAT_SYMBOL} {...props}>
       <span
         data-testid="sats-amount"
-        className={cn('slashed-zero tabular-nums select-all', {
-          [styles.satsAmountColor]: highlightSignificantDigits,
-        }, className)}
+        className={cn(
+          'slashed-zero tabular-nums select-all',
+          {
+            [styles.satsAmountColor]: highlightSignificantDigits,
+          },
+          className,
+        )}
         data-raw-value={value}
       >
         {formatSats(value)}

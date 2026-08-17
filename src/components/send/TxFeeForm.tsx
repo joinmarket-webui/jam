@@ -19,19 +19,22 @@ import {
   type TxFeeFormValues,
 } from './TxFeeForm.schema'
 
-const TxFeeUnitInput = (props: React.ComponentProps<typeof RadioGroup>) => {
+const TxFeeUnitInput = ({ className, ...props }: React.ComponentProps<typeof RadioGroup>) => {
   const { t } = useTranslation()
   const id = useId()
 
   return (
-    <RadioGroup className="flex flex-wrap items-center items-stretch justify-center gap-2" {...props}>
+    <RadioGroup
+      className={cn('flex flex-wrap items-center items-stretch justify-center gap-1.5', className)}
+      {...props}
+    >
       <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 has-data-[state=checked]:bg-primary/5 relative flex w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-2">
         <RadioGroupItem
           value={TX_FEE_UNITS.BLOCKS}
           id={`${id}-blocks`}
           className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
         />
-        <div className="grid grow justify-items-center gap-2">
+        <div className="grid grow justify-items-center gap-1.5">
           <BlocksIcon />
           <Label htmlFor={`${id}-blocks`} className="justify-center">
             {t('settings.fees.radio_tx_fees_blocks')}
@@ -44,7 +47,7 @@ const TxFeeUnitInput = (props: React.ComponentProps<typeof RadioGroup>) => {
           id={`${id}-satsperkvb`}
           className="order-1 size-5 cursor-pointer after:absolute after:inset-0 [&_svg]:size-3"
         />
-        <div className="grid grow justify-items-center gap-2">
+        <div className="grid grow justify-items-center gap-1.5">
           <CurrencySymbol currency="sats" className="size-[1.75em]" />
           <Label htmlFor={`${id}-satsperkvb`} className="justify-center">
             {t('settings.fees.radio_tx_fees_satspervbyte')}

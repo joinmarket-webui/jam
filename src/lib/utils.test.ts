@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
+import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import {
   cn,
@@ -594,38 +594,38 @@ describe('BTC and SATS constants', () => {
 describe('isRelativeOffer', () => {
   it('should return true for relative offer types', () => {
     expect(isRelativeOffer('sw0reloffer')).toBe(true)
-    expect(isRelativeOffer('swreloffer')).toBe(true)
-    expect(isRelativeOffer('reloffer')).toBe(true)
+    expect(isRelativeOffer('swreloffer' as OfferType)).toBe(true)
+    expect(isRelativeOffer('reloffer' as OfferType)).toBe(true)
   })
 
   it('should return false for absolute offer types', () => {
     expect(isRelativeOffer('sw0absoffer')).toBe(false)
-    expect(isRelativeOffer('swabsoffer')).toBe(false)
-    expect(isRelativeOffer('absoffer')).toBe(false)
+    expect(isRelativeOffer('swabsoffer' as OfferType)).toBe(false)
+    expect(isRelativeOffer('absoffer' as OfferType)).toBe(false)
   })
 
   it('should return false for invalid offer types', () => {
-    expect(isRelativeOffer('invalid')).toBe(false)
-    expect(isRelativeOffer('')).toBe(false)
+    expect(isRelativeOffer('invalid' as OfferType)).toBe(false)
+    expect(isRelativeOffer('' as OfferType)).toBe(false)
   })
 })
 
 describe('isAbsoluteOffer', () => {
   it('should return true for absolute offer types', () => {
     expect(isAbsoluteOffer('sw0absoffer')).toBe(true)
-    expect(isAbsoluteOffer('swabsoffer')).toBe(true)
-    expect(isAbsoluteOffer('absoffer')).toBe(true)
+    expect(isAbsoluteOffer('swabsoffer' as OfferType)).toBe(true)
+    expect(isAbsoluteOffer('absoffer' as OfferType)).toBe(true)
   })
 
   it('should return false for relative offer types', () => {
     expect(isAbsoluteOffer('sw0reloffer')).toBe(false)
-    expect(isAbsoluteOffer('swreloffer')).toBe(false)
-    expect(isAbsoluteOffer('reloffer')).toBe(false)
+    expect(isAbsoluteOffer('swreloffer' as OfferType)).toBe(false)
+    expect(isAbsoluteOffer('reloffer' as OfferType)).toBe(false)
   })
 
   it('should return false for invalid offer types', () => {
-    expect(isAbsoluteOffer('invalid')).toBe(false)
-    expect(isAbsoluteOffer('')).toBe(false)
+    expect(isAbsoluteOffer('invalid' as OfferType)).toBe(false)
+    expect(isAbsoluteOffer('' as OfferType)).toBe(false)
   })
 })
 

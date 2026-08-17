@@ -18,6 +18,7 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
+import { OFFERTYPE_ABS } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -44,6 +45,16 @@ import { RenewBondDialog } from './RenewBondDialog'
 import { EarnReportOverlay } from './report/EarnReportOverlay'
 
 const toStartMakerRequest = (values: EarnFormValues): StartMakerRequest => {
+  if (values.offerType === '__free') {
+    return {
+      ordertype: OFFERTYPE_ABS,
+      minsize: String(values.offerMinAmount),
+      cjfee_a: String(0),
+      cjfee_r: String(0),
+      txfee: String(0), // hardcoded on purpose: unused but must be present
+    }
+  }
+
   // both fee properties need to be provided.
   // prevent providing an invalid value by setting the ignored prop to zero
   const cjfee_a = isAbsoluteOffer(values.offerType) ? values.offerAbsoluteFee! : 0

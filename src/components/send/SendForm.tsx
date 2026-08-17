@@ -374,7 +374,7 @@ export function SendForm({
             {hasCoinjoinPreconditionWarning && coinjoinPreconditionSummary && (
               <SendCoinjoinPreconditionAlert summary={coinjoinPreconditionSummary} />
             )}
-            {isCoinJoin && !orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && (
+            {!disabled && isCoinJoin && !orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && (
               <OrderbookEmptyAlert isChecking={orderbookCheckIsFetching} onCheckClick={orderbookRefetch} />
             )}
           </div>
