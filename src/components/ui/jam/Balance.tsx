@@ -123,13 +123,16 @@ const BitcoinBalance = ({
 
 interface SatsBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'children'> {
   value: AmountSats
+  highlightSignificantDigits?: boolean
 }
 
-const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
+const SatsBalance = ({ value, highlightSignificantDigits = true, ...props }: SatsBalanceProps) => {
   return (
     <ElementWithSymbols symbol={SAT_SYMBOL} {...props}>
       <span
-        className={cn('slashed-zero tabular-nums select-all', styles.satsAmountColor)}
+        className={cn('slashed-zero tabular-nums select-all', {
+          [styles.satsAmountColor]: highlightSignificantDigits,
+        })}
         data-testid="sats-amount"
         data-raw-value={value}
       >
