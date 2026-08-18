@@ -10,7 +10,8 @@ const createColumn = (direction: SortDirection, meta?: Record<string, boolean>) 
     columnDef: {
       meta,
     },
-  }) as Column<unknown, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as Column<any, any, any>
 
 const meta: Meta<typeof SortIcon> = {
   title: 'Jam/SortIcon',

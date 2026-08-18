@@ -30,7 +30,8 @@ import { Input } from '../ui/input'
 import { Spinner } from '../ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountDetailsTabContent } from './AccountDetailsTabContent'
-import { JarUtxosTable, type UtxoTableEntry } from './JarUtxosTable'
+import { JarUtxosTable } from './JarUtxosTable'
+import type { UtxoTableEntry } from './JarUtxosTable.schema'
 
 const isKeyEventFromInputElement = (event: KeyboardEvent) => {
   return (

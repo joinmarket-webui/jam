@@ -39,7 +39,8 @@ import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
 import { OrderbookChart } from './OrderbookChart'
-import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
+import { OrderbookTable } from './OrderbookTable'
+import { orderbookTableFeatures, type OrderTableEntry } from './OrderbookTable.schema'
 
 const offerToTableEntry = (
   offer: OrderbookOffer,
@@ -191,7 +192,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   )
   const pinnedToTopOffers = useMemo<OrderTableEntry[]>(() => (isPinMyOffers ? myOffers : []), [isPinMyOffers, myOffers])
 
-  const [tableRowModel, setTableRowModel] = useState<RowModel<OrderTableEntry>>()
+  const [tableRowModel, setTableRowModel] = useState<RowModel<typeof orderbookTableFeatures, OrderTableEntry>>()
 
   const summary = useMemo(() => {
     const uniqueCounterparties = new Set((tableRowModel?.rows ?? []).map((it) => it.original.counterparty))
@@ -447,8 +448,8 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
           selectedEntries={highlightedOffers}
           pinnedEntries={pinnedToTopOffers}
           globalFilter={searchInputRaw}
-          onChange={(table) => {
-            setTableRowModel(table.getFilteredRowModel())
+          onChange={(filteredRowModel) => {
+            setTableRowModel(filteredRowModel)
           }}
         />
       )}
