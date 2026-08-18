@@ -119,9 +119,9 @@ export const OrderbookTable = ({
             },
           }) => {
             return isAbsolute ? (
-              <span className="slashed-zero tabular-nums">{fee.displayValue}</span>
-            ) : (
               <Balance valueString={fee.displayValue} />
+            ) : (
+              <span className="slashed-zero tabular-nums">{fee.displayValue}</span>
             )
           },
           meta: {
@@ -188,7 +188,7 @@ export const OrderbookTable = ({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <>{bondValue.displayValue}</>
+              <span className="slashed-zero tabular-nums">{bondValue.displayValue}</span>
             )
           },
           meta: {
