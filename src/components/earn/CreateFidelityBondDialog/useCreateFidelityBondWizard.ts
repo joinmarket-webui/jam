@@ -276,6 +276,8 @@ export function useCreateFidelityBondWizard(
 
     setStep('creating')
 
+    let broadcasted = false
+
     try {
       // TODO: refactor: use the sweep functionality from `useFidelityBondSweep` here
       const result = await directSend.mutateAsync({
@@ -286,6 +288,7 @@ export function useCreateFidelityBondWizard(
           destination: address,
         },
       })
+      broadcasted = true
 
       // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
       for (const utxo of frozenUtxos) {
@@ -319,9 +322,9 @@ export function useCreateFidelityBondWizard(
       setTxResult(result)
       setStep('success')
       toast.success(t('earn.fidelity_bond.create_fidelity_bond.success_text'))
-
-      await walletInfo.refetch()
     } catch {
+      if (broadcasted) return
+
       // Best-effort rollback — unfreeze UTXOs that were frozen for this operation
       for (const utxo of frozenUtxos) {
         try {
@@ -336,6 +339,14 @@ export function useCreateFidelityBondWizard(
       }
       setFrozenUtxos([])
       setStep('freeze_utxos')
+    } finally {
+      if (broadcasted) {
+        try {
+          await walletInfo.refetch()
+        } catch (error: unknown) {
+          console.warn('Error while refetching wallet info after creating fidelity bond.', error)
+        }
+      }
     }
   }
 
