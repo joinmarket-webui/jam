@@ -793,8 +793,8 @@
     "chart_exact_summary": "{{ exact }} of {{ total }} bonded makers advertise an exact grid fee.",
     "chart_tooltip": "{{ exact }} exactly at {{ fee }}; {{ near }} below it",
     "chart_tooltip_above": "{{ count }} above the largest quantum",
-    "chart_relative_axis": "Advertised relative fee (% of coinjoin amount)",
-    "chart_absolute_axis": "Advertised absolute fee (satoshis per coinjoin)",
+    "chart_relative_axis": "Advertised relative fee (% of amount)",
+    "chart_absolute_axis": "Advertised absolute fee (satoshis per transaction)",
     "chart_legend_exact": "exactly at the quantum (shared anonymity set)",
     "chart_legend_near": "below the quantum (rounds up into this band)",
     "table": {
