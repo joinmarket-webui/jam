@@ -172,7 +172,13 @@ export const OrderbookTable = ({
                 </TooltipTrigger>
                 <TooltipContent>
                   <div>
-                    <Balance valueString={String(bondValue.amount || 0)} convertToUnit="btc" />
+                    <Balance
+                      valueString={String(bondValue.amount || 0)}
+                      convertToUnit="btc"
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                      highlightSignificantDigits={false}
+                    />
                     {bondValue.displayLocktime && (
                       <div className="mt-1 text-xs">
                         {bondValue.displayLocktime} ({bondValue.displayExpiresIn})
