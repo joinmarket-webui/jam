@@ -106,19 +106,6 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
           cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
           meta: { align: 'right', numeric: true },
         }),
-        columnHelper.accessor('fee', {
-          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_tx_fee')}</div>,
-          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-          meta: { align: 'right', numeric: true },
-        }),
-        columnHelper.accessor('confirmationDuration', {
-          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_confirm_time')}</div>,
-          cell: (info) => {
-            const value = info.getValue()
-            return <span>{value != null ? t('earn.report.text_confirm_minutes', { count: value }) : undefined}</span>
-          },
-          meta: { align: 'right', numeric: true },
-        }),
         columnHelper.accessor('notes', {
           header: () => t('earn.report.heading_notes'),
           enableSorting: false,
