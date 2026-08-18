@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { createBrowserRouter } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import App from './App'
 
@@ -49,6 +50,11 @@ const {
 vi.mock('zustand', () => ({
   useStore: (store: { getState: () => unknown }, selector: (s: unknown) => unknown) => selector(store.getState()),
 }))
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const original = await importOriginal<typeof import('react-router-dom')>()
+  return { ...original, createBrowserRouter: vi.fn(original.createBrowserRouter) }
+})
 
 vi.mock('@/store/authStore', () => ({
   authStore: {
@@ -214,7 +220,19 @@ describe('App', () => {
   it('renders the home page when authenticated', async () => {
     render(<App />)
     await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+    expect(screen.getByTestId('session-provider')).toBeInTheDocument()
+    expect(screen.getByTestId('wallet-provider')).toBeInTheDocument()
     expect(screen.getByTestId('toaster')).toBeInTheDocument()
+  })
+
+  it('keeps the router stable across app rerenders', async () => {
+    const { rerender } = render(<App />)
+    await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+    const routerCreations = vi.mocked(createBrowserRouter).mock.calls.length
+
+    rerender(<App />)
+
+    expect(createBrowserRouter).toHaveBeenCalledTimes(routerCreations)
   })
 
   it('redirects to login when not authenticated', async () => {
