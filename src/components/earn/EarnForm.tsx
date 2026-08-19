@@ -167,6 +167,7 @@ interface EarnFormProps {
   onSubmit: SubmitHandler<EarnFormValues>
   offerMinsizeMax: AmountSats
   disabled?: boolean
+  debug?: boolean
 }
 
 export function EarnForm({
@@ -174,8 +175,9 @@ export function EarnForm({
   isWaitingMakerStart,
   fidelityBonds,
   onSubmit,
-  disabled,
   offerMinsizeMax,
+  disabled,
+  debug = false,
 }: EarnFormProps) {
   const { t } = useTranslation()
 
@@ -246,7 +248,7 @@ export function EarnForm({
           <FieldError className="flex justify-center">{errors.offerType.message}</FieldError>
         )}
       </Field>
-      <Tabs value={watchOfferType}>
+      <Tabs value={watchOfferType} className={!debug && errors.offerType?.message ? 'hidden' : undefined}>
         <TabsContent value={OFFERTYPE_ABS}>
           <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
             <FieldLabel htmlFor="offerAbsoluteFee">

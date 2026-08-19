@@ -355,6 +355,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               jmSession.coinjoin_in_process ||
               jmSession.rescanning
             }
+            debug={isDeveloperMode}
           />
         </CardContent>
       </Card>
