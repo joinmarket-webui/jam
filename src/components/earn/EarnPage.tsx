@@ -32,7 +32,7 @@ import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { useDeveloperMode } from '@/store/jamSettingsStore'
+import { useDeveloperMode, useExpertFeatureEnabled } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
@@ -78,6 +78,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
+
+  const enableCustomEarnFeeValues = useExpertFeatureEnabled('custom-earn-fee-values')
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const makerRunning = jmSession?.maker_running === true
 
@@ -355,6 +357,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               jmSession.coinjoin_in_process ||
               jmSession.rescanning
             }
+            enableCustomEarnFeeValues={enableCustomEarnFeeValues}
             debug={isDeveloperMode}
           />
         </CardContent>

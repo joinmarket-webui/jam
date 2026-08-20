@@ -19,6 +19,7 @@ import {
   SparklesIcon,
   HistoryIcon,
   LanguagesIcon,
+  FlaskConicalIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -73,218 +74,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   })
 
   return (
-    <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <PageTitle title={t('navbar.menu_mobile_settings')} />
-
-      {/* Display Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('settings.section_title_display')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SettingsSwitch
-            icon={isPrivate ? EyeIcon : EyeOffIcon}
-            title={t(isPrivate ? 'settings.show_balance' : 'settings.hide_balance')}
-            checked={isPrivate}
-            onCheckedChange={togglePrivacyMode}
-            displayToggle={false}
-          />
-          <Separator className="opacity-50" />
-          <SettingsSwitch
-            renderIcon={({ className }) => <CurrencySymbol currency={currency} className={className} />}
-            title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
-            checked={currency === 'btc'}
-            onCheckedChange={toggleCurrencyUnit}
-            displayToggle={false}
-          />
-          <Separator className="opacity-50" />
-          <SettingsSwitch
-            icon={addressChunkingEnabled === true ? UnfoldHorizontalIcon : FoldHorizontalIcon}
-            title={t(
-              addressChunkingEnabled === true
-                ? 'settings.use_address_chunking_enabled'
-                : 'settings.use_address_chunking_disabled',
-            )}
-            checked={addressChunkingEnabled === true}
-            onCheckedChange={toggleAddressChunking}
-            displayToggle={true}
-          />
-          <Separator className="opacity-50" />
-          <SettingsSwitch
-            icon={resolvedTheme === 'dark' ? SunIcon : MoonIcon}
-            title={resolvedTheme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
-            checked={resolvedTheme === 'dark'}
-            onCheckedChange={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-            displayToggle={false}
-          />
-          <Separator className="opacity-50" />
-          <SettingsItem icon={LanguagesIcon} title={t('settings.label_select_language')}>
-            <LanguageSelector />
-          </SettingsItem>
-        </CardContent>
-      </Card>
-
-      {/* Market Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('settings.section_title_market')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SettingsItem
-            icon={HandCoinsIcon}
-            title={t('settings.show_fee_config')}
-            action={() => setShowFeeConfigDialog(true)}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Wallet Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-0">
-          <SettingsItem
-            icon={KeyRoundIcon}
-            title={t('settings.show_seed')}
-            action={() => setShowSeedDialog(true)}
-            disabled={hashedPassword === undefined}
-          />
-          <Separator className="opacity-50" />
-          <SettingsItem
-            icon={BookKeyIcon}
-            title={t('settings.show_xpubs')}
-            action={() => setShowXpubsDialog(true)}
-            disabled={hashedPassword === undefined}
-          />
-          <Separator className="opacity-50" />
-          <SettingsItem
-            renderIcon={({ className }) =>
-              lockWalletMutation.isPending ? (
-                <Spinner className={className} />
-              ) : (
-                <LockKeyholeIcon className={className} />
-              )
-            }
-            title={t('settings.button_lock_wallet')}
-            action={() => void lockWalletMutation.mutateAsync({ navigate, t })}
-            disabled={lockWalletMutation.isPending}
-          />
-          <Separator className="opacity-50" />
-          <SettingsLink icon={PackageSearchIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
-          <Separator className="opacity-50" />
-          <SettingsLink
-            icon={FileTextIcon}
-            title={t('settings.show_logs')}
-            to={routes.logs}
-            disabled={!isFeatureEnabled('logs')}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Community Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('settings.section_title_community')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-0">
-          <SettingsLink
-            renderIcon={({ className }) => (
-              <img src="/matrix-logo.png" alt="Matrix" className={cn(className, 'light:invert-0 invert')} />
-            )}
-            title={t('settings.matrix')}
-            to={JAM_MATRIX_URL}
-            external={true}
-          />
-          <SettingsLink
-            renderIcon={({ className }) => <img src="/telegram-logo.png" alt="Telegram" className={className} />}
-            title={t('settings.telegram')}
-            to={JAM_TELEGRAM_URL}
-            external={true}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Development & Documentation */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('settings.section_title_dev')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-0">
-          <SettingsLink icon={BookIcon} title={t('settings.documentation')} to={JAM_DOCS_URL} external={true} />
-          <Separator className="opacity-50" />
-          <SettingsLink
-            renderIcon={({ className }) => <GitHubIcon className={className} />}
-            title={t('settings.github')}
-            to={JAM_REPO_URL}
-            external={true}
-          />
-          <Separator className="opacity-50" />
-          <SettingsSwitch
-            icon={SparklesIcon}
-            title={/* TODO: i18n */ 'Enable Feature Preview'}
-            disabled={!isDevMode()}
-            checked={!!jamSettings.state.previewFeatures}
-            onCheckedChange={(checked) => {
-              jamSettings.update({ previewFeatures: checked ? {} : undefined })
-            }}
-          />
-          {!!jamSettings.state.previewFeatures && (
-            <>
-              <Separator className="opacity-50" />
-              <SettingsSwitch
-                icon={HistoryIcon}
-                title={/* TODO: i18n */ 'Transaction History (Experimental)'}
-                disabled={!isDevMode()}
-                checked={!!jamSettings.state.previewFeatures?.['tx-history'] === true}
-                onCheckedChange={(checked) => {
-                  jamSettings.update({
-                    previewFeatures: {
-                      ...jamSettings.state.previewFeatures,
-                      'tx-history': checked,
-                    },
-                  })
-                }}
-              />
-            </>
-          )}
-          {isDevMode() && (
-            <>
-              <Separator className="opacity-50" />
-              <SettingsSwitch
-                icon={TerminalIcon}
-                title="Enable developer mode"
-                disabled={!isDevMode()}
-                checked={jamSettings.state.developerMode}
-                onCheckedChange={(checked) => {
-                  jamSettings.update({ developerMode: checked })
-                }}
-              />
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {jamSettings.state.developerMode && (
-        <>
-          {/* Developer Mode */}
-          <Card className="animate-slide-up">
-            <CardHeader>
-              <CardTitle>Developer Mode</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0">
-              <SettingsLink
-                icon={TerminalIcon}
-                title={'Dev page'}
-                to={routes.__dev}
-                disabled={!isDebugFeatureEnabled('devPage')}
-              />
-              <Separator className="opacity-50" />
-            </CardContent>
-          </Card>
-        </>
-      )}
-
+    <>
       <FeeConfigDialog
         walletFileName={walletFileName}
         feeConfigValidation={feeConfigValidation}
@@ -310,7 +100,247 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
         </>
       )}
-    </div>
+      <div className="mx-auto max-w-4xl space-y-3 p-4">
+        <PageTitle title={t('navbar.menu_mobile_settings')} />
+
+        {/* Display Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.section_title_display')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SettingsSwitch
+              icon={isPrivate ? EyeIcon : EyeOffIcon}
+              title={t(isPrivate ? 'settings.show_balance' : 'settings.hide_balance')}
+              checked={isPrivate}
+              onCheckedChange={togglePrivacyMode}
+              displayToggle={false}
+            />
+            <Separator className="opacity-50" />
+            <SettingsSwitch
+              renderIcon={({ className }) => <CurrencySymbol currency={currency} className={className} />}
+              title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
+              checked={currency === 'btc'}
+              onCheckedChange={toggleCurrencyUnit}
+              displayToggle={false}
+            />
+            <Separator className="opacity-50" />
+            <SettingsSwitch
+              icon={addressChunkingEnabled === true ? UnfoldHorizontalIcon : FoldHorizontalIcon}
+              title={t(
+                addressChunkingEnabled === true
+                  ? 'settings.use_address_chunking_enabled'
+                  : 'settings.use_address_chunking_disabled',
+              )}
+              checked={addressChunkingEnabled === true}
+              onCheckedChange={toggleAddressChunking}
+              displayToggle={true}
+            />
+            <Separator className="opacity-50" />
+            <SettingsSwitch
+              icon={resolvedTheme === 'dark' ? SunIcon : MoonIcon}
+              title={resolvedTheme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
+              checked={resolvedTheme === 'dark'}
+              onCheckedChange={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              displayToggle={false}
+            />
+            <Separator className="opacity-50" />
+            <SettingsItem icon={LanguagesIcon} title={t('settings.label_select_language')}>
+              <LanguageSelector />
+            </SettingsItem>
+          </CardContent>
+        </Card>
+
+        {/* Market Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.section_title_market')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SettingsItem
+              icon={HandCoinsIcon}
+              title={t('settings.show_fee_config')}
+              action={() => setShowFeeConfigDialog(true)}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Wallet Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-0">
+            <SettingsItem
+              icon={KeyRoundIcon}
+              title={t('settings.show_seed')}
+              action={() => setShowSeedDialog(true)}
+              disabled={hashedPassword === undefined}
+            />
+            <Separator className="opacity-50" />
+            <SettingsItem
+              icon={BookKeyIcon}
+              title={t('settings.show_xpubs')}
+              action={() => setShowXpubsDialog(true)}
+              disabled={hashedPassword === undefined}
+            />
+            <Separator className="opacity-50" />
+            <SettingsItem
+              renderIcon={({ className }) =>
+                lockWalletMutation.isPending ? (
+                  <Spinner className={className} />
+                ) : (
+                  <LockKeyholeIcon className={className} />
+                )
+              }
+              title={t('settings.button_lock_wallet')}
+              action={() => void lockWalletMutation.mutateAsync({ navigate, t })}
+              disabled={lockWalletMutation.isPending}
+            />
+            <Separator className="opacity-50" />
+            <SettingsLink icon={PackageSearchIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
+            <Separator className="opacity-50" />
+            <SettingsLink
+              icon={FileTextIcon}
+              title={t('settings.show_logs')}
+              to={routes.logs}
+              disabled={!isFeatureEnabled('logs')}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Community Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.section_title_community')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-0">
+            <SettingsLink
+              renderIcon={({ className }) => (
+                <img src="/matrix-logo.png" alt="Matrix" className={cn(className, 'light:invert-0 invert')} />
+              )}
+              title={t('settings.matrix')}
+              to={JAM_MATRIX_URL}
+              external={true}
+            />
+            <SettingsLink
+              renderIcon={({ className }) => <img src="/telegram-logo.png" alt="Telegram" className={className} />}
+              title={t('settings.telegram')}
+              to={JAM_TELEGRAM_URL}
+              external={true}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Development & Documentation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('settings.section_title_dev')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-0">
+            <SettingsLink icon={BookIcon} title={t('settings.documentation')} to={JAM_DOCS_URL} external={true} />
+            <Separator className="opacity-50" />
+            <SettingsLink
+              renderIcon={({ className }) => <GitHubIcon className={className} />}
+              title={t('settings.github')}
+              to={JAM_REPO_URL}
+              external={true}
+            />
+            <Separator className="opacity-50" />
+            <SettingsSwitch
+              icon={FlaskConicalIcon}
+              title={/* TODO: i18n */ 'Enable Feature Preview'}
+              disabled={!isDevMode()}
+              checked={!!jamSettings.state.previewFeatures}
+              onCheckedChange={(checked) => {
+                jamSettings.update({ previewFeatures: checked ? {} : undefined })
+              }}
+            />
+            {!!jamSettings.state.previewFeatures && (
+              <>
+                <Separator className="opacity-50" />
+                <SettingsSwitch
+                  icon={HistoryIcon}
+                  title={/* TODO: i18n */ 'Transaction History (Experimental)'}
+                  disabled={!isDevMode()}
+                  checked={!!jamSettings.state.previewFeatures?.['tx-history'] === true}
+                  onCheckedChange={(checked) => {
+                    jamSettings.update({
+                      previewFeatures: {
+                        ...jamSettings.state.previewFeatures,
+                        'tx-history': checked,
+                      },
+                    })
+                  }}
+                />
+              </>
+            )}
+            <SettingsSwitch
+              icon={SparklesIcon}
+              title={/* TODO: i18n */ 'Enable Expert Features'}
+              disabled={!isDevMode()}
+              checked={!!jamSettings.state.expertFeatures}
+              onCheckedChange={(checked) => {
+                jamSettings.update({ expertFeatures: checked ? {} : undefined })
+              }}
+            />
+            {!!jamSettings.state.expertFeatures && (
+              <>
+                <Separator className="opacity-50" />
+                <SettingsSwitch
+                  icon={HandCoinsIcon}
+                  title={/* TODO: i18n */ 'Custom Earn Fee Values'}
+                  disabled={!isDevMode()}
+                  checked={!!jamSettings.state.expertFeatures?.['custom-earn-fee-values'] === true}
+                  onCheckedChange={(checked) => {
+                    jamSettings.update({
+                      expertFeatures: {
+                        ...jamSettings.state.expertFeatures,
+                        'custom-earn-fee-values': checked,
+                      },
+                    })
+                  }}
+                />
+              </>
+            )}
+            {isDevMode() && (
+              <>
+                <Separator className="opacity-50" />
+                <SettingsSwitch
+                  icon={TerminalIcon}
+                  title="Enable developer mode"
+                  disabled={!isDevMode()}
+                  checked={jamSettings.state.developerMode}
+                  onCheckedChange={(checked) => {
+                    jamSettings.update({ developerMode: checked })
+                  }}
+                />
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {jamSettings.state.developerMode && (
+          <>
+            {/* Developer Mode */}
+            <Card className="animate-slide-up">
+              <CardHeader>
+                <CardTitle>Developer Mode</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-0">
+                <SettingsLink
+                  icon={TerminalIcon}
+                  title={'Dev page'}
+                  to={routes.__dev}
+                  disabled={!isDebugFeatureEnabled('devPage')}
+                />
+                <Separator className="opacity-50" />
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    </>
   )
 }
 

@@ -161,6 +161,7 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
 
 vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: mocks.developerMode }),
+  useExpertFeatureEnabled: (_name: string) => true,
 }))
 
 vi.mock('./CreateFidelityBondDialog', () => ({

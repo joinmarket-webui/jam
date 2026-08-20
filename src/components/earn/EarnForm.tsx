@@ -167,6 +167,7 @@ interface EarnFormProps {
   onSubmit: SubmitHandler<EarnFormValues>
   offerMinsizeMax: AmountSats
   disabled?: boolean
+  enableCustomEarnFeeValues?: boolean
   debug?: boolean
 }
 
@@ -177,6 +178,7 @@ export function EarnForm({
   onSubmit,
   offerMinsizeMax,
   disabled,
+  enableCustomEarnFeeValues = false,
   debug = false,
 }: EarnFormProps) {
   const { t } = useTranslation()
@@ -249,7 +251,7 @@ export function EarnForm({
         )}
       </Field>
       <Tabs value={watchOfferType} className={!debug && errors.offerType?.message ? 'hidden' : undefined}>
-        <TabsContent value={OFFERTYPE_ABS}>
+        <TabsContent value={OFFERTYPE_ABS} className="space-y-1.5">
           <Field data-invalid={errors.offerAbsoluteFee !== undefined}>
             <FieldLabel htmlFor="offerAbsoluteFee">
               {t('earn.label_abs_fee', {
@@ -260,39 +262,7 @@ export function EarnForm({
               })}
             </FieldLabel>
             <FieldDescription className="text-xs">{t('earn.description_abs_fee')}</FieldDescription>
-
-            <div className="align-center flex flex-wrap justify-center gap-1.5">
-              {JAM.OFFER_FEE_BANDS.absolute.map((it, index) => {
-                return (
-                  <Button
-                    key={index}
-                    type="button"
-                    variant={it === watchOfferAbsoluteFee ? 'default' : 'outline'}
-                    className="min-w-25 sm:min-w-50"
-                    disabled={disabled}
-                    onClick={() =>
-                      setValue('offerAbsoluteFee', it, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                      })
-                    }
-                  >
-                    {it === 0 ? (
-                      t('earn.text_abs_fee_zero')
-                    ) : (
-                      <Balance
-                        className="select-none"
-                        valueString={String(it)}
-                        showBalance={true}
-                        enableVisibilityToggle={false}
-                      />
-                    )}
-                  </Button>
-                )
-              })}
-            </div>
-            <InputGroup className="hidden">
+            <InputGroup className={!enableCustomEarnFeeValues ? 'hidden' : undefined}>
               <InputGroupInput
                 id="offerAbsoluteFee"
                 {...register('offerAbsoluteFee', {
@@ -305,8 +275,39 @@ export function EarnForm({
             </InputGroup>
             {errors.offerAbsoluteFee?.message && <FieldError>{errors.offerAbsoluteFee.message}</FieldError>}
           </Field>
+          <div className="align-center flex flex-wrap justify-start gap-1.5">
+            {JAM.OFFER_FEE_BANDS.absolute.map((it, index) => {
+              return (
+                <Button
+                  key={index}
+                  type="button"
+                  variant={it === watchOfferAbsoluteFee ? 'default' : 'outline'}
+                  className="min-w-33 flex-1 sm:min-w-50"
+                  disabled={disabled}
+                  onClick={() =>
+                    setValue('offerAbsoluteFee', it, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                      shouldValidate: true,
+                    })
+                  }
+                >
+                  {it === 0 ? (
+                    t('earn.text_abs_fee_zero')
+                  ) : (
+                    <Balance
+                      className="select-none"
+                      valueString={String(it)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                    />
+                  )}
+                </Button>
+              )
+            })}
+          </div>
         </TabsContent>
-        <TabsContent value={OFFERTYPE_REL}>
+        <TabsContent value={OFFERTYPE_REL} className="space-y-1.5">
           <Field data-invalid={errors.offerRelativeFeeInPercent !== undefined}>
             <FieldLabel htmlFor="offerRelativeFeeInPercent">
               {t('earn.label_rel_fee', {
@@ -314,32 +315,7 @@ export function EarnForm({
               })}
             </FieldLabel>
             <FieldDescription className="text-xs">{t('earn.description_rel_fee')}</FieldDescription>
-
-            <div className="align-center flex flex-wrap justify-center gap-1.5">
-              {JAM.OFFER_FEE_BANDS.relative
-                .map((it) => factorToPercentage(it))
-                .map((it, index) => {
-                  return (
-                    <Button
-                      key={index}
-                      type="button"
-                      variant={it === watchOfferRelativeFeeInPercent ? 'default' : 'outline'}
-                      className="min-w-25 sm:min-w-33"
-                      disabled={disabled}
-                      onClick={() =>
-                        setValue('offerRelativeFeeInPercent', it, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        })
-                      }
-                    >
-                      {it.toLocaleString()}%
-                    </Button>
-                  )
-                })}
-            </div>
-            <InputGroup className="hidden">
+            <InputGroup className={!enableCustomEarnFeeValues ? 'hidden' : undefined}>
               <InputGroupInput
                 id="offerRelativeFeeInPercent"
                 {...register('offerRelativeFeeInPercent', {
@@ -352,6 +328,30 @@ export function EarnForm({
             </InputGroup>
             {errors.offerRelativeFeeInPercent && <FieldError>{errors.offerRelativeFeeInPercent.message}</FieldError>}
           </Field>
+          <div className="align-center flex flex-wrap justify-start gap-1.5">
+            {JAM.OFFER_FEE_BANDS.relative
+              .map((it) => factorToPercentage(it))
+              .map((it, index) => {
+                return (
+                  <Button
+                    key={index}
+                    type="button"
+                    variant={it === watchOfferRelativeFeeInPercent ? 'default' : 'outline'}
+                    className="min-w-25 flex-1 sm:min-w-33"
+                    disabled={disabled}
+                    onClick={() =>
+                      setValue('offerRelativeFeeInPercent', it, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    {it.toLocaleString()}%
+                  </Button>
+                )
+              })}
+          </div>
         </TabsContent>
       </Tabs>
 
