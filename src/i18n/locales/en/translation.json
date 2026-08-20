@@ -284,6 +284,8 @@
     "section_title_wallet": "Wallet",
     "section_title_community": "Community",
     "section_title_dev": "Development & Documentation",
+    "section_title_expert_features": "Expert Features",
+    "section_title_preview_features": "Preview Features",
     "show_balance": "Show balance",
     "hide_balance": "Hide balance",
     "use_sats": "Display amounts in sats",

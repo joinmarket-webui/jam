@@ -16,9 +16,7 @@ const PageTitle = ({
   children,
 }: PropsWithChildren<PageTitleProps>) => {
   return (
-    <div
-      className={cn('flex flex-1 flex-col gap-2', center ? 'items-center' : 'items-start sm:flex-row sm:items-center')}
-    >
+    <div className={cn('flex flex-col gap-2', center ? 'items-center' : 'items-start sm:flex-row sm:items-center')}>
       <div
         className={cn('flex flex-1 flex-col', {
           'items-center': center,
