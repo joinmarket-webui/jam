@@ -246,17 +246,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <div className="flex flex-col items-center gap-2 sm:flex-row">
-        <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
-
-        <div className="flex justify-end">
-          <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
-          <Button variant="outline" onClick={() => setShowEarnReport(true)}>
-            <FileTextIcon />
-            {t('earn.button_show_report')}
-          </Button>
-        </div>
-      </div>
+      <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')}>
+        <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
+        <Button variant="outline" onClick={() => setShowEarnReport(true)}>
+          <FileTextIcon />
+          {t('earn.button_show_report')}
+        </Button>
+      </PageTitle>
 
       {feeConfigValidation.maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
