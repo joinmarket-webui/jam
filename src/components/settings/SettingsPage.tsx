@@ -25,7 +25,7 @@ import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { LanguageSelector } from '@/components/ui/jam/LanguageSelector'
 import PageTitle from '@/components/ui/jam/PageTitle'
@@ -40,6 +40,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Address } from '../ui/jam/Address'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
@@ -288,6 +289,17 @@ export const SettingsAdvancedContent = () => {
                 ? 'settings.use_address_chunking_enabled'
                 : 'settings.use_address_chunking_disabled',
             )}
+            subtitle={
+              <>
+                Example:{' '}
+                <Address
+                  value="bc1qabcdefghijklmnopqrstuvwxyz0123456789"
+                  chunked={addressChunkingEnabled}
+                  copyable={false}
+                />
+              </>
+            }
+
             checked={addressChunkingEnabled === true}
             onCheckedChange={toggleAddressChunking}
             displayToggle={true}
@@ -299,6 +311,9 @@ export const SettingsAdvancedContent = () => {
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.section_title_expert_features')}</CardTitle>
+          <CardDescription className="text-xs">
+            {/* TODO: i18n */}These are expert settings. Please only change them if you know what you are doing.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <SettingsSwitch
@@ -313,6 +328,7 @@ export const SettingsAdvancedContent = () => {
           <SettingsSwitch
             icon={HandCoinsIcon}
             title={/* TODO: i18n */ 'Custom Earn Fee Values'}
+            subtitle={/* TODO: i18n */ 'Be careful! Custom fee values have negative impacts on privacy.'}
             disabled={!jamSettings.state.expertFeatures}
             checked={jamSettings.state.expertFeatures?.['custom-earn-fee-values'] === true}
             onCheckedChange={(checked) => {

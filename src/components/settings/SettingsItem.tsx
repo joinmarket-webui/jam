@@ -9,7 +9,8 @@ type SettingsItemProps = PropsWithChildren<{
   className?: string
   icon?: LucideIcon
   renderIcon?: ({ className }: { className: string }) => ReactNode
-  title: string
+  title: ReactNode | string
+  subtitle?: ReactNode | string
   disabled?: boolean
   action?: () => void | Promise<void>
   /**
@@ -25,6 +26,7 @@ export const SettingsItem = ({
   icon: Icon,
   renderIcon,
   title,
+  subtitle,
   action,
   disabled = false,
   hasInteractiveChild = false,
@@ -54,7 +56,8 @@ export const SettingsItem = ({
           {renderIcon?.({ className: 'text-muted-foreground h-4 w-4 align-middle' })}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium break-words">{title}</p>
+          <p className="font-medium break-words">{title}</p>
+          {subtitle && <p className="text-muted-foreground text-xs break-words">{subtitle}</p>}
         </div>
       </div>
       {children !== undefined && <div className="shrink-0">{children}</div>}
