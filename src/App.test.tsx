@@ -297,6 +297,7 @@ describe('WalletInfoAutoReload', () => {
     // It should be called with { delayBefore: 210, signal: <AbortSignal> }
     expect(refetchWalletBalance).toHaveBeenLastCalledWith(expect.objectContaining({
       delayBefore: 210,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       signal: expect.any(AbortSignal)
     }))
 
