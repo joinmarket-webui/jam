@@ -440,6 +440,8 @@ const WalletInfoAutoReload = () => {
 
   const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
 
+  const previousUtxosHashHexRef = useRef(utxosHashHex)
+
   useEffect(
     function refetchWalletInfoAfterRescanFinished() {
       const wasRescanning = previousRescanningRef.current
@@ -491,6 +493,12 @@ const WalletInfoAutoReload = () => {
 
   useEffect(
     function refetchWalletInfoAfterUtxoChange() {
+      if (previousUtxosHashHexRef.current === utxosHashHex) {
+        return
+      }
+
+      previousUtxosHashHexRef.current = utxosHashHex
+
       const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
       console.debug(
         'Trigger refetch looking for funds AFTER_UTXO_CHANGE (%s) with delay %d...',
