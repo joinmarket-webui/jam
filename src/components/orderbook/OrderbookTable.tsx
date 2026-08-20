@@ -177,7 +177,6 @@ export const OrderbookTable = ({
                       convertToUnit="btc"
                       showBalance={true}
                       enableVisibilityToggle={false}
-                      highlightSignificantDigits={false}
                     />
                     {bondValue.displayLocktime && (
                       <div className="mt-1 text-xs">

@@ -78,6 +78,7 @@ const BitcoinBalance = ({
   value,
   fractionalPartSpacing = true,
   highlightSignificantDigits = true,
+  className,
   ...props
 }: BitcoinBalanceProps) => {
   const btcValue = satsToBtc(String(value))
@@ -90,10 +91,15 @@ const BitcoinBalance = ({
   return (
     <ElementWithSymbols symbol={BTC_SYMBOL} {...props}>
       <span
-        className={cn('slashed-zero tabular-nums select-all', styles.bitcoinAmount, {
-          [styles.bitcoinAmountSpacing]: fractionalPartSpacing,
-          [styles.bitcoinAmountColor]: highlightSignificantDigits,
-        })}
+        className={cn(
+          'slashed-zero tabular-nums select-all',
+          styles.bitcoinAmount,
+          {
+            [styles.bitcoinAmountSpacing]: fractionalPartSpacing,
+            [styles.bitcoinAmountColor]: highlightSignificantDigits,
+          },
+          className,
+        )}
         data-testid="bitcoin-amount"
         data-integer-part-is-zero={integerPartIsZero}
         data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}

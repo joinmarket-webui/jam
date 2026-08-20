@@ -1,14 +1,14 @@
 :root {
-  --jam-balance-deemphasize-color: var(--muted-foreground);
+  --jam-balance-deemphasize-percentage: 0.42;
 }
 
 :root[data-theme='dark'] {
-  --jam-balance-deemphasize-color: var(--muted-foreground);
+  --jam-balance-deemphasize-percentage: 0.42;
 }
 
 .hideSymbol {
   margin-left: 0.1em;
-  color: var(--jam-balance-deemphasize-color);
+  color: hwb(from currentcolor h w b / var(--jam-balance-deemphasize-percentage));
 }
 
 .frozenSymbol {
@@ -53,10 +53,10 @@
 .bitcoinAmountColor[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"],
 /** Symbol */
 .bitcoinAmountColor[data-raw-value="0"] + .bitcoinSymbol {
-  color: var(--jam-balance-deemphasize-color);
+  color: hwb(from currentcolor h w b / var(--jam-balance-deemphasize-percentage));
 }
 
 .satsAmountColor[data-raw-value='0'],
 .satsAmountColor[data-raw-value='0'] + .satsSymbol {
-  color: var(--jam-balance-deemphasize-color);
+  color: hwb(from currentcolor h w b / var(--jam-balance-deemphasize-percentage));
 }
