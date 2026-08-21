@@ -297,8 +297,7 @@ describe('WalletInfoAutoReload', () => {
     // It should be called with { delayBefore: 210, signal: <AbortSignal> }
     expect(refetchWalletBalance).toHaveBeenLastCalledWith(expect.objectContaining({
       delayBefore: 210,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      signal: expect.any(AbortSignal)
+      signal: expect.any(AbortSignal) as unknown as AbortSignal
     }))
 
     // 6. Test that same hash doesn't trigger another refetch
