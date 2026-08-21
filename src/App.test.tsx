@@ -1,7 +1,7 @@
 import { type ReactNode, StrictMode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import App from './App'
+import App, { WalletInfoAutoReload } from './App'
 
 type Holders = {
   walletFileName?: string
@@ -267,19 +267,20 @@ describe('WalletInfoAutoReload', () => {
   it('skips refetch on initial mount but refetches on subsequent utxosHashHex changes', async () => {
     const { rerender } = render(
       <StrictMode>
-        <App />
+        <WalletInfoAutoReload />
       </StrictMode>,
     )
 
     // 1. Verify refetchWalletBalance is NOT called because of the initial mount
-    await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+    // Yield to the event loop so the synchronous effects execute
+    await new Promise((r) => setTimeout(r, 0))
     expect(refetchWalletBalance).not.toHaveBeenCalled()
 
     // 2. A subsequent utxosHashHex change DOES call refetchWalletBalance
     holders.utxosHashHex = 'changed-hash-1'
     rerender(
       <StrictMode>
-        <App />
+        <WalletInfoAutoReload />
       </StrictMode>,
     )
     await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(1))
@@ -288,7 +289,7 @@ describe('WalletInfoAutoReload', () => {
     holders.utxosHashHex = 'changed-hash-2'
     rerender(
       <StrictMode>
-        <App />
+        <WalletInfoAutoReload />
       </StrictMode>,
     )
     await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(2))
@@ -305,7 +306,7 @@ describe('WalletInfoAutoReload', () => {
     // 6. Test that same hash doesn't trigger another refetch
     rerender(
       <StrictMode>
-        <App />
+        <WalletInfoAutoReload />
       </StrictMode>,
     )
     await new Promise((r) => setTimeout(r, 50))

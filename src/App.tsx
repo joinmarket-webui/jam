@@ -425,7 +425,7 @@ const RELOAD_WALLET_INFO_DELAY: {
  * This might change in the future but is okay for now - components can
  * always trigger a reload on demand and inform the user as they see fit.
  */
-const WalletInfoAutoReload = () => {
+export const WalletInfoAutoReload = () => {
   const {
     blockHeight: currentBlockHeight,
     takerInfo: { running: currentTakerRunning },
