@@ -8,7 +8,7 @@
 
 .hideSymbol {
   margin-left: 0.1em;
-  color: hwb(from currentcolor h w b / var(--jam-balance-deemphasize-percentage));
+  color: var(--muted-foreground);
 }
 
 .frozenSymbol {

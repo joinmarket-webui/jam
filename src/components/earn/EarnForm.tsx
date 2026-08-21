@@ -295,12 +295,7 @@ export function EarnForm({
                   {it === 0 ? (
                     t('earn.text_abs_fee_zero')
                   ) : (
-                    <Balance
-                      className="select-none"
-                      valueString={String(it)}
-                      showBalance={true}
-                      enableVisibilityToggle={false}
-                    />
+                    <Balance valueString={String(it)} showBalance={true} enableVisibilityToggle={false} />
                   )}
                 </Button>
               )
