@@ -113,8 +113,9 @@ describe('SeedPhraseDialog', () => {
 
   it('clears and masks the cached seed when verification expires', async () => {
     vi.useFakeTimers()
+    const props = { ...baseProps, autoCloseTimeout: 1_000, onOpenChange: vi.fn() }
     seedQuery = { ...seedQuery, data: ['word1', 'word2'] }
-    render(<SeedPhraseDialog {...baseProps} autoCloseTimeout={1_000} onOpenChange={vi.fn()} />)
+    const { rerender } = render(<SeedPhraseDialog {...props} />)
 
     verify()
     fireEvent.click(screen.getByTestId('reveal-switch'))
@@ -123,7 +124,12 @@ describe('SeedPhraseDialog', () => {
     await act(() => vi.advanceTimersByTimeAsync(1_332))
     expect(removeQueries).toHaveBeenCalledWith({ queryKey: ['seed'] })
 
+    seedQuery = { ...seedQuery, data: undefined }
     verify()
+    expect(refetch).toHaveBeenCalledTimes(1)
+
+    seedQuery = { ...seedQuery, data: ['word1', 'word2'] }
+    rerender(<SeedPhraseDialog {...props} />)
     expect(screen.getByTestId('seed-grid')).toHaveAttribute('data-masked', 'true')
   })
 })
