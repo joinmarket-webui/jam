@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { WalletFileName } from '@/lib/utils'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 
@@ -33,7 +33,11 @@ vi.mock('@/hooks/useApiClient', () => ({
 }))
 
 vi.mock('../ui/jam/SeedPhraseGrid', () => ({
-  SeedPhraseGrid: ({ value }: { value: string[] }) => <div data-testid="seed-grid">{value.join(' ')}</div>,
+  SeedPhraseGrid: ({ value, masked }: { value: string[]; masked: boolean }) => (
+    <div data-testid="seed-grid" data-masked={masked}>
+      {value.join(' ')}
+    </div>
+  ),
 }))
 
 vi.mock('../ui/spinner', () => ({
@@ -70,6 +74,8 @@ describe('SeedPhraseDialog', () => {
     seedQuery = { data: undefined, error: undefined, isFetching: false, refetch, dataUpdatedAt: 0 }
   })
 
+  afterEach(() => vi.useRealTimers())
+
   it('shows the password verification form before verification', () => {
     render(<SeedPhraseDialog {...baseProps} onOpenChange={vi.fn()} />)
     expect(screen.getByText('settings.seed_modal.verification.title')).toBeInTheDocument()
@@ -103,5 +109,21 @@ describe('SeedPhraseDialog', () => {
     fireEvent.click(screen.getByTestId('cancel'))
     expect(onOpenChange).toHaveBeenCalledWith(false)
     expect(removeQueries).toHaveBeenCalledWith({ queryKey: ['seed'] })
+  })
+
+  it('clears and masks the cached seed when verification expires', async () => {
+    vi.useFakeTimers()
+    seedQuery = { ...seedQuery, data: ['word1', 'word2'] }
+    render(<SeedPhraseDialog {...baseProps} autoCloseTimeout={1_000} onOpenChange={vi.fn()} />)
+
+    verify()
+    fireEvent.click(screen.getByTestId('reveal-switch'))
+    expect(screen.getByTestId('seed-grid')).toHaveAttribute('data-masked', 'false')
+
+    await act(() => vi.advanceTimersByTimeAsync(1_332))
+    expect(removeQueries).toHaveBeenCalledWith({ queryKey: ['seed'] })
+
+    verify()
+    expect(screen.getByTestId('seed-grid')).toHaveAttribute('data-masked', 'true')
   })
 })
