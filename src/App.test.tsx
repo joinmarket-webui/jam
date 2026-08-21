@@ -268,7 +268,7 @@ describe('WalletInfoAutoReload', () => {
     const { rerender } = render(
       <StrictMode>
         <App />
-      </StrictMode>
+      </StrictMode>,
     )
 
     // 1. Verify refetchWalletBalance is NOT called because of the initial mount
@@ -280,7 +280,7 @@ describe('WalletInfoAutoReload', () => {
     rerender(
       <StrictMode>
         <App />
-      </StrictMode>
+      </StrictMode>,
     )
     await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(1))
 
@@ -289,24 +289,26 @@ describe('WalletInfoAutoReload', () => {
     rerender(
       <StrictMode>
         <App />
-      </StrictMode>
+      </StrictMode>,
     )
     await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(2))
 
-    // 4. Test that the existing refetch behavior arguments remain unchanged 
+    // 4. Test that the existing refetch behavior arguments remain unchanged
     // It should be called with { delayBefore: 210, signal: <AbortSignal> }
-    expect(refetchWalletBalance).toHaveBeenLastCalledWith(expect.objectContaining({
-      delayBefore: 210,
-      signal: expect.any(AbortSignal) as unknown as AbortSignal
-    }))
+    expect(refetchWalletBalance).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        delayBefore: 210,
+        signal: expect.any(AbortSignal) as unknown as AbortSignal,
+      }),
+    )
 
     // 6. Test that same hash doesn't trigger another refetch
     rerender(
       <StrictMode>
         <App />
-      </StrictMode>
+      </StrictMode>,
     )
-    await new Promise(r => setTimeout(r, 50))
+    await new Promise((r) => setTimeout(r, 50))
     expect(refetchWalletBalance).toHaveBeenCalledTimes(2)
   })
 })
