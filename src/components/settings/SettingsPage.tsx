@@ -64,16 +64,15 @@ interface SettingPageProps {
 
 export const SettingsPage = ({ walletFileName, onLockWallet, initialTab = 'basic' }: SettingPageProps) => {
   const { t } = useTranslation()
-
   const [tab, setTab] = useState<SettingsTab>(initialTab)
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <PageTitle title={t('navbar.menu_mobile_settings')}>
+      <PageTitle title={t('settings.title')}>
         <Tabs value={tab} onValueChange={(value) => setTab(value as SettingsTab)}>
           <TabsList>
-            <TabsTrigger value="basic">Basic</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            <TabsTrigger value="basic">{t('settings.tab_basic')}</TabsTrigger>
+            <TabsTrigger value="advanced">{t('settings.tab_advanced')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </PageTitle>
@@ -311,14 +310,16 @@ export const SettingsAdvancedContent = () => {
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.section_title_expert_features')}</CardTitle>
-          <CardDescription className="text-xs">
-            {/* TODO: i18n */}These are expert settings. Please only change them if you know what you are doing.
-          </CardDescription>
+          <CardDescription className="text-xs">{t('settings.section_description_expert_features')}</CardDescription>
         </CardHeader>
         <CardContent>
           <SettingsSwitch
             icon={SparklesIcon}
-            title={/* TODO: i18n */ 'Enable Expert Features'}
+            title={t(
+              jamSettings.state.expertFeatures
+                ? 'settings.use_expert_features_enabled'
+                : 'settings.use_expert_features_disabled',
+            )}
             checked={!!jamSettings.state.expertFeatures}
             onCheckedChange={(checked) => {
               jamSettings.update({ expertFeatures: checked ? {} : undefined })
@@ -327,8 +328,8 @@ export const SettingsAdvancedContent = () => {
           <Separator className="opacity-50" />
           <SettingsSwitch
             icon={HandCoinsIcon}
-            title={/* TODO: i18n */ 'Custom Earn Fee Values'}
-            subtitle={/* TODO: i18n */ 'Be careful! Custom fee values have negative impacts on privacy.'}
+            title={t('settings.use_expert_custom_earn_fee_values_title')}
+            subtitle={t('settings.use_expert_custom_earn_fee_values_description')}
             disabled={!jamSettings.state.expertFeatures}
             checked={jamSettings.state.expertFeatures?.['custom-earn-fee-values'] === true}
             onCheckedChange={(checked) => {
@@ -346,12 +347,17 @@ export const SettingsAdvancedContent = () => {
       {/* Advanced Preview Features */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('settings.section_title_preview_features')}</CardTitle>
+          <CardTitle>{t('settings.section_title_feature_preview')}</CardTitle>
         </CardHeader>
         <CardContent>
           <SettingsSwitch
             icon={FlaskConicalIcon}
-            title={/* TODO: i18n */ 'Enable Feature Preview'}
+
+            title={t(
+              jamSettings.state.previewFeatures
+                ? 'settings.use_feature_preview_enabled'
+                : 'settings.use_feature_preview_disabled',
+            )}
             disabled={!isDevMode()}
             checked={!!jamSettings.state.previewFeatures}
             onCheckedChange={(checked) => {
@@ -361,7 +367,7 @@ export const SettingsAdvancedContent = () => {
           <Separator className="opacity-50" />
           <SettingsSwitch
             icon={HistoryIcon}
-            title={/* TODO: i18n */ 'Transaction History (Experimental)'}
+            title={/* no need to translate, should be short lived */ 'Transaction History (Experimental)'}
             disabled={!jamSettings.state.previewFeatures}
             checked={jamSettings.state.previewFeatures?.['tx-history'] === true}
             onCheckedChange={(checked) => {

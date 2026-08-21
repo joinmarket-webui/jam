@@ -219,7 +219,7 @@ describe('SettingsPage', () => {
   it('renders basic display and market settings and handles their actions', () => {
     renderSettingsPage('basic')
 
-    expect(screen.getByRole('heading', { name: 'navbar.menu_mobile_settings' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'settings.title' })).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_display')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_market')).toBeInTheDocument()
     expect(screen.getByText('language-selector')).toBeInTheDocument()
@@ -287,10 +287,10 @@ describe('SettingsPage', () => {
   it('renders advanced section', () => {
     renderSettingsPage('advanced')
 
-    expect(screen.getByRole('heading', { name: 'navbar.menu_mobile_settings' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'settings.title' })).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_display')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_expert_features')).toBeInTheDocument()
-    expect(screen.getByText('settings.section_title_preview_features')).toBeInTheDocument()
+    expect(screen.getByText('settings.section_title_feature_preview')).toBeInTheDocument()
     expect(screen.getByText('Developer Mode')).toBeInTheDocument()
 
     fireEvent.click(screen.getByText('switch:true'))
