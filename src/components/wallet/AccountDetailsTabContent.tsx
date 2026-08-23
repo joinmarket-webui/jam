@@ -7,7 +7,12 @@ import { statusTags } from '@/lib/tags'
 import { tryBtcToSat, isValidInteger } from '@/lib/utils'
 import type { HdPath } from '@/types/global'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
-import { BranchEntryTable, type BranchEntryApiObject, type BranchEntryTableRow } from './BranchEntryTable'
+import { BranchEntryTable } from './BranchEntryTable'
+import {
+  branchEntryTableFeatures,
+  type BranchEntryApiObject,
+  type BranchEntryTableRow,
+} from './BranchEntryTable.schema'
 
 const HIDE_EMPTY_BRANCHES = true
 
@@ -50,7 +55,7 @@ interface BranchAccordionContentProps {
 }
 
 const BranchAccordionContent = ({ value }: BranchAccordionContentProps) => {
-  const [_tableRowModel, setTableRowModel] = useState<RowModel<BranchEntryTableRow>>()
+  const [_tableRowModel, setTableRowModel] = useState<RowModel<typeof branchEntryTableFeatures, BranchEntryTableRow>>()
 
   const tableEntries = useMemo(() => {
     return (value.__raw.entries || []).map((it) => branchToTableEntry(it))
@@ -62,8 +67,8 @@ const BranchAccordionContent = ({ value }: BranchAccordionContentProps) => {
       selectedEntries={[]}
       pinnedEntries={[]}
       globalFilter={''}
-      onChange={(table) => {
-        setTableRowModel(table.getFilteredRowModel())
+      onChange={(filteredRowModel) => {
+        setTableRowModel(filteredRowModel)
       }}
     />
   )

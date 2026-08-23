@@ -30,11 +30,18 @@ export type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
   [Property in Key]-?: Type[Property]
 }
 
+declare module '@tanstack/table-core' {
+  // see https://tanstack.com/table/latest/docs/framework/react/guide/migrating#tablemeta-columnmeta-typing-changes
+  interface ColumnMeta<_TFeatures, _TData extends RowData = RowData, _TValue = unknown> {
+    align?: 'left' | 'right' | 'center'
+    alphabetic?: boolean
+    numeric?: boolean
+  }
+}
+
 declare module '@tanstack/react-table' {
-  // see https://tanstack.com/table/v8/docs/api/core/column-def#meta
-  interface ColumnMeta<TData extends RowData, TValue> {
-    __tData?: TData
-    __tValue?: TValue
+  // see https://tanstack.com/table/latest/docs/framework/react/guide/migrating#tablemeta-columnmeta-typing-changes
+  interface ColumnMeta<_TFeatures, _TData extends RowData = RowData, _TValue = unknown> {
     align?: 'left' | 'right' | 'center'
     alphabetic?: boolean
     numeric?: boolean

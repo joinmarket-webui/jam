@@ -101,6 +101,18 @@ const minLockdateOption = (isDeveloperMode = false) => {
   return lockdate
 }
 
+const submitFromReview = async (result: { current: ReturnType<typeof useCreateFidelityBondWizard> }) => {
+  act(() => result.current.setSelectedLockdate(minLockdateOption()))
+  act(() => result.current.setSelectedJarIndex(0))
+  act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+  act(() => result.current.setStep('freeze_utxos'))
+  await act(async () => result.current.handleNext())
+  expect(result.current.step).toBe('review')
+
+  act(() => result.current.setConfirmationChecked(true))
+  await act(async () => result.current.handleNext())
+}
+
 describe('useCreateFidelityBondWizard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -546,6 +558,32 @@ describe('useCreateFidelityBondWizard', () => {
       act(() => result.current.handleBack())
 
       expect(result.current.step).toBe('freeze_utxos')
+    })
+  })
+
+  describe('bond creation failures', () => {
+    it('stays on the success step when the wallet refetch after the broadcast fails', async () => {
+      mocks.walletInfoRefetch.mockRejectedValue(new Error('refetch failed'))
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+      await submitFromReview(result)
+
+      expect(mocks.directSendMutateAsync).toHaveBeenCalled()
+      expect(result.current.step).toBe('success')
+      expect(result.current.txResult).toEqual({ txid: 'created-tx' })
+      expect(mocks.toastSuccess).toHaveBeenCalledWith('earn.fidelity_bond.create_fidelity_bond.success_text')
+    })
+
+    it('rolls back to the freeze step when the send itself fails', async () => {
+      mocks.directSendMutateAsync.mockRejectedValue(new Error('broadcast failed'))
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+      await submitFromReview(result)
+
+      expect(result.current.step).toBe('freeze_utxos')
+      expect(result.current.txResult).toBeUndefined()
+      expect(result.current.frozenUtxos).toEqual([])
+      expect(mocks.walletInfoRefetch).not.toHaveBeenCalled()
     })
   })
 })

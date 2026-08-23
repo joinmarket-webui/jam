@@ -79,9 +79,14 @@ export const EarnReportChart = ({ entries, days = DEFAULT_CHART_DAYS }: EarnRepo
                 <TooltipContent side="top" className="text-xs">
                   <div className="font-medium">{bucket.label}</div>
                   <div>
-                    <Balance valueString={String(bucket.earned)} showBalance={true} enableVisibilityToggle={false} />
+                    <Balance
+                      valueString={String(bucket.earned)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                      highlightSignificantDigits={false}
+                    />
                   </div>
-                  <div className="text-muted-foreground">
+                  <div className="text-primary-foreground">
                     {t('earn.report.chart_tooltip_transactions', { count: bucket.count })}
                   </div>
                 </TooltipContent>
