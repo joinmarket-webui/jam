@@ -52,6 +52,30 @@ describe('EarnForm', () => {
     )
   })
 
+  it('verifies offer with fees cannot be submitted without Fidelity Bond', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+
+    render(
+      <EarnForm isWaitingMakerStart={false} offerMinsizeMax={100_000_000} onSubmit={onSubmit} fidelityBonds={[]} />,
+    )
+
+    expect(screen.queryByLabelText('earn.label_abs_fee')).not.toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('earn.radio_abs_offer_label'))
+
+    expect(screen.getByLabelText('earn.label_abs_fee')).toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText('earn.label_abs_fee'))
+    await user.type(screen.getByLabelText('earn.label_abs_fee'), String(21))
+
+    await user.click(screen.getByRole('button', { name: 'earn.button_start' }))
+
+    expect(await screen.findByText('earn.feedback_invalid_offer_type_bondless_maker')).toBeInTheDocument()
+
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
   it('switches to absolute fees and submits the edited values', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
