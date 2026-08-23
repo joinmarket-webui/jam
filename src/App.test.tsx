@@ -69,12 +69,6 @@ vi.mock('@/store/authStore', () => ({
   },
 }))
 
-vi.mock('./store/jmSessionStore', () => ({
-  jmSessionStore: {
-    getState: () => ({ state: holders.jmSession, update: vi.fn() }),
-  },
-}))
-
 vi.mock('./store/jmTxStore', () => ({
   jmTxStore: { getState: () => ({ state: {} }) },
 }))

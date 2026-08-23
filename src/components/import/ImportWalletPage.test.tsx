@@ -5,8 +5,9 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routes } from '@/constants/routes'
 import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import ImportWalletPage from './ImportWalletPage'
+
+type SessionInfoUpdater = (previousState?: SessionResponse) => SessionResponse | undefined
 
 const mocks = vi.hoisted(() => ({
   configGet: vi.fn(),
@@ -21,6 +22,14 @@ const mocks = vi.hoisted(() => ({
   toastDismiss: vi.fn(),
   toastLoading: vi.fn(() => 'toast-id'),
   toastSuccess: vi.fn(),
+  sessionState: undefined as SessionResponse | undefined,
+  updateSessionInfo: vi.fn((updater: unknown) => {
+    if (typeof updater === 'function') {
+      mocks.sessionState = (updater as SessionInfoUpdater)(mocks.sessionState)
+    } else {
+      mocks.sessionState = updater as SessionResponse | undefined
+    }
+  }),
 }))
 
 type MutationOptions = { mutationFn: (input: unknown) => Promise<unknown> }
@@ -68,21 +77,10 @@ vi.mock('sonner', () => ({
   },
 }))
 
-type SessionInfoUpdater = (previousState?: SessionResponse) => SessionResponse | undefined
-
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSession: () => ({
-    jmSession: jmSessionStore.getState().state,
-    updateSessionInfo: (updater: unknown) => {
-      const current = jmSessionStore.getState().state
-      if (typeof updater === 'function') {
-        const updateFn = updater as SessionInfoUpdater
-        const next = updateFn(current)
-        jmSessionStore.setState({ state: next })
-      } else {
-        jmSessionStore.setState({ state: updater as SessionResponse | undefined })
-      }
-    },
+    jmSession: mocks.sessionState,
+    updateSessionInfo: mocks.updateSessionInfo,
   }),
 }))
 
@@ -187,7 +185,7 @@ describe('ImportWalletPage', () => {
     mocks.toastLoading.mockClear()
     mocks.toastSuccess.mockReset()
     authStore.getState().clear()
-    jmSessionStore.setState({ state: undefined })
+    mocks.sessionState = undefined
 
     mocks.recoverWallet.mockResolvedValue({
       walletname: 'restored.jmdat',
@@ -225,7 +223,7 @@ describe('ImportWalletPage', () => {
     )
     expect(mocks.configSet).toHaveBeenCalledTimes(2)
     expect(mocks.rescanBlockchain).toHaveBeenCalled()
-    expect(jmSessionStore.getState().state?.rescanning).toBe(true)
+    expect(mocks.sessionState?.rescanning).toBe(true)
     expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
     expect(mocks.toastDismiss).toHaveBeenCalledWith('toast-id')
   })

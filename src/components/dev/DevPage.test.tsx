@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import DevPage from './DevPage'
 
 vi.mock('react-router-dom', () => ({
@@ -32,7 +31,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSession: () => ({
-    jmSession: jmSessionStore.getState().state,
+    jmSession: undefined,
     updateSessionInfo: vi.fn(),
   }),
 }))

@@ -1,4 +1,5 @@
 import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import test from 'node:test'
 import type { UseFormReturn } from 'react-hook-form'
@@ -14,7 +15,6 @@ import { JM_NG_DEFAULT_TUMBLER_PARAMS } from '@/constants/jm'
 import type { Jar, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { percentageToFactor } from '@/lib/utils'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import type { SweepFormValues } from './SweepFormSchema'
 import { SweepPage } from './SweepPage'
@@ -110,6 +110,11 @@ const mocks = vi.hoisted(() => ({
   hasOrders: true,
   orderbookIsLoading: false,
   orderbookError: false,
+  sessionActive: true,
+  coinjoinInProcess: false,
+  makerRunning: false,
+  rescanning: false,
+  hasSchedule: false,
 }))
 
 vi.mock('@/hooks/useQueryOrderbook', () => ({
@@ -367,37 +372,30 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSession: () => ({
-    jmSession: jmSessionStore.getState().state,
+    jmSession: mocks.sessionActive ? ({ session: true, wallet_name: 'wallet.jmdat' } as SessionResponse) : undefined,
     updateSessionInfo: vi.fn(),
   }),
-  useJamSessionInfoContext: () => {
-    const state = jmSessionStore.getState().state
-    return {
-      rescanInfo: { rescanning: !!state?.rescanning },
-      takerInfo: {
-        running: !!state?.coinjoin_in_process,
-        scheduler: {
-          running: !!state?.coinjoin_in_process && !!state?.schedule,
-        },
+  useJamSessionInfoContext: () => ({
+    rescanInfo: { rescanning: mocks.rescanning },
+    takerInfo: {
+      running: mocks.coinjoinInProcess,
+      scheduler: {
+        running: mocks.coinjoinInProcess && mocks.hasSchedule,
       },
-      makerInfo: {
-        running: !!state?.maker_running,
-      },
-    }
-  },
+    },
+    makerInfo: {
+      running: mocks.makerRunning,
+    },
+  }),
 }))
 
 const setSession = (overrides: Record<string, unknown> = {}) => {
-  jmSessionStore.setState({
-    state: {
-      coinjoin_in_process: false,
-      maker_running: false,
-      rescanning: false,
-      session: true,
-      wallet_name: 'wallet.jmdat',
-      ...overrides,
-    },
-  })
+  mocks.sessionActive = overrides.session !== false
+  mocks.coinjoinInProcess = overrides.coinjoin_in_process === true
+  mocks.makerRunning = overrides.maker_running === true
+  mocks.rescanning = overrides.rescanning === true
+  mocks.hasSchedule =
+    overrides.schedule !== undefined && Array.isArray(overrides.schedule) && overrides.schedule.length > 0
 }
 
 describe('SweepPage', async () => {
@@ -438,7 +436,7 @@ describe('SweepPage', async () => {
   })
 
   it('shows loading while session, fee config, or wallet info is loading', () => {
-    jmSessionStore.setState({ state: undefined })
+    mocks.sessionActive = false
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('page-loading')).toBeInTheDocument()

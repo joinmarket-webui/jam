@@ -117,7 +117,6 @@ export const JamSessionInfoContextProvider = ({
 
   const value = {
     blockHeight: state?.block_height ?? undefined,
-    takerRunning: state?.coinjoin_in_process === true,
     takerInfo,
     makerInfo,
     jmSession: state,

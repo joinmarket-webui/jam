@@ -1,17 +1,18 @@
 import type React from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as JAM from '@/constants/jam'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import type { EarnFormValues } from './EarnForm'
 import { EarnPage } from './EarnPage'
 
 const mocks = vi.hoisted(() => ({
   developerMode: false,
   feeConfigMissing: false,
+  jmSession: undefined as SessionResponse | undefined,
   orderbookData: vi.fn<() => unknown>(),
   orderbookQueryOptions: vi.fn(),
   orderbookQueryState: {
@@ -133,7 +134,7 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSession: () => ({
-    jmSession: jmSessionStore.getState().state,
+    jmSession: mocks.jmSession,
     updateSessionInfo: vi.fn(),
   }),
 }))
@@ -294,18 +295,16 @@ const expiredBond: FidelityBondUtxo = {
 }
 
 const setSession = (overrides: Record<string, unknown> = {}) => {
-  jmSessionStore.setState({
-    state: {
-      coinjoin_in_process: false,
-      maker_running: false,
-      nickname: 'maker-a',
-      offer_list: [],
-      rescanning: false,
-      session: true,
-      wallet_name: 'wallet.jmdat',
-      ...overrides,
-    },
-  })
+  mocks.jmSession = {
+    coinjoin_in_process: false,
+    maker_running: false,
+    nickname: 'maker-a',
+    offer_list: [],
+    rescanning: false,
+    session: true,
+    wallet_name: 'wallet.jmdat',
+    ...overrides,
+  }
 }
 
 describe('EarnPage', () => {
@@ -343,7 +342,7 @@ describe('EarnPage', () => {
   })
 
   it('shows loading until session and wallet info are ready', () => {
-    jmSessionStore.setState({ state: undefined })
+    mocks.jmSession = undefined
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
