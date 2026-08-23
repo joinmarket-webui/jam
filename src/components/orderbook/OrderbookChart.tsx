@@ -19,7 +19,9 @@ const bucketByQuantizationBand = (entries: OrderTableEntry[], mode: FeeMode) => 
   const offersByMaker = new Map<string, OrderTableEntry>()
 
   for (const entry of entries) {
-    if (mode === 'absolute' ? !entry.type.isAbsolute : !entry.type.isRelative) continue
+    if (entry.bondValue.value <= 0) continue
+    if (mode === 'absolute' && !entry.type.isAbsolute) continue
+    if (mode === 'relative' && !entry.type.isRelative) continue
 
     const previous = offersByMaker.get(entry.counterparty)
     if (Number.isFinite(entry.fee.value) && (!previous || entry.fee.value < previous.fee.value)) {

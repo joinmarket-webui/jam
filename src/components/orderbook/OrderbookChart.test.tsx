@@ -49,10 +49,10 @@ describe('OrderbookChart', () => {
       />,
     )
 
-    expect(screen.getByText('orderbook.chart_exact_summary {"exact":2,"total":4}')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.chart_exact_summary {"exact":1,"total":3}')).toBeInTheDocument()
     expect(
       screen.getByRole('button', {
-        name: 'orderbook.chart_tooltip {"fee":"0.01%","exact":2,"near":1}',
+        name: 'orderbook.chart_tooltip {"fee":"0.01%","exact":1,"near":1}',
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'orderbook.chart_tooltip_above {"count":1}' })).toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('OrderbookChart', () => {
 
     await user.click(screen.getByRole('button', { name: 'orderbook.chart_absolute_offers' }))
 
-    expect(screen.getByText('orderbook.chart_exact_summary {"exact":2,"total":2}')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.chart_exact_summary {"exact":1,"total":1}')).toBeInTheDocument()
     expect(
       screen.getByRole('button', {
         name: 'orderbook.chart_tooltip {"fee":"0","exact":1,"near":0}',
