@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { OFFER_FEE_BANDS } from '@/constants/jam'
 import { factorToPercentage } from '@/lib/utils'
 import type { OrderTableEntry } from './OrderbookTable'
 
@@ -14,16 +15,13 @@ interface FeeBucket {
   near: number
 }
 
-const FEE_GRIDS = {
-  relative: [0.00002, 0.00005, 0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1],
-  absolute: [0, 100, 200, 500, 1_000, 2_000, 5_000, 10_000],
-}
-
 const bucketByQuantizationBand = (entries: OrderTableEntry[], mode: FeeMode) => {
   const offersByMaker = new Map<string, OrderTableEntry>()
 
   for (const entry of entries) {
-    if ((mode === 'absolute' ? !entry.type.isAbsolute : !entry.type.isRelative) || entry.bondValue.value <= 0) continue
+    if (entry.bondValue.value <= 0) continue
+    if (mode === 'absolute' && !entry.type.isAbsolute) continue
+    if (mode === 'relative' && !entry.type.isRelative) continue
 
     const previous = offersByMaker.get(entry.counterparty)
     if (Number.isFinite(entry.fee.value) && (!previous || entry.fee.value < previous.fee.value)) {
@@ -31,7 +29,7 @@ const bucketByQuantizationBand = (entries: OrderTableEntry[], mode: FeeMode) => 
     }
   }
 
-  const grid = FEE_GRIDS[mode]
+  const grid = OFFER_FEE_BANDS[mode]
   const buckets: FeeBucket[] = grid.map((fee) => ({ fee, exact: 0, near: 0 }))
   const above: FeeBucket = { exact: 0, near: 0 }
   let exactTotal = 0
@@ -54,7 +52,7 @@ const bucketByQuantizationBand = (entries: OrderTableEntry[], mode: FeeMode) => 
 }
 
 const formatFee = (mode: FeeMode, fee?: number) => {
-  const value = fee ?? FEE_GRIDS[mode].at(-1)
+  const value = fee ?? OFFER_FEE_BANDS[mode].at(-1)
   if (value === undefined) return ''
   const label = mode === 'relative' ? `${factorToPercentage(value)}%` : value.toLocaleString()
   return fee === undefined ? `${label}+` : label

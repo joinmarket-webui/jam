@@ -13,6 +13,7 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { OFFER_FEE_BANDS } from '@/constants/jam'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
@@ -23,6 +24,7 @@ import {
   isAbsoluteOffer,
   isRelativeOffer,
   median,
+  pseudoRandomFloat,
   pseudoRandomInteger,
   time,
 } from '@/lib/utils'
@@ -126,8 +128,8 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       txfee: 0,
       cjfee:
         randomOrdertype === 'sw0absoffer'
-          ? pseudoRandomInteger(0, 10_000)
-          : Number.parseFloat(Math.random().toFixed(5)),
+          ? pseudoRandomInteger(OFFER_FEE_BANDS.absolute.at(0) ?? 0, OFFER_FEE_BANDS.absolute.at(-1) ?? 10_000)
+          : pseudoRandomFloat(OFFER_FEE_BANDS.relative.at(0) ?? 0, OFFER_FEE_BANDS.relative.at(-1) ?? 1).toFixed(5),
       fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomInteger(1_000, 21_000_000),
     }
 

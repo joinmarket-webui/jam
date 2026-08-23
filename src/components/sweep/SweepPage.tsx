@@ -295,9 +295,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
         )}
 
-        {!orderbookCheckIsLoading && !orderbookCheckIsError && !hasOrders && (
-          <OrderbookEmptyAlert isChecking={orderbookCheckIsFetching} onCheckClick={orderbookRefetch} />
-        )}
+        {!makerRunning &&
+          !singleCoinJoinRunning &&
+          !orderbookCheckIsLoading &&
+          !orderbookCheckIsError &&
+          !hasOrders && <OrderbookEmptyAlert isChecking={orderbookCheckIsFetching} onCheckClick={orderbookRefetch} />}
 
         {alertMessage && (
           <Alert variant="destructive">

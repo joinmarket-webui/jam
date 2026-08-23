@@ -149,7 +149,7 @@ export const LoginFormComponent = ({
             <Button
               tabIndex={-1}
               type="button"
-              variant="link"
+              variant="ghost"
               size="icon"
               onClick={() => setShowPassword((val) => !val)}
             >
