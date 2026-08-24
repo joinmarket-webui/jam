@@ -263,6 +263,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                       <span>{t('orderbook.market_summary_median_abs_fee_label')}:</span>
                       <Balance
                         valueString={String(Math.round(marketSummary.medianAbsFee))}
+                        showBalance={true}
                         enableVisibilityToggle={false}
                       />
                     </p>
@@ -276,13 +277,25 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                   )}
                   <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
                     <span>{t('orderbook.market_summary_total_liquidity_label')}:</span>
-                    <Balance valueString={String(marketSummary.totalLiquidity)} enableVisibilityToggle={false} />
+                    <Balance
+                      valueString={String(marketSummary.totalLiquidity)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                    />
                   </p>
                   <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
                     <span>{t('orderbook.market_summary_offer_min_size_label')}:</span>
-                    <Balance valueString={String(marketSummary.minOfferSize)} enableVisibilityToggle={false} />
+                    <Balance
+                      valueString={String(marketSummary.minOfferSize)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                    />
                     <span>–</span>
-                    <Balance valueString={String(marketSummary.maxOfferSize)} enableVisibilityToggle={false} />
+                    <Balance
+                      valueString={String(marketSummary.maxOfferSize)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                    />
                   </p>
                   <p className="break-words">
                     {t('orderbook.market_summary_bonded_makers', {
