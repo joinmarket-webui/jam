@@ -30,6 +30,7 @@ import {
 } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { AmountSats } from '@/types/global'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Spinner } from '../ui/spinner'
 import { OrderbookChart } from './OrderbookChart'
@@ -187,39 +188,52 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   }, [tableRowModel])
 
   const marketSummary = useMemo(() => {
-    const entries = (tableRowModel?.rows ?? []).map((r) => r.original)
-    if (entries.length === 0) return null
+    const rows = tableRowModel?.rows ?? []
+    if (rows.length === 0) return null
 
-    const absoluteOffers = entries.filter((offer) => offer.type.isAbsolute)
-    const relativeOffers = entries.filter((offer) => offer.type.isRelative)
-
-    const counterpartyBonds = new Map<string, number>()
-    for (const offer of entries) {
-      const previous = counterpartyBonds.get(offer.counterparty)
-      if (previous === undefined || offer.bondValue.value > previous) {
-        counterpartyBonds.set(offer.counterparty, offer.bondValue.value)
-      }
-    }
-    const bondedMakers = [...counterpartyBonds.values()].filter((v) => v > 0).length
-
-    const maxSizes = entries.map((offer) => Number(offer.maximumSize))
-    const minSizes = entries.map((offer) => Number(offer.minimumSize))
+    const absoluteOfferFees: AmountSats[] = []
+    const relativeOfferFees: number[] = []
+    let minOfferSize = Number.POSITIVE_INFINITY
+    let maxOfferSize = 0
 
     const counterpartyMaxSizes = new Map<string, number>()
-    for (const offer of entries) {
-      const previous = counterpartyMaxSizes.get(offer.counterparty)
-      const maximumSize = Number(offer.maximumSize)
-      if (previous === undefined || maximumSize > previous) {
-        counterpartyMaxSizes.set(offer.counterparty, maximumSize)
+    const counterpartyBonds = new Map<string, number>()
+    for (const { original: offer } of rows) {
+      if (offer.type.isAbsolute) {
+        absoluteOfferFees.push(offer.fee.value)
+      } else if (offer.type.isRelative) {
+        relativeOfferFees.push(offer.fee.value)
+      }
+
+      const offerMinimumSizeAsNumber = Number(offer.minimumSize)
+      if (offerMinimumSizeAsNumber < minOfferSize) {
+        minOfferSize = offerMinimumSizeAsNumber
+      }
+      const offerMaximumSizeAsNumber = Number(offer.maximumSize)
+      if (offerMaximumSizeAsNumber > maxOfferSize) {
+        maxOfferSize = offerMaximumSizeAsNumber
+      }
+
+      const previousCounterpartyBond = counterpartyBonds.get(offer.counterparty)
+      if (previousCounterpartyBond === undefined || offer.bondValue.value > previousCounterpartyBond) {
+        counterpartyBonds.set(offer.counterparty, offer.bondValue.value)
+      }
+
+      const previousCounterpartyMaxSize = counterpartyMaxSizes.get(offer.counterparty)
+      if (previousCounterpartyMaxSize === undefined || offerMaximumSizeAsNumber > previousCounterpartyMaxSize) {
+        counterpartyMaxSizes.set(offer.counterparty, offerMaximumSizeAsNumber)
       }
     }
 
+    const bondedMakers = [...counterpartyBonds.values()].filter((v) => v > 0).length
+    const totalLiquidity = [...counterpartyMaxSizes.values()].reduce((sum, value) => sum + value, 0)
+
     return {
-      medianAbsFee: median(absoluteOffers.map((offer) => offer.fee.value)),
-      medianRelFee: median(relativeOffers.map((offer) => offer.fee.value)),
-      totalLiquidity: [...counterpartyMaxSizes.values()].reduce((sum, value) => sum + value, 0),
-      minOfferSize: Math.min(...minSizes),
-      maxOfferSize: Math.max(...maxSizes),
+      medianAbsFee: median(absoluteOfferFees),
+      medianRelFee: median(relativeOfferFees),
+      totalLiquidity,
+      minOfferSize: minOfferSize === Number.POSITIVE_INFINITY ? 0 : minOfferSize,
+      maxOfferSize,
       bondedMakers,
       unbondedMakers: counterpartyBonds.size - bondedMakers,
     }
