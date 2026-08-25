@@ -205,10 +205,19 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
     const maxSizes = entries.map((offer) => Number(offer.maximumSize))
     const minSizes = entries.map((offer) => Number(offer.minimumSize))
 
+    const counterpartyMaxSizes = new Map<string, number>()
+    for (const offer of entries) {
+      const previous = counterpartyMaxSizes.get(offer.counterparty)
+      const maximumSize = Number(offer.maximumSize)
+      if (previous === undefined || maximumSize > previous) {
+        counterpartyMaxSizes.set(offer.counterparty, maximumSize)
+      }
+    }
+
     return {
       medianAbsFee: median(absoluteOffers.map((offer) => offer.fee.value)),
       medianRelFee: median(relativeOffers.map((offer) => offer.fee.value)),
-      totalLiquidity: maxSizes.reduce((sum, value) => sum + value, 0),
+      totalLiquidity: [...counterpartyMaxSizes.values()].reduce((sum, value) => sum + value, 0),
       minOfferSize: Math.min(...minSizes),
       maxOfferSize: Math.max(...maxSizes),
       bondedMakers,
