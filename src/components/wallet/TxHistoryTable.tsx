@@ -27,7 +27,7 @@ import { txHistoryTableFeatures } from './TxHistoryTable.schema'
 
 const ITEMS_PER_PAGE = 25
 
-type KnownHistoryRole = 'maker' | 'taker' | 'send' | 'deposit'
+type KnownHistoryRole = NonNullable<HistoryEntry['role']>
 type StatusBadgeVariant = NonNullable<Parameters<typeof StatusBadge>[0]['variant']>
 
 const ROLE_VARIANT: Record<KnownHistoryRole, StatusBadgeVariant> = {
@@ -40,7 +40,7 @@ const ROLE_VARIANT: Record<KnownHistoryRole, StatusBadgeVariant> = {
 const columnHelper = createColumnHelper<typeof txHistoryTableFeatures, HistoryEntry>()
 
 const historyRole = (entry: HistoryEntry): KnownHistoryRole | undefined => {
-  return ['maker', 'taker', 'send', 'deposit'].includes(entry.role ?? '') ? (entry.role as KnownHistoryRole) : undefined
+  return ['maker', 'taker', 'send', 'deposit'].includes(entry.role ?? '') ? entry.role : undefined
 }
 
 const roleLabel = (entry: HistoryEntry, t: TFunction) => {

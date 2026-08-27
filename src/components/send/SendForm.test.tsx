@@ -122,7 +122,7 @@ vi.mock('./JarSelectorDialog', () => ({
     ) : null,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   getaddress: () => Promise.resolve(h.getaddressResult),
 }))
 

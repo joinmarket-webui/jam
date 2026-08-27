@@ -1,4 +1,4 @@
-import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TFunction } from 'i18next'
 import { JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'

@@ -44,7 +44,7 @@ const mocks = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   startmakerMutation: vi.fn(() => ({ mutationFn: mocks.startMaker })),
   stopmakerOptions: vi.fn(() => ({ queryKey: ['stopmaker'], queryFn: vi.fn() })),
 }))

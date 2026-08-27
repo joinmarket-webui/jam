@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { wallethistoryOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { HistoryEntry, WalletHistoryResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { wallethistoryOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { HistoryEntry, WalletHistoryResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { isDevMode } from '@/constants/debugFeatures'
@@ -9,7 +9,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 
-export type { HistoryEntry } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+export type { HistoryEntry } from '@joinmarket-webui/joinmarket-api-ts/jm'
 
 export type UseQueryWalletHistoryResult = {
   history: HistoryEntry[]

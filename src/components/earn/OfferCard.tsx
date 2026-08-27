@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TFunction } from 'i18next'
 import {
   CircleAlertIcon,

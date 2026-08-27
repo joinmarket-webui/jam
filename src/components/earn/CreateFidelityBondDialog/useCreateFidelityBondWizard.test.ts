@@ -26,7 +26,7 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   directsendMutation: vi.fn(() => ({ mutationKey: ['directsend'] })),
   freezeMutation: vi.fn(() => ({ mutationKey: ['freeze'] })),
   gettimelockaddressOptions: vi.fn(() => ({ queryKey: ['timelock-address'] })),
