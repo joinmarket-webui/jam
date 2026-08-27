@@ -272,8 +272,6 @@ describe('WalletInfoAutoReload', () => {
     )
 
     // 1. Verify refetchWalletBalance is NOT called because of the initial mount
-    // Yield to the event loop so the synchronous effects execute
-    await new Promise((r) => setTimeout(r, 0))
     expect(refetchWalletBalance).not.toHaveBeenCalled()
 
     // 2. A subsequent utxosHashHex change DOES call refetchWalletBalance
@@ -309,7 +307,6 @@ describe('WalletInfoAutoReload', () => {
         <WalletInfoAutoReload />
       </StrictMode>,
     )
-    await new Promise((r) => setTimeout(r, 50))
     expect(refetchWalletBalance).toHaveBeenCalledTimes(2)
   })
 })
