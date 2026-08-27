@@ -256,7 +256,6 @@ describe('App', () => {
 describe('WalletInfoAutoReload', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    window.history.pushState({}, '', '/')
     holders.walletFileName = 'wallet.jmdat'
     holders.token = 'tok'
     holders.refreshToken = 'refresh'
