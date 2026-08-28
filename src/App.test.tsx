@@ -97,6 +97,7 @@ vi.mock('@tanstack/react-query', () => ({
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   lockwalletOptions: () => ({ queryKey: ['lock'] }),
+  displaywalletOptions: () => ({ queryKey: [{ _id: 'displaywallet' }], queryFn: vi.fn() }),
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
@@ -281,49 +282,35 @@ describe('WalletInfoAutoReload', () => {
     holders.utxosHashHex = 'initial-hash'
   })
 
-  it('skips refetch on initial mount but refetches on subsequent utxosHashHex changes', async () => {
+  it('does not call refetchWalletBalance on initial mount', () => {
+    render(
+      <StrictMode>
+        <WalletInfoAutoReload />
+      </StrictMode>,
+    )
+
+    // displaywallet now refetches automatically via React Query when utxosHashHex
+    // changes its query key — WalletInfoAutoReload no longer needs a manual effect
+    // for UTXO changes.
+    expect(refetchWalletBalance).not.toHaveBeenCalled()
+  })
+
+  it('does not call refetchWalletBalance when utxosHashHex changes (query key handles it)', () => {
     const { rerender } = render(
       <StrictMode>
         <WalletInfoAutoReload />
       </StrictMode>,
     )
 
-    // 1. Verify refetchWalletBalance is NOT called because of the initial mount
-    expect(refetchWalletBalance).not.toHaveBeenCalled()
-
-    // 2. A subsequent utxosHashHex change DOES call refetchWalletBalance
+    // Changing utxosHashHex no longer triggers a manual refetchWalletBalance call.
+    // React Query sees a new displaywallet query key and handles the fetch automatically.
     holders.utxosHashHex = 'changed-hash-1'
     rerender(
       <StrictMode>
         <WalletInfoAutoReload />
       </StrictMode>,
     )
-    await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(1))
 
-    // 3. Multiple subsequent UTXO hash changes continue to trigger refetches
-    holders.utxosHashHex = 'changed-hash-2'
-    rerender(
-      <StrictMode>
-        <WalletInfoAutoReload />
-      </StrictMode>,
-    )
-    await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(2))
-
-    // 4. Test that the existing refetch behavior arguments remain unchanged
-    // It should be called with { delayBefore: 210, signal: <AbortSignal> }
-    expect(refetchWalletBalance).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        delayBefore: 210,
-        signal: expect.any(AbortSignal) as unknown as AbortSignal,
-      }),
-    )
-
-    // 6. Test that same hash doesn't trigger another refetch
-    rerender(
-      <StrictMode>
-        <WalletInfoAutoReload />
-      </StrictMode>,
-    )
-    expect(refetchWalletBalance).toHaveBeenCalledTimes(2)
+    expect(refetchWalletBalance).not.toHaveBeenCalled()
   })
 })

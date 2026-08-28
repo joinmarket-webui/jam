@@ -30,13 +30,17 @@ export function useQueryDisplayWallet({
   const displaywalletQueryOptions = displaywalletOptions({
     client,
     path: { walletname: walletFileName },
-    meta: {
-      cacheBuster: utxosHashHex,
-    },
   })
+
+  // Extend the generated query key with utxosHashHex so that React Query treats
+  // each distinct UTXO state as a distinct query identity. When the UTXO set
+  // changes (utxosHashHex changes), React Query automatically fetches the
+  // displaywallet endpoint — no manual refetch effect needed.
+  const queryKey = [...displaywalletQueryOptions.queryKey, utxosHashHex] as const
 
   const queryResult = useQuery({
     ...displaywalletQueryOptions,
+    queryKey,
     queryFn: withQueryDelay(displaywalletQueryOptions.queryFn, {
       // simulate slow mainnet responses in dev mode
       throttle: isDevMode() ? 2_100 : 0,
