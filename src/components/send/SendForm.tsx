@@ -35,7 +35,7 @@ import { Address } from '../ui/jam/Address'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { OrderbookEmptyAlert } from '../ui/jam/OrderbookEmptyAlert'
 import { SelectableJar } from '../ui/jam/SelectableJar'
-import { Slider } from '../ui/slider'
+import { SliderWithInput } from '../ui/jam/SliderWithInput'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 import JarSelectorDialog from './JarSelectorDialog'
@@ -638,9 +638,8 @@ export function SendForm({
                         </div>
                         <span className="text-foreground">{values.numCollaborators}</span>
                       </div>
-                      <Slider
+                      <SliderWithInput
                         id="send-num-collaborators"
-                        withInput
                         min={minNumberOfCollaborators}
                         max={MAX_NUM_COLLABORATORS}
                         value={values.numCollaborators === undefined ? undefined : [values.numCollaborators]}

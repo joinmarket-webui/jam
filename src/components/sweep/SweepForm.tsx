@@ -35,6 +35,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { Field, FieldDescription, FieldError, FieldLabel, FieldSet } from '../ui/field'
 import { Slider } from '../ui/slider'
+import { SliderWithInput } from '../ui/jam/SliderWithInput'
 import { Spinner } from '../ui/spinner'
 
 const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
@@ -285,9 +286,8 @@ export const SweepForm = ({
                   </div>
                   <span className="text-foreground">{formWatch.minNumberOfTransactionsPerJar}</span>
                 </div>
-                <Slider
+                <SliderWithInput
                   id="slider-min-number-of-transactions-per-jar"
-                  withInput
                   min={JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR}
                   max={JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR}
                   value={
@@ -318,9 +318,8 @@ export const SweepForm = ({
                   </div>
                   <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
                 </div>
-                <Slider
+                <SliderWithInput
                   id="slider-rounding-chance-in-percent"
-                  withInput
                   min={JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT}
                   max={JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT}
                   value={
