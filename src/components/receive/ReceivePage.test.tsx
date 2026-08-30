@@ -1,4 +1,4 @@
-import { getaddress } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -49,11 +49,11 @@ type MutationOptions = {
   onError?: (error: unknown) => void
 }
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   getaddressQueryKey: vi.fn(() => ['getaddress']),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   getaddress: mocks.getAddress,
 }))
 

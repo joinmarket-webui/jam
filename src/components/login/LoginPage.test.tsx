@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -20,7 +20,7 @@ type MutationOptions = {
   onSuccess?: (result: unknown) => void
 }
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   listwalletsOptions: vi.fn(() => ({ queryKey: ['wallets'], queryFn: vi.fn() })),
   unlockwalletMutation: vi.fn(() => ({
     mutationFn: mocks.unlockWallet,

@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { useMemo, useState } from 'react'
-import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { createStore, useStore } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'

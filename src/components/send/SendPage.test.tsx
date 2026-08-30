@@ -1,4 +1,4 @@
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -40,7 +40,7 @@ const mocks = vi.hoisted(() => ({
   orderbookError: null as Error | null,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   directsendMutation: vi.fn(() => ({ mutationFn: mocks.directSend })),
   docoinjoinMutation: vi.fn(() => ({ mutationFn: mocks.startCoinjoin })),
   stopcoinjoinOptions: vi.fn(() => ({ queryKey: ['stopcoinjoin'], queryFn: vi.fn() })),

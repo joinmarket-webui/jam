@@ -1,5 +1,5 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { SendFormValues } from '@/components/send/types'
 import type { WalletFileName } from '@/lib/utils'
 import type { Factor } from '@/types/global'

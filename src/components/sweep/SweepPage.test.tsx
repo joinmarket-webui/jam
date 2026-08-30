@@ -1,5 +1,5 @@
-import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import test from 'node:test'
 import type { UseFormReturn } from 'react-hook-form'
@@ -127,7 +127,7 @@ vi.mock('@/hooks/useQueryOrderbook', () => ({
   }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   tumblerstatusOptions: vi.fn(() => ({ queryKey: ['tumblerstatus'], queryFn: vi.fn() })),
   tumblerplanMutation: vi.fn(() => ({ mutationFn: mocks.planTumbler })),
   tumblerstartMutation: vi.fn(() => ({ mutationFn: mocks.startTumbler })),

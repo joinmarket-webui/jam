@@ -12,6 +12,7 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { OFFER_FEE_BANDS } from '@/constants/jam'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import { useJamSession } from '@/context/JamSessionInfoContext'
 import * as OrderbookApi from '@/lib/api/orderbook'
@@ -23,10 +24,12 @@ import {
   isAbsoluteOffer,
   isRelativeOffer,
   median,
+  pseudoRandomFloat,
   pseudoRandomInteger,
   time,
 } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
+import type { AmountSats } from '@/types/global'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Spinner } from '../ui/spinner'
 import { OrderbookChart } from './OrderbookChart'
@@ -126,8 +129,8 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       txfee: 0,
       cjfee:
         randomOrdertype === 'sw0absoffer'
-          ? pseudoRandomInteger(0, 10_000)
-          : Number.parseFloat(Math.random().toFixed(5)),
+          ? pseudoRandomInteger(OFFER_FEE_BANDS.absolute.at(0) ?? 0, OFFER_FEE_BANDS.absolute.at(-1) ?? 10_000)
+          : pseudoRandomFloat(OFFER_FEE_BANDS.relative.at(0) ?? 0, OFFER_FEE_BANDS.relative.at(-1) ?? 1).toFixed(5),
       fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomInteger(1_000, 21_000_000),
     }
 
@@ -185,30 +188,52 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
   }, [tableRowModel])
 
   const marketSummary = useMemo(() => {
-    const entries = (tableRowModel?.rows ?? []).map((r) => r.original)
-    if (entries.length === 0) return null
+    const rows = tableRowModel?.rows ?? []
+    if (rows.length === 0) return null
 
-    const absoluteOffers = entries.filter((offer) => offer.type.isAbsolute)
-    const relativeOffers = entries.filter((offer) => offer.type.isRelative)
+    const absoluteOfferFees: AmountSats[] = []
+    const relativeOfferFees: number[] = []
+    let minOfferSize = Number.POSITIVE_INFINITY
+    let maxOfferSize = 0
 
+    const counterpartyMaxSizes = new Map<string, number>()
     const counterpartyBonds = new Map<string, number>()
-    for (const offer of entries) {
-      const previous = counterpartyBonds.get(offer.counterparty)
-      if (previous === undefined || offer.bondValue.value > previous) {
+    for (const { original: offer } of rows) {
+      if (offer.type.isAbsolute) {
+        absoluteOfferFees.push(offer.fee.value)
+      } else if (offer.type.isRelative) {
+        relativeOfferFees.push(offer.fee.value)
+      }
+
+      const offerMinimumSizeAsNumber = Number(offer.minimumSize)
+      if (offerMinimumSizeAsNumber < minOfferSize) {
+        minOfferSize = offerMinimumSizeAsNumber
+      }
+      const offerMaximumSizeAsNumber = Number(offer.maximumSize)
+      if (offerMaximumSizeAsNumber > maxOfferSize) {
+        maxOfferSize = offerMaximumSizeAsNumber
+      }
+
+      const previousCounterpartyBond = counterpartyBonds.get(offer.counterparty)
+      if (previousCounterpartyBond === undefined || offer.bondValue.value > previousCounterpartyBond) {
         counterpartyBonds.set(offer.counterparty, offer.bondValue.value)
       }
-    }
-    const bondedMakers = [...counterpartyBonds.values()].filter((v) => v > 0).length
 
-    const maxSizes = entries.map((offer) => Number(offer.maximumSize))
-    const minSizes = entries.map((offer) => Number(offer.minimumSize))
+      const previousCounterpartyMaxSize = counterpartyMaxSizes.get(offer.counterparty)
+      if (previousCounterpartyMaxSize === undefined || offerMaximumSizeAsNumber > previousCounterpartyMaxSize) {
+        counterpartyMaxSizes.set(offer.counterparty, offerMaximumSizeAsNumber)
+      }
+    }
+
+    const bondedMakers = [...counterpartyBonds.values()].filter((v) => v > 0).length
+    const totalLiquidity = [...counterpartyMaxSizes.values()].reduce((sum, value) => sum + value, 0)
 
     return {
-      medianAbsFee: median(absoluteOffers.map((offer) => offer.fee.value)),
-      medianRelFee: median(relativeOffers.map((offer) => offer.fee.value)),
-      totalLiquidity: maxSizes.reduce((sum, value) => sum + value, 0),
-      minOfferSize: Math.min(...minSizes),
-      maxOfferSize: Math.max(...maxSizes),
+      medianAbsFee: median(absoluteOfferFees),
+      medianRelFee: median(relativeOfferFees),
+      totalLiquidity,
+      minOfferSize: minOfferSize === Number.POSITIVE_INFINITY ? 0 : minOfferSize,
+      maxOfferSize,
       bondedMakers,
       unbondedMakers: counterpartyBonds.size - bondedMakers,
     }
@@ -261,6 +286,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                       <span>{t('orderbook.market_summary_median_abs_fee_label')}:</span>
                       <Balance
                         valueString={String(Math.round(marketSummary.medianAbsFee))}
+                        showBalance={true}
                         enableVisibilityToggle={false}
                       />
                     </p>
@@ -274,13 +300,25 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
                   )}
                   <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
                     <span>{t('orderbook.market_summary_total_liquidity_label')}:</span>
-                    <Balance valueString={String(marketSummary.totalLiquidity)} enableVisibilityToggle={false} />
+                    <Balance
+                      valueString={String(marketSummary.totalLiquidity)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                    />
                   </p>
                   <p className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5">
                     <span>{t('orderbook.market_summary_offer_min_size_label')}:</span>
-                    <Balance valueString={String(marketSummary.minOfferSize)} enableVisibilityToggle={false} />
+                    <Balance
+                      valueString={String(marketSummary.minOfferSize)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                    />
                     <span>–</span>
-                    <Balance valueString={String(marketSummary.maxOfferSize)} enableVisibilityToggle={false} />
+                    <Balance
+                      valueString={String(marketSummary.maxOfferSize)}
+                      showBalance={true}
+                      enableVisibilityToggle={false}
+                    />
                   </p>
                   <p className="break-words">
                     {t('orderbook.market_summary_bonded_makers', {

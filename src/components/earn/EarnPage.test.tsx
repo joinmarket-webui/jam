@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -45,7 +45,7 @@ const mocks = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   startmakerMutation: vi.fn(() => ({ mutationFn: mocks.startMaker })),
   stopmakerOptions: vi.fn(() => ({ queryKey: ['stopmaker'], queryFn: vi.fn() })),
 }))
@@ -169,6 +169,7 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
 
 vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: mocks.developerMode }),
+  useExpertFeatureEnabled: (_name: string) => true,
 }))
 
 vi.mock('./CreateFidelityBondDialog', () => ({

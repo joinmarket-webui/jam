@@ -8,7 +8,7 @@ export interface OrderbookOffer {
   minsize?: AmountSats | null
   maxsize?: AmountSats | null
   txfee?: number | null
-  cjfee?: number | null
+  cjfee?: number | string | null
   fidelity_bond_value?: number | null
   fidelity_bond_verification_stale?: boolean | null
   directory_nodes?: string[] | null

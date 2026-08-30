@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { validateMnemonic } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import type { TFunction } from 'i18next'

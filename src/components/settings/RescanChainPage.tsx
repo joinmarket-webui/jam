@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { rescanblockchain } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ArrowLeftIcon, PackageSearchIcon, RefreshCwIcon } from 'lucide-react'

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { directsendMutation, freezeMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { directsendMutation, freezeMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useApiClient } from '@/hooks/useApiClient'

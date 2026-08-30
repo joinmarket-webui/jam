@@ -1,5 +1,5 @@
-import { displaywalletOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { DisplaywalletResponse, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { displaywalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { DisplaywalletResponse, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { isDevMode } from '@/constants/debugFeatures'
 import { useJamSession } from '@/context/JamSessionInfoContext'

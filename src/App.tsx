@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ComponentType, PropsWithChildren } from 'react'
-import { lockwalletOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import { token } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ThemeProvider } from 'next-themes'
@@ -435,7 +435,7 @@ const RELOAD_WALLET_INFO_DELAY: {
  * This might change in the future but is okay for now - components can
  * always trigger a reload on demand and inform the user as they see fit.
  */
-const WalletInfoAutoReload = () => {
+export const WalletInfoAutoReload = () => {
   const {
     blockHeight: currentBlockHeight,
     takerInfo: { running: currentTakerRunning },
@@ -449,6 +449,8 @@ const WalletInfoAutoReload = () => {
   const previousJmTxsRef = useRef<JmTxInfos>(jmTxs)
 
   const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
+
+  const previousUtxosHashHexRef = useRef(utxosHashHex)
 
   useEffect(
     function refetchWalletInfoAfterRescanFinished() {
@@ -501,6 +503,12 @@ const WalletInfoAutoReload = () => {
 
   useEffect(
     function refetchWalletInfoAfterUtxoChange() {
+      if (previousUtxosHashHexRef.current === utxosHashHex) {
+        return
+      }
+
+      previousUtxosHashHexRef.current = utxosHashHex
+
       const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
       console.debug(
         'Trigger refetch looking for funds AFTER_UTXO_CHANGE (%s) with delay %d...',

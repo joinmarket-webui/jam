@@ -1,4 +1,4 @@
-import type { TumblerPhaseResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { TumblerPhaseResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ScheduleEntryItem } from '@/components/sweep/ScheduleEntryItem'
 import { toScheduleEntry } from '@/components/sweep/scheduleUtils'

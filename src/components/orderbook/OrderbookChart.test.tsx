@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { OFFER_FEE_BANDS } from '@/constants/jam'
 import { OrderbookChart } from './OrderbookChart'
 import type { OrderTableEntry } from './OrderbookTable'
 
@@ -37,13 +38,13 @@ describe('OrderbookChart', () => {
     render(
       <OrderbookChart
         entries={[
-          offer('alice', 0.0001, 'relative'),
-          offer('alice', 0.0002, 'relative'),
+          offer('alice', OFFER_FEE_BANDS.relative.at(2)!, 'relative'),
+          offer('alice', OFFER_FEE_BANDS.relative.at(3)!, 'relative'),
           offer('bob', 0.00009, 'relative'),
-          offer('mallory', 0.0001, 'relative', 0),
+          offer('mallory', OFFER_FEE_BANDS.relative.at(2)!, 'relative', 0),
           offer('dave', 0.2, 'relative'),
-          offer('erin', 0, 'absolute'),
-          offer('carol', 100, 'absolute'),
+          offer('erin', OFFER_FEE_BANDS.absolute.at(0)!, 'absolute'),
+          offer('carol', OFFER_FEE_BANDS.absolute.at(1)!, 'absolute', 0),
         ]}
       />,
     )
@@ -59,7 +60,7 @@ describe('OrderbookChart', () => {
 
     await user.click(screen.getByRole('button', { name: 'orderbook.chart_absolute_offers' }))
 
-    expect(screen.getByText('orderbook.chart_exact_summary {"exact":2,"total":2}')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.chart_exact_summary {"exact":1,"total":1}')).toBeInTheDocument()
     expect(
       screen.getByRole('button', {
         name: 'orderbook.chart_tooltip {"fee":"0","exact":1,"near":0}',

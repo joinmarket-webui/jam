@@ -26,7 +26,7 @@ vi.mock('@/lib/queryClient', () => ({
   withQueryDelay: (function_: unknown) => function_,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   listutxosOptions: () => ({ queryKey: ['utxos'], queryFn: vi.fn() }),
 }))
 
