@@ -1,4 +1,4 @@
-import type { UnlockWalletResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { UnlockWalletResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { createStore } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { WalletFileName } from '@/lib/utils'

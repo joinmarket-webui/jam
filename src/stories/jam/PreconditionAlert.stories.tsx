@@ -22,7 +22,7 @@ const makeUtxo = (overrides: Partial<Utxo> = {}): Utxo =>
     mixdepth: 0,
     path: '',
     tries_remaining: 3,
-    utxo: '4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b:0',
+    utxo: `txid:${overrides.value ?? 0}`,
     value: 100_000,
     ...overrides,
   }) as Utxo

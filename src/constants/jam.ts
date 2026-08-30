@@ -1,5 +1,5 @@
 import { percentageToFactor, parseSemanticVersion } from '@/lib/utils'
-import type { AmountSats, Milliseconds, Seconds } from '@/types/global'
+import type { AmountSats, Factor, Milliseconds, Seconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
 import {
   JM_API_AUTH_TOKEN_EXPIRY,
@@ -44,21 +44,29 @@ export const TX_FEES_FACTOR_MIN = 0 // 0%
  * Settling on 50% as a reasonable compromise until this problem is addressed.
  * Once resolved, this can be set to 100% again.
  */
-export const TX_FEES_FACTOR_MAX = percentageToFactor(50) // TODO: since JM 0.9.11, this is only applied to the upside, so it can also be 110%, why limit it to 50%?
+export const TX_FEES_FACTOR_MAX: Factor = percentageToFactor(50) // TODO: since JM 0.9.11, this is only applied to the upside, so it can also be 110%, why limit it to 50%?
 export const CJ_FEE_ABS_MIN: AmountSats = 1
 export const CJ_FEE_ABS_MAX: AmountSats = 1_000_000 // 0.01 BTC - no enforcement by JM - this should be a "sane" max value
-export const CJ_FEE_REL_MIN = percentageToFactor(0.0001)
-export const CJ_FEE_REL_MAX = percentageToFactor(5) // no enforcement by JM - this should be a "sane" max value
-export const MAX_SWEEP_FEE_CHANGE_MIN = percentageToFactor(50) // no enforcement by JM - should be a "sane" min vaue (too low and users might run into problems on sweeps)
-export const MAX_SWEEP_FEE_CHANGE_MAX = percentageToFactor(100) // TODO: this can also be 200%, why limit it to 100%?
+export const CJ_FEE_REL_MIN: Factor = percentageToFactor(0.0001)
+export const CJ_FEE_REL_MAX: Factor = percentageToFactor(5) // no enforcement by JM - this should be a "sane" max value
+export const MAX_SWEEP_FEE_CHANGE_MIN: Factor = percentageToFactor(50) // no enforcement by JM - should be a "sane" min vaue (too low and users might run into problems on sweeps)
+export const MAX_SWEEP_FEE_CHANGE_MAX: Factor = percentageToFactor(100) // TODO: this can also be 200%, why limit it to 100%?
 
-export const OFFER_FEE_REL_MIN = percentageToFactor(0.0001)
-export const OFFER_FEE_REL_MAX = percentageToFactor(10)
-export const OFFER_FEE_REL_STEP = percentageToFactor(0.0001)
-export const OFFER_FEE_REL_DEFAULT = percentageToFactor(0.0021)
+export const OFFER_FEE_BANDS: {
+  relative: Factor[]
+  absolute: AmountSats[]
+} = {
+  relative: [0.00002, 0.00005, 0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1],
+  absolute: [0, 100, 200, 500, 1_000, 2_000, 5_000, 10_000],
+}
+
+export const OFFER_FEE_REL_MIN: Factor = percentageToFactor(0.0001)
+export const OFFER_FEE_REL_MAX: Factor = percentageToFactor(10)
+export const OFFER_FEE_REL_STEP: Factor = percentageToFactor(0.0001)
+export const OFFER_FEE_REL_DEFAULT: Factor = OFFER_FEE_BANDS.relative[0]
 
 export const OFFER_FEE_ABS_MIN: AmountSats = 0
-export const OFFER_FEE_ABS_DEFAULT: AmountSats = 21
+export const OFFER_FEE_ABS_DEFAULT: AmountSats = OFFER_FEE_BANDS.absolute[0]
 
 export const OFFER_MINSIZE_MIN: AmountSats = JM_DUST_THRESHOLD
 export const OFFER_MINSIZE_DEFAULT: AmountSats = 100_000

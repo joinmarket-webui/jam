@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, StrictMode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { createBrowserRouter } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import App from './App'
+import App, { WalletInfoAutoReload } from './App'
 
 type Holders = {
   walletFileName?: string
@@ -12,6 +13,7 @@ type Holders = {
   rescanning: boolean
   blockHeight?: number
   takerRunning: boolean
+  utxosHashHex: string
 }
 
 const {
@@ -33,6 +35,7 @@ const {
     rescanning: false,
     blockHeight: 100,
     takerRunning: false,
+    utxosHashHex: 'initial-hash',
   }
   return {
     holders,
@@ -49,6 +52,11 @@ const {
 vi.mock('zustand', () => ({
   useStore: (store: { getState: () => unknown }, selector: (s: unknown) => unknown) => selector(store.getState()),
 }))
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const original = await importOriginal<typeof import('react-router-dom')>()
+  return { ...original, createBrowserRouter: vi.fn(original.createBrowserRouter) }
+})
 
 vi.mock('@/store/authStore', () => ({
   authStore: {
@@ -67,8 +75,9 @@ vi.mock('./store/jmSessionStore', () => ({
   jmSessionStore: { getState: () => ({ state: holders.jmSession }) },
 }))
 
+const mockJmTxStoreState = { state: {} }
 vi.mock('./store/jmTxStore', () => ({
-  jmTxStore: { getState: () => ({ state: {} }) },
+  jmTxStore: { getState: () => mockJmTxStoreState },
 }))
 
 vi.mock('@/store/jamSettingsStore', () => ({
@@ -86,11 +95,11 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({ mutateAsync }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   lockwalletOptions: () => ({ queryKey: ['lock'] }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   token: vi.fn().mockResolvedValue({ data: { token: 't', refresh_token: 'r' } }),
 }))
 
@@ -133,7 +142,7 @@ vi.mock('./context/JamSessionInfoContext', () => ({
   }),
 }))
 vi.mock('./context/JamWalletInfoContext', () => ({
-  useJamWalletInfoContext: () => ({ refetch: refetchWalletBalance, utxosHashHex: 'hash' }),
+  useJamWalletInfoContext: () => ({ refetch: refetchWalletBalance, utxosHashHex: holders.utxosHashHex }),
 }))
 
 function passthrough(name: string) {
@@ -209,12 +218,25 @@ describe('App', () => {
     holders.rescanning = false
     holders.blockHeight = 100
     holders.takerRunning = false
+    holders.utxosHashHex = 'initial-hash'
   })
 
   it('renders the home page when authenticated', async () => {
     render(<App />)
     await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+    expect(screen.getByTestId('session-provider')).toBeInTheDocument()
+    expect(screen.getByTestId('wallet-provider')).toBeInTheDocument()
     expect(screen.getByTestId('toaster')).toBeInTheDocument()
+  })
+
+  it('keeps the router stable across app rerenders', async () => {
+    const { rerender } = render(<App />)
+    await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+    const routerCreations = vi.mocked(createBrowserRouter).mock.calls.length
+
+    rerender(<App />)
+
+    expect(createBrowserRouter).toHaveBeenCalledTimes(routerCreations)
   })
 
   it('redirects to login when not authenticated', async () => {
@@ -246,5 +268,62 @@ describe('App', () => {
     holders.developerMode = true
     render(<App />)
     await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+  })
+})
+
+describe('WalletInfoAutoReload', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    holders.walletFileName = 'wallet.jmdat'
+    holders.token = 'tok'
+    holders.refreshToken = 'refresh'
+    holders.jmSession = { maker_running: true, coinjoin_in_process: false, schedule: [] }
+    holders.utxosHashHex = 'initial-hash'
+  })
+
+  it('skips refetch on initial mount but refetches on subsequent utxosHashHex changes', async () => {
+    const { rerender } = render(
+      <StrictMode>
+        <WalletInfoAutoReload />
+      </StrictMode>,
+    )
+
+    // 1. Verify refetchWalletBalance is NOT called because of the initial mount
+    expect(refetchWalletBalance).not.toHaveBeenCalled()
+
+    // 2. A subsequent utxosHashHex change DOES call refetchWalletBalance
+    holders.utxosHashHex = 'changed-hash-1'
+    rerender(
+      <StrictMode>
+        <WalletInfoAutoReload />
+      </StrictMode>,
+    )
+    await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(1))
+
+    // 3. Multiple subsequent UTXO hash changes continue to trigger refetches
+    holders.utxosHashHex = 'changed-hash-2'
+    rerender(
+      <StrictMode>
+        <WalletInfoAutoReload />
+      </StrictMode>,
+    )
+    await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(2))
+
+    // 4. Test that the existing refetch behavior arguments remain unchanged
+    // It should be called with { delayBefore: 210, signal: <AbortSignal> }
+    expect(refetchWalletBalance).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        delayBefore: 210,
+        signal: expect.any(AbortSignal) as unknown as AbortSignal,
+      }),
+    )
+
+    // 6. Test that same hash doesn't trigger another refetch
+    rerender(
+      <StrictMode>
+        <WalletInfoAutoReload />
+      </StrictMode>,
+    )
+    expect(refetchWalletBalance).toHaveBeenCalledTimes(2)
   })
 })

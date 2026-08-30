@@ -2,15 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   createColumnHelper,
   flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type CellContext,
+  useTable,
   type PaginationState,
   type Row,
   type SortingState,
-  useReactTable,
 } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import { CheckIcon, ChevronDownIcon, CopyIcon } from 'lucide-react'
@@ -28,10 +23,11 @@ import { Balance } from '../ui/jam/Balance'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
+import { txHistoryTableFeatures } from './TxHistoryTable.schema'
 
 const ITEMS_PER_PAGE = 25
 
-type KnownHistoryRole = 'maker' | 'taker' | 'send' | 'deposit'
+type KnownHistoryRole = NonNullable<HistoryEntry['role']>
 type StatusBadgeVariant = NonNullable<Parameters<typeof StatusBadge>[0]['variant']>
 
 const ROLE_VARIANT: Record<KnownHistoryRole, StatusBadgeVariant> = {
@@ -41,10 +37,10 @@ const ROLE_VARIANT: Record<KnownHistoryRole, StatusBadgeVariant> = {
   deposit: 'deposit',
 }
 
-const columnHelper = createColumnHelper<HistoryEntry>()
+const columnHelper = createColumnHelper<typeof txHistoryTableFeatures, HistoryEntry>()
 
 const historyRole = (entry: HistoryEntry): KnownHistoryRole | undefined => {
-  return ['maker', 'taker', 'send', 'deposit'].includes(entry.role ?? '') ? (entry.role as KnownHistoryRole) : undefined
+  return ['maker', 'taker', 'send', 'deposit'].includes(entry.role ?? '') ? entry.role : undefined
 }
 
 const roleLabel = (entry: HistoryEntry, t: TFunction) => {
@@ -72,13 +68,14 @@ const TxHistoryDetails = ({ entry }: { entry: HistoryEntry }) => {
   )
 }
 
-const TxHistoryTableRow = ({ row }: { row: Row<HistoryEntry> }) => {
+const TxHistoryTableRow = ({ row }: { row: Row<typeof txHistoryTableFeatures, HistoryEntry> }) => {
   return (
     <>
       <TableRow key={row.id}>
         {row.getVisibleCells().map((cell) => {
-          const alignCenter = cell.column.columnDef.meta?.align === 'center'
-          const alignRight = cell.column.columnDef.meta?.align === 'right'
+          const meta = cell.column.columnDef.meta as { align?: string } | undefined
+          const alignCenter = meta?.align === 'center'
+          const alignRight = meta?.align === 'right'
           return (
             <TableCell
               key={cell.id}
@@ -103,19 +100,19 @@ const TxHistoryTableRow = ({ row }: { row: Row<HistoryEntry> }) => {
   )
 }
 
-const txHistoryTableColumns = (t: TFunction) => {
-  return [
+const txHistoryTableColumns = (t: TFunction) =>
+  columnHelper.columns([
     columnHelper.accessor('timestamp', {
       header: () => t('tx_history.column_title_date'),
-      sortingFn: (a, b) => dateTimeValue(a.original.timestamp) - dateTimeValue(b.original.timestamp),
-      cell: (info) => <span className="text-nowrap">{formatDateTime(info.getValue())}</span>,
+      sortFn: (a, b) => dateTimeValue(a.original.timestamp) - dateTimeValue(b.original.timestamp),
+      cell: (info) => <span className="text-nowrap">{formatDateTime(String(info.getValue()))}</span>,
       meta: {
         alphabetic: true,
       },
     }),
     columnHelper.accessor('role', {
       header: () => t('tx_history.column_title_role'),
-      sortingFn: (a, b) => roleLabel(a.original, t).localeCompare(roleLabel(b.original, t)),
+      sortFn: (a, b) => roleLabel(a.original, t).localeCompare(roleLabel(b.original, t)),
       cell: (info) => {
         const role = historyRole(info.row.original)
         return (
@@ -125,7 +122,7 @@ const txHistoryTableColumns = (t: TFunction) => {
     }),
     columnHelper.accessor('cj_amount', {
       header: () => t('tx_history.column_title_amount'),
-      sortingFn: (a, b) => (a.original.cj_amount ?? 0) - (b.original.cj_amount ?? 0),
+      sortFn: (a, b) => (a.original.cj_amount ?? 0) - (b.original.cj_amount ?? 0),
       cell: (info) => <Balance valueString={String(info.getValue() ?? 0)} />,
       meta: {
         numeric: true,
@@ -134,7 +131,7 @@ const txHistoryTableColumns = (t: TFunction) => {
     }),
     columnHelper.accessor('net_fee', {
       header: () => t('tx_history.column_title_net_fee'),
-      sortingFn: (a, b) => (a.original.net_fee ?? 0) - (b.original.net_fee ?? 0),
+      sortFn: (a, b) => (a.original.net_fee ?? 0) - (b.original.net_fee ?? 0),
       cell: (info) => <Balance valueString={String(info.getValue() ?? 0)} />,
       meta: {
         numeric: true,
@@ -143,7 +140,7 @@ const txHistoryTableColumns = (t: TFunction) => {
     }),
     columnHelper.accessor('confirmations', {
       header: () => t('tx_history.column_title_confirmations'),
-      sortingFn: (a, b) => (a.original.confirmations ?? 0) - (b.original.confirmations ?? 0),
+      sortFn: (a, b) => (a.original.confirmations ?? 0) - (b.original.confirmations ?? 0),
       cell: (info) => <>{info.getValue() ?? 0}</>,
       meta: {
         numeric: true,
@@ -153,7 +150,7 @@ const txHistoryTableColumns = (t: TFunction) => {
     columnHelper.accessor('txid', {
       header: () => t('tx_history.column_title_txid'),
       cell: (info) => {
-        const txid = info.getValue() ?? ''
+        const txid = String(info.getValue() ?? '')
         return txid ? (
           <div className="flex min-w-0 items-center gap-2">
             <span className="min-w-0 font-mono text-xs slashed-zero select-all">{shortenStringMiddle(txid, 16)}</span>
@@ -172,9 +169,9 @@ const txHistoryTableColumns = (t: TFunction) => {
       },
       enableSorting: false,
     }),
-    {
+    columnHelper.display({
       id: 'expand-col',
-      cell: ({ row }: CellContext<HistoryEntry, unknown>) => {
+      cell: ({ row }) => {
         return row.getCanExpand() ? (
           <Button size="sm" variant="outline" onClick={row.getToggleExpandedHandler()}>
             {t('jar_details.utxo_list.row_button_details')}
@@ -189,9 +186,8 @@ const txHistoryTableColumns = (t: TFunction) => {
         )
       },
       enableSorting: false,
-    },
-  ]
-}
+    }),
+  ])
 
 interface TxHistoryTableProps {
   history: HistoryEntry[]
@@ -207,19 +203,10 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
     pageSize: compact ? 5 : ITEMS_PER_PAGE,
   })
 
-  useEffect(() => {
-    if (isShowAll) {
-      setPagination((previous) => ({
-        ...previous,
-        pageSize: Math.max(1, history.length),
-        pageIndex: 0,
-      }))
-    }
-  }, [history.length, isShowAll])
-
   const columns = useMemo(() => txHistoryTableColumns(t), [t])
 
-  const table = useReactTable<HistoryEntry>({
+  const { setPageSize, setPageIndex, getPageCount, getFilteredRowModel, ...table } = useTable({
+    features: txHistoryTableFeatures,
     data: history,
     columns,
     state: {
@@ -230,13 +217,15 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
     getRowId: (row, index) => `${row.txid || 'notxid'}-${row.source_mixdepth ?? 0}-${row.timestamp}-${index}`,
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getRowCanExpand: () => true,
-    getExpandedRowModel: getExpandedRowModel(),
     paginateExpandedRows: false,
   })
+
+  useEffect(() => {
+    if (isShowAll) {
+      setPageSize(history.length || 1)
+    }
+  }, [setPageSize, isShowAll, history.length])
 
   if (history.length === 0) {
     return (
@@ -255,8 +244,9 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const alignCenter = header.column.columnDef.meta?.align === 'center'
-                  const alignRight = header.column.columnDef.meta?.align === 'right'
+                  const meta = header.column.columnDef.meta as { align?: string } | undefined
+                  const alignCenter = meta?.align === 'center'
+                  const alignRight = meta?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -273,7 +263,7 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
                           'font-bold': header.column.getIsSorted(),
-                          'text-muted-foreground': table.getState().sorting.length > 0 && !header.column.getIsSorted(),
+                          'text-muted-foreground': sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -295,20 +285,20 @@ export const TxHistoryTable = ({ history, compact = false }: TxHistoryTableProps
 
       {!compact && (
         <TablePagination
-          currentPage={table.getState().pagination.pageIndex + 1}
-          totalPages={table.getPageCount()}
+          currentPage={pagination.pageIndex + 1}
+          totalPages={getPageCount()}
           itemsPerPage={isShowAll ? -1 : pagination.pageSize}
-          totalItems={table.getFilteredRowModel().rows.length}
-          onPageChange={(page) => table.setPageIndex(page - 1)}
+          totalItems={getFilteredRowModel().rows.length}
+          onPageChange={(page) => setPageIndex(page - 1)}
           onItemsPerPageChange={(newItemsPerPage) => {
             if (newItemsPerPage === -1) {
               setIsShowAll(true)
-              table.setPageSize(history.length || 1)
+              setPageSize(history.length || 1)
             } else {
               setIsShowAll(false)
-              table.setPageSize(newItemsPerPage)
+              setPageSize(newItemsPerPage)
             }
-            table.setPageIndex(0)
+            setPageIndex(0)
           }}
         />
       )}

@@ -2,14 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   createColumnHelper,
   flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type ColumnDef,
+  useTable,
   type PaginationState,
   type SortingState,
-  useReactTable,
 } from '@tanstack/react-table'
 import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -28,6 +23,7 @@ import { BITCOIN_GENESIS_DATE, cn, pseudoRandomFloat, pseudoRandomInteger } from
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
+import { earnReportTableFeatures } from './EarnReportContent.schema'
 
 const sumEarned = (entries: EarnReportEntry[], since: Date): AmountSats => {
   return entries.filter((entry) => entry.timestamp >= since).reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
@@ -54,7 +50,7 @@ const MILLISECONDS_IN_90_DAYS: Milliseconds = 90 * MILLISECONDS_IN_A_DAY
 
 const ITEMS_PER_PAGE = 25
 
-const columnHelper = createColumnHelper<EarnReportEntry>()
+const columnHelper = createColumnHelper<typeof earnReportTableFeatures, EarnReportEntry>()
 
 interface EarnReportContentProps {
   className?: string
@@ -79,47 +75,50 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
 
   const allEntries = useMemo(() => [...(entries ?? []), ...demoEntries], [entries, demoEntries])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<EarnReportEntry, any>[]>(
-    () => [
-      columnHelper.accessor('timestamp', {
-        header: () => t('earn.report.heading_timestamp'),
-        sortingFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
-        cell: (info) => {
-          const ts = info.getValue() as Date
-          return <span title={ts.toISOString()}>{ts.toLocaleString()}</span>
-        },
-      }),
-      columnHelper.accessor('earnedAmount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_earned')}</div>,
-        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('cjTotalAmount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_cj_amount')}</div>,
-        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('inputCount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_count')}</div>,
-        cell: (info) => <span>{info.getValue() as number}</span>,
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('inputAmount', {
-        header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_value')}</div>,
-        cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
-        meta: { align: 'right', numeric: true },
-      }),
-      columnHelper.accessor('notes', {
-        header: () => t('earn.report.heading_notes'),
-        enableSorting: false,
-        cell: (info) => <span className="text-muted-foreground max-w-[200px] truncate text-xs">{info.getValue()}</span>,
-      }),
-    ],
+  const columns = useMemo(
+    () =>
+      columnHelper.columns([
+        columnHelper.accessor('timestamp', {
+          header: () => t('earn.report.heading_timestamp'),
+          sortFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
+          cell: (info) => {
+            const ts = info.getValue()
+            return <span title={ts.toISOString()}>{ts.toLocaleString()}</span>
+          },
+        }),
+        columnHelper.accessor('earnedAmount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_earned')}</div>,
+          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('cjTotalAmount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_cj_amount')}</div>,
+          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('inputCount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_count')}</div>,
+          cell: (info) => <span>{info.getValue()}</span>,
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('inputAmount', {
+          header: () => <div className="flex items-center justify-end">{t('earn.report.heading_input_value')}</div>,
+          cell: (info) => (info.getValue() != null ? <Balance valueString={String(info.getValue())} /> : undefined),
+          meta: { align: 'right', numeric: true },
+        }),
+        columnHelper.accessor('notes', {
+          header: () => t('earn.report.heading_notes'),
+          enableSorting: false,
+          cell: (info) => (
+            <span className="text-muted-foreground max-w-[200px] truncate text-xs">{info.getValue()}</span>
+          ),
+        }),
+      ]),
     [t],
   )
 
-  const table = useReactTable<EarnReportEntry>({
+  const { setPageSize, getSortedRowModel, ...table } = useTable({
+    features: earnReportTableFeatures,
     data: allEntries,
     columns,
     state: {
@@ -131,24 +130,17 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     autoResetPageIndex: true,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   })
 
   useEffect(() => {
     if (isShowAll) {
-      table.setPageSize(allEntries.length || 1)
+      setPageSize(allEntries.length || 1)
     }
-  }, [isShowAll, allEntries.length, table])
-
-  const visibleRows = table.getRowModel().rows
-  const exportRows = table.getSortedRowModel().rows
+  }, [setPageSize, isShowAll, allEntries.length])
 
   const downloadCsv = useCallback(() => {
     const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
-    const rows = exportRows.map((row) =>
+    const rows = getSortedRowModel().rows.map((row) =>
       [
         row.original.timestamp.toISOString(),
         row.original.cjTotalAmount ?? '',
@@ -170,7 +162,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
-  }, [exportRows])
+  }, [getSortedRowModel])
 
   const earnedTotal = useMemo(() => sumEarned(allEntries, BITCOIN_GENESIS_DATE), [allEntries])
 
@@ -212,7 +204,14 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
           <EarnReportChart entries={allEntries} />
 
           {/* Toolbar: search + refresh */}
-          <div className="flex w-full flex-wrap items-center justify-end gap-2">
+          <div className="flex w-full flex-col items-start justify-center gap-2 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-sm">
+                {globalFilter.length === 0
+                  ? t('earn.report.text_report_summary', { count: allEntries.length })
+                  : t('earn.report.text_report_summary_filtered', { count: table.getFilteredRowModel().rows.length })}
+              </p>
+            </div>
             <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
               <InputGroup className="min-w-[120px] flex-1 sm:max-w-[360px] sm:min-w-[220px]">
                 <InputGroupInput
@@ -238,7 +237,12 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 </InputGroupAddon>
               </InputGroup>
 
-              <Button variant="outline" onClick={() => void refetch()} disabled={!enabled || isRefetching}>
+              <Button
+                variant="outline"
+                onClick={() => void refetch()}
+                disabled={!enabled || isRefetching}
+                title={t('global.refresh')}
+              >
                 <RefreshCwIcon className={isRefetching ? 'animate-spin' : undefined} />
                 <span className="hidden sm:inline">{t('global.refresh')}</span>
               </Button>
@@ -251,20 +255,15 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 <DownloadIcon className="group/download" />
                 <span className="hidden sm:inline">{t('global.download')}</span>
               </Button>
-            </div>
 
-            <span className="text-muted-foreground ml-2 text-sm font-normal">
-              {globalFilter === ''
-                ? t('earn.report.text_report_summary', { count: allEntries.length })
-                : t('earn.report.text_report_summary_filtered', { count: table.getFilteredRowModel().rows.length })}
-            </span>
-            {isDeveloperMode ? (
-              <Button className="min-w-0 shrink overflow-hidden" variant="outline" onClick={addDemoEntry}>
-                <PlusIcon />
-                {t('earn.report.text_button_generate_demo_report')}
-                <DevBadge />
-              </Button>
-            ) : undefined}
+              {isDeveloperMode ? (
+                <Button className="min-w-0 shrink overflow-hidden" variant="outline" onClick={addDemoEntry}>
+                  <PlusIcon />
+                  <span className="hidden sm:inline">Add Demo Entry</span>
+                  <DevBadge className="shrink-0" />
+                </Button>
+              ) : undefined}
+            </div>
           </div>
 
           {/* Table or empty state */}
@@ -283,7 +282,8 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                       <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map((header) => {
                           const canSort = header.column.getCanSort()
-                          const alignRight = header.column.columnDef.meta?.align === 'right'
+                          const meta = header.column.columnDef.meta as { align?: string } | undefined
+                          const alignRight = meta?.align === 'right'
                           return (
                             <TableHead
                               key={header.id}
@@ -291,7 +291,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                               onClick={canSort ? () => header.column.toggleSorting() : undefined}
                             >
                               <div
-                                className={`flex items-center gap-2 ${alignRight ? 'justify-end' : ''} ${canSort ? 'cursor-pointer select-none' : ''} ${header.column.getIsSorted() ? 'font-bold' : ''} ${table.getState().sorting.length > 0 && !header.column.getIsSorted() ? 'text-muted-foreground' : ''}`}
+                                className={`flex items-center gap-2 ${alignRight ? 'justify-end' : ''} ${canSort ? 'cursor-pointer select-none' : ''} ${header.column.getIsSorted() ? 'font-bold' : ''} ${table.state.sorting.length > 0 && !header.column.getIsSorted() ? 'text-muted-foreground' : ''}`}
                               >
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                                 {canSort ? <SortIcon className="size-4" column={header.column} /> : undefined}
@@ -303,10 +303,11 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                     ))}
                   </TableHeader>
                   <TableBody>
-                    {visibleRows.map((row) => (
+                    {table.getRowModel().rows.map((row) => (
                       <TableRow key={row.id}>
                         {row.getVisibleCells().map((cell) => {
-                          const alignRight = cell.column.columnDef.meta?.align === 'right'
+                          const meta = cell.column.columnDef.meta as { align?: string } | undefined
+                          const alignRight = meta?.align === 'right'
                           return (
                             <TableCell key={cell.id} className={alignRight ? 'text-right' : ''}>
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -320,7 +321,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
               </div>
 
               <TablePagination
-                currentPage={table.getState().pagination.pageIndex + 1}
+                currentPage={table.state.pagination.pageIndex + 1}
                 totalPages={table.getPageCount()}
                 itemsPerPage={isShowAll ? -1 : pagination.pageSize}
                 totalItems={table.getFilteredRowModel().rows.length}
@@ -328,10 +329,10 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
                 onItemsPerPageChange={(newItemsPerPage) => {
                   if (newItemsPerPage === -1) {
                     setIsShowAll(true)
-                    table.setPageSize(allEntries.length || 1)
+                    setPageSize(allEntries.length || 1)
                   } else {
                     setIsShowAll(false)
-                    table.setPageSize(newItemsPerPage)
+                    setPageSize(newItemsPerPage)
                   }
                   table.setPageIndex(0)
                 }}

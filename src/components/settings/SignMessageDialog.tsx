@@ -1,5 +1,5 @@
 import { useState, useMemo, type ComponentProps } from 'react'
-import { signmessageMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { signmessageMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckIcon, CopyIcon, PenLineIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'

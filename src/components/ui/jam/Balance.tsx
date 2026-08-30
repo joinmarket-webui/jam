@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent, type MouseEventHandler, type PropsWithChildren } from 'react'
+import { useEffect, useMemo, useState, type KeyboardEvent, type MouseEvent, type PropsWithChildren } from 'react'
 import { SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
@@ -23,7 +23,7 @@ type ElementWithSymbolsProps = PropsWithChildren<{
   frozen?: boolean
   frozenSymbol?: boolean
   className?: string
-  onClick?: MouseEventHandler
+  onClick?: () => void
   'aria-label'?: string
   'aria-pressed'?: boolean
 }>
@@ -39,13 +39,7 @@ const ElementWithSymbols = ({
   'aria-label': ariaLabel,
   'aria-pressed': ariaPressed,
 }: ElementWithSymbolsProps) => {
-  const sharedClassName = cn(
-    'balance-hook inline-flex items-center',
-    {
-      'text-brand-info': frozen,
-    },
-    className,
-  )
+  const sharedClassName = cn('balance-hook inline-flex items-center', frozen ? 'text-brand-info' : undefined, className)
 
   const content = (
     <>
@@ -57,15 +51,27 @@ const ElementWithSymbols = ({
 
   if (onClick) {
     return (
-      <button
-        type="button"
-        className={cn(sharedClassName, 'appearance-none border-0 bg-transparent p-0')}
-        onClick={onClick}
+      <span
+        className={sharedClassName}
+        tabIndex={0}
+        role="button"
         aria-label={ariaLabel}
         aria-pressed={ariaPressed}
+        onClick={(event: MouseEvent<HTMLSpanElement>) => {
+          event.preventDefault()
+          event.stopPropagation()
+          onClick()
+        }}
+        onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            event.stopPropagation()
+            onClick()
+          }
+        }}
       >
         {content}
-      </button>
+      </span>
     )
   }
 
@@ -96,7 +102,7 @@ const BitcoinBalance = ({
   return (
     <ElementWithSymbols symbol={BTC_SYMBOL} {...props}>
       <span
-        className={cn('slashed-zero tabular-nums select-all', styles.bitcoinAmount, {
+        className={cn('slashed-zero tabular-nums not-[button_*]:select-all', styles.bitcoinAmount, {
           [styles.bitcoinAmountSpacing]: fractionalPartSpacing,
           [styles.bitcoinAmountColor]: highlightSignificantDigits,
         })}
@@ -123,14 +129,17 @@ const BitcoinBalance = ({
 
 interface SatsBalanceProps extends Omit<ElementWithSymbolsProps, 'symbol' | 'children'> {
   value: AmountSats
+  highlightSignificantDigits?: boolean
 }
 
-const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
+const SatsBalance = ({ value, highlightSignificantDigits = true, ...props }: SatsBalanceProps) => {
   return (
     <ElementWithSymbols symbol={SAT_SYMBOL} {...props}>
       <span
-        className={cn('slashed-zero tabular-nums select-all', styles.satsAmountColor)}
         data-testid="sats-amount"
+        className={cn('slashed-zero tabular-nums not-[button_*]:select-all', {
+          [styles.satsAmountColor]: highlightSignificantDigits,
+        })}
         data-raw-value={value}
       >
         {formatSats(value)}
@@ -157,6 +166,8 @@ type BalanceComponentProps = Omit<ElementWithSymbolsProps, 'symbol' | 'children'
   showBalance?: boolean
   enableVisibilityToggle?: boolean
   hiddenAmountPlaceholder: HiddenBalanceProps['hiddenAmountPlaceholder']
+  fractionalPartSpacing?: boolean
+  highlightSignificantDigits?: boolean
 }
 
 /**
@@ -188,11 +199,7 @@ export const BalanceComponent = ({
   }, [showBalance])
 
   const elementProps = useMemo(() => {
-    const toggleVisibility: MouseEventHandler = (event) => {
-      event.preventDefault()
-      event.stopPropagation()
-      setIsBalanceVisible((current) => !current)
-    }
+    const toggleVisibility = () => setIsBalanceVisible((current) => !current)
     const onClickHandler = enableVisibilityToggle === false ? undefined : toggleVisibility
     const isInteractive = Boolean(onClickHandler || props.onClick)
 
@@ -202,9 +209,9 @@ export const BalanceComponent = ({
         'cursor-pointer': isInteractive,
       }),
       onClick: isInteractive
-        ? (event: MouseEvent<HTMLButtonElement>) => {
-            onClickHandler?.(event)
-            props.onClick?.(event)
+        ? () => {
+            onClickHandler?.()
+            props.onClick?.()
           }
         : undefined,
       'aria-label': onClickHandler

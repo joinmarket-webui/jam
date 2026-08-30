@@ -1,4 +1,4 @@
-import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'

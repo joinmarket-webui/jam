@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY } from '@/constants/jam'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'

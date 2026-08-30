@@ -8,7 +8,7 @@ export interface OrderbookOffer {
   minsize?: AmountSats | null
   maxsize?: AmountSats | null
   txfee?: number | null
-  cjfee?: number | null
+  cjfee?: number | string | null
   fidelity_bond_value?: number | null
   fidelity_bond_verification_stale?: boolean | null
   directory_nodes?: string[] | null
@@ -45,18 +45,4 @@ export const fetchOrderbook = async (): Promise<OrderbookResponse> => {
   }
 
   return data as OrderbookResponse
-}
-
-export const refreshOrderbook = async (): Promise<Response> => {
-  const response = await fetch('/obwatch/refreshorderbook', {
-    method: 'POST',
-    // endpoint adds a redirect ('Location' header) that we do not want to follow as it is likely
-    // to be a local address (localhost, 127.0.0.1) that might not be reachable without proxy
-    redirect: 'manual',
-  })
-
-  if (!response.ok && response.type !== 'opaqueredirect') {
-    throw new Error(`Failed to refresh orderbook: ${response.status}`)
-  }
-  return response
 }

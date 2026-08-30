@@ -122,7 +122,7 @@ vi.mock('./JarSelectorDialog', () => ({
     ) : null,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   getaddress: () => Promise.resolve(h.getaddressResult),
 }))
 
@@ -424,7 +424,7 @@ describe('SendForm', () => {
     expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
   })
 
-  it('does not show empty orderbook warning when non-collaborative send is selected', () => {
+  it('does not show empty orderbook warning when non-collaborative send is selected', async () => {
     h.hasOrders = false
     renderForm()
 
@@ -438,5 +438,7 @@ describe('SendForm', () => {
     fireEvent.click(collaborativeSwitch!)
 
     expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
+
+    await flushActUpdates()
   })
 })

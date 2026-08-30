@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { FileTextIcon, HourglassIcon, InfoIcon, PlusIcon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
@@ -18,6 +18,7 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
+import { OFFERTYPE_ABS } from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -31,7 +32,7 @@ import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { useDeveloperMode } from '@/store/jamSettingsStore'
+import { useDeveloperMode, useExpertFeatureEnabled } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
@@ -44,6 +45,16 @@ import { RenewBondDialog } from './RenewBondDialog'
 import { EarnReportOverlay } from './report/EarnReportOverlay'
 
 const toStartMakerRequest = (values: EarnFormValues): StartMakerRequest => {
+  if (values.offerType === '__free') {
+    return {
+      ordertype: OFFERTYPE_ABS,
+      minsize: String(values.offerMinAmount),
+      cjfee_a: String(0),
+      cjfee_r: String(0),
+      txfee: String(0), // hardcoded on purpose: unused but must be present
+    }
+  }
+
   // both fee properties need to be provided.
   // prevent providing an invalid value by setting the ignored prop to zero
   const cjfee_a = isAbsoluteOffer(values.offerType) ? values.offerAbsoluteFee! : 0
@@ -67,6 +78,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
+
+  const enableCustomEarnFeeValues = useExpertFeatureEnabled('custom-earn-fee-values')
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const makerRunning = jmSession?.maker_running === true
 
@@ -233,7 +246,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
+      <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')}>
+        <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
+        <Button variant="outline" onClick={() => setShowEarnReport(true)}>
+          <FileTextIcon />
+          {t('earn.button_show_report')}
+        </Button>
+      </PageTitle>
 
       {feeConfigValidation.maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
@@ -283,13 +302,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </>
       )}
 
-      <div className="flex justify-end">
-        <Button variant="outline" onClick={() => setShowEarnReport(true)}>
-          <FileTextIcon />
-          {t('earn.button_show_report')}
-        </Button>
-      </div>
-
       {jmSession.offer_list && jmSession.offer_list.length > 0 && (
         <OfferCard
           className="motion-safe:animate-in blur-in"
@@ -330,6 +342,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           <EarnForm
             onSubmit={onSubmit}
             isWaitingMakerStart={isWaitingMakerStart}
+            fidelityBonds={walletInfo.fidelityBondSummary.fbOutputs}
             offerMinsizeMax={maxConfirmedJarAvailableBalance}
             disabled={
               earnPreconditionWarning !== undefined ||
@@ -340,6 +353,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               jmSession.coinjoin_in_process ||
               jmSession.rescanning
             }
+            enableCustomEarnFeeValues={enableCustomEarnFeeValues}
             debug={isDeveloperMode}
           />
         </CardContent>
@@ -497,8 +511,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           </CardContent>
         </Card>
       )}
-
-      <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
     </div>
   )
 }
