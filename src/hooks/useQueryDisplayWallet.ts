@@ -1,6 +1,6 @@
 import { displaywalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DisplaywalletResponse, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useQuery, type UseQueryResult } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { isDevMode } from '@/constants/debugFeatures'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -46,6 +46,11 @@ export function useQueryDisplayWallet({
       throttle: isDevMode() ? 2_100 : 0,
     }),
     enabled: !!walletFileName && !!jmSession,
+    // When the query key changes (utxosHashHex changes), keep the previous
+    // successful data visible while the new request is in-flight.
+    // This prevents `isLoading` from temporarily becoming true and causing
+    // the wallet balance and jars to be replaced by a spinner.
+    placeholderData: keepPreviousData,
   })
 
   return {

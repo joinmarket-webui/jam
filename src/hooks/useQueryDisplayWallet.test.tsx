@@ -15,6 +15,7 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
 }))
 
 vi.mock('@tanstack/react-query', () => ({
+  keepPreviousData: (data: unknown) => data,
   useQuery: (options: { queryKey: unknown }) => {
     capturedQueryKeys.push(options.queryKey)
     return { data: undefined }
