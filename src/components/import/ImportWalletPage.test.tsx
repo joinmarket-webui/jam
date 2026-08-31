@@ -200,7 +200,7 @@ describe('ImportWalletPage', () => {
     await waitFor(() =>
       expect(authStore.getState().state).toEqual({
         walletFileName: 'restored.jmdat',
-        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh' },
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
         hashed_password: 'hashed-secret',
       }),
     )

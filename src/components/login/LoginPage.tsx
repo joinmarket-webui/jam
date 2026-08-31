@@ -11,7 +11,7 @@ import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
 import { isWalletFileName, sortWallets } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore, type AuthState } from '@/store/authStore'
+import { authStore, computeAuthExpiresAt, type AuthState } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import { LoginCard } from './LoginCard'
@@ -76,7 +76,11 @@ const LoginPage = () => {
       }
       return {
         walletFileName: response.walletname as WalletFileName,
-        auth: { token: response.token, refresh_token: response.refresh_token },
+        auth: {
+          token: response.token,
+          refresh_token: response.refresh_token,
+          expiresAt: computeAuthExpiresAt(response.expires_in),
+        },
         hashed_password: hashedPassword,
       }
     },

@@ -175,6 +175,27 @@ describe('setIntervalDebounced', () => {
 
     expect(callback).toHaveBeenCalledTimes(2)
   })
+
+  it('re-evaluates a delay function on every iteration instead of using a fixed value', async () => {
+    const callback = vi.fn().mockResolvedValue(undefined)
+    const onTimerIdChanged = vi.fn()
+    const delays = [1000, 5000]
+    const delayFn = vi.fn(() => delays.shift() ?? 5000)
+
+    setIntervalDebounced(callback, delayFn, onTimerIdChanged)
+
+    expect(delayFn).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(delayFn).toHaveBeenCalledTimes(2)
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(callback).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(4000)
+    expect(callback).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('debounce', () => {
