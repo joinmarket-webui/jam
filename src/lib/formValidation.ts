@@ -10,14 +10,16 @@ import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import type { BitcoinAddress, BlockHeight, JarIndex } from '@/types/global'
 import { isValidInteger } from './utils'
 
-const BECH32_HRP_PREFIXES = ['bc1', 'tb1', 'bcrt1']
-
 export const normalizeBitcoinAddress = (value: string): string => {
   const trimmed = value.trim()
   if (trimmed !== trimmed.toUpperCase()) return trimmed
 
   const lowercased = trimmed.toLowerCase()
-  return BECH32_HRP_PREFIXES.some((prefix) => lowercased.startsWith(prefix)) ? lowercased : trimmed
+  try {
+    return getAddressInfo(lowercased).bech32 ? lowercased : trimmed
+  } catch (_ignoredOnPurpose) {
+    return trimmed
+  }
 }
 
 /**
