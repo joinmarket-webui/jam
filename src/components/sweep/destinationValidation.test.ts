@@ -23,6 +23,16 @@ describe('buildDestinationErrors', () => {
     ])
   })
 
+  it('reports duplicates that differ only in bech32 casing', () => {
+    const address = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
+    const errors = buildDestinationErrors([address, address.toUpperCase()], {}, t)
+
+    expect(errors).toEqual([
+      'scheduler.feedback_reused_destination_address',
+      'scheduler.feedback_reused_destination_address',
+    ])
+  })
+
   it('reports reused addresses from wallet history', () => {
     const usedAddress = '1BitcoinEaterAddressDontSend8MUo1T'
     const freshAddress = '1BitcoinEaterAddressDontSendDHyNcX'

@@ -1,8 +1,8 @@
 import type { TFunction } from 'i18next'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
-import { isReusedAddress, isValidAddress } from '@/lib/formValidation'
+import { isReusedAddress, isValidAddress, normalizeBitcoinAddress } from '@/lib/formValidation'
 
-const normalizeAddress = (value: string): string => value.trim()
+const normalizeAddress = (value: string): string => normalizeBitcoinAddress(value)
 
 export const buildDestinationErrors = (
   addresses: string[],
