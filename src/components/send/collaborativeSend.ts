@@ -1,6 +1,6 @@
 import type { DirectSendRequest, DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { isValidAddress, normalizeBitcoinAddress } from '@/lib/formValidation'
 import { isValidInteger, isValidNumber } from '@/lib/utils'
 import type { SendFormValues } from './types'
 
@@ -24,7 +24,7 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
   if (data.amount === undefined) {
     throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
   }
-  if (data.destination === undefined || !isValidBitcoinAddress(data.destination.address)) {
+  if (data.destination === undefined || !isValidAddress(data.destination.address)) {
     throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
   }
   if (data.source?.fromJar === undefined) {
@@ -38,7 +38,7 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
 
   return {
     amount_sats: data.amount.isSweep === true ? 0 : data.amount.amount,
-    destination: data.destination.address,
+    destination: normalizeBitcoinAddress(data.destination.address),
     mixdepth: data.source.fromJar,
     txfee,
   }
@@ -50,8 +50,9 @@ export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinR
     throw new Error('Invalid source jar.')
   }
 
-  const address = data.destination.address
-  if (typeof address !== 'string' || !isValidBitcoinAddress(address)) {
+  const rawAddress: unknown = data.destination.address
+  const address = typeof rawAddress === 'string' ? normalizeBitcoinAddress(rawAddress) : rawAddress
+  if (!isValidAddress(address)) {
     throw new Error('Invalid bitcoin address.')
   }
 
