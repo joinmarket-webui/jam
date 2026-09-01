@@ -34,8 +34,8 @@ import { cn } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { Field, FieldDescription, FieldError, FieldLabel, FieldSet } from '../ui/field'
-import { Slider } from '../ui/slider'
 import { SliderWithInput } from '../ui/jam/SliderWithInput'
+import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
 
 const getNewTestingDestinationAddress = (addressSummary: AddressSummary): string => {
