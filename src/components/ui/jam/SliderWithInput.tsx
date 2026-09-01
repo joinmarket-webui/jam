@@ -53,15 +53,6 @@ function SliderWithInput({
 
   return (
     <div data-slot="slider-with-input" className="flex w-full items-center gap-3">
-      <Slider
-        className={className}
-        defaultValue={defaultValue}
-        value={value}
-        min={min}
-        max={max}
-        step={step}
-        {...props}
-      />
       <Input
         data-slot="slider-input"
         type="number"
@@ -74,6 +65,15 @@ function SliderWithInput({
         aria-label={props['aria-label']}
         onChange={(event) => commitValue(event.target.value)}
         className={cn('h-8 w-20 shrink-0 text-center', inputClassName)}
+      />
+      <Slider
+        className={className}
+        defaultValue={defaultValue}
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        {...props}
       />
     </div>
   )
