@@ -191,12 +191,64 @@ describe('useCreateFidelityBondWizard', () => {
         mixdepth: 0,
         amount_sats: 0,
         destination: 'bcrt1qtimelockdestination',
+        input_utxos: ['only:0'],
       },
     })
     expect(result.current.step).toBe('success')
     expect(result.current.txResult).toEqual({ txid: 'created-tx' })
     expect(mocks.walletInfoRefetch).toHaveBeenCalled()
     expect(mocks.toastSuccess).toHaveBeenCalledWith('earn.fidelity_bond.create_fidelity_bond.success_text')
+  })
+
+  it('sweeps only the reviewed utxos when new funds arrive in the jar before confirming', async () => {
+    mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'reviewed:0', value: 25_000 })])]
+    const { result, rerender } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+    act(() => result.current.setSelectedLockdate(minLockdateOption()))
+    await act(async () => result.current.handleNext())
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+    await act(async () => result.current.handleNext())
+
+    expect(result.current.step).toBe('review')
+    expect(result.current.totalAmount).toBe(25_000)
+
+    mocks.walletInfo.jars = [
+      jar(0, [utxo({ utxo: 'reviewed:0', value: 25_000 }), utxo({ utxo: 'arrived-late:0', value: 80_000 })]),
+    ]
+    rerender()
+
+    act(() => result.current.setConfirmationChecked(true))
+    await act(async () => result.current.handleNext())
+
+    expect(mocks.directSendMutateAsync).toHaveBeenCalledWith({
+      path: { walletname: 'wallet.jmdat' },
+      body: {
+        mixdepth: 0,
+        amount_sats: 0,
+        destination: 'bcrt1qtimelockdestination',
+        input_utxos: ['reviewed:0'],
+      },
+    })
+  })
+
+  it('does not broadcast when the reviewed utxo is no longer in the jar', async () => {
+    mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'reviewed:0', value: 25_000 })])]
+    const { result, rerender } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+    act(() => result.current.setSelectedLockdate(minLockdateOption()))
+    await act(async () => result.current.handleNext())
+    act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+    await act(async () => result.current.handleNext())
+
+    expect(result.current.step).toBe('review')
+
+    mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'spent-elsewhere:0', value: 25_000 })])]
+    rerender()
+
+    act(() => result.current.setConfirmationChecked(true))
+    await act(async () => result.current.handleNext())
+
+    expect(mocks.directSendMutateAsync).not.toHaveBeenCalled()
   })
 
   it('freezes unselected utxos before review and supports back navigation', async () => {

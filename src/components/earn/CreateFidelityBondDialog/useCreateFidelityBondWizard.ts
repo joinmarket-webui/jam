@@ -272,7 +272,7 @@ export function useCreateFidelityBondWizard(
   }
 
   const handleCreateFidelityBond = async () => {
-    if (!address || selectedJar === undefined) return
+    if (!address || selectedJar === undefined || selectedUtxos.length === 0) return
 
     setStep('creating')
 
@@ -286,6 +286,9 @@ export function useCreateFidelityBondWizard(
           mixdepth: selectedJar.jarIndex,
           amount_sats: 0, // 0 := sweep!
           destination: address,
+          // Pin the reviewed utxos so the sweep spends exactly those, instead of
+          // whatever is unfrozen in the mixdepth once the user confirms.
+          input_utxos: selectedUtxos.map((utxo) => utxo.utxo),
         },
       })
       broadcasted = true
