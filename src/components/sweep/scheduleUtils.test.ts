@@ -565,8 +565,12 @@ describe('scheduleUtils', () => {
 describe('formatDuration', () => {
   // Minimal stand-in for i18next: renders the key with its interpolated values,
   // so each assertion shows both which key was picked and what was passed to it.
+  // Keys are sorted so the assertions stay focused on which translation key was
+  // selected and with what values -- i18next treats option key order as
+  // irrelevant, so reordering the object literal must not break these tests.
   const t = ((key: string, values: Record<string, string> = {}) =>
     `${key}(${Object.entries(values)
+      .toSorted(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}=${v}`)
       .join(',')})`) as unknown as Parameters<typeof formatDuration>[1]
 
