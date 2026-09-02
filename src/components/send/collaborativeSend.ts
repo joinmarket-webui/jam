@@ -33,6 +33,9 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
   if (data.amount.isSweep === true && data.amount.amount !== undefined) {
     throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given for sweep.')
   }
+  if (data.amount.isSweep === true && (data.amount.sweepUtxos === undefined || data.amount.sweepUtxos.length === 0)) {
+    throw new Error('Cannot trigger non-collaborative transaction: Missing utxos to sweep.')
+  }
 
   const txfee = txFeeValueForRequest(data)
 
@@ -41,6 +44,7 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
     destination: normalizeBitcoinAddress(data.destination.address),
     mixdepth: data.source.fromJar,
     txfee,
+    input_utxos: data.amount.isSweep === true ? data.amount.sweepUtxos : undefined,
   }
 }
 
@@ -65,6 +69,9 @@ export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinR
   if (!data.amount.isSweep && amountSats <= 0) {
     throw new Error('Invalid amount.')
   }
+  if (data.amount.isSweep && (data.amount.sweepUtxos === undefined || data.amount.sweepUtxos.length === 0)) {
+    throw new Error('Missing utxos to sweep.')
+  }
 
   const txfee = txFeeValueForRequest(data)
   if (txfee !== undefined && (!isValidNumber(txfee) || txfee <= 0)) {
@@ -77,5 +84,6 @@ export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinR
     counterparties,
     destination: address,
     txfee,
+    input_utxos: data.amount.isSweep ? data.amount.sweepUtxos : undefined,
   }
 }

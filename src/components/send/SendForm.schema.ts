@@ -118,6 +118,15 @@ export const createSendFormSchema = (
                   .nullable()
                   .optional(),
             }),
+            sweepUtxos: yup.array().when('isSweep', {
+              is: (val: boolean) => val === true,
+              then: (schema) => schema.of(yup.string().required()).min(1, t('send.feedback_invalid_amount')).required(),
+              otherwise: (schema) =>
+                schema
+                  .transform(() => null)
+                  .nullable()
+                  .optional(),
+            }),
             amount: yup.number().when('isSweep', {
               is: (val: boolean) => val === true,
               then: (schema) =>

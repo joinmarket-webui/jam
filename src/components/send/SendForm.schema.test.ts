@@ -127,7 +127,7 @@ describe('createSendFormSchema', () => {
       schema.validate({
         ...validFormValues,
         source: { fromJar: jars[1].jarIndex },
-        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT },
+        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT, sweepUtxos: ['tx:0'] },
       }),
     ).rejects.toThrow('send.feedback_invalid_source_jar')
   })
@@ -137,7 +137,7 @@ describe('createSendFormSchema', () => {
       schema.validate({
         ...validFormValues,
         source: { fromJar: jars[2].jarIndex },
-        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT },
+        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT, sweepUtxos: ['tx:0'] },
       }),
     ).rejects.toThrow('send.feedback_invalid_source_jar_must_unfreeze_utxos')
   })
@@ -147,7 +147,7 @@ describe('createSendFormSchema', () => {
       schema.validate({
         ...validFormValues,
         source: { fromJar: jars[3].jarIndex },
-        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT },
+        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT, sweepUtxos: ['tx:0'] },
       }),
     ).rejects.toThrow('send.feedback_invalid_source_jar_must_freeze_fidelity_bond:{"count":2}')
   })
@@ -252,10 +252,26 @@ describe('createSendFormSchema', () => {
     await expect(
       schema.validate({
         ...validFormValues,
-        amount: { isSweep: true, sweepAmount: 9_000, amount: 500 },
+        amount: { isSweep: true, sweepAmount: 9_000, sweepUtxos: ['tx:0'], amount: 500 },
       }),
     ).resolves.toMatchObject({
-      amount: { isSweep: true, sweepAmount: 9_000, amount: null },
+      amount: { isSweep: true, sweepAmount: 9_000, sweepUtxos: ['tx:0'], amount: null },
     })
+  })
+
+  it('rejects sweeps without any captured utxos', async () => {
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        amount: { isSweep: true, sweepAmount: 9_000, sweepUtxos: [] },
+      }),
+    ).rejects.toThrow('send.feedback_invalid_amount')
+
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        amount: { isSweep: true, sweepAmount: 9_000, sweepUtxos: undefined },
+      }),
+    ).rejects.toThrow('amount.sweepUtxos is a required field')
   })
 })

@@ -70,6 +70,7 @@ const baseValues: SendFormValues = {
     amount: 12_000,
     isSweep: false,
     sweepAmount: undefined,
+    sweepUtxos: undefined,
   },
   destination: {
     address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
@@ -127,6 +128,7 @@ describe('PaymentConfirmDialog', () => {
         amount: undefined,
         isSweep: true,
         sweepAmount: 20_000,
+        sweepUtxos: ['aaaa'.repeat(16) + ':0'],
       },
       destination: {
         address: baseValues.destination.address,

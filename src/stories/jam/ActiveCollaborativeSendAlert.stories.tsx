@@ -43,7 +43,7 @@ const paymentAttempt: PaymentAttempt = {
   utxosHashHex: 'abc123hash',
   walletFileName: 'Satoshi.jmdat',
   data: {
-    amount: { amount: 21_000, isSweep: false as const, sweepAmount: undefined },
+    amount: { amount: 21_000, isSweep: false as const, sweepAmount: undefined, sweepUtxos: undefined },
     destination: { address: 'bcrt1qdestinationaddress123456789', fromJar: undefined },
     isCoinJoin: true,
     numCollaborators: 5,
@@ -65,7 +65,7 @@ export const WithSweepPaymentAttempt: Story = {
       ...paymentAttempt,
       data: {
         ...paymentAttempt.data,
-        amount: { amount: undefined, isSweep: true, sweepAmount: 21_000 },
+        amount: { amount: undefined, isSweep: true, sweepAmount: 21_000, sweepUtxos: ['aaaa'.repeat(16) + ':0'] },
         destination: { address: 'bcrt1qdestinationaddress123456789', fromJar: paymentAttempt.data.source.fromJar },
       },
     },
