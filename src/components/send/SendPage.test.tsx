@@ -1,3 +1,4 @@
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -5,7 +6,6 @@ import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore } from '@/store/jmTxStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import { SendPage } from './SendPage'
@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   fetchIfMissing: vi.fn(),
   feeConfigMissing: false,
   getFeeConfigValues: vi.fn<() => JamFeeConfigValues>(),
+  jmSessionPresent: true,
   onOpenUtxoSelector: vi.fn(),
   scrollToTop: vi.fn(),
   setCurrentPaymentAttempt: vi.fn(),
@@ -166,6 +167,18 @@ vi.mock('@/context/JamDisplayContext', () => ({
 }))
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: mocks.jmSessionPresent
+      ? ({
+          coinjoin_in_process: false,
+          maker_running: false,
+          session: true,
+          wallet_name: 'wallet.jmdat',
+          rescanning: false,
+        } as SessionResponse)
+      : undefined,
+    updateSessionInfo: vi.fn(),
+  }),
   useJamSessionInfoContext: () => ({
     clearCurrentPaymentAttempt: mocks.clearCurrentPaymentAttempt,
     rescanInfo: { rescanning: false },
@@ -349,20 +362,12 @@ describe('SendPage', () => {
     mocks.hasOrders = true
     mocks.orderbookIsLoading = false
     mocks.orderbookError = null
-    jmSessionStore.setState({
-      state: {
-        coinjoin_in_process: false,
-        maker_running: false,
-        session: true,
-        wallet_name: 'wallet.jmdat',
-        rescanning: false,
-      },
-    })
+    mocks.jmSessionPresent = true
     jmTxStore.getState().clear()
   })
 
   it('shows loading until session and wallet data are ready', async () => {
-    jmSessionStore.setState({ state: undefined })
+    mocks.jmSessionPresent = false
 
     render(<SendPage walletFileName="wallet.jmdat" />)
     await flushActUpdates()

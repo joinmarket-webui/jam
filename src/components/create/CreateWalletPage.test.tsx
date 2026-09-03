@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routes } from '@/constants/routes'
 import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import CreateWalletPage from './CreateWalletPage'
 
 const mocks = vi.hoisted(() => ({
@@ -65,6 +64,13 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
     loading: mocks.toastLoading,
   },
+}))
+
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: undefined,
+    updateSessionInfo: vi.fn(),
+  }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({
@@ -136,7 +142,6 @@ describe('CreateWalletPage', () => {
     mocks.toastDismiss.mockReset()
     mocks.toastLoading.mockClear()
     authStore.getState().clear()
-    jmSessionStore.setState({ state: undefined })
 
     mocks.createWallet.mockResolvedValue({
       walletname: 'fresh.jmdat',

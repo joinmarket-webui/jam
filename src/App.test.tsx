@@ -71,10 +71,6 @@ vi.mock('@/store/authStore', () => ({
   },
 }))
 
-vi.mock('./store/jmSessionStore', () => ({
-  jmSessionStore: { getState: () => ({ state: holders.jmSession }) },
-}))
-
 const mockJmTxStoreState = { state: {} }
 vi.mock('./store/jmTxStore', () => ({
   jmTxStore: { getState: () => mockJmTxStoreState },
@@ -135,6 +131,10 @@ vi.mock('@/hooks/useFeeConfigValidation', () => ({ useFeeConfigValidation: () =>
 vi.mock('@/hooks/useRefreshSession', () => ({ useRefreshSession: () => undefined }))
 
 vi.mock('./context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: holders.jmSession,
+    updateSessionInfo: vi.fn(),
+  }),
   useJamSessionInfoContext: () => ({
     blockHeight: holders.blockHeight,
     takerInfo: { running: holders.takerRunning },

@@ -3,7 +3,6 @@ import type { TFunction } from 'i18next'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, type NavigateFunction } from 'react-router-dom'
-import { useStore } from 'zustand'
 import { AppFooter } from '@/components/layout/AppFooter'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
@@ -11,14 +10,13 @@ import { useSidebar } from '@/components/ui/use-sidebar'
 import { isDevMode } from '@/constants/debugFeatures'
 import { APP_DISPLAY_VERSION, JAM_DEFAULT_THEME } from '@/constants/jam'
 import { routes } from '@/constants/routes'
-import { useRescanStatus } from '@/context/JamSessionInfoContext'
+import { useJamSession, useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useJmWebsocketContext } from '@/context/JmWebsocketContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useFeatures } from '@/hooks/useFeatures'
 import { useQueryJamInfo } from '@/hooks/useQueryJamInfo'
 import { type WalletFileName } from '@/lib/utils'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { LogsOverlay } from '../LogsOverlay'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
 import { Cheatsheet } from '../ui/jam/Cheatsheet'
@@ -39,7 +37,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useJamSession()
   const rescanStatus = useRescanStatus()
 
   const { backendName, backendVersion } = useQueryJamInfo()

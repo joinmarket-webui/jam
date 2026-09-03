@@ -51,12 +51,11 @@ import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDi
 import { Spinner } from './components/ui/spinner'
 import { TxHistoryPage } from './components/wallet/TxHistoryPage'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
-import { useJamSessionInfoContext } from './context/JamSessionInfoContext'
+import { useJamSession, useJamSessionInfoContext } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { JmWebsocketContextProvider } from './context/JmWebsocketContextProvider'
 import { getErrorReason } from './lib/errorReason'
-import { jmSessionStore } from './store/jmSessionStore'
 import { jmTxStore, type JmTxInfos } from './store/jmTxStore'
 import type { Milliseconds } from './types/global'
 
@@ -100,12 +99,10 @@ const ProtectedRoute = () => {
   const walletFileName = useAuthenticatedWalletFileName()
 
   return walletFileName ? (
-    <JamSessionInfoContextProvider walletFileName={walletFileName}>
-      <JamWalletInfoContextProvider walletFileName={walletFileName}>
-        <WalletInfoAutoReload />
-        <Outlet context={walletFileName} />
-      </JamWalletInfoContextProvider>
-    </JamSessionInfoContextProvider>
+    <JamWalletInfoContextProvider walletFileName={walletFileName}>
+      <WalletInfoAutoReload />
+      <Outlet context={walletFileName} />
+    </JamWalletInfoContextProvider>
   ) : (
     <Navigate to={routes.login} replace />
   )
@@ -113,7 +110,7 @@ const ProtectedRoute = () => {
 
 const ProtectedNavbarRoute = () => {
   const walletFileName = useOutletContext<WalletFileName>()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useJamSession()
   const makerRunning = jmSession?.maker_running === true
   const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
   const client = useApiClient()
@@ -282,15 +279,17 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
       <JamDisplayContextProvider>
-        <JmWebsocketContextProvider>
-          <QueryClientProvider client={queryClient}>
-            <RefreshApiToken />
-            <RefreshJmSession />
-            {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
-            <RouterProvider router={router} />
-            <Toaster closeButton />
-          </QueryClientProvider>
-        </JmWebsocketContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <JamSessionInfoContextProvider>
+            <JmWebsocketContextProvider>
+              <RefreshApiToken />
+              <RefreshJmSession />
+              {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
+              <RouterProvider router={router} />
+              <Toaster closeButton />
+            </JmWebsocketContextProvider>
+          </JamSessionInfoContextProvider>
+        </QueryClientProvider>
       </JamDisplayContextProvider>
     </ThemeProvider>
   )

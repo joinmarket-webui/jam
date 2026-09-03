@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { routes } from '@/constants/routes'
+import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
@@ -12,7 +13,6 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { isWalletFileName, sortWallets } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import { LoginCard } from './LoginCard'
 
@@ -26,7 +26,7 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useJamSession()
 
   const makerRunning = jmSession?.maker_running === true
   const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0

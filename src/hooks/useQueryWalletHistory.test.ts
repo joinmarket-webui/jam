@@ -9,8 +9,8 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: (options: unknown) => queryMock(options),
 }))
 
-vi.mock('zustand', () => ({
-  useStore: () => ({ session: 'mock-session' }),
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({ jmSession: { session: 'mock-session' } }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({
@@ -23,10 +23,6 @@ vi.mock('@/constants/debugFeatures', () => ({
 
 vi.mock('@/lib/queryClient', () => ({
   withQueryDelay: (function_: unknown) => function_,
-}))
-
-vi.mock('@/store/jmSessionStore', () => ({
-  jmSessionStore: {},
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({

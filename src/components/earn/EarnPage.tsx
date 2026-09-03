@@ -7,7 +7,6 @@ import type { SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -20,6 +19,7 @@ import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
 import { OFFERTYPE_ABS } from '@/constants/jm'
 import { routes } from '@/constants/routes'
+import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -33,7 +33,6 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode, useExpertFeatureEnabled } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { Spinner } from '../ui/spinner'
 import { CreateFidelityBondDialog } from './CreateFidelityBondDialog'
 import { EarnForm, type EarnFormValues } from './EarnForm'
@@ -77,7 +76,7 @@ const JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED = isDevMode()
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useJamSession()
 
   const enableCustomEarnFeeValues = useExpertFeatureEnabled('custom-earn-fee-values')
   const { enabled: isDeveloperMode } = useDeveloperMode()

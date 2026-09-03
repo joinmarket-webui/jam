@@ -2,12 +2,11 @@ import { useEffect } from 'react'
 import { wallethistoryOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { HistoryEntry, WalletHistoryResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
-import { useStore } from 'zustand'
 import { isDevMode } from '@/constants/debugFeatures'
+import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
-import { jmSessionStore } from '@/store/jmSessionStore'
 
 export type { HistoryEntry } from '@joinmarket-webui/joinmarket-api-ts/jm'
 
@@ -32,7 +31,7 @@ export function useQueryWalletHistory({
   utxosHashHex = '',
 }: UseQueryWalletHistoryProps): UseQueryWalletHistoryResult {
   const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
+  const { jmSession } = useJamSession()
 
   const queryOptions = wallethistoryOptions({
     client,
@@ -49,7 +48,7 @@ export function useQueryWalletHistory({
       // simulate slow mainnet responses in dev mode
       throttle: isDevMode() ? 210 : 0,
     }),
-    enabled: enabled && !!walletFileName && !!jmSession,
+    enabled: enabled && !!walletFileName && !!jmSession?.session,
   })
 
   const { refetch } = queryResult

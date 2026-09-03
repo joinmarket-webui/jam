@@ -4,11 +4,11 @@ import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
+import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
 
 export interface UseRefreshSessionProps {
@@ -27,6 +27,7 @@ export function useRefreshSession({
   refetchDelay = 1,
 }: UseRefreshSessionProps): UseRefreshSessionResult {
   const client = useApiClient()
+  const { updateSessionInfo } = useJamSession()
   const authState = useStore(authStore, (state) => state.state)
   const sessionOptionsQueryOptions = sessionOptions({
     client,
@@ -47,9 +48,9 @@ export function useRefreshSession({
 
   useEffect(() => {
     if (sessionData) {
-      jmSessionStore.getState().update(sessionData)
+      updateSessionInfo(sessionData)
     }
-  }, [sessionData])
+  }, [sessionData, updateSessionInfo])
 
   useEffect(
     function refetchOnWalletLockOrUnlock() {

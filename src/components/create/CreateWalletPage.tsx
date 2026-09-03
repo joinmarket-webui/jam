@@ -16,6 +16,7 @@ import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { JM_DEFAULT_WALLET_TYPE } from '@/constants/jm'
 import { routes } from '@/constants/routes'
+import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { buildAuthHeaderMap, type ApiToken } from '@/lib/config'
 import { getErrorReason } from '@/lib/errorReason'
@@ -23,7 +24,6 @@ import { hashPassword } from '@/lib/hash'
 import { delayedPromise, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import type { MnemonicPhrase } from '@/types/global'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
@@ -59,7 +59,7 @@ const CreateWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useJamSession()
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [createWalletSuccessInfo, setCreateWalletSuccessInfo] = useState<CreateWalletSuccessInfo>()
   const [step, setStep] = useState<'wallet_details' | 'confirm' | 'verify_mnemonic'>('wallet_details')

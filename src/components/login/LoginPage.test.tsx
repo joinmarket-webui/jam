@@ -1,10 +1,10 @@
 import type { PropsWithChildren } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routes } from '@/constants/routes'
 import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import LoginPage from './LoginPage'
 
 const mocks = vi.hoisted(() => ({
@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   listWalletsRefetch: vi.fn(),
   unlockWallet: vi.fn(),
   hashPassword: vi.fn(),
+  sessionState: undefined as SessionResponse | undefined,
 }))
 
 type MutationOptions = {
@@ -59,6 +60,13 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
     success: vi.fn(),
   },
+}))
+
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    jmSession: mocks.sessionState,
+    updateSessionInfo: vi.fn(),
+  }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({
@@ -115,16 +123,14 @@ describe('LoginPage', () => {
     })
     mocks.hashPassword.mockResolvedValue('hashed-secret')
     authStore.getState().clear()
-    jmSessionStore.setState({
-      state: {
-        session: true,
-        rescanning: false,
-        wallet_name: 'active.jmdat',
-        maker_running: true,
-        coinjoin_in_process: false,
-        schedule: [['pending coinjoin']],
-      },
-    })
+    mocks.sessionState = {
+      session: true,
+      rescanning: false,
+      wallet_name: 'active.jmdat',
+      maker_running: true,
+      coinjoin_in_process: false,
+      schedule: [['pending coinjoin']],
+    }
   })
 
   it('passes wallet/session state to the card and unlocks the selected wallet', async () => {

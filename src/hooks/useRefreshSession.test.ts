@@ -3,13 +3,13 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { useRefreshSession } from './useRefreshSession'
 
 const mocks = vi.hoisted(() => ({
   queryData: undefined as SessionResponse | undefined,
   refetchSessionData: vi.fn(() => Promise.resolve()),
   toastError: vi.fn(),
+  updateSessionInfo: vi.fn(),
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
@@ -32,6 +32,12 @@ vi.mock('sonner', () => ({
   },
 }))
 
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSession: () => ({
+    updateSessionInfo: mocks.updateSessionInfo,
+  }),
+}))
+
 vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
 }))
@@ -52,9 +58,9 @@ describe('useRefreshSession', () => {
     mocks.refetchSessionData.mockReset()
     mocks.refetchSessionData.mockResolvedValue(undefined)
     mocks.toastError.mockReset()
+    mocks.updateSessionInfo.mockReset()
     authStore.getState().clear()
     jamSettingsStore.getState().clear()
-    jmSessionStore.setState({ state: undefined })
   })
 
   it('stores refreshed session data', async () => {
@@ -63,7 +69,7 @@ describe('useRefreshSession', () => {
     const { result } = renderHook(() => useRefreshSession({ enabled: true, refetchInterval: 5_000 }))
 
     expect(result.current.data).toBe(sessionData)
-    await waitFor(() => expect(jmSessionStore.getState().state).toBe(sessionData))
+    await waitFor(() => expect(mocks.updateSessionInfo).toHaveBeenCalledWith(sessionData))
   })
 
   it('refetches when the active wallet changes', () => {

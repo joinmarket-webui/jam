@@ -10,6 +10,7 @@ import { MemoryRouter } from 'react-router-dom'
 import type { CoreTypes, GlobalTypes } from 'storybook/internal/csf'
 import { DEFAULT_VIEWPORT, MINIMAL_VIEWPORTS, INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { JamDisplayContextProvider } from '../src/context/JamDisplayContextProvider'
+import { JamSessionInfoContextProvider } from '../src/context/JamSessionInfoContextProvider'
 import { JamWalletInfoContextProvider } from '../src/context/JamWalletInfoContextProvider'
 import i18n from '../src/i18n/config'
 import '../src/index.css'
@@ -31,7 +32,7 @@ const locales = [
 
 // Create a global variable called locale in storybook
 // and add a menu in the toolbar to change your locale
-export const globalTypes: GlobalTypes = {
+const globalTypes: GlobalTypes = {
   locale: {
     name: 'Locale',
     description: 'Internationalization locale',
@@ -99,6 +100,7 @@ const preview: Preview = {
       return worker
     }),
   ],
+  globalTypes,
 }
 
 const withTheme = (Story: React.ComponentType, context: GlobalContext) => {
@@ -151,6 +153,14 @@ export const withJamDisplayContext = (Story: React.ComponentType) => {
   )
 }
 
+export const withJamSessionInfoContext = (Story: React.ComponentType) => {
+  return (
+    <JamSessionInfoContextProvider>
+      <Story />
+    </JamSessionInfoContextProvider>
+  )
+}
+
 export const withJamWalletInfoContext = (Story: React.ComponentType) => {
   return (
     <JamWalletInfoContextProvider walletFileName={'Satoshi.jmdat'}>
@@ -159,14 +169,16 @@ export const withJamWalletInfoContext = (Story: React.ComponentType) => {
   )
 }
 
-// export decorators for storybook to wrap your stories in
 export const decorators = [
   withTheme,
   withMemoryRouter,
   withI18next,
   withJamWalletInfoContext,
+  withJamSessionInfoContext,
   withQueryClient,
   withJamDisplayContext,
 ]
+
+preview.decorators = decorators
 
 export default preview

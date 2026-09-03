@@ -10,14 +10,13 @@ import { AlertTriangleIcon, CheckCircle2Icon, HourglassIcon, ListFilterIcon } fr
 import type { SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import * as JAM from '@/constants/jam'
-import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { useJamSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAddressSummary,
   useJamWalletInfoContext,
@@ -35,7 +34,6 @@ import * as fb from '@/lib/fidelityBondUtils'
 import { withMutationDelay } from '@/lib/queryClient'
 import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
@@ -81,7 +79,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     waitForUtxosToBeSpent,
     setWaitForUtxosToBeSpent,
   } = useJamWalletInfoContext()
-  const jmSessionActive = useStore(jmSessionStore, (state) => state.state?.session)
+  const { jmSession } = useJamSession()
+  const jmSessionActive = !!jmSession
   const {
     makerInfo: { running: makerRunning },
     takerInfo: {
