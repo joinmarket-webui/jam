@@ -267,6 +267,7 @@
     "success": {
       "title": "Wallet imported successfully!"
     },
+    "warning_partial_import": "Wallet recovered, but a setup step did not complete. Reason: {{ reason }}",
     "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}"
   },
   "current_wallet": {
