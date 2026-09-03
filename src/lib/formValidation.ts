@@ -10,12 +10,24 @@ import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import type { BitcoinAddress, BlockHeight, JarIndex } from '@/types/global'
 import { isValidInteger } from './utils'
 
+export const normalizeBitcoinAddress = (value: string): string => {
+  const trimmed = value.trim()
+  if (trimmed !== trimmed.toUpperCase()) return trimmed
+
+  const lowercased = trimmed.toLowerCase()
+  try {
+    return getAddressInfo(lowercased).bech32 ? lowercased : trimmed
+  } catch (_ignoredOnPurpose) {
+    return trimmed
+  }
+}
+
 /**
  * Shared bitcoin-address predicates used across form schemas (send, sweep, ...).
  * Keeping these in one place ensures every form validates addresses the same way.
  */
 export const isValidAddress = (value: unknown): value is BitcoinAddress =>
-  typeof value === 'string' && isValidBitcoinAddress(value)
+  typeof value === 'string' && isValidBitcoinAddress(normalizeBitcoinAddress(value))
 
 // p2pkh/p2sh addresses (base58) share the same version bytes on testnet and regtest, so
 // address validation can't tell them apart and always labels them "testnet".
@@ -40,7 +52,7 @@ const isAmbiguousAddressForNetwork = (info: AddressInfo, expectedNetwork: Networ
 
 export const isAddressOnNetwork = (value: string, expectedNetwork: Network): boolean => {
   try {
-    const addressInfo = getAddressInfo(value)
+    const addressInfo = getAddressInfo(normalizeBitcoinAddress(value))
     if (addressInfo.network === expectedNetwork) return true
     return isAmbiguousAddressForNetwork(addressInfo, expectedNetwork)
   } catch (_ignoredOnPurpose) {
@@ -49,7 +61,7 @@ export const isAddressOnNetwork = (value: string, expectedNetwork: Network): boo
 }
 
 export const isReusedAddress = (value: string, addressSummary: AddressSummary): boolean =>
-  addressSummary[value]?.used === true
+  addressSummary[normalizeBitcoinAddress(value)]?.used === true
 
 /**
  * Shared "source jar" (`fromJar`) field validator.
@@ -88,6 +100,7 @@ export const destinationAddressField = ({
   yup
     .string()
     .trim()
+    .transform((value: unknown) => (typeof value === 'string' ? normalizeBitcoinAddress(value) : value))
     .required(messages.invalid)
     .test('valid-address-test', messages.invalid, (value) => isValidAddress(value))
     // The network and reuse checks only run once the address itself is valid, so an invalid

@@ -53,7 +53,7 @@ const sampleAttempt: PaymentAttempt = {
   utxosHashHex: bytesToHex(sha256(hexToBytes('00'))),
   walletFileName: 'test.jmdat',
   data: {
-    amount: { amount: 21_000, isSweep: false as const, sweepAmount: undefined },
+    amount: { amount: 21_000, isSweep: false as const, sweepAmount: undefined, sweepUtxos: undefined },
     destination: { address: 'bcrt1qdestinationaddress123456789', fromJar: undefined },
     isCoinJoin: true,
     numCollaborators: 5,

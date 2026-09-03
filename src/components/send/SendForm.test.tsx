@@ -126,6 +126,14 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   getaddress: () => Promise.resolve(h.getaddressResult),
 }))
 
+// Reads the `amount` slice of the debug panel's `values:` JSON dump (only
+// rendered when `debug` is set), typed just enough for the sweep assertions.
+const readDebugAmountValues = (): { isSweep?: boolean; sweepUtxos?: string[] } => {
+  const valuesJson = screen.getByText('values:').nextElementSibling?.textContent ?? '{}'
+  const parsed = JSON.parse(valuesJson) as { amount?: { isSweep?: boolean; sweepUtxos?: string[] } }
+  return parsed.amount ?? {}
+}
+
 describe('SendForm', () => {
   const mockJars = [
     {
@@ -256,6 +264,70 @@ describe('SendForm', () => {
     expect(screen.queryByTestId('balance')).not.toBeInTheDocument()
 
     await flushActUpdates()
+  })
+
+  it('captures the jar’s current unfrozen utxos as sweepUtxos when clicking sweep', async () => {
+    const jarsWithUtxos = [
+      {
+        ...mockJars[0],
+        utxos: [
+          { utxo: 'aaaa'.repeat(16) + ':0', frozen: false, locktime: undefined },
+          { utxo: 'bbbb'.repeat(16) + ':1', frozen: false, locktime: undefined },
+          // frozen and timelocked utxos must not be captured
+          { utxo: 'cccc'.repeat(16) + ':0', frozen: true, locktime: undefined },
+        ],
+      },
+      mockJars[1],
+    ] as unknown as Jar[]
+
+    render(
+      <SendForm
+        onSubmit={vi.fn()}
+        walletFileName="test.jmdat"
+        jars={jarsWithUtxos}
+        walletBalanceSummary={mockBalanceSummary}
+        addressSummary={mockAddressSummary}
+        feeConfigValues={mockFeeConfigValues}
+        debug
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
+    fireEvent.click(document.querySelector('#btn-sweep-trigger')!)
+
+    await waitFor(() => {
+      const values = readDebugAmountValues()
+      expect(values.isSweep).toBe(true)
+      expect(values.sweepUtxos).toEqual(['aaaa'.repeat(16) + ':0', 'bbbb'.repeat(16) + ':1'])
+    })
+  })
+
+  it('clears sweepUtxos when clearing sweep or reselecting the source jar', async () => {
+    const jarsWithUtxos = [
+      { ...mockJars[0], utxos: [{ utxo: 'aaaa'.repeat(16) + ':0', frozen: false, locktime: undefined }] },
+      mockJars[1],
+    ] as unknown as Jar[]
+
+    render(
+      <SendForm
+        onSubmit={vi.fn()}
+        walletFileName="test.jmdat"
+        jars={jarsWithUtxos}
+        walletBalanceSummary={mockBalanceSummary}
+        addressSummary={mockAddressSummary}
+        feeConfigValues={mockFeeConfigValues}
+        debug
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
+    fireEvent.click(document.querySelector('#btn-sweep-trigger')!)
+
+    await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toEqual(['aaaa'.repeat(16) + ':0']))
+
+    fireEvent.click(document.querySelector('#btn-sweep-clear-trigger')!)
+
+    await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toBeUndefined())
   })
 
   it('applies a scanned bip21 result', async () => {

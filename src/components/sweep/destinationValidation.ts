@@ -1,15 +1,13 @@
 import type { TFunction } from 'i18next'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
-import { isReusedAddress, isValidAddress } from '@/lib/formValidation'
-
-const normalizeAddress = (value: string): string => value.trim()
+import { isReusedAddress, isValidAddress, normalizeBitcoinAddress } from '@/lib/formValidation'
 
 export const buildDestinationErrors = (
   addresses: string[],
   addressSummary: AddressSummary,
   t: TFunction,
 ): Array<string | undefined> => {
-  const normalizedAddresses = addresses.map((address) => normalizeAddress(address))
+  const normalizedAddresses = addresses.map((address) => normalizeBitcoinAddress(address))
   const counts = normalizedAddresses.reduce((acc, address) => {
     if (!isValidAddress(address)) {
       return acc
@@ -34,5 +32,5 @@ export const buildDestinationErrors = (
 }
 
 export const normalizeDestinationAddresses = (addresses: string[]): string[] => {
-  return addresses.map((address) => normalizeAddress(address))
+  return addresses.map((address) => normalizeBitcoinAddress(address))
 }

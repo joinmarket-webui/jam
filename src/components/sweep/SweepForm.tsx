@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { Field, FieldDescription, FieldError, FieldLabel, FieldSet } from '../ui/field'
+import { SliderWithInput } from '../ui/jam/SliderWithInput'
 import { Slider } from '../ui/slider'
 import { Spinner } from '../ui/spinner'
 
@@ -285,7 +286,7 @@ export const SweepForm = ({
                   </div>
                   <span className="text-foreground">{formWatch.minNumberOfTransactionsPerJar}</span>
                 </div>
-                <Slider
+                <SliderWithInput
                   id="slider-min-number-of-transactions-per-jar"
                   min={JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR}
                   max={JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR}
@@ -317,7 +318,7 @@ export const SweepForm = ({
                   </div>
                   <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
                 </div>
-                <Slider
+                <SliderWithInput
                   id="slider-rounding-chance-in-percent"
                   min={JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT}
                   max={JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT}
