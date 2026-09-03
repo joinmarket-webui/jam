@@ -19,6 +19,7 @@ import {
   SparklesIcon,
   HistoryIcon,
   LanguagesIcon,
+  PenLineIcon,
   FlaskConicalIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -45,6 +46,7 @@ import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingsItem, SettingsLink, SettingsSwitch } from './SettingsItem'
+import { SignMessageDialog } from './SignMessageDialog'
 import { FeeConfigDialog } from './fees/FeeConfigDialog'
 
 const GitHubIcon = ({ className }: { className: string }) => (
@@ -93,6 +95,7 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPa
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showXpubsDialog, setShowXpubsDialog] = useState(false)
+  const [showSignMessageDialog, setShowSignMessageDialog] = useState(false)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isFeatureEnabled } = useFeatures()
@@ -131,6 +134,11 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPa
           />
         </>
       )}
+      <SignMessageDialog
+        walletFileName={walletFileName}
+        open={showSignMessageDialog}
+        onOpenChange={setShowSignMessageDialog}
+      />
       {/* Basic Display Settings */}
       <Card>
         <CardHeader>
@@ -199,6 +207,12 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPa
             title={t('settings.show_xpubs')}
             action={() => setShowXpubsDialog(true)}
             disabled={hashedPassword === undefined}
+          />
+          <Separator className="opacity-50" />
+          <SettingsItem
+            icon={PenLineIcon}
+            title={t('settings.sign_message')}
+            action={() => setShowSignMessageDialog(true)}
           />
           <Separator className="opacity-50" />
           <SettingsItem
