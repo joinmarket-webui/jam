@@ -18,6 +18,7 @@ import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
+import * as fb from '@/lib/fidelityBondUtils'
 import { cn, delayedPromise, factorToPercentage, type WalletFileName } from '@/lib/utils'
 import type { BitcoinAddress, JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
@@ -35,7 +36,7 @@ import { Address } from '../ui/jam/Address'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { OrderbookEmptyAlert } from '../ui/jam/OrderbookEmptyAlert'
 import { SelectableJar } from '../ui/jam/SelectableJar'
-import { Slider } from '../ui/slider'
+import { SliderWithInput } from '../ui/jam/SliderWithInput'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 import JarSelectorDialog from './JarSelectorDialog'
@@ -94,6 +95,13 @@ const AddressFromJarSelectorDialog = ({
     />
   )
 }
+
+// Same "available" definition as `toBalanceSummary`: not frozen and not a
+// timelocked fidelity bond. Captured at the moment "Sweep" is clicked so the
+// exact utxos can be pinned via `input_utxos`, instead of the backend
+// re-deriving "everything unfrozen in the mixdepth" at broadcast time.
+const availableUtxosForSweep = (jar: Jar | undefined) =>
+  (jar?.utxos ?? []).filter((utxo) => !utxo.frozen && !fb.utxo.isLocked(utxo)).map((utxo) => utxo.utxo)
 
 const FieldPrefixSatSymbol = (
   <SatSymbol
@@ -355,6 +363,7 @@ export function SendForm({
                         if (isSweep === true) {
                           setValue('amount.isSweep', false, { shouldValidate: true })
                           setValue('amount.sweepAmount', undefined, { shouldValidate: true })
+                          setValue('amount.sweepUtxos', undefined, { shouldValidate: true })
                           setValue('amount.amount', undefined, { shouldValidate: true })
                         }
                         if (destinationJarIndex === jar.jarIndex) {
@@ -520,6 +529,7 @@ export function SendForm({
                     setValue('amount.sweepAmount', sourceJar?.balanceSummary.calculatedAvailableBalanceInSats, {
                       shouldValidate: true,
                     })
+                    setValue('amount.sweepUtxos', availableUtxosForSweep(sourceJar), { shouldValidate: true })
                     setValue('amount.amount', undefined, { shouldValidate: true })
                   }}
                 >
@@ -560,6 +570,7 @@ export function SendForm({
                   onClick={() => {
                     setValue('amount.isSweep', false, { shouldValidate: true })
                     setValue('amount.sweepAmount', undefined, { shouldValidate: true })
+                    setValue('amount.sweepUtxos', undefined, { shouldValidate: true })
                     setValue('amount.amount', undefined, { shouldValidate: true })
                   }}
                 >
@@ -570,6 +581,7 @@ export function SendForm({
               {errors.amount?.sweepAmount?.message ? (
                 <FieldError>{errors.amount.sweepAmount.message}</FieldError>
               ) : null}
+              {errors.amount?.sweepUtxos?.message ? <FieldError>{errors.amount.sweepUtxos.message}</FieldError> : null}
               {errors.amount?.isSweep?.message ? <FieldError>{errors.amount.isSweep.message}</FieldError> : null}
             </Field>
           </div>
@@ -638,7 +650,7 @@ export function SendForm({
                         </div>
                         <span className="text-foreground">{values.numCollaborators}</span>
                       </div>
-                      <Slider
+                      <SliderWithInput
                         id="send-num-collaborators"
                         min={minNumberOfCollaborators}
                         max={MAX_NUM_COLLABORATORS}

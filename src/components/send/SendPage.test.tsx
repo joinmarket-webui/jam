@@ -311,7 +311,7 @@ const jars: Jar[] = [
 ]
 
 const directValues: SendFormValues = {
-  amount: { amount: 1_000, isSweep: false, sweepAmount: undefined },
+  amount: { amount: 1_000, isSweep: false, sweepAmount: undefined, sweepUtxos: undefined },
   destination: { address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', fromJar: undefined },
   isCoinJoin: false,
   source: { fromJar: 0 },

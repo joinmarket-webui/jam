@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { freezeMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { freezebatchMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import type { RowSelectionState } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
@@ -64,37 +64,26 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
 
   const client = useApiClient()
 
-  const freezeOrUnfreezeUtxo = useMutation({
-    ...freezeMutation({ client }),
+  const freezeOrUnfreezeUtxos = useMutation({
+    ...freezebatchMutation({ client }),
     retry: false,
   })
 
-  const freezeOrUnfreezeUtxos = useMutation({
-    mutationFn: async ({ values, freeze }: { values: Utxo[]; freeze: boolean }) => {
-      return Promise.allSettled(
-        values.map((utxo) =>
-          freezeOrUnfreezeUtxo
-            .mutateAsync({
-              path: {
-                walletname: walletFileName,
-              },
-              body: {
-                'utxo-string': utxo.utxo,
-                freeze,
-              },
-            })
-            .then((it) => ({ ...it, utxo })),
-        ),
-      )
-    },
-  })
+  // The batch endpoint applies every entry or none of them, so a rejected
+  // promise means nothing was changed - there is no partial outcome to report.
+  const freezeOrUnfreezeAll = (values: Utxo[], freeze: boolean) =>
+    freezeOrUnfreezeUtxos
+      .mutateAsync({
+        path: { walletname: walletFileName },
+        body: { entries: values.map((utxo) => ({ 'utxo-string': utxo.utxo, freeze })) },
+      })
+      .then(() => walletInfoRefetch())
+
   const freezeUtxos = useMutation({
-    mutationFn: (values: Utxo[]) =>
-      freezeOrUnfreezeUtxos.mutateAsync({ values, freeze: true }).then((it) => walletInfoRefetch().then(() => it)),
+    mutationFn: (values: Utxo[]) => freezeOrUnfreezeAll(values, true),
   })
   const unfreezeUtxos = useMutation({
-    mutationFn: (values: Utxo[]) =>
-      freezeOrUnfreezeUtxos.mutateAsync({ values, freeze: false }).then((it) => walletInfoRefetch().then(() => it)),
+    mutationFn: (values: Utxo[]) => freezeOrUnfreezeAll(values, false),
   })
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -151,21 +140,10 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
     }
 
     try {
-      const result = await freezeUtxos.mutateAsync(eligibleUtxos)
-      const fulfilled = result.filter((it) => it.status === 'fulfilled')
-      const rejected = result.filter((it) => it.status === 'rejected')
-      if (rejected.length === 0) {
-        toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: fulfilled.length }))
-      } else {
-        const errorMessage = t('jar_details.utxo_list.toast_freeze_error', { count: rejected.length })
-        if (fulfilled.length > 0) {
-          toast.warning(errorMessage)
-        } else {
-          toast.error(errorMessage)
-        }
-      }
+      await freezeUtxos.mutateAsync(eligibleUtxos)
+      toast.success(t('jar_details.utxo_list.toast_freeze_success', { count: eligibleUtxos.length }))
     } catch (_ignoredOnPurpose) {
-      toast.error(t('jar_details.utxo_list.toast_freeze_error', { count: selectedUtxos.length }))
+      toast.error(t('jar_details.utxo_list.toast_freeze_error', { count: eligibleUtxos.length }))
     }
   }
 
@@ -182,21 +160,10 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
     }
 
     try {
-      const result = await unfreezeUtxos.mutateAsync(eligibleUtxos)
-      const fulfilled = result.filter((it) => it.status === 'fulfilled')
-      const rejected = result.filter((it) => it.status === 'rejected')
-      if (rejected.length === 0) {
-        toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: fulfilled.length }))
-      } else {
-        const errorMessage = t('jar_details.utxo_list.toast_unfreeze_error', { count: rejected.length })
-        if (fulfilled.length > 0) {
-          toast.warning(errorMessage)
-        } else {
-          toast.error(errorMessage)
-        }
-      }
+      await unfreezeUtxos.mutateAsync(eligibleUtxos)
+      toast.success(t('jar_details.utxo_list.toast_unfreeze_success', { count: eligibleUtxos.length }))
     } catch (_ignoredOnPurpose) {
-      toast.error(t('jar_details.utxo_list.toast_unfreeze_error', { count: selectedUtxos.length }))
+      toast.error(t('jar_details.utxo_list.toast_unfreeze_error', { count: eligibleUtxos.length }))
     }
   }
 

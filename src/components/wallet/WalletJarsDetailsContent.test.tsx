@@ -5,9 +5,10 @@ import type { AccountMeta, AccountSummary, AddressMeta, AddressSummary, Jar } fr
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { WalletJarsDetailsContent } from './WalletJarsDetailsContent'
 
-const { walletInfoRefetch, toastMocks, ...mocks } = vi.hoisted(() => ({
+const { walletInfoRefetch, toastMocks, freezebatchMutationFn, ...mocks } = vi.hoisted(() => ({
   walletInfoRefetch: vi.fn(),
-  toastMocks: { success: vi.fn(), warning: vi.fn() },
+  freezebatchMutationFn: vi.fn(),
+  toastMocks: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
   rescanning: false,
   takerRunning: false,
   makerRunning: false,
@@ -21,6 +22,9 @@ vi.mock('sonner', () => ({
     warning: (message: string) => {
       toastMocks.warning(message)
     },
+    error: (message: string) => {
+      toastMocks.error(message)
+    },
     dismiss: () => {},
   },
 }))
@@ -33,7 +37,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
-  freezeMutation: vi.fn(() => ({ mutationFn: vi.fn() })),
+  freezebatchMutation: vi.fn(() => ({ mutationFn: freezebatchMutationFn })),
 }))
 
 vi.mock('@tanstack/react-query', () => ({
@@ -160,8 +164,11 @@ describe('WalletJarsDetailsContent', () => {
   beforeEach(() => {
     walletInfoRefetch.mockReset()
     walletInfoRefetch.mockResolvedValue({})
+    freezebatchMutationFn.mockReset()
+    freezebatchMutationFn.mockResolvedValue({})
     toastMocks.success.mockReset()
     toastMocks.warning.mockReset()
+    toastMocks.error.mockReset()
     mocks.rescanning = false
     mocks.takerRunning = false
     mocks.makerRunning = false
@@ -254,6 +261,11 @@ describe('WalletJarsDetailsContent', () => {
     await waitFor(() =>
       expect(toastMocks.success).toHaveBeenCalledWith('jar_details.utxo_list.toast_freeze_success:{"count":1}'),
     )
+    expect(freezebatchMutationFn).toHaveBeenCalledTimes(1)
+    expect(freezebatchMutationFn).toHaveBeenCalledWith({
+      path: { walletname: 'wallet.jmdat' },
+      body: { entries: [{ 'utxo-string': 'wallet-tx-b:1', freeze: true }] },
+    })
     expect(walletInfoRefetch).toHaveBeenCalled()
   })
 
@@ -273,7 +285,28 @@ describe('WalletJarsDetailsContent', () => {
     await waitFor(() =>
       expect(toastMocks.success).toHaveBeenCalledWith('jar_details.utxo_list.toast_unfreeze_success:{"count":1}'),
     )
+    expect(freezebatchMutationFn).toHaveBeenCalledTimes(1)
+    expect(freezebatchMutationFn).toHaveBeenCalledWith({
+      path: { walletname: 'wallet.jmdat' },
+      body: { entries: [{ 'utxo-string': 'wallet-tx-c:2', freeze: false }] },
+    })
     expect(walletInfoRefetch).toHaveBeenCalled()
+  })
+
+  it('reports a failed batch without refetching', async () => {
+    const user = userEvent.setup()
+    freezebatchMutationFn.mockRejectedValue(new Error('batch rejected'))
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={1} />)
+
+    const dataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('bc1qwallet-b'))!
+    await user.click(within(dataRow).getByRole('checkbox'))
+    await user.click(screen.getByRole('button', { name: 'jar_details.utxo_list.button_freeze' }))
+
+    await waitFor(() =>
+      expect(toastMocks.error).toHaveBeenCalledWith('jar_details.utxo_list.toast_freeze_error:{"count":1}'),
+    )
+    expect(toastMocks.success).not.toHaveBeenCalled()
+    expect(walletInfoRefetch).not.toHaveBeenCalled()
   })
 
   it.each(['taker', 'maker', 'rescan'])('disables freeze/unfreeze if rescan/maker/taker is running', async (value) => {
