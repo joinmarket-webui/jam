@@ -34,7 +34,12 @@ import { SettingsPage } from '@/components/settings/SettingsPage'
 import { SweepPage } from '@/components/sweep/SweepPage'
 import { Toaster } from '@/components/ui/sonner'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
-import { JAM_API_AUTH_TOKEN_RENEW_INTERVAL, JAM_JM_SESSION_REFRESH_INTERVAL } from '@/constants/jam'
+import {
+  JAM_API_AUTH_TOKEN_RENEW_INTERVAL,
+  JAM_API_AUTH_TOKEN_RENEW_MIN_INTERVAL,
+  JAM_API_AUTH_TOKEN_RENEW_SAFETY_FACTOR,
+  JAM_JM_SESSION_REFRESH_INTERVAL,
+} from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
 import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProvider'
@@ -43,7 +48,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient, withMutationDelay } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
+import { authStore, computeAuthExpiresAt } from '@/store/authStore'
 import { jamSettingsStore, useDeveloperMode } from '@/store/jamSettingsStore'
 import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { RootLayout } from './components/layout/RootLayout'
@@ -306,6 +311,16 @@ function Loading() {
   )
 }
 
+const nextTokenRenewDelay = (): Milliseconds => {
+  const expiresAt = authStore.getState().state?.auth?.expiresAt
+  if (expiresAt === undefined) {
+    return JAM_API_AUTH_TOKEN_RENEW_INTERVAL
+  }
+
+  const remaining = expiresAt - Date.now()
+  return Math.max(JAM_API_AUTH_TOKEN_RENEW_MIN_INTERVAL, Math.round(remaining * JAM_API_AUTH_TOKEN_RENEW_SAFETY_FACTOR))
+}
+
 function RefreshApiToken() {
   const client = useApiClient()
   const hasRefreshToken = useStore(authStore, (state) => state.state?.auth?.refresh_token !== undefined)
@@ -329,10 +344,9 @@ function RefreshApiToken() {
         })
 
         if (!response.data) {
-          clearAuthAndQueryCache()
-
+          const message = getErrorReason(response.error, 'Unknown error.')
+          console.warn(`Renewing auth token failed, will retry: ${message}`)
           if (isDevMode) {
-            const message = getErrorReason(response.error, 'Unknown error.')
             toast.error(`[DEV] Error while renewing auth token: ${message}`, {
               id: 'token-renew-error',
             })
@@ -342,11 +356,12 @@ function RefreshApiToken() {
             auth: {
               token: response.data.token,
               refresh_token: response.data.refresh_token,
+              expiresAt: computeAuthExpiresAt(response.data.expires_in),
             },
           })
         }
       },
-      JAM_API_AUTH_TOKEN_RENEW_INTERVAL,
+      nextTokenRenewDelay,
       (timerId) => (intervalId = timerId),
     )
 

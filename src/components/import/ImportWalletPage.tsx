@@ -23,7 +23,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore, type AuthState } from '@/store/authStore'
+import { authStore, computeAuthExpiresAt, type AuthState } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { CreateWalletForm } from '../create/CreateWalletForm'
 import { AuthPageShell } from '../layout/AuthPageShell'
@@ -175,6 +175,7 @@ const ImportWalletPage = () => {
         auth: {
           token: recoverWalletResponse.token,
           refresh_token: recoverWalletResponse.refresh_token,
+          expiresAt: computeAuthExpiresAt(recoverWalletResponse.expires_in),
         },
       }
 
@@ -222,6 +223,7 @@ const ImportWalletPage = () => {
       authState.auth = {
         token: unlockResponse.token,
         refresh_token: unlockResponse.refresh_token,
+        expiresAt: computeAuthExpiresAt(unlockResponse.expires_in),
       }
 
       // Step #4: reset `gaplimit´ to previous value if necessary

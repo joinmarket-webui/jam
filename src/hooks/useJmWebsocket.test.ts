@@ -43,6 +43,7 @@ const setAuthToken = () => {
       auth: {
         token: AUTH_TOKEN,
         refresh_token: 'test-refresh-token',
+        expiresAt: Date.now() + 1_800_000,
       },
     },
   })
