@@ -306,11 +306,44 @@ const toScheduleDerivedStatus = (
   return undefined
 }
 
+const SECONDS_PER_MINUTE = 60
+const SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
+const SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
+
 // TODO: move to utils and use Intl.DurationFormat (es2025) if available
 export const formatDuration = (seconds: number, t: TFunction): string => {
   const roundedSeconds = Math.max(0, Math.ceil(seconds))
-  const minutes = Math.floor(roundedSeconds / 60)
-  const remainingSeconds = roundedSeconds % 60
+
+  // Show at most the two largest non-zero units, so long waits stay readable:
+  // seconds are dropped from an hour upwards, minutes from a day upwards.
+  if (roundedSeconds >= SECONDS_PER_DAY) {
+    const days = Math.floor(roundedSeconds / SECONDS_PER_DAY)
+    const hours = Math.floor((roundedSeconds % SECONDS_PER_DAY) / SECONDS_PER_HOUR)
+
+    if (hours === 0) {
+      return t('global.duration_days', { days: days.toLocaleString() })
+    }
+    return t('global.duration_days_hours', {
+      days: days.toLocaleString(),
+      hours: hours.toLocaleString(),
+    })
+  }
+
+  if (roundedSeconds >= SECONDS_PER_HOUR) {
+    const hours = Math.floor(roundedSeconds / SECONDS_PER_HOUR)
+    const minutes = Math.floor((roundedSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE)
+
+    if (minutes === 0) {
+      return t('global.duration_hours', { hours: hours.toLocaleString() })
+    }
+    return t('global.duration_hours_minutes', {
+      hours: hours.toLocaleString(),
+      minutes: minutes.toLocaleString(),
+    })
+  }
+
+  const minutes = Math.floor(roundedSeconds / SECONDS_PER_MINUTE)
+  const remainingSeconds = roundedSeconds % SECONDS_PER_MINUTE
 
   if (minutes === 0) {
     return t('global.duration_seconds', { seconds: remainingSeconds.toLocaleString() })

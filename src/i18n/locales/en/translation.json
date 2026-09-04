@@ -34,6 +34,10 @@
     "duration_seconds": "{{ seconds }}s",
     "duration_minutes": "{{ minutes }}m",
     "duration_minutes_seconds": "{{ minutes }}m {{ seconds }}s",
+    "duration_hours": "{{ hours }}h",
+    "duration_hours_minutes": "{{ hours }}h {{ minutes }}m",
+    "duration_days": "{{ days }}d",
+    "duration_days_hours": "{{ days }}d {{ hours }}h",
     "errors": {
       "error_loading_wallet_failed": "Loading wallet failed. {{ reason }}",
       "error_reloading_wallet_failed": "Reloading wallet failed. {{ reason }}",
