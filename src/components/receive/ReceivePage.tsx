@@ -13,10 +13,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJars } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import { toBip21Uri } from '@/lib/bip21'
 import { withMutationDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import type { AmountSats, BitcoinAddress } from '@/types/global'
+import type { AmountSats } from '@/types/global'
 import { Badge } from '../ui/badge'
 import { jarBadgeVariant } from '../ui/badge-variants'
 import { buttonVariants, jarButtonVariant } from '../ui/button-variants'
@@ -94,12 +95,24 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     if (getAddressMutation.data?.sourceJarIndex === undefined) return
     return jars[getAddressMutation.data.sourceJarIndex]
   }, [jars, getAddressMutation.data])
-  const shareAddress = async (bitcoinAddress: BitcoinAddress) => {
+
+  // What "Copy" and "Share" hand out. With a requested amount this must be the
+  // full BIP21 payment request, otherwise the amount silently gets lost on its
+  // way to the sender - the QR code has always encoded it.
+  // Without an amount we deliberately fall back to the plain address instead of
+  // a bare `bitcoin:` URI: a copied address commonly ends up in an exchange
+  // withdrawal field, and those often reject the URI form.
+  const address = getAddressMutation.data?.address
+  const paymentRequest = useMemo(() => {
+    if (address === undefined) return ''
+    return amount !== undefined && amount > 0 ? toBip21Uri({ address, amount }) : address
+  }, [address, amount])
+  const shareAddress = async (value: string) => {
     if ('share' in navigator) {
       await navigator
         .share({
           title: 'Bitcoin Address',
-          text: bitcoinAddress,
+          text: value,
         })
         .catch(() => {
           toast.error(t('receive.error_share_address_failed'))
@@ -215,8 +228,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               className={buttonVariants({
                 variant: 'outline',
               })}
-              disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
-              value={getAddressMutation.data?.address ?? ''}
+              disabled={getAddressMutation.isPending || !address}
+              value={paymentRequest}
               text={
                 <>
                   <CopyIcon />
@@ -236,8 +249,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             {'share' in navigator && (
               <Button
                 variant="outline"
-                onClick={() => void shareAddress(getAddressMutation.data!.address)}
-                disabled={getAddressMutation.isPending || !getAddressMutation.data?.address}
+                onClick={() => void shareAddress(paymentRequest)}
+                disabled={getAddressMutation.isPending || !address}
               >
                 <ShareIcon />
                 {t('receive.button_share_address')}
