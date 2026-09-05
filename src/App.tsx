@@ -401,7 +401,6 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
 
 const RELOAD_WALLET_INFO_DELAY: {
   AFTER_RESCAN: Milliseconds
-  AFTER_UTXO_CHANGE: Milliseconds
   AFTER_BLOCK_HEIGHT_CHANGE: Milliseconds
   AFTER_TAKER_STOPPED: Milliseconds
   AFTER_TX_MESSAGE: Milliseconds
@@ -414,13 +413,10 @@ const RELOAD_WALLET_INFO_DELAY: {
   // takes effect after rescanning the chain, which should happen quite infrequently.
   AFTER_RESCAN: 8_000,
 
-  // Small delay is sufficient after utxo change (e.g. normal unlock of wallet)
-  AFTER_UTXO_CHANGE: 210,
-
   // Small delay is sufficient after block height change
   AFTER_BLOCK_HEIGHT_CHANGE: 210,
 
-  // Small delay is sufficient after block height change
+  // Small delay is sufficient after taker stopped
   AFTER_TAKER_STOPPED: 210,
 
   // Small delay is sufficient after an incoming tx message via websocket
@@ -449,9 +445,7 @@ export const WalletInfoAutoReload = () => {
   const jmTxs = useStore(jmTxStore, (state) => state.state)
   const previousJmTxsRef = useRef<JmTxInfos>(jmTxs)
 
-  const { refetch: refetchWalletBalance, utxosHashHex } = useJamWalletInfoContext()
-
-  const previousUtxosHashHexRef = useRef(utxosHashHex)
+  const { refetch: refetchWalletBalance } = useJamWalletInfoContext()
 
   useEffect(
     function refetchWalletInfoAfterRescanFinished() {
@@ -500,30 +494,6 @@ export const WalletInfoAutoReload = () => {
       return () => abortCtrl.abort('useEffect(AFTER_BLOCK_HEIGHT_CHANGE) ended')
     },
     [refetchWalletBalance, currentBlockHeight],
-  )
-
-  useEffect(
-    function refetchWalletInfoAfterUtxoChange() {
-      if (previousUtxosHashHexRef.current === utxosHashHex) {
-        return
-      }
-
-      previousUtxosHashHexRef.current = utxosHashHex
-
-      const delayBefore = RELOAD_WALLET_INFO_DELAY.AFTER_UTXO_CHANGE
-      console.debug(
-        'Trigger refetch looking for funds AFTER_UTXO_CHANGE (%s) with delay %d...',
-        utxosHashHex,
-        delayBefore,
-      )
-
-      const abortCtrl = new AbortController()
-      refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.error('Error while auto-reloading wallet info AFTER_UTXO_CHANGE finished', error)
-      })
-      return () => abortCtrl.abort('useEffect(AFTER_UTXO_CHANGE) ended')
-    },
-    [refetchWalletBalance, utxosHashHex],
   )
 
   useEffect(
