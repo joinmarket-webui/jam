@@ -3,7 +3,8 @@ import { DownloadIcon } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { cn, satsToBtc } from '@/lib/utils'
+import { toBip21Uri } from '@/lib/bip21'
+import { cn } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 
 const DEFAULT_ERROR_CORRECTION: QRCode.QRCodeErrorCorrectionLevel = 'high'
@@ -80,10 +81,7 @@ type BitcoinAddressQrCodeProps = Omit<QrCodeComponentProps, 'value' | 'children'
 export const BitcoinAddressQrCode = ({ address, amount, type, ...props }: BitcoinAddressQrCodeProps) => {
   const { t } = useTranslation()
 
-  const uri = useMemo(() => {
-    const btc = amount ? satsToBtc(String(amount)) || 0 : 0
-    return `bitcoin:${address}${btc > 0 ? `?amount=${btc.toFixed(8)}` : ''}`
-  }, [address, amount])
+  const uri = useMemo(() => toBip21Uri({ address, amount }), [address, amount])
 
   return (
     <QrCodeComponent value={uri} type={type} {...props}>
