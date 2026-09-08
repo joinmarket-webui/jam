@@ -201,10 +201,10 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const currentSchedule = useMemo(() => {
     if (getScheduleQuery.error) return
     if (getScheduleQuery.data === undefined) return
-    if (getScheduleQuery.data.stale === true) return
 
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
+  const isCurrentScheduleStale = getScheduleQuery.data?.stale === true
 
   const isWaitingSchedulerStart =
     startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
@@ -355,9 +355,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Alert>
                 ) : null}
 
-                <SweepScheduleProgress schedule={currentSchedule} debug={isDeveloperMode} />
+                <SweepScheduleProgress
+                  schedule={currentSchedule}
+                  error={getScheduleQuery.data?.error}
+                  debug={isDeveloperMode}
+                />
 
-                {schedulerRunning && currentSchedule.summary.status.running ? (
+                {!isCurrentScheduleStale && schedulerRunning && currentSchedule.summary.status.running ? (
                   <Button
                     type="button"
                     onClick={() => void stopSchedule()}
@@ -376,7 +380,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Button>
                 ) : (
                   <>
-                    {currentSchedule.summary.status.pending || isWaitingSchedulerStart ? (
+                    {!isCurrentScheduleStale && (currentSchedule.summary.status.pending || isWaitingSchedulerStart) ? (
                       <Button
                         type="button"
                         onClick={() => {
@@ -396,7 +400,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                         )}
                       </Button>
                     ) : null}
-                    {currentSchedule.summary.status.pending && planSchedule.variables?.body ? (
+                    {!isCurrentScheduleStale &&
+                    currentSchedule.summary.status.pending &&
+                    planSchedule.variables?.body ? (
                       <Button
                         type="button"
                         variant="secondary"

@@ -651,6 +651,35 @@ describe('SweepPage', async () => {
     expect(screen.queryByRole('button', { name: 'global.loadingscheduler.button_stop' })).not.toBeInTheDocument()
   })
 
+  it('keeps a stale failed plan visible until it is cleared', async () => {
+    const restartError = 'Tumbler plan interrupted by backend restart'
+    mocks.tumblerStatusData = {
+      ...activePlan,
+      status: 'failed',
+      stale: true,
+      error: restartError,
+    }
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('Scheduled sweep failed.')).toBeInTheDocument()
+    expect(screen.getByText(restartError)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'fill-destinations' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_plan' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_start' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_stop' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_plan_renew' })).not.toBeInTheDocument()
+    expect(mocks.planTumbler).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'global.cancel' }))
+
+    await waitFor(() =>
+      expect(mocks.deleteTumbler).toHaveBeenCalledWith({
+        path: { walletname: 'wallet.jmdat' },
+      }),
+    )
+  })
+
   it('does not render a stale running tumbler plan as a running schedule', () => {
     setSession({ coinjoin_in_process: true, schedule: ['anything'] })
     mocks.tumblerStatusData = { ...activePlan, stale: true }
