@@ -110,4 +110,38 @@ describe('LogViewer', () => {
       behavior: 'smooth',
     })
   })
+
+  it('toggles auto-follow switch when clicked', async () => {
+    const user = userEvent.setup()
+    const onToggleAutoFollow = vi.fn()
+
+    const { rerender } = render(
+      <LogViewer
+        fileName="jmwalletd.log"
+        value="log content"
+        refresh={vi.fn()}
+        isAutoFollowEnabled={false}
+        onToggleAutoFollow={onToggleAutoFollow}
+      />,
+    )
+
+    const switchElement = screen.getByRole('switch', { name: 'logs.label_auto_follow' })
+    expect(switchElement).toBeInTheDocument()
+    expect(switchElement).not.toBeChecked()
+
+    await user.click(switchElement)
+    expect(onToggleAutoFollow).toHaveBeenCalledWith(true)
+
+    rerender(
+      <LogViewer
+        fileName="jmwalletd.log"
+        value="log content"
+        refresh={vi.fn()}
+        isAutoFollowEnabled={true}
+        onToggleAutoFollow={onToggleAutoFollow}
+      />,
+    )
+
+    expect(switchElement).toBeChecked()
+  })
 })

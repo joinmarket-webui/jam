@@ -3,6 +3,8 @@ import { RefreshCwIcon, DownloadIcon, ArrowDownIcon, SearchIcon, XIcon } from 'l
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { cn, delayedPromise } from '@/lib/utils'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 
@@ -10,9 +12,17 @@ interface LogViewerProps {
   fileName: string
   value: string
   refresh: () => Promise<void>
+  isAutoFollowEnabled?: boolean
+  onToggleAutoFollow?: (enabled: boolean) => void
 }
 
-export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
+export function LogViewer({
+  fileName,
+  value,
+  refresh,
+  isAutoFollowEnabled = false,
+  onToggleAutoFollow,
+}: LogViewerProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
@@ -70,19 +80,29 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
       const timerId = setTimeout(() => scrollToLogTop(), 4)
       return () => clearTimeout(timerId)
     }
-    // Follow log tail only on first render or when user is already at the bottom.
-    // This avoids jumping away while someone is reading older lines.
-    if (!hasAutoScrolledInitially || isScrolledToLogBottom) {
+    // Always scroll to bottom on initial render so latest log lines are visible.
+    if (!hasAutoScrolledInitially) {
       const timerId = setTimeout(() => {
         scrollToLogBottom()
-
-        if (!hasAutoScrolledInitially) {
-          setHasAutoScrolledInitially(true)
-        }
+        setHasAutoScrolledInitially(true)
       }, 4)
       return () => clearTimeout(timerId)
     }
-  }, [filteredLines.length, hasAutoScrolledInitially, isScrolledToLogBottom, normalizedSearchValue])
+
+    // When auto-follow is enabled, continue tailing when user is at the bottom.
+    if (isAutoFollowEnabled && isScrolledToLogBottom) {
+      const timerId = setTimeout(() => {
+        scrollToLogBottom()
+      }, 4)
+      return () => clearTimeout(timerId)
+    }
+  }, [
+    filteredLines.length,
+    hasAutoScrolledInitially,
+    isAutoFollowEnabled,
+    isScrolledToLogBottom,
+    normalizedSearchValue,
+  ])
 
   const handleRefresh = useCallback(async () => {
     if (isLoadingRefresh) return
@@ -171,6 +191,14 @@ export function LogViewer({ fileName, value, refresh }: LogViewerProps) {
               </Button>
             </InputGroupAddon>
           </InputGroup>
+          {onToggleAutoFollow && (
+            <div className="flex items-center gap-2 px-1">
+              <Switch id="logs-auto-follow" checked={isAutoFollowEnabled} onCheckedChange={onToggleAutoFollow} />
+              <Label htmlFor="logs-auto-follow" className="cursor-pointer text-xs font-medium sm:text-sm">
+                {t('logs.label_auto_follow')}
+              </Label>
+            </div>
+          )}
           <Button
             variant="outline"
             onClick={() => void handleRefresh()}

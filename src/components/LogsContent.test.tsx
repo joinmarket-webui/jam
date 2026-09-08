@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LogsContent } from './LogsContent'
 
@@ -10,6 +11,16 @@ const mocks = vi.hoisted(() => ({
     logFileContent: undefined as string | undefined,
     refresh: vi.fn(),
   },
+  useJmwalletdStdoutLogMock: vi.fn(),
+  lastLogViewerProps: undefined as
+    | {
+        fileName: string
+        value: string
+        refresh: () => Promise<void>
+        isAutoFollowEnabled?: boolean
+        onToggleAutoFollow?: (enabled: boolean) => void
+      }
+    | undefined,
 }))
 
 vi.mock('react-i18next', () => ({
@@ -19,15 +30,34 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('@/components/logging/useJmwalletdStdoutLog', () => ({
-  useJmwalletdStdoutLog: vi.fn(() => mocks.logState),
+  useJmwalletdStdoutLog: (parameters: unknown) => {
+    mocks.useJmwalletdStdoutLogMock(parameters)
+    return mocks.logState
+  },
 }))
 
 vi.mock('@/components/logging/LogViewer', () => ({
-  LogViewer: ({ fileName, value }: { fileName: string; value: string }) => (
-    <div>
-      viewer:{fileName}:{value}
-    </div>
-  ),
+  LogViewer: (props: {
+    fileName: string
+    value: string
+    refresh: () => Promise<void>
+    isAutoFollowEnabled?: boolean
+    onToggleAutoFollow?: (enabled: boolean) => void
+  }) => {
+    mocks.lastLogViewerProps = props
+    return (
+      <div>
+        viewer:{props.fileName}:{props.value}
+        <button
+          type="button"
+          data-testid="toggle-autofollow"
+          onClick={() => props.onToggleAutoFollow?.(!props.isAutoFollowEnabled)}
+        >
+          toggle
+        </button>
+      </div>
+    )
+  },
 }))
 
 describe('LogsContent', () => {
@@ -37,6 +67,8 @@ describe('LogsContent', () => {
     mocks.logState.isInitialized = true
     mocks.logState.logFileContent = 'log body'
     mocks.logState.refresh.mockReset()
+    mocks.useJmwalletdStdoutLogMock.mockClear()
+    mocks.lastLogViewerProps = undefined
   })
 
   it('shows a loading state before logs initialize', () => {
@@ -65,5 +97,25 @@ describe('LogsContent', () => {
     render(<LogsContent enabled={true} />)
 
     expect(screen.queryByText(/viewer:/u)).not.toBeInTheDocument()
+  })
+
+  it('manages auto-follow toggle state and connects to log hook and viewer', async () => {
+    const user = userEvent.setup()
+
+    render(<LogsContent enabled={true} />)
+
+    expect(mocks.useJmwalletdStdoutLogMock).toHaveBeenLastCalledWith({
+      enabled: true,
+      isAutoFollowEnabled: false,
+    })
+    expect(mocks.lastLogViewerProps?.isAutoFollowEnabled).toBe(false)
+
+    await user.click(screen.getByTestId('toggle-autofollow'))
+
+    expect(mocks.useJmwalletdStdoutLogMock).toHaveBeenLastCalledWith({
+      enabled: true,
+      isAutoFollowEnabled: true,
+    })
+    expect(mocks.lastLogViewerProps?.isAutoFollowEnabled).toBe(true)
   })
 })

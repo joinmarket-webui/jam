@@ -415,6 +415,7 @@
     "error_loading_logs_failed": "Could not retrieve log file.",
     "error_no_auth_token": "No authentication token available. Please login again.",
     "button_scroll_to_bottom": "Scroll to bottom",
+    "label_auto_follow": "Auto-follow",
     "label_search": "Search logs",
     "placeholder_search": "Search logs...",
     "text_search_matches_zero": "No matches for \"{{ searchValue }}\".",
