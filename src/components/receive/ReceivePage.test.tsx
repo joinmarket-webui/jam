@@ -226,6 +226,23 @@ describe('ReceivePage', () => {
     await waitFor(() => expect(screen.getByText('copy:bitcoin:bc1qexample?amount=0.00002100')).toBeInTheDocument())
   })
 
+  it('shares the plain address when no amount is requested', async () => {
+    const user = userEvent.setup()
+    mocks.share.mockResolvedValue(undefined)
+
+    render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+    await waitFor(() => expect(screen.getByText('copy:bc1qexample')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_share_address' }))
+
+    expect(mocks.share).toHaveBeenCalledWith({
+      title: 'Bitcoin Address',
+      text: 'bc1qexample',
+    })
+  })
+
   it('uses receive form changes for the next address request and sharing', async () => {
     const user = userEvent.setup()
     mocks.share.mockRejectedValue(new Error('cancelled'))

@@ -228,7 +228,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               className={buttonVariants({
                 variant: 'outline',
               })}
-              disabled={getAddressMutation.isPending || !address}
+              disabled={getAddressMutation.isPending || !paymentRequest}
               value={paymentRequest}
               text={
                 <>
@@ -250,7 +250,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               <Button
                 variant="outline"
                 onClick={() => void shareAddress(paymentRequest)}
-                disabled={getAddressMutation.isPending || !address}
+                disabled={getAddressMutation.isPending || !paymentRequest}
               >
                 <ShareIcon />
                 {t('receive.button_share_address')}
