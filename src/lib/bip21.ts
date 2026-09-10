@@ -1,5 +1,5 @@
 import { isValidAddress, normalizeBitcoinAddress } from '@/lib/formValidation'
-import { tryBtcToSat } from '@/lib/utils'
+import { satsToBtc, tryBtcToSat } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 
 const BITCOIN_URI_SCHEME = 'bitcoin:'
@@ -68,4 +68,22 @@ export const parseBip21Uri = (raw: string): Bip21ParseResult | undefined => {
   }
 
   return result
+}
+
+/**
+ * Builds a BIP21 payment request URI.
+ *
+ * The `amount` parameter is only appended for a positive amount, mirroring what
+ * the QR code has always encoded. Amounts are rendered with a fixed number of
+ * decimals on purpose: `toFixed` keeps small values in plain decimal notation,
+ * whereas the default number formatting would switch to scientific notation
+ * below 1e-6 BTC (100 sats) and produce a URI that {@link parseBip21Uri} - and
+ * other wallets - would reject.
+ */
+export const toBip21Uri = ({ address, amount }: { address: BitcoinAddress; amount?: AmountSats }): string => {
+  const amountBtc = amount !== undefined ? satsToBtc(String(amount)) : 0
+  if (!(amountBtc > 0)) {
+    return `${BITCOIN_URI_SCHEME}${address}`
+  }
+  return `${BITCOIN_URI_SCHEME}${address}?amount=${amountBtc.toFixed(8)}`
 }
