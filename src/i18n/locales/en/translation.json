@@ -497,6 +497,8 @@
       "label_recipient": "Recipient",
       "label_source_jar": "Send from",
       "label_num_collaborators": "Collaborators",
+      "label_utxos_one": "UTXO",
+      "label_utxos_other": "UTXOs ({{ count }})",
       "text_collaborative_tx_enabled": "Payment with privacy improvement",
       "text_collaborative_tx_disabled": "Payment without privacy improvement",
       "label_estimated_max_collaborator_fee": "Collaborator fee",
