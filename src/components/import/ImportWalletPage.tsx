@@ -183,103 +183,138 @@ const ImportWalletPage = () => {
       } catch (hashError: unknown) {
         console.warn('Failed to hash password after wallet import', hashError)
       }
+
+      // From here on, the wallet has already been recovered on the backend
+      // (step #1 above). The remaining steps are best-effort setup: a
+      // failure in any of them must not be reported as "import failed" —
+      // the wallet exists and is usable — it should just be logged and
+      // surfaced as a softer warning instead.
+      let setupWarningReason: string | undefined
+
       // Step #2: update the gaplimit config value if necessary
-      const originalGaplimitResponse = await fetchConfig.mutateAsync({
-        path: { walletname: authState.walletFileName },
-        headers: { ...buildAuthHeaderMap(authState.auth.token) },
-        body: JM_GAPLIMIT_CONFIGKEY,
-      })
-      const originalGaplimit = Number.parseInt(originalGaplimitResponse.configvalue, 10) || JM_GAPLIMIT_DEFAULT
-
-      const gaplimitUpdateNecessary = importDetails.gaplimit !== originalGaplimit
-      if (gaplimitUpdateNecessary) {
-        console.info('Will update gaplimit from %d to %d', originalGaplimit, importDetails.gaplimit)
-
-        await updateConfig.mutateAsync({
-          path: { walletname: authState.walletFileName },
-          headers: { ...buildAuthHeaderMap(authState.auth.token) },
-          body: {
-            ...JM_GAPLIMIT_CONFIGKEY,
-            value: String(importDetails.gaplimit),
-          },
-        })
-      }
-      // Step #3: lock and unlock the wallet (for new addresses to be imported)
-      await lockWallet.mutateAsync({
-        walletFileName: authState.walletFileName,
-        token: authState.auth.token,
-      })
-
-      const unlockResponse = await unlockWallet.mutateAsync({
-        path: { walletname: authState.walletFileName },
-        body: {
-          password: walletDetails.password,
-        },
-      })
-
-      // use new token in requests
-      authState.walletFileName = unlockResponse.walletname as WalletFileName
-      authState.auth = {
-        token: unlockResponse.token,
-        refresh_token: unlockResponse.refresh_token,
-      }
-
-      // Step #4: reset `gaplimit´ to previous value if necessary
-      if (gaplimitUpdateNecessary) {
-        console.info('Will reset gaplimit to previous value %d', originalGaplimit)
-        await updateConfig.mutateAsync({
-          path: { walletname: authState.walletFileName },
-          headers: { ...buildAuthHeaderMap(authState.auth.token) },
-          body: {
-            ...JM_GAPLIMIT_CONFIGKEY,
-            value: String(originalGaplimit),
-          },
-        })
-      }
-
-      // Step #5: invoke rescanning the timechain
-      console.info('Will start rescanning timechain from block %d', importDetails.blockheight)
-      await rescanMutation.mutateAsync({
-        walletFileName: authState.walletFileName,
-        token: authState.auth.token,
-        blockHeight: importDetails.blockheight,
-      })
-
+      let gaplimitUpdateApplied = false
+      let originalGaplimit: number | undefined
       try {
-        const { data: sessionInfo } = await session({ client, throwOnError: true })
-        updateSessionInfo({
-          ...sessionInfo,
-          rescanning: true,
+        const originalGaplimitResponse = await fetchConfig.mutateAsync({
+          path: { walletname: authState.walletFileName },
+          headers: { ...buildAuthHeaderMap(authState.auth.token) },
+          body: JM_GAPLIMIT_CONFIGKEY,
         })
-        toast.success(t('rescan_chain.success_rescan_started'))
+        originalGaplimit = Number.parseInt(originalGaplimitResponse.configvalue, 10) || JM_GAPLIMIT_DEFAULT
+
+        if (importDetails.gaplimit !== originalGaplimit) {
+          console.info('Will update gaplimit from %d to %d', originalGaplimit, importDetails.gaplimit)
+          await updateConfig.mutateAsync({
+            path: { walletname: authState.walletFileName },
+            headers: { ...buildAuthHeaderMap(authState.auth.token) },
+            body: {
+              ...JM_GAPLIMIT_CONFIGKEY,
+              value: String(importDetails.gaplimit),
+            },
+          })
+          gaplimitUpdateApplied = true
+        }
       } catch (error: unknown) {
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        console.warn('Non-critical error while fetching session after wallet import. Continuing with import...', reason)
+        console.warn('Failed to apply temporary gaplimit during wallet import, continuing with import...', reason)
+        setupWarningReason = reason
       }
 
-      updateAuthState(authState)
+      // Step #3: lock and unlock the wallet (for new addresses to be imported).
+      // Unlike steps #2, #4 and #5, a failure here means the auth token in
+      // `authState` may no longer be valid, so the remaining steps that
+      // depend on it are skipped rather than attempted best-effort.
+      let lockUnlockSucceeded = false
+      try {
+        await lockWallet.mutateAsync({
+          walletFileName: authState.walletFileName,
+          token: authState.auth.token,
+        })
 
-      toast.success(t('import_wallet.success.title'))
-      await navigate(routes.home)
+        const unlockResponse = await unlockWallet.mutateAsync({
+          path: { walletname: authState.walletFileName },
+          body: {
+            password: walletDetails.password,
+          },
+        })
+
+        // use new token in requests
+        authState.walletFileName = unlockResponse.walletname as WalletFileName
+        authState.auth = {
+          token: unlockResponse.token,
+          refresh_token: unlockResponse.refresh_token,
+        }
+        lockUnlockSucceeded = true
+      } catch (error: unknown) {
+        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+        console.warn('Failed to lock/unlock wallet after import, skipping remaining setup steps...', reason)
+        setupWarningReason = reason
+      }
+
+      if (lockUnlockSucceeded) {
+        // Step #4: reset `gaplimit´ to previous value if necessary
+        if (gaplimitUpdateApplied && originalGaplimit !== undefined) {
+          try {
+            console.info('Will reset gaplimit to previous value %d', originalGaplimit)
+            await updateConfig.mutateAsync({
+              path: { walletname: authState.walletFileName },
+              headers: { ...buildAuthHeaderMap(authState.auth.token) },
+              body: {
+                ...JM_GAPLIMIT_CONFIGKEY,
+                value: String(originalGaplimit),
+              },
+            })
+          } catch (error: unknown) {
+            const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+            console.warn('Failed to reset gaplimit after wallet import, continuing with import...', reason)
+            setupWarningReason = reason
+          }
+        }
+
+        // Step #5: invoke rescanning the timechain
+        try {
+          console.info('Will start rescanning timechain from block %d', importDetails.blockheight)
+          await rescanMutation.mutateAsync({
+            walletFileName: authState.walletFileName,
+            token: authState.auth.token,
+            blockHeight: importDetails.blockheight,
+          })
+
+          const { data: sessionInfo } = await session({ client, throwOnError: true })
+          updateSessionInfo({
+            ...sessionInfo,
+            rescanning: true,
+          })
+          toast.success(t('rescan_chain.success_rescan_started'))
+        } catch (error: unknown) {
+          const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+          console.warn('Failed to start rescan after wallet import, continuing with import...', reason)
+          setupWarningReason = reason
+        }
+      }
+
+      if (setupWarningReason === undefined) {
+        toast.success(t('import_wallet.success.title'))
+      } else {
+        toast.warning(t('import_wallet.warning_partial_import', { reason: setupWarningReason }))
+      }
+
+      if (lockUnlockSucceeded) {
+        // token in `authState` is fresh, safe to log the user in directly
+        updateAuthState(authState)
+        await navigate(routes.home)
+      } else {
+        // token may be stale after a failed lock/unlock — send the user to
+        // log in again rather than optimistically using a token that might
+        // no longer work
+        await navigate(routes.login)
+      }
     } catch (error: unknown) {
       console.error('Error while importing wallet', error)
 
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
       const errorMessage = t('import_wallet.error_importing_failed', { reason })
       toast.error(errorMessage)
-
-      if (authState?.auth.token !== undefined) {
-        try {
-          // try to lock the current wallet on error on a best effort basis
-          await lockWallet.mutateAsync({
-            walletFileName: authState.walletFileName,
-            token: authState.auth.token,
-          })
-        } catch (error: unknown) {
-          const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-          console.warn('Locking wallet attempt failed after import error.', reason)
-        }
-      }
     } finally {
       toast.dismiss(durationHintToastId)
     }

@@ -20,6 +20,8 @@ const mocks = vi.hoisted(() => ({
   toastDismiss: vi.fn(),
   toastLoading: vi.fn(() => 'toast-id'),
   toastSuccess: vi.fn(),
+  toastWarning: vi.fn(),
+  toastError: vi.fn(),
 }))
 
 type MutationOptions = { mutationFn: (input: unknown) => Promise<unknown> }
@@ -61,9 +63,10 @@ vi.mock('react-router-dom', () => ({
 vi.mock('sonner', () => ({
   toast: {
     dismiss: mocks.toastDismiss,
-    error: vi.fn(),
+    error: mocks.toastError,
     loading: mocks.toastLoading,
     success: mocks.toastSuccess,
+    warning: mocks.toastWarning,
   },
 }))
 
@@ -167,6 +170,8 @@ describe('ImportWalletPage', () => {
     mocks.toastDismiss.mockReset()
     mocks.toastLoading.mockClear()
     mocks.toastSuccess.mockReset()
+    mocks.toastWarning.mockReset()
+    mocks.toastError.mockReset()
     authStore.getState().clear()
     jmSessionStore.setState({ state: undefined })
 
@@ -209,5 +214,86 @@ describe('ImportWalletPage', () => {
     expect(jmSessionStore.getState().state?.rescanning).toBe(true)
     expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
     expect(mocks.toastDismiss).toHaveBeenCalledWith('toast-id')
+  })
+
+  it('still signs the user in and shows a warning (not an error) when resetting gaplimit fails', async () => {
+    const user = userEvent.setup()
+    mocks.configSet.mockResolvedValueOnce({}).mockRejectedValueOnce(new Error('reset failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() =>
+      expect(authStore.getState().state).toEqual({
+        walletFileName: 'restored.jmdat',
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh' },
+        hashed_password: 'hashed-secret',
+      }),
+    )
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
+    expect(mocks.toastWarning).toHaveBeenCalledWith('import_wallet.warning_partial_import')
+    expect(mocks.toastSuccess).not.toHaveBeenCalledWith('import_wallet.success.title')
+    expect(mocks.toastError).not.toHaveBeenCalled()
+  })
+
+  it('still signs the user in and shows a warning (not an error) when the rescan trigger fails', async () => {
+    const user = userEvent.setup()
+    mocks.rescanBlockchain.mockRejectedValueOnce(new Error('rescan failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() =>
+      expect(authStore.getState().state).toEqual({
+        walletFileName: 'restored.jmdat',
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh' },
+        hashed_password: 'hashed-secret',
+      }),
+    )
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
+    expect(mocks.toastWarning).toHaveBeenCalledWith('import_wallet.warning_partial_import')
+    expect(mocks.toastError).not.toHaveBeenCalled()
+  })
+
+  it('does not sign the user in, sends them to login, and shows a warning (not the generic error) when lock/unlock fails after the wallet was already recovered', async () => {
+    const user = userEvent.setup()
+    mocks.lockWallet.mockRejectedValueOnce(new Error('lock failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() => expect(mocks.toastWarning).toHaveBeenCalledWith('import_wallet.warning_partial_import'))
+
+    expect(authStore.getState().state).toBeUndefined()
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.login)
+    expect(mocks.rescanBlockchain).not.toHaveBeenCalled()
+    expect(mocks.toastError).not.toHaveBeenCalled()
+  })
+
+  it('shows the generic error when the wallet itself was never recovered', async () => {
+    const user = userEvent.setup()
+    mocks.recoverWallet.mockReset()
+    mocks.recoverWallet.mockRejectedValueOnce(new Error('recover failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith('import_wallet.error_importing_failed'))
+
+    expect(authStore.getState().state).toBeUndefined()
+    expect(mocks.navigate).not.toHaveBeenCalled()
+    expect(mocks.toastWarning).not.toHaveBeenCalled()
   })
 })
