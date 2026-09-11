@@ -472,6 +472,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                       <Button
                         variant="outline"
                         onClick={() => {
+                          setFormId((current) => current + 1)
                           clearCurrentPaymentAttempt()
                         }}
                       >
