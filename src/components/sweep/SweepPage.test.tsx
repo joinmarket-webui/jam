@@ -680,13 +680,13 @@ describe('SweepPage', async () => {
     )
   })
 
-  it('does not render a stale running tumbler plan as a running schedule', () => {
+  it('keeps stop available when the scheduler is running even if the plan is stale', () => {
     setSession({ coinjoin_in_process: true, schedule: ['anything'] })
     mocks.tumblerStatusData = { ...activePlan, stale: true }
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.queryByRole('button', { name: 'scheduler.button_stop' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'global.loadingscheduler.button_stop' })).not.toBeInTheDocument()
   })
 

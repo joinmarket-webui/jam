@@ -204,7 +204,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
-  const isCurrentScheduleStale = getScheduleQuery.data?.stale === true
 
   const isWaitingSchedulerStart =
     startScheduleMutationIsPending || (startScheduleMutationIsSuccess && !schedulerRunning)
@@ -361,7 +360,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   debug={isDeveloperMode}
                 />
 
-                {!isCurrentScheduleStale && schedulerRunning && currentSchedule.summary.status.running ? (
+                {schedulerRunning && currentSchedule.summary.status.running ? (
                   <Button
                     type="button"
                     onClick={() => void stopSchedule()}
@@ -380,7 +379,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Button>
                 ) : (
                   <>
-                    {!isCurrentScheduleStale && (currentSchedule.summary.status.pending || isWaitingSchedulerStart) ? (
+                    {!currentSchedule.summary.stale &&
+                    (currentSchedule.summary.status.pending || isWaitingSchedulerStart) ? (
                       <Button
                         type="button"
                         onClick={() => {
@@ -400,7 +400,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                         )}
                       </Button>
                     ) : null}
-                    {!isCurrentScheduleStale &&
+                    {!currentSchedule.summary.stale &&
                     currentSchedule.summary.status.pending &&
                     planSchedule.variables?.body ? (
                       <Button
