@@ -20,6 +20,7 @@ import {
   HistoryIcon,
   LanguagesIcon,
   FlaskConicalIcon,
+  PenLineIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -40,11 +41,13 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Badge } from '../ui/badge'
 import { Address } from '../ui/jam/Address'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingsItem, SettingsLink, SettingsSwitch } from './SettingsItem'
+import { SignMessageDialog } from './SignMessageDialog'
 import { FeeConfigDialog } from './fees/FeeConfigDialog'
 
 const GitHubIcon = ({ className }: { className: string }) => (
@@ -78,12 +81,14 @@ export const SettingsPage = ({ walletFileName, onLockWallet, initialTab = 'basic
       </PageTitle>
 
       {tab === 'basic' && <SettingsBasicContent walletFileName={walletFileName} onLockWallet={onLockWallet} />}
-      {tab === 'advanced' && <SettingsAdvancedContent />}
+      {tab === 'advanced' && <SettingsAdvancedContent walletFileName={walletFileName} />}
     </div>
   )
 }
 
-export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPageProps) => {
+type SettingBasicContentProps = Pick<SettingPageProps, 'walletFileName' | 'onLockWallet'>
+
+export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingBasicContentProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
@@ -214,7 +219,15 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPa
             disabled={lockWalletMutation.isPending}
           />
           <Separator className="opacity-50" />
-          <SettingsLink icon={PackageSearchIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
+          <SettingsLink
+            icon={PackageSearchIcon}
+            title={
+              <>
+                {t('settings.rescan_chain')} <Badge variant="muted">{t('global.experimental')}</Badge>
+              </>
+            }
+            to={routes.rescan}
+          />
           <Separator className="opacity-50" />
           <SettingsLink
             icon={FileTextIcon}
@@ -268,13 +281,21 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingPa
   )
 }
 
-export const SettingsAdvancedContent = () => {
+type SettingsAdvancedContentProps = Pick<SettingPageProps, 'walletFileName'>
+
+export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedContentProps) => {
   const { t } = useTranslation()
   const { addressChunkingEnabled, toggleAddressChunking } = useJamDisplayContext()
+  const [showSignMessageDialog, setShowSignMessageDialog] = useState(false)
   const jamSettings = useStore(jamSettingsStore)
 
   return (
     <>
+      <SignMessageDialog
+        walletFileName={walletFileName}
+        open={showSignMessageDialog}
+        onOpenChange={setShowSignMessageDialog}
+      />
       {/* Advanced Display Settings */}
       <Card>
         <CardHeader>
@@ -302,6 +323,23 @@ export const SettingsAdvancedContent = () => {
             checked={addressChunkingEnabled === true}
             onCheckedChange={toggleAddressChunking}
             displayToggle={true}
+          />
+        </CardContent>
+      </Card>
+      {/* Advanced Wallet Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SettingsItem
+            icon={PenLineIcon}
+            title={
+              <>
+                {t('settings.sign_message')} <Badge variant="muted">{t('global.experimental')}</Badge>
+              </>
+            }
+            action={() => setShowSignMessageDialog(true)}
           />
         </CardContent>
       </Card>
@@ -367,7 +405,11 @@ export const SettingsAdvancedContent = () => {
           <Separator className="opacity-50" />
           <SettingsSwitch
             icon={HistoryIcon}
-            title={/* no need to translate, should be short lived */ 'Transaction History (Experimental)'}
+            title={
+              /* no need to translate, should be short lived */ <>
+                Transaction History <Badge variant="muted">{t('global.preview')}</Badge>
+              </>
+            }
             disabled={!jamSettings.state.previewFeatures}
             checked={jamSettings.state.previewFeatures?.['tx-history'] === true}
             onCheckedChange={(checked) => {

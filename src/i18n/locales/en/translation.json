@@ -46,7 +46,9 @@
       "error_loading_address_failed": "Unable to get new address.",
       "error_freezing_utxos": "Could not freeze UTXOs."
     },
-    "next": "Next"
+    "next": "Next",
+    "experimental": "Experimental",
+    "preview": "Preview"
   },
   "app": {
     "alert_new_transaction": "New transaction: {{ txid }}",
@@ -313,6 +315,23 @@
     "label_select_language_aria_label": "$t(settings.label_select_language_title)",
     "show_seed": "Show seed phrase",
     "show_xpubs": "Show account xpubs",
+    "sign_message": "Sign message",
+    "sign_message_modal": {
+      "title": "Sign Message",
+      "subtitle": "Sign a message with a wallet address to prove ownership.",
+      "label_address": "Wallet address or HD path",
+      "placeholder_address": "Select or enter an address (e.g. bc1q... or m/84'/0'/0'/0/0)",
+      "select_from_wallet": "Select from wallet",
+      "label_message": "Message",
+      "placeholder_message": "Enter the message to sign...",
+      "label_signature": "Signature",
+      "button_sign": "Sign message",
+      "button_signing": "Signing...",
+      "button_reset": "Reset",
+      "button_copy": "Copy signature",
+      "alert_success_copied": "Copied signature to clipboard!",
+      "text_error_title": "Error while signing message"
+    },
     "reveal_seed": "Reveal seed phrase",
     "show_logs": "Show logs",
     "show_fee_config": "Adjust fee limits",
@@ -399,7 +418,7 @@
     }
   },
   "rescan_chain": {
-    "title": "Rescan timechain (Experimental)",
+    "title": "Rescan timechain",
     "subtitle": "Rescan the local timechain for wallet related transactions.",
     "label_blockheight": "Rescan height",
     "description_blockheight": "The height of the chain at which the rescan process is started.",
@@ -830,7 +849,7 @@
     }
   },
   "scheduler": {
-    "title": "Scheduled Sweep (Experimental)",
+    "title": "Scheduled Sweep",
     "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of yourself and others. Every scheduled transaction is a collaborative transaction.",
     "error_starting_schedule_failed": "Starting a Scheduled Sweep failed. Reason: {{ reason }}",
     "error_stopping_schedule_failed": "Stopping Scheduled Sweep failed. Reason: {{ reason }}",
@@ -947,9 +966,9 @@
     "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
   },
   "tx_history": {
-    "title": "Transaction History (Experimental)",
+    "title": "Transaction History",
     "section_title": "Recent Activity",
-    "overlay_title": "Transaction History (Experimental)",
+    "overlay_title": "$t(tx_history.title)",
     "button_view_all": "View All",
     "button_load_more": "Load More",
     "expand_history": "Show transaction history",
