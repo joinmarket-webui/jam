@@ -258,9 +258,6 @@ describe('SettingsPage', () => {
     clickItem('settings.show_xpubs')
     expect(screen.getByText('xpubs-dialog')).toBeInTheDocument()
 
-    clickItem('settings.sign_message')
-    expect(screen.getByText('sign-message-dialog')).toBeInTheDocument()
-
     clickItem('settings.button_lock_wallet')
 
     await waitFor(() => {
@@ -301,9 +298,14 @@ describe('SettingsPage', () => {
 
     expect(screen.getByRole('heading', { name: 'settings.title' })).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_display')).toBeInTheDocument()
+    expect(screen.getByText('settings.section_title_wallet')).toBeInTheDocument()
+    expect(screen.getByText('settings.sign_message')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_expert_features')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_feature_preview')).toBeInTheDocument()
     expect(screen.getByText('Developer Mode')).toBeInTheDocument()
+
+    clickItem('settings.sign_message')
+    expect(screen.getByText('sign-message-dialog')).toBeInTheDocument()
 
     fireEvent.click(screen.getByText('switch:true'))
     expect(mocks.toggleAddressChunking).toHaveBeenCalledWith(false)

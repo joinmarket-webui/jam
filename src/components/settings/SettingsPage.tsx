@@ -219,7 +219,15 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingBa
             disabled={lockWalletMutation.isPending}
           />
           <Separator className="opacity-50" />
-          <SettingsLink icon={PackageSearchIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
+          <SettingsLink
+            icon={PackageSearchIcon}
+            title={
+              <>
+                {t('settings.rescan_chain')} <Badge variant="muted">{t('global.experimental')}</Badge>
+              </>
+            }
+            to={routes.rescan}
+          />
           <Separator className="opacity-50" />
           <SettingsLink
             icon={FileTextIcon}
@@ -328,7 +336,7 @@ export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedCont
             icon={PenLineIcon}
             title={
               <>
-                {t('settings.sign_message')} <Badge variant="muted">{/* TODO: i18n */ 'Experimental'}</Badge>
+                {t('settings.sign_message')} <Badge variant="muted">{t('global.experimental')}</Badge>
               </>
             }
             action={() => setShowSignMessageDialog(true)}
@@ -399,7 +407,7 @@ export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedCont
             icon={HistoryIcon}
             title={
               /* no need to translate, should be short lived */ <>
-                Transaction History <Badge variant="muted">Preview</Badge>
+                Transaction History <Badge variant="muted">{t('global.preview')}</Badge>
               </>
             }
             disabled={!jamSettings.state.previewFeatures}

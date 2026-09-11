@@ -28,7 +28,8 @@
       "error_loading_address_failed": "Neue Adresse kann nicht ermittelt werden.",
       "error_freezing_utxos": "Die UTXOs konnten nicht gefroren werden. "
     },
-    "next": "Weiter"
+    "next": "Weiter",
+    "experimental": "experimentell"
   },
   "app": {
     "alert_rescan_in_progress": "Erneuter Scan läuft..."
@@ -506,7 +507,7 @@
     }
   },
   "scheduler": {
-    "title": "Geplanter Sweep (experimentell)",
+    "title": "Geplanter Sweep",
     "subtitle": "Führe mehrere Transaktionen mit zufälligen Beträgen und Zeitintervallen durch, um deine Privatsphäre und die von anderen zu erhöhen. Jede durchgeführte Transaktion ist ein Coinjoin. ",
     "error_starting_schedule_failed": "Der Scheduler konnte nicht gestartet werden. Begründung: {{ reason }}",
     "error_stopping_schedule_failed": "Der Scheduler konnte nicht gestoppt werden. Begründung: {{ reason }}",

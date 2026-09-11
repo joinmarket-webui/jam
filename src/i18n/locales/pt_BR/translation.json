@@ -27,7 +27,8 @@
       "error_loading_address_failed": "Não foi possível obter novo endereço.",
       "error_freezing_utxos": "Não foi possível congelar os UTXOs."
     },
-    "next": "Próximo"
+    "next": "Próximo",
+    "experimental": "Experimental"
   },
   "navbar": {
     "title": "Jam",
@@ -465,7 +466,7 @@
     }
   },
   "scheduler": {
-    "title": "Programar Limpeza (Experimental)",
+    "title": "Programar Limpeza",
     "subtitle": "Execute várias transações usando valores aleatórios e intervalos de tempo para aumentar a sua privacidade e a dos outros. Cada transação agendada é uma transação colaborativa.",
     "error_starting_schedule_failed": "Falha ao iniciar o agendador. Motivo: {{ reason }}",
     "error_stopping_schedule_failed": "Falha ao parar agendador. Motivo: {{ reason }}",

@@ -25,6 +25,7 @@ import { useQueryDisplayWallet } from '@/hooks/useQueryDisplayWallet'
 import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import type { WithRequiredProperty } from '@/types/global'
+import { Badge } from '../ui/badge'
 
 type SignMessageDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
@@ -102,7 +103,7 @@ export const SignMessageDialog = ({ open, onOpenChange, walletFileName, ...dialo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PenLineIcon className="h-5 w-5" />
-            {t('settings.sign_message_modal.title')}
+            {t('settings.sign_message_modal.title')} <Badge variant="muted">{t('global.experimental')}</Badge>
           </DialogTitle>
           <DialogDescription>{t('settings.sign_message_modal.subtitle')}</DialogDescription>
         </DialogHeader>

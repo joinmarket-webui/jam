@@ -27,7 +27,8 @@
       "error_loading_address_failed": "Impossibile ottenere un nuovo indirizzo.",
       "error_freezing_utxos": "Impossibile congelare gli UTXO."
     },
-    "next": "Successivo"
+    "next": "Successivo",
+    "experimental": "sperimentale"
   },
   "navbar": {
     "title": "Jam",
@@ -465,7 +466,7 @@
     }
   },
   "scheduler": {
-    "title": "Spazzamento programmata (sperimentale)",
+    "title": "Spazzamento programmata",
     "subtitle": "Eseguire transazioni multiple utilizzando importi e intervalli di tempo casuali per aumentare la propria privacy e quella altrui. Ogni transazione programmata è una transazione collaborativa.",
     "error_starting_schedule_failed": "L'avvio dello scheduler non è riuscito. Motivo: {{ reason }}",
     "error_stopping_schedule_failed": "L'arresto dello scheduler non è riuscito. Motivo: {{ reason }}",
