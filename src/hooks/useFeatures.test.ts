@@ -42,7 +42,9 @@ describe('useFeatures', () => {
   })
 
   it('normalizes object feature responses', () => {
-    authStore.getState().update({ auth: { token: 'token', refresh_token: 'refresh' } })
+    authStore
+      .getState()
+      .update({ auth: { token: 'token', refresh_token: 'refresh', expiresAt: Date.now() + 1_800_000 } })
     mocks.queryData = { features: { logs: true } }
 
     const { result } = renderHook(() => useFeatures())
@@ -53,7 +55,9 @@ describe('useFeatures', () => {
   })
 
   it('supports array responses and developer-mode fallback', () => {
-    authStore.getState().update({ auth: { token: 'token', refresh_token: 'refresh' } })
+    authStore
+      .getState()
+      .update({ auth: { token: 'token', refresh_token: 'refresh', expiresAt: Date.now() + 1_800_000 } })
     mocks.developerMode = true
     mocks.queryData = { features: [{ name: 'logs', enabled: false }] }
 

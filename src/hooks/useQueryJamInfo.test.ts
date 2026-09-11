@@ -44,7 +44,9 @@ describe('useQueryJamInfo', () => {
   })
 
   it('returns standalone info when an auth token is available and resolves statuses correctly', () => {
-    authStore.getState().update({ auth: { token: 'token', refresh_token: 'refresh' } })
+    authStore
+      .getState()
+      .update({ auth: { token: 'token', refresh_token: 'refresh', expiresAt: Date.now() + 1_800_000 } })
     mocks.queryData = { backend: { name: 'joinmarket-ng', version: '0.33.0' } }
 
     const { result } = renderHook(() => useQueryJamInfo())
@@ -63,7 +65,9 @@ describe('useQueryJamInfo', () => {
   })
 
   it('falls back to native version if standalone version is not semantic', () => {
-    authStore.getState().update({ auth: { token: 'token', refresh_token: 'refresh' } })
+    authStore
+      .getState()
+      .update({ auth: { token: 'token', refresh_token: 'refresh', expiresAt: Date.now() + 1_800_000 } })
     mocks.queryData = { backend: { name: 'joinmarket-ng', version: 'main' } }
 
     const { result } = renderHook(() => useQueryJamInfo())
