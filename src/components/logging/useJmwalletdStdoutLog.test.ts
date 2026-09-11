@@ -66,6 +66,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
     vi.mocked(fetchLog).mockResolvedValue(new Response('log body'))
@@ -90,6 +91,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
     mocks.queryResult.error = new Error('disk unavailable')
@@ -107,6 +109,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
 

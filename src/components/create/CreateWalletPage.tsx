@@ -22,7 +22,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { delayedPromise, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
+import { authStore, computeAuthExpiresAt } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { MnemonicPhrase } from '@/types/global'
 import { AuthPageShell } from '../layout/AuthPageShell'
@@ -202,7 +202,11 @@ const CreateWalletPage = () => {
 
       updateAuthState({
         walletFileName: response.walletname as WalletFileName,
-        auth: { token: response.token, refresh_token: response.refresh_token },
+        auth: {
+          token: response.token,
+          refresh_token: response.refresh_token,
+          expiresAt: computeAuthExpiresAt(response.expires_in),
+        },
         hashed_password: hashedPassword,
       })
 
