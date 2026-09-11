@@ -1,13 +1,16 @@
 import { type ReactNode, StrictMode } from 'react'
+import { token as tokenMock } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createBrowserRouter } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { setIntervalDebounced as setIntervalDebouncedMock } from '@/lib/utils'
 import App, { WalletInfoAutoReload } from './App'
 
 type Holders = {
   walletFileName?: string
   token?: string
   refreshToken?: string
+  expiresAt?: number
   developerMode: boolean
   jmSession: Record<string, unknown>
   rescanning: boolean
@@ -30,6 +33,7 @@ const {
     walletFileName: 'wallet.jmdat',
     token: 'tok',
     refreshToken: 'refresh',
+    expiresAt: Date.now() + 1_800_000,
     developerMode: false,
     jmSession: { maker_running: true, coinjoin_in_process: false, schedule: [] },
     rescanning: false,
@@ -63,12 +67,16 @@ vi.mock('@/store/authStore', () => ({
     getState: () => ({
       state: {
         walletFileName: holders.walletFileName,
-        auth: holders.token ? { token: holders.token, refresh_token: holders.refreshToken } : undefined,
+        auth: holders.token
+          ? { token: holders.token, refresh_token: holders.refreshToken, expiresAt: holders.expiresAt }
+          : undefined,
       },
       clear: clearAuth,
       update: updateAuth,
     }),
   },
+  computeAuthExpiresAt: (expiresInSeconds: number | undefined) =>
+    Date.now() + (expiresInSeconds !== undefined ? expiresInSeconds * 1_000 : 1_800_000),
 }))
 
 vi.mock('./store/jmSessionStore', () => ({
@@ -213,6 +221,7 @@ describe('App', () => {
     holders.walletFileName = 'wallet.jmdat'
     holders.token = 'tok'
     holders.refreshToken = 'refresh'
+    holders.expiresAt = Date.now() + 1_800_000
     holders.developerMode = false
     holders.jmSession = { maker_running: true, coinjoin_in_process: false, schedule: [] }
     holders.rescanning = false
@@ -268,6 +277,62 @@ describe('App', () => {
     holders.developerMode = true
     render(<App />)
     await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+  })
+})
+
+describe('RefreshApiToken', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    holders.walletFileName = 'wallet.jmdat'
+    holders.token = 'tok'
+    holders.refreshToken = 'refresh'
+    holders.expiresAt = Date.now() + 1_800_000
+    holders.developerMode = false
+  })
+
+  const renderAndGetRenewalCallback = async () => {
+    render(<App />)
+    await waitFor(() => expect(vi.mocked(setIntervalDebouncedMock)).toHaveBeenCalled())
+    const [callback, delay] = vi.mocked(setIntervalDebouncedMock).mock.calls.at(-1)!
+    return { callback: callback as () => Promise<void>, delay }
+  }
+
+  it('does not clear auth when a renewal request fails (e.g. a network error)', async () => {
+    vi.mocked(tokenMock).mockResolvedValueOnce({ data: undefined, error: new Error('network error') } as never)
+
+    const { callback } = await renderAndGetRenewalCallback()
+    await callback()
+
+    expect(clearAuth).not.toHaveBeenCalled()
+    expect(updateAuth).not.toHaveBeenCalled()
+  })
+
+  it('stores the new expiry deadline on a successful renewal', async () => {
+    vi.mocked(tokenMock).mockResolvedValueOnce({
+      data: { token: 'new-token', refresh_token: 'new-refresh', expires_in: 1_800 },
+    } as never)
+
+    const { callback } = await renderAndGetRenewalCallback()
+    await callback()
+
+    expect(updateAuth).toHaveBeenCalledWith({
+      auth: expect.objectContaining({
+        token: 'new-token',
+        refresh_token: 'new-refresh',
+        expiresAt: expect.any(Number) as number,
+      }) as unknown,
+    })
+    expect(clearAuth).not.toHaveBeenCalled()
+  })
+
+  it('schedules renewal based on the token expiry rather than a fixed interval', async () => {
+    holders.expiresAt = Date.now() + 4 * 60_000
+
+    const { delay } = await renderAndGetRenewalCallback()
+    const resolvedDelay = typeof delay === 'function' ? delay() : delay
+
+    expect(resolvedDelay).toBeLessThan(4 * 60_000)
+    expect(resolvedDelay).toBeGreaterThan(0)
   })
 })
 
