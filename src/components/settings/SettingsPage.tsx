@@ -41,6 +41,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Badge } from '../ui/badge'
 import { Address } from '../ui/jam/Address'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
@@ -272,7 +273,6 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingBa
   )
 }
 
-
 type SettingsAdvancedContentProps = Pick<SettingPageProps, 'walletFileName'>
 
 export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedContentProps) => {
@@ -318,6 +318,23 @@ export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedCont
           />
         </CardContent>
       </Card>
+      {/* Advanced Wallet Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SettingsItem
+            icon={PenLineIcon}
+            title={
+              <>
+                {t('settings.sign_message')} <Badge variant="muted">{/* TODO: i18n */ 'Experimental'}</Badge>
+              </>
+            }
+            action={() => setShowSignMessageDialog(true)}
+          />
+        </CardContent>
+      </Card>
 
       {/* Advanced Expert Features */}
       <Card>
@@ -326,12 +343,6 @@ export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedCont
           <CardDescription className="text-xs">{t('settings.section_description_expert_features')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Separator className="opacity-50" />
-          <SettingsItem
-            icon={PenLineIcon}
-            title={t('settings.sign_message')}
-            action={() => setShowSignMessageDialog(true)}
-          />
           <SettingsSwitch
             icon={SparklesIcon}
             title={t(
@@ -386,7 +397,11 @@ export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedCont
           <Separator className="opacity-50" />
           <SettingsSwitch
             icon={HistoryIcon}
-            title={/* no need to translate, should be short lived */ 'Transaction History (Experimental)'}
+            title={
+              /* no need to translate, should be short lived */ <>
+                Transaction History <Badge variant="muted">Preview</Badge>
+              </>
+            }
             disabled={!jamSettings.state.previewFeatures}
             checked={jamSettings.state.previewFeatures?.['tx-history'] === true}
             onCheckedChange={(checked) => {
