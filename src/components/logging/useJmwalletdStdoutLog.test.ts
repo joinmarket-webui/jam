@@ -126,6 +126,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
 
@@ -143,6 +144,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
 
