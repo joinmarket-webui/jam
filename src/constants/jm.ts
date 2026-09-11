@@ -48,6 +48,21 @@ export const JM_GAPLIMIT_CONFIGKEY: ConfigKey = {
   field: 'gaplimit',
 }
 
+export const JM_SMART_SCAN_CONFIGKEY: ConfigKey = {
+  section: 'WALLET',
+  field: 'smart_scan',
+}
+
+export const JM_BACKGROUND_FULL_RESCAN_CONFIGKEY: ConfigKey = {
+  section: 'WALLET',
+  field: 'background_full_rescan',
+}
+
+export const JM_BACKGROUND_FULL_SCAN_ALIAS_CONFIGKEY: ConfigKey = {
+  section: 'WALLET',
+  field: 'background_full_scan',
+}
+
 // only support starting the maker with native segwit offers
 type RelativeOfferType = 'sw0reloffer'
 type AbsoluteOfferType = 'sw0absoffer'

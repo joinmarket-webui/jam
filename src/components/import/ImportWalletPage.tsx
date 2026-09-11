@@ -15,9 +15,17 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { JM_DEFAULT_WALLET_TYPE, JM_GAPLIMIT_CONFIGKEY, JM_GAPLIMIT_DEFAULT } from '@/constants/jm'
+import {
+  JM_BACKGROUND_FULL_RESCAN_CONFIGKEY,
+  JM_BACKGROUND_FULL_SCAN_ALIAS_CONFIGKEY,
+  JM_DEFAULT_WALLET_TYPE,
+  JM_GAPLIMIT_CONFIGKEY,
+  JM_GAPLIMIT_DEFAULT,
+  JM_SMART_SCAN_CONFIGKEY,
+} from '@/constants/jm'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import { buildAuthHeaderMap, type ApiToken } from '@/lib/config'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
@@ -63,6 +71,8 @@ const ImportWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
+  const { info: jmInfo } = useQueryJmInfo()
+  const isJoinmarketNg = jmInfo?.backend === 'joinmarket-ng'
 
   const { state: jmSession, update: updateSessionInfo } = useStore(jmSessionStore, (state) => state)
   const { update: updateAuthState } = useStore(authStore, (state) => state)
@@ -239,24 +249,91 @@ const ImportWalletPage = () => {
         })
       }
 
-      // Step #5: invoke rescanning the timechain
-      console.info('Will start rescanning timechain from block %d', importDetails.blockheight)
-      await rescanMutation.mutateAsync({
-        walletFileName: authState.walletFileName,
-        token: authState.auth.token,
-        blockHeight: importDetails.blockheight,
-      })
+      // Step #5: invoke rescanning the timechain if not handled by backend smart/background scan
+      let shouldSkipManualRescan = false
+      if (isJoinmarketNg) {
+        const isOptionEnabled = (value?: string) => {
+          const normalized = value?.trim().toLowerCase()
+          return normalized === 'true' || normalized === '1'
+        }
 
-      try {
-        const { data: sessionInfo } = await session({ client, throwOnError: true })
-        updateSessionInfo({
-          ...sessionInfo,
-          rescanning: true,
+        try {
+          const smartScanConfig = await fetchConfig.mutateAsync({
+            path: { walletname: authState.walletFileName },
+            headers: { ...buildAuthHeaderMap(authState.auth.token) },
+            body: JM_SMART_SCAN_CONFIGKEY,
+          })
+          if (isOptionEnabled(smartScanConfig.configvalue)) {
+            shouldSkipManualRescan = true
+          }
+        } catch (error: unknown) {
+          console.warn('Failed to query smart_scan setting. Continuing check...', error)
+        }
+
+        if (!shouldSkipManualRescan) {
+          try {
+            const bgScanConfig = await fetchConfig.mutateAsync({
+              path: { walletname: authState.walletFileName },
+              headers: { ...buildAuthHeaderMap(authState.auth.token) },
+              body: JM_BACKGROUND_FULL_RESCAN_CONFIGKEY,
+            })
+            if (isOptionEnabled(bgScanConfig.configvalue)) {
+              shouldSkipManualRescan = true
+            }
+          } catch {
+            try {
+              const bgScanAliasConfig = await fetchConfig.mutateAsync({
+                path: { walletname: authState.walletFileName },
+                headers: { ...buildAuthHeaderMap(authState.auth.token) },
+                body: JM_BACKGROUND_FULL_SCAN_ALIAS_CONFIGKEY,
+              })
+              if (isOptionEnabled(bgScanAliasConfig.configvalue)) {
+                shouldSkipManualRescan = true
+              }
+            } catch (error: unknown) {
+              console.warn('Failed to query background_full_rescan setting.', error)
+            }
+          }
+        }
+      }
+
+      if (shouldSkipManualRescan) {
+        console.info('Smart scan or background full rescan is enabled in joinmarket-ng. Skipping manual rescan.')
+        try {
+          const { data: sessionInfo } = await session({ client, throwOnError: true })
+          updateSessionInfo(sessionInfo)
+          if (sessionInfo.rescanning) {
+            toast.success(t('rescan_chain.success_rescan_started'))
+          }
+        } catch (error: unknown) {
+          const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+          console.warn(
+            'Non-critical error while fetching session after wallet import. Continuing with import...',
+            reason,
+          )
+        }
+      } else {
+        console.info('Will start rescanning timechain from block %d', importDetails.blockheight)
+        await rescanMutation.mutateAsync({
+          walletFileName: authState.walletFileName,
+          token: authState.auth.token,
+          blockHeight: importDetails.blockheight,
         })
-        toast.success(t('rescan_chain.success_rescan_started'))
-      } catch (error: unknown) {
-        const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        console.warn('Non-critical error while fetching session after wallet import. Continuing with import...', reason)
+
+        try {
+          const { data: sessionInfo } = await session({ client, throwOnError: true })
+          updateSessionInfo({
+            ...sessionInfo,
+            rescanning: true,
+          })
+          toast.success(t('rescan_chain.success_rescan_started'))
+        } catch (error: unknown) {
+          const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+          console.warn(
+            'Non-critical error while fetching session after wallet import. Continuing with import...',
+            reason,
+          )
+        }
       }
 
       updateAuthState(authState)
