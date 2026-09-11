@@ -12,7 +12,7 @@ interface LogViewerProps {
   fileName: string
   value: string
   refresh: () => Promise<void>
-  enableAutoFollow?: boolean
+  isAutoFollowEnabled?: boolean
   onToggleAutoFollow?: (enabled: boolean) => void
 }
 
