@@ -120,7 +120,7 @@ describe('LogViewer', () => {
         fileName="jmwalletd.log"
         value="log content"
         refresh={vi.fn()}
-        isAutoFollowEnabled={false}
+        enableAutoFollow={false}
         onToggleAutoFollow={onToggleAutoFollow}
       />,
     )
@@ -137,7 +137,7 @@ describe('LogViewer', () => {
         fileName="jmwalletd.log"
         value="log content"
         refresh={vi.fn()}
-        isAutoFollowEnabled={true}
+        enableAutoFollow={true}
         onToggleAutoFollow={onToggleAutoFollow}
       />,
     )

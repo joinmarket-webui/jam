@@ -18,12 +18,12 @@ interface SimpleAlert {
 
 interface UseJmwalletdStdoutLogParameters {
   enabled?: boolean
-  isAutoFollowEnabled?: boolean
+  enableAutoFollow?: boolean
 }
 
 export function useJmwalletdStdoutLog({
   enabled = true,
-  isAutoFollowEnabled = false,
+  enableAutoFollow = false,
 }: UseJmwalletdStdoutLogParameters = {}) {
   const { t } = useTranslation()
   const token = useStore(authStore, (state) => state.state?.auth?.token)
@@ -41,7 +41,7 @@ export function useJmwalletdStdoutLog({
     refetchOnWindowFocus: false,
     // Poll logs continuously only when auto-follow is enabled.
     refetchInterval: (query) => {
-      if (!enabled || !isAutoFollowEnabled || token === undefined) return false
+      if (!enabled || !enableAutoFollow || token === undefined) return false
       if (query.state.error) return false
       return JAM.JMWALLETD_LOGS_POLLING_INTERVAL
     },

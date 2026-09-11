@@ -16,7 +16,7 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
   const [isAutoFollowEnabled, setIsAutoFollowEnabled] = useState(false)
   const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({
     enabled,
-    isAutoFollowEnabled,
+    enableAutoFollow: isAutoFollowEnabled,
   })
 
   if (!isInitialized) {
@@ -42,7 +42,7 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
           fileName={fileName}
           value={logFileContent}
           refresh={refresh}
-          isAutoFollowEnabled={isAutoFollowEnabled}
+          enableAutoFollow={isAutoFollowEnabled}
           onToggleAutoFollow={setIsAutoFollowEnabled}
         />
       )}

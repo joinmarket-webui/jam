@@ -135,7 +135,7 @@ describe('useJmwalletdStdoutLog', () => {
     }
   })
 
-  it('enables auto-follow polling when isAutoFollowEnabled is true', () => {
+  it('enables auto-follow polling when enableAutoFollow is true', () => {
     authStore.getState().update({
       auth: {
         token: 'token',
@@ -143,7 +143,7 @@ describe('useJmwalletdStdoutLog', () => {
       },
     })
 
-    renderHook(() => useJmwalletdStdoutLog({ isAutoFollowEnabled: true }))
+    renderHook(() => useJmwalletdStdoutLog({ enableAutoFollow: true }))
 
     const refetchInterval = mocks.queryOptions?.refetchInterval
     expect(typeof refetchInterval).toBe('function')

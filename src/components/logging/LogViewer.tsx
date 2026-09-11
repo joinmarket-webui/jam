@@ -12,17 +12,11 @@ interface LogViewerProps {
   fileName: string
   value: string
   refresh: () => Promise<void>
-  isAutoFollowEnabled?: boolean
+  enableAutoFollow?: boolean
   onToggleAutoFollow?: (enabled: boolean) => void
 }
 
-export function LogViewer({
-  fileName,
-  value,
-  refresh,
-  isAutoFollowEnabled = false,
-  onToggleAutoFollow,
-}: LogViewerProps) {
+export function LogViewer({ fileName, value, refresh, enableAutoFollow = false, onToggleAutoFollow }: LogViewerProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
@@ -90,19 +84,13 @@ export function LogViewer({
     }
 
     // When auto-follow is enabled, continue tailing when user is at the bottom.
-    if (isAutoFollowEnabled && isScrolledToLogBottom) {
+    if (enableAutoFollow && isScrolledToLogBottom) {
       const timerId = setTimeout(() => {
         scrollToLogBottom()
       }, 4)
       return () => clearTimeout(timerId)
     }
-  }, [
-    filteredLines.length,
-    hasAutoScrolledInitially,
-    isAutoFollowEnabled,
-    isScrolledToLogBottom,
-    normalizedSearchValue,
-  ])
+  }, [filteredLines.length, hasAutoScrolledInitially, enableAutoFollow, isScrolledToLogBottom, normalizedSearchValue])
 
   const handleRefresh = useCallback(async () => {
     if (isLoadingRefresh) return
@@ -193,7 +181,7 @@ export function LogViewer({
           </InputGroup>
           {onToggleAutoFollow && (
             <div className="flex items-center gap-2 px-1">
-              <Switch id="logs-auto-follow" checked={isAutoFollowEnabled} onCheckedChange={onToggleAutoFollow} />
+              <Switch id="logs-auto-follow" checked={enableAutoFollow} onCheckedChange={onToggleAutoFollow} />
               <Label htmlFor="logs-auto-follow" className="cursor-pointer text-xs font-medium sm:text-sm">
                 {t('logs.label_auto_follow')}
               </Label>

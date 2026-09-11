@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
         fileName: string
         value: string
         refresh: () => Promise<void>
-        isAutoFollowEnabled?: boolean
+        enableAutoFollow?: boolean
         onToggleAutoFollow?: (enabled: boolean) => void
       }
     | undefined,
@@ -41,7 +41,7 @@ vi.mock('@/components/logging/LogViewer', () => ({
     fileName: string
     value: string
     refresh: () => Promise<void>
-    isAutoFollowEnabled?: boolean
+    enableAutoFollow?: boolean
     onToggleAutoFollow?: (enabled: boolean) => void
   }) => {
     mocks.lastLogViewerProps = props
@@ -51,7 +51,7 @@ vi.mock('@/components/logging/LogViewer', () => ({
         <button
           type="button"
           data-testid="toggle-autofollow"
-          onClick={() => props.onToggleAutoFollow?.(!props.isAutoFollowEnabled)}
+          onClick={() => props.onToggleAutoFollow?.(!props.enableAutoFollow)}
         >
           toggle
         </button>
@@ -106,16 +106,16 @@ describe('LogsContent', () => {
 
     expect(mocks.useJmwalletdStdoutLogMock).toHaveBeenLastCalledWith({
       enabled: true,
-      isAutoFollowEnabled: false,
+      enableAutoFollow: false,
     })
-    expect(mocks.lastLogViewerProps?.isAutoFollowEnabled).toBe(false)
+    expect(mocks.lastLogViewerProps?.enableAutoFollow).toBe(false)
 
     await user.click(screen.getByTestId('toggle-autofollow'))
 
     expect(mocks.useJmwalletdStdoutLogMock).toHaveBeenLastCalledWith({
       enabled: true,
-      isAutoFollowEnabled: true,
+      enableAutoFollow: true,
     })
-    expect(mocks.lastLogViewerProps?.isAutoFollowEnabled).toBe(true)
+    expect(mocks.lastLogViewerProps?.enableAutoFollow).toBe(true)
   })
 })
