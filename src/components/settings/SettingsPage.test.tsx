@@ -127,6 +127,15 @@ vi.mock('@/components/settings/AccountXpubsDialog', () => ({
     ) : null,
 }))
 
+vi.mock('./SignMessageDialog', () => ({
+  SignMessageDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
+    open ? (
+      <button type="button" onClick={() => onOpenChange(false)}>
+        sign-message-dialog
+      </button>
+    ) : null,
+}))
+
 vi.mock('@/components/ui/jam/LanguageSelector', () => ({
   LanguageSelector: () => <div>language-selector</div>,
 }))
@@ -289,9 +298,14 @@ describe('SettingsPage', () => {
 
     expect(screen.getByRole('heading', { name: 'settings.title' })).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_display')).toBeInTheDocument()
+    expect(screen.getByText('settings.section_title_wallet')).toBeInTheDocument()
+    expect(screen.getByText('settings.sign_message')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_expert_features')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_feature_preview')).toBeInTheDocument()
     expect(screen.getByText('Developer Mode')).toBeInTheDocument()
+
+    clickItem('settings.sign_message')
+    expect(screen.getByText('sign-message-dialog')).toBeInTheDocument()
 
     fireEvent.click(screen.getByText('switch:true'))
     expect(mocks.toggleAddressChunking).toHaveBeenCalledWith(false)

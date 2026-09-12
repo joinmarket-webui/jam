@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import type { WalletFileName } from '@/lib/utils'
+import { Badge } from '../ui/badge'
 import { TxHistoryContent } from './TxHistoryContent'
 
 interface TxHistoryPageProps {
@@ -12,7 +13,13 @@ export function TxHistoryPage({ walletFileName }: TxHistoryPageProps) {
 
   return (
     <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col space-y-4 p-4 sm:p-6">
-      <PageTitle title={t('tx_history.title')} />
+      <PageTitle
+        title={
+          <>
+            {t('tx_history.title')} <Badge variant="muted">{t('global.preview')}</Badge>
+          </>
+        }
+      />
       <TxHistoryContent walletFileName={walletFileName} compact={false} />
     </div>
   )

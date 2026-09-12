@@ -565,13 +565,18 @@ describe('SendPage', () => {
     await flushActUpdates()
   })
 
-  it('shows the collaborative ended alert when utxos are unchanged and clears the attempt', async () => {
+  it('shows the same neutral stopped alert regardless of whether the utxo set changed, and clears the attempt', async () => {
     const user = userEvent.setup()
     mocks.currentPaymentAttemptPresent = true
 
+    // collaborativeValues has utxosHashHex 'hash-before', matching the wallet's
+    // current 'hash-before' mock (see JamWalletInfoContext mock above). A utxo
+    // hash match/mismatch no longer decides which message is shown.
     render(<SendPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('send.alert_collaborative_ended_title')).toBeInTheDocument()
+    expect(screen.getByText('send.alert_collaborative_stopped_title')).toBeInTheDocument()
+    expect(screen.queryByText('send.alert_collaborative_completed_title')).not.toBeInTheDocument()
+    expect(screen.queryByText('send.alert_collaborative_ended_title')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'global.done' }))
     expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
   })
