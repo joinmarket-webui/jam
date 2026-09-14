@@ -853,6 +853,7 @@
     "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of yourself and others. Every scheduled transaction is a collaborative transaction.",
     "error_starting_schedule_failed": "Starting a Scheduled Sweep failed. Reason: {{ reason }}",
     "error_stopping_schedule_failed": "Stopping Scheduled Sweep failed. Reason: {{ reason }}",
+    "error_deleting_schedule_failed": "Deleting the Scheduled Sweep plan failed. Reason: {{ reason }}",
     "error_planning_schedule_failed": "Error while planning the Scheduled Sweep. Reason: {{ reason }}",
     "complete_wallet_title": "Complete Wallet",
     "complete_wallet_subtitle": "This will use all of your non-frozen funds.",
