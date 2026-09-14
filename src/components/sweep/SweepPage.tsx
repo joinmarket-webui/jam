@@ -202,7 +202,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const currentSchedule = useMemo(() => {
     if (getScheduleQuery.error) return
     if (getScheduleQuery.data === undefined) return
-    if (getScheduleQuery.data.stale === true) return
 
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
@@ -363,7 +362,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Alert>
                 ) : null}
 
-                <SweepScheduleProgress schedule={currentSchedule} debug={isDeveloperMode} />
+                <SweepScheduleProgress
+                  schedule={currentSchedule}
+                  error={getScheduleQuery.data?.error}
+                  debug={isDeveloperMode}
+                />
 
                 {schedulerRunning && currentSchedule.summary.status.running ? (
                   <Button
@@ -384,7 +387,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Button>
                 ) : (
                   <>
-                    {currentSchedule.summary.status.pending || isWaitingSchedulerStart ? (
+                    {!currentSchedule.summary.stale &&
+                    (currentSchedule.summary.status.pending || isWaitingSchedulerStart) ? (
                       <Button
                         type="button"
                         onClick={() => {
@@ -404,7 +408,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                         )}
                       </Button>
                     ) : null}
-                    {currentSchedule.summary.status.pending && planSchedule.variables?.body ? (
+                    {!currentSchedule.summary.stale &&
+                    currentSchedule.summary.status.pending &&
+                    planSchedule.variables?.body ? (
                       <Button
                         type="button"
                         variant="secondary"
