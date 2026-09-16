@@ -455,46 +455,32 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                   </Alert>
                 </>
               ) : (
-                <>
-                  {currentPaymentAttempt.utxosHashHex === utxosHashHex ? (
-                    <Alert variant="warning">
-                      <AlertTriangleIcon />
-                      <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
-                      <AlertDescription className="flex flex-col gap-2">
-                        <div>{t('send.alert_collaborative_ended_description')}</div>
-                        <div>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              clearCurrentPaymentAttempt()
-                            }}
-                          >
-                            {t('global.done')}
-                          </Button>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-                  ) : (
-                    <Alert variant="success">
-                      <CheckCircle2Icon />
-                      <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
-                      <AlertDescription className="flex flex-col gap-2">
-                        <div>{t('send.alert_collaborative_completed_description')}</div>
-                        <div>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setFormId((current) => current + 1)
-                              clearCurrentPaymentAttempt()
-                            }}
-                          >
-                            {t('global.done')}
-                          </Button>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </>
+                /**
+                 * Whether the utxo set changed during the attempt is not proof that a
+                 * coinjoin was actually made (see joinmarket-webui/jam#1475): a deposit
+                 * landing mid-attempt flips this to "changed" with no send having
+                 * happened. Until there's a real signal to check against, we don't
+                 * distinguish "completed" from "ended" here and show one message
+                 * pointing the user at their transaction history either way.
+                 */
+                <Alert variant="warning">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('send.alert_collaborative_stopped_title')}</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2">
+                    <div>{t('send.alert_collaborative_stopped_description')}</div>
+                    <div>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setFormId((current) => current + 1)
+                          clearCurrentPaymentAttempt()
+                        }}
+                      >
+                        {t('global.done')}
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
               )}
             </>
           )

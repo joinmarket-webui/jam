@@ -28,7 +28,8 @@
       "error_loading_address_failed": "無法獲取新地址。",
       "error_freezing_utxos": "無法凍結 UTXOs。"
     },
-    "next": "繼續"
+    "next": "繼續",
+    "experimental": "試驗性"
   },
   "app": {
     "alert_rescan_in_progress": "正在進行重新掃描..."
@@ -183,6 +184,23 @@
     "use_dark_theme": "切換深色主題",
     "use_light_theme": "切換淺色主題",
     "show_seed": "顯示種子詞",
+    "sign_message": "簽署訊息",
+    "sign_message_modal": {
+      "title": "簽署訊息",
+      "subtitle": "使用錢包地址簽署訊息以證明所有權。",
+      "label_address": "錢包地址或 HD 路徑",
+      "placeholder_address": "選擇或輸入地址 (例如 bc1q... 或 m/84'/0'/0'/0/0)",
+      "select_from_wallet": "從錢包中選擇",
+      "label_message": "訊息內容",
+      "placeholder_message": "輸入要簽署的訊息...",
+      "label_signature": "簽署結果",
+      "button_sign": "簽署訊息",
+      "button_signing": "正在簽署...",
+      "button_reset": "重置",
+      "button_copy": "複製簽署",
+      "alert_success_copied": "簽署已複製到剪貼簿！",
+      "text_error_title": "簽署訊息時出錯"
+    },
     "reveal_seed": "顯示種子詞",
     "show_logs": "顯示日誌",
     "show_fee_config": "調整費用限制",
@@ -489,7 +507,7 @@
     }
   },
   "scheduler": {
-    "title": "預定掃空（試驗性）",
+    "title": "預定掃空",
     "subtitle": "使用隨機金額和時間間隔執行多次交易，以此增加你和他人的隱私程度。每個預定的交易都是協作式交易。",
     "error_starting_schedule_failed": "開始調度程序失敗。原因： {{ reason }}",
     "error_stopping_schedule_failed": "停止調度程序失敗。原因： {{ reason }}",

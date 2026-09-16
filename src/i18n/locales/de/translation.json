@@ -28,7 +28,8 @@
       "error_loading_address_failed": "Neue Adresse kann nicht ermittelt werden.",
       "error_freezing_utxos": "Die UTXOs konnten nicht gefroren werden. "
     },
-    "next": "Weiter"
+    "next": "Weiter",
+    "experimental": "experimentell"
   },
   "app": {
     "alert_rescan_in_progress": "Erneuter Scan läuft..."
@@ -183,6 +184,23 @@
     "use_dark_theme": "Zum Dark Theme wechseln",
     "use_light_theme": "Zum Light Theme wechseln",
     "show_seed": "Seed Phrase anzeigen",
+    "sign_message": "Nachricht signieren",
+    "sign_message_modal": {
+      "title": "Nachricht signieren",
+      "subtitle": "Signiere eine Nachricht mit einer Wallet-Adresse, um deinen Besitz nachzuweisen.",
+      "label_address": "Wallet-Adresse oder HD-Pfad",
+      "placeholder_address": "Adresse auswählen oder eingeben (z. B. bc1q... oder m/84'/0'/0'/0/0)",
+      "select_from_wallet": "Aus Wallet auswählen",
+      "label_message": "Nachricht",
+      "placeholder_message": "Nachricht zum Signieren eingeben...",
+      "label_signature": "Signatur",
+      "button_sign": "Nachricht signieren",
+      "button_signing": "Signieren...",
+      "button_reset": "Zurücksetzen",
+      "button_copy": "Signatur kopieren",
+      "alert_success_copied": "Signatur in die Zwischenablage kopiert!",
+      "text_error_title": "Fehler beim Signieren der Nachricht"
+    },
     "reveal_seed": "Seed Phrase einblenden",
     "show_logs": "Logs anzeigen",
     "show_fee_config": "Fee Limit festlegen",
@@ -489,7 +507,7 @@
     }
   },
   "scheduler": {
-    "title": "Geplanter Sweep (experimentell)",
+    "title": "Geplanter Sweep",
     "subtitle": "Führe mehrere Transaktionen mit zufälligen Beträgen und Zeitintervallen durch, um deine Privatsphäre und die von anderen zu erhöhen. Jede durchgeführte Transaktion ist ein Coinjoin. ",
     "error_starting_schedule_failed": "Der Scheduler konnte nicht gestartet werden. Begründung: {{ reason }}",
     "error_stopping_schedule_failed": "Der Scheduler konnte nicht gestoppt werden. Begründung: {{ reason }}",

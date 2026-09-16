@@ -18,6 +18,7 @@ import {
   UploadIcon,
   WalletIcon,
   XIcon,
+  type LucideIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -39,11 +40,21 @@ import {
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
-import { routes } from '@/constants/routes'
+import { routes, type Route } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
 import { useDeveloperMode, usePreviewFeatures } from '@/store/jamSettingsStore'
 import { DevBadge } from '../dev/DevBadge'
 import { Badge } from '../ui/badge'
+
+type JamMenuItem = {
+  icon: LucideIcon
+  title: string
+  url: Route
+  onClick?: () => void
+  preview?: boolean
+  experimental?: boolean
+  subitems?: JamMenuItem[]
+}
 
 export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
   const { t } = useTranslation()
@@ -53,69 +64,69 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const previewFeatures = usePreviewFeatures()
 
   const { isFeatureEnabled } = useFeatures()
-  const mainItems = useMemo(
+  const mainItems = useMemo<JamMenuItem[]>(
     () => [
       {
         title: t('sidebar.item_home.label'),
-        url: routes.home,
+        url: 'home',
         icon: WalletIcon,
       },
       {
         title: t('navbar.tab_receive'),
-        url: routes.receive,
+        url: 'receive',
         icon: DownloadIcon,
       },
       {
         title: t('navbar.tab_send'),
-        url: routes.send,
+        url: 'send',
         icon: UploadIcon,
       },
       {
         title: t('navbar.tab_earn'),
-        url: routes.earn,
+        url: 'earn',
         icon: HandCoinsIcon,
         subitems: [
           {
             title: t('sidebar.item_earn_report.label'),
-            url: routes.earnReport,
+            url: 'earnReport',
             icon: NotebookTabsIcon,
           },
         ],
       },
       {
         title: t('navbar.tab_sweep'),
-        url: routes.sweep,
+        url: 'sweep',
         icon: BrushCleaningIcon,
       },
       {
         title: t('sidebar.item_orderbook.label'),
-        url: routes.orderbook,
+        url: 'orderbook',
         icon: BookOpenIcon,
       },
       {
         title: t('sidebar.item_jars.label'),
-        url: routes.walletJarsDetails,
+        url: 'walletJarsDetails',
         icon: MilkIcon,
       },
-      ...(previewFeatures?.['tx-history'] !== true
+      ...((previewFeatures?.['tx-history'] !== true
         ? []
         : [
             {
               title: t('sidebar.item_history.label'),
-              url: routes.txHistory,
+              url: 'txHistory',
               icon: HistoryIcon,
               preview: true,
             },
-          ]),
+          ]) as JamMenuItem[]),
     ],
     [t, previewFeatures],
   )
 
-  const settingsItems = useMemo(
+  const settingsItems = useMemo<JamMenuItem[]>(
     () => [
       {
         title: t('sidebar.item_tour.label'),
-        url: routes.home,
+        url: 'home',
         icon: SparklesIcon,
         onClick: () => {
           toggleSidebar()
@@ -124,10 +135,11 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
       },
       {
         title: t('sidebar.item_rescan.label'),
-        url: routes.rescan,
+        url: 'rescan',
         icon: PackageSearchIcon,
+        experimental: true,
       },
-      ...(!isFeatureEnabled('logs')
+      ...((!isFeatureEnabled('logs')
         ? []
         : [
             {
@@ -135,17 +147,17 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
               url: routes.logs,
               icon: LogsIcon,
             },
-          ]),
+          ]) as JamMenuItem[]),
     ],
     [t, isFeatureEnabled, toggleSidebar],
   )
 
-  const devItems = useMemo(
+  const devItems = useMemo<JamMenuItem[]>(
     () =>
       !isDevMode() || !isDeveloperMode
         ? []
         : [
-            ...(!isDebugFeatureEnabled('devPage')
+            ...((!isDebugFeatureEnabled('devPage')
               ? []
               : [
                   {
@@ -153,8 +165,8 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                     url: routes.__dev,
                     icon: TerminalIcon,
                   },
-                ]),
-            ...(!isDebugFeatureEnabled('devSetupPage')
+                ]) as JamMenuItem[]),
+            ...((!isDebugFeatureEnabled('devSetupPage')
               ? []
               : [
                   {
@@ -162,8 +174,8 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                     url: routes.__devSetup,
                     icon: ServerIcon,
                   },
-                ]),
-            ...(!isDebugFeatureEnabled('devErrorExamplePage')
+                ]) as JamMenuItem[]),
+            ...((!isDebugFeatureEnabled('devErrorExamplePage')
               ? []
               : [
                   {
@@ -171,7 +183,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                     url: routes.__devErrorExample,
                     icon: BugPlayIcon,
                   },
-                ]),
+                ]) as JamMenuItem[]),
           ],
     [isDeveloperMode],
   )
@@ -190,10 +202,11 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild title={item.title}>
-                    <Link to={item.url}>
+                    <Link to={routes[item.url]}>
                       <item.icon />
                       <span>{item.title}</span>
-                      {item.preview ? <Badge variant="muted">{/* TODO: i18n */ 'Preview'}</Badge> : null}
+                      {item.preview ? <Badge variant="muted">{t('global.preview')}</Badge> : null}
+                      {item.experimental ? <Badge variant="muted">{t('global.experimental')}</Badge> : null}
                     </Link>
                   </SidebarMenuButton>
                   {item.subitems?.length && (
@@ -201,7 +214,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                       {item.subitems?.map((subitem) => (
                         <SidebarMenuSubItem key={subitem.title}>
                           <SidebarMenuSubButton asChild title={subitem.title}>
-                            <Link to={subitem.url}>
+                            <Link to={routes[subitem.url]}>
                               <subitem.icon />
                               <span>{subitem.title}</span>
                             </Link>
@@ -230,7 +243,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                   {settingsItems.map((item) => (
                     <SidebarMenuSubItem key={item.title}>
                       <SidebarMenuSubButton asChild title={item.title}>
-                        <Link to={item.url} onClick={item.onClick}>
+                        <Link to={routes[item.url]} onClick={item.onClick}>
                           <item.icon />
                           <span>{item.title}</span>
                         </Link>
@@ -258,8 +271,8 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                   <SidebarMenuSub>
                     {devItems.map((item) => (
                       <SidebarMenuSubItem key={item.title}>
-                        <SidebarMenuSubButton asChild title={item.title}>
-                          <Link to={item.url}>
+                        <SidebarMenuSubButton asChild title={item.title} size="sm">
+                          <Link to={routes[item.url]}>
                             <item.icon />
                             <span>{item.title}</span>
                           </Link>

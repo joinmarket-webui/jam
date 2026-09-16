@@ -38,6 +38,7 @@ import { getErrorReason } from '@/lib/errorReason'
 import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
 import { SweepForm } from './SweepForm'
@@ -288,7 +289,14 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         isStarting={isWaitingSchedulerStart}
       />
       <div className="mx-auto max-w-4xl space-y-3 p-4">
-        <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
+        <PageTitle
+          title={
+            <>
+              {t('scheduler.title')} <Badge variant="muted">{t('global.experimental')}</Badge>
+            </>
+          }
+          subtitle={t('scheduler.subtitle')}
+        />
 
         {feeConfigValidation.maxFeesConfigMissing && (
           <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
