@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseBip21Uri } from './bip21'
+import { parseBip21Uri, toBip21Uri } from './bip21'
 
 // Valid mainnet P2WPKH address for testing
 const VALID_ADDRESS = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
@@ -187,5 +187,42 @@ describe('parseBip21Uri', () => {
       expect(result).toEqual({ address: VALID_ADDRESS, fromUri: false })
       expect(result).not.toHaveProperty('message')
     })
+  })
+})
+
+describe('toBip21Uri', () => {
+  it('omits the amount parameter when no amount is requested', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS })).toBe(`bitcoin:${VALID_ADDRESS}`)
+  })
+
+  it('omits the amount parameter for a zero amount', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 0 })).toBe(`bitcoin:${VALID_ADDRESS}`)
+  })
+
+  it('appends the amount in BTC', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 50_000 })).toBe(`bitcoin:${VALID_ADDRESS}?amount=0.00050000`)
+  })
+
+  it('renders one whole BTC', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 100_000_000 })).toBe(
+      `bitcoin:${VALID_ADDRESS}?amount=1.00000000`,
+    )
+  })
+
+  // A naive `String(sats / 1e8)` switches to scientific notation below 1e-6 BTC
+  // and yields an amount no wallet - including our own parser - accepts.
+  it('renders small amounts in plain decimal notation', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 1 })).toBe(`bitcoin:${VALID_ADDRESS}?amount=0.00000001`)
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 99 })).toBe(`bitcoin:${VALID_ADDRESS}?amount=0.00000099`)
+  })
+
+  it('round-trips through parseBip21Uri', () => {
+    const uri = toBip21Uri({ address: VALID_ADDRESS, amount: 50_000 })
+    expect(parseBip21Uri(uri)).toEqual({ address: VALID_ADDRESS, amount: 50_000, fromUri: true })
+  })
+
+  it('round-trips a small amount through parseBip21Uri', () => {
+    const uri = toBip21Uri({ address: VALID_ADDRESS, amount: 1 })
+    expect(parseBip21Uri(uri)).toEqual({ address: VALID_ADDRESS, amount: 1, fromUri: true })
   })
 })

@@ -1,6 +1,6 @@
 import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { describe, expect, it } from 'vitest'
-import { toSchedule } from './scheduleUtils'
+import { formatDuration, toSchedule } from './scheduleUtils'
 
 describe('scheduleUtils', () => {
   it('creates schedule from tumbler plan', () => {
@@ -559,5 +559,53 @@ describe('scheduleUtils', () => {
         transactionId: '1f95d0ff8b43645777b60bc23544b955be7e4d8984bb66856747f1fe5674df00',
       },
     ])
+  })
+})
+
+describe('formatDuration', () => {
+  // Minimal stand-in for i18next: renders the key with its interpolated values,
+  // so each assertion shows both which key was picked and what was passed to it.
+  // Keys are sorted so the assertions stay focused on which translation key was
+  // selected and with what values -- i18next treats option key order as
+  // irrelevant, so reordering the object literal must not break these tests.
+  const t = ((key: string, values: Record<string, string> = {}) =>
+    `${key}(${Object.entries(values)
+      .toSorted(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join(',')})`) as unknown as Parameters<typeof formatDuration>[1]
+
+  it('renders seconds below a minute', () => {
+    expect(formatDuration(0, t)).toBe('global.duration_seconds(seconds=0)')
+    expect(formatDuration(45, t)).toBe('global.duration_seconds(seconds=45)')
+  })
+
+  it('clamps negative input to zero', () => {
+    expect(formatDuration(-10, t)).toBe('global.duration_seconds(seconds=0)')
+  })
+
+  it('rounds fractional seconds up', () => {
+    expect(formatDuration(20.88, t)).toBe('global.duration_seconds(seconds=21)')
+  })
+
+  it('renders minutes, dropping seconds when they are zero', () => {
+    expect(formatDuration(60, t)).toBe('global.duration_minutes(minutes=1)')
+    expect(formatDuration(125, t)).toBe('global.duration_minutes_seconds(minutes=2,seconds=5)')
+  })
+
+  it('drops seconds from an hour upwards', () => {
+    expect(formatDuration(3600, t)).toBe('global.duration_hours(hours=1)')
+    // 2h 30m 15s -> the trailing 15s is not shown
+    expect(formatDuration(9015, t)).toBe('global.duration_hours_minutes(hours=2,minutes=30)')
+  })
+
+  it('drops minutes from a day upwards', () => {
+    expect(formatDuration(86400, t)).toBe('global.duration_days(days=1)')
+    expect(formatDuration(90000, t)).toBe('global.duration_days_hours(days=1,hours=1)')
+  })
+
+  it('renders the long wait from the issue as days instead of thousands of minutes', () => {
+    // 9,119m 3s -- previously rendered as "9,119m 3s"
+    const seconds = 9119 * 60 + 3
+    expect(formatDuration(seconds, t)).toBe('global.duration_days_hours(days=6,hours=7)')
   })
 })

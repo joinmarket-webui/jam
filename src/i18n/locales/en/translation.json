@@ -34,6 +34,10 @@
     "duration_seconds": "{{ seconds }}s",
     "duration_minutes": "{{ minutes }}m",
     "duration_minutes_seconds": "{{ minutes }}m {{ seconds }}s",
+    "duration_hours": "{{ hours }}h",
+    "duration_hours_minutes": "{{ hours }}h {{ minutes }}m",
+    "duration_days": "{{ days }}d",
+    "duration_days_hours": "{{ days }}d {{ hours }}h",
     "errors": {
       "error_loading_wallet_failed": "Loading wallet failed. {{ reason }}",
       "error_reloading_wallet_failed": "Reloading wallet failed. {{ reason }}",
@@ -42,7 +46,9 @@
       "error_loading_address_failed": "Unable to get new address.",
       "error_freezing_utxos": "Could not freeze UTXOs."
     },
-    "next": "Next"
+    "next": "Next",
+    "experimental": "Experimental",
+    "preview": "Preview"
   },
   "app": {
     "alert_new_transaction": "New transaction: {{ txid }}",
@@ -309,6 +315,23 @@
     "label_select_language_aria_label": "$t(settings.label_select_language_title)",
     "show_seed": "Show seed phrase",
     "show_xpubs": "Show account xpubs",
+    "sign_message": "Sign message",
+    "sign_message_modal": {
+      "title": "Sign Message",
+      "subtitle": "Sign a message with a wallet address to prove ownership.",
+      "label_address": "Wallet address or HD path",
+      "placeholder_address": "Select or enter an address (e.g. bc1q... or m/84'/0'/0'/0/0)",
+      "select_from_wallet": "Select from wallet",
+      "label_message": "Message",
+      "placeholder_message": "Enter the message to sign...",
+      "label_signature": "Signature",
+      "button_sign": "Sign message",
+      "button_signing": "Signing...",
+      "button_reset": "Reset",
+      "button_copy": "Copy signature",
+      "alert_success_copied": "Copied signature to clipboard!",
+      "text_error_title": "Error while signing message"
+    },
     "reveal_seed": "Reveal seed phrase",
     "show_logs": "Show logs",
     "show_fee_config": "Adjust fee limits",
@@ -395,7 +418,7 @@
     }
   },
   "rescan_chain": {
-    "title": "Rescan timechain (Experimental)",
+    "title": "Rescan timechain",
     "subtitle": "Rescan the local timechain for wallet related transactions.",
     "label_blockheight": "Rescan height",
     "description_blockheight": "The height of the chain at which the rescan process is started.",
@@ -411,6 +434,7 @@
     "error_loading_logs_failed": "Could not retrieve log file.",
     "error_no_auth_token": "No authentication token available. Please login again.",
     "button_scroll_to_bottom": "Scroll to bottom",
+    "label_auto_follow": "Auto-follow",
     "label_search": "Search logs",
     "placeholder_search": "Search logs...",
     "text_search_matches_zero": "No matches for \"{{ searchValue }}\".",
@@ -437,10 +461,8 @@
     "alert_collaborative_starting": "Starting collaborative transaction...",
     "alert_collaborative_stopping": "Aborting collaborative transaction...",
     "alert_collaborative_awaiting_completion": "Awaiting completion of collaborative transaction...",
-    "alert_collaborative_completed_title": "Collaborative transaction completed",
-    "alert_collaborative_completed_description": "JoinMarket finished the collaborative transaction successfully.",
-    "alert_collaborative_ended_title": "Collaborative flow ended",
-    "alert_collaborative_ended_description": "The collaborative flow stopped, but no new completed transaction was confirmed yet. Please verify the recipient and transaction history.",
+    "alert_collaborative_stopped_title": "Collaborative flow stopped",
+    "alert_collaborative_stopped_description": "The collaborative flow has stopped. Please check your transaction history to confirm whether the transaction went through.",
     "error_starting_collaborative_transaction": "Error while starting collaborative transaction: {{ reason }}",
     "error_stopping_collaborative_transaction": "Error while stopping collaborative transaction: {{ reason }}",
     "text_maker_running": "Earn is active. Stop the service to send collaborative transactions.",
@@ -493,6 +515,8 @@
       "label_recipient": "Recipient",
       "label_source_jar": "Send from",
       "label_num_collaborators": "Collaborators",
+      "label_utxos_one": "UTXO",
+      "label_utxos_other": "UTXOs ({{ count }})",
       "text_collaborative_tx_enabled": "Payment with privacy improvement",
       "text_collaborative_tx_disabled": "Payment without privacy improvement",
       "label_estimated_max_collaborator_fee": "Collaborator fee",
@@ -825,10 +849,11 @@
     }
   },
   "scheduler": {
-    "title": "Scheduled Sweep (Experimental)",
+    "title": "Scheduled Sweep",
     "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of yourself and others. Every scheduled transaction is a collaborative transaction.",
     "error_starting_schedule_failed": "Starting a Scheduled Sweep failed. Reason: {{ reason }}",
     "error_stopping_schedule_failed": "Stopping Scheduled Sweep failed. Reason: {{ reason }}",
+    "error_deleting_schedule_failed": "Deleting the Scheduled Sweep plan failed. Reason: {{ reason }}",
     "error_planning_schedule_failed": "Error while planning the Scheduled Sweep. Reason: {{ reason }}",
     "complete_wallet_title": "Complete Wallet",
     "complete_wallet_subtitle": "This will use all of your non-frozen funds.",
@@ -942,9 +967,9 @@
     "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
   },
   "tx_history": {
-    "title": "Transaction History (Experimental)",
+    "title": "Transaction History",
     "section_title": "Recent Activity",
-    "overlay_title": "Transaction History (Experimental)",
+    "overlay_title": "$t(tx_history.title)",
     "button_view_all": "View All",
     "button_load_more": "Load More",
     "expand_history": "Show transaction history",

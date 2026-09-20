@@ -147,7 +147,7 @@ describe('LoginPage', () => {
     await waitFor(() =>
       expect(authStore.getState().state).toEqual({
         walletFileName: 'active.jmdat',
-        auth: { token: 'token', refresh_token: 'refresh' },
+        auth: { token: 'token', refresh_token: 'refresh', expiresAt: expect.any(Number) as number },
         hashed_password: 'hashed-secret',
       }),
     )
