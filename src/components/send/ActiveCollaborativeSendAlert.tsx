@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MilkIcon, UsersIcon } from 'lucide-react'
+import { CoinsIcon, GoalIcon, MilkIcon, UsersIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { jarBadgeVariant } from '@/components/ui/badge-variants'
@@ -81,7 +81,7 @@ export const ActiveCollaborativeSendAlert = ({
                 ) : null}
 
                 <div className="flex min-w-0 items-start gap-4">
-                  <UsersIcon className="mt-0.5 shrink-0" />
+                  <CoinsIcon className="mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1 space-y-1">
                     <Label className="font-semibold">
                       {t('send.confirm_send_modal.label_amount')}
@@ -110,7 +110,7 @@ export const ActiveCollaborativeSendAlert = ({
                 ) : null}
 
                 <div className="col-span-full flex min-w-0 items-start gap-4">
-                  <UsersIcon className="mt-0.5 shrink-0" />
+                  <GoalIcon className="mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1 space-y-1">
                     <Label className="font-semibold">{t('send.confirm_send_modal.label_recipient')}</Label>
                     {destinationJar && (
