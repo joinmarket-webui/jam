@@ -29,6 +29,13 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   useWalletBalanceSummary: () => ({}),
 }))
 
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
+    jmSession: undefined,
+    updateSessionInfo: vi.fn(),
+  }),
+}))
+
 vi.mock('@/components/settings/fees/FeeConfigDialog', () => ({
   FeeConfigDialog: () => <div data-testid="fee-config-dialog" />,
 }))

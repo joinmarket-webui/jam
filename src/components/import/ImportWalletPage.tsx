@@ -17,6 +17,7 @@ import { useStore } from 'zustand'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { JM_DEFAULT_WALLET_TYPE, JM_GAPLIMIT_CONFIGKEY, JM_GAPLIMIT_DEFAULT } from '@/constants/jm'
 import { routes } from '@/constants/routes'
+import { useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { buildAuthHeaderMap, type ApiToken } from '@/lib/config'
 import { getErrorReason } from '@/lib/errorReason'
@@ -24,7 +25,6 @@ import { hashPassword } from '@/lib/hash'
 import { walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, computeAuthExpiresAt, type AuthState } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import type { CreateWalletForm } from '../create/CreateWalletForm'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
@@ -64,7 +64,7 @@ const ImportWalletPage = () => {
   const navigate = useNavigate()
   const client = useApiClient()
 
-  const { state: jmSession, update: updateSessionInfo } = useStore(jmSessionStore, (state) => state)
+  const { jmSession, updateSessionInfo } = useRawJmSession()
   const { update: updateAuthState } = useStore(authStore, (state) => state)
   const [step, setStep] = useState<ImportFlowStep>('wallet_details')
   const [stepWalletDetailsValues, setStepWalletDetailsValues] = useState<WalletDetailsValues>()

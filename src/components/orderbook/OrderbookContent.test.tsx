@@ -12,6 +12,13 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
+    jmSession: { nickname: 'mock-nickname' },
+    updateSessionInfo: vi.fn(),
+  }),
+}))
+
 vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   TooltipContent: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
