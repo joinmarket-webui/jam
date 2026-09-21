@@ -66,8 +66,8 @@ vi.mock('sonner', () => ({
   },
 }))
 
-vi.mock('@/context/JmSessionInfoContext', () => ({
-  useJmSession: () => ({
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
     jmSession: undefined,
     updateSessionInfo: vi.fn(),
   }),

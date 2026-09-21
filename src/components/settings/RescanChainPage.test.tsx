@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { type RescanInfo } from '@/context/JmSessionInfoContext'
+import { type RescanInfo } from '@/context/JamSessionInfoContext'
 import { SEGWIT_ACTIVATION_BLOCK, type WalletFileName } from '@/lib/utils'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import type { BlockHeight } from '@/types/global'
@@ -55,7 +55,7 @@ vi.mock('sonner', () => ({
   },
 }))
 
-vi.mock('@/context/JmSessionInfoContext', () => ({
+vi.mock('@/context/JamSessionInfoContext', () => ({
   useRescanStatus: () => ({ rescanInfo, setRescanInfo }),
   useCurrentBlockHeight: () => ({ currentBlockHeight: SEGWIT_ACTIVATION_BLOCK }),
 }))

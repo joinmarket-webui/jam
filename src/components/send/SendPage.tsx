@@ -16,13 +16,13 @@ import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import * as JAM from '@/constants/jam'
+import { useRawJmSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAddressSummary,
   useJamWalletInfoContext,
   useJars,
   useWalletBalanceSummary,
 } from '@/context/JamWalletInfoContext'
-import { useJmSession, useJmSessionInfoContext } from '@/context/JmSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useJmConfig } from '@/hooks/useJmConfig'
@@ -79,7 +79,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     waitForUtxosToBeSpent,
     setWaitForUtxosToBeSpent,
   } = useJamWalletInfoContext()
-  const { jmSession } = useJmSession()
+  const { jmSession } = useRawJmSession()
   const jmSessionActive = !!jmSession
   const {
     makerInfo: { running: makerRunning },
@@ -91,7 +91,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     rescanInfo,
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
-  } = useJmSessionInfoContext()
+  } = useJamSessionInfoContext()
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
 

@@ -138,12 +138,12 @@ vi.mock('@/hooks/useApiClient', () => ({ useApiClient: () => ({}) }))
 vi.mock('@/hooks/useFeeConfigValidation', () => ({ useFeeConfigValidation: () => ({ fetchMissing }) }))
 vi.mock('@/hooks/useRefreshSession', () => ({ useRefreshSession: () => undefined }))
 
-vi.mock('./context/JmSessionInfoContext', () => ({
-  useJmSession: () => ({
+vi.mock('./context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
     jmSession: holders.jmSession,
     updateSessionInfo: vi.fn(),
   }),
-  useJmSessionInfoContext: () => ({
+  useJamSessionInfoContext: () => ({
     blockHeight: holders.blockHeight,
     takerInfo: { running: holders.takerRunning },
     rescanInfo: { rescanning: holders.rescanning },
@@ -161,8 +161,8 @@ vi.mock('@/context/JamDisplayContextProvider', () => ({ JamDisplayContextProvide
 vi.mock('@/context/JamWalletInfoContextProvider', () => ({
   JamWalletInfoContextProvider: passthrough('wallet-provider'),
 }))
-vi.mock('./context/JmSessionInfoContextProvider', () => ({
-  JmSessionInfoContextProvider: passthrough('session-provider'),
+vi.mock('./context/JamSessionInfoContextProvider', () => ({
+  JamSessionInfoContextProvider: passthrough('session-provider'),
 }))
 vi.mock('./context/JmWebsocketContextProvider', () => ({ JmWebsocketContextProvider: passthrough('ws') }))
 

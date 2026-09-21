@@ -132,8 +132,8 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
   PageLoading: () => <div>page-loading</div>,
 }))
 
-vi.mock('@/context/JmSessionInfoContext', () => ({
-  useJmSession: () => ({
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
     jmSession: mocks.jmSession,
     updateSessionInfo: vi.fn(),
   }),

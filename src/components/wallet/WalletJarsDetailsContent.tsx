@@ -7,6 +7,7 @@ import { AlertTriangleIcon, RefreshCwIcon, ThermometerSnowflakeIcon, Thermometer
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Balance } from '@/components/ui/jam/Balance'
+import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAccountSummary,
   useAddressSummary,
@@ -16,7 +17,6 @@ import {
   type AddressSummary,
   type Jar,
 } from '@/context/JamWalletInfoContext'
-import { useJmSessionInfoContext } from '@/context/JmSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { Utxo, UtxoId } from '@/hooks/useQueryUtxos'
 import { utxoTags } from '@/lib/tags'
@@ -59,7 +59,7 @@ interface UtxosContentProps {
 
 export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
-  const { takerInfo, rescanInfo, makerInfo } = useJmSessionInfoContext()
+  const { takerInfo, rescanInfo, makerInfo } = useJamSessionInfoContext()
   const { refetch: walletInfoRefetch, isFetching: walletInfoIsFetching } = useJamWalletInfoContext()
 
   const client = useApiClient()
