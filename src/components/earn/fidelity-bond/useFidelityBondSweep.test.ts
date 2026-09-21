@@ -107,12 +107,11 @@ describe('useFidelityBondSweep', () => {
 
     expect(txResult).toBeUndefined()
 
-    // the other jar utxo was frozen then correctly rolled back
-    expect(mocks.freezeMutateAsync).toHaveBeenCalledWith({
-      path: { walletname: 'wallet.jmdat' },
-      body: { 'utxo-string': 'other:0', freeze: true },
-    })
-    expect(mocks.unfreezeMutateAsync).toHaveBeenCalledWith(
+    // other utxos in the jar are left alone - the sweep pins its input instead
+    expect(mocks.freezeMutateAsync).not.toHaveBeenCalledWith(
+      expect.objectContaining({ body: { 'utxo-string': 'other:0', freeze: true } }),
+    )
+    expect(mocks.unfreezeMutateAsync).not.toHaveBeenCalledWith(
       expect.objectContaining({ body: { 'utxo-string': 'other:0', freeze: false } }),
     )
 
@@ -148,7 +147,7 @@ describe('useFidelityBondSweep', () => {
     )
   })
 
-  it('sweeps successfully: freezes other utxos, unfreezes the bond, then restores the others', async () => {
+  it('sweeps successfully: unfreezes the bond and spends exactly that utxo', async () => {
     const bond = bondUtxo({ mixdepth: 0 })
     const other = utxo({ utxo: 'other:0', mixdepth: 0, frozen: false })
     mocks.walletInfo.jars = [jar(0, [bond, other])]
@@ -171,12 +170,15 @@ describe('useFidelityBondSweep', () => {
     expect(txResult).toEqual({ txinfo: { txid: 'renewed-tx' } })
     expect(mocks.directSendMutateAsync).toHaveBeenCalledWith({
       path: { walletname: 'wallet.jmdat' },
-      body: { mixdepth: 0, amount_sats: 0, destination: 'bcrt1qdestination' },
+      body: { mixdepth: 0, amount_sats: 0, destination: 'bcrt1qdestination', input_utxos: ['bond:0'] },
     })
-    // the other utxo ends up unfrozen again post-broadcast
-    expect(mocks.unfreezeMutateAsync).toHaveBeenCalledWith(
-      expect.objectContaining({ body: { 'utxo-string': 'other:0', freeze: false } }),
-    )
+    // only the bond is unfrozen; the other utxo is never touched
+    expect(mocks.unfreezeMutateAsync).toHaveBeenCalledTimes(1)
+    expect(mocks.unfreezeMutateAsync).toHaveBeenCalledWith({
+      path: { walletname: 'wallet.jmdat' },
+      body: { 'utxo-string': 'bond:0', freeze: false },
+    })
+    expect(mocks.freezeMutateAsync).not.toHaveBeenCalled()
     expect(mocks.walletInfoRefetch).toHaveBeenCalled()
   })
 
@@ -204,5 +206,60 @@ describe('useFidelityBondSweep', () => {
     expect(mocks.freezeMutateAsync).not.toHaveBeenCalledWith(
       expect.objectContaining({ body: { 'utxo-string': 'bond:0', freeze: true } }),
     )
+  })
+
+  it('does not spend a utxo that arrived in the jar after the dialog was opened', async () => {
+    const bond = bondUtxo({ mixdepth: 0 })
+    const other = utxo({ utxo: 'other:0', mixdepth: 0, frozen: false })
+    mocks.walletInfo.jars = [jar(0, [bond, other])]
+
+    // a deposit lands in the jar while the bond is being unfrozen, i.e. after
+    // any snapshot the hook could have taken of the jar
+    const arriving = utxo({ utxo: 'deposit:0', mixdepth: 0, frozen: false })
+    mocks.unfreezeMutateAsync.mockImplementation(() => {
+      mocks.walletInfo.jars = [jar(0, [bond, other, arriving])]
+      return Promise.resolve()
+    })
+    mocks.directSendMutateAsync.mockResolvedValue({ txinfo: { txid: 'renewed-tx' } })
+
+    const { result } = renderHook(() =>
+      useFidelityBondSweep({
+        walletFileName: 'wallet.jmdat',
+        utxo: bond,
+        unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
+        sendErrorKey: 'earn.fidelity_bond.renew.error_renewing_fidelity_bond',
+      }),
+    )
+
+    await result.current.sweep({ destination: 'bcrt1qdestination', tryFreezeAfterBroadcast: false })
+
+    // the request names the bond and nothing else - the backend cannot pick the deposit
+    expect(mocks.directSendMutateAsync).toHaveBeenCalledTimes(1)
+    expect(mocks.directSendMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: { mixdepth: 0, amount_sats: 0, destination: 'bcrt1qdestination', input_utxos: ['bond:0'] },
+      }),
+    )
+  })
+
+  it('does not broadcast when the bond is no longer in the jar', async () => {
+    const bond = bondUtxo({ mixdepth: 0 })
+    mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'other:0', mixdepth: 0 })])]
+
+    const { result } = renderHook(() =>
+      useFidelityBondSweep({
+        walletFileName: 'wallet.jmdat',
+        utxo: bond,
+        unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
+        sendErrorKey: 'earn.fidelity_bond.renew.error_renewing_fidelity_bond',
+      }),
+    )
+
+    const txResult = await result.current.sweep({ destination: 'bcrt1qdestination', tryFreezeAfterBroadcast: false })
+
+    expect(txResult).toBeUndefined()
+    expect(mocks.unfreezeMutateAsync).not.toHaveBeenCalled()
+    expect(mocks.directSendMutateAsync).not.toHaveBeenCalled()
+    expect(mocks.setError).toHaveBeenLastCalledWith('earn.fidelity_bond.error_bond_not_in_jar')
   })
 })
