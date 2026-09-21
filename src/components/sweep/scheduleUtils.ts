@@ -64,6 +64,7 @@ type ExternalDestination = {
   transactionId?: TxId
 }
 export interface ScheduleSummary {
+  stale: boolean
   status: {
     value: ScheduleStatus
     pending: boolean
@@ -174,6 +175,7 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
   const startedAt = entries.at(0)?.startedAt
   const finishedAt = entries.at(-1)?.finishedAt
   const summary: ScheduleSummary = {
+    stale: plan.stale === true,
     status,
     startedAt,
     finishedAt,
