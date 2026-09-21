@@ -10,8 +10,8 @@ import { MemoryRouter } from 'react-router-dom'
 import type { CoreTypes, GlobalTypes } from 'storybook/internal/csf'
 import { DEFAULT_VIEWPORT, MINIMAL_VIEWPORTS, INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { JamDisplayContextProvider } from '../src/context/JamDisplayContextProvider'
-import { JamSessionInfoContextProvider } from '../src/context/JamSessionInfoContextProvider'
 import { JamWalletInfoContextProvider } from '../src/context/JamWalletInfoContextProvider'
+import { JmSessionInfoContextProvider } from '../src/context/JmSessionInfoContextProvider'
 import i18n from '../src/i18n/config'
 import '../src/index.css'
 import mswHandlers from './msw-handlers'
@@ -153,11 +153,11 @@ export const withJamDisplayContext = (Story: React.ComponentType) => {
   )
 }
 
-export const withJamSessionInfoContext = (Story: React.ComponentType) => {
+export const withJmSessionInfoContext = (Story: React.ComponentType) => {
   return (
-    <JamSessionInfoContextProvider>
+    <JmSessionInfoContextProvider>
       <Story />
-    </JamSessionInfoContextProvider>
+    </JmSessionInfoContextProvider>
   )
 }
 
@@ -174,7 +174,7 @@ export const decorators = [
   withMemoryRouter,
   withI18next,
   withJamWalletInfoContext,
-  withJamSessionInfoContext,
+  withJmSessionInfoContext,
   withQueryClient,
   withJamDisplayContext,
 ]

@@ -108,7 +108,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   }),
 }))
 
-vi.mock('@/context/JamSessionInfoContext', () => ({
+vi.mock('@/context/JmSessionInfoContext', () => ({
   useRescanStatus: () => ({
     rescanInfo: { rescanning: mocks.rescanning },
   }),

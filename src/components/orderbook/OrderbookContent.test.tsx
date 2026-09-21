@@ -12,8 +12,8 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-vi.mock('@/context/JamSessionInfoContext', () => ({
-  useJamSession: () => ({
+vi.mock('@/context/JmSessionInfoContext', () => ({
+  useJmSession: () => ({
     jmSession: { nickname: 'mock-nickname' },
     updateSessionInfo: vi.fn(),
   }),

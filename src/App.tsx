@@ -56,9 +56,9 @@ import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDi
 import { Spinner } from './components/ui/spinner'
 import { TxHistoryPage } from './components/wallet/TxHistoryPage'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
-import { useJamSession, useJamSessionInfoContext } from './context/JamSessionInfoContext'
-import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
+import { useJmSession, useJmSessionInfoContext } from './context/JmSessionInfoContext'
+import { JmSessionInfoContextProvider } from './context/JmSessionInfoContextProvider'
 import { JmWebsocketContextProvider } from './context/JmWebsocketContextProvider'
 import { getErrorReason } from './lib/errorReason'
 import { jmTxStore, type JmTxInfos } from './store/jmTxStore'
@@ -115,7 +115,7 @@ const ProtectedRoute = () => {
 
 const ProtectedNavbarRoute = () => {
   const walletFileName = useOutletContext<WalletFileName>()
-  const { jmSession } = useJamSession()
+  const { jmSession } = useJmSession()
   const makerRunning = jmSession?.maker_running === true
   const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
   const client = useApiClient()
@@ -285,7 +285,7 @@ function App() {
     <ThemeProvider defaultTheme="dark" enableSystem>
       <JamDisplayContextProvider>
         <QueryClientProvider client={queryClient}>
-          <JamSessionInfoContextProvider>
+          <JmSessionInfoContextProvider>
             <JmWebsocketContextProvider>
               <RefreshApiToken />
               <RefreshJmSession />
@@ -293,7 +293,7 @@ function App() {
               <RouterProvider router={router} />
               <Toaster closeButton />
             </JmWebsocketContextProvider>
-          </JamSessionInfoContextProvider>
+          </JmSessionInfoContextProvider>
         </QueryClientProvider>
       </JamDisplayContextProvider>
     </ThemeProvider>
@@ -455,7 +455,7 @@ export const WalletInfoAutoReload = () => {
     blockHeight: currentBlockHeight,
     takerInfo: { running: currentTakerRunning },
     rescanInfo: currentRescanInfo,
-  } = useJamSessionInfoContext()
+  } = useJmSessionInfoContext()
   const previousRescanningRef = useRef<boolean>(currentRescanInfo.rescanning)
   const previousBlockHeightRef = useRef<number | undefined>(currentBlockHeight)
   const previousTakerRunningRef = useRef<boolean>(currentTakerRunning)

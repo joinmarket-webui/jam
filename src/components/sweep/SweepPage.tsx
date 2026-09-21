@@ -27,8 +27,8 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import * as JAM from '@/constants/jam'
 import type { TumblerParameters } from '@/constants/jm'
-import { useJamSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useDetectNetwork, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJmSession, useJmSessionInfoContext } from '@/context/JmSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
@@ -64,8 +64,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       running: takerRunning,
       scheduler: { running: schedulerRunning },
     },
-  } = useJamSessionInfoContext()
-  const { jmSession } = useJamSession()
+  } = useJmSessionInfoContext()
+  const { jmSession } = useJmSession()
   const walletInfo = useJamWalletInfoContext()
   const { network } = useDetectNetwork()
   const { enabled: isDeveloperMode } = useDeveloperMode()

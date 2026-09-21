@@ -19,8 +19,8 @@ import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
 import { OFFERTYPE_ABS } from '@/constants/jm'
 import { routes } from '@/constants/routes'
-import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJmSession } from '@/context/JmSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
@@ -76,7 +76,7 @@ const JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED = isDevMode()
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
-  const { jmSession } = useJamSession()
+  const { jmSession } = useJmSession()
 
   const enableCustomEarnFeeValues = useExpertFeatureEnabled('custom-earn-fee-values')
   const { enabled: isDeveloperMode } = useDeveloperMode()

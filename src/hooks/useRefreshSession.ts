@@ -4,7 +4,7 @@ import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { useJamSession } from '@/context/JamSessionInfoContext'
+import { useJmSession } from '@/context/JmSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import { authStore } from '@/store/authStore'
@@ -27,7 +27,7 @@ export function useRefreshSession({
   refetchDelay = 1,
 }: UseRefreshSessionProps): UseRefreshSessionResult {
   const client = useApiClient()
-  const { updateSessionInfo } = useJamSession()
+  const { updateSessionInfo } = useJmSession()
   const authState = useStore(authStore, (state) => state.state)
   const sessionOptionsQueryOptions = sessionOptions({
     client,

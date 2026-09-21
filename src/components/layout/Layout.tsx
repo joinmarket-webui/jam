@@ -10,8 +10,8 @@ import { useSidebar } from '@/components/ui/use-sidebar'
 import { isDevMode } from '@/constants/debugFeatures'
 import { APP_DISPLAY_VERSION, JAM_DEFAULT_THEME } from '@/constants/jam'
 import { routes } from '@/constants/routes'
-import { useJamSession, useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJmSession, useRescanStatus } from '@/context/JmSessionInfoContext'
 import { useJmWebsocketContext } from '@/context/JmWebsocketContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useFeatures } from '@/hooks/useFeatures'
@@ -37,7 +37,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const { jmSession } = useJamSession()
+  const { jmSession } = useJmSession()
   const rescanStatus = useRescanStatus()
 
   const { backendName, backendVersion } = useQueryJamInfo()

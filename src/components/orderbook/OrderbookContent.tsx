@@ -14,7 +14,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OFFER_FEE_BANDS } from '@/constants/jam'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
-import { useJamSession } from '@/context/JamSessionInfoContext'
+import { useJmSession } from '@/context/JmSessionInfoContext'
 import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
 import { withQueryDelay } from '@/lib/queryClient'
@@ -104,7 +104,7 @@ interface OrderbookContentProps {
 export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) => {
   const { t, i18n } = useTranslation()
 
-  const { jmSession } = useJamSession()
+  const { jmSession } = useJmSession()
   const nickname = jmSession?.nickname
 
   const [globalFilter, setGlobalFilter] = useState('')

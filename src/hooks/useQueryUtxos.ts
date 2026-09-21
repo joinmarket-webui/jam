@@ -2,7 +2,7 @@ import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/
 import type { ListUtxosResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { isDevMode } from '@/constants/debugFeatures'
-import { useJamSession } from '@/context/JamSessionInfoContext'
+import { useJmSession } from '@/context/JmSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
@@ -41,7 +41,7 @@ const EMPTY_UTXOS: Utxo[] = []
 
 export function useQueryUtxos({ walletFileName }: UseQueryUtxosProps): UseQueryUtxosResult {
   const client = useApiClient()
-  const { jmSession } = useJamSession()
+  const { jmSession } = useJmSession()
 
   const listutxosQueryOptions = listutxosOptions({
     client,

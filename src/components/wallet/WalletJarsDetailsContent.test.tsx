@@ -59,8 +59,8 @@ vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString: string }) => <span>{valueString}</span>,
 }))
 
-vi.mock('@/context/JamSessionInfoContext', () => ({
-  useJamSessionInfoContext: () => ({
+vi.mock('@/context/JmSessionInfoContext', () => ({
+  useJmSessionInfoContext: () => ({
     takerInfo: { running: mocks.takerRunning },
     rescanInfo: { rescanning: mocks.rescanning },
     makerInfo: { running: mocks.makerRunning },

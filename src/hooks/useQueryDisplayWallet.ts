@@ -2,7 +2,7 @@ import { displaywalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanst
 import type { DisplaywalletResponse, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { isDevMode } from '@/constants/debugFeatures'
-import { useJamSession } from '@/context/JamSessionInfoContext'
+import { useJmSession } from '@/context/JmSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
@@ -24,7 +24,7 @@ export function useQueryDisplayWallet({
   utxosHashHex = '',
 }: UseQueryDisplayWalletProps): UseQueryDisplayWalletResult {
   const client = useApiClient()
-  const { jmSession } = useJamSession()
+  const { jmSession } = useJmSession()
 
   const displaywalletQueryOptions = displaywalletOptions({
     client,

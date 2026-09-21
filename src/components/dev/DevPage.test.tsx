@@ -29,8 +29,8 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   useWalletBalanceSummary: () => ({}),
 }))
 
-vi.mock('@/context/JamSessionInfoContext', () => ({
-  useJamSession: () => ({
+vi.mock('@/context/JmSessionInfoContext', () => ({
+  useJmSession: () => ({
     jmSession: undefined,
     updateSessionInfo: vi.fn(),
   }),

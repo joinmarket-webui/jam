@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ActiveCollaborativeSendAlert } from '@/components/send/ActiveCollaborativeSendAlert'
-import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
+import type { PaymentAttempt } from '@/context/JmSessionInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 
 const meta: Meta<typeof ActiveCollaborativeSendAlert> = {

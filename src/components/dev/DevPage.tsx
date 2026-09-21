@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { routes } from '@/constants/routes'
-import { useJamSession } from '@/context/JamSessionInfoContext'
 import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
+import { useJmSession } from '@/context/JmSessionInfoContext'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -23,7 +23,7 @@ interface DevConfigTabContentProps {
 
 function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
   const authState = useStore(authStore, (state) => state.state)
-  const { jmSession } = useJamSession()
+  const { jmSession } = useJmSession()
   const jamSettingsState = useStore(jamSettingsStore, (state) => state.state)
   const jmConfigStoreState = useStore(jmConfigStore, (state) => state.state)
   const jmTxStoreState = useStore(jmTxStore, (state) => state.state)
@@ -43,7 +43,7 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
         <pre className="text-xs">{JSON.stringify(authState, null, 2)}</pre>
       </div>
       <div className="overflow-scroll">
-        <code className="light:text-red-700 text-red-800">useJamSession():</code>
+        <code className="light:text-red-700 text-red-800">useJmSession():</code>
         <pre className="text-xs">{JSON.stringify(jmSession, null, 2)}</pre>
       </div>
       <div className="overflow-scroll">
