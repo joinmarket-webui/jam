@@ -10,8 +10,8 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: (options: unknown) => queryMock(options),
 }))
 
-vi.mock('@/context/JmSessionInfoContext', () => ({
-  useJmSession: () => ({ jmSession: { session: true } }),
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({ jmSession: { session: true } }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({

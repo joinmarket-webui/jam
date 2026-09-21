@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { routes } from '@/constants/routes'
-import { useJmSession } from '@/context/JmSessionInfoContext'
+import { useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
@@ -26,7 +26,7 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
-  const { jmSession } = useJmSession()
+  const { jmSession } = useRawJmSession()
 
   const makerRunning = jmSession?.maker_running === true
   const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0

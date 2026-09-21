@@ -124,8 +124,8 @@ vi.mock('@/components/ui/use-sidebar', () => ({
   }),
 }))
 
-vi.mock('@/context/JmSessionInfoContext', () => ({
-  useJmSession: () => ({
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
     jmSession: { block_height: 123 } as SessionState,
     updateSessionInfo: vi.fn(),
   }),

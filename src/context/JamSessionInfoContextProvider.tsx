@@ -10,8 +10,8 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { factorToPercentage, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { JmSessionInfoContext } from './JmSessionInfoContext'
-import type { MakerInfo, PaymentAttempt, RescanInfo, TakerInfo } from './JmSessionInfoContext'
+import { JamSessionInfoContext } from './JamSessionInfoContext'
+import type { MakerInfo, PaymentAttempt, RescanInfo, TakerInfo } from './JamSessionInfoContext'
 
 interface PaymentAttemptStoreState {
   state?: PaymentAttempt
@@ -33,14 +33,14 @@ const paymentAttemptStore = createStore<PaymentAttemptStoreState>()(
   ),
 )
 
-interface JmSessionInfoContextProviderProps {
+interface JamSessionInfoContextProviderProps {
   walletFileName?: WalletFileName
 }
 
-export const JmSessionInfoContextProvider = ({
+export const JamSessionInfoContextProvider = ({
   walletFileName,
   children,
-}: PropsWithChildren<JmSessionInfoContextProviderProps>) => {
+}: PropsWithChildren<JamSessionInfoContextProviderProps>) => {
   const authWalletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const activeWalletFileName = walletFileName ?? authWalletFileName
   const { state, update: updateSessionInfo } = useStore(jmSessionStore, (state) => state)
@@ -127,5 +127,5 @@ export const JmSessionInfoContextProvider = ({
     updateSessionInfo,
   }
 
-  return <JmSessionInfoContext.Provider value={value}>{children}</JmSessionInfoContext.Provider>
+  return <JamSessionInfoContext.Provider value={value}>{children}</JamSessionInfoContext.Provider>
 }

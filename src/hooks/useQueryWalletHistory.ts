@@ -3,7 +3,7 @@ import { wallethistoryOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanst
 import type { HistoryEntry, WalletHistoryResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { isDevMode } from '@/constants/debugFeatures'
-import { useJmSession } from '@/context/JmSessionInfoContext'
+import { useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
@@ -31,7 +31,7 @@ export function useQueryWalletHistory({
   utxosHashHex = '',
 }: UseQueryWalletHistoryProps): UseQueryWalletHistoryResult {
   const client = useApiClient()
-  const { jmSession } = useJmSession()
+  const { jmSession } = useRawJmSession()
 
   const queryOptions = wallethistoryOptions({
     client,

@@ -370,12 +370,12 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
   }
 }
 
-vi.mock('@/context/JmSessionInfoContext', () => ({
-  useJmSession: () => ({
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
     jmSession: mocks.sessionActive ? ({ session: true, wallet_name: 'wallet.jmdat' } as SessionResponse) : undefined,
     updateSessionInfo: vi.fn(),
   }),
-  useJmSessionInfoContext: () => ({
+  useJamSessionInfoContext: () => ({
     rescanInfo: { rescanning: mocks.rescanning },
     takerInfo: {
       running: mocks.coinjoinInProcess,

@@ -30,7 +30,7 @@ export interface MakerInfo {
   running: boolean
 }
 
-interface JmSessionInfoContextType {
+interface JamSessionInfoContextType {
   blockHeight?: number
   takerInfo: TakerInfo
   rescanInfo: RescanInfo
@@ -42,30 +42,30 @@ interface JmSessionInfoContextType {
   updateSessionInfo: (val: SessionResponse) => void
 }
 
-export const JmSessionInfoContext = createContext<JmSessionInfoContextType | undefined>(undefined)
+export const JamSessionInfoContext = createContext<JamSessionInfoContextType | undefined>(undefined)
 
-export const useJmSessionInfoContext = () => {
-  const context = useContext(JmSessionInfoContext)
+export const useJamSessionInfoContext = () => {
+  const context = useContext(JamSessionInfoContext)
   if (context === undefined) {
-    throw new Error('useJmSessionInfoContext must be used within a JmSessionInfoContextProvider')
+    throw new Error('useJamSessionInfoContext must be used within a JamSessionInfoContextProvider')
   }
   return context
 }
 
 export const useRescanStatus = () => {
-  const { rescanInfo, setRescanInfo } = useJmSessionInfoContext()
+  const { rescanInfo, setRescanInfo } = useJamSessionInfoContext()
   return { rescanInfo, setRescanInfo }
 }
 
 export const useCurrentBlockHeight = () => {
-  const { blockHeight } = useJmSessionInfoContext()
+  const { blockHeight } = useJamSessionInfoContext()
   return { currentBlockHeight: blockHeight }
 }
 
 // TODO: The generic session response (`jmSession`) is a temporary abstraction.
 // It should eventually be replaced with custom, domain-specific structures
 // (e.g. TakerInfo, MakerInfo, RescanInfo, etc.) and this hook removed.
-export const useJmSession = () => {
-  const { jmSession, updateSessionInfo } = useJmSessionInfoContext()
+export const useRawJmSession = () => {
+  const { jmSession, updateSessionInfo } = useJamSessionInfoContext()
   return { jmSession, updateSessionInfo }
 }

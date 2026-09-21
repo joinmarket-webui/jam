@@ -166,8 +166,8 @@ vi.mock('@/context/JamDisplayContext', () => ({
   useJamDisplayContext: () => ({ addressChunkingEnabled: false }),
 }))
 
-vi.mock('@/context/JmSessionInfoContext', () => ({
-  useJmSession: () => ({
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
     jmSession: mocks.jmSessionPresent
       ? ({
           coinjoin_in_process: false,
@@ -179,7 +179,7 @@ vi.mock('@/context/JmSessionInfoContext', () => ({
       : undefined,
     updateSessionInfo: vi.fn(),
   }),
-  useJmSessionInfoContext: () => ({
+  useJamSessionInfoContext: () => ({
     clearCurrentPaymentAttempt: mocks.clearCurrentPaymentAttempt,
     rescanInfo: { rescanning: false },
     setCurrentPaymentAttempt: mocks.setCurrentPaymentAttempt,

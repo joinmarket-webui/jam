@@ -3,8 +3,8 @@ import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SendFormValues } from '@/components/send/types'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { useJmSessionInfoContext, type PaymentAttempt } from './JmSessionInfoContext'
-import { JmSessionInfoContextProvider } from './JmSessionInfoContextProvider'
+import { useJamSessionInfoContext, type PaymentAttempt } from './JamSessionInfoContext'
+import { JamSessionInfoContextProvider } from './JamSessionInfoContextProvider'
 
 const mocks = vi.hoisted(() => ({
   rescanData: undefined as { rescanning: boolean; progress?: number } | undefined,
@@ -41,7 +41,7 @@ const paymentAttempt: PaymentAttempt = {
 }
 
 const Consumer = () => {
-  const context = useJmSessionInfoContext()
+  const context = useJamSessionInfoContext()
   return (
     <div>
       <span>{context.blockHeight}</span>
@@ -58,7 +58,7 @@ const Consumer = () => {
   )
 }
 
-describe('<JmSessionInfoContextProvider />', () => {
+describe('<JamSessionInfoContextProvider />', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     sessionStorage.clear()
@@ -73,9 +73,9 @@ describe('<JmSessionInfoContextProvider />', () => {
 
   it('provides session state and payment attempt helpers', () => {
     render(
-      <JmSessionInfoContextProvider walletFileName="wallet.jmdat">
+      <JamSessionInfoContextProvider walletFileName="wallet.jmdat">
         <Consumer />
-      </JmSessionInfoContextProvider>,
+      </JamSessionInfoContextProvider>,
     )
 
     expect(screen.getByText('123')).toBeInTheDocument()
@@ -99,9 +99,9 @@ describe('<JmSessionInfoContextProvider />', () => {
     } as SessionResponse)
 
     render(
-      <JmSessionInfoContextProvider walletFileName="wallet.jmdat">
+      <JamSessionInfoContextProvider walletFileName="wallet.jmdat">
         <Consumer />
-      </JmSessionInfoContextProvider>,
+      </JamSessionInfoContextProvider>,
     )
 
     expect(screen.getByText('1')).toBeInTheDocument()
