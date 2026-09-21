@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { rescanblockchain } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ArrowLeftIcon, PackageSearchIcon, RefreshCwIcon } from 'lucide-react'
@@ -22,6 +22,7 @@ import { AVERAGE_BLOCKS_PER_DAY, AVERAGE_BLOCKS_PER_YEAR, SEGWIT_ACTIVATION_BLOC
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { BlockHeight } from '@/types/global'
+import { Badge } from '../ui/badge'
 import { Field, FieldDescription, FieldError, FieldLabel } from '../ui/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -238,7 +239,14 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
             <span className="sr-only">{t('global.back')}</span>
           </Button>
         ) : null}
-        <PageTitle title={t('rescan_chain.title')} subtitle={t('rescan_chain.subtitle')} />
+        <PageTitle
+          title={
+            <>
+              {t('rescan_chain.title')} <Badge variant="muted">{t('global.experimental')}</Badge>
+            </>
+          }
+          subtitle={t('rescan_chain.subtitle')}
+        />
       </div>
 
       <Card>

@@ -1,3 +1,4 @@
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -5,7 +6,6 @@ import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore } from '@/store/jmTxStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import { SendPage } from './SendPage'
@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   fetchIfMissing: vi.fn(),
   feeConfigMissing: false,
   getFeeConfigValues: vi.fn<() => JamFeeConfigValues>(),
+  jmSessionPresent: true,
   onOpenUtxoSelector: vi.fn(),
   scrollToTop: vi.fn(),
   setCurrentPaymentAttempt: vi.fn(),
@@ -39,7 +40,7 @@ const mocks = vi.hoisted(() => ({
   orderbookError: null as Error | null,
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   directsendMutation: vi.fn(() => ({ mutationFn: mocks.directSend })),
   docoinjoinMutation: vi.fn(() => ({ mutationFn: mocks.startCoinjoin })),
   stopcoinjoinOptions: vi.fn(() => ({ queryKey: ['stopcoinjoin'], queryFn: vi.fn() })),
@@ -166,6 +167,18 @@ vi.mock('@/context/JamDisplayContext', () => ({
 }))
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
+    jmSession: mocks.jmSessionPresent
+      ? ({
+          coinjoin_in_process: false,
+          maker_running: false,
+          session: true,
+          wallet_name: 'wallet.jmdat',
+          rescanning: false,
+        } as SessionResponse)
+      : undefined,
+    updateSessionInfo: vi.fn(),
+  }),
   useJamSessionInfoContext: () => ({
     clearCurrentPaymentAttempt: mocks.clearCurrentPaymentAttempt,
     rescanInfo: { rescanning: false },
@@ -298,7 +311,7 @@ const jars: Jar[] = [
 ]
 
 const directValues: SendFormValues = {
-  amount: { amount: 1_000, isSweep: false, sweepAmount: undefined },
+  amount: { amount: 1_000, isSweep: false, sweepAmount: undefined, sweepUtxos: undefined },
   destination: { address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', fromJar: undefined },
   isCoinJoin: false,
   source: { fromJar: 0 },
@@ -349,20 +362,12 @@ describe('SendPage', () => {
     mocks.hasOrders = true
     mocks.orderbookIsLoading = false
     mocks.orderbookError = null
-    jmSessionStore.setState({
-      state: {
-        coinjoin_in_process: false,
-        maker_running: false,
-        session: true,
-        wallet_name: 'wallet.jmdat',
-        rescanning: false,
-      },
-    })
+    mocks.jmSessionPresent = true
     jmTxStore.getState().clear()
   })
 
   it('shows loading until session and wallet data are ready', async () => {
-    jmSessionStore.setState({ state: undefined })
+    mocks.jmSessionPresent = false
 
     render(<SendPage walletFileName="wallet.jmdat" />)
     await flushActUpdates()
@@ -565,13 +570,18 @@ describe('SendPage', () => {
     await flushActUpdates()
   })
 
-  it('shows the collaborative ended alert when utxos are unchanged and clears the attempt', async () => {
+  it('shows the same neutral stopped alert regardless of whether the utxo set changed, and clears the attempt', async () => {
     const user = userEvent.setup()
     mocks.currentPaymentAttemptPresent = true
 
+    // collaborativeValues has utxosHashHex 'hash-before', matching the wallet's
+    // current 'hash-before' mock (see JamWalletInfoContext mock above). A utxo
+    // hash match/mismatch no longer decides which message is shown.
     render(<SendPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('send.alert_collaborative_ended_title')).toBeInTheDocument()
+    expect(screen.getByText('send.alert_collaborative_stopped_title')).toBeInTheDocument()
+    expect(screen.queryByText('send.alert_collaborative_completed_title')).not.toBeInTheDocument()
+    expect(screen.queryByText('send.alert_collaborative_ended_title')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'global.done' }))
     expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
   })

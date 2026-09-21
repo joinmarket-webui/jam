@@ -1,18 +1,18 @@
-import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { routes } from '@/constants/routes'
+import { useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
 import { isWalletFileName, sortWallets } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore, type AuthState } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
+import { authStore, computeAuthExpiresAt, type AuthState } from '@/store/authStore'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import { LoginCard } from './LoginCard'
 
@@ -26,7 +26,7 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useRawJmSession()
 
   const makerRunning = jmSession?.maker_running === true
   const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
@@ -76,7 +76,11 @@ const LoginPage = () => {
       }
       return {
         walletFileName: response.walletname as WalletFileName,
-        auth: { token: response.token, refresh_token: response.refresh_token },
+        auth: {
+          token: response.token,
+          refresh_token: response.refresh_token,
+          expiresAt: computeAuthExpiresAt(response.expires_in),
+        },
         hashed_password: hashedPassword,
       }
     },

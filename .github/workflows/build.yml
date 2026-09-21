@@ -5,13 +5,14 @@ on:
     branches: [master, devel]
   pull_request:
     branches: [master, devel]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['v26.5.0']
+        node-version: ['v26.7.0']
 
     steps:
       - name: Checkout

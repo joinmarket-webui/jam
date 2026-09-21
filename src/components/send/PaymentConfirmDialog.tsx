@@ -62,6 +62,15 @@ export default function PaymentConfirmDialog({
     return maxCollaboraterFee(meta.feeConfigValues, values)
   }, [values, meta.feeConfigValues])
 
+  // The utxos pinned when "Sweep" was clicked, resolved back to the jar entries
+  // so they can be shown with address and value. An id without a match is still
+  // listed, since it is part of what gets spent either way.
+  const sweepUtxos = useMemo(() => {
+    if (values.amount?.isSweep !== true) return []
+    const utxosById = new Map<string, Utxo>((meta.availableUtxos ?? []).map((utxo) => [utxo.utxo, utxo]))
+    return values.amount.sweepUtxos.map((utxoId) => ({ utxoId, utxo: utxosById.get(utxoId) }))
+  }, [values.amount, meta.availableUtxos])
+
   const miningFeeText = useMiningFeeText({
     feeConfigValues: {
       txFeeFactor: meta.feeConfigValues.txFeeFactor || 0,
@@ -154,6 +163,28 @@ export default function PaymentConfirmDialog({
               <Balance valueString={String(values.amount?.amount)} />
             )}
           </div>
+          {sweepUtxos.length > 0 && (
+            <>
+              <div className="col-span-1 font-semibold md:text-right">
+                {t('send.confirm_send_modal.label_utxos', { count: sweepUtxos.length })}
+              </div>
+              <div className="col-span-4 flex flex-col gap-1">
+                {sweepUtxos.map(({ utxoId, utxo }) =>
+                  utxo === undefined ? (
+                    <span key={utxoId} className="text-muted-foreground font-mono text-xs break-all">
+                      {utxoId}
+                    </span>
+                  ) : (
+                    <div key={utxoId} className="flex flex-wrap items-center gap-2">
+                      <Address className="text-muted-foreground text-xs" value={utxo.address} />
+                      <Balance valueString={String(utxo.value)} />
+                    </div>
+                  ),
+                )}
+              </div>
+            </>
+          )}
+
           {values.numCollaborators !== undefined && (
             <>
               <div className="col-span-1 font-semibold md:text-right">

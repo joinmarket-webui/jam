@@ -73,11 +73,12 @@ export function debounce<T extends unknown[], U>(callback: (...args: T) => Promi
 
 export function setIntervalDebounced(
   callback: () => PromiseLike<void> | void,
-  delay: number,
+  delay: number | (() => number),
   onTimerIdChanged: (timerId: NodeJS.Timeout) => void,
   onError: (error: unknown, loop: () => void) => void = (_, loop) => loop(),
 ) {
   ;(function loop() {
+    const currentDelay = typeof delay === 'function' ? delay() : delay
     onTimerIdChanged(
       setTimeout(() => {
         try {
@@ -87,7 +88,7 @@ export function setIntervalDebounced(
         } catch (error: unknown) {
           onError(error, loop)
         }
-      }, delay),
+      }, currentDelay),
     )
   })()
 }

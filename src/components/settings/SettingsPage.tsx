@@ -19,12 +19,14 @@ import {
   SparklesIcon,
   HistoryIcon,
   LanguagesIcon,
+  FlaskConicalIcon,
+  PenLineIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { LanguageSelector } from '@/components/ui/jam/LanguageSelector'
 import PageTitle from '@/components/ui/jam/PageTitle'
@@ -39,23 +41,58 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Badge } from '../ui/badge'
+import { Address } from '../ui/jam/Address'
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingsItem, SettingsLink, SettingsSwitch } from './SettingsItem'
+import { SignMessageDialog } from './SignMessageDialog'
 import { FeeConfigDialog } from './fees/FeeConfigDialog'
+
+const GitHubIcon = ({ className }: { className: string }) => (
+  <svg className={className} fill="currentColor" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <title>GitHub</title>
+    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+  </svg>
+)
+
+type SettingsTab = 'basic' | 'advanced'
 
 interface SettingPageProps {
   walletFileName: WalletFileName
   onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
+  initialTab?: SettingsTab
 }
 
-export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps) => {
+export const SettingsPage = ({ walletFileName, onLockWallet, initialTab = 'basic' }: SettingPageProps) => {
+  const { t } = useTranslation()
+  const [tab, setTab] = useState<SettingsTab>(initialTab)
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-3 p-4">
+      <PageTitle title={t('settings.title')}>
+        <Tabs value={tab} onValueChange={(value) => setTab(value as SettingsTab)}>
+          <TabsList>
+            <TabsTrigger value="basic">{t('settings.tab_basic')}</TabsTrigger>
+            <TabsTrigger value="advanced">{t('settings.tab_advanced')}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </PageTitle>
+
+      {tab === 'basic' && <SettingsBasicContent walletFileName={walletFileName} onLockWallet={onLockWallet} />}
+      {tab === 'advanced' && <SettingsAdvancedContent walletFileName={walletFileName} />}
+    </div>
+  )
+}
+
+type SettingBasicContentProps = Pick<SettingPageProps, 'walletFileName' | 'onLockWallet'>
+
+export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingBasicContentProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
-  const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode, addressChunkingEnabled, toggleAddressChunking } =
-    useJamDisplayContext()
-  const jamSettings = useStore(jamSettingsStore)
+  const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode } = useJamDisplayContext()
 
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
 
@@ -73,10 +110,33 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   })
 
   return (
-    <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <PageTitle title={t('navbar.menu_mobile_settings')} />
+    <>
+      <FeeConfigDialog
+        walletFileName={walletFileName}
+        feeConfigValidation={feeConfigValidation}
+        open={showFeeConfigDialog}
+        onOpenChange={setShowFeeConfigDialog}
+      />
 
-      {/* Display Settings */}
+      {hashedPassword && (
+        <>
+          <SeedPhraseDialog
+            hashedPassword={hashedPassword}
+            walletFileName={walletFileName}
+            open={showSeedDialog}
+            onOpenChange={setShowSeedDialog}
+            autoCloseTimeout={JAM_SEED_MODAL_TIMEOUT}
+          />
+          <AccountXpubsDialog
+            hashedPassword={hashedPassword}
+            walletFileName={walletFileName}
+            open={showXpubsDialog}
+            onOpenChange={setShowXpubsDialog}
+            autoCloseTimeout={JAM_SEED_MODAL_TIMEOUT}
+          />
+        </>
+      )}
+      {/* Basic Display Settings */}
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.section_title_display')}</CardTitle>
@@ -99,18 +159,6 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
           <Separator className="opacity-50" />
           <SettingsSwitch
-            icon={addressChunkingEnabled === true ? UnfoldHorizontalIcon : FoldHorizontalIcon}
-            title={t(
-              addressChunkingEnabled === true
-                ? 'settings.use_address_chunking_enabled'
-                : 'settings.use_address_chunking_disabled',
-            )}
-            checked={addressChunkingEnabled === true}
-            onCheckedChange={toggleAddressChunking}
-            displayToggle={true}
-          />
-          <Separator className="opacity-50" />
-          <SettingsSwitch
             icon={resolvedTheme === 'dark' ? SunIcon : MoonIcon}
             title={resolvedTheme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
             checked={resolvedTheme === 'dark'}
@@ -124,7 +172,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </CardContent>
       </Card>
 
-      {/* Market Settings */}
+      {/* Basic Market Settings */}
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.section_title_market')}</CardTitle>
@@ -138,12 +186,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </CardContent>
       </Card>
 
-      {/* Wallet Settings */}
+      {/* Basic Wallet Settings */}
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-0">
+        <CardContent>
           <SettingsItem
             icon={KeyRoundIcon}
             title={t('settings.show_seed')}
@@ -171,7 +219,15 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             disabled={lockWalletMutation.isPending}
           />
           <Separator className="opacity-50" />
-          <SettingsLink icon={PackageSearchIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
+          <SettingsLink
+            icon={PackageSearchIcon}
+            title={
+              <>
+                {t('settings.rescan_chain')} <Badge variant="muted">{t('global.experimental')}</Badge>
+              </>
+            }
+            to={routes.rescan}
+          />
           <Separator className="opacity-50" />
           <SettingsLink
             icon={FileTextIcon}
@@ -182,12 +238,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </CardContent>
       </Card>
 
-      {/* Community Settings */}
+      {/* Basic Community Settings */}
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.section_title_community')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-0">
+        <CardContent>
           <SettingsLink
             renderIcon={({ className }) => (
               <img src="/matrix-logo.png" alt="Matrix" className={cn(className, 'light:invert-0 invert')} />
@@ -205,12 +261,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </CardContent>
       </Card>
 
-      {/* Development & Documentation */}
+      {/* Basic Development & Documentation */}
       <Card>
         <CardHeader>
           <CardTitle>{t('settings.section_title_dev')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-0">
+        <CardContent>
           <SettingsLink icon={BookIcon} title={t('settings.documentation')} to={JAM_DOCS_URL} external={true} />
           <Separator className="opacity-50" />
           <SettingsLink
@@ -219,104 +275,187 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
             to={JAM_REPO_URL}
             external={true}
           />
-          <Separator className="opacity-50" />
+        </CardContent>
+      </Card>
+    </>
+  )
+}
+
+type SettingsAdvancedContentProps = Pick<SettingPageProps, 'walletFileName'>
+
+export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedContentProps) => {
+  const { t } = useTranslation()
+  const { addressChunkingEnabled, toggleAddressChunking } = useJamDisplayContext()
+  const [showSignMessageDialog, setShowSignMessageDialog] = useState(false)
+  const jamSettings = useStore(jamSettingsStore)
+
+  return (
+    <>
+      <SignMessageDialog
+        walletFileName={walletFileName}
+        open={showSignMessageDialog}
+        onOpenChange={setShowSignMessageDialog}
+      />
+      {/* Advanced Display Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.section_title_display')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SettingsSwitch
+            icon={addressChunkingEnabled === true ? UnfoldHorizontalIcon : FoldHorizontalIcon}
+            title={t(
+              addressChunkingEnabled === true
+                ? 'settings.use_address_chunking_enabled'
+                : 'settings.use_address_chunking_disabled',
+            )}
+            subtitle={
+              <>
+                Example:{' '}
+                <Address
+                  value="bc1qabcdefghijklmnopqrstuvwxyz0123456789"
+                  chunked={addressChunkingEnabled}
+                  copyable={false}
+                />
+              </>
+            }
+
+            checked={addressChunkingEnabled === true}
+            onCheckedChange={toggleAddressChunking}
+            displayToggle={true}
+          />
+        </CardContent>
+      </Card>
+      {/* Advanced Wallet Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SettingsItem
+            icon={PenLineIcon}
+            title={
+              <>
+                {t('settings.sign_message')} <Badge variant="muted">{t('global.experimental')}</Badge>
+              </>
+            }
+            action={() => setShowSignMessageDialog(true)}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Advanced Expert Features */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.section_title_expert_features')}</CardTitle>
+          <CardDescription className="text-xs">{t('settings.section_description_expert_features')}</CardDescription>
+        </CardHeader>
+        <CardContent>
           <SettingsSwitch
             icon={SparklesIcon}
-            title={/* TODO: i18n */ 'Enable Feature Preview'}
+            title={t(
+              jamSettings.state.expertFeatures
+                ? 'settings.use_expert_features_enabled'
+                : 'settings.use_expert_features_disabled',
+            )}
+            checked={!!jamSettings.state.expertFeatures}
+            onCheckedChange={(checked) => {
+              jamSettings.update({ expertFeatures: checked ? {} : undefined })
+            }}
+          />
+          <Separator className="opacity-50" />
+          <SettingsSwitch
+            icon={HandCoinsIcon}
+            title={t('settings.use_expert_custom_earn_fee_values_title')}
+            subtitle={t('settings.use_expert_custom_earn_fee_values_description')}
+            disabled={!jamSettings.state.expertFeatures}
+            checked={jamSettings.state.expertFeatures?.['custom-earn-fee-values'] === true}
+            onCheckedChange={(checked) => {
+              jamSettings.update({
+                expertFeatures: {
+                  ...jamSettings.state.expertFeatures,
+                  'custom-earn-fee-values': checked,
+                },
+              })
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Advanced Preview Features */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.section_title_feature_preview')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SettingsSwitch
+            icon={FlaskConicalIcon}
+
+            title={t(
+              jamSettings.state.previewFeatures
+                ? 'settings.use_feature_preview_enabled'
+                : 'settings.use_feature_preview_disabled',
+            )}
             disabled={!isDevMode()}
             checked={!!jamSettings.state.previewFeatures}
             onCheckedChange={(checked) => {
               jamSettings.update({ previewFeatures: checked ? {} : undefined })
             }}
           />
-          {!!jamSettings.state.previewFeatures && (
-            <>
-              <Separator className="opacity-50" />
-              <SettingsSwitch
-                icon={HistoryIcon}
-                title={/* TODO: i18n */ 'Transaction History (Experimental)'}
-                disabled={!isDevMode()}
-                checked={!!jamSettings.state.previewFeatures?.['tx-history'] === true}
-                onCheckedChange={(checked) => {
-                  jamSettings.update({
-                    previewFeatures: {
-                      ...jamSettings.state.previewFeatures,
-                      'tx-history': checked,
-                    },
-                  })
-                }}
-              />
-            </>
-          )}
-          {isDevMode() && (
-            <>
-              <Separator className="opacity-50" />
+          <Separator className="opacity-50" />
+          <SettingsSwitch
+            icon={HistoryIcon}
+            title={
+              /* no need to translate, should be short lived */ <>
+                Transaction History <Badge variant="muted">{t('global.preview')}</Badge>
+              </>
+            }
+            disabled={!jamSettings.state.previewFeatures}
+            checked={jamSettings.state.previewFeatures?.['tx-history'] === true}
+            onCheckedChange={(checked) => {
+              jamSettings.update({
+                previewFeatures: {
+                  ...jamSettings.state.previewFeatures,
+                  'tx-history': checked,
+                },
+              })
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Advanced Developer Mode */}
+      {isDevMode() && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Developer Mode</CardTitle>
+            </CardHeader>
+            <CardContent>
               <SettingsSwitch
                 icon={TerminalIcon}
-                title="Enable developer mode"
+                title="Enable Developer Mode"
                 disabled={!isDevMode()}
                 checked={jamSettings.state.developerMode}
                 onCheckedChange={(checked) => {
                   jamSettings.update({ developerMode: checked })
                 }}
               />
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {jamSettings.state.developerMode && (
-        <>
-          {/* Developer Mode */}
-          <Card className="animate-slide-up">
-            <CardHeader>
-              <CardTitle>Developer Mode</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-0">
-              <SettingsLink
-                icon={TerminalIcon}
-                title={'Dev page'}
-                to={routes.__dev}
-                disabled={!isDebugFeatureEnabled('devPage')}
-              />
-              <Separator className="opacity-50" />
+              {jamSettings.state.developerMode && (
+                <>
+                  <Separator className="opacity-50" />
+                  <SettingsLink
+                    icon={TerminalIcon}
+                    title={'Dev page'}
+                    to={routes.__dev}
+                    disabled={!isDebugFeatureEnabled('devPage')}
+                  />
+                </>
+              )}
             </CardContent>
           </Card>
         </>
       )}
-
-      <FeeConfigDialog
-        walletFileName={walletFileName}
-        feeConfigValidation={feeConfigValidation}
-        open={showFeeConfigDialog}
-        onOpenChange={setShowFeeConfigDialog}
-      />
-
-      {hashedPassword && (
-        <>
-          <SeedPhraseDialog
-            hashedPassword={hashedPassword}
-            walletFileName={walletFileName}
-            open={showSeedDialog}
-            onOpenChange={setShowSeedDialog}
-            autoCloseTimeout={JAM_SEED_MODAL_TIMEOUT}
-          />
-          <AccountXpubsDialog
-            hashedPassword={hashedPassword}
-            walletFileName={walletFileName}
-            open={showXpubsDialog}
-            onOpenChange={setShowXpubsDialog}
-            autoCloseTimeout={JAM_SEED_MODAL_TIMEOUT}
-          />
-        </>
-      )}
-    </div>
+    </>
   )
 }
-
-const GitHubIcon = ({ className }: { className: string }) => (
-  <svg className={className} fill="currentColor" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <title>GitHub</title>
-    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-  </svg>
-)

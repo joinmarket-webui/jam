@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   isDevMode: vi.fn(),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts', () => ({
   createClient: mocks.createClient,
 }))
 
@@ -58,7 +58,7 @@ describe('createApiClient', () => {
     createApiClient()
     authStore.getState().update({
       walletFileName: 'test.jmdat',
-      auth: { token: 'tok', refresh_token: 'ref' },
+      auth: { token: 'tok', refresh_token: 'ref', expiresAt: Date.now() + 1_800_000 },
     })
 
     const request = new Request('https://example.test')
@@ -118,7 +118,7 @@ describe('unauthorizedResponseInterceptor', () => {
     mocks.isDevMode.mockReturnValue(false)
     authStore.getState().update({
       walletFileName: 'test.jmdat',
-      auth: { token: 'tok', refresh_token: 'ref' },
+      auth: { token: 'tok', refresh_token: 'ref', expiresAt: Date.now() + 1_800_000 },
     })
     queryClientClearSpy.mockReset()
   })

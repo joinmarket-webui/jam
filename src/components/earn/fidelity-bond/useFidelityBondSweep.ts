@@ -1,17 +1,22 @@
-import { useMemo } from 'react'
-import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS_DELAY } from '@/constants/jam'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
-import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
+import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { delayedPromise, type WalletFileName } from '@/lib/utils'
 import { useFidelityBondMutations } from './useFidelityBondMutations'
 
 /**
- * Sweeps a fidelity bond UTXO to a destination address: freezes all other
- * UTXOs in the source jar, unfreezes the bond if needed, direct-sends the
- * whole jar balance, then restores the frozen UTXOs. Shared by the renew
- * and move-to-jar flows.
+ * Sweeps a fidelity bond UTXO to a destination address: unfreezes the bond if
+ * needed, then direct-sends exactly that utxo via `input_utxos`. Shared by the
+ * renew and move-to-jar flows.
+ *
+ * Pinning the input is what makes this safe. A mixdepth sweep spends the regular
+ * unfrozen coins first and only falls back to an expired bond when there are
+ * none, so the previous approach (freeze everything else, sweep the mixdepth)
+ * would spend a coin that arrived in the jar after the freeze snapshot instead
+ * of the bond - and report success.
  */
 export function useFidelityBondSweep({
   walletFileName,
@@ -24,6 +29,7 @@ export function useFidelityBondSweep({
   unfreezeErrorKey: string
   sendErrorKey: string
 }) {
+  const { t } = useTranslation()
   const { jars, refetch: walletInfoRefetch } = useJamWalletInfoContext()
   const { freezeUtxo, unfreezeUtxo, directSend, error, setError } = useFidelityBondMutations({
     unfreezeErrorKey,
@@ -32,16 +38,9 @@ export function useFidelityBondSweep({
 
   const sourceJar = jars.find((jar) => jar.jarIndex === utxo.mixdepth)
 
-  // UTXOs in the source jar that are NOT this FB — they need to be frozen during sweep
-  const utxosToFreeze = useMemo(() => {
-    if (!sourceJar) return []
-    return sourceJar.utxos.filter((u) => u.utxo !== utxo.utxo && !u.frozen)
-  }, [sourceJar, utxo.utxo])
-
   /**
-   * Runs the sweep. `onBroadcast` fires as soon as the transaction is sent,
-   * before the frozen UTXOs are restored. Returns false when the sweep failed
-   * (after a best-effort rollback).
+   * Runs the sweep. `onBroadcastSuccess` fires as soon as the transaction is
+   * sent. Returns undefined when the sweep failed (after a best-effort rollback).
    */
   const { isPending, mutateAsync: sweep } = useMutation({
     mutationFn: async ({
@@ -55,20 +54,19 @@ export function useFidelityBondSweep({
     }): Promise<DirectSendResponse | undefined> => {
       setError(undefined)
 
-      const frozen: Utxo[] = []
+      // Bail out instead of broadcasting if the bond has left the jar since the
+      // dialog was opened - the API rejects an unknown input, but there is no
+      // point in unfreezing anything first.
+      const bondStillInJar = sourceJar?.utxos.some((it) => it.utxo === utxo.utxo) === true
+      if (!bondStillInJar) {
+        setError(t('earn.fidelity_bond.error_bond_not_in_jar'))
+        return undefined
+      }
+
       let bondWasUnfrozen = false
       let sweepBroadcasted = false
 
       try {
-        // Freeze other UTXOs in the source jar so only the FB gets swept
-        for (const u of utxosToFreeze) {
-          await freezeUtxo.mutateAsync({
-            path: { walletname: walletFileName },
-            body: { 'utxo-string': u.utxo, freeze: true },
-          })
-          frozen.push(u)
-        }
-
         if (utxo.frozen) {
           await unfreezeUtxo.mutateAsync({
             path: { walletname: walletFileName },
@@ -83,23 +81,12 @@ export function useFidelityBondSweep({
             mixdepth: utxo.mixdepth,
             amount_sats: 0, // 0 := sweep!
             destination,
+            // Pin the bond so the sweep spends exactly this utxo, regardless of
+            // what else is unfrozen in the mixdepth at broadcast time.
+            input_utxos: [utxo.utxo],
           },
         })
         sweepBroadcasted = true
-
-        // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
-        for (const u of frozen) {
-          try {
-            await unfreezeUtxo.mutateAsync({
-              path: { walletname: walletFileName },
-              body: { 'utxo-string': u.utxo, freeze: false },
-              throwOnError: true,
-            })
-          } catch (_ignoredOnPurpose: unknown) {
-            // only debug output
-            console.debug('Error while unfreezing previously frozen UTXO.')
-          }
-        }
 
         if (tryFreezeAfterBroadcast) {
           try {
@@ -124,20 +111,6 @@ export function useFidelityBondSweep({
 
         return result
       } catch (_ignoredOnPurpose: unknown) {
-        // Best-effort rollback — unfreeze UTXOs that were frozen before the error
-        for (const u of frozen) {
-          try {
-            await unfreezeUtxo.mutateAsync({
-              path: { walletname: walletFileName },
-              body: { 'utxo-string': u.utxo, freeze: false },
-              throwOnError: true,
-            })
-          } catch (_ignoredOnPurpose: unknown) {
-            // only debug output
-            console.debug('Error while unfreezing previously frozen UTXO in error handling.')
-          }
-        }
-
         // re-freeze the bond if it was unfrozen before the error. skip once the
         // sweep already broadcast, the bond utxo is spent by then
         if (bondWasUnfrozen && !sweepBroadcasted) {

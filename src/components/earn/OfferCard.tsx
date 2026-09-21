@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TFunction } from 'i18next'
 import {
   CircleAlertIcon,
@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import type { OfferType } from '@/constants/jm'
 import type { OrderbookFidelityBond, OrderbookOffer } from '@/lib/api/orderbook'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
 import { Balance } from '../ui/jam/Balance'
@@ -34,13 +35,14 @@ const OfferTypeBadge = ({ value }: { value: Offer }) => {
 }
 
 const renderOfferText = (value: Offer, t: TFunction<'translation', undefined>) => {
-  if (isAbsoluteOffer(String(value?.ordertype || ''))) {
+  const offerType = String(value?.ordertype || '') as OfferType
+  if (isAbsoluteOffer(offerType)) {
     return t('earn.current.text_offer_type_absolute')
   }
-  if (isRelativeOffer(String(value?.ordertype || ''))) {
+  if (isRelativeOffer(offerType)) {
     return t('earn.current.text_offer_type_relative')
   }
-  return String(value?.ordertype || '')
+  return offerType
 }
 
 interface OfferCardProps {
@@ -116,7 +118,7 @@ export function OfferCard({
           <div className="min-w-0 flex-1">
             <Label className="font-semibold">{t('earn.current.text_cjfee')}</Label>
             <span className="text-sm">
-              {isRelativeOffer(String(value?.ordertype || '')) ? (
+              {isRelativeOffer(String(value?.ordertype || '') as OfferType) ? (
                 <span className="select-all">
                   {factorToPercentage(Number.parseFloat(String(value?.cjfee || '')) || 0)}%
                 </span>

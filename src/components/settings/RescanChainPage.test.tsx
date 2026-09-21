@@ -30,7 +30,7 @@ vi.mock('@tanstack/react-query', () => ({
   },
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   rescanblockchain: () => rescanblockchainMock(),
 }))
 

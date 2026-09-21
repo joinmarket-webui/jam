@@ -2,7 +2,8 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Utxo } from '@/hooks/useQueryUtxos'
-import { JarUtxosTable, type UtxoTableEntry } from './JarUtxosTable'
+import { JarUtxosTable } from './JarUtxosTable'
+import type { UtxoTableEntry } from './JarUtxosTable.schema'
 
 const mocks = vi.hoisted(() => ({
   toastDismiss: vi.fn(),

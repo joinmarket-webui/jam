@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Jar } from '@/context/JamWalletInfoContext'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
@@ -65,11 +66,22 @@ const destinationJar: Jar = {
   name: 'Destination jar',
 }
 
+const makeUtxo = (overrides: Partial<Utxo>): Utxo =>
+  ({
+    utxo: 'tx:0',
+    address: 'bcrt1qsource',
+    value: 10_000,
+    frozen: false,
+    locktime: undefined,
+    ...overrides,
+  }) as Utxo
+
 const baseValues: SendFormValues = {
   amount: {
     amount: 12_000,
     isSweep: false,
     sweepAmount: undefined,
+    sweepUtxos: undefined,
   },
   destination: {
     address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
@@ -127,6 +139,7 @@ describe('PaymentConfirmDialog', () => {
         amount: undefined,
         isSweep: true,
         sweepAmount: 20_000,
+        sweepUtxos: ['aaaa'.repeat(16) + ':0'],
       },
       destination: {
         address: baseValues.destination.address,
@@ -156,5 +169,82 @@ describe('PaymentConfirmDialog', () => {
     expect(screen.getByText('(7.5%)')).toBeInTheDocument()
     expect(screen.getByText('dev-badge')).toBeInTheDocument()
     expect(screen.getByText(/"isCoinJoin": true/u)).toBeInTheDocument()
+  })
+
+  it('lists the utxos a sweep will spend', () => {
+    const firstUtxoId = ('aaaa'.repeat(16) + ':0') as Utxo['utxo']
+    const secondUtxoId = ('bbbb'.repeat(16) + ':1') as Utxo['utxo']
+    const values: SendFormValues = {
+      ...baseValues,
+      amount: {
+        amount: undefined,
+        isSweep: true,
+        sweepAmount: 33_000,
+        sweepUtxos: [firstUtxoId, secondUtxoId],
+      },
+    }
+
+    render(
+      <PaymentConfirmDialog
+        open
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        values={values}
+        meta={{
+          feeConfigValues,
+          sourceJar,
+          availableUtxos: [
+            makeUtxo({ utxo: firstUtxoId, address: 'bcrt1qfirst', value: 21_000 }),
+            makeUtxo({ utxo: secondUtxoId, address: 'bcrt1qsecond', value: 12_000 }),
+          ],
+        }}
+      />,
+    )
+
+    expect(screen.getByText('send.confirm_send_modal.label_utxos:{"count":2}')).toBeInTheDocument()
+    expect(screen.getByText('address:bcrt1qfirst')).toBeInTheDocument()
+    expect(screen.getByText('balance:21000')).toBeInTheDocument()
+    expect(screen.getByText('address:bcrt1qsecond')).toBeInTheDocument()
+    expect(screen.getByText('balance:12000')).toBeInTheDocument()
+  })
+
+  it('falls back to the raw utxo id when the jar entry is unknown', () => {
+    const unknownUtxoId = ('cccc'.repeat(16) + ':2') as Utxo['utxo']
+    const values: SendFormValues = {
+      ...baseValues,
+      amount: {
+        amount: undefined,
+        isSweep: true,
+        sweepAmount: 5_000,
+        sweepUtxos: [unknownUtxoId],
+      },
+    }
+
+    render(
+      <PaymentConfirmDialog
+        open
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        values={values}
+        meta={{ feeConfigValues, sourceJar, availableUtxos: [] }}
+      />,
+    )
+
+    expect(screen.getByText('send.confirm_send_modal.label_utxos:{"count":1}')).toBeInTheDocument()
+    expect(screen.getByText(unknownUtxoId)).toBeInTheDocument()
+  })
+
+  it('does not list utxos for a non-sweep payment', () => {
+    render(
+      <PaymentConfirmDialog
+        open
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        values={baseValues}
+        meta={{ feeConfigValues, sourceJar }}
+      />,
+    )
+
+    expect(screen.queryByText(/send\.confirm_send_modal\.label_utxos/u)).not.toBeInTheDocument()
   })
 })

@@ -5,8 +5,8 @@ import {
   listwalletsOptions,
   sessionOptions,
   unlockwalletMutation,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import { lockwallet } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { lockwallet } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { CircleCheckBigIcon, ShieldCheckIcon, WalletIcon, type LucideIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -16,14 +16,14 @@ import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { JM_DEFAULT_WALLET_TYPE } from '@/constants/jm'
 import { routes } from '@/constants/routes'
+import { useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { buildAuthHeaderMap, type ApiToken } from '@/lib/config'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
 import { delayedPromise, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
+import { authStore, computeAuthExpiresAt } from '@/store/authStore'
 import type { MnemonicPhrase } from '@/types/global'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
@@ -59,7 +59,7 @@ const CreateWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useRawJmSession()
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [createWalletSuccessInfo, setCreateWalletSuccessInfo] = useState<CreateWalletSuccessInfo>()
   const [step, setStep] = useState<'wallet_details' | 'confirm' | 'verify_mnemonic'>('wallet_details')
@@ -202,7 +202,11 @@ const CreateWalletPage = () => {
 
       updateAuthState({
         walletFileName: response.walletname as WalletFileName,
-        auth: { token: response.token, refresh_token: response.refresh_token },
+        auth: {
+          token: response.token,
+          refresh_token: response.refresh_token,
+          expiresAt: computeAuthExpiresAt(response.expires_in),
+        },
         hashed_password: hashedPassword,
       })
 

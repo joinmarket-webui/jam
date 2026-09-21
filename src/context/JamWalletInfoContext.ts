@@ -1,5 +1,5 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
-import type { WalletDisplayResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { Network, type AddressInfo } from 'bitcoin-address-validation'
 import type { FidelityBondUtxo, Utxo, UtxoId } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'

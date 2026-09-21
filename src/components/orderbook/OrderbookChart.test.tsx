@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { OFFER_FEE_BANDS } from '@/constants/jam'
 import { OrderbookChart } from './OrderbookChart'
 import type { OrderTableEntry } from './OrderbookTable'
 
@@ -17,28 +19,53 @@ vi.mock('@/components/ui/tooltip', () => ({
   TooltipContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }))
 
-const offer = (feeValue: number, isAbsolute: boolean): OrderTableEntry =>
-  ({ type: { isAbsolute }, fee: { value: feeValue } }) as unknown as OrderTableEntry
+const offer = (counterparty: string, feeValue: number, type: 'relative' | 'absolute', bondValue = 1): OrderTableEntry =>
+  ({
+    counterparty,
+    type: { isAbsolute: type === 'absolute', isRelative: type === 'relative' },
+    fee: { value: feeValue },
+    bondValue: { value: bondValue },
+  }) as unknown as OrderTableEntry
 
 describe('OrderbookChart', () => {
-  it('renders nothing when there are no absolute offers', () => {
-    const { container } = render(<OrderbookChart entries={[offer(50, false)]} />)
-    expect(container.firstChild).toBeNull()
-  })
-
-  it('renders nothing when entries is empty', () => {
+  it('renders nothing when entries are empty', () => {
     const { container } = render(<OrderbookChart entries={[]} />)
     expect(container.firstChild).toBeNull()
   })
 
-  it('renders fee buckets for absolute offers across ranges', () => {
-    render(<OrderbookChart entries={[offer(50, true), offer(20_000, true)]} />)
-    expect(screen.getByText('orderbook.chart_title')).toBeInTheDocument()
-    expect(screen.getByText('10,000+ sats')).toBeInTheDocument()
-  })
+  it('quantizes the cheapest offer per bonded maker and switches fee modes', async () => {
+    const user = userEvent.setup()
+    render(
+      <OrderbookChart
+        entries={[
+          offer('alice', OFFER_FEE_BANDS.relative.at(2)!, 'relative'),
+          offer('alice', OFFER_FEE_BANDS.relative.at(3)!, 'relative'),
+          offer('bob', 0.00009, 'relative'),
+          offer('mallory', OFFER_FEE_BANDS.relative.at(2)!, 'relative', 0),
+          offer('dave', 0.2, 'relative'),
+          offer('erin', OFFER_FEE_BANDS.absolute.at(0)!, 'absolute'),
+          offer('carol', OFFER_FEE_BANDS.absolute.at(1)!, 'absolute', 0),
+        ]}
+      />,
+    )
 
-  it('renders a single bucket without a trailing range label', () => {
-    render(<OrderbookChart entries={[offer(50, true)]} />)
-    expect(screen.getByText('orderbook.chart_title')).toBeInTheDocument()
+    expect(screen.getByText('orderbook.chart_exact_summary {"exact":1,"total":3}')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'orderbook.chart_tooltip {"fee":"0.01%","exact":1,"near":1}',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'orderbook.chart_tooltip_above {"count":1}' })).toBeInTheDocument()
+    expect(screen.getAllByText('10%+').length).toBeGreaterThan(0)
+
+    await user.click(screen.getByRole('button', { name: 'orderbook.chart_absolute_offers' }))
+
+    expect(screen.getByText('orderbook.chart_exact_summary {"exact":1,"total":1}')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'orderbook.chart_tooltip {"fee":"0","exact":1,"near":0}',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('orderbook.chart_absolute_axis')).toBeInTheDocument()
   })
 })

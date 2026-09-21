@@ -6,11 +6,12 @@ import { useQueryUtxos } from './useQueryUtxos'
 const queryMock = vi.fn<(options: unknown) => unknown>()
 
 vi.mock('@tanstack/react-query', () => ({
+  QueryClient: vi.fn(),
   useQuery: (options: unknown) => queryMock(options),
 }))
 
-vi.mock('zustand', () => ({
-  useStore: () => ({ session: 'mock-session' }),
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({ jmSession: { session: true } }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({
@@ -25,11 +26,7 @@ vi.mock('@/lib/queryClient', () => ({
   withQueryDelay: (function_: unknown) => function_,
 }))
 
-vi.mock('@/store/jmSessionStore', () => ({
-  jmSessionStore: {},
-}))
-
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   listutxosOptions: () => ({ queryKey: ['utxos'], queryFn: vi.fn() }),
 }))
 

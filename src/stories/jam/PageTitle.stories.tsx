@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/ui/jam/PageTitle'
 
 const meta: Meta<typeof PageTitle> = {
@@ -29,5 +30,18 @@ export const Error: Story = {
     title: 'Wallet could not load',
     subtitle: 'Check your connection and try again.',
     variant: 'error',
+  },
+}
+
+export const WithChildren: Story = {
+  args: {
+    children: <Button>Click me!</Button>,
+  },
+}
+
+export const CenteredWithChildren: Story = {
+  args: {
+    center: true,
+    children: <Button>Click me!</Button>,
   },
 }

@@ -6,6 +6,7 @@ import {
   isAddressOnNetwork,
   isReusedAddress,
   isValidAddress,
+  normalizeBitcoinAddress,
   sourceJarField,
   blockHeightField,
   INPUT_BLOCK_HEIGHT_MIN,
@@ -13,6 +14,8 @@ import {
 
 const mainnetAddress = '1BitcoinEaterAddressDontSend8MUo1T'
 const testnetAddress = 'mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn'
+const mainnetBech32Address = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
+const mainnetTaprootAddress = 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr'
 const regtestBech32Address = 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
 const testnetBech32Address = 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
 // bech32m/taproot pair - same witness program, differing only by HRP (tb1p vs bcrt1p)
@@ -23,6 +26,33 @@ const regtestLegacyAddressLabelledTestnet = 'mkpZhYtJu2r87Js3pDiWJDmPte2NRZ8bJV'
 const addressSummary = {
   [mainnetAddress]: { address: mainnetAddress, used: false },
 } as unknown as AddressSummary
+
+describe('normalizeBitcoinAddress', () => {
+  it('lowercases an all-uppercase bech32 address', () => {
+    expect(normalizeBitcoinAddress(mainnetBech32Address.toUpperCase())).toBe(mainnetBech32Address)
+    expect(normalizeBitcoinAddress(mainnetTaprootAddress.toUpperCase())).toBe(mainnetTaprootAddress)
+    expect(normalizeBitcoinAddress(testnetBech32Address.toUpperCase())).toBe(testnetBech32Address)
+    expect(normalizeBitcoinAddress(regtestTaprootAddress.toUpperCase())).toBe(regtestTaprootAddress)
+  })
+
+  it('leaves base58 addresses untouched - they are case-sensitive', () => {
+    expect(normalizeBitcoinAddress(mainnetAddress)).toBe(mainnetAddress)
+    expect(normalizeBitcoinAddress(mainnetAddress.toUpperCase())).toBe(mainnetAddress.toUpperCase())
+    expect(normalizeBitcoinAddress(testnetAddress)).toBe(testnetAddress)
+  })
+
+  it('leaves lowercase and mixed-case input alone', () => {
+    expect(normalizeBitcoinAddress(mainnetBech32Address)).toBe(mainnetBech32Address)
+    const mixedCase = 'BC1Qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
+    expect(normalizeBitcoinAddress(mixedCase)).toBe(mixedCase)
+    expect(isValidAddress(mixedCase)).toBe(false)
+  })
+
+  it('trims surrounding whitespace', () => {
+    expect(normalizeBitcoinAddress(`  ${mainnetBech32Address.toUpperCase()}  `)).toBe(mainnetBech32Address)
+    expect(normalizeBitcoinAddress(`  ${mainnetAddress}  `)).toBe(mainnetAddress)
+  })
+})
 
 describe('isValidAddress', () => {
   it.each([
@@ -35,6 +65,17 @@ describe('isValidAddress', () => {
     regtestLegacyAddressLabelledTestnet,
   ])('accepts valid addresses', (address) => {
     expect(isValidAddress(address)).toBe(true)
+  })
+
+  it.each([
+    mainnetBech32Address,
+    mainnetTaprootAddress,
+    testnetBech32Address,
+    testnetTaprootAddress,
+    regtestBech32Address,
+    regtestTaprootAddress,
+  ])('accepts the uppercase form of bech32 addresses', (address) => {
+    expect(isValidAddress(address.toUpperCase())).toBe(true)
   })
 
   it('reject invalid addresses', () => {
@@ -97,6 +138,15 @@ describe('isReusedAddress', () => {
     expect(isReusedAddress(mainnetAddress, usedSummary)).toBe(true)
     expect(isReusedAddress(mainnetAddress, addressSummary)).toBe(false)
     expect(isReusedAddress('unknown-address', addressSummary)).toBe(false)
+  })
+
+  it('detects reuse regardless of bech32 casing', () => {
+    const usedSummary = {
+      [mainnetBech32Address]: { address: mainnetBech32Address, used: true },
+    } as unknown as AddressSummary
+
+    expect(isReusedAddress(mainnetBech32Address, usedSummary)).toBe(true)
+    expect(isReusedAddress(mainnetBech32Address.toUpperCase(), usedSummary)).toBe(true)
   })
 })
 

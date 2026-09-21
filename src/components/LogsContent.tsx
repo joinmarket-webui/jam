@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AlertTriangleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { LogViewer } from '@/components/logging/LogViewer'
@@ -12,7 +13,11 @@ interface LogsContentProps {
 
 export const LogsContent = ({ enabled, className }: LogsContentProps) => {
   const { t } = useTranslation()
-  const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({ enabled })
+  const [isAutoFollowEnabled, setIsAutoFollowEnabled] = useState(false)
+  const { alert, isInitialized, logFileContent, refresh, fileName } = useJmwalletdStdoutLog({
+    enabled,
+    enableAutoFollow: isAutoFollowEnabled,
+  })
 
   if (!isInitialized) {
     return (
@@ -32,7 +37,15 @@ export const LogsContent = ({ enabled, className }: LogsContentProps) => {
         </Alert>
       )}
 
-      {logFileContent && <LogViewer fileName={fileName} value={logFileContent} refresh={refresh} />}
+      {logFileContent && (
+        <LogViewer
+          fileName={fileName}
+          value={logFileContent}
+          refresh={refresh}
+          enableAutoFollow={isAutoFollowEnabled}
+          onToggleAutoFollow={setIsAutoFollowEnabled}
+        />
+      )}
     </div>
   )
 }

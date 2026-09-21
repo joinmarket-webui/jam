@@ -1,6 +1,6 @@
 import { useState, type ComponentProps, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { configsettingMutation } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
+import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'

@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { parseBip21Uri } from './bip21'
+import { parseBip21Uri, toBip21Uri } from './bip21'
 
 // Valid mainnet P2WPKH address for testing
 const VALID_ADDRESS = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
 // Valid testnet address
 const VALID_TESTNET_ADDRESS = 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
+// Valid mainnet P2TR (bech32m) address for testing
+const VALID_TAPROOT_ADDRESS = 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr'
 
 describe('parseBip21Uri', () => {
   describe('raw addresses', () => {
@@ -95,6 +97,39 @@ describe('parseBip21Uri', () => {
     it('returns undefined for non-bitcoin URI scheme', () => {
       expect(parseBip21Uri(`lnurl:${VALID_ADDRESS}`)).toBeUndefined()
     })
+
+    it('keeps the query string when it contains an unencoded question mark', () => {
+      const result = parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=0.5&message=a?b`)
+      expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true, amount: 50_000_000, message: 'a?b' })
+    })
+  })
+
+  describe('uppercase URIs (as encoded in QR codes)', () => {
+    it('parses an uppercase URI and lowercases the address', () => {
+      const result = parseBip21Uri(`BITCOIN:${VALID_ADDRESS.toUpperCase()}?AMOUNT=0.001`)
+      expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true, amount: 100_000 })
+    })
+
+    it('parses an uppercase taproot address', () => {
+      const result = parseBip21Uri(`BITCOIN:${VALID_TAPROOT_ADDRESS.toUpperCase()}`)
+      expect(result).toEqual({ address: VALID_TAPROOT_ADDRESS, fromUri: true })
+    })
+
+    it('parses an uppercase raw address without URI scheme', () => {
+      const result = parseBip21Uri(VALID_TAPROOT_ADDRESS.toUpperCase())
+      expect(result).toEqual({ address: VALID_TAPROOT_ADDRESS, fromUri: false })
+    })
+
+    it('reads parameter names case-insensitively', () => {
+      const result = parseBip21Uri(`bitcoin:${VALID_ADDRESS}?AMOUNT=0.01&Label=test&MESSAGE=hello`)
+      expect(result).toEqual({
+        address: VALID_ADDRESS,
+        fromUri: true,
+        amount: 1_000_000,
+        label: 'test',
+        message: 'hello',
+      })
+    })
   })
 
   describe('label parameter', () => {
@@ -152,5 +187,42 @@ describe('parseBip21Uri', () => {
       expect(result).toEqual({ address: VALID_ADDRESS, fromUri: false })
       expect(result).not.toHaveProperty('message')
     })
+  })
+})
+
+describe('toBip21Uri', () => {
+  it('omits the amount parameter when no amount is requested', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS })).toBe(`bitcoin:${VALID_ADDRESS}`)
+  })
+
+  it('omits the amount parameter for a zero amount', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 0 })).toBe(`bitcoin:${VALID_ADDRESS}`)
+  })
+
+  it('appends the amount in BTC', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 50_000 })).toBe(`bitcoin:${VALID_ADDRESS}?amount=0.00050000`)
+  })
+
+  it('renders one whole BTC', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 100_000_000 })).toBe(
+      `bitcoin:${VALID_ADDRESS}?amount=1.00000000`,
+    )
+  })
+
+  // A naive `String(sats / 1e8)` switches to scientific notation below 1e-6 BTC
+  // and yields an amount no wallet - including our own parser - accepts.
+  it('renders small amounts in plain decimal notation', () => {
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 1 })).toBe(`bitcoin:${VALID_ADDRESS}?amount=0.00000001`)
+    expect(toBip21Uri({ address: VALID_ADDRESS, amount: 99 })).toBe(`bitcoin:${VALID_ADDRESS}?amount=0.00000099`)
+  })
+
+  it('round-trips through parseBip21Uri', () => {
+    const uri = toBip21Uri({ address: VALID_ADDRESS, amount: 50_000 })
+    expect(parseBip21Uri(uri)).toEqual({ address: VALID_ADDRESS, amount: 50_000, fromUri: true })
+  })
+
+  it('round-trips a small amount through parseBip21Uri', () => {
+    const uri = toBip21Uri({ address: VALID_ADDRESS, amount: 1 })
+    expect(parseBip21Uri(uri)).toEqual({ address: VALID_ADDRESS, amount: 1, fromUri: true })
   })
 })

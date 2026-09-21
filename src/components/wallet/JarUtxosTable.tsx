@@ -3,26 +3,18 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getExpandedRowModel,
+  useTable,
   type SortingState,
   type PaginationState,
-  type ColumnDef,
-  useReactTable,
   type RowPinningState,
   type RowSelectionState,
-  type VisibilityState,
+  type ColumnVisibilityState,
   type FilterFn,
-  type FilterFnOption,
-  type Table as TableType,
+  type RowModel,
   type Row,
   type OnChangeFn,
   type HeaderContext,
   type CellContext,
-  type RowSelectionOptions,
 } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import { ChevronDownIcon, SnowflakeIcon } from 'lucide-react'
@@ -31,8 +23,6 @@ import { toast } from 'sonner'
 import { Balance } from '@/components/ui/jam/Balance'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import type { Utxo } from '@/hooks/useQueryUtxos'
-import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
@@ -40,24 +30,21 @@ import { Checkbox } from '../ui/checkbox'
 import { Address } from '../ui/jam/Address'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
+import { jarUtxosTableFeatures, type UtxoTableEntry } from './JarUtxosTable.schema'
+
+export type { UtxoTableEntry } from './JarUtxosTable.schema'
 
 const ITEMS_PER_PAGE = 25
 
-export type UtxoTableEntry = {
-  utxo: Utxo
-  tags: UtxoTag[]
-}
-
-const columnHelper = createColumnHelper<UtxoTableEntry>()
-
-const fuzzyFilter: FilterFn<UtxoTableEntry> = (row, columnId, value, addMeta) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- tanstack/table api
-  const itemRank = rankItem(row.getValue(columnId), value)
-  addMeta({ itemRank })
+const fuzzyFilter: FilterFn<typeof jarUtxosTableFeatures, UtxoTableEntry> = (row, columnId, value, addMeta) => {
+  const itemRank = rankItem(row.getValue(columnId), value as string)
+  addMeta?.({ itemRank })
   return itemRank.passed
 }
 
-const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
+const columnHelper = createColumnHelper<typeof jarUtxosTableFeatures, UtxoTableEntry>()
+
+const UtxoTableRow = ({ row }: { row: Row<typeof jarUtxosTableFeatures, UtxoTableEntry> }) => {
   return (
     <>
       <TableRow
@@ -68,8 +55,9 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
         })}
       >
         {row.getVisibleCells().map((cell) => {
-          const alignCenter = cell.column.columnDef.meta?.align === 'center'
-          const alignRight = cell.column.columnDef.meta?.align === 'right'
+          const meta = cell.column.columnDef.meta as { align?: string } | undefined
+          const alignCenter = meta?.align === 'center'
+          const alignRight = meta?.align === 'right'
           return (
             <TableCell
               key={cell.id}
@@ -100,22 +88,27 @@ const UtxoTableRow = ({ row }: { row: Row<UtxoTableEntry> }) => {
 
 const AUTO_CHANGE_SELECTION_TOAST_ID = 'utxo.selection_changed_automatically'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnDef<UtxoTableEntry, any>[] => {
-  return [
+const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction) =>
+  columnHelper.columns([
     {
       id: 'select-col',
-      header: ({ table }: HeaderContext<UtxoTableEntry, unknown>) => (
+      header: ({ table }: HeaderContext<typeof jarUtxosTableFeatures, UtxoTableEntry, unknown>) => (
         <Checkbox
           disabled={enableSelectAllToggle === false}
-          checked={table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false}
+          checked={
+            table.getIsAllRowsSelected()
+              ? true
+              : table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+                ? 'indeterminate'
+                : false
+          }
           onCheckedChange={(checked) => {
             table.toggleAllRowsSelected(checked === true)
             toast.dismiss(AUTO_CHANGE_SELECTION_TOAST_ID)
           }}
         />
       ),
-      cell: ({ row, table }: CellContext<UtxoTableEntry, unknown>) => (
+      cell: ({ row, table }: CellContext<typeof jarUtxosTableFeatures, UtxoTableEntry, unknown>) => (
         <Checkbox
           className="light:bg-background/80"
           checked={row.getIsSelected()}
@@ -147,7 +140,7 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
     },
     columnHelper.accessor('utxo.frozen', {
       header: () => <></>,
-      sortingFn: ({ original: { utxo: a } }, { original: { utxo: b } }) => {
+      sortFn: ({ original: { utxo: a } }, { original: { utxo: b } }) => {
         const val = (a.frozen ? 1 : 0) - (b.frozen ? 1 : 0)
         if (val !== 0) return val
         // tie-break using confirmations
@@ -170,7 +163,7 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
     }),
     columnHelper.accessor('utxo.value', {
       header: () => t('jar_details.utxo_list.column_title_balance'),
-      sortingFn: ({ original: { utxo: a } }, { original: { utxo: b } }) => {
+      sortFn: ({ original: { utxo: a } }, { original: { utxo: b } }) => {
         const val = a.value - b.value
         if (val !== 0) return val
         // tie-break using confirmations
@@ -214,7 +207,7 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
     }),
     columnHelper.accessor<'utxo.address', UtxoTableEntry['utxo']['address']>('utxo.address', {
       header: () => t('jar_details.utxo_list.column_title_address'),
-      sortingFn: (a, b) => {
+      sortFn: (a, b) => {
         const val = a.original.utxo.address.localeCompare(b.original.utxo.address)
         if (val !== 0) return val
         // tie-break using confirmations
@@ -227,7 +220,7 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
         alphabetic: true,
       },
     }),
-    {
+    columnHelper.display({
       id: 'expand-col',
       cell: ({ row }) => {
         return row.getCanExpand() ? (
@@ -244,21 +237,18 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction): ColumnD
         )
       },
       enableSorting: false,
-    },
-  ]
-}
+    }),
+  ])
 
-const defaultRowSelection: RowSelectionOptions<UtxoTableEntry>['enableRowSelection'] = (
-  _ignoredOnPurpose: Row<UtxoTableEntry>,
-) => true
+const defaultRowSelection = (_ignoredOnPurpose: Row<typeof jarUtxosTableFeatures, UtxoTableEntry>): boolean => true
 
 interface JarUtxosTableProps {
   globalFilter?: string
   tableEntries: UtxoTableEntry[]
   pinnedEntries: UtxoTableEntry[]
   initialRowSelection?: RowSelectionState
-  enableRowSelection?: RowSelectionOptions<UtxoTableEntry>['enableRowSelection']
-  onChange?: (table: TableType<UtxoTableEntry>) => void
+  enableRowSelection?: boolean | ((row: Row<typeof jarUtxosTableFeatures, UtxoTableEntry>) => boolean)
+  onChange?: (table: RowModel<typeof jarUtxosTableFeatures, UtxoTableEntry>) => void
   onRowSelectionChange?: OnChangeFn<RowSelectionState>
 }
 
@@ -283,7 +273,7 @@ export const JarUtxosTable = ({
 
   const columns = useMemo(() => utxoTableColumns(enableSelectAllToggle, t), [enableSelectAllToggle, t])
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({
     minerFeeContribution: false,
   })
   const [rowPinning, setRowPinning] = useState<RowPinningState>({
@@ -293,62 +283,53 @@ export const JarUtxosTable = ({
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>(initialRowSelection ?? {})
 
-  const table = useReactTable<UtxoTableEntry>({
-    data: tableEntries,
-    columns,
-    filterFns: {
-      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
-    },
-    state: {
-      globalFilter,
-      sorting,
-      pagination,
-      rowPinning,
-      rowSelection,
-      columnVisibility,
-    },
-    globalFilterFn: 'fuzzy' as FilterFnOption<UtxoTableEntry>,
-    keepPinnedRows: true,
-    enableRowSelection,
-    enableMultiRowSelection: true,
-    autoResetPageIndex: true,
-    getRowId: (row) => row.utxo.utxo,
-    onSortingChange: setSorting,
-    onPaginationChange: setPagination,
-    onRowPinningChange: setRowPinning,
-    onRowSelectionChange: (rowSelection) => {
-      setRowSelection(rowSelection)
-      onRowSelectionChange?.(rowSelection)
-    },
-    onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-
-    getRowCanExpand: () => true,
-    getExpandedRowModel: getExpandedRowModel(),
-    paginateExpandedRows: false,
-  })
+  const { setPageSize, setPageIndex, getPageCount, getFilteredRowModel, resetRowPinning, getRowModel, ...table } =
+    useTable({
+      features: jarUtxosTableFeatures,
+      data: tableEntries,
+      columns,
+      state: {
+        globalFilter,
+        sorting,
+        pagination,
+        rowPinning,
+        rowSelection,
+        columnVisibility,
+      },
+      globalFilterFn: fuzzyFilter,
+      keepPinnedRows: true,
+      enableRowSelection,
+      enableMultiRowSelection: true,
+      autoResetPageIndex: true,
+      getRowId: (row) => row.utxo.utxo,
+      onSortingChange: setSorting,
+      onPaginationChange: setPagination,
+      onRowPinningChange: setRowPinning,
+      onRowSelectionChange: (rowSelection) => {
+        setRowSelection(rowSelection)
+        onRowSelectionChange?.(rowSelection)
+      },
+      onColumnVisibilityChange: setColumnVisibility,
+      getRowCanExpand: () => true,
+      paginateExpandedRows: false,
+    })
 
   useEffect(() => {
-    table.resetRowPinning(true)
-    table.getRowModel().rows.forEach((row) => {
+    resetRowPinning(true)
+    getRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
-  }, [table, pinnedEntries])
+  }, [resetRowPinning, getRowModel, pinnedEntries])
 
   useEffect(() => {
     if (isShowAll) {
-      table.setPageSize(tableEntries.length || 1)
+      setPageSize(tableEntries.length || 1)
     }
-  }, [isShowAll, tableEntries.length, table])
+  }, [setPageSize, isShowAll, tableEntries.length])
 
   useEffect(() => {
-    if (onChange) {
-      onChange(table)
-    }
-  }, [table, onChange])
+    onChange?.(getFilteredRowModel())
+  }, [getFilteredRowModel, onChange])
 
   useEffect(() => {
     return () => {
@@ -374,8 +355,9 @@ export const JarUtxosTable = ({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
-                  const alignCenter = header.column.columnDef.meta?.align === 'center'
-                  const alignRight = header.column.columnDef.meta?.align === 'right'
+                  const meta = header.column.columnDef.meta as { align?: string } | undefined
+                  const alignCenter = meta?.align === 'center'
+                  const alignRight = meta?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -392,7 +374,7 @@ export const JarUtxosTable = ({
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
                           'font-bold': header.column.getIsSorted(),
-                          'text-muted-foreground': table.getState().sorting.length > 0 && !header.column.getIsSorted(),
+                          'text-muted-foreground': table.state.sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -416,20 +398,20 @@ export const JarUtxosTable = ({
       </div>
 
       <TablePagination
-        currentPage={table.getState().pagination.pageIndex + 1}
-        totalPages={table.getPageCount()}
+        currentPage={table.state.pagination.pageIndex + 1}
+        totalPages={getPageCount()}
         itemsPerPage={isShowAll ? -1 : pagination.pageSize}
-        totalItems={table.getFilteredRowModel().rows.length}
-        onPageChange={(page) => table.setPageIndex(page - 1)}
+        totalItems={getFilteredRowModel().rows.length}
+        onPageChange={(page) => setPageIndex(page - 1)}
         onItemsPerPageChange={(newItemsPerPage) => {
           if (newItemsPerPage === -1) {
             setIsShowAll(true)
-            table.setPageSize(tableEntries.length || 1)
+            setPageSize(tableEntries.length || 1)
           } else {
             setIsShowAll(false)
-            table.setPageSize(newItemsPerPage)
+            setPageSize(newItemsPerPage)
           }
-          table.setPageIndex(0)
+          setPageIndex(0)
         }}
       />
     </div>

@@ -1,5 +1,5 @@
-import { createClient } from '@joinmarket-webui/joinmarket-ng-api-ts'
-import type { UnlockWalletResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { createClient } from '@joinmarket-webui/joinmarket-api-ts'
+import type { UnlockWalletResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { isDevMode } from '@/constants/debugFeatures'
 import { normalizeAppError } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'

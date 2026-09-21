@@ -1,4 +1,3 @@
-import type { Column } from '@tanstack/react-table'
 import {
   ArrowUpDownIcon,
   SortDescIcon,
@@ -11,8 +10,15 @@ import {
 
 interface SortIconProps {
   className?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  column: Column<any, unknown>
+  column: {
+    getIsSorted: () => 'asc' | 'desc' | false
+    columnDef: {
+      meta?: {
+        numeric?: boolean
+        alphabetic?: boolean
+      }
+    }
+  }
 }
 
 export const SortIcon = ({ column, className }: SortIconProps) => {

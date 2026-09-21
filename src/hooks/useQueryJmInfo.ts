@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { versionOptions } from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type { GetInfoResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { versionOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { GetInfoResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { useApiClient } from '@/hooks/useApiClient'
 import { parseSemanticVersion, type SemanticVersion } from '@/lib/utils'

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchOrderbook, refreshOrderbook } from './orderbook'
+import { fetchOrderbook } from './orderbook'
 
 describe('orderbook API helpers', () => {
   beforeEach(() => {
@@ -31,16 +31,5 @@ describe('orderbook API helpers', () => {
     vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 503 }))
 
     await expect(fetchOrderbook()).rejects.toThrow('Failed to fetch orderbook: 503')
-  })
-
-  it('refreshes the orderbook without following local redirects', async () => {
-    const response = new Response(null, { status: 204 })
-    vi.mocked(fetch).mockResolvedValue(response)
-
-    await expect(refreshOrderbook()).resolves.toBe(response)
-    expect(fetch).toHaveBeenCalledWith('/obwatch/refreshorderbook', {
-      method: 'POST',
-      redirect: 'manual',
-    })
   })
 })

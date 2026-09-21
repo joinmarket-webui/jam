@@ -1,4 +1,4 @@
-import { getaddress } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -49,11 +49,11 @@ type MutationOptions = {
   onError?: (error: unknown) => void
 }
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   getaddressQueryKey: vi.fn(() => ['getaddress']),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   getaddress: mocks.getAddress,
 }))
 
@@ -204,6 +204,45 @@ describe('ReceivePage', () => {
     expect(badge).not.toHaveClass('bg-primary')
   })
 
+  it('copies the plain address when no amount is requested', async () => {
+    render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+
+    await waitFor(() => expect(screen.getByText('copy:bc1qexample')).toBeInTheDocument())
+  })
+
+  it('copies the full payment request once an amount is requested', async () => {
+    const user = userEvent.setup()
+
+    render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+    await waitFor(() => expect(screen.getByText('copy:bc1qexample')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_settings' }))
+    await user.click(screen.getByRole('button', { name: 'update receive form' }))
+
+    await waitFor(() => expect(screen.getByText('copy:bitcoin:bc1qexample?amount=0.00002100')).toBeInTheDocument())
+  })
+
+  it('shares the plain address when no amount is requested', async () => {
+    const user = userEvent.setup()
+    mocks.share.mockResolvedValue(undefined)
+
+    render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+    await waitFor(() => expect(screen.getByText('copy:bc1qexample')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_share_address' }))
+
+    expect(mocks.share).toHaveBeenCalledWith({
+      title: 'Bitcoin Address',
+      text: 'bc1qexample',
+    })
+  })
+
   it('uses receive form changes for the next address request and sharing', async () => {
     const user = userEvent.setup()
     mocks.share.mockRejectedValue(new Error('cancelled'))
@@ -222,7 +261,7 @@ describe('ReceivePage', () => {
 
     expect(mocks.share).toHaveBeenCalledWith({
       title: 'Bitcoin Address',
-      text: 'bc1qexample',
+      text: 'bitcoin:bc1qexample?amount=0.00002100',
     })
     expect(mocks.toastError).toHaveBeenCalledWith('receive.error_share_address_failed')
   })

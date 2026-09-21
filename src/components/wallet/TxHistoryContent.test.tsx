@@ -1,4 +1,4 @@
-import type { WalletHistoryResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { WalletHistoryResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'

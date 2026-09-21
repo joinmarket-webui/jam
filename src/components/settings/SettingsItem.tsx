@@ -6,9 +6,11 @@ import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
 type SettingsItemProps = PropsWithChildren<{
+  className?: string
   icon?: LucideIcon
   renderIcon?: ({ className }: { className: string }) => ReactNode
-  title: string
+  title: ReactNode | string
+  subtitle?: ReactNode | string
   disabled?: boolean
   action?: () => void | Promise<void>
   /**
@@ -20,19 +22,25 @@ type SettingsItemProps = PropsWithChildren<{
 }>
 
 export const SettingsItem = ({
+  className,
   icon: Icon,
   renderIcon,
   title,
+  subtitle,
   action,
   disabled = false,
   hasInteractiveChild = false,
   children,
 }: SettingsItemProps) => {
-  const rowClassName = cn('flex min-w-0 items-center justify-between gap-2 py-2', {
-    'hover:bg-muted/50 cursor-pointer': !disabled && action,
-    'rounded-md px-2': !disabled,
-    'cursor-not-allowed opacity-60': disabled,
-  })
+  const rowClassName = cn(
+    'flex min-w-0 items-center justify-between gap-2 py-2',
+    {
+      'hover:bg-muted/50 cursor-pointer': !disabled && action,
+      'rounded-md px-2': !disabled,
+      'cursor-not-allowed opacity-60': disabled,
+    },
+    className,
+  )
   // The row bleeds into the card padding so the hover background spans the full width.
   // A block `div` with `width: auto` gets this from the negative margin alone, but a
   // `button` does not stretch to its parent, and once `w-full` pins the width the
@@ -48,7 +56,8 @@ export const SettingsItem = ({
           {renderIcon?.({ className: 'text-muted-foreground h-4 w-4 align-middle' })}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-medium break-words">{title}</p>
+          <p className="font-medium break-words">{title}</p>
+          {subtitle && <p className="text-muted-foreground text-xs break-words">{subtitle}</p>}
         </div>
       </div>
       {children !== undefined && <div className="shrink-0">{children}</div>}

@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { JAM_DOCS_URL } from '@/constants/jam'
@@ -126,6 +127,15 @@ vi.mock('@/components/settings/AccountXpubsDialog', () => ({
     ) : null,
 }))
 
+vi.mock('./SignMessageDialog', () => ({
+  SignMessageDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
+    open ? (
+      <button type="button" onClick={() => onOpenChange(false)}>
+        sign-message-dialog
+      </button>
+    ) : null,
+}))
+
 vi.mock('@/components/ui/jam/LanguageSelector', () => ({
   LanguageSelector: () => <div>language-selector</div>,
 }))
@@ -178,8 +188,11 @@ vi.mock('@/hooks/useFeeConfigValidation', () => ({
 
 const walletFileName = 'wallet.jmdat' as WalletFileName
 
-const renderSettingsPage = (onLockWallet = vi.fn<() => Promise<void>>()) => {
-  render(<SettingsPage walletFileName={walletFileName} onLockWallet={onLockWallet} />)
+const renderSettingsPage = (
+  tab: ComponentProps<typeof SettingsPage>['initialTab'],
+  onLockWallet = vi.fn<() => Promise<void>>(),
+) => {
+  render(<SettingsPage walletFileName={walletFileName} onLockWallet={onLockWallet} initialTab={tab} />)
 
   return { onLockWallet }
 }
@@ -212,10 +225,10 @@ describe('SettingsPage', () => {
     vi.stubGlobal('open', mocks.open)
   })
 
-  it('renders display and market settings and handles their actions', () => {
-    renderSettingsPage()
+  it('renders basic display and market settings and handles their actions', () => {
+    renderSettingsPage('basic')
 
-    expect(screen.getByRole('heading', { name: 'navbar.menu_mobile_settings' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'settings.title' })).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_display')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_market')).toBeInTheDocument()
     expect(screen.getByText('language-selector')).toBeInTheDocument()
@@ -226,9 +239,6 @@ describe('SettingsPage', () => {
     clickItem('settings.use_btc')
     expect(mocks.toggleCurrencyUnit).toHaveBeenCalledTimes(1)
 
-    fireEvent.click(screen.getByText('switch:true'))
-    expect(mocks.toggleAddressChunking).toHaveBeenCalledWith(false)
-
     clickItem('settings.use_light_theme')
     expect(mocks.setTheme).toHaveBeenCalledWith('light')
 
@@ -236,11 +246,11 @@ describe('SettingsPage', () => {
     expect(screen.getByText('fee-config-dialog')).toBeInTheDocument()
   })
 
-  it('opens protected wallet dialogs and locks the wallet when a password is available', async () => {
+  it('opens basic, protected wallet dialogs and locks the wallet when a password is available', async () => {
     mocks.hashedPassword = 'hashed-password'
     const onLockWallet = vi.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
-    renderSettingsPage(onLockWallet)
+    renderSettingsPage('basic', onLockWallet)
 
     clickItem('settings.show_seed')
     expect(screen.getByText('seed-dialog')).toBeInTheDocument()
@@ -255,12 +265,11 @@ describe('SettingsPage', () => {
     })
   })
 
-  it('handles internal, external, feature-gated, and developer links', async () => {
-    mocks.debugFeatures = new Set(['devPage'])
+  it('handles internal, external, feature-gated links', async () => {
     mocks.developerMode = true
     mocks.logsFeature = true
 
-    renderSettingsPage()
+    renderSettingsPage('basic')
 
     clickItem('settings.rescan_chain')
     await waitFor(() => {
@@ -274,22 +283,46 @@ describe('SettingsPage', () => {
 
     clickItem('settings.documentation')
     expect(mocks.open).toHaveBeenCalledWith(JAM_DOCS_URL, '_blank', 'noreferrer,noopener')
-
-    clickItem('Enable developer mode')
-    expect(mocks.updateJamSettings).toHaveBeenCalledWith({ developerMode: false })
-
-    expect(screen.getByText('Developer Mode')).toBeInTheDocument()
-    clickItem('Dev page')
-    await waitFor(() => {
-      expect(mocks.navigate).toHaveBeenCalledWith('/dev')
-    })
   })
 
   it('shows a spinner while wallet locking is pending', () => {
     mocks.lockWalletPending = true
 
-    renderSettingsPage()
+    renderSettingsPage('basic')
 
     expect(screen.getByText('spinner')).toBeInTheDocument()
+  })
+
+  it('renders advanced section', () => {
+    renderSettingsPage('advanced')
+
+    expect(screen.getByRole('heading', { name: 'settings.title' })).toBeInTheDocument()
+    expect(screen.getByText('settings.section_title_display')).toBeInTheDocument()
+    expect(screen.getByText('settings.section_title_wallet')).toBeInTheDocument()
+    expect(screen.getByText('settings.sign_message')).toBeInTheDocument()
+    expect(screen.getByText('settings.section_title_expert_features')).toBeInTheDocument()
+    expect(screen.getByText('settings.section_title_feature_preview')).toBeInTheDocument()
+    expect(screen.getByText('Developer Mode')).toBeInTheDocument()
+
+    clickItem('settings.sign_message')
+    expect(screen.getByText('sign-message-dialog')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('switch:true'))
+    expect(mocks.toggleAddressChunking).toHaveBeenCalledWith(false)
+  })
+
+  it('handles advanced developer links', async () => {
+    mocks.debugFeatures = new Set(['devPage'])
+    mocks.developerMode = true
+
+    renderSettingsPage('advanced')
+
+    clickItem('Enable Developer Mode')
+    expect(mocks.updateJamSettings).toHaveBeenCalledWith({ developerMode: false })
+
+    clickItem('Dev page')
+    await waitFor(() => {
+      expect(mocks.navigate).toHaveBeenCalledWith('/dev')
+    })
   })
 })

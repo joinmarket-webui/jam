@@ -27,7 +27,8 @@
       "error_loading_address_failed": "Não foi possível obter novo endereço.",
       "error_freezing_utxos": "Não foi possível congelar os UTXOs."
     },
-    "next": "Próximo"
+    "next": "Próximo",
+    "experimental": "Experimental"
   },
   "navbar": {
     "title": "Jam",
@@ -148,6 +149,23 @@
     "use_dark_theme": "Mudar para modo escudo",
     "use_light_theme": "Mudar para modo claro",
     "show_seed": "Mostrar seed",
+    "sign_message": "Assinar mensagem",
+    "sign_message_modal": {
+      "title": "Assinar Mensagem",
+      "subtitle": "Assine uma mensagem com um endereço da carteira para provar a posse.",
+      "label_address": "Endereço da carteira ou caminho HD",
+      "placeholder_address": "Selecione ou insira um endereço (ex: bc1q... ou m/84'/0'/0'/0/0)",
+      "select_from_wallet": "Selecionar da carteira",
+      "label_message": "Mensagem",
+      "placeholder_message": "Insira a mensagem para assinar...",
+      "label_signature": "Assinatura",
+      "button_sign": "Assinar mensagem",
+      "button_signing": "Assinando...",
+      "button_reset": "Redefinir",
+      "button_copy": "Copiar assinatura",
+      "alert_success_copied": "Assinatura copiada para a área de transferência!",
+      "text_error_title": "Erro ao assinar mensagem"
+    },
     "reveal_seed": "Revelar seed",
     "show_logs": "Mostrar logs",
     "show_fee_config": "Ajustar os limites de taxas",
@@ -448,7 +466,7 @@
     }
   },
   "scheduler": {
-    "title": "Programar Limpeza (Experimental)",
+    "title": "Programar Limpeza",
     "subtitle": "Execute várias transações usando valores aleatórios e intervalos de tempo para aumentar a sua privacidade e a dos outros. Cada transação agendada é uma transação colaborativa.",
     "error_starting_schedule_failed": "Falha ao iniciar o agendador. Motivo: {{ reason }}",
     "error_stopping_schedule_failed": "Falha ao parar agendador. Motivo: {{ reason }}",

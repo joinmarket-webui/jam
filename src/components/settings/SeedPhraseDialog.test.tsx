@@ -15,7 +15,7 @@ const refetch = vi.fn<() => Promise<unknown>>().mockResolvedValue(undefined)
 const removeQueries = vi.fn()
 let seedQuery: SeedQuery
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   getseedOptions: () => ({ queryKey: ['seed'] }),
 }))
 

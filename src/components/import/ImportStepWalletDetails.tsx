@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { CreateWalletForm } from '@/components/create/CreateWalletForm'

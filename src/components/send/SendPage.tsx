@@ -3,25 +3,20 @@ import {
   directsendMutation,
   docoinjoinMutation,
   stopcoinjoinOptions,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query'
-import type {
-  DirectSendRequest,
-  DirectSendResponse,
-  DoCoinjoinRequest,
-} from '@joinmarket-webui/joinmarket-ng-api-ts/jm'
+} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { DirectSendRequest, DirectSendResponse, DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckCircle2Icon, HourglassIcon, ListFilterIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import * as JAM from '@/constants/jam'
-import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { useRawJmSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import {
   useAddressSummary,
   useJamWalletInfoContext,
@@ -39,7 +34,6 @@ import * as fb from '@/lib/fidelityBondUtils'
 import { withMutationDelay } from '@/lib/queryClient'
 import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
@@ -85,7 +79,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     waitForUtxosToBeSpent,
     setWaitForUtxosToBeSpent,
   } = useJamWalletInfoContext()
-  const jmSessionActive = useStore(jmSessionStore, (state) => state.state?.session)
+  const { jmSession } = useRawJmSession()
+  const jmSessionActive = !!jmSession
   const {
     makerInfo: { running: makerRunning },
     takerInfo: {
@@ -459,46 +454,32 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                   </Alert>
                 </>
               ) : (
-                <>
-                  {currentPaymentAttempt.utxosHashHex === utxosHashHex ? (
-                    <Alert variant="warning">
-                      <AlertTriangleIcon />
-                      <AlertTitle>{t('send.alert_collaborative_ended_title')}</AlertTitle>
-                      <AlertDescription className="flex flex-col gap-2">
-                        <div>{t('send.alert_collaborative_ended_description')}</div>
-                        <div>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              clearCurrentPaymentAttempt()
-                            }}
-                          >
-                            {t('global.done')}
-                          </Button>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-                  ) : (
-                    <Alert variant="success">
-                      <CheckCircle2Icon />
-                      <AlertTitle>{t('send.alert_collaborative_completed_title')}</AlertTitle>
-                      <AlertDescription className="flex flex-col gap-2">
-                        <div>{t('send.alert_collaborative_completed_description')}</div>
-                        <div>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setFormId((current) => current + 1)
-                              clearCurrentPaymentAttempt()
-                            }}
-                          >
-                            {t('global.done')}
-                          </Button>
-                        </div>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </>
+                /**
+                 * Whether the utxo set changed during the attempt is not proof that a
+                 * coinjoin was actually made (see joinmarket-webui/jam#1475): a deposit
+                 * landing mid-attempt flips this to "changed" with no send having
+                 * happened. Until there's a real signal to check against, we don't
+                 * distinguish "completed" from "ended" here and show one message
+                 * pointing the user at their transaction history either way.
+                 */
+                <Alert variant="warning">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('send.alert_collaborative_stopped_title')}</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2">
+                    <div>{t('send.alert_collaborative_stopped_description')}</div>
+                    <div>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setFormId((current) => current + 1)
+                          clearCurrentPaymentAttempt()
+                        }}
+                      >
+                        {t('global.done')}
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
               )}
             </>
           )

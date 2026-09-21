@@ -1,11 +1,13 @@
 import type { PropsWithChildren } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routes } from '@/constants/routes'
 import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import ImportWalletPage from './ImportWalletPage'
+
+type SessionInfoUpdater = (previousState?: SessionResponse) => SessionResponse | undefined
 
 const mocks = vi.hoisted(() => ({
   configGet: vi.fn(),
@@ -22,11 +24,19 @@ const mocks = vi.hoisted(() => ({
   toastSuccess: vi.fn(),
   toastWarning: vi.fn(),
   toastError: vi.fn(),
+  sessionState: undefined as SessionResponse | undefined,
+  updateSessionInfo: vi.fn((updater: unknown) => {
+    if (typeof updater === 'function') {
+      mocks.sessionState = (updater as SessionInfoUpdater)(mocks.sessionState)
+    } else {
+      mocks.sessionState = updater as SessionResponse | undefined
+    }
+  }),
 }))
 
 type MutationOptions = { mutationFn: (input: unknown) => Promise<unknown> }
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   configgetMutation: vi.fn(() => ({ mutationFn: mocks.configGet })),
   configsettingMutation: vi.fn(() => ({ mutationFn: mocks.configSet })),
   listwalletsOptions: vi.fn(() => ({ queryKey: ['wallets'], queryFn: vi.fn() })),
@@ -34,7 +44,7 @@ vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
   unlockwalletMutation: vi.fn(() => ({ mutationFn: mocks.unlockWallet })),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/jm', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
   lockwallet: mocks.lockWallet,
   rescanblockchain: mocks.rescanBlockchain,
   session: mocks.session,
@@ -68,6 +78,13 @@ vi.mock('sonner', () => ({
     success: mocks.toastSuccess,
     warning: mocks.toastWarning,
   },
+}))
+
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
+    jmSession: mocks.sessionState,
+    updateSessionInfo: mocks.updateSessionInfo,
+  }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({
@@ -173,7 +190,7 @@ describe('ImportWalletPage', () => {
     mocks.toastWarning.mockReset()
     mocks.toastError.mockReset()
     authStore.getState().clear()
-    jmSessionStore.setState({ state: undefined })
+    mocks.sessionState = undefined
 
     mocks.recoverWallet.mockResolvedValue({
       walletname: 'restored.jmdat',
@@ -205,13 +222,13 @@ describe('ImportWalletPage', () => {
     await waitFor(() =>
       expect(authStore.getState().state).toEqual({
         walletFileName: 'restored.jmdat',
-        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh' },
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
         hashed_password: 'hashed-secret',
       }),
     )
     expect(mocks.configSet).toHaveBeenCalledTimes(2)
     expect(mocks.rescanBlockchain).toHaveBeenCalled()
-    expect(jmSessionStore.getState().state?.rescanning).toBe(true)
+    expect(mocks.sessionState?.rescanning).toBe(true)
     expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
     expect(mocks.toastDismiss).toHaveBeenCalledWith('toast-id')
   })
@@ -229,7 +246,7 @@ describe('ImportWalletPage', () => {
     await waitFor(() =>
       expect(authStore.getState().state).toEqual({
         walletFileName: 'restored.jmdat',
-        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh' },
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
         hashed_password: 'hashed-secret',
       }),
     )
@@ -252,7 +269,7 @@ describe('ImportWalletPage', () => {
     await waitFor(() =>
       expect(authStore.getState().state).toEqual({
         walletFileName: 'restored.jmdat',
-        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh' },
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
         hashed_password: 'hashed-secret',
       }),
     )

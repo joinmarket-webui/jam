@@ -1,3 +1,11 @@
+:root {
+  --jam-address-deemphasize-percentage: 0.66;
+}
+
+:root[data-theme='dark'] {
+  --jam-address-deemphasize-percentage: 0.66;
+}
+
 .bitcoinAddress {
   word-break: break-all;
   user-select: all;
@@ -5,8 +13,7 @@
 }
 
 .bitcoinAddress.chunked :nth-child(even) {
-  color: var(--muted-foreground);
-  filter: hue-rotate(45deg);
+  color: hwb(from currentcolor h w b / var(--jam-address-deemphasize-percentage));
 }
 
 .bitcoinAddress.chunked :nth-child(odd) {

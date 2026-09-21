@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import * as JAM from '@/constants/jam'
 import { fetchLog } from '@/lib/api/jam'
 import { authStore } from '@/store/authStore'
 import { useJmwalletdStdoutLog } from './useJmwalletdStdoutLog'
@@ -7,6 +8,7 @@ import { useJmwalletdStdoutLog } from './useJmwalletdStdoutLog'
 type QueryOptions = {
   enabled?: boolean
   queryFn?: (args: { signal: AbortSignal }) => Promise<string>
+  refetchInterval?: ((query: { state: { error?: unknown } }) => number | false) | number | false
 }
 
 const mocks = vi.hoisted(() => ({
@@ -64,6 +66,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
     vi.mocked(fetchLog).mockResolvedValue(new Response('log body'))
@@ -88,6 +91,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
     mocks.queryResult.error = new Error('disk unavailable')
@@ -105,6 +109,7 @@ describe('useJmwalletdStdoutLog', () => {
       auth: {
         token: 'token',
         refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
       },
     })
 
@@ -114,5 +119,42 @@ describe('useJmwalletdStdoutLog', () => {
     expect(result.current.isInitialized).toBe(false)
     await result.current.refresh()
     expect(mocks.queryResult.refetch).not.toHaveBeenCalled()
+  })
+
+  it('disables auto-reloading polling by default', () => {
+    authStore.getState().update({
+      auth: {
+        token: 'token',
+        refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
+      },
+    })
+
+    renderHook(() => useJmwalletdStdoutLog())
+
+    const refetchInterval = mocks.queryOptions?.refetchInterval
+    expect(typeof refetchInterval).toBe('function')
+    if (typeof refetchInterval === 'function') {
+      expect(refetchInterval({ state: { error: undefined } })).toBe(false)
+    }
+  })
+
+  it('enables auto-follow polling when enableAutoFollow is true', () => {
+    authStore.getState().update({
+      auth: {
+        token: 'token',
+        refresh_token: 'refresh',
+        expiresAt: Date.now() + 1_800_000,
+      },
+    })
+
+    renderHook(() => useJmwalletdStdoutLog({ enableAutoFollow: true }))
+
+    const refetchInterval = mocks.queryOptions?.refetchInterval
+    expect(typeof refetchInterval).toBe('function')
+    if (typeof refetchInterval === 'function') {
+      expect(refetchInterval({ state: { error: undefined } })).toBe(JAM.JMWALLETD_LOGS_POLLING_INTERVAL)
+      expect(refetchInterval({ state: { error: new Error('err') } })).toBe(false)
+    }
   })
 })

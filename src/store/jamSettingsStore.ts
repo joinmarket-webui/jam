@@ -9,9 +9,16 @@ type PreviewFeatures = {
   // 'myCoolNewFeature'?: boolean
 }
 
+type ExpertFeatures = {
+  'custom-earn-fee-values'?: boolean
+  // add more entries on demand
+  // 'myCoolNewExportFeature'?: boolean
+}
+
 export type JamSettings = {
   developerMode: boolean
   previewFeatures: PreviewFeatures | undefined
+  expertFeatures: ExpertFeatures | undefined
   privateMode: boolean
   addressChunking: boolean
   currencyUnit: Currency
@@ -27,6 +34,7 @@ interface JamSettingsStoreState {
 const initial: JamSettings = {
   developerMode: isDevMode(),
   previewFeatures: isDevMode() ? {} : undefined,
+  expertFeatures: isDevMode() ? {} : undefined,
   privateMode: false,
   addressChunking: true,
   currencyUnit: 'sats',
@@ -54,4 +62,16 @@ export const useDeveloperMode = () => {
 
 export const usePreviewFeatures = () => {
   return useStore(jamSettingsStore, (state) => state.state.previewFeatures)
+}
+
+export const usePreviewFeatureEnabled = (name: keyof PreviewFeatures) => {
+  return useStore(jamSettingsStore, (state) => state.state.previewFeatures?.[name])
+}
+
+export const useExpertFeatures = () => {
+  return useStore(jamSettingsStore, (state) => state.state.expertFeatures)
+}
+
+export const useExpertFeatureEnabled = (name: keyof ExpertFeatures) => {
+  return useStore(jamSettingsStore, (state) => state.state.expertFeatures?.[name])
 }

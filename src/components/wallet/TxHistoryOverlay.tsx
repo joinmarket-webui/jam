@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { WithRequiredProperty } from '@/types/global'
+import { Badge } from '../ui/badge'
 import PageTitle from '../ui/jam/PageTitle'
 import { TxHistoryContent } from './TxHistoryContent'
 
@@ -19,7 +20,13 @@ export function TxHistoryOverlay({ open, onOpenChange, walletFileName, ...dialog
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-dvh max-h-dvh! max-w-screen! flex-col overflow-hidden rounded-none border-none">
         <DialogHeader className="px-2">
           <DialogTitle className="flex items-center gap-2">
-            <PageTitle title={t('tx_history.overlay_title')} />
+            <PageTitle
+              title={
+                <>
+                  {t('tx_history.overlay_title')} <Badge variant="muted">{t('global.preview')}</Badge>
+                </>
+              }
+            />
           </DialogTitle>
         </DialogHeader>
 

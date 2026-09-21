@@ -51,7 +51,11 @@ export const JM_GAPLIMIT_CONFIGKEY: ConfigKey = {
 // only support starting the maker with native segwit offers
 type RelativeOfferType = 'sw0reloffer'
 type AbsoluteOfferType = 'sw0absoffer'
-export type OfferType = RelativeOfferType | AbsoluteOfferType | string
+
+export type OfferType = RelativeOfferType | AbsoluteOfferType
+
+export const OFFERTYPE_ABS: OfferType = 'sw0absoffer'
+export const OFFERTYPE_REL: OfferType = 'sw0reloffer'
 
 export type SectionKey = string
 
