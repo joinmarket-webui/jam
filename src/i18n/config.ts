@@ -10,27 +10,11 @@ const resources = languages.reduce((acc, lng) => {
   }
 }, {})
 
-/**
- * Keeps the document's language declaration in sync with the active UI language.
- *
- * Without this, `<html lang>` keeps the value `index.html` ships (`en`) no matter
- * which language is selected. Screen readers pick their speech synthesizer from
- * `lang`, so translated content would be announced with an English voice (a
- * WCAG 2.2 SC 3.1.1 failure), and browsers would have no signal to pick the
- * correct Han glyph variants for `zh-Hans` vs `zh-Hant`.
- */
-const syncDocumentLanguage = () => {
-  if (typeof document === 'undefined') return
-
-  const language = i18n.resolvedLanguage || i18n.language
-  if (language) {
-    document.documentElement.setAttribute('lang', language)
-  }
-}
-
-// registered before `init` so the initially detected language is applied as well
-i18n.on('languageChanged', syncDocumentLanguage)
-i18n.on('initialized', syncDocumentLanguage)
+// Keep the document's language declaration in sync with the UI language: screen readers
+// pick their speech synthesizer from `lang`, and browsers need it to resolve the correct
+// Han glyph variants for `zh-Hans` vs `zh-Hant`.
+// Registered before `init` so the initially detected language is applied as well.
+i18n.on('languageChanged', (lng) => (document.documentElement.lang = lng))
 
 void i18n.use(LanguageDetector).use(initReactI18next).init({
   resources,
