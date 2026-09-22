@@ -95,7 +95,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
         {schedule.summary.status.completed ? (
           <Alert variant="success">
             <CheckCircle2Icon />
-            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep finished successfully.'}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_schedule_completed_title')}</AlertTitle>
             <AlertDescription />
           </Alert>
         ) : null}
@@ -103,7 +103,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
         {schedule.summary.status.failed ? (
           <Alert variant="destructive">
             <AlertTriangleIcon />
-            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep failed.'}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_schedule_failed_title')}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
@@ -111,7 +111,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
         {schedule.summary.status.cancelled ? (
           <Alert variant="warning">
             <AlertTriangleIcon />
-            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep cancelled.'}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_schedule_cancelled_title')}</AlertTitle>
             <AlertDescription />
           </Alert>
         ) : null}
@@ -119,7 +119,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
         {schedule.summary.status.pending ? (
           <Alert variant="default">
             <ClockAlertIcon />
-            <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep pending.'}</AlertTitle>
+            <AlertTitle>{t('scheduler.alert_schedule_pending_title')}</AlertTitle>
             <AlertDescription />
           </Alert>
         ) : null}
@@ -195,7 +195,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
               <div className="flex min-w-0 items-start gap-4">
                 <CalendarClockIcon className="mt-0.5 shrink-0" />
                 <div className="min-w-0 flex-1 space-y-1">
-                  <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
+                  <Label className="font-semibold">{t('scheduler.label_started_at')}</Label>
                   <span title={schedule.summary.startedAt.toISOString()}>
                     {schedule.summary.startedAt.toLocaleString()}
                   </span>
@@ -204,7 +204,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
               <div className="flex min-w-0 items-start gap-4">
                 <CalendarCheck2Icon className="mt-0.5 shrink-0" />
                 <div className="min-w-0 flex-1 space-y-1">
-                  <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
+                  <Label className="font-semibold">{t('scheduler.label_finished_at')}</Label>
                   {schedule.summary.finishedAt === undefined ? (
                     '-'
                   ) : (
@@ -221,13 +221,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
         {schedule.active !== undefined ? (
           <Accordion type="single" collapsible defaultValue="active">
             <AccordionItem value="active">
-              <AccordionTrigger>
-                {
-                  /* TODO: i18n */ t('scheduler.section_active_action_title', {
-                    defaultValue: 'Active action',
-                  })
-                }
-              </AccordionTrigger>
+              <AccordionTrigger>{t('scheduler.section_active_action_title')}</AccordionTrigger>
               <AccordionContent
                 className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
               >
@@ -242,13 +236,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
         {schedule.summary.externalDestinations.length === 0 ? null : (
           <Accordion type="single" collapsible>
             <AccordionItem value="destinations">
-              <AccordionTrigger>
-                {
-                  /* TODO: i18n */ t('scheduler.section_destinations_title', {
-                    defaultValue: 'Destinations',
-                  })
-                }
-              </AccordionTrigger>
+              <AccordionTrigger>{t('scheduler.section_destinations_title')}</AccordionTrigger>
               <AccordionContent
                 className={cn('flex flex-col gap-2 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
               >
@@ -258,12 +246,12 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
                     <Item key={index} variant={value.transactionId ? 'muted' : 'outline'}>
                       <ItemContent className="space-y-2">
                         <ItemTitle className="flex-col items-start gap-1">
-                          <Label className="font-semibold">{/*TODO: i18n */ 'Address'}</Label>
+                          <Label className="font-semibold">{t('scheduler.label_address')}</Label>
                           <Address value={value.address} />
                         </ItemTitle>
                         {value.transactionId ? (
                           <div className="flex flex-col gap-1">
-                            <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
+                            <Label className="font-semibold">{t('scheduler.label_transaction_id')}</Label>
 
                             <div className="flex items-center gap-2">
                               <span className="text-md block font-mono break-all select-all">
@@ -289,13 +277,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
 
         <Accordion type="single" collapsible>
           <AccordionItem value="details">
-            <AccordionTrigger>
-              {
-                /* TODO: i18n */ t('scheduler.section_details_title', {
-                  defaultValue: 'Schedule details',
-                })
-              }
-            </AccordionTrigger>
+            <AccordionTrigger>{t('scheduler.section_details_title')}</AccordionTrigger>
             <AccordionContent
               className={cn('flex flex-col gap-6 py-2', 'mx-1' /* add x-spacing for input component focus state*/)}
             >
@@ -306,13 +288,13 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
               >
                 <TabsList className="mx-auto flex items-center gap-2">
                   <TabsTrigger value="pending" className="cursor-pointer">
-                    {/* TODO: i18n */}Pending ({schedule.pending.length.toLocaleString()})
+                    {t('scheduler.tab_pending', { count: schedule.pending.length.toLocaleString() })}
                   </TabsTrigger>
                   <TabsTrigger value="completed" className="cursor-pointer">
-                    {/* TODO: i18n */}Completed ({schedule.completed.length.toLocaleString()})
+                    {t('scheduler.tab_completed', { count: schedule.completed.length.toLocaleString() })}
                   </TabsTrigger>
                   <TabsTrigger value="all" className="cursor-pointer">
-                    {/* TODO: i18n */}All ({schedule.entries.length.toLocaleString()})
+                    {t('scheduler.tab_all', { count: schedule.entries.length.toLocaleString() })}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -320,7 +302,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
                 schedule.completed.length === 0 ? (
                   <>
                     <div className="m-2 flex items-center justify-center gap-2">
-                      No completed actions yet.{/* TODO: i18n */}
+                      {t('scheduler.text_no_completed_actions')}
                     </div>
                   </>
                 ) : (
@@ -335,7 +317,7 @@ export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleP
                 schedule.pending.length === 0 ? (
                   <>
                     <div className="m-2 flex items-center justify-center gap-2">
-                      No pending actions.{/* TODO: i18n */}
+                      {t('scheduler.text_no_pending_actions')}
                     </div>
                   </>
                 ) : (
