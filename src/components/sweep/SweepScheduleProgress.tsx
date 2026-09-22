@@ -55,10 +55,11 @@ type Tab = 'completed' | 'pending' | 'all'
 
 interface SweepScheduleProgressProps {
   schedule: Schedule
+  error?: string | null
   debug?: boolean
 }
 
-export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgressProps) => {
+export const SweepScheduleProgress = ({ schedule, error, debug }: SweepScheduleProgressProps) => {
   const { t } = useTranslation()
   const totalHours = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds / 60 / 60)
   const totalSeconds = Math.ceil(schedule.summary.estimatedTotalDurationInSeconds)
@@ -103,7 +104,7 @@ export const SweepScheduleProgress = ({ schedule, debug }: SweepScheduleProgress
           <Alert variant="destructive">
             <AlertTriangleIcon />
             <AlertTitle>{/* TODO: i18n */ 'Scheduled sweep failed.'}</AlertTitle>
-            <AlertDescription />
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
 

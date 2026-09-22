@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MilkIcon, UsersIcon } from 'lucide-react'
+import { CoinsIcon, GoalIcon, MilkIcon, UsersIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { jarBadgeVariant } from '@/components/ui/badge-variants'
@@ -10,7 +10,7 @@ import { CookingPotIcon } from '@/components/ui/jam/CookingPotIcon'
 import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
-import { Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemHeader, ItemTitle } from '../ui/item'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Label } from '../ui/label'
 
 export interface ActiveCollaborativeSendAlertProps {
@@ -42,22 +42,17 @@ export const ActiveCollaborativeSendAlert = ({
 
   return (
     <>
-      <Item
-        variant="outline"
+      <Card
         className={cn({
           //'ring-brand-success ring-1': value.status.completed,
           //'ring-destructive ring-1': value.status.failed,
           'ring-ring/50 ring-2': true,
         })}
       >
-        <ItemHeader className="mb-4">
-          <div>
-            <ItemTitle className="text-base">{t('send.text_coinjoin_already_running')}</ItemTitle>
-            <ItemDescription></ItemDescription>
-          </div>
-        </ItemHeader>
-
-        <ItemContent className="flex flex-col gap-2 md:flex-row md:gap-8">
+        <CardHeader className="mb-4">
+          <CardTitle className="text-base">{t('send.text_coinjoin_already_running')}</CardTitle>
+        </CardHeader>
+        <CardContent className={cn('flex flex-col gap-2', { 'md:flex-row md:gap-8': data !== undefined })}>
           <div className="col-span-full flex justify-center md:col-span-1">
             <CookingPotIcon
               className="animate-pulse"
@@ -81,7 +76,7 @@ export const ActiveCollaborativeSendAlert = ({
                 ) : null}
 
                 <div className="flex min-w-0 items-start gap-4">
-                  <UsersIcon className="mt-0.5 shrink-0" />
+                  <CoinsIcon className="mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1 space-y-1">
                     <Label className="font-semibold">
                       {t('send.confirm_send_modal.label_amount')}
@@ -110,7 +105,7 @@ export const ActiveCollaborativeSendAlert = ({
                 ) : null}
 
                 <div className="col-span-full flex min-w-0 items-start gap-4">
-                  <UsersIcon className="mt-0.5 shrink-0" />
+                  <GoalIcon className="mt-0.5 shrink-0" />
                   <div className="min-w-0 flex-1 space-y-1">
                     <Label className="font-semibold">{t('send.confirm_send_modal.label_recipient')}</Label>
                     {destinationJar && (
@@ -129,16 +124,14 @@ export const ActiveCollaborativeSendAlert = ({
               </div>
             </>
           )}
-        </ItemContent>
+        </CardContent>
 
-        <ItemFooter>
-          <ItemActions>
-            <Button type="button" variant="destructive" onClick={onAbort} disabled={isAborting}>
-              {t('global.abort')}
-            </Button>
-          </ItemActions>
-        </ItemFooter>
-      </Item>
+        <CardFooter className="justify-end">
+          <Button type="button" variant="ghost" onClick={onAbort} disabled={isAborting}>
+            {t('global.abort')}
+          </Button>
+        </CardFooter>
+      </Card>
     </>
   )
 }

@@ -313,6 +313,9 @@ describe('scheduleUtils', () => {
       failed: false,
       cancelled: false,
     })
+    expect(schedule.summary.stale).toBe(false)
+    expect(toSchedule({ ...response, stale: true }, []).summary.stale).toBe(true)
+    expect(toSchedule({ ...response, stale: undefined }, []).summary.stale).toBe(false)
   })
 
   it('derives current state while waiting for transaction confirmation', () => {

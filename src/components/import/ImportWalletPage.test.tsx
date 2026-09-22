@@ -1,11 +1,13 @@
 import type { PropsWithChildren } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routes } from '@/constants/routes'
 import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import ImportWalletPage from './ImportWalletPage'
+
+type SessionInfoUpdater = (previousState?: SessionResponse) => SessionResponse | undefined
 
 const mocks = vi.hoisted(() => ({
   jmInfo: undefined as { backend?: string } | undefined,
@@ -21,6 +23,22 @@ const mocks = vi.hoisted(() => ({
   toastDismiss: vi.fn(),
   toastLoading: vi.fn(() => 'toast-id'),
   toastSuccess: vi.fn(),
+  toastWarning: vi.fn(),
+  toastError: vi.fn(),
+  sessionState: undefined as SessionResponse | undefined,
+  updateSessionInfo: vi.fn((updater: unknown) => {
+    if (typeof updater === 'function') {
+      mocks.sessionState = (updater as SessionInfoUpdater)(mocks.sessionState)
+    } else {
+      mocks.sessionState = updater as SessionResponse | undefined
+    }
+  }),
+}))
+
+vi.mock('@/hooks/useQueryJmInfo', () => ({
+  useQueryJmInfo: () => ({
+    info: mocks.jmInfo,
+  }),
 }))
 
 type MutationOptions = { mutationFn: (input: unknown) => Promise<unknown> }
@@ -62,15 +80,17 @@ vi.mock('react-router-dom', () => ({
 vi.mock('sonner', () => ({
   toast: {
     dismiss: mocks.toastDismiss,
-    error: vi.fn(),
+    error: mocks.toastError,
     loading: mocks.toastLoading,
     success: mocks.toastSuccess,
+    warning: mocks.toastWarning,
   },
 }))
 
-vi.mock('@/hooks/useQueryJmInfo', () => ({
-  useQueryJmInfo: () => ({
-    info: mocks.jmInfo,
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  useRawJmSession: () => ({
+    jmSession: mocks.sessionState,
+    updateSessionInfo: mocks.updateSessionInfo,
   }),
 }))
 
@@ -162,6 +182,7 @@ vi.mock('./ImportStepConfirm', () => ({
 
 describe('ImportWalletPage', () => {
   beforeEach(() => {
+    mocks.jmInfo = undefined
     mocks.configGet.mockReset()
     mocks.configSet.mockReset()
     mocks.lockWallet.mockReset()
@@ -174,9 +195,10 @@ describe('ImportWalletPage', () => {
     mocks.toastDismiss.mockReset()
     mocks.toastLoading.mockClear()
     mocks.toastSuccess.mockReset()
-    mocks.jmInfo = undefined
+    mocks.toastWarning.mockReset()
+    mocks.toastError.mockReset()
     authStore.getState().clear()
-    jmSessionStore.setState({ state: undefined })
+    mocks.sessionState = undefined
 
     mocks.recoverWallet.mockResolvedValue({
       walletname: 'restored.jmdat',
@@ -196,7 +218,7 @@ describe('ImportWalletPage', () => {
     mocks.hashPassword.mockResolvedValue('hashed-secret')
   })
 
-  it('imports a wallet on legacy backend, restores gaplimit, starts rescan, and signs in', async () => {
+  it('imports a wallet, restores gaplimit, starts rescan, and signs in', async () => {
     const user = userEvent.setup()
 
     render(<ImportWalletPage />)
@@ -214,9 +236,90 @@ describe('ImportWalletPage', () => {
     )
     expect(mocks.configSet).toHaveBeenCalledTimes(2)
     expect(mocks.rescanBlockchain).toHaveBeenCalled()
-    expect(jmSessionStore.getState().state?.rescanning).toBe(true)
+    expect(mocks.sessionState?.rescanning).toBe(true)
     expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
     expect(mocks.toastDismiss).toHaveBeenCalledWith('toast-id')
+  })
+
+  it('still signs the user in and shows a warning (not an error) when resetting gaplimit fails', async () => {
+    const user = userEvent.setup()
+    mocks.configSet.mockResolvedValueOnce({}).mockRejectedValueOnce(new Error('reset failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() =>
+      expect(authStore.getState().state).toEqual({
+        walletFileName: 'restored.jmdat',
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
+        hashed_password: 'hashed-secret',
+      }),
+    )
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
+    expect(mocks.toastWarning).toHaveBeenCalledWith('import_wallet.warning_partial_import')
+    expect(mocks.toastSuccess).not.toHaveBeenCalledWith('import_wallet.success.title')
+    expect(mocks.toastError).not.toHaveBeenCalled()
+  })
+
+  it('still signs the user in and shows a warning (not an error) when the rescan trigger fails', async () => {
+    const user = userEvent.setup()
+    mocks.rescanBlockchain.mockRejectedValueOnce(new Error('rescan failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() =>
+      expect(authStore.getState().state).toEqual({
+        walletFileName: 'restored.jmdat',
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
+        hashed_password: 'hashed-secret',
+      }),
+    )
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
+    expect(mocks.toastWarning).toHaveBeenCalledWith('import_wallet.warning_partial_import')
+    expect(mocks.toastError).not.toHaveBeenCalled()
+  })
+
+  it('does not sign the user in, sends them to login, and shows a warning (not the generic error) when lock/unlock fails after the wallet was already recovered', async () => {
+    const user = userEvent.setup()
+    mocks.lockWallet.mockRejectedValueOnce(new Error('lock failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() => expect(mocks.toastWarning).toHaveBeenCalledWith('import_wallet.warning_partial_import'))
+
+    expect(authStore.getState().state).toBeUndefined()
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.login)
+    expect(mocks.rescanBlockchain).not.toHaveBeenCalled()
+    expect(mocks.toastError).not.toHaveBeenCalled()
+  })
+
+  it('shows the generic error when the wallet itself was never recovered', async () => {
+    const user = userEvent.setup()
+    mocks.recoverWallet.mockReset()
+    mocks.recoverWallet.mockRejectedValueOnce(new Error('recover failed'))
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith('import_wallet.error_importing_failed'))
+
+    expect(authStore.getState().state).toBeUndefined()
+    expect(mocks.navigate).not.toHaveBeenCalled()
+    expect(mocks.toastWarning).not.toHaveBeenCalled()
   })
 
   it('skips manual rescan when smart_scan is enabled on joinmarket-ng', async () => {
@@ -243,7 +346,7 @@ describe('ImportWalletPage', () => {
       }),
     )
     expect(mocks.rescanBlockchain).not.toHaveBeenCalled()
-    expect(jmSessionStore.getState().state?.rescanning).toBe(true)
+    expect(mocks.sessionState?.rescanning).toBe(true)
     expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
   })
 

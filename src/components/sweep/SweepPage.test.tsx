@@ -1,4 +1,5 @@
 import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import test from 'node:test'
 import type { UseFormReturn } from 'react-hook-form'
@@ -14,7 +15,6 @@ import { JM_NG_DEFAULT_TUMBLER_PARAMS } from '@/constants/jm'
 import type { Jar, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { percentageToFactor } from '@/lib/utils'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import type { SweepFormValues } from './SweepFormSchema'
 import { SweepPage } from './SweepPage'
@@ -110,6 +110,11 @@ const mocks = vi.hoisted(() => ({
   hasOrders: true,
   orderbookIsLoading: false,
   orderbookError: false,
+  sessionActive: true,
+  coinjoinInProcess: false,
+  makerRunning: false,
+  rescanning: false,
+  hasSchedule: false,
 }))
 
 vi.mock('@/hooks/useQueryOrderbook', () => ({
@@ -366,34 +371,31 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
 }
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
-  useJamSessionInfoContext: () => {
-    const state = jmSessionStore.getState().state
-    return {
-      rescanInfo: { rescanning: !!state?.rescanning },
-      takerInfo: {
-        running: !!state?.coinjoin_in_process,
-        scheduler: {
-          running: !!state?.coinjoin_in_process && !!state?.schedule,
-        },
+  useRawJmSession: () => ({
+    jmSession: mocks.sessionActive ? ({ session: true, wallet_name: 'wallet.jmdat' } as SessionResponse) : undefined,
+    updateSessionInfo: vi.fn(),
+  }),
+  useJamSessionInfoContext: () => ({
+    rescanInfo: { rescanning: mocks.rescanning },
+    takerInfo: {
+      running: mocks.coinjoinInProcess,
+      scheduler: {
+        running: mocks.coinjoinInProcess && mocks.hasSchedule,
       },
-      makerInfo: {
-        running: !!state?.maker_running,
-      },
-    }
-  },
+    },
+    makerInfo: {
+      running: mocks.makerRunning,
+    },
+  }),
 }))
 
 const setSession = (overrides: Record<string, unknown> = {}) => {
-  jmSessionStore.setState({
-    state: {
-      coinjoin_in_process: false,
-      maker_running: false,
-      rescanning: false,
-      session: true,
-      wallet_name: 'wallet.jmdat',
-      ...overrides,
-    },
-  })
+  mocks.sessionActive = overrides.session !== false
+  mocks.coinjoinInProcess = overrides.coinjoin_in_process === true
+  mocks.makerRunning = overrides.maker_running === true
+  mocks.rescanning = overrides.rescanning === true
+  mocks.hasSchedule =
+    overrides.schedule !== undefined && Array.isArray(overrides.schedule) && overrides.schedule.length > 0
 }
 
 describe('SweepPage', async () => {
@@ -434,7 +436,7 @@ describe('SweepPage', async () => {
   })
 
   it('shows loading while session, fee config, or wallet info is loading', () => {
-    jmSessionStore.setState({ state: undefined })
+    mocks.sessionActive = false
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('page-loading')).toBeInTheDocument()
@@ -651,13 +653,42 @@ describe('SweepPage', async () => {
     expect(screen.queryByRole('button', { name: 'global.loadingscheduler.button_stop' })).not.toBeInTheDocument()
   })
 
-  it('does not render a stale running tumbler plan as a running schedule', () => {
+  it('keeps a stale failed plan visible until it is cleared', async () => {
+    const restartError = 'Tumbler plan interrupted by backend restart'
+    mocks.tumblerStatusData = {
+      ...activePlan,
+      status: 'failed',
+      stale: true,
+      error: restartError,
+    }
+
+    render(<SweepPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('Scheduled sweep failed.')).toBeInTheDocument()
+    expect(screen.getByText(restartError)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'fill-destinations' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_plan' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_start' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_stop' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'scheduler.button_plan_renew' })).not.toBeInTheDocument()
+    expect(mocks.planTumbler).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'global.cancel' }))
+
+    await waitFor(() =>
+      expect(mocks.deleteTumbler).toHaveBeenCalledWith({
+        path: { walletname: 'wallet.jmdat' },
+      }),
+    )
+  })
+
+  it('keeps stop available when the scheduler is running even if the plan is stale', () => {
     setSession({ coinjoin_in_process: true, schedule: ['anything'] })
     mocks.tumblerStatusData = { ...activePlan, stale: true }
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.queryByRole('button', { name: 'scheduler.button_stop' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'global.loadingscheduler.button_stop' })).not.toBeInTheDocument()
   })
 

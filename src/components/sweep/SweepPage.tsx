@@ -11,7 +11,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { HourglassIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
@@ -28,7 +27,7 @@ import { PageLoading } from '@/components/ui/jam/PageLoading'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import * as JAM from '@/constants/jam'
 import type { TumblerParameters } from '@/constants/jm'
-import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { useRawJmSession, useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useDetectNetwork, useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -37,7 +36,6 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
 import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
@@ -67,7 +65,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       scheduler: { running: schedulerRunning },
     },
   } = useJamSessionInfoContext()
-  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const { jmSession } = useRawJmSession()
   const walletInfo = useJamWalletInfoContext()
   const { network } = useDetectNetwork()
   const { enabled: isDeveloperMode } = useDeveloperMode()
@@ -202,7 +200,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const currentSchedule = useMemo(() => {
     if (getScheduleQuery.error) return
     if (getScheduleQuery.data === undefined) return
-    if (getScheduleQuery.data.stale === true) return
 
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
@@ -363,7 +360,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Alert>
                 ) : null}
 
-                <SweepScheduleProgress schedule={currentSchedule} debug={isDeveloperMode} />
+                <SweepScheduleProgress
+                  schedule={currentSchedule}
+                  error={getScheduleQuery.data?.error}
+                  debug={isDeveloperMode}
+                />
 
                 {schedulerRunning && currentSchedule.summary.status.running ? (
                   <Button
@@ -384,7 +385,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   </Button>
                 ) : (
                   <>
-                    {currentSchedule.summary.status.pending || isWaitingSchedulerStart ? (
+                    {!currentSchedule.summary.stale &&
+                    (currentSchedule.summary.status.pending || isWaitingSchedulerStart) ? (
                       <Button
                         type="button"
                         onClick={() => {
@@ -404,7 +406,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                         )}
                       </Button>
                     ) : null}
-                    {currentSchedule.summary.status.pending && planSchedule.variables?.body ? (
+                    {!currentSchedule.summary.stale &&
+                    currentSchedule.summary.status.pending &&
+                    planSchedule.variables?.body ? (
                       <Button
                         type="button"
                         variant="secondary"
