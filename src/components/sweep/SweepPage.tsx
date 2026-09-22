@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   tumblerplandeleteMutation,
   tumblerplanMutation,
@@ -34,7 +34,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useQueryOrderbook } from '@/hooks/useQueryOrderbook'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { getErrorReason } from '@/lib/errorReason'
-import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
+import { cn, scrollIntoView, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -69,6 +69,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const walletInfo = useJamWalletInfoContext()
   const { network } = useDetectNetwork()
   const { enabled: isDeveloperMode } = useDeveloperMode()
+
+  const pageTopElementRef = useRef<HTMLDivElement>(null)
+  const scrollToPageTop = () => scrollIntoView(pageTopElementRef, {})
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
@@ -110,8 +113,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setAlertMessage(undefined)
     },
     onSettled: async () => {
+      scrollToPageTop()
       await getScheduleQuery.refetch()
-      scrollToTop()
     },
     onError: (error) => {
       console.error('Plan schedule error:', error)
@@ -138,8 +141,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     },
     onSettled: async () => {
       setShowScheduleConfirmDialog(undefined)
+      scrollToPageTop()
       await getScheduleQuery.refetch()
-      scrollToTop()
     },
     onError: (error) => {
       console.error('Plan schedule error:', error)
@@ -165,8 +168,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       setAlertMessage(undefined)
     },
     onSettled: async () => {
+      scrollToPageTop()
       await getScheduleQuery.refetch()
-      scrollToTop()
     },
     onError: (error) => {
       const reason = getErrorReason(error, t('global.errors.reason_unknown'))
@@ -184,7 +187,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     retry: false,
     onMutate: () => {
       setAlertMessage(undefined)
-      scrollToTop()
+      scrollToPageTop()
     },
     onSettled: async () => {
       await getScheduleQuery.refetch()
@@ -286,7 +289,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         disabled={isStartDisabled}
         isStarting={isWaitingSchedulerStart}
       />
-      <div className="mx-auto max-w-4xl space-y-3 p-4">
+      <div className="mx-auto max-w-4xl space-y-3 p-4" ref={pageTopElementRef}>
         <PageTitle
           title={
             <>
