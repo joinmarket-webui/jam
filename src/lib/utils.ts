@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
@@ -307,7 +308,15 @@ export const median = (values: number[]): number | null => {
  * did not properly work without a timeout.
  */
 export const scrollToTop = (options?: ScrollOptions) => {
-  setTimeout(() => window.scrollTo({ behavior: 'smooth', ...options, top: 0, left: 0 }), 21)
+  return setTimeout(() => window.scrollTo({ behavior: 'smooth', ...options, top: 0, left: 0 }), 21)
+}
+
+export const scrollIntoView = <T extends HTMLElement>(
+  targetElement: RefObject<T | null> | null,
+  options?: ScrollIntoViewOptions,
+) => {
+  if (!targetElement?.current) return
+  return setTimeout(() => targetElement?.current?.scrollIntoView({ behavior: 'smooth', ...options }), 21)
 }
 
 export const time = (() => {
