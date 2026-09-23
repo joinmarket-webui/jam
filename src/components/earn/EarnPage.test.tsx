@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => ({
     isError: false,
     isLoading: false,
   },
-  scrollToTop: vi.fn(),
+  scrollIntoView: vi.fn(),
   startMaker: vi.fn(),
   startMutationState: {
     isPending: false,
@@ -164,7 +164,7 @@ vi.mock('@/lib/queryClient', () => ({
 
 vi.mock('@/lib/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/utils')>()),
-  scrollToTop: mocks.scrollToTop,
+  scrollIntoView: mocks.scrollIntoView,
 }))
 
 vi.mock('@/store/jamSettingsStore', () => ({
@@ -317,7 +317,7 @@ describe('EarnPage', () => {
     mocks.orderbookQueryOptions.mockReset()
     mocks.orderbookQueryState.isError = false
     mocks.orderbookQueryState.isLoading = false
-    mocks.scrollToTop.mockReset()
+    mocks.scrollIntoView.mockReset()
     mocks.startMaker.mockReset()
     mocks.startMaker.mockResolvedValue({})
     mocks.startMutationState.isPending = false
@@ -375,7 +375,7 @@ describe('EarnPage', () => {
       },
       path: { walletname: 'wallet.jmdat' },
     })
-    expect(mocks.scrollToTop).toHaveBeenCalled()
+    expect(mocks.scrollIntoView).toHaveBeenCalled()
   })
 
   it('opens fee/report dialogs', async () => {
@@ -410,6 +410,7 @@ describe('EarnPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'earn.button_stop' }))
     expect(mocks.stopMakerRefetch).toHaveBeenCalledWith({ throwOnError: true })
+    expect(mocks.scrollIntoView).toHaveBeenCalled()
   })
 
   it('shows the current offer and fidelity bond from the local orderbook', () => {

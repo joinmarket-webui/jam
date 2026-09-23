@@ -93,6 +93,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   } = useJamSessionInfoContext()
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
+
   const pageTopElementRef = useRef<HTMLDivElement>(null)
   const scrollToPageTop = () => scrollIntoView(pageTopElementRef, {})
 
