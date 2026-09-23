@@ -31,7 +31,6 @@ import {
   delayedPromise,
   pseudoRandomInteger,
   pseudoRandomFloat,
-  scrollToTop,
   time,
   shortenStringMiddle,
   median,
@@ -383,31 +382,6 @@ describe('percentageToFactor', () => {
   it('should use default precision of 6', () => {
     expect(percentageToFactor(12.345678)).toBe(0.123457)
     expect(percentageToFactor(0.001)).toBe(0.00001)
-  })
-})
-
-describe('scrollToTop', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.unstubAllGlobals()
-    vi.restoreAllMocks()
-    vi.useRealTimers()
-  })
-
-  it('should scroll the window to the top after a short delay', async () => {
-    const scrollTo = vi.fn()
-    vi.stubGlobal('scrollTo', scrollTo)
-
-    scrollToTop({ behavior: 'auto' })
-
-    expect(scrollTo).not.toHaveBeenCalled()
-
-    await vi.advanceTimersByTimeAsync(21)
-
-    expect(scrollTo).toHaveBeenCalledWith({ behavior: 'auto', top: 0, left: 0 })
   })
 })
 
