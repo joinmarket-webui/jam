@@ -10,9 +10,7 @@ const resources = languages.reduce((acc, lng) => {
   }
 }, {})
 
-// Keep the document's language declaration in sync with the UI language: screen readers
-// pick their speech synthesizer from `lang`, and browsers need it to resolve the correct
-// Han glyph variants for `zh-Hans` vs `zh-Hant`.
+// Keep the document's language declaration in sync for screen readers.
 // Registered before `init` so the initially detected language is applied as well.
 i18n.on('languageChanged', (lng) => (document.documentElement.lang = lng))
 
