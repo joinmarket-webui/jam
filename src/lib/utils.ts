@@ -300,17 +300,6 @@ export const median = (values: number[]): number | null => {
   return Number.isFinite(median) ? median : null
 }
 
-/**
- * Scrolls to the top of the page.
- *
- * Hint: There is a small delay before the scrolling is initiated,
- * in order to mitigate some weird browser behaviour, where it
- * did not properly work without a timeout.
- */
-export const scrollToTop = (options?: ScrollOptions) => {
-  return setTimeout(() => window.scrollTo({ behavior: 'smooth', ...options, top: 0, left: 0 }), 21)
-}
-
 export const scrollIntoView = <T extends HTMLElement>(
   targetElement: RefObject<T | null> | null,
   options?: ScrollIntoViewOptions,
