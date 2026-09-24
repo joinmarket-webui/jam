@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   directsendMutation,
   docoinjoinMutation,
@@ -32,7 +32,7 @@ import { useUtxoSelectionDialog } from '@/hooks/useUtxoSelectionDialog'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withMutationDelay } from '@/lib/queryClient'
-import { cn, scrollToTop, type WalletFileName } from '@/lib/utils'
+import { cn, delayedPromise, scrollIntoView, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { jmTxStore, type JmTxInfo } from '@/store/jmTxStore'
 import type { JarIndex } from '@/types/global'
@@ -70,7 +70,6 @@ interface SendPageProps {
 export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
-  const [formId, setFormId] = useState<number>(0)
   const { fetchIfMissing } = useJmConfig({ walletFileName })
   const {
     isLoading: walletInfoIsLoading,
@@ -95,6 +94,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
+  const pageTopElementRef = useRef<HTMLDivElement>(null)
+  const scrollToPageTop = () => scrollIntoView(pageTopElementRef, {})
+
+  const [formId, setFormId] = useState<number>(0)
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
@@ -179,7 +182,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     reset: stopCoinjoinMutationReset,
   } = useMutation({
     mutationFn: async () => {
-      return await stopCoinjoinQuery.refetch({ throwOnError: true })
+      const result = await stopCoinjoinQuery.refetch({ throwOnError: true })
+      await delayedPromise(210) // avoid flickering
+      return result
     },
     retry: false,
     onMutate: () => {
@@ -267,7 +272,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     ),
     onMutate: () => {
       setNonCollaborativePaymentSuccessInfoAlert(undefined)
-      scrollToTop()
+      scrollToPageTop()
     },
     onSuccess: (result: DirectSendResult, data: SendFormValues) => {
       const tx = result.response.txinfo as Required<JmTxInfo>
@@ -315,7 +320,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     ),
     onMutate: () => {
       setNonCollaborativePaymentSuccessInfoAlert(undefined)
-      scrollToTop()
+      scrollToPageTop()
     },
     onSuccess: (_result, data) => {
       setCurrentPaymentAttempt({
@@ -402,7 +407,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           debug={isDeveloperMode}
         />
       )}
-      <div className="mx-auto max-w-4xl space-y-3 p-4">
+      <div className="mx-auto max-w-4xl space-y-3 p-4" ref={pageTopElementRef}>
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
         {feeConfigValidation.maxFeesConfigMissing && (
@@ -492,7 +497,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         )}
 
-        {takerRunning && !schedulerRunning && (
+        {takerRunning && !schedulerRunning && (!isWaitingCoinjoinStop || currentPaymentAttempt !== undefined) && (
           <ActiveCollaborativeSendAlert
             paymentAttempt={currentPaymentAttempt?.data.isCoinJoin === true ? currentPaymentAttempt : undefined}
             jars={jars}

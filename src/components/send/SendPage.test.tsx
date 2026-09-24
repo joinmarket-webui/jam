@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
   getFeeConfigValues: vi.fn<() => JamFeeConfigValues>(),
   jmSessionPresent: true,
   onOpenUtxoSelector: vi.fn(),
-  scrollToTop: vi.fn(),
+  scrollIntoView: vi.fn(),
   setCurrentPaymentAttempt: vi.fn(),
   setWaitForUtxosToBeSpent: vi.fn(),
   startCoinjoin: vi.fn(),
@@ -155,7 +155,7 @@ vi.mock('@/lib/queryClient', () => ({
 
 vi.mock('@/lib/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/utils')>()),
-  scrollToTop: mocks.scrollToTop,
+  scrollIntoView: mocks.scrollIntoView,
 }))
 
 vi.mock('@/store/jamSettingsStore', () => ({
@@ -344,7 +344,7 @@ describe('SendPage', () => {
       txFee: directValues.txFee,
     })
     mocks.onOpenUtxoSelector.mockReset()
-    mocks.scrollToTop.mockReset()
+    mocks.scrollIntoView.mockReset()
     mocks.setCurrentPaymentAttempt.mockReset()
     mocks.setWaitForUtxosToBeSpent.mockReset()
     mocks.startCoinjoin.mockReset()
@@ -395,6 +395,7 @@ describe('SendPage', () => {
     expect(mocks.setWaitForUtxosToBeSpent).toHaveBeenCalledWith(['source-tx:0'])
     expect(mocks.toastSuccess).toHaveBeenCalledWith('send.alert_direct_payment_success_title')
     expect(screen.getByText(/send.alert_payment_successful/u)).toBeInTheDocument()
+    expect(mocks.scrollIntoView).toHaveBeenCalled()
   })
 
   it('opens fee config instead of starting CoinJoin when max fees are missing', async () => {
@@ -450,6 +451,7 @@ describe('SendPage', () => {
 
     await waitFor(() => expect(mocks.startCoinjoin).toHaveBeenCalled())
     expect(mocks.setCurrentPaymentAttempt).toHaveBeenCalled()
+    expect(mocks.scrollIntoView).toHaveBeenCalled()
   })
 
   it('rejects confirmed CoinJoin when max fees config goes missing after submit', async () => {
