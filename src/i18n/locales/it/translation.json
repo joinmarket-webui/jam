@@ -351,7 +351,8 @@
       "select_utxos": {
         "description": "Selezionare uno o più UTXO dal vaso {{ jar }} da utilizzare per il Fidelity Bond.",
         "utxo_card": {
-          "confirmations": "{{ confs }} Conferme"
+          "confirmations_one": "{{ count }} conferma",
+          "confirmations_other": "{{ count }} conferme"
         }
       },
       "freeze_utxos": {

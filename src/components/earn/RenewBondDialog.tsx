@@ -13,7 +13,8 @@ import { JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
-import type { WalletFileName } from '@/lib/utils'
+import { type WalletFileName, time } from '@/lib/utils'
+import { Address } from '../ui/jam/Address'
 import { RENEW_BOND_FORM_DEFAULT_VALUES, renewBondFormSchema, type RenewBondFormValues } from './RenewBondDialog.schema'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
@@ -44,7 +45,7 @@ interface RenewBondDialogProps {
 }
 
 export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: RenewBondDialogProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const client = useApiClient()
 
   const [step, setStep] = useState<Step>('select_date')
@@ -75,6 +76,14 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   })
 
   const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
+  const selectedDateHumanReadableDuration = (() => {
+    if (!selectedLockdate) return null
+    const locktime = fb.lockdate.toTimestamp(selectedLockdate)
+    return time.humanReadableDuration({
+      to: locktime,
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  })()
 
   const timelockAddressQuery = useQuery({
     ...gettimelockaddressOptions({
@@ -140,7 +149,14 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
       case 'confirm':
         return (
           <WizardStepFooter
-            onBack={() => setStep('select_date')}
+            onBack={() => {
+              setStep('select_date')
+              setValue('confirmationAccepted', false, {
+                shouldDirty: false,
+                shouldTouch: false,
+                shouldValidate: false,
+              })
+            }}
             onCancel={() => handleOpenChange(false)}
             onPrimary={() => void submitRenewal()}
             primaryDisabled={!confirmationChecked || !destinationAddress}
@@ -160,6 +176,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
       open={open}
       onOpenChange={handleOpenChange}
       title={t('earn.fidelity_bond.renew.title')}
+      subtitle={t('earn.fidelity_bond.subtitle')}
       currentStep={step === 'sending' || step === 'success' ? undefined : WIZARD_STEPS.indexOf(step)}
       totalSteps={WIZARD_STEPS.length}
       error={displayError}
@@ -167,7 +184,11 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     >
       {step === 'select_date' && (
         <div className="space-y-6">
-          <StepIntro icon={CalendarIcon} title={t('earn.fidelity_bond.select_date.description')} />
+          <StepIntro
+            icon={CalendarIcon}
+            title={t('earn.fidelity_bond.select_date.description')}
+            subtitle={t('earn.fidelity_bond.select_date.subtitle')}
+          />
 
           <InfoCard label={t('earn.fidelity_bond.review_inputs.label_amount')}>
             <FidelityBondAmount value={utxo.value} className="text-lg" />
@@ -218,8 +239,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
             <AlertTitle>{t('earn.fidelity_bond.renew.confirm_send_modal.title')}</AlertTitle>
             <AlertDescription>
               {t('earn.fidelity_bond.confirm_modal.body', {
-                /* TODO: fix human readable duration */
-                humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
+                humanReadableDuration: selectedDateHumanReadableDuration || '',
                 date: selectedDateLabel || '',
               })}
             </AlertDescription>
@@ -250,7 +270,9 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
               label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
               value={destinationAddress}
               copiedMessage={t('receive.text_copy_address')}
-            />
+            >
+              <Address value={destinationAddress} className="animate-in blur-in-10 duration-800" copyable={false} />
+            </CopyableField>
           )}
 
           {txResult?.txinfo?.txid && (
@@ -258,7 +280,9 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
               label={t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
               value={txResult.txinfo.txid}
               copiedMessage={t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id')}
-            />
+            >
+              {txResult.txinfo.txid}
+            </CopyableField>
           )}
         </div>
       )}

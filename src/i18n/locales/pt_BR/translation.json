@@ -351,7 +351,8 @@
       "select_utxos": {
         "description": "Selecione um ou mais UTXOs do frasco {{ jar }} para usar no título de fidelidade.",
         "utxo_card": {
-          "confirmations": "{{ confs }} Confirmações"
+          "confirmations_one": "{{ count }} confirmação",
+          "confirmations_other": "{{ count }} confirmações"
         }
       },
       "freeze_utxos": {

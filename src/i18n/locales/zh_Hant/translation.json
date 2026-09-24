@@ -392,7 +392,8 @@
       "select_utxos": {
         "description": "從罐子 {{ jar }} 選擇單一或多個 UTXOs 以用於保證金。",
         "utxo_card": {
-          "confirmations": "{{ confs }}次確認"
+          "confirmations_one": "{{ count }}次確認",
+          "confirmations_other": "{{ count }}次確認"
         }
       },
       "freeze_utxos": {

@@ -1,7 +1,8 @@
 import { AlertTriangleIcon, CheckIcon, CalendarIcon, WalletIcon, CoinsIcon, LockIcon } from 'lucide-react'
-import { Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
+import { Address } from '@/components/ui/jam/Address'
 import {
   Pagination,
   PaginationContent,
@@ -10,7 +11,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import * as fb from '@/lib/fidelityBondUtils'
-import { clamp, cn } from '@/lib/utils'
+import { clamp, cn, time } from '@/lib/utils'
 import {
   AddressPreview,
   ConfirmationToggle,
@@ -58,9 +59,18 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     frozenUtxos,
     t,
   } = wizard
+  const { i18n } = useTranslation()
 
   const selectedJar = jarsWithUtxos.find((jar) => jar.jarIndex === selectedJarIndex)
   const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
+  const selectedDateHumanReadableDuration = (() => {
+    if (!selectedLockdate) return null
+    const locktime = fb.lockdate.toTimestamp(selectedLockdate)
+    return time.humanReadableDuration({
+      to: locktime,
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  })()
 
   switch (step) {
     case 'select_date':
@@ -148,7 +158,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                             <p className="truncate font-mono text-xs break-all">{utxo.utxo}</p>
                             <p className="text-muted-foreground mt-0.5 text-xs">
                               {t('earn.fidelity_bond.select_utxos.utxo_card.confirmations', {
-                                confs: utxo.confirmations,
+                                count: utxo.confirmations,
                               })}
                             </p>
                           </div>
@@ -294,7 +304,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             <AlertTitle>{t('earn.fidelity_bond.confirm_modal.title')}</AlertTitle>
             <AlertDescription>
               {t('earn.fidelity_bond.confirm_modal.body', {
-                humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
+                humanReadableDuration: selectedDateHumanReadableDuration || '',
                 date: selectedDateLabel || '',
               })}
             </AlertDescription>
@@ -335,7 +345,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                 label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
                 value={address}
                 copiedMessage={t('receive.text_copy_address')}
-              />
+              >
+                <Address value={address} className="animate-in blur-in-10 duration-800" copyable={false} />
+              </CopyableField>
             )}
 
             {txResult?.txinfo?.txid && (
@@ -343,7 +355,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                 label={t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
                 value={txResult.txinfo.txid}
                 copiedMessage={t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id')}
-              />
+              >
+                {txResult.txinfo.txid}
+              </CopyableField>
             )}
           </div>
 

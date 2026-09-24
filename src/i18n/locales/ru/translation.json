@@ -426,7 +426,10 @@
       "select_utxos": {
         "description": "Выберите один или несколько UTXO из Банки {{ jar }} для использования в качестве Fidelity Bond.",
         "utxo_card": {
-          "confirmations": "{{ confs }} Подтверждений"
+          "confirmations_one": "{{ count }} подтверждение",
+          "confirmations_few": "{{ count }} подтверждения",
+          "confirmations_many": "{{ count }} подтверждений",
+          "confirmations_other": "{{ count }} подтверждения"
         }
       },
       "freeze_utxos": {
