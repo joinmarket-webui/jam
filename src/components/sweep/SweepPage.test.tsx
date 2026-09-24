@@ -664,7 +664,7 @@ describe('SweepPage', async () => {
 
     render(<SweepPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('Scheduled sweep failed.')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.alert_schedule_failed_title')).toBeInTheDocument()
     expect(screen.getByText(restartError)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'fill-destinations' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'scheduler.button_plan' })).not.toBeInTheDocument()
