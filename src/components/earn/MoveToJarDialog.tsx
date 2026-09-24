@@ -226,7 +226,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
           {destinationAddress && (
             <CopyableField
-              label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
+              label={t('earn.fidelity_bond.move.label_destination')}
               value={destinationAddress}
               copiedMessage={t('receive.text_copy_address')}
             >
