@@ -60,7 +60,7 @@ describe('parseBip21Uri', () => {
       expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true, amount: 10_000_000 })
     })
 
-    it('ignores extra query parameters', () => {
+    it('ignores extra non-req- query parameters', () => {
       const result = parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=0.01&label=test&message=hello`)
       expect(result).toEqual({
         address: VALID_ADDRESS,
@@ -68,6 +68,42 @@ describe('parseBip21Uri', () => {
         amount: 1_000_000,
         label: 'test',
         message: 'hello',
+      })
+    })
+
+    describe('required (req-) parameters', () => {
+      it('rejects a URI carrying an unsupported req- parameter', () => {
+        expect(parseBip21Uri(`bitcoin:${VALID_ADDRESS}?req-somethingyoudontunderstand=50`)).toBeUndefined()
+      })
+
+      it('rejects even when the rest of the URI is valid', () => {
+        expect(
+          parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=0.01&label=test&req-somethingyoudontunderstand=50`),
+        ).toBeUndefined()
+      })
+
+      it('rejects a URI carrying several req- parameters', () => {
+        expect(
+          parseBip21Uri(`bitcoin:${VALID_ADDRESS}?req-somethingyoudontunderstand=50&req-somethingelseyoudontget=999`),
+        ).toBeUndefined()
+      })
+
+      it('rejects req- regardless of case, as used in QR code URIs', () => {
+        expect(parseBip21Uri(`BITCOIN:${VALID_ADDRESS.toUpperCase()}?AMOUNT=0.01&REQ-FOO=1`)).toBeUndefined()
+      })
+
+      it('accepts the same parameters without the req- prefix', () => {
+        expect(
+          parseBip21Uri(`bitcoin:${VALID_ADDRESS}?somethingyoudontunderstand=50&somethingelseyoudontget=999`),
+        ).toEqual({ address: VALID_ADDRESS, fromUri: true })
+      })
+
+      it('does not treat a parameter merely containing "req-" as required', () => {
+        expect(parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=0.01&notreq-foo=1`)).toEqual({
+          address: VALID_ADDRESS,
+          fromUri: true,
+          amount: 1_000_000,
+        })
       })
     })
 
