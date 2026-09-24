@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { PropsWithChildren, ReactNode } from 'react'
 import { CheckCircle2Icon, CheckIcon, CopyIcon, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -99,17 +99,18 @@ export function CopyableField({
   label,
   value,
   copiedMessage,
-}: {
+  children,
+}: PropsWithChildren<{
   label: string
   value: string
   copiedMessage: string
-}) {
+}>) {
   const { t } = useTranslation()
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">{label}</Label>
       <div className="flex items-center gap-2">
-        <code className="bg-muted flex-1 rounded-lg p-3 font-mono text-xs break-all">{value}</code>
+        <div className="bg-muted flex-1 rounded-lg p-3 font-mono text-xs break-all">{children}</div>
         <CopyButton
           value={value}
           text={<CopyIcon className="h-4 w-4" />}

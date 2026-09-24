@@ -2,6 +2,7 @@ import { AlertTriangleIcon, CheckIcon, CalendarIcon, WalletIcon, CoinsIcon, Lock
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
+import { Address } from '@/components/ui/jam/Address'
 import {
   Pagination,
   PaginationContent,
@@ -344,7 +345,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                 label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
                 value={address}
                 copiedMessage={t('receive.text_copy_address')}
-              />
+              >
+                <Address value={address} className="animate-in blur-in-10 duration-800" copyable={false} />
+              </CopyableField>
             )}
 
             {txResult?.txinfo?.txid && (
@@ -352,7 +355,9 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                 label={t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
                 value={txResult.txinfo.txid}
                 copiedMessage={t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id')}
-              />
+              >
+                {txResult.txinfo.txid}
+              </CopyableField>
             )}
           </div>
 

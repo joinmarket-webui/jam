@@ -13,6 +13,7 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import type { WalletFileName } from '@/lib/utils'
+import { Address } from '../ui/jam/Address'
 import { createMoveToJarFormSchema, type MoveToJarFormValues } from './MoveToJarDialog.schema'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
@@ -223,12 +224,24 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
         <div className="space-y-6">
           <SuccessHeading title={t('earn.fidelity_bond.move.success_text')} />
 
+          {destinationAddress && (
+            <CopyableField
+              label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
+              value={destinationAddress}
+              copiedMessage={t('receive.text_copy_address')}
+            >
+              <Address value={destinationAddress} className="animate-in blur-in-10 duration-800" copyable={false} />
+            </CopyableField>
+          )}
+
           {txResult?.txinfo?.txid && (
             <CopyableField
               label={t('earn.fidelity_bond.create_fidelity_bond.label_transaction_id')}
               value={txResult.txinfo.txid}
               copiedMessage={t('earn.fidelity_bond.create_fidelity_bond.text_copy_transaction_id')}
-            />
+            >
+              {txResult.txinfo.txid}
+            </CopyableField>
           )}
         </div>
       )}

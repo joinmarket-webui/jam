@@ -81,6 +81,7 @@ export function CreateFidelityBondDialog({
       open={open}
       onOpenChange={handleOpenChange}
       title={t('earn.fidelity_bond.create_fidelity_bond.title')}
+      subtitle={t('earn.fidelity_bond.subtitle')}
       currentStep={step !== 'creating' && step !== 'success' ? getStepNumber() : undefined}
       totalSteps={TOTAL_STEPS}
       error={error}

@@ -179,6 +179,7 @@ export function useCreateFidelityBondWizard(
 
   const handleBack = () => {
     setError(undefined)
+    setConfirmationChecked(false)
     switch (step) {
       case 'select_jar':
         setStep('select_date')
