@@ -157,7 +157,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
                             <p className="truncate font-mono text-xs break-all">{utxo.utxo}</p>
                             <p className="text-muted-foreground mt-0.5 text-xs">
                               {t('earn.fidelity_bond.select_utxos.utxo_card.confirmations', {
-                                confs: utxo.confirmations,
+                                count: utxo.confirmations,
                               })}
                             </p>
                           </div>

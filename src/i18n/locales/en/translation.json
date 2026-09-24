@@ -685,7 +685,8 @@
         "button_deselect_all": "Deselect All",
         "label_total_selected": "Total Selected",
         "utxo_card": {
-          "confirmations": "{{ confs }} Confirmations"
+          "confirmations_one": "{{ count }} confirmation",
+          "confirmations_other": "{{ count }} confirmations"
         }
       },
       "freeze_utxos": {
