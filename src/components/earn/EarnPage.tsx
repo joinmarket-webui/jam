@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -30,7 +30,7 @@ import * as OrderbookApi from '@/lib/api/orderbook'
 import { getErrorReason } from '@/lib/errorReason'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
-import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop } from '@/lib/utils'
+import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollIntoView } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode, useExpertFeatureEnabled } from '@/store/jamSettingsStore'
 import { Spinner } from '../ui/spinner'
@@ -87,6 +87,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const maxConfirmedJarAvailableBalance = useMemo(() => {
     return Math.max(0, ...walletInfo.jars.map((jar) => jar.balanceSummary.calculatedConfirmedAvailableBalanceInSats))
   }, [walletInfo.jars])
+
+  const pageTopElementRef = useRef<HTMLDivElement>(null)
+  const scrollToPageTop = () => scrollIntoView(pageTopElementRef, {})
 
   const [moveToJarUtxo, setMoveToJarUtxo] = useState<FidelityBondUtxo | undefined>()
   const [renewBondUtxo, setRenewBondUtxo] = useState<FidelityBondUtxo | undefined>()
@@ -210,6 +213,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const onStop = async () => {
     startMaker.reset()
     await stopMaker.mutateAsync()
+    scrollToPageTop()
   }
 
   const onSubmit: SubmitHandler<EarnFormValues> = async (data) => {
@@ -220,7 +224,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       },
       body: toStartMakerRequest(data),
     })
-    scrollToTop()
+    scrollToPageTop()
   }
 
   useEffect(() => {
@@ -244,7 +248,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-3 p-4">
+    <div className="mx-auto max-w-4xl space-y-3 p-4" ref={pageTopElementRef}>
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')}>
         <EarnReportOverlay open={showEarnReport} onOpenChange={setShowEarnReport} />
         <Button variant="outline" onClick={() => setShowEarnReport(true)}>

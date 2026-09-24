@@ -1,3 +1,5 @@
+import { createRef } from 'react'
+import { render } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
@@ -29,12 +31,12 @@ import {
   delayedPromise,
   pseudoRandomInteger,
   pseudoRandomFloat,
-  scrollToTop,
   time,
   shortenStringMiddle,
   median,
   clamp,
   uint8ArrayfromHex,
+  scrollIntoView,
 } from './utils'
 import type { WalletFileName } from './utils'
 
@@ -383,28 +385,43 @@ describe('percentageToFactor', () => {
   })
 })
 
-describe('scrollToTop', () => {
+describe('scrollIntoView', () => {
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- okay in tests
+  const original = HTMLElement.prototype.scrollIntoView
+  const scrollTo = vi.fn()
+
   beforeEach(() => {
     vi.useFakeTimers()
+
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollTo,
+    })
   })
 
   afterEach(() => {
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: original,
+    })
+
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
     vi.useRealTimers()
   })
 
-  it('should scroll the window to the top after a short delay', async () => {
-    const scrollTo = vi.fn()
-    vi.stubGlobal('scrollTo', scrollTo)
+  it('should scroll the element into view after a short delay', async () => {
+    const targetRef = createRef<HTMLDivElement>()
 
-    scrollToTop({ behavior: 'auto' })
+    render(<div ref={targetRef}></div>)
+
+    scrollIntoView(targetRef, { behavior: 'instant' })
 
     expect(scrollTo).not.toHaveBeenCalled()
 
     await vi.advanceTimersByTimeAsync(21)
 
-    expect(scrollTo).toHaveBeenCalledWith({ behavior: 'auto', top: 0, left: 0 })
+    expect(scrollTo).toHaveBeenCalledWith({ behavior: 'instant' })
   })
 })
 
