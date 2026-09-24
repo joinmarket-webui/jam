@@ -175,7 +175,11 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     >
       {step === 'select_date' && (
         <div className="space-y-6">
-          <StepIntro icon={CalendarIcon} title={t('earn.fidelity_bond.select_date.description')} />
+          <StepIntro
+            icon={CalendarIcon}
+            title={t('earn.fidelity_bond.select_date.description')}
+            subtitle={t('earn.fidelity_bond.select_date.subtitle')}
+          />
 
           <InfoCard label={t('earn.fidelity_bond.review_inputs.label_amount')}>
             <FidelityBondAmount value={utxo.value} className="text-lg" />

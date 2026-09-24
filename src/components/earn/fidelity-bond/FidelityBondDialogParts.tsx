@@ -24,7 +24,7 @@ export function StepIntro({ icon: Icon, title, subtitle }: { icon: LucideIcon; t
       </ItemMedia>
       <ItemContent>
         <ItemTitle>{title}</ItemTitle>
-        <ItemDescription>{subtitle}</ItemDescription>
+        {subtitle && <ItemDescription>{subtitle}</ItemDescription>}
       </ItemContent>
     </Item>
   )
