@@ -10,13 +10,12 @@ vi.mock('react-i18next', () => ({
   Trans: ({ i18nKey, children }: { i18nKey?: string; children?: ReactNode }) => (
     <div data-testid={`trans-${i18nKey}`}>{children}</div>
   ),
-  useTranslation: () => ({ t: (key: string) => key }),
-}))
-
-vi.mock('@/lib/utils', () => ({
-  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
-  formatSats: (sats: number) => `${sats} sats`,
-  clamp: (val: number, min: number, max: number) => Math.min(Math.max(val, min), max),
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      resolvedLanguage: 'en',
+    },
+  }),
 }))
 
 vi.mock('@/components/ui/jam/Address', () => ({
@@ -25,15 +24,6 @@ vi.mock('@/components/ui/jam/Address', () => ({
 
 vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString: string }) => <span>{valueString} sats</span>,
-}))
-
-vi.mock('@/lib/fidelityBondUtils', () => ({
-  utxo: {
-    isFidelityBond: vi.fn(),
-  },
-  lockdate: {
-    toDateLabel: () => 'January 1, 2025',
-  },
 }))
 
 vi.mock('@/store/jamSettingsStore', () => ({

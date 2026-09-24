@@ -13,7 +13,7 @@ import { JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
-import type { WalletFileName } from '@/lib/utils'
+import { type WalletFileName, time } from '@/lib/utils'
 import { RENEW_BOND_FORM_DEFAULT_VALUES, renewBondFormSchema, type RenewBondFormValues } from './RenewBondDialog.schema'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
@@ -44,7 +44,7 @@ interface RenewBondDialogProps {
 }
 
 export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: RenewBondDialogProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const client = useApiClient()
 
   const [step, setStep] = useState<Step>('select_date')
@@ -75,6 +75,14 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   })
 
   const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
+  const selectedDateHumanReadableDuration = (() => {
+    if (!selectedLockdate) return null
+    const locktime = fb.lockdate.toTimestamp(selectedLockdate)
+    return time.humanReadableDuration({
+      to: locktime,
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  })()
 
   const timelockAddressQuery = useQuery({
     ...gettimelockaddressOptions({
@@ -218,8 +226,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
             <AlertTitle>{t('earn.fidelity_bond.renew.confirm_send_modal.title')}</AlertTitle>
             <AlertDescription>
               {t('earn.fidelity_bond.confirm_modal.body', {
-                /* TODO: fix human readable duration */
-                humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
+                humanReadableDuration: selectedDateHumanReadableDuration || '',
                 date: selectedDateLabel || '',
               })}
             </AlertDescription>

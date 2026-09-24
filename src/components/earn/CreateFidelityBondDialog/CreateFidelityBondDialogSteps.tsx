@@ -1,5 +1,5 @@
 import { AlertTriangleIcon, CheckIcon, CalendarIcon, WalletIcon, CoinsIcon, LockIcon } from 'lucide-react'
-import { Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -10,7 +10,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import * as fb from '@/lib/fidelityBondUtils'
-import { clamp, cn } from '@/lib/utils'
+import { clamp, cn, time } from '@/lib/utils'
 import {
   AddressPreview,
   ConfirmationToggle,
@@ -58,9 +58,18 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     frozenUtxos,
     t,
   } = wizard
+  const { i18n } = useTranslation()
 
   const selectedJar = jarsWithUtxos.find((jar) => jar.jarIndex === selectedJarIndex)
   const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
+  const selectedDateHumanReadableDuration = (() => {
+    if (!selectedLockdate) return null
+    const locktime = fb.lockdate.toTimestamp(selectedLockdate)
+    return time.humanReadableDuration({
+      to: locktime,
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  })()
 
   switch (step) {
     case 'select_date':
@@ -294,7 +303,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             <AlertTitle>{t('earn.fidelity_bond.confirm_modal.title')}</AlertTitle>
             <AlertDescription>
               {t('earn.fidelity_bond.confirm_modal.body', {
-                humanReadableDuration: selectedDateLabel ? `until ${selectedDateLabel}` : '',
+                humanReadableDuration: selectedDateHumanReadableDuration || '',
                 date: selectedDateLabel || '',
               })}
             </AlertDescription>
