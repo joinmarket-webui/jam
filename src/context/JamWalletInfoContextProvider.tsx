@@ -109,7 +109,7 @@ type JarTemplateByJarIndex = ByJarIndex<JarTemplate>
 const EMPTY_UTXOS: Utxo[] = []
 
 type JarTemplate = Pick<Jar, 'jarIndex' | 'name' | 'color'>
-const jarTemplates: JarTemplate[] = [
+const defaultJarTemplates: JarTemplate[] = [
   { jarIndex: 0, name: 'Apricot', color: '#e2b86a' },
   { jarIndex: 1, name: 'Blueberry', color: '#3b5ba9' },
   { jarIndex: 2, name: 'Cherry', color: '#c94f7c' },
@@ -117,10 +117,29 @@ const jarTemplates: JarTemplate[] = [
   { jarIndex: 4, name: 'Elderberry', color: '#7c3fa6' },
 ]
 
-const jarTemplatesByJarIndex = jarTemplates.reduce((acc, jar) => {
-  acc[jar.jarIndex] = jar
-  return acc
-}, {} as JarTemplateByJarIndex)
+const additionalJarColors = ['#4c8c6b', '#d16d3a', '#547f9b', '#9b6b8f', '#8a8f45']
+
+const createJarTemplates = (accountSummary: AccountSummary): JarTemplateByJarIndex => {
+  const accountIndexes = Object.keys(accountSummary)
+    .map(Number)
+    .filter((index) => Number.isInteger(index))
+  // Keep the current placeholders until /display has provided account indexes.
+  const templateCount = accountIndexes.length === 0 ? defaultJarTemplates.length : Math.max(...accountIndexes) + 1
+
+  return Array.from({ length: templateCount }, (_, jarIndex) => {
+    const existingTemplate = defaultJarTemplates[jarIndex]
+    return (
+      existingTemplate ?? {
+        jarIndex,
+        name: `Jar #${jarIndex}`,
+        color: additionalJarColors[(jarIndex - defaultJarTemplates.length) % additionalJarColors.length],
+      }
+    )
+  }).reduce((acc, jar) => {
+    acc[jar.jarIndex] = jar
+    return acc
+  }, {} as JarTemplateByJarIndex)
+}
 
 const EMPTY_ADDRESS_SUMMARY = {} as AddressSummary
 const EMPTY_ACCOUNT_SUMMARY = {} as AccountSummary
@@ -145,6 +164,12 @@ export const JamWalletInfoContextProvider = ({
     walletFileName,
     utxosHashHex,
   })
+
+  const accountSummary =
+    displayWalletQuery.walletInfo === undefined
+      ? EMPTY_ACCOUNT_SUMMARY
+      : toAccountSummary(displayWalletQuery.walletInfo)
+  const jarTemplatesByJarIndex = createJarTemplates(accountSummary)
 
   const walletBalanceSummary = toBalanceSummary(utxos)
 
@@ -192,10 +217,6 @@ export const JamWalletInfoContextProvider = ({
   jars.sort((a, b) => a.jarIndex - b.jarIndex)
 
   const fidelityBondSummary = toFidelityBondSummary(utxos)
-  const accountSummary =
-    displayWalletQuery.walletInfo === undefined
-      ? EMPTY_ACCOUNT_SUMMARY
-      : toAccountSummary(displayWalletQuery.walletInfo)
   const addressSummary =
     displayWalletQuery.walletInfo === undefined ? EMPTY_ADDRESS_SUMMARY : toAddressSummary(accountSummary)
   const hasEligibleFidelityBondUtxo = utxos.some((utxo) =>

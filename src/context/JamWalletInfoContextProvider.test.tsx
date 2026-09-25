@@ -144,7 +144,7 @@ describe('<JamWalletInfoContextProvider />', () => {
 
     expect(screen.getByText('testing')).toBeInTheDocument()
     expect(context?.walletName).toBe('testing')
-    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4, 7])
+    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 7])
     expect(context?.jars.find((jar) => jar.jarIndex === 7)?.name).toBe('Jar #7')
     expect(context?.fidelityBondSummary.fbOutputs.map((entry) => entry.utxo)).toEqual([`${txid('c')}:2`])
     expect(context?.hasEligibleFidelityBondUtxo).toBe(false)
@@ -161,6 +161,89 @@ describe('<JamWalletInfoContextProvider />', () => {
     expect(context?.isLoading).toBe(false)
     expect(context?.isFetching).toBe(false)
     expect(context?.error).toBeNull()
+  })
+
+  it('creates jars for every account index returned by display wallet', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.utxos = []
+    mocks.walletInfo = {
+      ...walletInfo(),
+      accounts: [...walletInfo().accounts!, { ...walletInfo().accounts![0], account: '6' }],
+    }
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(context?.jars[6]?.name).toBe('Jar #6')
+    expect(context?.jars[6]?.color).toMatch(/^#[0-9a-f]{6}$/)
+  })
+
+  it.each([
+    ['non-contiguous account indexes', ['0', '2', '7']],
+    ['unsorted and duplicate account indexes', ['7', '1', '3', '7']],
+  ])('creates unique ordered jars for %s', (_description, accountIndexes) => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.utxos = []
+    const firstAccount = walletInfo().accounts![0]
+    mocks.walletInfo = {
+      ...walletInfo(),
+      accounts: accountIndexes.map((account) => ({ ...firstAccount, account })),
+    }
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
+    expect(new Set(context?.jars.map((jar) => jar.jarIndex)).size).toBe(8)
+  })
+
+  it('shows one jar when display wallet has one configured account', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.utxos = []
+    mocks.walletInfo = walletInfo()
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0])
+  })
+
+  it('keeps the five placeholder jars while display wallet data is loading', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.utxos = []
+    mocks.walletInfo = undefined
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4])
+  })
+
+  it('keeps the five default jars when loaded display data contains no accounts', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.utxos = []
+    mocks.walletInfo = { ...walletInfo(), accounts: [] }
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.jars.map((jar) => jar.jarIndex)).toEqual([0, 1, 2, 3, 4])
   })
 
   it('reports when an eligible fidelity-bond UTXO is available', () => {
