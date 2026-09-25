@@ -263,12 +263,21 @@
       "feedback_invalid_gaplimit": "Please provide a valid value between {{ min }} and {{ max }}.",
       "alert_high_gaplimit_value": "The given value causes many addresses to be imported, which can lead to a decline in performance and responsiveness.",
       "text_button_submit": "Review",
-      "text_button_submitting": "Review"
+      "text_button_submitting": "Review",
+      "tab_rescan_by_date": "By creation date",
+      "tab_rescan_by_block": "By block number",
+      "label_month": "Month",
+      "label_year": "Year",
+      "label_start_at_genesis": "Start at genesis block (Jan 2009)",
+      "hint_select_month_year": "Please select the month and year when you created this wallet.",
+      "hint_genesis_block": "Scan will start at Blockheight 0.",
+      "hint_estimated_blockheight": "Scan will start at Blockheight {{ blockheight }} (includes ~1 month safety buffer)."
     },
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
       "text_button_submit": "Import",
-      "text_button_submitting": "Importing..."
+      "text_button_submitting": "Importing...",
+      "blockheight_genesis": "Block #0 (Genesis)"
     },
     "success": {
       "title": "Wallet imported successfully!"
