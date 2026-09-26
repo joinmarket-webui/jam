@@ -1,6 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { AlertTriangleIcon } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Dialog,
@@ -14,6 +13,7 @@ import { StepProgress } from './StepProgress'
 
 type FidelityBondDialogLayoutProps = Omit<ComponentProps<typeof Dialog>, 'children'> & {
   title: string
+  subtitle?: string
   /** zero-based wizard step, or undefined to hide the progress indicator (pending/success states) */
   currentStep?: number
   totalSteps: number
@@ -24,6 +24,7 @@ type FidelityBondDialogLayoutProps = Omit<ComponentProps<typeof Dialog>, 'childr
 
 export function FidelityBondDialogLayout({
   title,
+  subtitle,
   currentStep,
   totalSteps,
   error,
@@ -31,13 +32,12 @@ export function FidelityBondDialogLayout({
   children,
   ...dialogProps
 }: FidelityBondDialogLayoutProps) {
-  const { t } = useTranslation()
   return (
     <Dialog {...dialogProps}>
       <DialogContent className="flex max-h-[90dvh] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl">{title}</DialogTitle>
-          <DialogDescription>{t('earn.fidelity_bond.subtitle')}</DialogDescription>
+          {subtitle && <DialogDescription>{subtitle}</DialogDescription>}
         </DialogHeader>
 
         {currentStep !== undefined && <StepProgress currentStep={currentStep} totalSteps={totalSteps} />}
@@ -50,7 +50,7 @@ export function FidelityBondDialogLayout({
         )}
 
         {/* negative margin + matching padding keep the scrollbar in the dialog padding, clear of content */}
-        <div className="-mr-4 min-h-0 flex-1 overflow-y-auto py-2 pr-4 sm:-mr-6 sm:pr-6">{children}</div>
+        <div className="-mr-4 min-h-0 flex-1 overflow-y-auto py-2 pr-5 pl-1 sm:-mr-6 sm:pr-7">{children}</div>
 
         {footer && <DialogFooter className="gap-3 sm:gap-2">{footer}</DialogFooter>}
       </DialogContent>

@@ -392,7 +392,8 @@
       "select_utxos": {
         "description": "Wähle einen oder mehr UTXOs vom Glas {{ jar }} für den Fidelity Bond.",
         "utxo_card": {
-          "confirmations": "{{ confs }} Bestätigungen"
+          "confirmations_one": "{{ count }} Bestätigung",
+          "confirmations_other": "{{ count }} Bestätigungen"
         }
       },
       "freeze_utxos": {
@@ -421,7 +422,7 @@
       },
       "confirm_modal": {
         "title": "Fidelity Bond erstellen und Gelder zeitlich sperren?",
-        "body": "Es ist nicht möglich, Gelder auszugeben, die zeitlich gesperrt wurden, bis der Fidelity Bond endet. Das Ablaufdatum ist in {{ humanReadableDuration }} am {{date}}."
+        "body": "Es ist nicht möglich, Gelder auszugeben, die zeitlich gesperrt wurden, bis der Fidelity Bond endet. Das Ablaufdatum ist {{ humanReadableDuration }} am {{date}}."
       },
       "title": "Fidelity Bond konfigurieren",
       "subtitle": "Deine Sats werden vom Bitcoin Protokoll zeitlich gesperrt. Es ist unmöglich, sie vor dem Ablaufdatum des Bonds auszugeben.  ",

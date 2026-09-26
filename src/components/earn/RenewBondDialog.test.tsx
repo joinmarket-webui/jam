@@ -22,6 +22,9 @@ const h = vi.hoisted(() => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => key + (options ? ' ' + JSON.stringify(options) : ''),
+    i18n: {
+      resolvedLanguage: 'en',
+    },
   }),
 }))
 
@@ -59,10 +62,6 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 }))
 
 vi.mock('@/lib/errorReason', () => ({ getErrorReason: () => 'reason' }))
-
-vi.mock('@/lib/fidelityBondUtils', () => ({
-  lockdate: { toDateLabel: () => 'January 1, 2030' },
-}))
 
 vi.mock('@/lib/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/utils')>()),

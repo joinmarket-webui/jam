@@ -12,6 +12,8 @@ export type Bip21ParseResult = {
   fromUri: boolean
 }
 
+const REQUIRED_PARAMETER_PREFIX = 'req-'
+
 const readParameters = (queryString: string) => {
   const byLowercaseName = new Map<string, string>()
   for (const [name, value] of new URLSearchParams(queryString)) {
@@ -20,8 +22,11 @@ const readParameters = (queryString: string) => {
       byLowercaseName.set(key, value)
     }
   }
-  return (name: string) => byLowercaseName.get(name)
+  return byLowercaseName
 }
+
+const hasUnsupportedRequiredParameter = (parameters: ReadonlyMap<string, string>) =>
+  [...parameters.keys()].some((name) => name.startsWith(REQUIRED_PARAMETER_PREFIX))
 
 export const parseBip21Uri = (raw: string): Bip21ParseResult | undefined => {
   const trimmed = raw.trim()
@@ -49,19 +54,24 @@ export const parseBip21Uri = (raw: string): Bip21ParseResult | undefined => {
   const result: Bip21ParseResult = { address, fromUri: true }
 
   if (queryString) {
-    const getParameter = readParameters(queryString)
-    const amountBtc = getParameter('amount')
+    const parameters = readParameters(queryString)
+
+    if (hasUnsupportedRequiredParameter(parameters)) {
+      return undefined
+    }
+
+    const amountBtc = parameters.get('amount')
     if (amountBtc !== undefined) {
       const satValue = tryBtcToSat(amountBtc)
       if (satValue !== undefined && satValue > 0) {
         result.amount = satValue
       }
     }
-    const label = getParameter('label')
+    const label = parameters.get('label')
     if (label) {
       result.label = label
     }
-    const message = getParameter('message')
+    const message = parameters.get('message')
     if (message) {
       result.message = message
     }

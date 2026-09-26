@@ -166,7 +166,7 @@ describe('SweepScheduleProgress', () => {
     render(<SweepScheduleProgress schedule={schedule} />)
 
     expect(screen.getByText('scheduler.progress_tldr_hours:{"length":"2","hours":"2"}')).toBeInTheDocument()
-    expect(screen.getByText('Scheduled sweep finished successfully.')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.alert_schedule_completed_title')).toBeInTheDocument()
   })
 
   it('shows failed schedule', () => {
@@ -230,7 +230,7 @@ describe('SweepScheduleProgress', () => {
     render(<SweepScheduleProgress schedule={schedule} />)
 
     expect(screen.getByText('scheduler.progress_tldr_hours:{"length":"2","hours":"2"}')).toBeInTheDocument()
-    expect(screen.getByText('Scheduled sweep failed.')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.alert_schedule_failed_title')).toBeInTheDocument()
   })
 
   it('shows cancelled schedule', () => {
@@ -294,6 +294,6 @@ describe('SweepScheduleProgress', () => {
     render(<SweepScheduleProgress schedule={schedule} />)
 
     expect(screen.getByText('scheduler.progress_tldr_hours:{"length":"2","hours":"2"}')).toBeInTheDocument()
-    expect(screen.getByText('Scheduled sweep cancelled.')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.alert_schedule_cancelled_title')).toBeInTheDocument()
   })
 })

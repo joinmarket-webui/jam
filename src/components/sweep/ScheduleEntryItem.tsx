@@ -23,6 +23,7 @@ import { Label } from '../ui/label'
 import { formatDuration, type ScheduleEntry } from './scheduleUtils'
 
 const EntryStatusBadge = ({ active, status }: { active: boolean; status: ScheduleEntry['status'] }) => {
+  const { t } = useTranslation()
   const variant: BadgeVariant = (() => {
     if (active) return 'outline'
     switch (status.value) {
@@ -45,7 +46,7 @@ const EntryStatusBadge = ({ active, status }: { active: boolean; status: Schedul
         'ring-ring/50 ring-1 motion-safe:animate-pulse': active,
       })}
     >
-      {/* TODO: i18n */ status.value}
+      {t(`scheduler.status_${status.value}`, { defaultValue: status.value })}
     </Badge>
   )
 }
@@ -76,32 +77,29 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
             {t('scheduler.progress_entry_label', { index: (value.index + 1).toLocaleString() })}
           </ItemTitle>
           <ItemDescription>
-            {
-              /* TODO: i18n */
-              value.kind === 'taker_coinjoin' ? (
-                <Trans
-                  i18nKey="A collaborative transaction as <1>taker</1> with {{numberOfRequestedCounterparties}} counterparties"
-                  values={{ numberOfRequestedCounterparties: value.numberOfRequestedCounterparties?.toLocaleString() }}
-                  components={{
-                    '1': <span className="font-semibold" />,
-                  }}
-                />
-              ) : value.kind === 'maker_session' ? (
-                <Trans
-                  i18nKey="A collaborative transaction as <1>maker</1>"
-                  components={{
-                    '1': <span className="font-semibold" />,
-                  }}
-                />
-              ) : null
-            }
+            {value.kind === 'taker_coinjoin' ? (
+              <Trans
+                i18nKey="scheduler.description_taker_coinjoin"
+                values={{ numberOfRequestedCounterparties: value.numberOfRequestedCounterparties?.toLocaleString() }}
+                components={{
+                  '1': <span className="font-semibold" />,
+                }}
+              />
+            ) : value.kind === 'maker_session' ? (
+              <Trans
+                i18nKey="scheduler.description_maker_session"
+                components={{
+                  '1': <span className="font-semibold" />,
+                }}
+              />
+            ) : null}
           </ItemDescription>
         </div>
         <div className="flex flex-row-reverse flex-wrap items-center gap-2">
           <EntryStatusBadge active={active} status={value.status} />
-          {value.kind === 'maker_session' ? <Badge variant="info">{/* TODO: i18n */ 'Earn'}</Badge> : null}
-          {value.kind === 'taker_coinjoin' ? <Badge variant="default">{/* TODO: i18n */ 'Send'}</Badge> : null}
-          {value.isSweep ? <Badge variant="outline">{/* TODO: i18n */ 'Sweep'}</Badge> : null}
+          {value.kind === 'maker_session' ? <Badge variant="info">{t('scheduler.action_earn')}</Badge> : null}
+          {value.kind === 'taker_coinjoin' ? <Badge variant="default">{t('scheduler.action_send')}</Badge> : null}
+          {value.isSweep ? <Badge variant="outline">{t('scheduler.action_sweep')}</Badge> : null}
         </div>
       </ItemHeader>
       <ItemContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -109,7 +107,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="text-destructive col-span-full flex min-w-0 items-start gap-4">
             <AlertTriangleIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'Error'}</Label>
+              <Label className="font-semibold">{t('global.error')}</Label>
               {value.__raw?.error ?? t('global.errors.reason_unknown')}
             </div>
           </div>
@@ -118,7 +116,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="flex min-w-0 items-start gap-4">
             <CalendarClockIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'Started At'}</Label>
+              <Label className="font-semibold">{t('scheduler.label_started_at')}</Label>
               <span title={value.startedAt.toISOString()}>{value.startedAt.toLocaleString()}</span>
             </div>
           </div>
@@ -127,7 +125,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="flex min-w-0 items-start gap-4">
             <CalendarCheck2Icon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'Finished At'}</Label>
+              <Label className="font-semibold">{t('scheduler.label_finished_at')}</Label>
               {value.finishedAt === undefined ? (
                 '-'
               ) : (
@@ -141,7 +139,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="flex min-w-0 items-start gap-4">
             <MilkIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'Source Jar'}</Label>
+              <Label className="font-semibold">{t('scheduler.label_source_jar')}</Label>
               <Badge variant={jarBadgeVariant(value.jar.jarIndex)}>
                 {value.jar.name} <span className="text-xs">#{value.jar.jarIndex.toLocaleString()}</span>
               </Badge>
@@ -153,7 +151,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="flex min-w-0 items-start gap-4">
             <UsersIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'Request collaborators'}</Label>
+              <Label className="font-semibold">{t('scheduler.label_request_collaborators')}</Label>
               {value.numberOfRequestedCounterparties.toLocaleString()}
             </div>
           </div>
@@ -173,7 +171,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="flex min-w-0 items-start gap-4">
             <ClockFadingIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1">
-              <Label className="font-semibold">{/* TODO: i18n*/ 'Idle Timeout'}</Label>
+              <Label className="font-semibold">{t('scheduler.label_idle_timeout')}</Label>
               {formatDuration(value.idleTimeoutSeconds, t)}
             </div>
           </div>
@@ -193,7 +191,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="col-span-full flex min-w-0 items-start gap-4">
             <ExternalLinkIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'External destination'}</Label>
+              <Label className="font-semibold">{t('scheduler.label_external_destination')}</Label>
               <Address value={value.externalDestinationAddress} />
             </div>
           </div>
@@ -203,7 +201,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
           <div className="col-span-full flex min-w-0 items-start gap-4">
             <FingerprintIcon className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
-              <Label className="font-semibold">{/*TODO: i18n */ 'Transaction ID'}</Label>
+              <Label className="font-semibold">{t('scheduler.label_transaction_id')}</Label>
 
               <div className="flex items-center gap-2">
                 <span className="text-md block font-mono break-all select-all">{value.transactionId}</span>
