@@ -10,6 +10,7 @@ import ImportWalletPage from './ImportWalletPage'
 type SessionInfoUpdater = (previousState?: SessionResponse) => SessionResponse | undefined
 
 const mocks = vi.hoisted(() => ({
+  jmInfo: undefined as { backend?: string } | undefined,
   configGet: vi.fn(),
   configSet: vi.fn(),
   lockWallet: vi.fn(),
@@ -31,6 +32,12 @@ const mocks = vi.hoisted(() => ({
     } else {
       mocks.sessionState = updater as SessionResponse | undefined
     }
+  }),
+}))
+
+vi.mock('@/hooks/useQueryJmInfo', () => ({
+  useQueryJmInfo: () => ({
+    info: mocks.jmInfo,
   }),
 }))
 
@@ -175,6 +182,7 @@ vi.mock('./ImportStepConfirm', () => ({
 
 describe('ImportWalletPage', () => {
   beforeEach(() => {
+    mocks.jmInfo = undefined
     mocks.configGet.mockReset()
     mocks.configSet.mockReset()
     mocks.lockWallet.mockReset()
@@ -312,5 +320,86 @@ describe('ImportWalletPage', () => {
     expect(authStore.getState().state).toBeUndefined()
     expect(mocks.navigate).not.toHaveBeenCalled()
     expect(mocks.toastWarning).not.toHaveBeenCalled()
+  })
+
+  it('skips manual rescan when smart_scan is enabled on joinmarket-ng', async () => {
+    const user = userEvent.setup()
+    mocks.jmInfo = { backend: 'joinmarket-ng' }
+    mocks.configGet.mockImplementation((parameters: { body: { field: string } }) => {
+      if (parameters.body.field === 'gaplimit') return Promise.resolve({ configvalue: '6' })
+      if (parameters.body.field === 'smart_scan') return Promise.resolve({ configvalue: 'true' })
+      return Promise.resolve({ configvalue: 'false' })
+    })
+    mocks.session.mockResolvedValue({ data: { wallet_name: 'restored.jmdat', session: true, rescanning: true } })
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() =>
+      expect(authStore.getState().state).toEqual({
+        walletFileName: 'restored.jmdat',
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
+        hashed_password: 'hashed-secret',
+      }),
+    )
+    expect(mocks.rescanBlockchain).not.toHaveBeenCalled()
+    expect(mocks.sessionState?.rescanning).toBe(true)
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
+  })
+
+  it('skips manual rescan when background_full_rescan is enabled on joinmarket-ng', async () => {
+    const user = userEvent.setup()
+    mocks.jmInfo = { backend: 'joinmarket-ng' }
+    mocks.configGet.mockImplementation((parameters: { body: { field: string } }) => {
+      if (parameters.body.field === 'gaplimit') return Promise.resolve({ configvalue: '6' })
+      if (parameters.body.field === 'smart_scan') return Promise.resolve({ configvalue: 'false' })
+      if (parameters.body.field === 'background_full_rescan') return Promise.resolve({ configvalue: 'true' })
+      return Promise.resolve({ configvalue: 'false' })
+    })
+    mocks.session.mockResolvedValue({ data: { wallet_name: 'restored.jmdat', session: true, rescanning: false } })
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() =>
+      expect(authStore.getState().state).toEqual({
+        walletFileName: 'restored.jmdat',
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
+        hashed_password: 'hashed-secret',
+      }),
+    )
+    expect(mocks.rescanBlockchain).not.toHaveBeenCalled()
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
+  })
+
+  it('proceeds with manual rescan on joinmarket-ng when both smart_scan and background_full_rescan are disabled', async () => {
+    const user = userEvent.setup()
+    mocks.jmInfo = { backend: 'joinmarket-ng' }
+    mocks.configGet.mockImplementation((parameters: { body: { field: string } }) => {
+      if (parameters.body.field === 'gaplimit') return Promise.resolve({ configvalue: '6' })
+      return Promise.resolve({ configvalue: 'false' })
+    })
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() =>
+      expect(authStore.getState().state).toEqual({
+        walletFileName: 'restored.jmdat',
+        auth: { token: 'unlock-token', refresh_token: 'unlock-refresh', expiresAt: expect.any(Number) as number },
+        hashed_password: 'hashed-secret',
+      }),
+    )
+    expect(mocks.rescanBlockchain).toHaveBeenCalled()
+    expect(mocks.navigate).toHaveBeenCalledWith(routes.home)
   })
 })
