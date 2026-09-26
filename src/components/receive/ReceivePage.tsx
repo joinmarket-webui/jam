@@ -29,6 +29,17 @@ import { ReceiveForm } from './ReceiveForm'
 
 const QRCODE_WIDTH = 320
 
+const renderJarLabel = (jar: { name: string; jarIndex: number } | undefined) => {
+  if (!jar) return null
+  if (jar.name === `Jar #${jar.jarIndex}`) return jar.name
+
+  return (
+    <>
+      {jar.name} <span className="text-xs">#{jar.jarIndex}</span>
+    </>
+  )
+}
+
 interface ReceivePageProps {
   walletFileName: WalletFileName
 }
@@ -43,7 +54,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
   const selectedSourceJar = useMemo(() => {
     if (selectedSourceJarIndex === undefined) return
-    return jars[selectedSourceJarIndex]
+    return jars.find((jar) => jar.jarIndex === selectedSourceJarIndex)
   }, [jars, selectedSourceJarIndex])
 
   const [receiveFormDefaultValues] = useState({
@@ -93,7 +104,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
   const sourceJar = useMemo(() => {
     if (getAddressMutation.data?.sourceJarIndex === undefined) return
-    return jars[getAddressMutation.data.sourceJarIndex]
+    return jars.find((jar) => jar.jarIndex === getAddressMutation.data?.sourceJarIndex)
   }, [jars, getAddressMutation.data])
 
   // What "Copy" and "Share" hand out. With a requested amount this must be the
@@ -191,15 +202,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   className="fade-in min-h-6 text-sm duration-1000"
                   variant={sourceJar ? jarBadgeVariant(sourceJar.jarIndex) : 'secondary'}
                 >
-                  {sourceJar ? (
-                    <>
-                      {sourceJar.name} <span className="text-xs">#{sourceJar.jarIndex}</span>
-                    </>
-                  ) : (
-                    <>
-                      {selectedSourceJar?.name} <span className="text-xs">#{selectedSourceJar?.jarIndex}</span>
-                    </>
-                  )}
+                  {renderJarLabel(sourceJar ?? selectedSourceJar)}
                 </Badge>
               </div>
             )}

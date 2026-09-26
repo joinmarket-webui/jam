@@ -41,6 +41,7 @@ const mocks = vi.hoisted(() => {
     share: vi.fn(),
     toastError: vi.fn(),
     toastSuccess: vi.fn(),
+    selectedReceiveJarIndex: 1,
   }
 })
 
@@ -148,7 +149,9 @@ vi.mock('../ui/jam/CopyButton', () => ({
 
 vi.mock('./ReceiveForm', () => ({
   ReceiveForm: ({ onSubmit }: { onSubmit: (values: { source?: { fromJar?: number }; amount?: number }) => void }) => (
-    <button onClick={() => onSubmit({ source: { fromJar: 1 }, amount: 2100 })}>update receive form</button>
+    <button onClick={() => onSubmit({ source: { fromJar: mocks.selectedReceiveJarIndex }, amount: 2100 })}>
+      update receive form
+    </button>
   ),
 }))
 
@@ -157,6 +160,7 @@ describe('ReceivePage', () => {
     mocks.developerMode = false
     mocks.rescanning = false
     mocks.jars = mocks.defaultJars
+    mocks.selectedReceiveJarIndex = 1
     mocks.getAddress.mockReset()
     mocks.getAddress.mockResolvedValue({ data: { address: 'bc1qexample' } })
     mocks.toastError.mockReset()
@@ -181,6 +185,31 @@ describe('ReceivePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'receive.button_new_address' }))
     expect(mocks.getAddress).toHaveBeenCalledTimes(2)
     await flushActUpdates()
+  })
+
+  it('uses a sparse jar index selected in receive settings', async () => {
+    const user = userEvent.setup()
+    mocks.jars = [mocks.defaultJars[0], { ...mocks.defaultJars[1], jarIndex: 7, name: 'Jar #7' }]
+    mocks.selectedReceiveJarIndex = 7
+
+    render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_settings' }))
+    await user.click(screen.getByRole('button', { name: 'update receive form' }))
+    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+
+    await waitFor(() =>
+      expect(mocks.getAddress).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: { walletname: 'wallet.jmdat', mixdepth: '7' },
+          throwOnError: true,
+        }),
+      ),
+    )
+    const badge = document.querySelector('[data-slot="badge"]')
+    expect(badge).toHaveTextContent('Jar #7')
+    expect(badge).not.toHaveTextContent('Jar #7 #7')
+    expect(screen.getByText('Jar #7')).toBeInTheDocument()
   })
 
   it('prevents loading addresses while rescanning', () => {
