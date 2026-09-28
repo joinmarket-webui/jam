@@ -233,7 +233,11 @@
       "subtitle": "Tap each word in the correct order to verify you have backed up your mnemonic phrase.",
       "progress": "{{ current }} of {{ total }}",
       "feedback_mnemonic_confirmed": "Mnemonic phrase confirmed."
-    }
+    },
+    "confirmation_label_wallet_birthday": "Wallet Birthday",
+    "confirmation_wallet_birthday_block": "Block #{{blockHeight}}",
+    "confirmation_description_wallet_birthday": "Note down your creation date or block number with your backup seed for easy recovery.",
+    "confirmation_label_seedphrase": "Seed Phrase"
   },
   "import_wallet": {
     "alert_rescan_in_progress": "Rescanning the timechain is currently in progress. Please wait until the process finishes and then try again. <1>Go back</1>.",

@@ -9,7 +9,7 @@ import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import type { WalletFileName } from '@/lib/utils'
-import type { MnemonicPhrase } from '@/types/global'
+import type { BlockHeight, MnemonicPhrase } from '@/types/global'
 import { Field, FieldLabel } from '../ui/field'
 import { MaskedText } from '../ui/jam/MaskedText'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
@@ -38,6 +38,8 @@ interface CreateStepConfirmProps {
   walletFileName: WalletFileName
   password: string
   mnemonicPhrase: MnemonicPhrase
+  createdAt?: Date
+  blockHeight?: BlockHeight
   onConfirm: () => Promise<void>
   mode?: Mode
 }
@@ -46,10 +48,18 @@ export const CreateStepConfirm = ({
   walletFileName,
   password,
   mnemonicPhrase,
+  createdAt,
+  blockHeight,
   onConfirm,
   mode = 'onSubmit',
 }: CreateStepConfirmProps) => {
   const { t } = useTranslation()
+
+  const creationDate = createdAt ?? new Date()
+  const creationDateFormatted = creationDate.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+  })
 
   const schema = createFormSchema(t)
 
@@ -87,7 +97,7 @@ export const CreateStepConfirm = ({
 
   return (
     <form onSubmit={(event) => void doOnSubmit(event)} className="space-y-6" noValidate>
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div>
           <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
           <span className="font-semibold break-all select-all">{walletFileName}</span>
@@ -103,7 +113,23 @@ export const CreateStepConfirm = ({
           </MaskedText>
         </div>
         <div>
-          <Label className="text-muted-foreground text-xs">{/* i18n confirmation_label_seedphrase */}Seed Phrase</Label>
+          <Label className="text-muted-foreground text-xs">
+            {t('create_wallet.confirmation_label_wallet_birthday')}
+          </Label>
+          <div className="flex items-baseline gap-2">
+            <span className="font-semibold select-all">{creationDateFormatted}</span>
+            {blockHeight !== undefined && blockHeight >= 0 ? (
+              <span className="text-muted-foreground text-xs select-all">
+                ({t('create_wallet.confirmation_wallet_birthday_block', { blockHeight: blockHeight.toLocaleString() })})
+              </span>
+            ) : null}
+          </div>
+          <div className="text-muted-foreground text-xs">
+            {t('create_wallet.confirmation_description_wallet_birthday')}
+          </div>
+        </div>
+        <div>
+          <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_seedphrase')}</Label>
           <div className="bg-muted rounded-lg p-2">
             <SeedPhraseGrid value={mnemonicPhrase} masked={!revealSensitiveInfo} />
           </div>

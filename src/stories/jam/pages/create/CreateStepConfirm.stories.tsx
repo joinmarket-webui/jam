@@ -22,3 +22,13 @@ export const Default: Story = {
     mnemonicPhrase: DUMMY_SEED_PHRASE,
   },
 }
+
+export const WithBlockHeight: Story = {
+  args: {
+    walletFileName: 'Satoshi.jmdat',
+    password: 'correct horse battery staple',
+    mnemonicPhrase: DUMMY_SEED_PHRASE,
+    createdAt: new Date('2024-04-20T00:00:00Z'),
+    blockHeight: 840_000,
+  },
+}
