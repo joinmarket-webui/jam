@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { getaddressQueryKey } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
@@ -52,10 +52,10 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const [selectedSourceJarIndex, setSelectedSourceJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
   const [amount, setAmount] = useState<AmountSats>()
 
-  const selectedSourceJar = useMemo(() => {
-    if (selectedSourceJarIndex === undefined) return
-    return jars.find((jar) => jar.jarIndex === selectedSourceJarIndex)
-  }, [jars, selectedSourceJarIndex])
+  const selectedSourceJar = useMemo(
+    () => jars.find((jar) => jar.jarIndex === selectedSourceJarIndex) ?? jars[0],
+    [jars, selectedSourceJarIndex],
+  )
 
   const [receiveFormDefaultValues] = useState({
     source: {
@@ -157,7 +157,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             ) : getAddressMutation.isIdle ? (
               <div className={cn('flex aspect-square w-full max-w-80 items-center justify-center border')}>
                 <Button
-                  variant={jarButtonVariant(selectedSourceJarIndex)}
+                  variant={jarButtonVariant(selectedSourceJar?.jarIndex)}
                   size="lg"
                   onClick={() => void fetchNewAddress()}
                   disabled={getAddressMutation.isPending || rescanInfo.rescanning}

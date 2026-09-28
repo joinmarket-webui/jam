@@ -117,7 +117,7 @@ const defaultJarTemplates: JarTemplate[] = [
   { jarIndex: 4, name: 'Elderberry', color: '#7c3fa6' },
 ]
 
-const additionalJarColors = ['#4c8c6b', '#d16d3a', '#547f9b', '#9b6b8f', '#8a8f45']
+const additionalJarColors = ['#4c8c6b', '#d16d3a', '#547f9b', '#9b6b8f', '#8a8f45'] as const
 
 const createJarTemplates = (accountSummary: AccountSummary): JarTemplateByJarIndex => {
   const accountIndexes = Object.keys(accountSummary)

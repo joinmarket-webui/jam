@@ -212,6 +212,31 @@ describe('ReceivePage', () => {
     expect(screen.getByText('Jar #7')).toBeInTheDocument()
   })
 
+  it('falls back to an available jar when the selected jar is removed', async () => {
+    const user = userEvent.setup()
+    mocks.jars = [mocks.defaultJars[0], { ...mocks.defaultJars[1], jarIndex: 7, name: 'Jar #7' }]
+    mocks.selectedReceiveJarIndex = 7
+
+    const { rerender } = render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_settings' }))
+    await user.click(screen.getByRole('button', { name: 'update receive form' }))
+
+    mocks.jars = [mocks.defaultJars[0]]
+    rerender(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+
+    await waitFor(() =>
+      expect(mocks.getAddress).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: { walletname: 'wallet.jmdat', mixdepth: '0' },
+          throwOnError: true,
+        }),
+      ),
+    )
+  })
+
   it('prevents loading addresses while rescanning', () => {
     mocks.rescanning = true
 
