@@ -29,6 +29,8 @@ export const DEFAULT_TIMELOCK_YEARS_RANGE = toYearsRange(0, DEFAULT_MAX_TIMELOCK
 // Exported for tests only!
 export const __INITIAL_LOCKDATE_MONTH_AHEAD = 3
 
+const DATE_LABEL_FORMAT: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
+
 export const lockdate = (() => {
   const _fromDate = (date: Date): Lockdate => {
     return `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Lockdate
@@ -51,12 +53,22 @@ export const lockdate = (() => {
     return Date.UTC(year, month - 1, 1)
   }
 
-  const toDateLabel = (lockdate: Lockdate): string =>
-    new Date(toTimestamp(lockdate)).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+  /**
+   * Formats a fidelity bond locktime.
+   *
+   * Locktimes are the 1st of a month at 00:00 UTC, so they are always
+   * formatted in UTC. In local time, anyone behind UTC would see the last day
+   * of the previous month instead (a January 2027 bond shows as 31 December
+   * 2026 in New York).
+   *
+   * @param timestamp the locktime
+   * @param options date format options (the time zone is always UTC)
+   * @returns the formatted locktime
+   */
+  const formatTimestamp = (timestamp: Milliseconds, options: Intl.DateTimeFormatOptions = DATE_LABEL_FORMAT): string =>
+    new Date(timestamp).toLocaleDateString(undefined, { ...options, timeZone: 'UTC' })
+
+  const toDateLabel = (lockdate: Lockdate): string => formatTimestamp(toTimestamp(lockdate))
 
   /**
    * Returns a lockdate an initial lockdate in the future.
@@ -81,6 +93,7 @@ export const lockdate = (() => {
   return {
     fromTimestamp,
     toTimestamp,
+    formatTimestamp,
     toDateLabel,
     initial,
   }

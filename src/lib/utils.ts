@@ -282,9 +282,15 @@ export const uint8ArrayfromHex = (hexString: string) => {
   return Uint8Array.from(match.map((byte) => Number.parseInt(byte, 16)) || [])
 }
 
-// not cryptographically random; returned number is in range [min, max] (both inclusive);
+// not cryptographically random; returned integer is in range [ceil(min), floor(max)] (both inclusive);
+// throws a RangeError if the range contains no integer;
 export const pseudoRandomInteger = (min: number, max: number) => {
-  return Math.round(pseudoRandomFloat(min, max))
+  const lower = Math.ceil(min)
+  const upper = Math.floor(max)
+  if (lower > upper) {
+    throw new RangeError('pseudoRandomInteger requires a range containing an integer')
+  }
+  return lower + Math.floor(Math.random() * (upper - lower + 1))
 }
 // not cryptographically random; returned number is in range [min, max] (both inclusive);
 export const pseudoRandomFloat = (min: number, max: number) => {
