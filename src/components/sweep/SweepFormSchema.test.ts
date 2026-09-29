@@ -92,6 +92,24 @@ describe('sweepFormSchema', () => {
     })
   })
 
+  it.each(['minNumberOfTransactionsPerJar', 'minNumberOfCollaborators', 'maxNumberOfCollaborators'] as const)(
+    'rejects a fractional %s',
+    async (field) => {
+      const values = {
+        ...buildSweepFormValuesDefaultValues(),
+        destinations: [{ address: validRegtestAddress }],
+        minNumberOfCollaborators: 5,
+        maxNumberOfCollaborators: 9,
+        minNumberOfTransactionsPerJar: 3,
+      }
+
+      await expect(validate(values)).resolves.toBeDefined()
+      await expect(validate({ ...values, [field]: values[field] + 0.5 })).rejects.toMatchObject({
+        inner: [expect.objectContaining({ path: field, type: 'integer' })],
+      })
+    },
+  )
+
   it('rejects reused wallet addresses', async () => {
     const usedAddress = validRegtestAddress
     const addressSummary = {

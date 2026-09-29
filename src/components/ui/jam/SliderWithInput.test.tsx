@@ -54,6 +54,13 @@ describe('SliderWithInput', () => {
     expect(onValueChange).toHaveBeenCalledWith([15])
   })
 
+  it('snaps typed values to whole numbers when no step is given', () => {
+    const onValueChange = vi.fn()
+    render(<SliderWithInput value={[2]} min={2} max={8} onValueChange={onValueChange} />)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3.5' } })
+    expect(onValueChange).toHaveBeenCalledWith([4])
+  })
+
   it('ignores empty or non-numeric input', () => {
     const onValueChange = vi.fn()
     render(<SliderWithInput value={[5]} min={0} max={10} onValueChange={onValueChange} />)

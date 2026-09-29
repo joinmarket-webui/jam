@@ -176,18 +176,21 @@ export const sweepFormSchema = (
       minNumberOfCollaborators: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
+        .integer()
         .min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS)
         .max(JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS)
         .required(),
       maxNumberOfCollaborators: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
+        .integer()
         .min(JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS)
         .max(JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS)
         .required(),
       minNumberOfTransactionsPerJar: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
+        .integer()
         .min(JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR)
         .max(JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR)
         .required(),
