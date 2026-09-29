@@ -236,7 +236,7 @@
     },
     "confirmation_label_wallet_birthday": "Wallet Birthday",
     "confirmation_wallet_birthday_block": "Block #{{blockHeight}}",
-    "confirmation_description_wallet_birthday": "Note down your creation date or block number with your backup seed for easy recovery.",
+    "confirmation_description_wallet_birthday": "Note down the wallet's birthday with your backup seed for easy recovery.",
     "confirmation_label_seedphrase": "Seed Phrase"
   },
   "import_wallet": {

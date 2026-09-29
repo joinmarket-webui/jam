@@ -55,8 +55,7 @@ export const CreateStepConfirm = ({
 }: CreateStepConfirmProps) => {
   const { t } = useTranslation()
 
-  const creationDate = createdAt ?? new Date()
-  const creationDateFormatted = creationDate.toLocaleDateString(undefined, {
+  const creationDateFormatted = createdAt?.toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'long',
   })
@@ -112,22 +111,26 @@ export const CreateStepConfirm = ({
             {password}
           </MaskedText>
         </div>
-        <div>
-          <Label className="text-muted-foreground text-xs">
-            {t('create_wallet.confirmation_label_wallet_birthday')}
-          </Label>
-          <div className="flex items-baseline gap-2">
-            <span className="font-semibold select-all">{creationDateFormatted}</span>
-            {blockHeight !== undefined && blockHeight >= 0 ? (
-              <span className="text-muted-foreground text-xs select-all">
-                ({t('create_wallet.confirmation_wallet_birthday_block', { blockHeight: blockHeight.toLocaleString() })})
-              </span>
-            ) : null}
+        {createdAt && creationDateFormatted && (
+          <div>
+            <Label className="text-muted-foreground text-xs">
+              {t('create_wallet.confirmation_label_wallet_birthday')}
+            </Label>
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold select-all">{creationDateFormatted}</span>
+              {blockHeight !== undefined && blockHeight >= 0 ? (
+                <span className="text-muted-foreground text-xs select-all">
+                  (
+                  {t('create_wallet.confirmation_wallet_birthday_block', { blockHeight: blockHeight.toLocaleString() })}
+                  )
+                </span>
+              ) : null}
+            </div>
+            <div className="text-muted-foreground text-xs">
+              {t('create_wallet.confirmation_description_wallet_birthday')}
+            </div>
           </div>
-          <div className="text-muted-foreground text-xs">
-            {t('create_wallet.confirmation_description_wallet_birthday')}
-          </div>
-        </div>
+        )}
         <div>
           <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_seedphrase')}</Label>
           <div className="bg-muted rounded-lg p-2">

@@ -43,16 +43,29 @@ const renderConfirm = ({
 }
 
 describe('<CreateStepConfirm />', () => {
-  it('renders wallet details, birthday, and masked seed phrase by default', () => {
+  it('renders wallet details and masked seed phrase without birthday when createdAt is undefined', () => {
     renderConfirm()
 
     expect(screen.getByText(walletFileName)).toBeInTheDocument()
-    expect(screen.getByText('Wallet Birthday')).toBeInTheDocument()
+    expect(screen.queryByText('Wallet Birthday')).not.toBeInTheDocument()
     expect(screen.getByText('Seed Phrase')).toBeInTheDocument()
-    expect(
-      screen.getByText('Note down your creation date or block number with your backup seed for easy recovery.'),
-    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Next/i })).toBeInTheDocument()
+  })
+
+  it('renders birthday when createdAt is provided', () => {
+    const fixedDate = new Date('2024-05-15T12:00:00Z')
+    renderConfirm({ createdAt: fixedDate })
+
+    const expectedDate = fixedDate.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+    })
+
+    expect(screen.getByText('Wallet Birthday')).toBeInTheDocument()
+    expect(screen.getByText(expectedDate)).toBeInTheDocument()
+    expect(
+      screen.getByText("Note down the wallet's birthday with your backup seed for easy recovery."),
+    ).toBeInTheDocument()
   })
 
   it('renders explicit creation date and block height when provided', () => {
