@@ -24,7 +24,7 @@ import { hashPassword } from '@/lib/hash'
 import { delayedPromise, walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, computeAuthExpiresAt } from '@/store/authStore'
-import type { MnemonicPhrase } from '@/types/global'
+import type { BlockHeight, MnemonicPhrase } from '@/types/global'
 import { AuthPageShell } from '../layout/AuthPageShell'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
@@ -53,6 +53,8 @@ type CreateWalletSuccessInfo = {
   password: WalletDetailsValues['password']
   mnemonicPhrase: MnemonicPhrase
   hashedPassword?: string
+  createdAt?: Date
+  blockHeight?: BlockHeight
 }
 
 const CreateWalletPage = () => {
@@ -175,6 +177,8 @@ const CreateWalletPage = () => {
         password,
         hashedPassword,
         mnemonicPhrase: createData.seedphrase.split(/\s+/),
+        createdAt: new Date(),
+        blockHeight: jmSession?.block_height ?? undefined,
       })
 
       setStep('confirm')
@@ -240,6 +244,8 @@ const CreateWalletPage = () => {
             walletFileName={createWalletSuccessInfo!.walletFileName}
             password={createWalletSuccessInfo!.password}
             mnemonicPhrase={createWalletSuccessInfo!.mnemonicPhrase}
+            createdAt={createWalletSuccessInfo!.createdAt}
+            blockHeight={createWalletSuccessInfo!.blockHeight}
             onConfirm={handleConfirmMnemonic}
           />
         </CreateWalletCard>
