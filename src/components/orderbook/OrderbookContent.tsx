@@ -17,6 +17,7 @@ import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import { useRawJmSession } from '@/context/JamSessionInfoContext'
 import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
+import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
 import {
   cn,
@@ -84,7 +85,7 @@ const offerToTableEntry = (
       value: offer.fidelity_bond_value || 0,
       displayValue: Math.floor(offer.fidelity_bond_value || 0).toLocaleString(),
       locktime: fidelityBond?.locktime,
-      displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
+      displayLocktime: fidelityBond?.locktime ? fb.lockdate.formatTimestamp(fidelityBond.locktime * 1_000) : undefined,
       displayExpiresIn: fidelityBond?.locktime
         ? time.humanReadableDuration({
             to: fidelityBond.locktime * 1_000,

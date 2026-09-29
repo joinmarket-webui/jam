@@ -920,7 +920,6 @@
     "action_earn": "Earn",
     "action_send": "Send",
     "action_sweep": "Sweep",
-    "description_taker_coinjoin": "A collaborative transaction as <1>taker</1> with {{numberOfRequestedCounterparties}} counterparties",
     "description_maker_session": "A collaborative transaction as <1>maker</1>",
     "label_started_at": "Started At",
     "label_finished_at": "Finished At",
@@ -929,7 +928,9 @@
     "label_source_jar": "Source Jar",
     "label_request_collaborators": "Request collaborators",
     "label_idle_timeout": "Idle Timeout",
-    "label_external_destination": "External destination"
+    "label_external_destination": "External destination",
+    "description_taker_coinjoin_one": "A collaborative transaction as <1>taker</1> with {{count}} counterparty",
+    "description_taker_coinjoin_other": "A collaborative transaction as <1>taker</1> with {{count}} counterparties"
   },
   "modal": {
     "confirm_button_accept": "Confirm",
