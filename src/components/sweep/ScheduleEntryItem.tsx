@@ -80,7 +80,7 @@ export const ScheduleEntryItem = ({ value, active }: { value: ScheduleEntry; act
             {value.kind === 'taker_coinjoin' ? (
               <Trans
                 i18nKey="scheduler.description_taker_coinjoin"
-                values={{ numberOfRequestedCounterparties: value.numberOfRequestedCounterparties?.toLocaleString() }}
+                count={value.numberOfRequestedCounterparties}
                 components={{
                   '1': <span className="font-semibold" />,
                 }}

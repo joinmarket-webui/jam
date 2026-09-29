@@ -2,7 +2,8 @@ import type React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { OrderbookOffer } from '@/lib/api/orderbook'
+import type { OrderbookFidelityBond, OrderbookOffer } from '@/lib/api/orderbook'
+import { withTimeZone } from '@/test/withTimeZone'
 import { OrderbookContent } from './OrderbookContent'
 
 vi.mock('react-i18next', () => ({
@@ -31,10 +32,11 @@ vi.mock('@/components/ui/jam/Balance', () => ({
 }))
 
 const offers = vi.hoisted(() => ({ current: [] as unknown[] }))
+const fidelityBonds = vi.hoisted(() => ({ current: [] as unknown[] }))
 
 vi.mock('@/lib/api/orderbook', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/api/orderbook')>()),
-  fetchOrderbook: () => Promise.resolve({ offers: offers.current, fidelitybonds: [] }),
+  fetchOrderbook: () => Promise.resolve({ offers: offers.current, fidelitybonds: fidelityBonds.current }),
 }))
 
 const TOTAL_LIQUIDITY_LABEL = 'orderbook.market_summary_total_liquidity_label:'
@@ -107,5 +109,29 @@ describe('OrderbookContent market summary', () => {
     ])
 
     expect(totalLiquidity).toBe(551_777)
+  })
+})
+
+describe('OrderbookContent fidelity bonds', () => {
+  it('shows a bond locktime as the 1st of its month, also behind UTC', async () => {
+    await withTimeZone('America/New_York', async () => {
+      const bond: OrderbookFidelityBond = {
+        counterparty: 'bond-maker',
+        amount: 100_000,
+        locktime: Date.UTC(2027, 0, 1) / 1_000,
+      }
+      fidelityBonds.current = [bond]
+      await renderWithOffers([{ ...offer('bond-maker', 0, 1_000_000), fidelity_bond_value: 42 }])
+
+      const jan1 = new Date(2027, 0, 1).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+      const escaped = jan1.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`)
+      expect(screen.getByText(new RegExp(String.raw`^${escaped} \(`, 'u'))).toBeInTheDocument()
+    }).finally(() => {
+      fidelityBonds.current = []
+    })
   })
 })

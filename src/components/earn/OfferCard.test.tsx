@@ -1,14 +1,16 @@
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { OrderbookOffer } from '@/lib/api/orderbook'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
+import { withTimeZone } from '@/test/withTimeZone'
 import { OfferCard } from './OfferCard'
 
 type Offer = NonNullable<SessionResponse['offer_list']>[number]
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: { date?: string }) => (options?.date ? `${key}: ${options.date}` : key),
   }),
 }))
 
@@ -90,6 +92,17 @@ describe('OfferCard', () => {
     expect(screen.getByText('earn.current.text_orderbook_missing')).toBeInTheDocument()
   })
 
+  const orderbookOffer: OrderbookOffer = {
+    counterparty: 'JMBot',
+    oid: 123,
+    ordertype: 'sw0absoffer',
+    minsize: 10_000,
+    maxsize: 50_000,
+    txfee: 500,
+    cjfee: 1_000,
+    fidelity_bond_value: 42_000,
+  }
+
   it('shows the advertised fidelity bond details', () => {
     withRuntimeLocale('de-DE', () => {
       render(
@@ -97,16 +110,7 @@ describe('OfferCard', () => {
           value={baseOffer}
           nickname="JMBot"
           orderbookStatus="visible"
-          orderbookOffer={{
-            counterparty: 'JMBot',
-            oid: 123,
-            ordertype: 'sw0absoffer',
-            minsize: 10_000,
-            maxsize: 50_000,
-            txfee: 500,
-            cjfee: 1_000,
-            fidelity_bond_value: 42_000,
-          }}
+          orderbookOffer={orderbookOffer}
           fidelityBond={{ counterparty: 'JMBot', amount: 100_000, locktime: 1_800_000_000 }}
         />,
       )
@@ -115,6 +119,27 @@ describe('OfferCard', () => {
       expect(screen.getByText('earn.current.text_bond_value: 42.000')).toBeInTheDocument()
       expect(screen.getByText('100000')).toBeInTheDocument()
       expect(screen.getByText(/earn\.current\.text_bond_locktime/u)).toBeInTheDocument()
+    })
+  })
+
+  it('shows the bond locktime as the 1st of its month, also behind UTC', () => {
+    withTimeZone('America/New_York', () => {
+      render(
+        <OfferCard
+          value={baseOffer}
+          nickname="JMBot"
+          orderbookStatus="visible"
+          orderbookOffer={orderbookOffer}
+          fidelityBond={{ counterparty: 'JMBot', amount: 100_000, locktime: Date.UTC(2027, 0, 1) / 1_000 }}
+        />,
+      )
+
+      const jan1 = new Date(2027, 0, 1).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+      expect(screen.getByText(`earn.current.text_bond_locktime: ${jan1}`)).toBeInTheDocument()
     })
   })
 })

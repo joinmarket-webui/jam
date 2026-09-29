@@ -1,0 +1,33 @@
+{
+  "default_branch": "devel",
+  "branches": [
+    "devel",
+    "feat/variable-jar-counts",
+    "master",
+    "origin",
+    "parth/1449-seed-timeout",
+    "pre-release/v2.0.0-beta.4",
+    "tbk/deps",
+    "tbk/docs"
+  ],
+  "parent": {
+    "devel": null,
+    "feat/variable-jar-counts": "devel",
+    "master": "devel",
+    "origin": "devel",
+    "parth/1449-seed-timeout": "devel",
+    "pre-release/v2.0.0-beta.4": "devel",
+    "tbk/deps": "devel",
+    "tbk/docs": "devel"
+  },
+  "order": [
+    "devel",
+    "feat/variable-jar-counts",
+    "master",
+    "origin",
+    "parth/1449-seed-timeout",
+    "pre-release/v2.0.0-beta.4",
+    "tbk/deps",
+    "tbk/docs"
+  ]
+}
