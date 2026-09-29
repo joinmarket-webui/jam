@@ -747,6 +747,40 @@ describe('pseudoRandomNumbers', () => {
     }
   })
 
+  it('should return every integer in the range with equal probability', () => {
+    const counts = new Map<number, number>()
+    const steps = 300
+    const randomSpy = vi.spyOn(Math, 'random')
+    try {
+      for (let i = 0; i < steps; i++) {
+        randomSpy.mockReturnValueOnce(i / steps)
+        const result = pseudoRandomInteger(8, 10)
+        counts.set(result, (counts.get(result) ?? 0) + 1)
+      }
+    } finally {
+      randomSpy.mockRestore()
+    }
+
+    expect(Object.fromEntries(counts)).toEqual({ 8: 100, 9: 100, 10: 100 })
+  })
+
+  it('should include both bounds', () => {
+    const randomSpy = vi.spyOn(Math, 'random')
+    try {
+      randomSpy.mockReturnValueOnce(0)
+      expect(pseudoRandomInteger(-5, 5)).toBe(-5)
+      randomSpy.mockReturnValueOnce(1 - Number.EPSILON)
+      expect(pseudoRandomInteger(-5, 5)).toBe(5)
+    } finally {
+      randomSpy.mockRestore()
+    }
+  })
+
+  it('should throw if the range contains no integer', () => {
+    expect(() => pseudoRandomInteger(1.2, 1.8)).toThrow(RangeError)
+    expect(() => pseudoRandomInteger(5, 3)).toThrow(RangeError)
+  })
+
   it('should handle single value range', () => {
     const value = 5
     const result = pseudoRandomInteger(value, value)
@@ -803,20 +837,22 @@ describe('pseudoRandomNumbers', () => {
     expect(results.size).toBeGreaterThan(1)
   })
 
-  it('should work with decimal inputs by preserving decimal precision', () => {
-    const min = 1.7
-    const max = 5.3
+  it('should return integers between ceil(min) and floor(max) for decimal inputs', () => {
+    const randomSpy = vi.spyOn(Math, 'random')
+    try {
+      randomSpy.mockReturnValueOnce(0)
+      expect(pseudoRandomInteger(1.7, 5.3)).toBe(2)
+      randomSpy.mockReturnValueOnce(1 - Number.EPSILON)
+      expect(pseudoRandomInteger(1.7, 5.3)).toBe(5)
+    } finally {
+      randomSpy.mockRestore()
+    }
 
     for (let i = 0; i < 20; i++) {
-      const result = pseudoRandomInteger(min, max)
-      expect(result).toBeGreaterThanOrEqual(min)
-      // The function can return values beyond max when using decimal inputs
-      // because Math.round(Math.random() * (max - min)) can round up to Math.round(max - min)
-      // and then min is added, potentially exceeding the original max
-      const maxPossible = Math.round(max - min) + min
-      expect(result).toBeLessThanOrEqual(maxPossible)
-      // The result may be a decimal when decimal inputs are provided
-      expect(typeof result).toBe('number')
+      const result = pseudoRandomInteger(1.7, 5.3)
+      expect(Number.isInteger(result)).toBe(true)
+      expect(result).toBeGreaterThanOrEqual(2)
+      expect(result).toBeLessThanOrEqual(5)
     }
   })
 })

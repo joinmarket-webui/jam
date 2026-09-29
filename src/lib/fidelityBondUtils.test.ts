@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import { withTimeZone } from '@/test/withTimeZone'
 import * as fb from './fidelityBondUtils'
 
 const makeUtxo = (id: string, address = '', frozen = false) =>
@@ -48,14 +49,46 @@ describe('utils', () => {
       expect(fb.lockdate.toTimestamp('2009-13' as fb.Lockdate)).toBe(Date.UTC(2010, 0, 1))
     })
 
-    it('should format lockdate as a human readable date label', () => {
-      expect(fb.lockdate.toDateLabel('2009-01')).toBe(
-        new Date(Date.UTC(2009, 0, 1)).toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }),
-      )
+    describe('behind UTC', () => {
+      // 2027-01-01T00:00Z is still 31 December 2026 in New York.
+      const NEW_YORK = 'America/New_York'
+      const JAN_2027 = Date.UTC(2027, 0, 1)
+      const DAY_FORMAT = { year: 'numeric', month: 'long', day: 'numeric' } as const
+
+      // Local-time dates format as themselves in any time zone and locale.
+      const localLabel = (year: number, monthIndex: number, day: number, format: Intl.DateTimeFormatOptions) =>
+        new Date(year, monthIndex, day).toLocaleDateString(undefined, format)
+
+      it('should run in a time zone where the 1st of the month is still the previous day', () => {
+        // Guards the tests below: without the shift they could not fail.
+        withTimeZone(NEW_YORK, () => {
+          expect(new Date(JAN_2027).getDate()).toBe(31)
+        })
+      })
+
+      it('should format lockdate as the 1st of the picked month', () => {
+        withTimeZone(NEW_YORK, () => {
+          expect(fb.lockdate.toDateLabel('2027-01')).toBe(localLabel(2027, 0, 1, DAY_FORMAT))
+          expect(fb.lockdate.toDateLabel('2027-01')).not.toBe(localLabel(2026, 11, 31, DAY_FORMAT))
+        })
+      })
+
+      it('should format a locktime in UTC, with or without options', () => {
+        withTimeZone(NEW_YORK, () => {
+          expect(fb.lockdate.formatTimestamp(JAN_2027)).toBe(localLabel(2027, 0, 1, DAY_FORMAT))
+          expect(fb.lockdate.formatTimestamp(JAN_2027, { year: 'numeric', month: 'long' })).toBe(
+            localLabel(2027, 0, 1, { year: 'numeric', month: 'long' }),
+          )
+        })
+      })
+
+      it('should not let options override the UTC time zone', () => {
+        withTimeZone(NEW_YORK, () => {
+          expect(fb.lockdate.formatTimestamp(JAN_2027, { ...DAY_FORMAT, timeZone: NEW_YORK })).toBe(
+            localLabel(2027, 0, 1, DAY_FORMAT),
+          )
+        })
+      })
     })
 
     it('should create an initial lockdate', () => {

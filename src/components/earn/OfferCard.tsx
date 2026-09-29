@@ -18,6 +18,7 @@ import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader,
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { OfferType } from '@/constants/jm'
 import type { OrderbookFidelityBond, OrderbookOffer } from '@/lib/api/orderbook'
+import * as fb from '@/lib/fidelityBondUtils'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
 import { Balance } from '../ui/jam/Balance'
 import { Label } from '../ui/label'
@@ -184,11 +185,7 @@ export function OfferCard({
                   <Balance valueString={String(fidelityBond.amount)} />
                   <span className="text-muted-foreground">
                     {t('earn.current.text_bond_locktime', {
-                      date: new Date(fidelityBond.locktime * 1_000).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      }),
+                      date: fb.lockdate.formatTimestamp(fidelityBond.locktime * 1_000),
                     })}
                   </span>
                 </div>
