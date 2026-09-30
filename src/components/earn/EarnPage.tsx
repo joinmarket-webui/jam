@@ -19,7 +19,7 @@ import { isDevMode } from '@/constants/debugFeatures'
 import * as JAM from '@/constants/jam'
 import { OFFERTYPE_ABS } from '@/constants/jm'
 import { routes } from '@/constants/routes'
-import { useRawJmSession } from '@/context/JamSessionInfoContext'
+import { useJamSessionInfoContext, useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -77,6 +77,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const { jmSession } = useRawJmSession()
+  const { operations } = useJamSessionInfoContext()
 
   const enableCustomEarnFeeValues = useExpertFeatureEnabled('custom-earn-fee-values')
   const { enabled: isDeveloperMode } = useDeveloperMode()
@@ -178,12 +179,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const hasFidelityBond = walletInfo.fidelityBondSummary.fbOutputs.length > 0
   const isFidelityBondActionsEnabled =
-    jmSession?.rescanning === false &&
-    jmSession.maker_running === false &&
-    jmSession.coinjoin_in_process === false &&
-    !waitingForMakerUpdate &&
-    !waitingForOfferUpdate &&
-    !walletInfo.isFetching
+    operations.earn.enabled && !waitingForMakerUpdate && !waitingForOfferUpdate && !walletInfo.isFetching
 
   const isCreateFidelityBondEnabled =
     isFidelityBondActionsEnabled &&
@@ -331,12 +327,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       <Card
         className={cn({
           hidden: jmSession.maker_running && !waitingForOfferUpdate,
-          'blur-[2px]':
-            isWaitingMakerStop ||
-            waitingForOfferUpdate ||
-            jmSession.maker_running ||
-            jmSession.coinjoin_in_process ||
-            jmSession.rescanning,
+          'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate || !operations.earn.enabled,
         })}
       >
         <CardContent>
@@ -352,9 +343,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               walletInfo.isFetching ||
               isWaitingMakerStart ||
               isWaitingMakerStop ||
-              jmSession.maker_running ||
-              jmSession.coinjoin_in_process ||
-              jmSession.rescanning
+              !operations.earn.enabled
             }
             enableCustomEarnFeeValues={enableCustomEarnFeeValues}
             debug={isDeveloperMode}
