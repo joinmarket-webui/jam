@@ -17,7 +17,7 @@ import {
 import { JM_NG_DEFAULT_TUMBLER_PARAMS, type TumblerParameters } from '@/constants/jm'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { isAddressOnNetwork, isValidAddress } from '@/lib/formValidation'
-import { factorToPercentage, isValidNumber, percentageToFactor, pseudoRandomInteger } from '@/lib/utils'
+import { factorToPercentage, isValidInteger, isValidNumber, percentageToFactor, pseudoRandomInteger } from '@/lib/utils'
 import type { Seconds } from '@/types/global'
 import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
@@ -175,22 +175,19 @@ export const sweepFormSchema = (
         .required(),
       minNumberOfCollaborators: yup
         .number()
-        .transform((value) => (isValidNumber(value) ? value : null))
-        .integer()
+        .transform((value) => (isValidInteger(value) ? value : null))
         .min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS)
         .max(JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS)
         .required(),
       maxNumberOfCollaborators: yup
         .number()
-        .transform((value) => (isValidNumber(value) ? value : null))
-        .integer()
+        .transform((value) => (isValidInteger(value) ? value : null))
         .min(JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS)
         .max(JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS)
         .required(),
       minNumberOfTransactionsPerJar: yup
         .number()
-        .transform((value) => (isValidNumber(value) ? value : null))
-        .integer()
+        .transform((value) => (isValidInteger(value) ? value : null))
         .min(JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR)
         .max(JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR)
         .required(),

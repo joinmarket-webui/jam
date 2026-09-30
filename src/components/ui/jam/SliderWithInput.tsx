@@ -23,7 +23,7 @@ function SliderWithInput({
   value,
   min = 0,
   max = 100,
-  step = 1,
+  step,
   ...props
 }: SliderWithInputProps) {
   const _values = React.useMemo(
@@ -36,7 +36,7 @@ function SliderWithInput({
 
   const clamp = (raw: number) => {
     let next = Math.min(max, Math.max(min, raw))
-    if (step > 0) {
+    if (typeof step === 'number' && step > 0) {
       // Snap to the nearest step relative to `min`, then re-clamp to `max`.
       next = min + Math.round((next - min) / step) * step
       next = Math.min(max, Math.max(min, next))

@@ -1,6 +1,7 @@
 import { Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import { describe, expect, it } from 'vitest'
+import { ValidationError } from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { percentageToFactor } from '@/lib/utils'
 import {
@@ -104,9 +105,9 @@ describe('sweepFormSchema', () => {
       }
 
       await expect(validate(values)).resolves.toBeDefined()
-      await expect(validate({ ...values, [field]: values[field] + 0.5 })).rejects.toMatchObject({
-        inner: [expect.objectContaining({ path: field, type: 'integer' })],
-      })
+      const error = await validate({ ...values, [field]: values[field] + 0.5 }).catch((error_: unknown) => error_)
+      expect(error).toBeInstanceOf(ValidationError)
+      expect((error as ValidationError).inner.map((it) => it.path)).toContain(field)
     },
   )
 
