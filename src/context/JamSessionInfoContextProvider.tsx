@@ -12,6 +12,7 @@ import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { JamSessionInfoContext } from './JamSessionInfoContext'
 import type { MakerInfo, PaymentAttempt, RescanInfo, TakerInfo } from './JamSessionInfoContext'
+import { getOperationsAvailability } from './operationAvailability'
 
 interface PaymentAttemptStoreState {
   state?: PaymentAttempt
@@ -116,6 +117,7 @@ export const JamSessionInfoContextProvider = ({
   }
 
   const value = {
+    operations: getOperationsAvailability(state, rescanInfo.rescanning),
     blockHeight: state?.block_height ?? undefined,
     takerInfo,
     makerInfo,
