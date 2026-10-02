@@ -1,6 +1,7 @@
 import { Network } from 'bitcoin-address-validation'
 import type { TFunction } from 'i18next'
 import { describe, expect, it } from 'vitest'
+import { ValidationError } from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import { percentageToFactor } from '@/lib/utils'
 import {
@@ -91,6 +92,24 @@ describe('sweepFormSchema', () => {
       ],
     })
   })
+
+  it.each(['minNumberOfTransactionsPerJar', 'minNumberOfCollaborators', 'maxNumberOfCollaborators'] as const)(
+    'rejects a fractional %s',
+    async (field) => {
+      const values = {
+        ...buildSweepFormValuesDefaultValues(),
+        destinations: [{ address: validRegtestAddress }],
+        minNumberOfCollaborators: 5,
+        maxNumberOfCollaborators: 9,
+        minNumberOfTransactionsPerJar: 3,
+      }
+
+      await expect(validate(values)).resolves.toBeDefined()
+      const error = await validate({ ...values, [field]: values[field] + 0.5 }).catch((error_: unknown) => error_)
+      expect(error).toBeInstanceOf(ValidationError)
+      expect((error as ValidationError).inner.map((it) => it.path)).toContain(field)
+    },
+  )
 
   it('rejects reused wallet addresses', async () => {
     const usedAddress = validRegtestAddress
