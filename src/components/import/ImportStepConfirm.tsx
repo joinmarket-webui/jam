@@ -127,7 +127,11 @@ export const ImportStepConfirm = ({
                   <div className="text-muted-foreground text-xs">
                     {t('import_wallet.import_details.description_blockheight')}
                   </div>
-                  <div className="text-xl">{importDetails.blockheight.toLocaleString()}</div>
+                  <div className="text-xl">
+                    {importDetails.blockheight === 0
+                      ? t('import_wallet.confirmation.blockheight_genesis')
+                      : importDetails.blockheight.toLocaleString()}
+                  </div>
                 </div>
                 <div>
                   <div>{t('import_wallet.import_details.label_gaplimit')}</div>
