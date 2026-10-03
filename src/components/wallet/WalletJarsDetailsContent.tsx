@@ -59,7 +59,7 @@ interface UtxosContentProps {
 
 export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
-  const { takerInfo, rescanInfo, makerInfo } = useJamSessionInfoContext()
+  const { operations } = useJamSessionInfoContext()
   const { refetch: walletInfoRefetch, isFetching: walletInfoIsFetching } = useJamWalletInfoContext()
 
   const client = useApiClient()
@@ -121,9 +121,7 @@ export const UtxosContent = ({ enabled, walletFileName, addressSummary, jar }: U
 
   const operationsEnabled =
     enabled &&
-    !makerInfo.running &&
-    !takerInfo.running &&
-    !rescanInfo.rescanning &&
+    operations.walletUtxos.enabled &&
     !(walletInfoIsFetching || freezeUtxos.isPending || unfreezeUtxos.isPending)
   const enableRowSelection = enabled && !(freezeUtxos.isPending || unfreezeUtxos.isPending)
 
