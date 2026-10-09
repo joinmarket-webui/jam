@@ -116,11 +116,11 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction) =>
           onCheckedChange={(checked) => {
             const address = row.original.utxo.address
             const eligibleRows = table
-              .getRowModel()
+              .getFilteredRowModel()
               .rows.filter((it) => it.original.utxo.address === address)
               .filter((it) => it.getIsSelected() !== checked)
 
-            eligibleRows.forEach((it) => it.toggleSelected())
+            eligibleRows.forEach((it) => it.toggleSelected(checked === true))
 
             if (eligibleRows.length > 1) {
               const affectedCount = eligibleRows.length - 1
