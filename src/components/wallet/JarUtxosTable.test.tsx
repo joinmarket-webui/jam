@@ -181,4 +181,44 @@ describe('JarUtxosTable', () => {
 
     expect(screen.getByText('bc1qfrozen')).toBeInTheDocument()
   })
+
+  it('selects related UTXOs sharing an address across different pages', async () => {
+    const user = userEvent.setup()
+    const onRowSelectionChange = vi.fn()
+
+    // Create 30 entries (default page size is 25)
+    // first entry (page 1) and last entry (page 2) share the same address 'bc1qshared'
+    const manyEntries: UtxoTableEntry[] = Array.from({ length: 30 }, (_, index) => {
+      const isShared = index === 0 || index === 28
+      return {
+        utxo: makeUtxo({
+          address: isShared ? 'bc1qshared' : `bc1qunique-${index}`,
+          utxo: `txid-${index}:0`,
+          value: 1_000 * (index + 1),
+        }),
+        tags: [],
+      }
+    })
+
+    render(<JarUtxosTable tableEntries={manyEntries} pinnedEntries={[]} onRowSelectionChange={onRowSelectionChange} />)
+
+    // Click checkbox for the first entry on page 1
+    const firstDataRow = screen.getAllByRole('row').find((row) => within(row).queryByText('bc1qshared'))!
+    const firstRowCheckbox = within(firstDataRow).getByRole('checkbox')
+    await user.click(firstRowCheckbox)
+
+    await waitFor(() => expect(onRowSelectionChange).toHaveBeenCalled())
+    expect(mocks.toastWarning).toHaveBeenCalledOnce()
+    const [, options] = mocks.toastWarning.mock.calls[0]
+    expect(options.description).toContain('jar_details.utxo_list.toast_auto_selected_with_address')
+
+    // Navigate to page 2 (click next page button)
+    const nextButton = screen.getByRole('button', { name: 'global.table.pagination.page_selector.label_next' })
+    await user.click(nextButton)
+
+    // On page 2, the row for index 28 (value 29000, address bc1qshared) should also be checked
+    const page2Rows = screen.getAllByRole('row')
+    const siblingRow = page2Rows.find((row) => within(row).queryByText('29000'))!
+    expect(within(siblingRow).getByRole('checkbox')).toBeChecked()
+  })
 })
