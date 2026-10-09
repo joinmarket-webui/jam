@@ -199,7 +199,9 @@
       "button_reset": "重置",
       "button_copy": "复制签名",
       "alert_success_copied": "签名已复制到剪贴板！",
-      "text_error_title": "签名消息时出错"
+      "text_error_title": "签名消息时出错",
+      "feedback_invalid_address": "请输入钱包地址或 HD 路径。",
+      "feedback_invalid_message": "请输入要签名的消息。"
     },
     "reveal_seed": "显示种子词",
     "show_logs": "显示日志",

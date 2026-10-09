@@ -144,7 +144,9 @@
       "button_reset": "Réinitialiser",
       "button_copy": "Copier la signature",
       "alert_success_copied": "Signature copiée dans le presse-papier !",
-      "text_error_title": "Erreur lors de la signature du message"
+      "text_error_title": "Erreur lors de la signature du message",
+      "feedback_invalid_address": "Veuillez saisir une adresse de portefeuille ou un chemin HD.",
+      "feedback_invalid_message": "Veuillez saisir un message à signer."
     },
     "reveal_seed": "Révéler la phrase graine",
     "show_logs": "Afficher les journaux",
