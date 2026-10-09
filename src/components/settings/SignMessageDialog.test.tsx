@@ -42,7 +42,7 @@ vi.mock('@/hooks/useQueryDisplayWallet', () => ({
   }),
 }))
 
-vi.mock('@joinmarket-webui/joinmarket-ng-api-ts/@tanstack/react-query', () => ({
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   signmessageMutation: vi.fn(() => ({})),
 }))
 
@@ -180,6 +180,35 @@ describe('SignMessageDialog', () => {
           message: 'Test',
         },
       })
+    })
+  })
+
+  it('updates address input when an address is selected from wallet', async () => {
+    h.walletInfo = {
+      accounts: [
+        {
+          branches: [
+            {
+              entries: [
+                {
+                  address: 'bc1qtestaddress',
+                  hd_path: "m/84'/0'/0'/0/2",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    } as unknown as WalletInfoApiObject
+
+    render(<SignMessageDialog open={true} onOpenChange={vi.fn()} walletFileName={walletFileName} />)
+
+    const selectButton = screen.getByText('Select Address')
+    fireEvent.click(selectButton)
+
+    const addressInput = screen.getByPlaceholderText('settings.sign_message_modal.placeholder_address')
+    await waitFor(() => {
+      expect(addressInput).toHaveValue('bc1qtestaddress')
     })
   })
 

@@ -335,7 +335,9 @@
       "button_reset": "Reset",
       "button_copy": "Copy signature",
       "alert_success_copied": "Copied signature to clipboard!",
-      "text_error_title": "Error while signing message"
+      "text_error_title": "Error while signing message",
+      "feedback_invalid_address": "Please enter a wallet address or HD path.",
+      "feedback_invalid_message": "Please enter a message to sign."
     },
     "reveal_seed": "Reveal seed phrase",
     "show_logs": "Show logs",

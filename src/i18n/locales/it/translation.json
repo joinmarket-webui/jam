@@ -164,7 +164,9 @@
       "button_reset": "Reimposta",
       "button_copy": "Copia firma",
       "alert_success_copied": "Firma copiata negli appunti!",
-      "text_error_title": "Errore durante la firma del messaggio"
+      "text_error_title": "Errore durante la firma del messaggio",
+      "feedback_invalid_address": "Inserisci un indirizzo del portafoglio o un percorso HD.",
+      "feedback_invalid_message": "Inserisci un messaggio da firmare."
     },
     "reveal_seed": "Rivela la seed phrase",
     "show_logs": "Mostra i log",
