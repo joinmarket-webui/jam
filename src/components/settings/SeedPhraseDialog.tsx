@@ -57,10 +57,14 @@ export const SeedPhraseDialog = ({
   const queryClient = useQueryClient()
   const client = useApiClient()
 
-  const seedQueryOptions = getseedOptions({
-    client,
-    path: { walletname: walletFileName },
-  })
+  const seedQueryOptions = useMemo(
+    () =>
+      getseedOptions({
+        client,
+        path: { walletname: walletFileName },
+      }),
+    [client, walletFileName],
+  )
 
   const {
     data: seedQueryData,
@@ -88,13 +92,21 @@ export const SeedPhraseDialog = ({
 
     const seedDisplayedAt = Math.max(seedQueryDataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
-      setTimeLeft(Math.max(0, seedDisplayedAt + autoCloseTimeout - Date.now()))
+      const nextTimeLeft = Math.max(0, seedDisplayedAt + autoCloseTimeout - Date.now())
+      setTimeLeft(nextTimeLeft)
+      if (nextTimeLeft <= 0) setRevealSeed(false)
     }, 333)
 
     return () => {
       clearInterval(interval)
     }
   }, [seedQueryDataUpdatedAt, isPasswordVerified, passwordVerifiedAt, autoCloseTimeout])
+
+  useEffect(() => {
+    if (timeLeft > 0) return
+
+    queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
+  }, [queryClient, seedQueryOptions.queryKey, timeLeft])
 
   const handleClose = () => {
     onOpenChange(false)
