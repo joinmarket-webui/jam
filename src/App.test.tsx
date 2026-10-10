@@ -144,6 +144,17 @@ vi.mock('./context/JamSessionInfoContext', () => ({
     updateSessionInfo: vi.fn(),
   }),
   useJamSessionInfoContext: () => ({
+    operations: {
+      walletLock: {
+        reasons: [
+          ...(holders.jmSession?.maker_running ? ['makerRunning'] : []),
+          ...(holders.jmSession?.coinjoin_in_process ? ['coinjoinRunning'] : []),
+          ...(Array.isArray(holders.jmSession?.schedule) && holders.jmSession.schedule.length > 0
+            ? ['schedulePending']
+            : []),
+        ],
+      },
+    },
     blockHeight: holders.blockHeight,
     takerInfo: { running: holders.takerRunning },
     rescanInfo: { rescanning: holders.rescanning },

@@ -81,13 +81,13 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { jmSession } = useRawJmSession()
   const jmSessionActive = !!jmSession
   const {
+    operations,
     makerInfo: { running: makerRunning },
     takerInfo: {
       running: takerRunning,
       currentPaymentAttempt,
       scheduler: { running: schedulerRunning },
     },
-    rescanInfo,
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
   } = useJamSessionInfoContext()
@@ -566,9 +566,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               addressSummary={addressSummary}
               walletBalanceSummary={walletBalanceSummary}
               disabled={
-                makerRunning ||
-                takerRunning ||
-                rescanInfo.rescanning ||
+                !operations.send.enabled ||
                 isWaitingCoinjoinStart ||
                 isWaitingCoinjoinStop ||
                 utxoSelectionDialog.isSubmitting ||
