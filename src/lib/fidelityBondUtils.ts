@@ -143,3 +143,11 @@ export const utxo = (() => {
     getLocktime,
   }
 })()
+
+export const existingLockdates = (fbUtxos: Array<Utxo>): Lockdate[] => {
+  const lockdates = fbUtxos
+    .map((it) => utxo.getLocktime(it))
+    .filter((locktime): locktime is Milliseconds => locktime !== null)
+    .map((locktime) => lockdate.fromTimestamp(locktime))
+  return [...new Set(lockdates)]
+}

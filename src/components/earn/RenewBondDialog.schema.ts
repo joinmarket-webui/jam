@@ -11,9 +11,12 @@ export const RENEW_BOND_FORM_DEFAULT_VALUES: RenewBondFormValues = {
   confirmationAccepted: false,
 }
 
-export const renewBondFormSchema: yup.ObjectSchema<RenewBondFormValues> = yup
-  .object({
-    lockdate: yup.string<fb.Lockdate>().required(),
-    confirmationAccepted: yup.boolean().oneOf([true]).required(),
-  })
-  .required()
+export const createRenewBondFormSchema = (
+  availableLockdates: readonly fb.Lockdate[],
+): yup.ObjectSchema<RenewBondFormValues> =>
+  yup
+    .object({
+      lockdate: yup.string<fb.Lockdate>().oneOf(availableLockdates).required(),
+      confirmationAccepted: yup.boolean().oneOf([true]).required(),
+    })
+    .required()

@@ -17,6 +17,7 @@ const h = vi.hoisted(() => ({
   utxoFrozen: false,
   extraUtxos: [] as Array<{ utxo: string; value: number; frozen: boolean }>,
   selectHandlers: [] as Array<(value: string) => void>,
+  fbOutputs: [] as Array<{ utxo: string; locktime: string; path: string }>,
 }))
 
 vi.mock('react-i18next', () => ({
@@ -57,6 +58,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
         utxos: [{ utxo: 'tx1:0', value: 1000, frozen: h.utxoFrozen }, ...h.extraUtxos],
       },
     ],
+    fidelityBondSummary: { fbOutputs: h.fbOutputs },
     refetch: h.refetch,
   }),
 }))
@@ -109,7 +111,11 @@ vi.mock('@/components/ui/select', () => ({
     return <div>{children}</div>
   },
   SelectContent: ({ children }: ChildrenProps) => <div>{children}</div>,
-  SelectItem: ({ children }: ChildrenProps) => <div>{children}</div>,
+  SelectItem: ({ children, value, disabled }: ChildrenProps & { value: string; disabled?: boolean }) => (
+    <div role="option" data-value={value} aria-disabled={disabled === true}>
+      {children}
+    </div>
+  ),
   SelectTrigger: ({ children }: ChildrenProps) => <div>{children}</div>,
   SelectValue: () => <div />,
 }))
@@ -186,6 +192,7 @@ describe('RenewBondDialog', () => {
     h.utxoFrozen = false
     h.extraUtxos = []
     h.selectHandlers = []
+    h.fbOutputs = []
   })
 
   it('renders the date selection step', () => {
@@ -212,6 +219,19 @@ describe('RenewBondDialog', () => {
     selectMonth('06')
     selectYear('2026')
     expect(screen.getByText('earn.fidelity_bond.select_date.label_selected_lock_date')).toBeInTheDocument()
+  })
+
+  it('does not offer the lockdate of an existing bond, as it would reuse its address', () => {
+    h.fbOutputs = [{ utxo: 'other-bond:0', locktime: '2027-06-01 00:00:00', path: `m/84'/1'/0'/2/0:1811808000` }]
+    renderDialog()
+
+    const juneOption = screen.getAllByRole('option').find((it) => it.dataset.value === '06')
+    expect(juneOption).toHaveAttribute('aria-disabled', 'true')
+
+    selectMonth('06')
+    selectYear('2027')
+    expect(screen.queryByText('earn.fidelity_bond.select_date.label_selected_lock_date')).not.toBeInTheDocument()
+    expect(screen.getByText('global.next')).toBeDisabled()
   })
 
   it('moves to the confirm step and shows the timelock address', () => {
