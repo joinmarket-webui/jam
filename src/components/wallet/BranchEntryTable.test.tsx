@@ -139,12 +139,18 @@ describe('BranchEntryTable', () => {
       />,
     )
 
+    // Fail early if the target entry is not actually located beyond the first page
+    // (e.g. because the default page size changed)
+    const nextButton = screen.getByRole('button', { name: 'global.table.pagination.page_selector.label_next' })
+    expect(nextButton).toBeEnabled()
+    expect(screen.queryByText('bc1qbranch-27')).not.toBeInTheDocument()
+
     // The pinned entry from page 2 should be rendered in top rows on page 1
     expect(screen.getByText('bc1qbranch-28')).toBeInTheDocument()
 
     // Navigate to page 2
-    const nextButton = screen.getByRole('button', { name: 'global.table.pagination.page_selector.label_next' })
     await user.click(nextButton)
+    expect(screen.queryByText('bc1qbranch-0')).not.toBeInTheDocument()
 
     // On page 2, the row for bc1qbranch-28 should also have the selected highlight class
     const page2Rows = screen.getAllByRole('row')
