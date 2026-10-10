@@ -78,6 +78,17 @@ describe('ReceiveForm', () => {
     expect(screen.getByText(/"fromJar": 1/u)).toBeInTheDocument()
   })
 
+  it('selects the first available jar when the current selection disappears', async () => {
+    const { rerender } = render(
+      <ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 1 } }} onSubmit={vi.fn()} />,
+    )
+
+    rerender(<ReceiveForm jars={[jars[0]]} defaultValues={{ source: { fromJar: 1 } }} onSubmit={vi.fn()} />)
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Zero' })).toHaveAttribute('aria-pressed', 'true'))
+    expect(screen.queryByRole('button', { name: 'One' })).not.toBeInTheDocument()
+  })
+
   it('shows validation feedback for invalid amounts', async () => {
     const user = userEvent.setup()
 
