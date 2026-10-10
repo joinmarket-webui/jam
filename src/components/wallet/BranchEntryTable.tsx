@@ -145,8 +145,8 @@ export const BranchEntryTable = ({
     getPageCount,
     getFilteredRowModel,
     resetRowSelection,
+    getPrePaginatedRowModel,
     resetRowPinning,
-    getRowModel,
     ...table
   } = useTable({
     features: branchEntryTableFeatures,
@@ -173,17 +173,17 @@ export const BranchEntryTable = ({
 
   useEffect(() => {
     resetRowPinning(true)
-    getRowModel().rows.forEach((row) => {
+    getPrePaginatedRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
-  }, [resetRowPinning, getRowModel, pinnedEntries])
+  }, [resetRowPinning, getPrePaginatedRowModel, pinnedEntries])
 
   useEffect(() => {
     resetRowSelection(true)
-    getRowModel().rows.forEach((row) => {
+    getPrePaginatedRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
-  }, [resetRowSelection, getRowModel, highlightedEntries])
+  }, [resetRowSelection, getPrePaginatedRowModel, highlightedEntries])
 
   useEffect(() => {
     if (isShowAll) {
