@@ -117,4 +117,39 @@ describe('BranchEntryTable', () => {
 
     expect(screen.getAllByText('bc1qsame')).toHaveLength(2)
   })
+
+  it('pins and selects entries located on pages beyond the first page', async () => {
+    const user = userEvent.setup()
+    // Create 30 entries (default page size is 25)
+    const manyEntries: BranchEntryTableRow[] = Array.from({ length: 30 }, (_, index) =>
+      makeEntry({
+        address: `bc1qbranch-${index}`,
+        balance: 1_000 * (index + 1),
+        derivationIndex: index,
+      }),
+    )
+
+    const targetPage2Entry = manyEntries[28] // index 28 (normally on page 2)
+
+    render(
+      <BranchEntryTable
+        tableEntries={manyEntries}
+        selectedEntries={[targetPage2Entry]}
+        pinnedEntries={[targetPage2Entry]}
+      />,
+    )
+
+    // The pinned entry from page 2 should be rendered in top rows on page 1
+    expect(screen.getByText('bc1qbranch-28')).toBeInTheDocument()
+
+    // Navigate to page 2
+    const nextButton = screen.getByRole('button', { name: 'global.table.pagination.page_selector.label_next' })
+    await user.click(nextButton)
+
+    // On page 2, the row for bc1qbranch-28 should also have the selected highlight class
+    const page2Rows = screen.getAllByRole('row')
+    const targetRow = page2Rows.find((row) => row.textContent?.includes('bc1qbranch-28'))
+    expect(targetRow).toBeInTheDocument()
+    expect(targetRow).toHaveClass('bg-brand-warning/25!')
+  })
 })
