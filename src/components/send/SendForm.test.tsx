@@ -401,6 +401,73 @@ describe('SendForm', () => {
     await flushActUpdates()
   })
 
+  it('applies a pasted bip21 amount without integer part instead of keeping the previous amount', async () => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+
+    fireEvent.paste(destinationInput, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_NEW_DUMMY_ADDRESS_0}?amount=0.01` },
+    })
+    await flushActUpdates()
+    expect(amountInput).toHaveValue(1_000_000)
+
+    fireEvent.paste(destinationInput, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_SCAN_DUMMY_ADDRESS_1}?amount=.5` },
+    })
+    await flushActUpdates()
+
+    expect(destinationInput).toHaveValue(h.DEFAULT_SCAN_DUMMY_ADDRESS_1)
+    expect(amountInput).toHaveValue(50_000_000)
+  })
+
+  it.each([
+    ['a bip21 uri without amount', `bitcoin:${h.DEFAULT_SCAN_DUMMY_ADDRESS_1}`],
+    ['a bip21 uri with an invalid amount', `bitcoin:${h.DEFAULT_SCAN_DUMMY_ADDRESS_1}?amount=abc`],
+    ['a plain address', h.DEFAULT_SCAN_DUMMY_ADDRESS_1],
+  ])('drops the amount of a previous bip21 uri when pasting %s', async (_, pasted) => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+
+    fireEvent.paste(destinationInput, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_NEW_DUMMY_ADDRESS_0}?amount=0.01` },
+    })
+    await flushActUpdates()
+    expect(amountInput).toHaveValue(1_000_000)
+
+    fireEvent.paste(destinationInput, { clipboardData: { getData: () => pasted } })
+    await flushActUpdates()
+
+    expect(destinationInput).toHaveValue(h.DEFAULT_SCAN_DUMMY_ADDRESS_1)
+    expect(amountInput).toHaveValue(null)
+  })
+
+  it('keeps an amount entered by the user when pasting a bip21 uri without amount', async () => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+
+    fireEvent.paste(destinationInput, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_NEW_DUMMY_ADDRESS_0}?amount=0.01` },
+    })
+    await flushActUpdates()
+
+    fireEvent.change(amountInput, { target: { value: '123456' } })
+    await flushActUpdates()
+
+    fireEvent.paste(destinationInput, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_SCAN_DUMMY_ADDRESS_1}` },
+    })
+    await flushActUpdates()
+
+    expect(destinationInput).toHaveValue(h.DEFAULT_SCAN_DUMMY_ADDRESS_1)
+    expect(amountInput).toHaveValue(123_456)
+  })
+
   it('ignores a non-bitcoin-uri paste', () => {
     renderForm()
     const input = document.querySelector('#send-destination') as HTMLInputElement

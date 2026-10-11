@@ -28,6 +28,10 @@ const readParameters = (queryString: string) => {
 const hasUnsupportedRequiredParameter = (parameters: ReadonlyMap<string, string>) =>
   [...parameters.keys()].some((name) => name.startsWith(REQUIRED_PARAMETER_PREFIX))
 
+// BIP21 allows amounts without an integer part (`amountparam = "amount=" *digit [ "." *digit ]`),
+// e.g. `.5` - prefix them with `0` before conversion.
+const normalizeAmount = (value: string) => (value.startsWith('.') ? `0${value}` : value)
+
 export const parseBip21Uri = (raw: string): Bip21ParseResult | undefined => {
   const trimmed = raw.trim()
 
@@ -62,7 +66,7 @@ export const parseBip21Uri = (raw: string): Bip21ParseResult | undefined => {
 
     const amountBtc = parameters.get('amount')
     if (amountBtc !== undefined) {
-      const satValue = tryBtcToSat(amountBtc)
+      const satValue = tryBtcToSat(normalizeAmount(amountBtc))
       if (satValue !== undefined && satValue > 0) {
         result.amount = satValue
       }

@@ -55,6 +55,19 @@ describe('parseBip21Uri', () => {
       expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true, amount: 1 })
     })
 
+    it('parses bitcoin: URI with amount without integer part', () => {
+      expect(parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=.5`)).toEqual({
+        address: VALID_ADDRESS,
+        fromUri: true,
+        amount: 50_000_000,
+      })
+      expect(parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=.0001`)).toEqual({
+        address: VALID_ADDRESS,
+        fromUri: true,
+        amount: 10_000,
+      })
+    })
+
     it('handles case-insensitive scheme', () => {
       const result = parseBip21Uri(`BiTcOiN:${VALID_ADDRESS}?amount=0.1`)
       expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true, amount: 10_000_000 })
@@ -128,6 +141,11 @@ describe('parseBip21Uri', () => {
     it('ignores non-numeric amount', () => {
       const result = parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=abc`)
       expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true })
+    })
+
+    it('ignores a bare decimal point and signed amounts without integer part', () => {
+      expect(parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=.`)).toEqual({ address: VALID_ADDRESS, fromUri: true })
+      expect(parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=-.5`)).toEqual({ address: VALID_ADDRESS, fromUri: true })
     })
 
     it('returns undefined for non-bitcoin URI scheme', () => {
