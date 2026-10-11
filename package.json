@@ -106,7 +106,7 @@
     "radix-ui": "1.7.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-hook-form": "7.89.0",
+    "react-hook-form": "7.90.0",
     "react-i18next": "17.0.16",
     "react-router-dom": "7.18.4",
     "react-use-websocket": "4.13.0",
