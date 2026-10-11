@@ -401,6 +401,27 @@ describe('SendForm', () => {
     await flushActUpdates()
   })
 
+  it('applies a pasted bip21 amount without integer part instead of keeping the previous amount', async () => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+
+    fireEvent.paste(destinationInput, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_NEW_DUMMY_ADDRESS_0}?amount=0.01` },
+    })
+    await flushActUpdates()
+    expect(amountInput).toHaveValue(1_000_000)
+
+    fireEvent.paste(destinationInput, {
+      clipboardData: { getData: () => `bitcoin:${h.DEFAULT_SCAN_DUMMY_ADDRESS_1}?amount=.5` },
+    })
+    await flushActUpdates()
+
+    expect(destinationInput).toHaveValue(h.DEFAULT_SCAN_DUMMY_ADDRESS_1)
+    expect(amountInput).toHaveValue(50_000_000)
+  })
+
   it('ignores a non-bitcoin-uri paste', () => {
     renderForm()
     const input = document.querySelector('#send-destination') as HTMLInputElement
