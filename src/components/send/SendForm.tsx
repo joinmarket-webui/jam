@@ -205,7 +205,7 @@ export function SendForm({
 
   const destinationAddressInfo = useMemo(() => {
     try {
-      return destinationAddress !== undefined ? getAddressInfo(destinationAddress) : undefined
+      return destinationAddress ? getAddressInfo(destinationAddress) : undefined
     } catch (_ignoredOnPurpose) {
       return undefined
     }
@@ -394,7 +394,7 @@ export function SendForm({
                         if (destinationJarIndex === jar.jarIndex) {
                           setValue('destination.address', '', { shouldValidate: true })
                           setValue('destination.fromJar', undefined, { shouldValidate: true })
-                        } else if (destinationAddress !== undefined) {
+                        } else if (destinationAddress) {
                           void trigger('destination.address')
                         }
                       }}
