@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ActiveCollaborativeSendAlert } from '@/components/send/ActiveCollaborativeSendAlert'
-import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
+import type { PaymentAttempt, TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 
@@ -18,8 +18,47 @@ export default meta
 
 type Story = StoryObj<typeof ActiveCollaborativeSendAlert>
 
-export const Default: Story = {
-  args: {},
+const statusUnknown: TakerInfo['status'] = {
+  value: null,
+  fetchingOrderbook: false,
+  filling: false,
+  collectingSignatures: false,
+  broadcasting: false,
+  completed: false,
+  failed: false,
+  cancelled: false,
+}
+
+const statusFetchingOrderbook: TakerInfo['status'] = {
+  ...statusUnknown,
+  value: 'fetching_orderbook',
+  fetchingOrderbook: true,
+}
+
+const statusFailed: TakerInfo['status'] = {
+  ...statusUnknown,
+  value: 'failed',
+  failed: true,
+}
+
+const statusCancelled: TakerInfo['status'] = {
+  ...statusUnknown,
+  value: 'cancelled',
+  cancelled: true,
+}
+
+const statusCompleted: TakerInfo['status'] = {
+  ...statusUnknown,
+  value: 'completed',
+  completed: true,
+}
+
+const takerInfo: TakerInfo = {
+  running: true,
+  status: statusFetchingOrderbook,
+  scheduler: {
+    running: false,
+  },
 }
 
 const jars: Jar[] = [
@@ -38,6 +77,12 @@ const jars: Jar[] = [
   },
 ]
 
+export const Default: Story = {
+  args: {
+    takerInfo,
+  },
+}
+
 const paymentAttempt: PaymentAttempt = {
   createdAt: 1_000,
   utxosHashHex: 'abc123hash',
@@ -52,22 +97,66 @@ const paymentAttempt: PaymentAttempt = {
   },
 }
 
+const takerInfoWithPaymentAttempt: TakerInfo = {
+  ...takerInfo,
+  currentPaymentAttempt: paymentAttempt,
+}
+
 export const WithPaymentAttempt: Story = {
   args: {
-    paymentAttempt,
+    takerInfo: takerInfoWithPaymentAttempt,
     jars,
   },
 }
 
 export const WithSweepPaymentAttempt: Story = {
   args: {
-    paymentAttempt: {
-      ...paymentAttempt,
-      data: {
-        ...paymentAttempt.data,
-        amount: { amount: undefined, isSweep: true, sweepAmount: 21_000, sweepUtxos: ['aaaa'.repeat(16) + ':0'] },
-        destination: { address: 'bcrt1qdestinationaddress123456789', fromJar: paymentAttempt.data.source.fromJar },
+    takerInfo: {
+      ...takerInfoWithPaymentAttempt,
+      currentPaymentAttempt: {
+        ...takerInfoWithPaymentAttempt.currentPaymentAttempt!,
+        data: {
+          ...takerInfoWithPaymentAttempt.currentPaymentAttempt!.data,
+          amount: { amount: undefined, isSweep: true, sweepAmount: 21_000, sweepUtxos: ['aaaa'.repeat(16) + ':0'] },
+          destination: {
+            address: 'bcrt1qdestinationaddress123456789',
+            fromJar: takerInfoWithPaymentAttempt.currentPaymentAttempt!.data.source.fromJar,
+          },
+        },
       },
+    },
+    jars,
+  },
+}
+
+export const Failed: Story = {
+  args: {
+    takerInfo: {
+      ...takerInfoWithPaymentAttempt,
+      status: statusFailed,
+      running: false,
+    },
+    jars,
+  },
+}
+
+export const Completed: Story = {
+  args: {
+    takerInfo: {
+      ...takerInfoWithPaymentAttempt,
+      status: statusCompleted,
+      running: false,
+    },
+    jars,
+  },
+}
+
+export const Cancelled: Story = {
+  args: {
+    takerInfo: {
+      ...takerInfoWithPaymentAttempt,
+      status: statusCancelled,
+      running: false,
     },
     jars,
   },

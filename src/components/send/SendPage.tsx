@@ -82,15 +82,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const jmSessionActive = !!jmSession
   const {
     makerInfo: { running: makerRunning },
-    takerInfo: {
-      running: takerRunning,
-      currentPaymentAttempt,
-      scheduler: { running: schedulerRunning },
-    },
+    takerInfo,
     rescanInfo,
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
   } = useJamSessionInfoContext()
+
+  const takerRunning = takerInfo.running
+  const schedulerRunning = takerInfo.scheduler.running
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
 
@@ -449,45 +448,47 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
            * If data `takerCurrentAttempt` is not present, no message is shown
            * when the taker service stops - this is not ideal, but okay.
            */
-          currentPaymentAttempt?.data.isCoinJoin === true && !isWaitingCoinjoinStart && takerRunning === false && (
-            <>
-              {walletInfoIsFetching ? (
-                <>
-                  <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
-                    <Spinner className="motion-reduce:hidden" />
-                    <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
+          takerInfo.currentPaymentAttempt?.data.isCoinJoin === true &&
+            !isWaitingCoinjoinStart &&
+            takerRunning === false && (
+              <>
+                {walletInfoIsFetching ? (
+                  <>
+                    <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+                      <Spinner className="motion-reduce:hidden" />
+                      <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
+                    </Alert>
+                  </>
+                ) : (
+                  /**
+                   * Whether the utxo set changed during the attempt is not proof that a
+                   * coinjoin was actually made (see joinmarket-webui/jam#1475): a deposit
+                   * landing mid-attempt flips this to "changed" with no send having
+                   * happened. Until there's a real signal to check against, we don't
+                   * distinguish "completed" from "ended" here and show one message
+                   * pointing the user at their transaction history either way.
+                   */
+                  <Alert variant="warning">
+                    <AlertTriangleIcon />
+                    <AlertTitle>{t('send.alert_collaborative_stopped_title')}</AlertTitle>
+                    <AlertDescription className="flex flex-col gap-2">
+                      <div>{t('send.alert_collaborative_stopped_description')}</div>
+                      <div>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setFormId((current) => current + 1)
+                            clearCurrentPaymentAttempt()
+                          }}
+                        >
+                          {t('global.done')}
+                        </Button>
+                      </div>
+                    </AlertDescription>
                   </Alert>
-                </>
-              ) : (
-                /**
-                 * Whether the utxo set changed during the attempt is not proof that a
-                 * coinjoin was actually made (see joinmarket-webui/jam#1475): a deposit
-                 * landing mid-attempt flips this to "changed" with no send having
-                 * happened. Until there's a real signal to check against, we don't
-                 * distinguish "completed" from "ended" here and show one message
-                 * pointing the user at their transaction history either way.
-                 */
-                <Alert variant="warning">
-                  <AlertTriangleIcon />
-                  <AlertTitle>{t('send.alert_collaborative_stopped_title')}</AlertTitle>
-                  <AlertDescription className="flex flex-col gap-2">
-                    <div>{t('send.alert_collaborative_stopped_description')}</div>
-                    <div>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setFormId((current) => current + 1)
-                          clearCurrentPaymentAttempt()
-                        }}
-                      >
-                        {t('global.done')}
-                      </Button>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </>
-          )
+                )}
+              </>
+            )
         }
 
         {schedulerRunning && (
@@ -497,14 +498,16 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         )}
 
-        {takerRunning && !schedulerRunning && (!isWaitingCoinjoinStop || currentPaymentAttempt !== undefined) && (
-          <ActiveCollaborativeSendAlert
-            paymentAttempt={currentPaymentAttempt?.data.isCoinJoin === true ? currentPaymentAttempt : undefined}
-            jars={jars}
-            isAborting={isWaitingCoinjoinStop}
-            onAbort={() => setShowAbortCoinjoinDialog(true)}
-          />
-        )}
+        {takerRunning &&
+          !schedulerRunning &&
+          (!isWaitingCoinjoinStop || takerInfo.currentPaymentAttempt !== undefined) && (
+            <ActiveCollaborativeSendAlert
+              takerInfo={takerInfo}
+              jars={jars}
+              isAborting={isWaitingCoinjoinStop}
+              onAbort={() => setShowAbortCoinjoinDialog(true)}
+            />
+          )}
 
         {triggerNonCollaborativeTransaction.error ? (
           <Alert variant="destructive">
@@ -552,7 +555,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
         <Card
           className={cn('transition-all duration-500', {
-            'blur-[2px]': currentPaymentAttempt !== undefined || takerRunning || schedulerRunning || makerRunning,
+            'blur-[2px]':
+              takerInfo.currentPaymentAttempt !== undefined || takerRunning || schedulerRunning || makerRunning,
           })}
         >
           <CardContent>
@@ -574,7 +578,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 utxoSelectionDialog.isSubmitting ||
                 triggerNonCollaborativeTransaction.isPending ||
                 triggerCollaborativeTransaction.isPending ||
-                currentPaymentAttempt !== undefined ||
+                takerInfo.currentPaymentAttempt !== undefined ||
                 waitForUtxosToBeSpent.length > 0
               }
               debug={isDeveloperMode}

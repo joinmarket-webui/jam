@@ -7,28 +7,28 @@ import { Button } from '@/components/ui/button'
 import { Address } from '@/components/ui/jam/Address'
 import { Balance } from '@/components/ui/jam/Balance'
 import { CookingPotIcon } from '@/components/ui/jam/CookingPotIcon'
-import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
+import type { TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Label } from '../ui/label'
 
 export interface ActiveCollaborativeSendAlertProps {
-  paymentAttempt?: PaymentAttempt
+  takerInfo: TakerInfo
   jars: Jar[]
   isAborting: boolean
   onAbort: () => void
 }
 
 export const ActiveCollaborativeSendAlert = ({
-  paymentAttempt,
+  takerInfo,
   jars,
   isAborting,
   onAbort,
 }: ActiveCollaborativeSendAlertProps) => {
   const { t } = useTranslation()
 
-  const data = paymentAttempt?.data
+  const data = takerInfo.currentPaymentAttempt?.data
 
   const sourceJar = useMemo(() => {
     if (data?.source?.fromJar === undefined) return undefined
@@ -43,10 +43,11 @@ export const ActiveCollaborativeSendAlert = ({
   return (
     <>
       <Card
-        className={cn({
-          //'ring-brand-success ring-1': value.status.completed,
-          //'ring-destructive ring-1': value.status.failed,
-          'ring-ring/50 ring-2': true,
+        className={cn('ring-ring/50 ring-2', {
+          'ring-mute-foreground': takerInfo.running,
+          'ring-brand-success': takerInfo.status.completed,
+          'ring-destructive/50': takerInfo.status.failed,
+          'ring-brand-warning': takerInfo.status.cancelled,
         })}
       >
         <CardHeader className="mb-4">
@@ -55,7 +56,8 @@ export const ActiveCollaborativeSendAlert = ({
         <CardContent className={cn('flex flex-col gap-2', { 'md:flex-row md:gap-8': data !== undefined })}>
           <div className="col-span-full flex justify-center md:col-span-1">
             <CookingPotIcon
-              className="animate-pulse"
+              animate={takerInfo.running}
+              className={takerInfo.running ? 'animate-pulse' : undefined}
               sourceJarIndex={data?.source?.fromJar}
               destinationJarIndex={data?.destination?.fromJar}
             />

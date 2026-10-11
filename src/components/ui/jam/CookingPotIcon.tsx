@@ -5,6 +5,7 @@ export interface CookingPotIconProps {
   sourceJarIndex?: number
   destinationJarIndex?: number
   className?: string
+  animate: boolean
 }
 
 const STROKE_CLASSES: Record<string, string> = {
@@ -16,7 +17,7 @@ const STROKE_CLASSES: Record<string, string> = {
   jarUnknown: 'stroke-jar-unknown',
 }
 
-export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className }: CookingPotIconProps) => {
+export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className, animate }: CookingPotIconProps) => {
   const sourceVariant = jarBadgeVariant(sourceJarIndex)
   const destinationVariant = jarBadgeVariant(destinationJarIndex) ?? sourceVariant
 
@@ -42,16 +43,22 @@ export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className 
           50% { opacity: 0.75; }
           100% { transform: translateY(-12px) scaleY(1.1); opacity: 0; }
         }
-        .anim-lid {
+        .lid-handle {
+          transform: rotate(-4deg) translateY(6px) translateX(0px);
+        }
+        .lid-closed {
+          transform: rotate(8.5deg) translateY(-5px) translateX(6px);
+        }
+        .animation-lid {
           animation: lidRattle 2.2s ease-in-out infinite;
           transform-origin: 35px 50px;
         }
-        .anim-wave {
+        .animation-wave {
           animation: waveShift 2.8s ease-in-out infinite;
         }
-        .anim-steam-1 { animation: steamRise 2.2s ease-in-out infinite; }
-        .anim-steam-2 { animation: steamRise 2.6s ease-in-out 0.7s infinite; }
-        .anim-steam-3 { animation: steamRise 2.4s ease-in-out 1.2s infinite; }
+        .animation-steam-1 { animation: steamRise 2.2s ease-in-out infinite; }
+        .animation-steam-2 { animation: steamRise 2.6s ease-in-out 0.7s infinite; }
+        .animation-steam-3 { animation: steamRise 2.4s ease-in-out 1.2s infinite; }
       `}</style>
 
       <div className="relative z-10 flex size-44 items-center justify-center md:size-48">
@@ -74,32 +81,34 @@ export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className 
           </defs>
 
           <g className="text-foreground">
-            <g className="text-foreground/60">
-              <path
-                d="M 125 35 Q 118 24 126 14 T 120 2"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="anim-steam-1"
-              />
-              <path
-                d="M 148 30 Q 142 20 150 10 T 144 -2"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="anim-steam-2"
-              />
-              <path
-                d="M 102 42 Q 96 30 104 18 T 98 5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                className="anim-steam-3"
-              />
-            </g>
+            {animate && (
+              <g className="text-foreground/60">
+                <path
+                  d="M 125 35 Q 118 24 126 14 T 120 2"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="animation-steam-1"
+                />
+                <path
+                  d="M 148 30 Q 142 20 150 10 T 144 -2"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="animation-steam-2"
+                />
+                <path
+                  d="M 102 42 Q 96 30 104 18 T 98 5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  className="animation-steam-3"
+                />
+              </g>
+            )}
 
             <path
               d="M 35 60 H 22 C 14 60 14 80 22 80 H 35"
@@ -120,7 +129,7 @@ export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className 
             />
 
             <g clipPath="url(#potBodyClip)">
-              <g className="anim-wave">
+              <g className={animate ? 'animation-wave' : undefined}>
                 <path
                   d="M 25 78 C 55 58 75 70 100 88 C 120 102 145 106 175 96 L 175 150 L 25 150 Z"
                   fill="url(#potDiagonalHatch)"
@@ -137,13 +146,14 @@ export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className 
               strokeLinejoin="round"
             />
 
-            <g className="anim-lid">
+            <g className={animate ? 'animation-lid' : 'lid-closed'}>
               <path
                 d="M 87 27 C 87 20 107 20 107 27"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2.2"
                 strokeLinecap="round"
+                className="lid-handle"
               />
 
               <path

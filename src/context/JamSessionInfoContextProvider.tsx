@@ -1,10 +1,12 @@
 import type { PropsWithChildren } from 'react'
 import { useMemo, useState } from 'react'
-import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { getrescaninfoOptions, takerstatusOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { createStore, useStore } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
+import * as JAM from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import { factorToPercentage, type WalletFileName } from '@/lib/utils'
@@ -56,19 +58,48 @@ export const JamSessionInfoContextProvider = ({
     clear: clearCurrentPaymentAttempt,
   } = useStore(paymentAttemptStore, (state) => state)
 
+  const sessionTakerIsActive = state?.coinjoin_in_process === true
+
+  const takerStatusQuery = useQuery({
+    ...takerstatusOptions({
+      client,
+      path: { walletname: activeWalletFileName || '' },
+    }),
+    refetchInterval: (query) => {
+      const response: TakerStatusResponse | undefined = query.state.data
+      return sessionTakerIsActive || !response || response?.running === true
+        ? JAM.RUNNING_COINJOIN_POLLING_INTERVAL
+        : false
+    },
+    refetchIntervalInBackground: true,
+    retry: false,
+  })
+
+  const takerIsRunning = sessionTakerIsActive || takerStatusQuery.data?.running === true
+  const takerStatus = takerStatusQuery.data?.status
+
   const takerInfo = useMemo<TakerInfo>(() => {
     const isWalletPayment = currentPaymentAttempt?.walletFileName === activeWalletFileName
     const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
-    const takerIsRunning = state?.coinjoin_in_process === true
     const schedulerIsRunning = takerIsRunning && !!state?.schedule
     return {
       currentPaymentAttempt: isWalletPayment && isCoinJoin ? currentPaymentAttempt : undefined,
       running: takerIsRunning,
+      status: {
+        value: takerStatus,
+        fetchingOrderbook: takerStatus === 'fetching_orderbook',
+        filling: takerStatus === 'filling',
+        collectingSignatures: takerStatus === 'collecting_signatures',
+        broadcasting: takerStatus === 'broadcasting',
+        completed: takerStatus === 'completed',
+        failed: takerStatus === 'failed',
+        cancelled: takerStatus === 'cancelled',
+      },
       scheduler: {
         running: schedulerIsRunning,
       },
     }
-  }, [state?.coinjoin_in_process, state?.schedule, activeWalletFileName, currentPaymentAttempt])
+  }, [takerIsRunning, state?.schedule, activeWalletFileName, currentPaymentAttempt])
 
   const makerInfo = useMemo<MakerInfo>(() => {
     const makerIsRunning = state?.maker_running === true
