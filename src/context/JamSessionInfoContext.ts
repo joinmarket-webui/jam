@@ -1,5 +1,5 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse, TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { SendFormValues } from '@/components/send/types'
 import type { WalletFileName } from '@/lib/utils'
 import type { Factor } from '@/types/global'
@@ -18,12 +18,32 @@ export interface PaymentAttempt {
   data: SendFormValues
 }
 
+type TakerStatus =
+  | 'fetching_orderbook'
+  | 'filling'
+  | 'collecting_signatures'
+  | 'broadcasting'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | TakerStatusResponse['status']
+
 export interface TakerInfo {
-  currentPaymentAttempt?: PaymentAttempt
   running: boolean
+  status: {
+    value: TakerStatus
+    fetchingOrderbook: boolean
+    filling: boolean
+    collectingSignatures: boolean
+    broadcasting: boolean
+    completed: boolean
+    failed: boolean
+    cancelled: boolean
+  }
   scheduler: {
     running: boolean
   }
+  currentPaymentAttempt?: PaymentAttempt
 }
 
 export interface MakerInfo {

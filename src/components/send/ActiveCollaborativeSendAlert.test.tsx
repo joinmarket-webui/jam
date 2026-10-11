@@ -3,7 +3,7 @@ import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
+import type { PaymentAttempt, TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import { ActiveCollaborativeSendAlert } from './ActiveCollaborativeSendAlert'
@@ -62,11 +62,29 @@ const sampleAttempt: PaymentAttempt = {
   },
 }
 
+const sampleTakerInfo: TakerInfo = {
+  currentPaymentAttempt: sampleAttempt,
+  running: true,
+  status: {
+    value: 'fetching_orderbook',
+    fetchingOrderbook: true,
+    filling: false,
+    collectingSignatures: false,
+    broadcasting: false,
+    completed: false,
+    failed: false,
+    cancelled: false,
+  },
+  scheduler: {
+    running: false,
+  },
+}
+
 describe('ActiveCollaborativeSendAlert', () => {
   it('renders title and details for active collaborative send to external address', () => {
     render(
       <ActiveCollaborativeSendAlert
-        paymentAttempt={sampleAttempt}
+        takerInfo={sampleTakerInfo}
         jars={sampleJars}
         isAborting={false}
         onAbort={vi.fn()}
@@ -82,17 +100,20 @@ describe('ActiveCollaborativeSendAlert', () => {
   })
 
   it('renders destination jar badge when destination jar is present', () => {
-    const internalAttempt = {
-      ...sampleAttempt,
-      data: {
-        ...sampleAttempt.data,
-        destination: { address: 'bc1qinternal', fromJar: 1 as const },
+    const internalTakerInfo = {
+      ...sampleTakerInfo,
+      currentPaymentAttempt: {
+        ...sampleAttempt,
+        data: {
+          ...sampleAttempt.data,
+          destination: { address: 'bc1qinternal', fromJar: 1 as const },
+        },
       },
     }
 
     render(
       <ActiveCollaborativeSendAlert
-        paymentAttempt={internalAttempt}
+        takerInfo={internalTakerInfo}
         jars={sampleJars}
         isAborting={false}
         onAbort={vi.fn()}
@@ -109,7 +130,7 @@ describe('ActiveCollaborativeSendAlert', () => {
 
     render(
       <ActiveCollaborativeSendAlert
-        paymentAttempt={sampleAttempt}
+        takerInfo={sampleTakerInfo}
         jars={sampleJars}
         isAborting={false}
         onAbort={onAbort}
@@ -123,7 +144,7 @@ describe('ActiveCollaborativeSendAlert', () => {
   it('disables abort button when stopping coinjoin', () => {
     render(
       <ActiveCollaborativeSendAlert
-        paymentAttempt={sampleAttempt}
+        takerInfo={sampleTakerInfo}
         jars={sampleJars}
         isAborting={true}
         onAbort={vi.fn()}
