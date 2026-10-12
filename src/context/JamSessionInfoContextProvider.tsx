@@ -87,11 +87,13 @@ export const JamSessionInfoContextProvider = ({
       running: takerIsRunning,
       status: {
         value: takerStatus,
+        idle: takerStatus === 'idle',
         fetchingOrderbook: takerStatus === 'fetching_orderbook',
         filling: takerStatus === 'filling',
+        authenticating: takerStatus === 'authenticating',
         collectingSignatures: takerStatus === 'collecting_signatures',
         broadcasting: takerStatus === 'broadcasting',
-        completed: takerStatus === 'completed',
+        completed: takerStatus === 'complete',
         failed: takerStatus === 'failed',
         cancelled: takerStatus === 'cancelled',
       },
@@ -99,7 +101,7 @@ export const JamSessionInfoContextProvider = ({
         running: schedulerIsRunning,
       },
     }
-  }, [takerIsRunning, state?.schedule, activeWalletFileName, currentPaymentAttempt])
+  }, [takerIsRunning, takerStatus, state?.schedule, activeWalletFileName, currentPaymentAttempt])
 
   const makerInfo = useMemo<MakerInfo>(() => {
     const makerIsRunning = state?.maker_running === true

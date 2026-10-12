@@ -17,7 +17,7 @@ export interface ActiveCollaborativeSendAlertProps {
   takerInfo: TakerInfo
   jars: Jar[]
   isAborting: boolean
-  onAbort: () => void
+  onAbort?: () => void
 }
 
 export const ActiveCollaborativeSendAlert = ({
@@ -51,16 +51,19 @@ export const ActiveCollaborativeSendAlert = ({
         })}
       >
         <CardHeader className="mb-4">
-          <CardTitle className="text-base">{t('send.text_coinjoin_already_running')}</CardTitle>
+          <CardTitle className="text-base">
+            {takerInfo.running ? t('send.text_coinjoin_already_running') : t('send.alert_collaborative_stopped_title')}
+          </CardTitle>
         </CardHeader>
         <CardContent className={cn('flex flex-col gap-2', { 'md:flex-row md:gap-8': data !== undefined })}>
-          <div className="col-span-full flex justify-center md:col-span-1">
+          <div className="col-span-full flex flex-col items-center justify-center md:col-span-1">
             <CookingPotIcon
               animate={takerInfo.running}
               className={takerInfo.running ? 'animate-pulse' : undefined}
               sourceJarIndex={data?.source?.fromJar}
               destinationJarIndex={data?.destination?.fromJar}
             />
+            {takerInfo.status.value}
           </div>
           {data && (
             <>
@@ -129,9 +132,11 @@ export const ActiveCollaborativeSendAlert = ({
         </CardContent>
 
         <CardFooter className="justify-end">
-          <Button type="button" variant="ghost" onClick={onAbort} disabled={isAborting}>
-            {t('global.abort')}
-          </Button>
+          {onAbort && (
+            <Button type="button" variant="ghost" onClick={onAbort} disabled={isAborting}>
+              {t('global.abort')}
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </>
