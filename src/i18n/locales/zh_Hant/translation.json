@@ -199,7 +199,9 @@
       "button_reset": "重置",
       "button_copy": "複製簽署",
       "alert_success_copied": "簽署已複製到剪貼簿！",
-      "text_error_title": "簽署訊息時出錯"
+      "text_error_title": "簽署訊息時出錯",
+      "feedback_invalid_address": "請輸入錢包地址或 HD 路徑。",
+      "feedback_invalid_message": "請輸入要簽名的訊息。"
     },
     "reveal_seed": "顯示種子詞",
     "show_logs": "顯示日誌",
