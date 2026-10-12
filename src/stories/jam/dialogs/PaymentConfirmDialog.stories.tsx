@@ -8,11 +8,12 @@ import { TX_FEE_UNITS, toJamFeeConfigValues } from '@/lib/feeConfig'
 const sourceJar: Jar = {
   jarIndex: 0,
   name: 'Apricot',
-  color: 'yellow',
+  color: '#e2b86a',
   balanceSummary: {
-    accountIndex: 0,
     calculatedTotalBalanceInSats: 2500000,
     calculatedAvailableBalanceInSats: 2000000,
+    calculatedConfirmedAvailableBalanceInSats: 2000000,
+    calculatedAvailableFrozenBalanceInSats: 0,
     calculatedFrozenOrLockedBalanceInSats: 500000,
   },
   utxos: [],
@@ -21,11 +22,12 @@ const sourceJar: Jar = {
 const destinationJar: Jar = {
   jarIndex: 1,
   name: 'Blueberry',
-  color: 'blue',
+  color: '#3b5ba9',
   balanceSummary: {
-    accountIndex: 1,
     calculatedTotalBalanceInSats: 1000000,
     calculatedAvailableBalanceInSats: 1000000,
+    calculatedConfirmedAvailableBalanceInSats: 1000000,
+    calculatedAvailableFrozenBalanceInSats: 0,
     calculatedFrozenOrLockedBalanceInSats: 0,
   },
   utxos: [],

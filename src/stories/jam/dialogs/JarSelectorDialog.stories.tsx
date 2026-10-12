@@ -9,11 +9,12 @@ const mockJars: Jar[] = [
   {
     jarIndex: 0,
     name: 'Apricot',
-    color: 'yellow',
+    color: '#e2b86a',
     balanceSummary: {
-      accountIndex: 0,
       calculatedTotalBalanceInSats: 2500000,
       calculatedAvailableBalanceInSats: 2000000,
+      calculatedConfirmedAvailableBalanceInSats: 2000000,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedFrozenOrLockedBalanceInSats: 500000,
     },
     utxos: [],
@@ -21,11 +22,12 @@ const mockJars: Jar[] = [
   {
     jarIndex: 1,
     name: 'Blueberry',
-    color: 'blue',
+    color: '#3b5ba9',
     balanceSummary: {
-      accountIndex: 1,
       calculatedTotalBalanceInSats: 1000000,
       calculatedAvailableBalanceInSats: 1000000,
+      calculatedConfirmedAvailableBalanceInSats: 1000000,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedFrozenOrLockedBalanceInSats: 0,
     },
     utxos: [],
@@ -33,11 +35,12 @@ const mockJars: Jar[] = [
   {
     jarIndex: 2,
     name: 'Cherry',
-    color: 'red',
+    color: '#c94f7c',
     balanceSummary: {
-      accountIndex: 2,
       calculatedTotalBalanceInSats: 750000,
       calculatedAvailableBalanceInSats: 500000,
+      calculatedConfirmedAvailableBalanceInSats: 500000,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedFrozenOrLockedBalanceInSats: 250000,
     },
     utxos: [],
@@ -45,11 +48,12 @@ const mockJars: Jar[] = [
   {
     jarIndex: 3,
     name: 'Date',
-    color: 'purple',
+    color: '#a67c52',
     balanceSummary: {
-      accountIndex: 3,
       calculatedTotalBalanceInSats: 0,
       calculatedAvailableBalanceInSats: 0,
+      calculatedConfirmedAvailableBalanceInSats: 0,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedFrozenOrLockedBalanceInSats: 0,
     },
     utxos: [],
@@ -57,11 +61,12 @@ const mockJars: Jar[] = [
   {
     jarIndex: 4,
     name: 'Fig',
-    color: 'green',
+    color: '#7c3fa6',
     balanceSummary: {
-      accountIndex: 4,
       calculatedTotalBalanceInSats: 3200000,
       calculatedAvailableBalanceInSats: 3200000,
+      calculatedConfirmedAvailableBalanceInSats: 3200000,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedFrozenOrLockedBalanceInSats: 0,
     },
     utxos: [],
@@ -69,9 +74,10 @@ const mockJars: Jar[] = [
 ]
 
 const mockWalletBalanceSummary: BalanceSummary = {
-  accountIndex: 0,
   calculatedTotalBalanceInSats: 7450000,
   calculatedAvailableBalanceInSats: 6700000,
+  calculatedConfirmedAvailableBalanceInSats: 6700000,
+  calculatedAvailableFrozenBalanceInSats: 0,
   calculatedFrozenOrLockedBalanceInSats: 750000,
 }
 
@@ -124,9 +130,10 @@ export const SingleJar: Story = {
     jars: [mockJars[1]],
     disabledJars: [],
     walletBalanceSummary: {
-      accountIndex: 1,
       calculatedTotalBalanceInSats: 1000000,
       calculatedAvailableBalanceInSats: 1000000,
+      calculatedConfirmedAvailableBalanceInSats: 1000000,
+      calculatedAvailableFrozenBalanceInSats: 0,
       calculatedFrozenOrLockedBalanceInSats: 0,
     },
   },
