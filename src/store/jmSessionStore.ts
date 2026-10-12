@@ -3,10 +3,10 @@ import { createStore } from 'zustand'
 
 interface JmSessionStoreState {
   state?: SessionResponse & { __updatedAt: number }
-  update: (val: SessionResponse) => void
+  update: (val: SessionResponse, updatedAt?: number) => void
 }
 
 export const jmSessionStore = createStore<JmSessionStoreState>()((set) => ({
   state: undefined,
-  update: (val) => set(() => ({ state: { ...val, __updatedAt: Date.now() } })),
+  update: (val, updatedAt = Date.now()) => set(() => ({ state: { ...val, __updatedAt: updatedAt } })),
 }))
