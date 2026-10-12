@@ -164,7 +164,9 @@
       "button_reset": "Redefinir",
       "button_copy": "Copiar assinatura",
       "alert_success_copied": "Assinatura copiada para a área de transferência!",
-      "text_error_title": "Erro ao assinar mensagem"
+      "text_error_title": "Erro ao assinar mensagem",
+      "feedback_invalid_address": "Insira um endereço de carteira ou caminho HD.",
+      "feedback_invalid_message": "Insira uma mensagem para assinar."
     },
     "reveal_seed": "Revelar seed",
     "show_logs": "Mostrar logs",
