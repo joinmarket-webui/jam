@@ -18,11 +18,10 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   }),
 }))
 
+// like the real component, selecting a jar changes a radio input (and therefore emits a form `change` event)
 vi.mock('@/components/ui/jam/SelectableJar', () => ({
   SelectableJar: ({ name, isSelected, onSelect }: { name: string; isSelected: boolean; onSelect: () => void }) => (
-    <button type="button" aria-pressed={isSelected} onClick={onSelect}>
-      {name}
-    </button>
+    <input type="radio" aria-label={name} checked={isSelected} onChange={onSelect} />
   ),
 }))
 
@@ -63,7 +62,7 @@ describe('ReceiveForm', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'One' }))
+    await user.click(screen.getByRole('radio', { name: 'One' }))
     await user.type(screen.getByLabelText('receive.label_amount_input'), '2100')
 
     await waitFor(() =>
@@ -86,5 +85,66 @@ describe('ReceiveForm', () => {
     await user.type(screen.getByLabelText('receive.label_amount_input'), '0')
 
     expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
+  })
+
+  it.each(['2100.5', '0.001'])('shows validation feedback for non-integer amount %s', async (value) => {
+    const user = userEvent.setup()
+
+    render(<ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 } }} onSubmit={vi.fn()} />)
+
+    await user.type(screen.getByLabelText('receive.label_amount_input'), value)
+
+    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
+  })
+
+  it('submits no amount once a previously valid amount becomes invalid', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+
+    render(
+      <ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 }, amount: undefined }} onSubmit={onSubmit} />,
+    )
+
+    const amountInput = screen.getByLabelText('receive.label_amount_input')
+    await user.type(amountInput, '2100')
+    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 0 }, amount: 2100 }, expect.anything())
+
+    await user.type(amountInput, '.5')
+
+    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
+    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 0 }, amount: undefined }, expect.anything())
+  })
+
+  it('submits the selected jar while the amount is invalid', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+
+    render(
+      <ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 }, amount: undefined }} onSubmit={onSubmit} />,
+    )
+
+    await user.type(screen.getByLabelText('receive.label_amount_input'), '0')
+    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'One' }))
+
+    expect(screen.getByRole('radio', { name: 'One' })).toBeChecked()
+    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 1 }, amount: undefined }, expect.anything())
+  })
+
+  it('submits no amount for an empty input', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+
+    render(
+      <ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 }, amount: undefined }} onSubmit={onSubmit} />,
+    )
+
+    const amountInput = screen.getByLabelText('receive.label_amount_input')
+    await user.type(amountInput, '21')
+    await user.clear(amountInput)
+
+    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 0 }, amount: null }, expect.anything())
+    expect(screen.queryByText('receive.feedback_invalid_amount')).not.toBeInTheDocument()
   })
 })
