@@ -103,7 +103,7 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('@/components/settings/fees/FeeConfigDialog', () => ({
-  FeeConfigDialog: ({ open }: { open: boolean }) => <div>fee-config-dialog:{String(open)}</div>,
+  FeeConfigDialog: ({ open }: { open: boolean }) => <div>fee-config-dialog:{JSON.stringify({ open })}</div>,
 }))
 
 vi.mock('@/components/ui/jam/FeeConfigErrorAlert', () => ({
@@ -184,7 +184,7 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     rescanInfo: { rescanning: false },
     setCurrentPaymentAttempt: mocks.setCurrentPaymentAttempt,
     takerInfo: {
-      currentPaymentAttempt: mocks.takerRunning || mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
+      currentPaymentAttempt: mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
       status: {
         value: null,
         idle: false,
@@ -224,7 +224,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 vi.mock('./PaymentAbortDialog', () => ({
   PaymentAbortDialog: ({ open, onConfirm }: { open: boolean; onConfirm: () => Promise<void> }) => (
     <div>
-      abort-dialog:{String(open)}
+      abort-dialog:{JSON.stringify({ open })}
       {open ? <button onClick={() => void onConfirm()}>confirm-abort</button> : null}
     </div>
   ),
@@ -260,7 +260,7 @@ vi.mock('./SendForm', () => ({
     sourceJarLabelButton?: () => React.ReactElement
   }) => (
     <div>
-      send-form:{String(disabled)}
+      send-form:{JSON.stringify({ disabled })}
       <div>{sourceJarLabelButton?.()}</div>
       <button
         onClick={() => {
@@ -416,25 +416,29 @@ describe('SendPage', () => {
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
+    expect(screen.getByText('fee-config-dialog:{"open":false}')).toBeInTheDocument()
+
     await user.click(screen.getByText('submit-coinjoin'))
 
     expect(mocks.startCoinjoin).not.toHaveBeenCalled()
     expect(mocks.toastError).toHaveBeenCalledWith('send.taker_error_message_max_fees_config_missing')
-    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+    expect(screen.getByText('fee-config-dialog:{"open":true}')).toBeInTheDocument()
   })
 
   it('shows the running CoinJoin state and confirms abort', async () => {
     const user = userEvent.setup()
     mocks.takerRunning = true
+    mocks.currentPaymentAttemptPresent = true
     mocks.schedulerRunning = false
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
+    expect(screen.getByText('abort-dialog:{"open":false}')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'global.abort' }))
-    expect(screen.getByText('abort-dialog:true')).toBeInTheDocument()
+    expect(screen.getByText('abort-dialog:{"open":true}')).toBeInTheDocument()
 
     await user.click(screen.getByText('confirm-abort'))
     expect(mocks.stopCoinjoinRefetch).toHaveBeenCalledWith({ throwOnError: true })
@@ -448,7 +452,7 @@ describe('SendPage', () => {
     await flushActUpdates()
 
     expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
   })
 
@@ -549,9 +553,10 @@ describe('SendPage', () => {
     mocks.feeConfigMissing = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('fee-config-dialog:{"open":false}')).toBeInTheDocument()
 
     await user.click(screen.getByText('open-fee-config'))
-    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+    expect(screen.getByText('fee-config-dialog:{"open":true}')).toBeInTheDocument()
   })
 
   it('shows the maker running warning', async () => {
@@ -560,7 +565,7 @@ describe('SendPage', () => {
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('send.text_maker_running')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
     await flushActUpdates()
   })
 
@@ -570,7 +575,7 @@ describe('SendPage', () => {
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('send.alert_waiting_utxos_spent')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
     await flushActUpdates()
   })
 

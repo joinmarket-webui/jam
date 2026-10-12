@@ -60,9 +60,7 @@ export const ActiveCollaborativeSendAlert = ({
         })}
       >
         <CardHeader className="mb-4">
-          <CardTitle className="text-base">
-            {takerInfo.running ? t('send.text_coinjoin_already_running') : t('send.alert_collaborative_stopped_title')}
-          </CardTitle>
+          {<CardTitle className="text-base">{t('send.taker_status.title')}</CardTitle>}
         </CardHeader>
         <CardContent className={cn('flex flex-col gap-2', { 'md:flex-row md:gap-8': hasAdditionalInfo })}>
           <div className="col-span-full flex flex-col items-center justify-center md:col-span-1">
@@ -72,7 +70,13 @@ export const ActiveCollaborativeSendAlert = ({
               sourceJarIndex={data?.source?.fromJar}
               destinationJarIndex={data?.destination?.fromJar}
             />
-            {takerInfo.status.value}
+            {(() => {
+              const i18nKey = 'send.taker_status.status_' + takerInfo.status.value
+              const translation = t(i18nKey)
+              return translation !== i18nKey
+                ? translation
+                : t('send.taker_status.status_unmapped', { value: takerInfo.status.value })
+            })()}
           </div>
           {hasAdditionalInfo && (
             <>

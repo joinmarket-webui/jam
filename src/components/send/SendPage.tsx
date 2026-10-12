@@ -417,6 +417,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <AlertDescription>{t('send.text_maker_running')}</AlertDescription>
           </Alert>
         )}
+        {schedulerRunning && (
+          <Alert variant="warning">
+            <HourglassIcon className="motion-safe:animate-pulse" />
+            <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
+          </Alert>
+        )}
         {collaborativeFlowError && (
           <Alert variant="destructive">
             <AlertTriangleIcon />
@@ -490,21 +496,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             )
         }
 
-        {schedulerRunning && (
-          <Alert variant="warning">
-            <HourglassIcon className="motion-safe:animate-pulse" />
-            <AlertTitle>{t('send.text_coinjoin_already_running')}</AlertTitle>
-          </Alert>
-        )}
-
-        {((takerRunning && !schedulerRunning) || takerInfo.currentPaymentAttempt !== undefined) && (
+        {(takerRunning && !schedulerRunning) || takerInfo.currentPaymentAttempt !== undefined ? (
           <ActiveCollaborativeSendAlert
             takerInfo={takerInfo}
             jars={jars}
             isAborting={isWaitingCoinjoinStop}
             onAbort={takerInfo.running ? () => setShowAbortCoinjoinDialog(true) : undefined}
           />
-        )}
+        ) : null}
 
         {triggerNonCollaborativeTransaction.error ? (
           <Alert variant="destructive">

@@ -93,7 +93,7 @@ describe('ActiveCollaborativeSendAlert', () => {
       />,
     )
 
-    expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
+    expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
     expect(screen.getByText('Jar Zero')).toBeInTheDocument()
     expect(screen.getByText('#0')).toBeInTheDocument()
     expect(screen.getByText(/bcrt1qdestinationaddress123456789/u)).toBeInTheDocument()
