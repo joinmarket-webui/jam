@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddress } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { getAddressInfo, Network } from 'bitcoin-address-validation'
@@ -160,7 +160,7 @@ export function SendForm({
     return toSendFormDefaultValues({ minNumberOfCollaborators, feeConfigValues })
   }, [minNumberOfCollaborators, feeConfigValues])
 
-  const { control, register, handleSubmit, formState, setValue, trigger, ...sendFormMethods } = useForm<
+  const { control, register, handleSubmit, formState, setValue, trigger, getValues, ...sendFormMethods } = useForm<
     SendFormValues,
     unknown,
     SendFormValues
@@ -263,6 +263,9 @@ export function SendForm({
 
   const doOnSubmit = handleSubmit(onSubmit)
 
+  // amount applied from the last BIP21 URI, used to avoid pairing it with the address of another URI
+  const amountFromBip21UriRef = useRef<number | undefined>(undefined)
+
   const applyBip21Result = useCallback(
     (result: Bip21ParseResult) => {
       setValue('destination.address', result.address, { shouldValidate: true })
@@ -270,9 +273,17 @@ export function SendForm({
       if (result.amount !== undefined) {
         setValue('amount.amount', result.amount, { shouldValidate: true })
         setValue('amount.isSweep', false, { shouldValidate: true })
+        amountFromBip21UriRef.current = result.amount
+      } else {
+        // keep amounts entered by the user, but drop an amount that was applied from a previous URI
+        const currentAmount = getValues('amount.amount')
+        if (amountFromBip21UriRef.current !== undefined && Number(currentAmount) === amountFromBip21UriRef.current) {
+          setValue('amount.amount', undefined, { shouldValidate: true })
+        }
+        amountFromBip21UriRef.current = undefined
       }
     },
-    [setValue],
+    [setValue, getValues],
   )
 
   const handleAddressPaste = useCallback(
@@ -321,6 +332,7 @@ export function SendForm({
         formState={formState}
         setValue={setValue}
         trigger={trigger}
+        getValues={getValues}
         {...sendFormMethods}
       >
         <form onSubmit={(event) => void doOnSubmit(event)} className={cn('flex flex-col gap-4', className)} noValidate>
