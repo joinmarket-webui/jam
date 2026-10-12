@@ -1,6 +1,7 @@
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
+import { withQueryDelay } from '@/lib/queryClient'
 import type { Milliseconds } from '@/types/global'
 
 export interface UseRefreshSessionProps {
@@ -18,13 +19,18 @@ export function useRefreshSession({
   refetchInterval,
   refetchDelay = 1,
 }: UseRefreshSessionProps): UseRefreshSessionResult {
-  const { refetchSessionData } = useJamSessionInfoContext()
+  const { jmSession, refetchSessionData } = useJamSessionInfoContext()
 
-  const { data: sessionData } = useQuery({
-    queryKey: ['refresh-session', enabled, refetchInterval, refetchDelay],
-    queryFn: async () => {
-      return await refetchSessionData()
-    },
+  useQuery({
+    queryKey: ['refresh-session', refetchInterval, refetchDelay],
+    queryFn: withQueryDelay(
+      async () => {
+        return await refetchSessionData()
+      },
+      {
+        delayBefore: refetchDelay,
+      },
+    ),
     enabled,
     retry: 3,
     staleTime: 1,
@@ -34,6 +40,6 @@ export function useRefreshSession({
   })
 
   return {
-    data: sessionData?.data,
+    data: jmSession,
   }
 }
