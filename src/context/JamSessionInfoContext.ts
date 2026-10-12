@@ -1,5 +1,6 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
 import type { SessionResponse, TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { QueryObserverResult, RefetchOptions } from '@tanstack/react-query'
 import type { SendFormValues } from '@/components/send/types'
 import type { WalletFileName } from '@/lib/utils'
 import type { Factor } from '@/types/global'
@@ -43,10 +44,12 @@ export interface TakerInfo {
     failed: boolean
     cancelled: boolean
   }
+  __raw?: TakerStatusResponse
+  currentPaymentAttempt?: PaymentAttempt
+  // move to own "schedulerInfo"
   scheduler: {
     running: boolean
   }
-  currentPaymentAttempt?: PaymentAttempt
 }
 
 export interface MakerInfo {
@@ -62,6 +65,7 @@ interface JamSessionInfoContextType {
   setRescanInfo: Dispatch<SetStateAction<RescanInfo>>
   setCurrentPaymentAttempt: (val: PaymentAttempt) => void
   clearCurrentPaymentAttempt: () => void
+  refetchSessionData: (options?: RefetchOptions) => Promise<QueryObserverResult<SessionResponse, Error>>
   updateSessionInfo: (val: SessionResponse) => void
 }
 
