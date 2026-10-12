@@ -20,8 +20,10 @@ type Story = StoryObj<typeof ActiveCollaborativeSendAlert>
 
 const statusUnknown: TakerInfo['status'] = {
   value: null,
+  idle: false,
   fetchingOrderbook: false,
   filling: false,
+  authenticating: false,
   collectingSignatures: false,
   broadcasting: false,
   completed: false,

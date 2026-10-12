@@ -61,7 +61,7 @@ export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className,
         .animation-steam-3 { animation: steamRise 2.4s ease-in-out 1.2s infinite; }
       `}</style>
 
-      <div className="relative z-10 flex size-44 items-center justify-center md:size-48">
+      <div className="relative z-10 flex size-36 items-center justify-center md:size-42">
         <svg viewBox="0 0 200 160" className="size-full select-none" aria-hidden="true">
           <defs>
             <pattern

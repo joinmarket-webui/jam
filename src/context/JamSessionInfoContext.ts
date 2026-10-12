@@ -21,9 +21,10 @@ export interface PaymentAttempt {
 type TakerStatus =
   | 'fetching_orderbook'
   | 'filling'
+  | 'authenticating'
   | 'collecting_signatures'
   | 'broadcasting'
-  | 'completed'
+  | 'complete'
   | 'failed'
   | 'cancelled'
   | TakerStatusResponse['status']
@@ -32,8 +33,10 @@ export interface TakerInfo {
   running: boolean
   status: {
     value: TakerStatus
+    idle: boolean
     fetchingOrderbook: boolean
     filling: boolean
+    authenticating: boolean
     collectingSignatures: boolean
     broadcasting: boolean
     completed: boolean

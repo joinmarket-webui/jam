@@ -66,9 +66,11 @@ const sampleTakerInfo: TakerInfo = {
   currentPaymentAttempt: sampleAttempt,
   running: true,
   status: {
-    value: 'fetching_orderbook',
-    fetchingOrderbook: true,
+    value: 'idle',
+    idle: true,
+    fetchingOrderbook: false,
     filling: false,
+    authenticating: false,
     collectingSignatures: false,
     broadcasting: false,
     completed: false,

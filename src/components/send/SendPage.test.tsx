@@ -187,8 +187,10 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
       currentPaymentAttempt: mocks.takerRunning || mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
       status: {
         value: null,
+        idle: false,
         fetchingOrderbook: false,
         filling: false,
+        authenticating: false,
         collectingSignatures: false,
         broadcasting: false,
         completed: false,

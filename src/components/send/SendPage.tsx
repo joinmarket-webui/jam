@@ -190,7 +190,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       setCollaborativeFlowError(undefined)
     },
     onSuccess: () => {
-      clearCurrentPaymentAttempt()
       toast.info(t('send.alert_collaborative_stopping'))
     },
     onError: (error: unknown) => {
@@ -498,16 +497,14 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </Alert>
         )}
 
-        {takerRunning &&
-          !schedulerRunning &&
-          (!isWaitingCoinjoinStop || takerInfo.currentPaymentAttempt !== undefined) && (
-            <ActiveCollaborativeSendAlert
-              takerInfo={takerInfo}
-              jars={jars}
-              isAborting={isWaitingCoinjoinStop}
-              onAbort={() => setShowAbortCoinjoinDialog(true)}
-            />
-          )}
+        {((takerRunning && !schedulerRunning) || takerInfo.currentPaymentAttempt !== undefined) && (
+          <ActiveCollaborativeSendAlert
+            takerInfo={takerInfo}
+            jars={jars}
+            isAborting={isWaitingCoinjoinStop}
+            onAbort={takerInfo.running ? () => setShowAbortCoinjoinDialog(true) : undefined}
+          />
+        )}
 
         {triggerNonCollaborativeTransaction.error ? (
           <Alert variant="destructive">
