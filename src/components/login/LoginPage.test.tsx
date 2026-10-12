@@ -62,12 +62,18 @@ vi.mock('sonner', () => ({
   },
 }))
 
-vi.mock('@/context/JamSessionInfoContext', () => ({
-  useRawJmSession: () => ({
-    jmSession: mocks.sessionState,
-    updateSessionInfo: vi.fn(),
-  }),
-}))
+vi.mock('@/context/JamSessionInfoContext', async () => {
+  const { getOperationsAvailability } = await import('@/context/operationAvailability')
+  return {
+    useRawJmSession: () => ({
+      jmSession: mocks.sessionState,
+      updateSessionInfo: vi.fn(),
+    }),
+    useJamSessionInfoContext: () => ({
+      operations: getOperationsAvailability(mocks.sessionState, false),
+    }),
+  }
+})
 
 vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
