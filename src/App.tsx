@@ -38,14 +38,12 @@ import {
   JAM_API_AUTH_TOKEN_RENEW_INTERVAL,
   JAM_API_AUTH_TOKEN_RENEW_MIN_INTERVAL,
   JAM_API_AUTH_TOKEN_RENEW_SAFETY_FACTOR,
-  JAM_JM_SESSION_REFRESH_INTERVAL,
 } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
 import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProvider'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
-import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient, withMutationDelay } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore, computeAuthExpiresAt } from '@/store/authStore'
@@ -288,7 +286,6 @@ function App() {
           <JamSessionInfoContextProvider>
             <JmWebsocketContextProvider>
               <RefreshApiToken />
-              <RefreshJmSession />
               {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
               <RouterProvider router={router} />
               <Toaster closeButton />
@@ -368,15 +365,6 @@ function RefreshApiToken() {
       clearInterval(intervalId)
     }
   }, [client, hasRefreshToken])
-
-  return <></>
-}
-
-function RefreshJmSession() {
-  useRefreshSession({
-    enabled: true,
-    refetchInterval: JAM_JM_SESSION_REFRESH_INTERVAL,
-  })
 
   return <></>
 }

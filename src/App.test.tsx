@@ -136,7 +136,6 @@ vi.mock('./lib/errorReason', () => ({
 
 vi.mock('@/hooks/useApiClient', () => ({ useApiClient: () => ({}) }))
 vi.mock('@/hooks/useFeeConfigValidation', () => ({ useFeeConfigValidation: () => ({ fetchMissing }) }))
-vi.mock('@/hooks/useRefreshSession', () => ({ useRefreshSession: () => undefined }))
 
 vi.mock('./context/JamSessionInfoContext', () => ({
   useRawJmSession: () => ({

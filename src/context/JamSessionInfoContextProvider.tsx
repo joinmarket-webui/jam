@@ -1,6 +1,10 @@
 import type { PropsWithChildren } from 'react'
-import { useMemo, useState } from 'react'
-import { getrescaninfoOptions, takerstatusOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  getrescaninfoOptions,
+  sessionOptions,
+  takerstatusOptions,
+} from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { createStore, useStore } from 'zustand'
@@ -45,8 +49,41 @@ export const JamSessionInfoContextProvider = ({
 }: PropsWithChildren<JamSessionInfoContextProviderProps>) => {
   const authWalletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const activeWalletFileName = walletFileName ?? authWalletFileName
+
   const { state, update: updateSessionInfo } = useStore(jmSessionStore, (state) => state)
+
   const client = useApiClient()
+
+  const { data: sessionData, refetch: refetchSessionData } = useQuery({
+    ...sessionOptions({
+      client,
+    }),
+    enabled: true,
+    retry: 3,
+    staleTime: 1,
+    gcTime: 1,
+    refetchInterval: JAM.JAM_JM_SESSION_REFRESH_INTERVAL,
+    refetchIntervalInBackground: true,
+  })
+
+  useEffect(() => {
+    if (sessionData) {
+      updateSessionInfo(sessionData)
+    }
+  }, [sessionData, updateSessionInfo])
+
+  useEffect(
+    function refetchOnWalletLockOrUnlock() {
+      const abortCtrl = new AbortController()
+      refetchSessionData().catch(() => {
+        if (abortCtrl.signal.aborted) return
+        console.warn('Error while refreshing session data after auth wallet change.')
+      })
+      return () => abortCtrl.abort()
+    },
+    [authWalletFileName, refetchSessionData],
+  )
+
   const [rescanInfo, setRescanInfo] = useState<RescanInfo>({
     updatedAt: 0,
     rescanning: state?.rescanning === true,
@@ -64,7 +101,11 @@ export const JamSessionInfoContextProvider = ({
     ...takerstatusOptions({
       client,
       path: { walletname: activeWalletFileName || '' },
+      meta: {
+        cacheBuster: state?.__updatedAt,
+      },
     }),
+    enabled: !!activeWalletFileName,
     refetchInterval: (query) => {
       const response: TakerStatusResponse | undefined = query.state.data
       return sessionTakerIsActive || !response || response?.running === true
@@ -75,10 +116,9 @@ export const JamSessionInfoContextProvider = ({
     retry: false,
   })
 
-  const takerIsRunning = sessionTakerIsActive || takerStatusQuery.data?.running === true
-  const takerStatus = takerStatusQuery.data?.status
-
   const takerInfo = useMemo<TakerInfo>(() => {
+    const takerIsRunning = sessionTakerIsActive || takerStatusQuery.data?.running === true
+    const takerStatus = takerStatusQuery.data?.status
     const isWalletPayment = currentPaymentAttempt?.walletFileName === activeWalletFileName
     const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
     const schedulerIsRunning = takerIsRunning && !!state?.schedule
@@ -97,11 +137,14 @@ export const JamSessionInfoContextProvider = ({
         failed: takerStatus === 'failed',
         cancelled: takerStatus === 'cancelled',
       },
+      __raw: takerStatusQuery.data,
+
+      // TODO: move the scheduler to own "schedulerInfo"
       scheduler: {
         running: schedulerIsRunning,
       },
     }
-  }, [takerIsRunning, takerStatus, state?.schedule, activeWalletFileName, currentPaymentAttempt])
+  }, [sessionTakerIsActive, takerStatusQuery.data, state?.schedule, activeWalletFileName, currentPaymentAttempt])
 
   const makerInfo = useMemo<MakerInfo>(() => {
     const makerIsRunning = state?.maker_running === true
@@ -158,6 +201,7 @@ export const JamSessionInfoContextProvider = ({
     setCurrentPaymentAttempt,
     clearCurrentPaymentAttempt,
     updateSessionInfo,
+    refetchSessionData,
   }
 
   return <JamSessionInfoContext.Provider value={value}>{children}</JamSessionInfoContext.Provider>
