@@ -6,28 +6,12 @@ import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { SelectableJar } from '@/components/ui/jam/SelectableJar'
-import { TOTAL_COIN_SUPPLY } from '@/constants/jam'
 import { useWalletBalanceSummary, type Jar } from '@/context/JamWalletInfoContext'
 import { sourceJarField } from '@/lib/formValidation'
 import { cn } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Field, FieldError, FieldLabel } from '../ui/field'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
-import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import type { ReceiveFormValues } from './types'
-
-const FieldPrefixSatSymbol = (
-  <SatSymbol
-    width={'18px'}
-    height={'18px'}
-    style={{
-      margin: '5px -1px',
-    }}
-  />
-)
-
-const isEmptyInput = (value: unknown) =>
-  value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
 
 const receiveFormSchema = (jars: Jar[], t: TFunction) => {
   const invalidSourceJarFeedbackMessage = t('receive.feedback_invalid_source_jar')
@@ -41,17 +25,6 @@ const receiveFormSchema = (jars: Jar[], t: TFunction) => {
           ),
         })
         .required(),
-      amount: yup
-        .number()
-        .typeError(t('receive.feedback_invalid_amount'))
-        .integer(t('receive.feedback_invalid_amount'))
-        .min(1, t('receive.feedback_invalid_amount'))
-        .max(TOTAL_COIN_SUPPLY, t('receive.feedback_invalid_amount'))
-        // only an empty input means "no amount" - other values (e.g. `2100.5`) must reach the
-        // integer check instead of being silently turned into `null`
-        .transform((value: number, originalValue: unknown) => (isEmptyInput(originalValue) ? null : value))
-        .nullable()
-        .optional(),
     })
     .required()
 }
@@ -73,11 +46,9 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
 
   const {
     control,
-    register,
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
     setValue,
-    getValues,
   } = useForm<ReceiveFormValues, unknown, ReceiveFormValues>({
     mode: 'onChange',
     defaultValues,
@@ -87,12 +58,7 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
 
   const values = useWatch({ control })
 
-  const doOnChange = handleSubmit(onSubmit, (formErrors, event) => {
-    // An invalid amount must not hold back the jar selection, nor keep a previously
-    // submitted amount in the payment request while the input shows something else.
-    if (formErrors.source !== undefined) return
-    void onSubmit({ source: getValues('source'), amount: undefined }, event)
-  })
+  const doOnChange = handleSubmit(onSubmit)
 
   return (
     <form
@@ -123,25 +89,6 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
         </div>
 
         {errors.source?.fromJar?.message && <FieldError>{errors.source.fromJar.message}</FieldError>}
-      </Field>
-
-      <Field data-invalid={errors.amount !== undefined}>
-        <FieldLabel htmlFor="receive-amount">{t('receive.label_amount_input')}</FieldLabel>
-        <InputGroup>
-          <InputGroupInput
-            id="receive-amount"
-            {...register('amount', {
-              required: false,
-              disabled,
-            })}
-            type="number"
-            min={1}
-            step={1}
-            placeholder={t('receive.placeholder_amount_input')}
-          />
-          <InputGroupAddon align="inline-start">{FieldPrefixSatSymbol}</InputGroupAddon>
-        </InputGroup>
-        {errors.amount?.message && <FieldError>{errors.amount.message}</FieldError>}
       </Field>
 
       {debug && (

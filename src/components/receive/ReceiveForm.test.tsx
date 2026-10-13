@@ -49,102 +49,22 @@ const jars = [
 ] as unknown as Jar[]
 
 describe('ReceiveForm', () => {
-  it('submits selected jar and amount changes', async () => {
+  it('submits the selected jar', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
 
-    render(
-      <ReceiveForm
-        jars={jars}
-        defaultValues={{ source: { fromJar: 0 }, amount: undefined }}
-        onSubmit={onSubmit}
-        debug={true}
-      />,
-    )
+    render(<ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 } }} onSubmit={onSubmit} debug={true} />)
 
     await user.click(screen.getByRole('radio', { name: 'One' }))
-    await user.type(screen.getByLabelText('receive.label_amount_input'), '2100')
 
-    await waitFor(() =>
-      expect(onSubmit).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          source: { fromJar: 1 },
-          amount: 2100,
-        }),
-        expect.anything(),
-      ),
-    )
+    await waitFor(() => expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 1 } }, expect.anything()))
+    expect(screen.getByRole('radio', { name: 'One' })).toBeChecked()
     expect(screen.getByText(/"fromJar": 1/u)).toBeInTheDocument()
   })
 
-  it('shows validation feedback for invalid amounts', async () => {
-    const user = userEvent.setup()
-
+  it('has no amount input', () => {
     render(<ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 } }} onSubmit={vi.fn()} />)
 
-    await user.type(screen.getByLabelText('receive.label_amount_input'), '0')
-
-    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
-  })
-
-  it.each(['2100.5', '0.001'])('shows validation feedback for non-integer amount %s', async (value) => {
-    const user = userEvent.setup()
-
-    render(<ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 } }} onSubmit={vi.fn()} />)
-
-    await user.type(screen.getByLabelText('receive.label_amount_input'), value)
-
-    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
-  })
-
-  it('submits no amount once a previously valid amount becomes invalid', async () => {
-    const user = userEvent.setup()
-    const onSubmit = vi.fn()
-
-    render(
-      <ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 }, amount: undefined }} onSubmit={onSubmit} />,
-    )
-
-    const amountInput = screen.getByLabelText('receive.label_amount_input')
-    await user.type(amountInput, '2100')
-    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 0 }, amount: 2100 }, expect.anything())
-
-    await user.type(amountInput, '.5')
-
-    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
-    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 0 }, amount: undefined }, expect.anything())
-  })
-
-  it('submits the selected jar while the amount is invalid', async () => {
-    const user = userEvent.setup()
-    const onSubmit = vi.fn()
-
-    render(
-      <ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 }, amount: undefined }} onSubmit={onSubmit} />,
-    )
-
-    await user.type(screen.getByLabelText('receive.label_amount_input'), '0')
-    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('radio', { name: 'One' }))
-
-    expect(screen.getByRole('radio', { name: 'One' })).toBeChecked()
-    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 1 }, amount: undefined }, expect.anything())
-  })
-
-  it('submits no amount for an empty input', async () => {
-    const user = userEvent.setup()
-    const onSubmit = vi.fn()
-
-    render(
-      <ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 }, amount: undefined }} onSubmit={onSubmit} />,
-    )
-
-    const amountInput = screen.getByLabelText('receive.label_amount_input')
-    await user.type(amountInput, '21')
-    await user.clear(amountInput)
-
-    expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 0 }, amount: null }, expect.anything())
-    expect(screen.queryByText('receive.feedback_invalid_amount')).not.toBeInTheDocument()
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
   })
 })

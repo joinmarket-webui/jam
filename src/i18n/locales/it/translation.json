@@ -278,7 +278,6 @@
     "text_copy_address_confirmed": "Copiato",
     "button_settings": "Opzioni di ricezione",
     "label_amount": "Importo da richiedere in sats",
-    "feedback_invalid_amount": "Si prega di fornire un importo valido.",
     "button_new_address": "Ottieni un nuovo indirizzo",
     "text_getting_address": "Ottenere un nuovo indirizzo"
   },
