@@ -18,6 +18,9 @@ const makeUtxo = (id: string, address = '', frozen = false) =>
     utxo: id,
   }) as Utxo
 
+const makeBond = (id: string, locktimeSeconds: number) =>
+  ({ ...makeUtxo(id), locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/2/0:${locktimeSeconds}` }) as Utxo
+
 describe('utils', () => {
   describe('lockdate', () => {
     it('should convert timestamp to lockdate', () => {
@@ -299,6 +302,23 @@ describe('utils', () => {
         const utxo = { locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/0/1:notanumber` } as Utxo
         expect(fb.utxo.getLocktime(utxo)).toBeNull()
       })
+    })
+  })
+
+  describe('existingLockdates', () => {
+    it('should return the lockdates of the given fidelity bonds', () => {
+      const bonds = [makeBond('a:0', 1748736000), makeBond('b:0', 1798761600)]
+      expect(fb.existingLockdates(bonds)).toEqual(['2025-06', '2027-01'])
+    })
+
+    it('should return each lockdate only once', () => {
+      const bonds = [makeBond('a:0', 1748736000), makeBond('b:0', 1748736000)]
+      expect(fb.existingLockdates(bonds)).toEqual(['2025-06'])
+    })
+
+    it('should ignore utxos without a locktime', () => {
+      expect(fb.existingLockdates([makeUtxo('abc:0')])).toEqual([])
+      expect(fb.existingLockdates([])).toEqual([])
     })
   })
 })

@@ -48,6 +48,7 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => {
     rescanblockchainMutation: mutationOption,
     runscheduleMutation: mutationOption,
     sessionOptions: queryOption,
+    signmessageMutation: mutationOption,
     startmakerMutation: mutationOption,
     stopcoinjoinOptions: queryOption,
     stopmakerOptions: queryOption,
@@ -115,6 +116,24 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   }),
   useJars: () => ({ isLoading: false, jars: [walletMocks.storyJar] }),
   useWalletBalanceSummary: () => ({ isLoading: false, walletBalanceSummary: walletMocks.emptyBalanceSummary }),
+}))
+
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  JamSessionInfoContext: { Provider: ({ children }: { children: React.ReactNode }) => children },
+  useJamSessionInfoContext: () => ({
+    blockHeight: 800_000,
+    takerInfo: { running: false, scheduler: { running: false } },
+    rescanInfo: { updatedAt: 0, rescanning: false },
+    makerInfo: { running: false },
+    jmSession: { session: true },
+    setRescanInfo: vi.fn(),
+    setCurrentPaymentAttempt: vi.fn(),
+    clearCurrentPaymentAttempt: vi.fn(),
+    updateSessionInfo: vi.fn(),
+  }),
+  useRescanStatus: () => ({ rescanInfo: { updatedAt: 0, rescanning: false }, setRescanInfo: vi.fn() }),
+  useCurrentBlockHeight: () => ({ currentBlockHeight: 800_000 }),
+  useRawJmSession: () => ({ jmSession: { session: true }, updateSessionInfo: vi.fn() }),
 }))
 
 vi.mock('qrcode', () => ({

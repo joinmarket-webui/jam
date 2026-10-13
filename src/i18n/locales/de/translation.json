@@ -199,7 +199,9 @@
       "button_reset": "Zurücksetzen",
       "button_copy": "Signatur kopieren",
       "alert_success_copied": "Signatur in die Zwischenablage kopiert!",
-      "text_error_title": "Fehler beim Signieren der Nachricht"
+      "text_error_title": "Fehler beim Signieren der Nachricht",
+      "feedback_invalid_address": "Bitte gib eine Wallet-Adresse oder einen HD-Pfad ein.",
+      "feedback_invalid_message": "Bitte gib eine Nachricht zum Signieren ein."
     },
     "reveal_seed": "Seed Phrase einblenden",
     "show_logs": "Logs anzeigen",

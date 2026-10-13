@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { gettimelockaddressOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -10,12 +10,19 @@ import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS } from '@/constants/jam'
+import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { type WalletFileName, time } from '@/lib/utils'
+import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { Address } from '../ui/jam/Address'
-import { RENEW_BOND_FORM_DEFAULT_VALUES, renewBondFormSchema, type RenewBondFormValues } from './RenewBondDialog.schema'
+import { generateLockdateOptions } from './CreateFidelityBondDialog/types'
+import {
+  RENEW_BOND_FORM_DEFAULT_VALUES,
+  createRenewBondFormSchema,
+  type RenewBondFormValues,
+} from './RenewBondDialog.schema'
 import { FidelityBondDialogLayout } from './fidelity-bond/FidelityBondDialogLayout'
 import {
   AddressPreview,
@@ -51,6 +58,21 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   const [step, setStep] = useState<Step>('select_date')
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
 
+  const walletInfo = useJamWalletInfoContext()
+  const { enabled: isDeveloperMode } = useDeveloperMode()
+  const existingFbLockdates = useMemo(
+    () => fb.existingLockdates(walletInfo.fidelityBondSummary.fbOutputs),
+    [walletInfo.fidelityBondSummary.fbOutputs],
+  )
+  const availableLockdates = useMemo(
+    () =>
+      generateLockdateOptions(isDeveloperMode)
+        .map((option) => option.value)
+        .filter((lockdate) => !existingFbLockdates.includes(lockdate)),
+    [isDeveloperMode, existingFbLockdates],
+  )
+  const formSchema = useMemo(() => createRenewBondFormSchema(availableLockdates), [availableLockdates])
+
   const {
     control,
     handleSubmit,
@@ -60,7 +82,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
   } = useForm<RenewBondFormValues>({
     mode: 'onChange',
     defaultValues: RENEW_BOND_FORM_DEFAULT_VALUES,
-    resolver: yupResolver(renewBondFormSchema),
+    resolver: yupResolver(formSchema),
   })
   const selectedLockdate = useWatch({ control, name: 'lockdate' })
   const confirmationChecked = useWatch({
@@ -74,6 +96,8 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
     unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
     sendErrorKey: 'earn.fidelity_bond.renew.error_renewing_fidelity_bond',
   })
+
+  const isSelectedLockdateAvailable = !!selectedLockdate && availableLockdates.includes(selectedLockdate)
 
   const selectedDateLabel = selectedLockdate ? fb.lockdate.toDateLabel(selectedLockdate) : null
   const selectedDateHumanReadableDuration = (() => {
@@ -142,7 +166,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           <WizardStepFooter
             onCancel={() => handleOpenChange(false)}
             onPrimary={() => setStep('confirm')}
-            primaryDisabled={!selectedLockdate}
+            primaryDisabled={!isSelectedLockdateAvailable}
             primaryLabel={t('global.next')}
           />
         )
@@ -197,6 +221,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
           <LockdateSelect
             id="renew-lockdate"
             value={selectedLockdate ?? ''}
+            unavailableValues={existingFbLockdates}
             onChange={(lockdate) =>
               setValue('lockdate', lockdate || undefined, {
                 shouldDirty: true,

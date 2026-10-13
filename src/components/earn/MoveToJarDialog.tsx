@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { getaddressOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -47,6 +47,10 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
   const client = useApiClient()
   const walletInfo = useJamWalletInfoContext()
 
+  const instanceId = useId()
+  const [operationCount, setOperationCount] = useState(0)
+  const operationId = `${instanceId}-${operationCount}`
+
   const [step, setStep] = useState<Step>('select_jar')
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
 
@@ -86,6 +90,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
 
   const getAddressQuery = useQuery({
     ...getAddressQueryOptions,
+    queryKey: [...getAddressQueryOptions.queryKey, operationId] as unknown as typeof getAddressQueryOptions.queryKey,
     enabled: open && selectedJarIndex !== undefined && step !== 'select_jar',
     staleTime: Number.POSITIVE_INFINITY,
     retry: false,
@@ -99,6 +104,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
     reset()
     setTxResult(undefined)
     setError(undefined)
+    setOperationCount((count) => count + 1)
   }
 
   const handleOpenChange = (newOpen: boolean) => {
