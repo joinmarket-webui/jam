@@ -280,7 +280,6 @@
     "text_copy_address_confirmed": "Copiado",
     "button_settings": "Opções de recebimento",
     "label_amount": "Valor a solicitar em sats",
-    "feedback_invalid_amount": "Forneça um valor válido.",
     "button_new_address": "Obter novo endereço",
     "text_getting_address": "Obtendo novo endereço"
   },

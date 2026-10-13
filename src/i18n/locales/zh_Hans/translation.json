@@ -320,7 +320,6 @@
     "text_copy_address_confirmed": "已复制",
     "button_settings": "接收选项",
     "label_amount": "要求的聪金额",
-    "feedback_invalid_amount": "请输入有效的金额。",
     "button_new_address": "获取新地址",
     "text_getting_address": "正在获取新地址"
   },

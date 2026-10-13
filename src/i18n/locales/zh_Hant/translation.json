@@ -320,7 +320,6 @@
     "text_copy_address_confirmed": "已複製",
     "button_settings": "接收選項",
     "label_amount": "要求的聰金額",
-    "feedback_invalid_amount": "請輸入有效的金額。",
     "button_new_address": "獲取新地址",
     "text_getting_address": "正在獲取新地址"
   },
