@@ -29,7 +29,10 @@
       "error_freezing_utxos": "Die UTXOs konnten nicht gefroren werden. "
     },
     "next": "Weiter",
-    "experimental": "experimentell"
+    "experimental": "experimentell",
+    "text_address_copied": "Adresse kopiert",
+    "error_copy_address_failed": "Adresse konnte nicht kopiert werden",
+    "label_jar_n": "Glas {{ jar }}"
   },
   "app": {
     "alert_rescan_in_progress": "Erneuter Scan läuft..."
@@ -49,9 +52,7 @@
     "warning": "Jam ist Beta Software! <br /><1> Lies das, bevor du weitermachst.</1>",
     "warning_alert_title": "Warnung",
     "warning_alert_button_ok": "Geht klar.",
-    "cheatsheet": "Schummelzettel",
-    "connected": "Verbunden",
-    "disconnected": "Verbindung getrennt"
+    "cheatsheet": "Schummelzettel"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -91,7 +92,6 @@
     "subtitle_no_wallets": "Es sieht so aus, als hättest du noch keine Wallet angelegt. ",
     "button_new_wallet": "Neue Wallet erstellen",
     "button_import_wallet": "Bestehende Wallet importieren",
-    "alert_wallet_open": "Es kann immer nur eine Wallet aktiv sein. Wenn du eine andere öffnen willst, sperre zuerst '{{ currentWalletName }}'.",
     "error_loading_failed": "Laden der Wallets fehlgeschlagen",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} erfolgreich gesperrt. ",
@@ -128,7 +128,6 @@
     "confirmation_toggle_reveal_info": "Sensible Informationen anzeigen",
     "confirmation_toggle_info_written_down": "Ich habe die Informationen aufgeschrieben.",
     "confirmation_button_fund_wallet": "Wallet aufladen",
-    "feedback_seed_confirmed": "Seed Wörter korrekt. ",
     "back_button": "Zurück",
     "next_button": "Weiter",
     "hint_duration_text": "Bitte habe etwas Geduld, dieser Vorgang kann ein paar Minuten dauern. "
@@ -207,9 +206,6 @@
     "show_logs": "Logs anzeigen",
     "show_fee_config": "Fee Limit festlegen",
     "button_lock_wallet": "Wallet sperren",
-    "button_switch_wallet": "Wallet wechseln",
-    "button_create_wallet": "Neue Wallet erstellen",
-    "seed_modal_info_text": "Bitte schreib dir deine Seed Phrase und dein Passwort auf! Ohne diese Informationen kannst du deine Wallet nicht öffnen oder wiederherstellen.",
     "documentation": "Dokumentation",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -226,7 +222,6 @@
       "feedback_invalid_tx_fees_blocks": "Bitte gib ein gültiges Block-Target zwischen {{ min }} und {{ max }} an.",
       "feedback_invalid_tx_fees_satspervbyte": "Bitte gib eine gültige Transaktionsgebühr in sats/vByte zwischen {{ min }} und {{ max }} an.",
       "label_tx_fees_factor": "Zufällige Fee Anpassung",
-      "description_tx_fees_factor": "Zufällige Fees erhöhen deine Privatsphäre. Die Prozentzahl ist als +/- Bereich zur Base Fee zu verstehen. Z.B.: Gibst du eine Base Fee von 10 sats/vByte und eine Zufallsanpassung von 30% an, wird ein Wert zwischen 7 und 13 sats/vByte für deine Transaktion anwendet. Standardwert: 20%.",
       "feedback_invalid_tx_fees_factor": "Bitte gib einen gültigen Wert für die Zufallsanpassung zwischen {{ min }} und {{ max }} an.",
       "title_max_cj_fee_settings": "Collaborator Fees",
       "description_max_cj_fee_settings": "Collaborator-Fees beziehen sich auf den Preis der Liquidität und werden vom Markt bestimmt. Der Preis einer Transaktion hängt von der Zahl der Transaktionspartner ab. Zusätzliche Partner erhöhen Privatsphäre und Fees.  ",
@@ -251,11 +246,10 @@
     "title": "Senden",
     "subtitle": "Erstelle gemeinschaftliche Transaktionen, kurz Coinjoins, um deine Sicherheit und Privatsphäre zu verbessern. ",
     "label_num_collaborators": "Anzahl der Transaktionspartner: {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Andere",
     "description_num_collaborators": "Eine höhere Anzahl ist besser für die Privatsphäre, steigert aber die Transaktionskosten. ",
     "error_invalid_num_collaborators": "Bitte wähle zwischen {{ minNumCollaborators }} und {{ maxNumCollaborators }} Transaktionspartnern.",
     "taker_error_message_max_fees_config_missing": "Die Parameter 'max_cj_fee_rel' und 'max_cj_fee_abs' müssen in der joinmarket.cfg Datei verändert werden. Falls nötig, kannst du diese Einstellungen direkt in deiner Konfigurationsdatei vornehmen.",
-    "error_loading_min_makers_failed": "Laden der Konfigurationseinstellung 'minimum_makers' fehlgeschlagen.",
+    "error_loading_min_makers_failed": "Laden der Konfigurationseinstellung 'minimum_makers' fehlgeschlagen. {{ reason }}",
     "alert_payment_successful": "Zahlung erfolgreich: {{ amount }} Sats an die Adresse {{ address }} in der Transaction {{ txid }} versendet.",
     "text_maker_running": "Der Earn Modus ist aktiv. Stoppe diesen Service, um gemeinschaftliche Transaktionen durchzuführen. ",
     "text_coinjoin_already_running": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",
@@ -264,8 +258,6 @@
     "feedback_reused_address": "Diese Adresse wurde bereits verwendet. Nimm eine andere, um deine Privatsphäre zu bewahren. ",
     "label_source_jar": "Senden von",
     "title_jar_selector": "Wähle ein Glas aus, um deine Coins dorthin zu senden. ",
-    "label_amount": "Betrag in Sats",
-    "placeholder_amount": "Gib einen Betrag ein...",
     "feedback_invalid_amount": "Bitte einen gültigen Betrag eingeben.",
     "sending_options": "Sendeoptionen",
     "toggle_coinjoin": "Mit einer gemeinschaftlichen Transaktion senden",
@@ -314,12 +306,8 @@
   "receive": {
     "title": "Empfangen",
     "subtitle": "Befülle deine Wallet, indem du Sats an die unten stehende Adresse schickst. ",
-    "text_copy_address": "Adresse kopiert",
     "error_copy_address_failed": "Adresse konnte nicht kopiert werden",
-    "button_copy_address": "Kopieren",
-    "text_copy_address_confirmed": "Kopiert",
     "button_settings": "Empfangsoptionen",
-    "label_amount": "genauen Betrag anfordern ",
     "feedback_invalid_amount": "Bitte einen gültigen Betrag angeben.",
     "button_new_address": "neue Adresse generieren",
     "text_getting_address": "Generiere neue Adresse"
@@ -332,7 +320,6 @@
     "alert_starting": "Der Service startet.",
     "alert_stopping": "Der Service stoppt. ",
     "alert_running": "Sats anbieten, um Sats zu verdienen...",
-    "alert_no_spendable_balance_description": "<0>Befülle deine Wallet</0>, um mit dem Verdienen zu beginnen.",
     "radio_abs_offer_label": "Absolutes Angebot",
     "radio_rel_offer_label": "Relatives Angebot",
     "label_rel_fee": "Relative Fee {{ fee }}",
@@ -341,7 +328,6 @@
     "label_abs_fee": "Absolute Fee {{ fee }}",
     "description_abs_fee": "Die absolute Fee, die anderen berechnet wird, denominiert in Sats.",
     "feedback_invalid_abs_fee": "Ungültige absolute Fee. ",
-    "label_min_amount": "Minimalbetrag in Sats.",
     "feedback_invalid_min_amount": "Bitte gib einen Minimalbetrag an.",
     "button_start": "Fang an zu verdienen!",
     "button_stop": "Stoppen",
@@ -407,7 +393,6 @@
         "text_primary_button": "Erstelle Fidelity Bond",
         "label_lock_date": "Gesperrt bis",
         "label_jar": "Finanziert aus",
-        "label_jar_n": "Glas {{ jar }}",
         "label_amount": "Betrag, der gesperrt wird",
         "label_address": "Gelder werden zeitlich gesperrt und versendet an"
       },
@@ -558,6 +543,11 @@
       "column_title_confirmations": "Confs.",
       "column_title_label_and_status": "Tags",
       "row_button_details": "Details"
+    },
+    "address_list": {
+      "column_title_address": "Adresse",
+      "column_title_balance": "Wert",
+      "column_title_tags": "Tags"
     }
   },
   "sidebar": {

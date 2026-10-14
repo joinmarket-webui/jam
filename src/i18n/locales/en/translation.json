@@ -48,7 +48,10 @@
     },
     "next": "Next",
     "experimental": "Experimental",
-    "preview": "Preview"
+    "preview": "Preview",
+    "text_address_copied": "Address copied.",
+    "error_copy_address_failed": "Could not copy address.",
+    "label_jar_n": "Jar {{ jar }}"
   },
   "app": {
     "alert_new_transaction": "New transaction: {{ txid }}",
@@ -100,6 +103,10 @@
     },
     "item_settings": {
       "label": "Settings"
+    },
+    "trigger": {
+      "title_open": "Open sidebar",
+      "title_close": "Close sidebar"
     }
   },
   "footer": {
@@ -201,7 +208,6 @@
     "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",
     "alert_other_wallet_unlocked_generic": "Another wallet is active. You need to lock it first. <1>Go back</1>.",
     "alert_rescan_in_progress": "Rescanning the timechain is currently in progress. Please wait until the process finishes and then try again. <1>Go back</1>.",
-    "feedback_valid": "Looks good!",
     "label_wallet_name": "Wallet name",
     "placeholder_wallet_name": "Your Wallet...",
     "feedback_invalid_wallet_name": "Please choose a valid wallet name: Use only letters, numbers, underscores or hyphens.",
@@ -413,7 +419,7 @@
       "description_max_cj_fee_rel": "The maximum fee you are willing to pay per collaborator, as a percentage of the transaction amount. Example: if you send 2 million sats and the maximum fee is set to 0.1%, you will at most pay 2,000 sats to a single collaborator.",
       "feedback_invalid_max_cj_fee_rel": "Please provide a valid maximum relative fee between {{ min }} and {{ max }}.",
       "label_max_sweep_fee_change": "Collaborative sweep fee change",
-      "description_max_sweep_fee_change": "The maximum fee increase you are willing to pay on collaborative sweep transactions, as a percentage of the estimated transaction fee. Example: when set to 60% with 10 sats/vByte, the actual fee for collaborative sweeps can be between 4 and 16 sats/vByte. Default: {{ defaultValue }}",
+      "description_max_sweep_fee_change": "The maximum fee increase you are willing to pay on collaborative sweep transactions, as a percentage of the estimated transaction fee. Example: when set to 60% with 10 sats/vByte, the actual fee for collaborative sweeps can be between 4 and 16 sats/vByte. Default: {{ defaultPercentage }}",
       "feedback_invalid_max_sweep_fee_change": "Please provide a valid maximum sweep fee change between {{ min }} and {{ max }}.",
       "text_button_reset": "Reset",
       "text_button_submit": "Save",
@@ -434,7 +440,11 @@
     "success_rescan_started": "Rescan started successfully.",
     "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
     "text_button_submit": "Rescan timechain",
-    "text_button_submitting": "Rescanning timechain..."
+    "text_button_submitting": "Rescanning timechain...",
+    "text_button_last_day": "Last {{ blocks }} blocks (~24 hours)",
+    "text_button_last_year": "Last {{ blocks }} blocks (~1 year)",
+    "text_button_segwit_activation": "From block #{{ blockHeight }}",
+    "tooltip_segwit_activation": "Segwit activation block"
   },
   "logs": {
     "title": "Logs",
@@ -452,11 +462,10 @@
     "title": "Send",
     "subtitle": "Use a collaborative transaction for increased security and privacy.",
     "label_num_collaborators": "Number of collaborators: {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Other",
     "description_num_collaborators": "A higher number is better for privacy, but also increases the transaction fee.",
     "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
     "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg to send collaborative transactions. Consider adding them to your config manually.",
-    "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
+    "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed. {{ reason }}",
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }} in transaction {{ txid }}.",
     "alert_direct_payment_success_title": "Successfully sent non-collaborative transaction",
     "alert_direct_payment_pending": "Initiating non-collaborative transaction...",
@@ -554,7 +563,6 @@
   "receive": {
     "title": "Receive",
     "subtitle": "Send sats to the address below to fund your wallet.",
-    "text_copy_address": "Address copied.",
     "error_copy_address_failed": "Could not copy address.",
     "error_share_address_failed": "Could not share address.",
     "button_share_address": "Share",
@@ -676,8 +684,7 @@
         "form_label_month": "Month",
         "description": "Fidelity bond expiration date:",
         "subtitle": "Choose when your funds will be unlocked",
-        "label_selected_lock_date": "Selected lock date",
-        "warning_fb_with_same_expiry": "<strong>Warning</strong>: A Fidelity Bond with the same expiry date already exists."
+        "label_selected_lock_date": "Selected lock date"
       },
       "select_jar": {
         "title": "Select Source Jar",
@@ -687,8 +694,6 @@
       "select_utxos": {
         "title": "Select UTXOs",
         "description": "Select one UTXO from Jar {{ jar }} to use for the Fidelity Bond.",
-        "button_select_all": "Select All",
-        "button_deselect_all": "Deselect All",
         "label_total_selected": "Total Selected",
         "utxo_card": {
           "confirmations_one": "{{ count }} confirmation",
@@ -710,7 +715,6 @@
         "text_primary_button": "Create Fidelity Bond",
         "label_lock_date": "Locked until",
         "label_jar": "Funded from",
-        "label_jar_n": "Jar {{ jar }}",
         "label_amount": "Amount to be locked",
         "label_address": "Funds will be time-locked and sent to"
       },
@@ -997,6 +1001,12 @@
       "toast_auto_unfreeze_description_other": "Automatically unfreezing {{ count }} additional UTXOs. They should be spent together.",
       "alert_no_account_info_title": "No account information present",
       "alert_no_account_info_description": "Account information is not yet loaded or not present."
+    },
+    "address_list": {
+      "column_title_address": "Address",
+      "column_title_balance": "Value",
+      "column_title_tags": "Tags",
+      "column_title_index": "Index"
     }
   },
   "show_utxos": {
