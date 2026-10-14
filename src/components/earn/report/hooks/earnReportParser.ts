@@ -1,3 +1,4 @@
+import { parseHistoryTimestamp } from '@/lib/historyTimestamp'
 import type { AmountSats } from '@/types/global'
 
 type Minutes = number
@@ -15,7 +16,7 @@ export interface EarnReportEntry {
 
 // Yieldgen CSV timestamp format: yyyy/MM/dd HH:mm:ss
 const parseYieldgenTimestamp = (val: string) => {
-  return new Date(Date.parse(`${val} GMT`))
+  return parseHistoryTimestamp(val) ?? new Date(Number.NaN)
 }
 
 const yieldgenReportLineToEntry = (line: string): EarnReportEntry | null => {
