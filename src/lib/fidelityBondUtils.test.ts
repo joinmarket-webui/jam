@@ -22,6 +22,18 @@ const makeBond = (id: string, locktimeSeconds: number) =>
   ({ ...makeUtxo(id), locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/2/0:${locktimeSeconds}` }) as Utxo
 
 describe('utils', () => {
+  describe('toYearsRange', () => {
+    it('throws when max is less than or equal to min', () => {
+      expect(() => fb.toYearsRange(10, 5)).toThrow('Invalid values for range of years.')
+      expect(() => fb.toYearsRange(5, 5)).toThrow('Invalid values for range of years.')
+    })
+
+    it('exposes default timelock constants', () => {
+      expect(fb.DEFAULT_MAX_TIMELOCK_YEARS).toBe(10)
+      expect(fb.DEFAULT_TIMELOCK_YEARS_RANGE).toEqual({ min: 0, max: 10 })
+    })
+  })
+
   describe('lockdate', () => {
     it('should convert timestamp to lockdate', () => {
       expect(fb.lockdate.fromTimestamp(-1)).toBe('1969-12')
@@ -45,6 +57,8 @@ describe('utils', () => {
       expect(() => fb.lockdate.toTimestamp('10000-01' as fb.Lockdate)).toThrow('Unsupported format')
       expect(() => fb.lockdate.toTimestamp('' as fb.Lockdate)).toThrow('Unsupported format')
       expect(() => fb.lockdate.toTimestamp('any' as fb.Lockdate)).toThrow('Unsupported format')
+      expect(() => fb.lockdate.toTimestamp('abcd-ef' as fb.Lockdate)).toThrow('Unsupported format')
+      expect(() => fb.lockdate.toTimestamp('2025-ab' as fb.Lockdate)).toThrow('Unsupported format')
     })
 
     it('should silently roll over out-of-range months', () => {

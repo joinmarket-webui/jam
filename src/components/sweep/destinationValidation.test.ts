@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next'
 import { describe, expect, it } from 'vitest'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
-import { buildDestinationErrors } from './destinationValidation'
+import { buildDestinationErrors, normalizeDestinationAddresses } from './destinationValidation'
 
 const t = ((key: string) => key) as unknown as TFunction
 
@@ -48,5 +48,25 @@ describe('buildDestinationErrors', () => {
     const errors = buildDestinationErrors([usedAddress, freshAddress, freshAddress + 'x'], addressSummary, t)
 
     expect(errors).toEqual(['scheduler.feedback_reused_destination_address', undefined, undefined])
+  })
+})
+
+describe('normalizeDestinationAddresses', () => {
+  it('normalizes a list of bitcoin addresses', () => {
+    const addresses = [
+      ' bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq ',
+      'BC1QAR0SRRR7XFKVY5L643LYDNW9RE59GTZZWF5MDQ',
+      '1BitcoinEaterAddressDontSend8MUo1T',
+    ]
+
+    expect(normalizeDestinationAddresses(addresses)).toEqual([
+      'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
+      'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
+      '1BitcoinEaterAddressDontSend8MUo1T',
+    ])
+  })
+
+  it('handles empty address list', () => {
+    expect(normalizeDestinationAddresses([])).toEqual([])
   })
 })
