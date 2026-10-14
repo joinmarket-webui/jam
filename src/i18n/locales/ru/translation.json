@@ -30,7 +30,10 @@
       "error_freezing_utxos": "Не удалось заморозить UTXOs."
     },
     "next": "След",
-    "experimental": "экспериментальная фича"
+    "experimental": "экспериментальная фича",
+    "text_address_copied": "Адрес скопирован",
+    "error_copy_address_failed": "Не удалось скопировать адрес.",
+    "label_jar_n": "Банка {{ jar }}"
   },
   "app": {
     "alert_rescan_in_progress": "Повторное сканирование в процессе"
@@ -93,7 +96,6 @@
     "subtitle_no_wallets": "Похоже, у вас пока нет кошелька.",
     "button_new_wallet": "Создать новый кошелек",
     "button_import_wallet": "Импортировать кошелек",
-    "alert_wallet_open": "Только один кошелек может быть активным. Если нужно открыть другой кошелек, сначала заблокируйте '{{ currentWalletName }}'.",
     "error_loading_failed": "Ошибка загрузки кошельков.",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} заблокирован.",
@@ -131,7 +133,6 @@
     "confirmation_toggle_reveal_info": "Раскрыть конфиденциальную информацию",
     "confirmation_toggle_info_written_down": "Я записал информацию выше.",
     "confirmation_button_fund_wallet": "Пополнить кошелек",
-    "feedback_seed_confirmed": "Подтверждена исходная фраза.",
     "back_button": "Назад",
     "next_button": "След",
     "hint_duration_text": "Пожалуйста, проявите терпение, это может занять несколько минут."
@@ -213,8 +214,6 @@
     "show_logs": "Показать журнал",
     "show_fee_config": "Изменить лимиты комиссий",
     "button_lock_wallet": "Блокировка кошелька",
-    "button_switch_wallet": "Сменить кошелек",
-    "seed_modal_info_text": "Пожалуйста, запишите вашу сид-фразу и пароль! Без этой информации вы не сможете получить доступ и восстановить свой кошелек!",
     "documentation": "Документация",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -244,7 +243,7 @@
       "description_max_cj_fee_rel": "Максимальная комиссия, которую вы готовы заплатить за соавтора, в процентах от суммы транзакции. Пример: если вы отправляете 2 миллиона sats, а максимальная комиссия установлена ​​на уровне 0,1%, вы заплатите максимум 2000 sats одному соавтору.",
       "feedback_invalid_max_cj_fee_rel": "Пожалуйста, укажите допустимую максимальную относительную комиссию между{{ min }} и {{ max }}.",
       "label_max_sweep_fee_change": "Изменение комиссии за участие в Переносе",
-      "description_max_sweep_fee_change": "Максимальное увеличение комиссии, которое вы готовы заплатить за участие соавторов в транзакции Переноса, в процентах от предполагаемой комиссии за транзакцию. Пример: при установке на 60% с 10 sats/vByte фактическая комиссия за Совместные Транзакции Переноса может составлять от 4 до 16 sats/vByte. По умолчанию: {{ defaultValue }}",
+      "description_max_sweep_fee_change": "Максимальное увеличение комиссии, которое вы готовы заплатить за участие соавторов в транзакции Переноса, в процентах от предполагаемой комиссии за транзакцию. Пример: при установке на 60% с 10 sats/vByte фактическая комиссия за Совместные Транзакции Переноса может составлять от 4 до 16 sats/vByte. По умолчанию: {{ defaultPercentage }}",
       "feedback_invalid_max_sweep_fee_change": "Пожалуйста, укажите допустимое максимальное изменение комиссии за участие в Переносе между {{ min }} и {{ max }}.",
       "text_button_submit": "Сохранить",
       "text_button_submitting": "Отправка",
@@ -270,11 +269,10 @@
     "title": "Отправить",
     "subtitle": "Используйте Совместную Транзакцию для повышения безопасности и конфиденциальности.",
     "label_num_collaborators": "Количество соавторов: {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Другое",
     "description_num_collaborators": "Большее число лучше для конфиденциальности, но также увеличивает комиссию за транзакцию.",
     "error_invalid_num_collaborators": "Пожалуйста, используйте значение между {{ minNumCollaborators }} и {{ maxNumCollaborators }} соавторов.",
     "taker_error_message_max_fees_config_missing": "Переменные конфигурации 'max_cj_fee_rel' и 'max_cj_fee_abs' должны быть установлены в joinmarket.cfg для отправки Совместных Транзакций. Рассмотрите возможность добавления их в конфигурацию вручную.",
-    "error_loading_min_makers_failed": "Загрузка значения конфигурации «minimum_makers» не удалась.",
+    "error_loading_min_makers_failed": "Загрузка значения конфигурации «minimum_makers» не удалась. {{ reason }}",
     "alert_payment_successful": "Платеж успешен: отправлено {{ amount }} sats получателю {{ address }} в транзакции {{ txid }}.",
     "text_maker_running": "Заработок активен. Остановите службу, чтобы отправлять Совместные Транзакции.",
     "text_coinjoin_already_running": "В настоящее время выполняется Совместная Транзакция.",
@@ -336,10 +334,7 @@
   "receive": {
     "title": "Получить",
     "subtitle": "Отправьте sats на указанный ниже адрес, чтобы пополнить свой кошелек.",
-    "text_copy_address": "Адрес скопирован",
     "error_copy_address_failed": "Не удалось скопировать адрес.",
-    "button_copy_address": "Скопировать",
-    "text_copy_address_confirmed": "Скопировано",
     "button_settings": "Параметры получения",
     "label_source_jar": "Получить в",
     "label_amount_input": "Сумма",
@@ -356,7 +351,6 @@
     "alert_starting": "Старт службы",
     "alert_stopping": "Остановка службы",
     "alert_running": "Предлагаем sats, чтобы заработать больше sats",
-    "alert_no_spendable_balance_description": "<0>Пополните свой кошелек</0>, чтобы начать зарабатывать.",
     "radio_abs_offer_label": "Абсолютная комиссия",
     "radio_rel_offer_label": "Относительная комиссия",
     "label_rel_fee": "Относительная комиссия {{ fee }}",
@@ -419,8 +413,7 @@
       "select_date": {
         "form_label_year": "Год",
         "form_label_month": "Месяц",
-        "description": "Срок блокировки средств:",
-        "warning_fb_with_same_expiry": "<strong>Внимание</strong>: Fidelity Bond с тем же сроком блокировки уже существует."
+        "description": "Срок блокировки средств:"
       },
       "select_jar": {
         "description": "Выберите банку, из которой вы будете финансировать Fidelity Bond."
@@ -443,7 +436,6 @@
         "text_primary_button": "Создать Fidelity Bond",
         "label_lock_date": "Блокировка до",
         "label_jar": "Финансируется из",
-        "label_jar_n": "Банка {{ jar }}",
         "label_amount": "Сумма, подлежащая блокировке",
         "label_address": "Средства будут заблокированы по времени и отправлены"
       },
@@ -588,10 +580,6 @@
       "nested_hint_wait_for_block_other": "Подождите еще {{ count }} блоков.",
       "nested_hint_fund_wallet": "Пополните свой кошелек и ждите еще один блок.",
       "nested_hint_fund_wallet_other": "Пополните свой кошелек и ждите еще {{count}} блоков."
-    },
-    "confirm_modal": {
-      "title": "Начать запланированный Перенос",
-      "body": "Вы уверены, что хотите начать запланированный Перенос?"
     }
   },
   "modal": {
@@ -614,6 +602,11 @@
       "column_title_confirmations": "Подтверждений",
       "column_title_label_and_status": "Метки",
       "row_button_details": "Подробности"
+    },
+    "address_list": {
+      "column_title_address": "Адрес",
+      "column_title_balance": "Значение",
+      "column_title_tags": "Метки"
     }
   },
   "show_utxos": {

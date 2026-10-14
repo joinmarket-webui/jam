@@ -25,6 +25,16 @@ describe('i18n config', () => {
     expect(document.documentElement.lang).toBe('zh-Hans')
   })
 
+  it('does not html-escape interpolated values', async () => {
+    await i18n.changeLanguage('en')
+    const reason = `Can't reach "http://localhost/api" <timeout> & retry`
+
+    expect(i18n.t('send.error_loading_min_makers_failed', { reason })).toBe(
+      `Loading config value 'minimum_makers' failed. ${reason}`,
+    )
+    expect(i18n.t('logs.text_search_matches', { count: 0, searchValue: 'a/b' })).toBe('No matches for "a/b".')
+  })
+
   it('keeps regional variants of a shipped language', async () => {
     await i18n.changeLanguage('de-AT')
     expect(i18n.t('global.cancel')).toBe('Abbrechen')

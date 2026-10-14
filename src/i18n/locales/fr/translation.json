@@ -3,7 +3,9 @@
     "errors": {
       "error_loading_wallet_failed": "Le chargement du portefeuille a échoué. {{ reason }}",
       "error_loading_address_failed": "Le chargement de la nouvelle adresse a échoué."
-    }
+    },
+    "text_address_copied": "Adresse copiée",
+    "error_copy_address_failed": "L'adresse n'a pu être copiée."
   },
   "navbar": {
     "title": "Jam",
@@ -17,13 +19,7 @@
   "footer": {
     "warning": "Ceci est un logiciel beta.<br /><1> Lisez-ceci avant usage.</1>",
     "warning_alert_title": "Avertissement",
-    "warning_alert_button_ok": "Ça me convient.",
-    "docs": "Docs",
-    "features": "Fonctionnalités",
-    "github": "GitHub",
-    "twitter": "Twitter",
-    "connected": "Connecté",
-    "disconnected": "Déconnecté"
+    "warning_alert_button_ok": "Ça me convient."
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -49,7 +45,6 @@
   "wallets": {
     "subtitle_no_wallets": "Il semble que vous n'ayez pas encore de portefeuille.",
     "button_new_wallet": "Créer un nouveau portefeuille",
-    "alert_wallet_open": "Il ne peut y avoir qu'un seul porte-monnaie actif. Si vous souhaitez ouvrir un autre porte-monnaie, veuillez d'abord verrouiller '{{ currentWalletName }}'.",
     "error_loading_failed": "Le chargement des portefeuilles a échoué.",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} verrouillé avec succès.",
@@ -62,9 +57,7 @@
       "modal_lock_wallet_title": "Confirmez le verrouillage",
       "modal_lock_wallet_maker_running_text": "<0>Générer</0> est actif. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Une transaction collaborative est actuellement en cours. Le verrouillage du porte-monnaie arrêtera le service.",
-      "modal_lock_wallet_alternative_action_text": "Vous pouvez également fermer la fenêtre pour vous déconnecter.",
-      "modal_lock_wallet_button_confirm": "Oui, verrouiller le porte-monnaie",
-      "modal_lock_wallet_button_cancel": "Annuler"
+      "modal_lock_wallet_alternative_action_text": "Vous pouvez également fermer la fenêtre pour vous déconnecter."
     }
   },
   "create_wallet": {
@@ -88,31 +81,12 @@
     "confirmation_toggle_reveal_info": "Révéler des informations sensibles",
     "confirmation_toggle_info_written_down": "J'ai noté les informations ci-dessus.",
     "confirmation_button_fund_wallet": "Alimenter le portefeuille",
-    "feedback_seed_confirmed": "Phrase graine confirmée.",
     "back_button": "Retour",
     "next_button": "Suivant"
   },
   "current_wallet": {
     "button_deposit": "Déposer",
     "button_withdraw": "Retirer"
-  },
-  "current_wallet_advanced": {
-    "error_loading_utxos_failed": "Le chargement des UTXOs a échoué.",
-    "title_fidelity_bonds": "Fidelity Bonds",
-    "button_show_utxos": "Afficher les UTXOs",
-    "button_hide_utxos": "Masquer les UTXOs",
-    "alert_no_utxos": "Pas d'UTXOs disponibles.",
-    "account": "Compte",
-    "error_freeze_failed": "La demande a échoué.",
-    "label_locked_until": "Verrouillé jusqu'à ce que",
-    "label_frozen": "gelé",
-    "label_unconfirmed": "non confirmée",
-    "button_freeze": "geler",
-    "button_unfreeze": "dégeler",
-    "account_button_send": "Envoyer",
-    "account_button_receive": "Recevoir",
-    "account_heading_external_addresses": "Adresses externes",
-    "account_heading_internal_addresses": "Adresses internes"
   },
   "settings": {
     "section_title_display": "Écran",
@@ -126,8 +100,6 @@
     "use_btc": "Afficher les montants en bitcoin",
     "use_dark_theme": "Passer en thème sombre",
     "use_light_theme": "Passer en thème lumineur",
-    "use_normal_mode": "Utiliser le mode portefeuille normal",
-    "use_dev_mode": "Utiliser le mode portefeuille du développeur",
     "show_seed": "Afficher la phrase graine",
     "sign_message": "Signer un message",
     "sign_message_modal": {
@@ -152,9 +124,6 @@
     "show_logs": "Afficher les journaux",
     "show_fee_config": "Ajuster les limites de frais",
     "button_lock_wallet": "Verrouiller le portefeuille",
-    "button_create_wallet": "Créer un nouveau portefeuille",
-    "button_switch_wallet": "Changer de porte-monnaie",
-    "seed_modal_info_text": "Veuillez noter votre phrase graine et votre mot de passe ! Sans ces informations, vous ne serez pas en mesure d'accéder à votre portefeuille !",
     "documentation": "Documentation",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -168,20 +137,16 @@
     "title": "Envoyer du bitcoin",
     "subtitle": "Les transactions collaboratives permettent d'accroître la protection de votre vie privée et de celle des autres.",
     "label_num_collaborators": "Nombre de collaborateurs : {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Autre",
     "description_num_collaborators": "Un nombre plus élevé est meilleur pour la confidentialité, mais augmente également les frais.",
     "error_invalid_num_collaborators": "Veuillez utiliser entre {{ minNumCollaborators }} et {{ maxNumCollaborators }} collaborateurs.",
     "taker_error_message_max_fees_config_missing": "Les variables de configuration 'max_cj_fee_rel' et 'max_cj_fee_abs' doivent être définies dans votre fichier joinmarket.cfg afin d'envoyer des transactions collaboratives. Pensez à les ajouter manuellement à votre configuration.",
-    "error_loading_min_makers_failed": "Le chargement de la valeur de configuration 'minimum_makers' a échoué.",
+    "error_loading_min_makers_failed": "Le chargement de la valeur de configuration 'minimum_makers' a échoué. {{ reason }}",
     "alert_payment_successful": "Paiement réussi : Envoyé {{ amount }} sats à {{ address }} en transaction {{ txid }}.",
     "text_maker_running": "Générer est actif. Arrêtez le service afin d'envoyer des transactions collaboratives.",
     "text_coinjoin_already_running": "Une transaction collaborative est actuellement en cours.",
     "label_recipient": "Destinataire",
     "placeholder_recipient": "Entrez l'adresse...",
-    "feedback_invalid_recipient": "Veuillez indiquer l'adresse du destinataire.",
     "label_source_jar": "Niveau de confidentialité à envoyer à partir de",
-    "label_amount": "Montant en sats",
-    "placeholder_amount": "Entrez le montant...",
     "feedback_invalid_amount": "Veuillez fournir un montant valide.",
     "sending_options": "Options d'envoi",
     "toggle_coinjoin": "Envoyer en tant que transaction collaborative pour une meilleure confidentialité",
@@ -193,12 +158,8 @@
   "receive": {
     "title": "Recevoir",
     "subtitle": "Envoyez du bitcoin à l'adresse ci-dessous.",
-    "text_copy_address": "Adresse copiée",
     "error_copy_address_failed": "L'adresse n'a pu être copiée.",
-    "button_copy_address": "Copier",
-    "text_copy_address_confirmed": "Copié",
     "button_settings": "Paramètres",
-    "label_amount": "Montant à demander en sats",
     "feedback_invalid_amount": "Veuillez fournir un montant valide.",
     "button_new_address": "Obtenir une nouvelle adresse",
     "text_getting_address": "Obtention d'une nouvelle adresse"
@@ -210,22 +171,18 @@
     "alert_starting": "Le service démarre.",
     "alert_stopping": "Le service s'arrête.",
     "alert_running": "Le service est en cours d'exécution.",
-    "alert_no_spendable_balance_description": "<0>Approvisionnez votre portefeuille</0> pour commencer à générer.",
-    "toggle_rel_offer": "Offre relative",
     "label_rel_fee": "Frais relatifs  {{ fee }}",
     "description_rel_fee": "En pourcentage des montants, vous aidez les autres à améliorer leur vie privée.",
     "feedback_invalid_rel_fee": "Veuillez fournir un tarif relatif entre {{feeRelPercentageMin}} et {{feeRelPercentageMax}}.",
     "label_abs_fee": "Frais absolus en sats",
     "description_abs_fee": "Un montant absolu que vous recevez pour aider les autres à améliorer leur vie privée.",
     "feedback_invalid_abs_fee": "Veuillez fournir un tarif absolu.",
-    "label_min_amount": "Montant minimum en sats",
     "feedback_invalid_min_amount": "Veuillez indiquer un montant minimum.",
     "button_start": "Démarrer",
     "button_stop": "Arrêter",
     "text_starting": "Démarrage",
     "text_stopping": "Arrêt en cours",
-    "button_show_report": "Afficher le rapport",
-    "button_hide_report": "Masquer le rapport"
+    "button_show_report": "Afficher le rapport"
   },
   "sidebar": {
     "title": "Jam",

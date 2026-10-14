@@ -28,7 +28,10 @@
       "error_freezing_utxos": "Impossibile congelare gli UTXO."
     },
     "next": "Successivo",
-    "experimental": "sperimentale"
+    "experimental": "sperimentale",
+    "text_address_copied": "Indirizzo copiato",
+    "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
+    "label_jar_n": "Vaso {{ jar }}"
   },
   "navbar": {
     "title": "Jam",
@@ -44,9 +47,7 @@
     "warning": "Questo software è in beta.<br /><1>Leggi qui prima di usarlo.</1>",
     "warning_alert_title": "Avviso",
     "warning_alert_button_ok": "Accetto.",
-    "cheatsheet": "Introduzione",
-    "connected": "Connesso",
-    "disconnected": "Disconnesso"
+    "cheatsheet": "Introduzione"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -85,7 +86,6 @@
   "wallets": {
     "subtitle_no_wallets": "Sembra che tu non abbia ancora un portafoglio.",
     "button_new_wallet": "Crea un nuovo portafoglio",
-    "alert_wallet_open": "Può esserci solo un portafoglio attivo. Se desideri aprire un altro portafoglio, blocca prima '{{ currentWalletName }}'.",
     "error_loading_failed": "Caricamento dei portafogli fallito.",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} bloccato con successo.",
@@ -122,7 +122,6 @@
     "confirmation_toggle_reveal_info": "Rivela informazioni sensibili",
     "confirmation_toggle_info_written_down": "Ho annotato le informazioni sopra.",
     "confirmation_button_fund_wallet": "Aggiungi fondi al portafoglio",
-    "feedback_seed_confirmed": "Seed phrase confermata.",
     "back_button": "Indietro",
     "next_button": "Avanti",
     "hint_duration_text": "Sii paziente, l'operazione potrebbe richiedere alcuni minuti."
@@ -172,9 +171,6 @@
     "show_logs": "Mostra i log",
     "show_fee_config": "Modifica i limiti delle commissioni",
     "button_lock_wallet": "Blocca portafoglio",
-    "button_switch_wallet": "Cambia portafoglio",
-    "button_create_wallet": "Crea un nuovo portafoglio",
-    "seed_modal_info_text": "Per favore, annota la tua seed phrase e la tua password! Senza queste informazioni non sarai in grado di accedere e recuperare il tuo portafoglio!",
     "documentation": "Documentazione",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -190,7 +186,6 @@
       "feedback_invalid_tx_fees_blocks": "Fornisci un block target valido tra {{ min }} e {{ max }}.",
       "feedback_invalid_tx_fees_satspervbyte": "Fornisci una commissione di transazione valida in sats/vByte tra {{ min }} e {{ max }}.",
       "label_tx_fees_factor": "Randomizzazione della commissione",
-      "description_tx_fees_factor": "Le commissioni random migliorano la privacy. La percentuale deve essere intesa come un +/- intorno al valore di base. Esempio: Se si imposta la commissione base a 10 sats/vByte e la randomizzazione al 30%, verrà utilizzato un valore compreso tra 7 e 13 sats/vByte. Valore predefinito: 20%.",
       "feedback_invalid_tx_fees_factor": "Indica un valore di randomizzazione della commissione valido compreso tra {{ min }} e {{ max }}.",
       "title_max_cj_fee_settings": "Commissioni collaboratore",
       "subtitle_max_cj_fee": "Nota: un'offerta verrà rifiutata solo se vengono superati entrambi i limiti.",
@@ -214,11 +209,10 @@
     "title": "Invia",
     "subtitle": "Effettua una transazione collaborativa per maggiore sicurezza e privacy.",
     "label_num_collaborators": "Numero di collaboratori: {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Altro",
     "description_num_collaborators": "Un numero più alto è meglio per la privacy, ma aumenta anche la commissione di transazione.",
     "error_invalid_num_collaborators": "Utilizza tra {{ minNumCollaborators }} e {{ maxNumCollaborators }} collaboratori.",
     "taker_error_message_max_fees_config_missing": "Le variabili di configurazione 'max_cj_fee_rel' e 'max_cj_fee_abs' devono essere impostate nel tuo joinmarket.cfg per poter inviare transazioni collaborative. Considera di aggiungerli alla tua configurazione manualmente.",
-    "error_loading_min_makers_failed": "Caricamento del valore di configurazione 'minimum_makers' fallito.",
+    "error_loading_min_makers_failed": "Caricamento del valore di configurazione 'minimum_makers' fallito. {{ reason }}",
     "alert_payment_successful": "Pagamento riuscito: Inviati {{ amount }} sats a {{ address }} nella transazione {{ txid }}.",
     "text_maker_running": "La funzione Guadagna è attiva. Interrompere il servizio per inviare transazioni collaborative.",
     "text_coinjoin_already_running": "È attualmente in corso una transazione collaborativa.",
@@ -227,8 +221,6 @@
     "feedback_reused_address": "Questo indirizzo è già stato utilizzato. Per preservare la tua privacy, scegline un altro.",
     "label_source_jar": "Invia da",
     "title_jar_selector": "Seleziona un vaso dal tuo portafoglio a cui inviare i fondi.",
-    "label_amount": "Importo in sats",
-    "placeholder_amount": "Inserisci l'importo...",
     "feedback_invalid_amount": "Fornisci un importo valido.",
     "sending_options": "Opzioni di invio",
     "toggle_coinjoin": "Invia come transazione collaborativa",
@@ -274,12 +266,8 @@
   "receive": {
     "title": "Ricevi",
     "subtitle": "Invia sats all'indirizzo sottostante per depositare nel tuo wallet.",
-    "text_copy_address": "Indirizzo copiato",
     "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
-    "button_copy_address": "Copia",
-    "text_copy_address_confirmed": "Copiato",
     "button_settings": "Opzioni di ricezione",
-    "label_amount": "Importo da richiedere in sats",
     "feedback_invalid_amount": "Si prega di fornire un importo valido.",
     "button_new_address": "Ottieni un nuovo indirizzo",
     "text_getting_address": "Ottenere un nuovo indirizzo"
@@ -292,7 +280,6 @@
     "alert_starting": "Il servizio sta iniziando.",
     "alert_stopping": "Il servizio si sta fermando.",
     "alert_running": "Offrendo sats per guadagnare più sats...",
-    "alert_no_spendable_balance_description": "<0>Deposita nel tuo wallet</0> per iniziare a guadagnare.",
     "radio_abs_offer_label": "Offerta assoluta",
     "radio_rel_offer_label": "Offerta relativa",
     "label_rel_fee": "Commissione relativa {{ fee }}",
@@ -301,7 +288,6 @@
     "label_abs_fee": "Commissione assoluta {{ fee }}",
     "description_abs_fee": "La commissione da addebitare agli altri, come importo assoluto denominato in sats.",
     "feedback_invalid_abs_fee": "Commissione assoluta non valida.",
-    "label_min_amount": "Importo minimo in sats",
     "feedback_invalid_min_amount": "Si prega di fornire un importo minimo.",
     "button_start": "Comincia a guadagnare!",
     "button_stop": "Ferma",
@@ -366,7 +352,6 @@
         "text_primary_button": "Crea un Fidelity Bond",
         "label_lock_date": "Bloccato fino al",
         "label_jar": "Finanziato da",
-        "label_jar_n": "Vaso {{ jar }}",
         "label_amount": "Quantità da bloccare",
         "label_address": "I fondi saranno bloccati e inviati a"
       },
@@ -517,6 +502,11 @@
       "column_title_confirmations": "Conf.",
       "column_title_label_and_status": "Tags",
       "row_button_details": "Dettagli"
+    },
+    "address_list": {
+      "column_title_address": "Indirizzo",
+      "column_title_balance": "Valore",
+      "column_title_tags": "Tags"
     }
   },
   "sidebar": {
