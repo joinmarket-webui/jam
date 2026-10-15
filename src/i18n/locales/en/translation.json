@@ -854,7 +854,9 @@
       "heading_miner_fee_contribution": "Miner Fee Contribution",
       "heading_minimum_size": "Min. Size",
       "heading_maximum_size": "Max. Size",
-      "heading_bond_value": "Bond Value"
+      "heading_bond_value": "Bond Value",
+      "duplicate_identity_badge": "{{count}} offers",
+      "duplicate_identity_tooltip": "This counterparty has {{count}} active offers in the orderbook."
     }
   },
   "scheduler": {
