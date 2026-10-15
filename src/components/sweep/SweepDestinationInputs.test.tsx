@@ -199,8 +199,8 @@ describe('SweepDestinationInputs', () => {
     const inputs = screen.getAllByRole('textbox')
     expect(inputs.length).toBe(2)
 
-    expect(screen.getByRole('button', { name: 'Add additional destination' })).not.toBeDisabled()
-    fireEvent.click(screen.getByRole('button', { name: 'Add additional destination' }))
+    expect(screen.getByRole('button', { name: 'scheduler.button_add_destination' })).not.toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_add_destination' }))
 
     rerender(
       <SweepDestinationInputs
@@ -220,7 +220,7 @@ describe('SweepDestinationInputs', () => {
     const inputsAfterAdd = screen.getAllByRole('textbox')
     expect(inputsAfterAdd.length).toBe(maxNumberOfFields)
 
-    expect(screen.getByRole('button', { name: 'Add additional destination' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'scheduler.button_add_destination' })).toBeDisabled()
 
     const clearButtons = screen.queryAllByRole('button', { name: 'global.clear' })
     expect(clearButtons.length).toBe(fields.length - 1)

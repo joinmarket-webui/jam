@@ -211,17 +211,15 @@ export const SweepForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-start gap-0">
                     <FieldLabel htmlFor="switch-include-maker-sessions">
-                      {/* TODO: i18n */}Include maker sessions
+                      {t('scheduler.label_include_maker_sessions')}
                     </FieldLabel>
                     <FieldDescription className="text-xs">
-                      {/* TODO: i18n */}Occasionally switch from taker to maker, which aids privacy.
+                      {t('scheduler.description_include_maker_sessions')}
                     </FieldDescription>
                   </div>
                 </div>
                 {formState.errors.includeMakerSessions?.message ? (
-                  <FieldError>
-                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid value.
-                  </FieldError>
+                  <FieldError>{t('scheduler.feedback_invalid_value')}</FieldError>
                 ) : null}
               </Field>
 
@@ -234,9 +232,11 @@ export const SweepForm = ({
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-start gap-0">
-                    <FieldLabel htmlFor="slider-min-max-maker">{/* TODO: i18n */}Number of collaborators</FieldLabel>
+                    <FieldLabel htmlFor="slider-min-max-maker">
+                      {t('scheduler.label_number_of_collaborators')}
+                    </FieldLabel>
                     <FieldDescription className="text-xs">
-                      {/* TODO: i18n */}More collaborators are better for privacy, but also increase transaction fees.
+                      {t('scheduler.description_number_of_collaborators')}
                     </FieldDescription>
                   </div>
                   <span className="text-foreground">
@@ -263,14 +263,10 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.minNumberOfCollaborators?.message ? (
-                  <FieldError>
-                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid minimum value.
-                  </FieldError>
+                  <FieldError>{t('scheduler.feedback_invalid_min_value')}</FieldError>
                 ) : null}
                 {formState.errors.maxNumberOfCollaborators?.message ? (
-                  <FieldError>
-                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid maximum value.
-                  </FieldError>
+                  <FieldError>{t('scheduler.feedback_invalid_max_value')}</FieldError>
                 ) : null}
               </Field>
 
@@ -278,10 +274,10 @@ export const SweepForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-start gap-0">
                     <FieldLabel htmlFor="slider-min-number-of-transactions-per-jar">
-                      {/* TODO: i18n */}Transactions per Jar
+                      {t('scheduler.label_transactions_per_jar')}
                     </FieldLabel>
                     <FieldDescription className="text-xs">
-                      {/* TODO: i18n */}Minimum number of collaborative transactions per Jar.
+                      {t('scheduler.description_transactions_per_jar')}
                     </FieldDescription>
                   </div>
                   <span className="text-foreground">{formWatch.minNumberOfTransactionsPerJar}</span>
@@ -299,9 +295,7 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.minNumberOfTransactionsPerJar?.message ? (
-                  <FieldError>
-                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid value.
-                  </FieldError>
+                  <FieldError>{t('scheduler.feedback_invalid_value')}</FieldError>
                 ) : null}
               </Field>
 
@@ -309,11 +303,10 @@ export const SweepForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-start gap-0">
                     <FieldLabel htmlFor="slider-rounding-chance-in-percent">
-                      {/* TODO: i18n */}Round amount probability
+                      {t('scheduler.label_round_amount_probability')}
                     </FieldLabel>
                     <FieldDescription className="text-xs">
-                      {/* TODO: i18n */}Probability that an intermediate transaction output amount is rounded to mimic
-                      human behavior.
+                      {t('scheduler.description_round_amount_probability')}
                     </FieldDescription>
                   </div>
                   <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
@@ -329,9 +322,7 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.roundingChanceInPercent?.message ? (
-                  <FieldError>
-                    {/* TODO: i18n, "between {{ min }} and {{ max }}*/}Please provide a valid value.
-                  </FieldError>
+                  <FieldError>{t('scheduler.feedback_invalid_value')}</FieldError>
                 ) : null}
               </Field>
             </FieldSet>

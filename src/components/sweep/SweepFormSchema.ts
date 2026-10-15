@@ -202,10 +202,7 @@ export const sweepFormSchema = (
       if (root.maxNumberOfCollaborators === undefined) return true
 
       if (root.minNumberOfCollaborators > root.maxNumberOfCollaborators) {
-        // TODO: i18n
-        const errorMessage = t('scheduler.feedback_invalid_min_max_collaborators', {
-          defaultValue: 'Please provide valid values for minimum and maximum number of collaborators.',
-        })
+        const errorMessage = t('scheduler.feedback_invalid_min_max_collaborators')
         return new yup.ValidationError(
           errorMessage,
           root.maxNumberOfCollaborators,
