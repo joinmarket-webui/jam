@@ -130,8 +130,7 @@ export const SweepDestinationInputs = ({
             disabled={disabled || fields.length >= maxNumberOfFields}
           >
             <PlusCircleIcon />
-            {/* TODO: i18n */}
-            Add additional destination
+            {t('scheduler.button_add_destination')}
           </Button>
         </div>
       ) : null}
