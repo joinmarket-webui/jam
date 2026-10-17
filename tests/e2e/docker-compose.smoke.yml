@@ -3,6 +3,7 @@ services:
     container_name: jm_smoke_bitcoind
     restart: unless-stopped
     image: polarlightning/bitcoind:29.0@sha256:4521294ac25fdbf1492a8cc5ea987463a5f244b82546d29bbe8451db39f36f3a
+    # A fresh regtest chain needs a fallback fee for Core funding transactions.
     command:
       -rpcauth=regtest:20b58677979ad9d3cf4b78b1d6e85e44$$2ec3e1e1c00c7c58d7aff1d4bf96e4a984ea1af5d676d862fd0faa857a1d4d7c
       -rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
@@ -10,7 +11,6 @@ services:
       -walletdir=/home/bitcoin/walletdata
       -regtest=1
       -server=1
-      # A fresh regtest chain has no fee-estimation history for funding transactions.
       -fallbackfee=0.00002
       -port=39388
       -rpcport=43782
