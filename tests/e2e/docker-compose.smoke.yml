@@ -210,7 +210,7 @@ services:
       bitcoind:
         condition: service_healthy
       bitcoind_regtest_initializer:
-        condition: service_started
+        condition: service_completed_successfully
       joinmarket_ng_orderbook_watcher:
         condition: service_healthy
       tor:
