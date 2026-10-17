@@ -24,7 +24,8 @@ export default defineConfig({
     locale: 'en-US',
     timezoneId: 'UTC',
     screenshot: 'off',
-    trace: 'retain-on-failure',
+    // The journey includes passwords and a recovery seed; do not archive those in a trace.
+    trace: 'off',
     video: 'off',
     headless: true,
   },

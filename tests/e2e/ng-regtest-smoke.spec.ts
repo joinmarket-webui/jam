@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   checkNgBackendSession,
+  initializeFundingWallet,
   fundAddressViaBitcoinCore,
   getNewAddressFromBitcoinCore,
   getRawTransactionDetails,
@@ -16,6 +17,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
   let walletName: string
   let walletPassword: string
   let receiveAddress: string
+  let fundingTxid: string
   let destinationAddress: string
   let transactionId: string
   let actualMinerFeeSats = 0
@@ -40,12 +42,15 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
         window.localStorage.setItem(
           'jam-settings-store',
           JSON.stringify({
+            // Zustand persists the store's `state` property inside its own `state` envelope.
             state: {
-              developerMode: true,
-              privateMode: false,
-              addressChunking: true,
-              currencyUnit: 'sats',
-              cheatsheetForceOpenAt: Date.now() + 1000 * 60 * 60 * 24 * 365,
+              state: {
+                developerMode: false,
+                privateMode: false,
+                addressChunking: false,
+                currencyUnit: 'sats',
+                cheatsheetForceOpenAt: Date.now() + 1000 * 60 * 60 * 24 * 365,
+              },
             },
             version: 0,
           }),
@@ -66,6 +71,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       }
 
       expect(isReady, 'JoinMarket NG backend session endpoint must be reachable via Jam proxy').toBe(true)
+      await initializeFundingWallet()
 
       await page.goto('/')
       await expect(page).toHaveTitle(/Jam/i)
@@ -126,7 +132,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       await expect(page.getByText(/verify recovery seed|verify mnemonic/i)).toBeVisible({ timeout: 15_000 })
 
       for (const word of mnemonicWords) {
-        const wordButton = page.getByRole('button', { name: word, exact: true })
+        const wordButton = page.getByRole('button', { name: word, exact: true }).first()
         await expect(wordButton).toBeVisible()
         await wordButton.click()
       }
@@ -180,27 +186,18 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       await expect(page.getByText('Apricot')).toBeVisible()
     })
 
-    const dismissOverlays = async () => {
-      await page.keyboard.press('Escape')
-      const cheatsheetCloseButton = page.locator('div[class*="backdrop-blur-xs"] button[title="Close"]')
-      if (await cheatsheetCloseButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await cheatsheetCloseButton.click({ force: true })
-      }
-    }
-
     // D. Receive confirmed regtest funds and assert exact balance
     await test.step('D. Receive confirmed regtest funds and assert exact balance', async () => {
       await page.goto('/receive')
-      await dismissOverlays()
       await expect(page.getByRole('heading', { name: 'Receive', exact: true })).toBeVisible({ timeout: 20_000 })
 
       // Click "Reveal address"
       const revealAddressButton = page.getByRole('button', { name: /reveal address/i })
       await expect(revealAddressButton).toBeVisible()
-      await revealAddressButton.click({ force: true })
+      await revealAddressButton.click()
 
       // Wait for address to render in the DOM
-      const addressElement = page.locator('span[class*="bitcoinAddress"]')
+      const addressElement = page.getByRole('main').getByText(/^bcrt1[0-9a-z]{38,59}$/i)
       await expect(addressElement).toBeVisible({ timeout: 30_000 })
 
       // Extract exact displayed address text without spaces
@@ -210,7 +207,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       receiveAddress = displayedAddressText
 
       // Fund the exact displayed address from Bitcoin Core regtest wallet
-      const fundingTxid = await fundAddressViaBitcoinCore(receiveAddress, FUNDING_AMOUNT_BTC)
+      fundingTxid = await fundAddressViaBitcoinCore(receiveAddress, FUNDING_AMOUNT_BTC)
       expect(fundingTxid).toHaveLength(64)
 
       // Mine confirmation block
@@ -218,12 +215,15 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
       // Navigate to main wallet view to verify updated jar balance
       await page.goto('/')
-      await dismissOverlays()
       await expect(page.getByText(walletName).first()).toBeVisible({ timeout: 20_000 })
 
       // Poll for the balance to reflect the 100,000 sats in UI
-      const expectedBalanceRegex = /100[,. ]?000/
-      await expect(page.getByText(expectedBalanceRegex).first()).toBeVisible({ timeout: 60_000 })
+      const fundedJar = page.locator('[data-tour-id="wallet-jars"]').getByRole('button', { name: /Apricot/ })
+      await expect(fundedJar.getByTestId('sats-amount').first()).toHaveAttribute(
+        'data-raw-value',
+        String(FUNDING_AMOUNT_SATS),
+        { timeout: 60_000 },
+      )
 
       // Capture Evidence 01: Confirmed funded wallet
       await page.screenshot({
@@ -239,8 +239,13 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       expect(destinationAddress).toMatch(/^bcrt1/i)
 
       await page.goto('/send')
-      await dismissOverlays()
       await expect(page.getByRole('heading', { name: 'Send', exact: true })).toBeVisible({ timeout: 20_000 })
+
+      // Send does not select a source jar by default.
+      const sourceJar = page.getByRole('button', { name: /Apricot/ })
+      await expect(sourceJar.getByRole('radio')).toBeEnabled()
+      await sourceJar.click()
+      await expect(sourceJar.getByRole('radio')).toBeChecked()
 
       // Fill destination address
       const recipientInput = page.locator('#send-destination')
@@ -254,7 +259,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
       // Select non-collaborative / direct send mode
       const optionsAccordion = page.getByRole('button', { name: /sending options/i })
-      await optionsAccordion.click({ force: true })
+      await optionsAccordion.click()
 
       // Switch off collaborative toggle
       const collabSwitch = page.locator('#switch-is-collaborative-transaction')
@@ -263,18 +268,24 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
         (await collabSwitch.getAttribute('aria-checked')) === 'true' ||
         (await collabSwitch.getAttribute('data-state')) === 'checked'
       if (isChecked) {
-        await collabSwitch.click({ force: true })
+        await collabSwitch.click()
       }
+      await expect(collabSwitch).toHaveAttribute('aria-checked', 'false')
+
+      // A fresh regtest chain cannot provide a useful fee estimate in blocks.
+      await page.getByRole('radio', { name: /sats.*vbyte/i }).click()
+      await page.locator('#txFeeInSatsPerVbyte').fill('2')
 
       // Submit send form to open review dialog
       const reviewButton = page.locator('button[type="submit"]')
       await expect(reviewButton).toBeEnabled()
-      await reviewButton.click({ force: true })
+      await reviewButton.click()
 
       // Confirm dialog must appear with exact details
       const confirmDialog = page.getByRole('dialog')
       await expect(confirmDialog).toBeVisible({ timeout: 15_000 })
       await expect(confirmDialog.getByText(destinationAddress)).toBeVisible()
+      await expect(confirmDialog.getByTestId('sats-amount')).toHaveAttribute('data-raw-value', String(SEND_AMOUNT_SATS))
 
       // Capture Evidence 02: Transaction review dialog
       await page.screenshot({
@@ -285,7 +296,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       // Confirm transaction execution in UI
       const confirmSendButton = confirmDialog.getByRole('button', { name: /^confirm$/i })
       await expect(confirmSendButton).toBeEnabled()
-      await confirmSendButton.click({ force: true })
+      await confirmSendButton.click()
 
       // Wait for success alert in Send page
       const successAlert = page.locator('div[role="alert"]:has-text("Payment")')
@@ -307,6 +318,8 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       // Verify transaction through Bitcoin Core RPC
       const rawTx = await getRawTransactionDetails(transactionId)
       expect(rawTx.txid).toBe(transactionId)
+      expect(rawTx.vin).toHaveLength(1)
+      expect(rawTx.vin[0].txid).toBe(fundingTxid)
 
       // Verify destination output amount in Bitcoin Core
       const destinationOutput = rawTx.vout.find((out) => out.scriptPubKey?.address === destinationAddress)
@@ -330,7 +343,8 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
     // F. Reload persistence and post-send state consistency
     await test.step('F. Reload persistence and post-send state consistency', async () => {
-      // Reload browser page
+      // Reload the wallet view, rather than expecting wallet jars on the Send page.
+      await page.goto('/')
       await page.reload()
 
       // Verify wallet session persists without re-prompting credentials
@@ -343,17 +357,17 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       expect(actualMinerFeeSats).toBeGreaterThan(0)
       const expectedRemainingExact = expectedRemainingMax - actualMinerFeeSats
 
-      // Capture Evidence 04: Consistent wallet state after reload
+      // Verify Jar 0 reflects the correct post-send balance
+      const fundedJar = page.locator('[data-tour-id="wallet-jars"]').getByRole('button', { name: /Apricot/ })
+      await expect(fundedJar.getByTestId('sats-amount').first()).toHaveAttribute(
+        'data-raw-value',
+        String(expectedRemainingExact),
+        { timeout: 60_000 },
+      )
+
       await page.screenshot({
         path: path.join(EVIDENCE_DIR, '04-wallet-after-reload.png'),
         fullPage: false,
-      })
-
-      // Verify Jar 0 reflects the correct post-send balance
-      const formattedBalanceApprox = expectedRemainingExact.toLocaleString('en-US')
-      const balanceDigits = expectedRemainingExact.toString()
-      await expect(page.getByText(new RegExp(`${balanceDigits}|${formattedBalanceApprox}`)).first()).toBeVisible({
-        timeout: 30_000,
       })
     })
   })

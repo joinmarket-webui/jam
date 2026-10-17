@@ -1,6 +1,3 @@
-import { execSync } from 'node:child_process'
-import path from 'node:path'
-
 export interface RawTransactionOutput {
   value: number
   n: number
@@ -33,86 +30,73 @@ export interface RawTransactionDetails {
 const BITCOIN_RPC_URL = process.env.BITCOIN_RPC_URL || 'http://127.0.0.1:17782'
 const BITCOIN_RPC_USER = process.env.BITCOIN_RPC_USER || 'regtest'
 const BITCOIN_RPC_PASSWORD = process.env.BITCOIN_RPC_PASSWORD || 'regtest'
-const DOCKER_COMPOSE_PROJECT = process.env.SMOKE_COMPOSE_PROJECT || 'jam-smoke'
-const COMPOSE_FILE_PATH = path.resolve(import.meta.dirname, './docker-compose.smoke.yml')
+const FUNDING_WALLET = 'jam_smoke_funder'
 
 /**
- * Call Bitcoin Core RPC either through direct HTTP or falling back to docker-compose exec.
+ * Call the published Bitcoin Core RPC endpoint, scoping wallet methods explicitly.
  */
-export async function bitcoinRpcCall<T = unknown>(method: string, parameters: unknown[] = []): Promise<T> {
+export async function bitcoinRpcCall<T = unknown>(
+  method: string,
+  parameters: unknown[] = [],
+  wallet?: string,
+): Promise<T> {
   const authHeader = `Basic ${Buffer.from(`${BITCOIN_RPC_USER}:${BITCOIN_RPC_PASSWORD}`).toString('base64')}`
-
-  try {
-    const response = await fetch(BITCOIN_RPC_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: authHeader,
-      },
-      body: JSON.stringify({
-        jsonrpc: '1.0',
-        id: `smoke_${Date.now()}`,
-        method,
-        params: parameters,
-      }),
-    })
-
-    if (response.ok) {
-      const data = (await response.json()) as { result: T; error?: { message: string } }
-      if (data.error) {
-        throw new Error(`Bitcoin RPC Error [${method}]: ${data.error.message}`)
-      }
-      return data.result
-    }
-  } catch (error: unknown) {
-    // If HTTP fails (e.g. host port mapping delayed), fall back to docker exec
-    const message = error instanceof Error ? error.message : String(error)
-    if (!message.includes('ECONNREFUSED') && !message.includes('fetch failed')) {
-      throw error
-    }
+  const url = wallet ? `${BITCOIN_RPC_URL}/wallet/${encodeURIComponent(wallet)}` : BITCOIN_RPC_URL
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: authHeader,
+    },
+    body: JSON.stringify({
+      jsonrpc: '1.0',
+      id: `smoke_${Date.now()}`,
+      method,
+      params: parameters,
+    }),
+    signal: AbortSignal.timeout(30_000),
+  })
+  // Core returns JSON-RPC errors with HTTP 500. Preserve them instead of hiding
+  // missing-wallet/authentication errors behind a second transport.
+  const data = (await response.json()) as { result: T; error?: { message: string } }
+  if (data.error) {
+    throw new Error(`Bitcoin RPC Error [${method}]: ${data.error.message}`)
   }
-
-  // Fallback via docker compose exec
-  return execBitcoinCli<T>(method, parameters)
+  if (!response.ok) throw new Error(`Bitcoin RPC ${method}: HTTP ${response.status}`)
+  return data.result
 }
 
 /**
- * Execute bitcoin-cli command inside the isolated bitcoind container.
+ * The existing initializer mines to a fixed address, not a spendable Core wallet.
+ * Create a separate descriptor wallet and mature its coinbase funds for funding Jam.
  */
-export function execBitcoinCli<T = unknown>(method: string, parameters: unknown[] = []): T {
-  const cliArguments = parameters.map((parameter) => {
-    if (typeof parameter === 'string') return parameter
-    if (typeof parameter === 'number' || typeof parameter === 'boolean') return String(parameter)
-    return JSON.stringify(parameter)
-  })
-
-  const command = `docker compose -p "${DOCKER_COMPOSE_PROJECT}" -f "${COMPOSE_FILE_PATH}" exec -T bitcoind bitcoin-cli -datadir=/home/bitcoin/data -regtest -rpcport=43782 -rpcuser=${BITCOIN_RPC_USER} -rpcpassword=${BITCOIN_RPC_PASSWORD} ${method} ${cliArguments.join(' ')}`
-
-  try {
-    const stdout = execSync(command, { encoding: 'utf8', timeout: 30_000 }).trim()
-    try {
-      return JSON.parse(stdout) as T
-    } catch {
-      return stdout as unknown as T
+export async function initializeFundingWallet(): Promise<void> {
+  const chain = await bitcoinRpcCall<{ chain: string }>('getblockchaininfo')
+  if (chain.chain !== 'regtest') throw new Error('The smoke funding client requires Bitcoin regtest')
+  const loaded = await bitcoinRpcCall<string[]>('listwallets')
+  if (!loaded.includes(FUNDING_WALLET)) {
+    const existing = await bitcoinRpcCall<{ wallets: { name: string }[] }>('listwalletdir')
+    if (existing.wallets.some(({ name }) => name === FUNDING_WALLET)) {
+      await bitcoinRpcCall('loadwallet', [FUNDING_WALLET])
+    } else {
+      await bitcoinRpcCall('createwallet', [FUNDING_WALLET])
     }
-  } catch (error: unknown) {
-    const errorDetails = error instanceof Error ? error.message : String(error)
-    throw new Error(`Failed to execute bitcoin-cli ${method}: ${errorDetails}`)
   }
+  await mineBlocksViaBitcoinCore(101)
 }
 
 /**
  * Generate a fresh address in the bitcoind wallet.
  */
 export async function getNewAddressFromBitcoinCore(): Promise<string> {
-  return await bitcoinRpcCall<string>('getnewaddress')
+  return await bitcoinRpcCall<string>('getnewaddress', [], FUNDING_WALLET)
 }
 
 /**
  * Fund a target address with the given amount in BTC.
  */
 export async function fundAddressViaBitcoinCore(address: string, amountBtc: number | string): Promise<string> {
-  const txid = await bitcoinRpcCall<string>('sendtoaddress', [address, amountBtc])
+  const txid = await bitcoinRpcCall<string>('sendtoaddress', [address, amountBtc], FUNDING_WALLET)
   return txid
 }
 
@@ -139,6 +123,7 @@ export async function checkNgBackendSession(baseUrl: string = 'http://localhost:
     const response = await fetch(`${baseUrl}/api/v1/session`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5_000),
     })
     return response.ok
   } catch {

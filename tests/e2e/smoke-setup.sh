@@ -14,6 +14,37 @@ die() {
   exit "$code"
 }
 
+# Compose interpolates the whole file even for logs/down. Use the generated
+# directory address consistently, including after a partially failed startup.
+compose() {
+  if [ -f "${ENV_FILE}" ]; then
+    docker compose -p "${PROJECT_NAME}" --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" "$@"
+  else
+    JM_ALL_DIRECTORY_NODES=unused.onion:5222 JM_NG_DIRECTORY_NODES=unused.onion:5222 \
+      docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" "$@"
+  fi
+}
+
+wait_for_bitcoind() {
+  for ((attempt=0; attempt<30; attempt++)); do
+    if compose exec -T bitcoind bitcoin-cli -datadir=/home/bitcoin/data -regtest -rpcport=43782 -rpcuser=regtest -rpcpassword=regtest getblockchaininfo &>/dev/null; then
+      return 0
+    fi
+    sleep 2
+  done
+  die "bitcoind RPC did not become ready."
+}
+
+wait_for_jmwalletd() {
+  for ((attempt=0; attempt<30; attempt++)); do
+    if curl --fail --silent --show-error --insecure --connect-timeout 2 --max-time 5 https://127.0.0.1:28183/api/v1/session &>/dev/null; then
+      return 0
+    fi
+    sleep 2
+  done
+  die "jmwalletd session API did not become ready."
+}
+
 action="${1:-up}"
 
 if [ "$action" = "up" ]; then
@@ -37,36 +68,26 @@ JM_ALL_DIRECTORY_NODES=${NG_ONION_ADDRESS}:5222
 EOF
 
   echo "[smoke-setup] Starting isolated containers with compose project '${PROJECT_NAME}'..."
-  docker compose -p "${PROJECT_NAME}" --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up --detach --wait --wait-timeout 180
+  compose up --detach --wait --wait-timeout 180
 
   echo "[smoke-setup] Waiting for bitcoind RPC..."
-  for i in $(seq 1 30); do
-    if docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" exec -T bitcoind bitcoin-cli -datadir=/home/bitcoin/data -regtest -rpcport=43782 -rpcuser=regtest -rpcpassword=regtest getblockchaininfo &>/dev/null; then
-      echo "[smoke-setup] bitcoind RPC is ready."
-      break
-    fi
-    sleep 2
-  done
+  wait_for_bitcoind
+  echo "[smoke-setup] bitcoind RPC is ready."
 
   echo "[smoke-setup] Waiting for jmwalletd API..."
-  for i in $(seq 1 30); do
-    if curl -s -k https://127.0.0.1:28183/api/v1/session &>/dev/null; then
-      echo "[smoke-setup] jmwalletd API is ready."
-      break
-    fi
-    sleep 2
-  done
+  wait_for_jmwalletd
+  echo "[smoke-setup] jmwalletd API is ready."
 
   echo "[smoke-setup] Smoke environment successfully initialized."
 
 elif [ "$action" = "down" ]; then
   echo "[smoke-setup] Tearing down isolated compose project '${PROJECT_NAME}'..."
-  docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" down --volumes --remove-orphans || true
-  rm -rf "${SCRIPT_DIR}/out" "${ENV_FILE}" || true
+  compose down --volumes --remove-orphans
+  rm -rf "${SCRIPT_DIR}/out" "${ENV_FILE}"
   echo "[smoke-setup] Teardown complete."
 
 elif [ "$action" = "logs" ]; then
-  docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" logs --tail 200
+  compose logs --tail 200
 
 else
   die "Unknown action: ${action}. Use 'up', 'down', or 'logs'."
