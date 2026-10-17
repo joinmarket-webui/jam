@@ -98,7 +98,14 @@ jobs:
         run: npm clean-install --no-audit --no-fund
 
       - name: Verify runtime locale and time zone
-        run: node -e "const { locale, timeZone } = Intl.DateTimeFormat().resolvedOptions(); console.log(locale, timeZone); if (timeZone !== process.env.TZ || !process.env.LANG.startsWith(locale.replace('-', '_'))) process.exit(1)"
+        # time zones are compared after canonicalization by ICU, e.g. "Asia/Kolkata" resolves to "Asia/Calcutta"
+        run: |
+          node -e "
+            const { locale, timeZone } = Intl.DateTimeFormat().resolvedOptions()
+            const expectedTimeZone = Intl.DateTimeFormat(undefined, { timeZone: process.env.TZ }).resolvedOptions().timeZone
+            console.log(locale, timeZone)
+            if (timeZone !== expectedTimeZone || !process.env.LANG.startsWith(locale.replace('-', '_'))) process.exit(1)
+          "
 
       - name: Test (unit)
         run: npm run test:unit
