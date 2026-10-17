@@ -29,11 +29,13 @@ describe('<Balance />', () => {
   })
 
   it('should render balance in BTC', () => {
-    render(<Balance valueString={'123.456'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.45600000`)
-    expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
-    expect(screen.queryByTestId('sats-symbol')).not.toBeInTheDocument()
-    expect(screen.queryByTestId('frozen-symbol')).not.toBeInTheDocument()
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'123.456'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.45600000`)
+      expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
+      expect(screen.queryByTestId('sats-symbol')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('frozen-symbol')).not.toBeInTheDocument()
+    })
   })
 
   it('should render balance in SATS', () => {
@@ -47,9 +49,11 @@ describe('<Balance />', () => {
   })
 
   it('should render a string BTC value correctly as BTC', () => {
-    render(<Balance valueString={'123.03224961'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.03224961`)
-    expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'123.03224961'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.03224961`)
+      expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
+    })
   })
 
   it('should render a string BTC value correctly as SATS', () => {
@@ -61,8 +65,10 @@ describe('<Balance />', () => {
   })
 
   it('should render a zero string BTC value correctly as BTC', () => {
-    render(<Balance valueString={'0.00000000'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00000000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'0.00000000'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00000000`)
+    })
   })
 
   it('should render a zero string BTC value correctly as SATS', () => {
@@ -99,18 +105,24 @@ describe('<Balance />', () => {
   })
 
   it('should render a string SATS value correctly as SATS', () => {
-    render(<Balance valueString={'43000'} convertToUnit="sats" showBalance={true} />)
-    expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`43,000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'43000'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`43,000`)
+    })
   })
 
   it('should render a string SATS value correctly as BTC', () => {
-    render(<Balance valueString={'43000'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00043000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'43000'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00043000`)
+    })
   })
 
   it('should render a zero string SATS value correctly as BTC', () => {
-    render(<Balance valueString={'0'} convertToUnit="btc" showBalance={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00000000`)
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'0'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00000000`)
+    })
   })
 
   it('should render a zero string SATS value correctly as SATS', () => {
@@ -146,11 +158,24 @@ describe('<Balance />', () => {
     })
   })
 
+  it('should render balances with the separators of the runtime locale', () => {
+    withRuntimeLocale('de-DE', () => {
+      const { unmount } = render(<Balance valueString={'20999999.9769'} convertToUnit="btc" showBalance={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`20.999.999,97690000`)
+      unmount()
+
+      render(<Balance valueString={'20999999.9769'} convertToUnit="sats" showBalance={true} />)
+      expect(screen.getByTestId('sats-amount')).toHaveTextContent(`2.099.999.997.690.000`)
+    })
+  })
+
   it('should render frozen balance in BTC', () => {
-    render(<Balance valueString={'123.456'} convertToUnit="btc" showBalance={true} frozen={true} />)
-    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.45600000`)
-    expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
-    expect(screen.getByTestId('frozen-symbol')).toBeVisible()
+    withRuntimeLocale('en-US', () => {
+      render(<Balance valueString={'123.456'} convertToUnit="btc" showBalance={true} frozen={true} />)
+      expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.45600000`)
+      expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
+      expect(screen.getByTestId('frozen-symbol')).toBeVisible()
+    })
   })
 
   it('should render frozen balance in SATS', () => {
