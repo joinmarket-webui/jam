@@ -125,7 +125,8 @@ test.describe.serial('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
     // Ensure we reach the main wallet view
     await expect(page.getByText(walletName)).toBeVisible({ timeout: 45_000 })
-    await expect(page.getByText(/jar #0/i)).toBeVisible()
+    await expect(page.locator('[data-tour-id="wallet-jars"]')).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText('Apricot')).toBeVisible()
   })
 
   test('C. Lock wallet and unlock through UI', async ({ page }) => {
@@ -158,7 +159,8 @@ test.describe.serial('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
     // Verify back on main wallet view
     await expect(page.getByText(walletName)).toBeVisible({ timeout: 30_000 })
-    await expect(page.getByText(/jar #0/i)).toBeVisible()
+    await expect(page.locator('[data-tour-id="wallet-jars"]')).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText('Apricot')).toBeVisible()
   })
 
   test('D. Receive confirmed regtest funds and assert exact balance', async ({ page }) => {
@@ -306,7 +308,8 @@ test.describe.serial('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
     // Verify wallet session persists without re-prompting credentials
     await expect(page.getByText(walletName)).toBeVisible({ timeout: 30_000 })
-    await expect(page.getByText(/jar #0/i)).toBeVisible()
+    await expect(page.locator('[data-tour-id="wallet-jars"]')).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText('Apricot')).toBeVisible()
 
     // Assert that wallet balance is strictly less than 75,000 sats (accounting for miner fee)
     // 100,000 - 25,000 = 75,000 sats minus fee
