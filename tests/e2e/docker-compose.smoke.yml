@@ -10,6 +10,8 @@ services:
       -walletdir=/home/bitcoin/walletdata
       -regtest=1
       -server=1
+      # A fresh regtest chain has no fee-estimation history for funding transactions.
+      -fallbackfee=0.00002
       -port=39388
       -rpcport=43782
       -rpcbind=0.0.0.0
