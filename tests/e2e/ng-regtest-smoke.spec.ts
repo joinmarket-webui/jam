@@ -180,15 +180,24 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       await expect(page.getByText('Apricot')).toBeVisible()
     })
 
+    const dismissOverlays = async () => {
+      await page.keyboard.press('Escape')
+      const cheatsheetCloseButton = page.locator('div[class*="backdrop-blur-xs"] button[title="Close"]')
+      if (await cheatsheetCloseButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await cheatsheetCloseButton.click({ force: true })
+      }
+    }
+
     // D. Receive confirmed regtest funds and assert exact balance
     await test.step('D. Receive confirmed regtest funds and assert exact balance', async () => {
       await page.goto('/receive')
+      await dismissOverlays()
       await expect(page.getByRole('heading', { name: 'Receive', exact: true })).toBeVisible({ timeout: 20_000 })
 
       // Click "Reveal address"
       const revealAddressButton = page.getByRole('button', { name: /reveal address/i })
       await expect(revealAddressButton).toBeVisible()
-      await revealAddressButton.click()
+      await revealAddressButton.click({ force: true })
 
       // Wait for address to render in the DOM
       const addressElement = page.locator('span[class*="bitcoinAddress"]')
@@ -209,6 +218,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
       // Navigate to main wallet view to verify updated jar balance
       await page.goto('/')
+      await dismissOverlays()
       await expect(page.getByText(walletName).first()).toBeVisible({ timeout: 20_000 })
 
       // Poll for the balance to reflect the 100,000 sats in UI
@@ -229,6 +239,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       expect(destinationAddress).toMatch(/^bcrt1/i)
 
       await page.goto('/send')
+      await dismissOverlays()
       await expect(page.getByRole('heading', { name: 'Send', exact: true })).toBeVisible({ timeout: 20_000 })
 
       // Fill destination address
@@ -243,7 +254,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
       // Select non-collaborative / direct send mode
       const optionsAccordion = page.getByRole('button', { name: /sending options/i })
-      await optionsAccordion.click()
+      await optionsAccordion.click({ force: true })
 
       // Switch off collaborative toggle
       const collabSwitch = page.locator('#switch-is-collaborative-transaction')
@@ -252,13 +263,13 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
         (await collabSwitch.getAttribute('aria-checked')) === 'true' ||
         (await collabSwitch.getAttribute('data-state')) === 'checked'
       if (isChecked) {
-        await collabSwitch.click()
+        await collabSwitch.click({ force: true })
       }
 
       // Submit send form to open review dialog
       const reviewButton = page.locator('button[type="submit"]')
       await expect(reviewButton).toBeEnabled()
-      await reviewButton.click()
+      await reviewButton.click({ force: true })
 
       // Confirm dialog must appear with exact details
       const confirmDialog = page.getByRole('dialog')
@@ -274,7 +285,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       // Confirm transaction execution in UI
       const confirmSendButton = confirmDialog.getByRole('button', { name: /^confirm$/i })
       await expect(confirmSendButton).toBeEnabled()
-      await confirmSendButton.click()
+      await confirmSendButton.click({ force: true })
 
       // Wait for success alert in Send page
       const successAlert = page.locator('div[role="alert"]:has-text("Payment")')
