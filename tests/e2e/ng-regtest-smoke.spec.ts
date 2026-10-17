@@ -183,7 +183,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
     // D. Receive confirmed regtest funds and assert exact balance
     await test.step('D. Receive confirmed regtest funds and assert exact balance', async () => {
       await page.goto('/receive')
-      await expect(page.getByRole('heading', { name: /receive/i })).toBeVisible({ timeout: 20_000 })
+      await expect(page.getByRole('heading', { name: 'Receive', exact: true })).toBeVisible({ timeout: 20_000 })
 
       // Click "Reveal address"
       const revealAddressButton = page.getByRole('button', { name: /reveal address/i })
@@ -229,7 +229,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       expect(destinationAddress).toMatch(/^bcrt1/i)
 
       await page.goto('/send')
-      await expect(page.getByRole('heading', { name: /send/i })).toBeVisible({ timeout: 20_000 })
+      await expect(page.getByRole('heading', { name: 'Send', exact: true })).toBeVisible({ timeout: 20_000 })
 
       // Fill destination address
       const recipientInput = page.locator('#send-destination')
