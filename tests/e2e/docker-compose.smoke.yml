@@ -1,0 +1,233 @@
+services:
+  bitcoind:
+    container_name: jm_smoke_bitcoind
+    restart: unless-stopped
+    image: polarlightning/bitcoind:29.0@sha256:4521294ac25fdbf1492a8cc5ea987463a5f244b82546d29bbe8451db39f36f3a
+    # A fresh regtest chain needs a fallback fee for Core funding transactions.
+    command:
+      -rpcauth=regtest:20b58677979ad9d3cf4b78b1d6e85e44$$2ec3e1e1c00c7c58d7aff1d4bf96e4a984ea1af5d676d862fd0faa857a1d4d7c
+      -rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
+      -datadir=/home/bitcoin/data
+      -walletdir=/home/bitcoin/walletdata
+      -regtest=1
+      -server=1
+      -fallbackfee=0.00002
+      -port=39388
+      -rpcport=43782
+      -rpcbind=0.0.0.0
+      -rpcallowip=0.0.0.0/0
+      -whitelist=0.0.0.0/0
+      -maxmempool=500
+      -debug=rpc
+      -logips=0
+      -networkactive=1
+      -dnsseed=0
+      -uacomment=jmdevbitcoindregtest
+      -printpriority=1
+      -logtimemicros=1
+      -zmqpubrawblock=tcp://0.0.0.0:28332
+      -zmqpubrawtx=tcp://0.0.0.0:28333
+      -zmqpubhashblock=tcp://0.0.0.0:28334
+      -dns=0
+      -listenonion=0
+      -deprecatedrpc=create_bdb
+    expose:
+      - 39388 # P2P
+      - 43782 # RPC
+      - 28332 # ZMQ
+      - 28333 # ZMQ
+      - 28334 # ZMQ
+    ports:
+      - '17782:43782'
+    volumes:
+      - 'smoke_bitcoin_datadir:/home/bitcoin/data'
+      - 'smoke_bitcoin_wallet_datadir:/home/bitcoin/walletdata'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          '/entrypoint.sh',
+          'bitcoin-cli',
+          '-chain=regtest',
+          '-rpcport=43782',
+          '-datadir=/home/bitcoin/data',
+          '-getinfo',
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+      start_interval: 2s
+
+  bitcoind_regtest_initializer:
+    container_name: jm_smoke_bitcoind_initializer
+    build:
+      context: ../../docker/regtest/dockerfile-deps/bitcoin/regtest-initializer
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      RPC_HOST: bitcoind
+      RPC_PORT: 43782
+      RPC_USER: regtest
+      RPC_PASSWORD: regtest
+    volumes:
+      - 'smoke_initializer_datadir:/root/.regtest-initializer'
+    depends_on:
+      bitcoind:
+        condition: service_healthy
+
+  tor_init:
+    container_name: jm_smoke_tor_init
+    image: busybox:latest
+    restart: 'no'
+    command:
+      [
+        'sh',
+        '-c',
+        'mkdir -p /var/lib/tor/ng-directory && cp -f /source/ng/* /var/lib/tor/ng-directory/ && chown -R 1000:1000 /var/lib/tor && chmod 700 /var/lib/tor/ng-directory && chmod 600 /var/lib/tor/ng-directory/*',
+      ]
+    volumes:
+      - 'smoke_tor_datadir:/var/lib/tor'
+      - './out/ng_directory_hidden_service:/source/ng:ro,z'
+
+  tor:
+    container_name: jm_smoke_tor
+    image: ghcr.io/m0wer/docker-tor:latest
+    restart: unless-stopped
+    volumes:
+      - './tor/torrc:/etc/tor/torrc:ro'
+      - 'smoke_tor_datadir:/var/lib/tor'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'test -f /var/lib/tor/ng-directory/hostname && test $$(wc -c < /var/lib/tor/control_auth_cookie 2>/dev/null || echo 0) -eq 32',
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 40
+      start_period: 40s
+    depends_on:
+      tor_init:
+        condition: service_completed_successfully
+
+  joinmarket_ng_directory_node:
+    container_name: jm_smoke_directory_node
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/directory-server:main
+    restart: unless-stopped
+    environment:
+      NETWORK_CONFIG__NETWORK: testnet
+      DIRECTORY_SERVER__HOST: 0.0.0.0
+      DIRECTORY_SERVER__PORT: 5223
+      LOGGING__LEVEL: DEBUG
+    command: ['python', '-m', 'directory_server.main']
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import socket; s = socket.socket(); s.connect(('127.0.0.1', 5223)); s.close()"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+      start_interval: 2s
+    networks:
+      default:
+        ipv4_address: 172.38.0.21
+
+  joinmarket_ng_orderbook_watcher:
+    container_name: jm_smoke_obwatch
+    image: ghcr.io/joinmarket-ng/joinmarket-ng/orderbook-watcher:main
+    restart: unless-stopped
+    environment:
+      NETWORK_CONFIG__NETWORK: testnet
+      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
+      DIRECTORY_NODES: ${JM_ALL_DIRECTORY_NODES:?Directory nodes address must be set}
+      TOR__SOCKS_HOST: tor
+      TOR__SOCKS_PORT: 9050
+      LOGGING__LEVEL: DEBUG
+      ORDERBOOK_WATCHER__HTTP_HOST: 0.0.0.0
+      ORDERBOOK_WATCHER__HTTP_PORT: 8000
+    expose:
+      - 8000
+    ports:
+      - '31800:8000'
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import socket; s = socket.create_connection(('127.0.0.1', 8000), 5); s.close()"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+      start_interval: 2s
+    depends_on:
+      joinmarket_ng_directory_node:
+        condition: service_healthy
+      tor:
+        condition: service_healthy
+
+  joinmarket:
+    container_name: jm_smoke_jmwalletd
+    image: ${JM_NG_IMAGE:-ghcr.io/joinmarket-ng/joinmarket-ng/jmwalletd:0.40.0@sha256:4b44ec80621cb216fc16a1443ac44a46e1a41056701bad85fe21959b16123aaa}
+    restart: unless-stopped
+    environment:
+      JOINMARKET_DATA_DIR: /root/.joinmarket-ng
+      JMWALLETD_HOST: 0.0.0.0
+      BITCOIN__BACKEND_TYPE: descriptor_wallet
+      BITCOIN__RPC_URL: http://bitcoind:43782
+      BITCOIN__RPC_USER: regtest
+      BITCOIN__RPC_PASSWORD: regtest
+      NETWORK_CONFIG__NETWORK: testnet
+      NETWORK_CONFIG__BITCOIN_NETWORK: regtest
+      NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?Directory nodes address must be set}
+      ORDERBOOK_WATCHER__HTTP_HOST: joinmarket_ng_orderbook_watcher
+      ORDERBOOK_WATCHER__HTTP_PORT: 8000
+      OBWATCH_URL: http://joinmarket_ng_orderbook_watcher:8000
+      TOR__SOCKS_HOST: tor
+      TOR__SOCKS_PORT: 9050
+      TOR__CONTROL_HOST: tor
+      TOR__CONTROL_PORT: 9051
+      TOR__COOKIE_PATH: /var/lib/tor/control_auth_cookie
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+    expose:
+      - 8000
+      - 28183
+    ports:
+      - '28183:28183'
+    volumes:
+      - 'smoke_joinmarket_datadir:/root/.joinmarket-ng'
+      - 'smoke_initializer_datadir:/root/.regtest-initializer'
+      - 'smoke_tor_datadir:/var/lib/tor:ro'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import socket,ssl,sys; s=socket.socket(); s.settimeout(5);\ntry:\n c=ssl.create_default_context(); c.check_hostname=False; c.verify_mode=ssl.CERT_NONE; c.wrap_socket(s, server_hostname='localhost').connect(('127.0.0.1',28183)); sys.exit(0)\nexcept Exception:\n pass\ntry:\n s=socket.socket(); s.settimeout(5); s.connect(('127.0.0.1',28183)); s.close(); sys.exit(0)\nexcept Exception:\n sys.exit(1)",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 40s
+      start_interval: 2s
+    depends_on:
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_completed_successfully
+      joinmarket_ng_orderbook_watcher:
+        condition: service_healthy
+      tor:
+        condition: service_healthy
+
+volumes:
+  smoke_bitcoin_datadir:
+  smoke_bitcoin_wallet_datadir:
+  smoke_initializer_datadir:
+  smoke_joinmarket_datadir:
+  smoke_tor_datadir:
+
+networks:
+  default:
+    name: jam_smoke_default
+    ipam:
+      config:
+        - subnet: 172.38.0.0/24
