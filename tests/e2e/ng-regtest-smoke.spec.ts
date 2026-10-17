@@ -31,6 +31,16 @@ test.describe.serial('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
     walletPassword = `SmokePass_${uniqueSuffix}_!99`
   })
 
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('jam:v2:onboarding:dismissed', '1')
+      } catch {
+        // ignore
+      }
+    })
+  })
+
   test('A. Startup and backend readiness verification', async ({ page }) => {
     // 1. Verify that Jam and the backend proxy are responding
     let isReady = false
@@ -49,21 +59,27 @@ test.describe.serial('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
   })
 
   test('B. Create disposable wallet and complete onboarding flow', async ({ page }) => {
-    await page.goto('/create')
+    await page.goto('/create-wallet')
+
+    // Dismiss onboarding dialog if present
+    const skipIntroButton = page.getByRole('button', { name: /skip intro/i })
+    if (await skipIntroButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await skipIntroButton.click()
+    }
 
     // Fill wallet creation details
-    const walletNameInput = page.getByLabel(/wallet name/i)
+    const walletNameInput = page.locator('#create-wallet-name')
     await expect(walletNameInput).toBeVisible({ timeout: 15_000 })
     await walletNameInput.fill(walletName)
 
-    const passwordInput = page.getByLabel(/^password/i)
+    const passwordInput = page.locator('input[name="password"]')
     await passwordInput.fill(walletPassword)
 
-    const confirmPasswordInput = page.getByLabel(/confirm password/i)
+    const confirmPasswordInput = page.locator('input[name="confirmPassword"]')
     await confirmPasswordInput.fill(walletPassword)
 
     // Submit creation form
-    const createButton = page.getByRole('button', { name: /create wallet|create/i })
+    const createButton = page.getByRole('button', { name: /^create$/i })
     await expect(createButton).toBeEnabled()
     await createButton.click()
 
@@ -89,7 +105,7 @@ test.describe.serial('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
     await confirmBackupSwitch.click()
 
     // Click Next
-    const nextButton = page.getByRole('button', { name: /next/i })
+    const nextButton = page.getByRole('button', { name: /^next$/i })
     await expect(nextButton).toBeEnabled()
     await nextButton.click()
 
@@ -133,10 +149,10 @@ test.describe.serial('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
     await expect(page.getByText(/unlock wallet/i)).toBeVisible({ timeout: 20_000 })
 
     // Unlock wallet
-    const passwordInput = page.getByLabel(/password/i)
+    const passwordInput = page.locator('#login-password')
     await passwordInput.fill(walletPassword)
 
-    const unlockButton = page.getByRole('button', { name: /unlock/i })
+    const unlockButton = page.getByRole('button', { name: /^unlock$/i })
     await expect(unlockButton).toBeEnabled()
     await unlockButton.click()
 
