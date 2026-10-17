@@ -32,10 +32,24 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
   })
 
   test('Execute complete live NG wallet journey (A-F)', async ({ page }) => {
-    // 0. Auto-dismiss splashscreen / onboarding tutorial
+    // 0. Auto-dismiss splashscreen, post-login tour, and cheatsheet popup
     await page.addInitScript(() => {
       try {
         window.localStorage.setItem('jam:v2:onboarding:dismissed', '1')
+        window.localStorage.setItem('jam:v2:post-login-tour:dismissed', '1')
+        window.localStorage.setItem(
+          'jam-settings-store',
+          JSON.stringify({
+            state: {
+              developerMode: true,
+              privateMode: false,
+              addressChunking: true,
+              currencyUnit: 'sats',
+              cheatsheetForceOpenAt: Date.now() + 1000 * 60 * 60 * 24 * 365,
+            },
+            version: 0,
+          }),
+        )
       } catch {
         // ignore
       }
@@ -130,6 +144,12 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
     // C. Lock wallet and unlock through UI
     await test.step('C. Lock wallet and unlock through UI', async () => {
+      // Dismiss Cheatsheet or any overlay if present
+      const cheatsheetCloseButton = page.locator('div[class*="backdrop-blur-xs"] button[title="Close"]')
+      if (await cheatsheetCloseButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await cheatsheetCloseButton.click()
+      }
+
       // Find and click the lock button in navbar
       const lockButton = page.getByRole('button', { name: /lock wallet/i })
       await expect(lockButton).toBeVisible({ timeout: 15_000 })
