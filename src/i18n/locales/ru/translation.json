@@ -272,7 +272,7 @@
     "description_num_collaborators": "Большее число лучше для конфиденциальности, но также увеличивает комиссию за транзакцию.",
     "error_invalid_num_collaborators": "Пожалуйста, используйте значение между {{ minNumCollaborators }} и {{ maxNumCollaborators }} соавторов.",
     "taker_error_message_max_fees_config_missing": "Переменные конфигурации 'max_cj_fee_rel' и 'max_cj_fee_abs' должны быть установлены в joinmarket.cfg для отправки Совместных Транзакций. Рассмотрите возможность добавления их в конфигурацию вручную.",
-    "error_loading_min_makers_failed": "Загрузка значения конфигурации «minimum_makers» не удалась. {{ reason }}",
+    "error_loading_min_makers_failed": "Загрузка значения конфигурации «minimum_makers» не удалась. Причина: {{ reason }}",
     "alert_payment_successful": "Платеж успешен: отправлено {{ amount }} sats получателю {{ address }} в транзакции {{ txid }}.",
     "text_maker_running": "Заработок активен. Остановите службу, чтобы отправлять Совместные Транзакции.",
     "text_coinjoin_already_running": "В настоящее время выполняется Совместная Транзакция.",

@@ -270,7 +270,7 @@
     "description_num_collaborators": "Eine höhere Anzahl ist besser für die Privatsphäre, steigert aber die Transaktionskosten. ",
     "error_invalid_num_collaborators": "Bitte wähle zwischen {{ minNumCollaborators }} und {{ maxNumCollaborators }} Transaktionspartnern.",
     "taker_error_message_max_fees_config_missing": "Die Parameter 'max_cj_fee_rel' und 'max_cj_fee_abs' müssen in der joinmarket.cfg Datei verändert werden. Falls nötig, kannst du diese Einstellungen direkt in deiner Konfigurationsdatei vornehmen.",
-    "error_loading_min_makers_failed": "Laden der Konfigurationseinstellung 'minimum_makers' fehlgeschlagen. {{ reason }}",
+    "error_loading_min_makers_failed": "Laden der Konfigurationseinstellung 'minimum_makers' fehlgeschlagen. Begründung: {{ reason }}",
     "alert_payment_successful": "Zahlung erfolgreich: {{ amount }} Sats an die Adresse {{ address }} in der Transaction {{ txid }} versendet.",
     "text_maker_running": "Der Earn Modus ist aktiv. Stoppe diesen Service, um gemeinschaftliche Transaktionen durchzuführen. ",
     "text_coinjoin_already_running": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",

@@ -212,7 +212,7 @@
     "description_num_collaborators": "Un numero più alto è meglio per la privacy, ma aumenta anche la commissione di transazione.",
     "error_invalid_num_collaborators": "Utilizza tra {{ minNumCollaborators }} e {{ maxNumCollaborators }} collaboratori.",
     "taker_error_message_max_fees_config_missing": "Le variabili di configurazione 'max_cj_fee_rel' e 'max_cj_fee_abs' devono essere impostate nel tuo joinmarket.cfg per poter inviare transazioni collaborative. Considera di aggiungerli alla tua configurazione manualmente.",
-    "error_loading_min_makers_failed": "Caricamento del valore di configurazione 'minimum_makers' fallito. {{ reason }}",
+    "error_loading_min_makers_failed": "Caricamento del valore di configurazione 'minimum_makers' fallito. Motivo: {{ reason }}",
     "alert_payment_successful": "Pagamento riuscito: Inviati {{ amount }} sats a {{ address }} nella transazione {{ txid }}.",
     "text_maker_running": "La funzione Guadagna è attiva. Interrompere il servizio per inviare transazioni collaborative.",
     "text_coinjoin_already_running": "È attualmente in corso una transazione collaborativa.",

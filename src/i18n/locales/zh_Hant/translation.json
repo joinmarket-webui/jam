@@ -249,7 +249,7 @@
     "description_num_collaborators": "更高的數量會提高隱秘性，但同時也會增加交易費用。",
     "error_invalid_num_collaborators": "請使用{{ minNumCollaborators }}到{{ maxNumCollaborators }}個協作方。",
     "taker_error_message_max_fees_config_missing": "必須在你的 joinmarket.cfg 中先設置配置變量 'max_cj_fee_rel' 和 'max_cj_fee_abs' 才能發送協作式交易。請考慮手動將它們添加到你的配置中。",
-    "error_loading_min_makers_failed": "加載配置值 'minimum_makers' 失敗了。 {{ reason }}",
+    "error_loading_min_makers_failed": "加載配置值 'minimum_makers' 失敗了。原因：{{ reason }}",
     "alert_payment_successful": "付款成功：在交易 {{ txid }} 中發送了 {{ amount }} 聰到 {{ address }}。",
     "text_maker_running": "收益處於活躍狀態。停止服務以發送協作式交易。",
     "text_coinjoin_already_running": "協作式交易正在進行中。",
