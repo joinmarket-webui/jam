@@ -54,6 +54,23 @@ Hosted preview:
 https://joinmarket-webui.github.io/jam/
 ```
 
+## Locale and Time Zone in Tests
+
+Jam formats numbers and dates with the runtime locale, and dates with the runtime time zone.
+Unit tests must therefore not depend on the locale or time zone of the machine they run on.
+Besides the regular build, CI runs the unit tests with other locales and time zones (e.g. `de_DE` with `America/New_York`).
+
+- Wrap assertions that expect a specific format in `withRuntimeLocale(locale, callback)` from `src/test/withRuntimeLocale.ts`.
+  It makes `locale` act as the runtime default locale for `toLocaleString()` & co. and `Intl.*Format`.
+- Wrap assertions that depend on local dates in `withTimeZone(timeZone, callback)` from `src/test/withTimeZone.ts`.
+
+Setting environment variables like `LC_ALL` is not sufficient to pin the locale, e.g. Node.js on Windows ignores it.
+To reproduce the CI runs on Linux or macOS:
+
+```bash
+LANG=de_DE.UTF-8 LC_ALL=de_DE.UTF-8 TZ=America/New_York npm run test:unit
+```
+
 ## Linting
 
 We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).
