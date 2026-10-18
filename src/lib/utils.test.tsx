@@ -609,10 +609,12 @@ describe('factorToPercentage', () => {
 
 describe('formatBtc', () => {
   it('should format BTC values with 8 decimal places', () => {
-    expect(formatBtc(1)).toBe('1.00000000')
-    expect(formatBtc(0.5)).toBe('0.50000000')
-    expect(formatBtc(0.12345678)).toBe('0.12345678')
-    expect(formatBtc(0)).toBe('0.00000000')
+    withRuntimeLocale('en-US', () => {
+      expect(formatBtc(1)).toBe('1.00000000')
+      expect(formatBtc(0.5)).toBe('0.50000000')
+      expect(formatBtc(0.12345678)).toBe('0.12345678')
+      expect(formatBtc(0)).toBe('0.00000000')
+    })
   })
 
   it('should handle large BTC values', () => {
@@ -623,23 +625,38 @@ describe('formatBtc', () => {
   })
 
   it('should handle very small BTC values', () => {
-    expect(formatBtc(0.00000001)).toBe('0.00000001')
-    expect(formatBtc(0.000000001)).toBe('0.00000000')
+    withRuntimeLocale('en-US', () => {
+      expect(formatBtc(0.00000001)).toBe('0.00000001')
+      expect(formatBtc(0.000000001)).toBe('0.00000000')
+    })
   })
 
   it('should handle negative BTC values', () => {
-    expect(formatBtc(-1)).toBe('-1.00000000')
-    expect(formatBtc(-0.12345678)).toBe('-0.12345678')
+    withRuntimeLocale('en-US', () => {
+      expect(formatBtc(-1)).toBe('-1.00000000')
+      expect(formatBtc(-0.12345678)).toBe('-0.12345678')
+    })
   })
 })
 
 describe('getBtcParts', () => {
   it('should decompose a BTC value into semantic parts', () => {
-    const parts = getBtcParts(1.5)
-    expect(parts.integerPart).toBe('1')
-    expect(parts.fractionalPart).toBe('50000000')
-    expect(parts.sign).toBeUndefined()
-    expect(parts.formatted).toBe('1.50000000')
+    withRuntimeLocale('en-US', () => {
+      const parts = getBtcParts(1.5)
+      expect(parts.integerPart).toBe('1')
+      expect(parts.fractionalPart).toBe('50000000')
+      expect(parts.sign).toBeUndefined()
+      expect(parts.formatted).toBe('1.50000000')
+    })
+  })
+
+  it('should use the decimal separator of the runtime locale', () => {
+    withRuntimeLocale('de-DE', () => {
+      const parts = getBtcParts(1.5)
+      expect(parts.integerPart).toBe('1')
+      expect(parts.fractionalPart).toBe('50000000')
+      expect(parts.formatted).toBe('1,50000000')
+    })
   })
 
   it('should handle negative values', () => {
@@ -1160,7 +1177,14 @@ describe('time', () => {
     expect(time.humanReadableDuration({ locale: 'hi', to: now, from: now })).toBe('0 सेकंड में')
     expect(time.humanReadableDuration({ locale: 'it', to: now, from: now })).toBe('tra 0 secondi')
     expect(time.humanReadableDuration({ locale: 'zh', to: now, from: now })).toBe('0秒钟后')
-    // fallback to english
-    expect(time.humanReadableDuration({ locale: 'xx', to: now, from: now })).toBe('in 0 seconds')
+  })
+
+  it('should fall back to the runtime locale for unsupported locales', () => {
+    withRuntimeLocale('en-US', () => {
+      expect(time.humanReadableDuration({ locale: 'xx', to: now, from: now })).toBe('in 0 seconds')
+    })
+    withRuntimeLocale('de-DE', () => {
+      expect(time.humanReadableDuration({ locale: 'xx', to: now, from: now })).toBe('in 0 Sekunden')
+    })
   })
 })
