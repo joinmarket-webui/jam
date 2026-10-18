@@ -553,6 +553,7 @@
       "button_freeze": "Einfrieren",
       "button_unfreeze": "Auftauen",
       "utxo_tag_fb": "Bond",
+      "column_title_index": "Index",
       "column_title_balance": "Wert",
       "column_title_address": "Adresse",
       "column_title_confirmations": "Confs.",
