@@ -855,8 +855,10 @@
       "heading_minimum_size": "Min. Size",
       "heading_maximum_size": "Max. Size",
       "heading_bond_value": "Bond Value",
-      "duplicate_identity_badge": "{{count}} offers",
-      "duplicate_identity_tooltip": "This counterparty has {{count}} active offers in the orderbook."
+      "duplicate_identity_badge_one": "{{count}} offer",
+      "duplicate_identity_badge_other": "{{count}} offers",
+      "duplicate_identity_tooltip_one": "This counterparty has {{count}} active offer in the orderbook.",
+      "duplicate_identity_tooltip_other": "This counterparty has {{count}} active offers in the orderbook."
     }
   },
   "scheduler": {
