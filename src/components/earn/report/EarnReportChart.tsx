@@ -3,9 +3,8 @@ import { useTranslation } from 'react-i18next'
 import type { EarnReportEntry } from '@/components/earn/report/hooks/useQueryYieldgenReport'
 import { Balance } from '@/components/ui/jam/Balance'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import type { Days, Milliseconds } from '@/types/global'
+import type { Days } from '@/types/global'
 
-const MILLISECONDS_IN_A_DAY: Milliseconds = 24 * 60 * 60 * 1_000
 const DEFAULT_CHART_DAYS: Days = 30
 
 interface DayBucket {
@@ -14,7 +13,10 @@ interface DayBucket {
   count: number
 }
 
-// Group entries into daily buckets for the past N days
+// Group entries into daily buckets for the past N days.
+// Buckets are calendar days in local time. Not every day has 24 hours (e.g. on
+// daylight saving time changes), hence the boundaries are local midnights and
+// not derived by adding or subtracting a fixed amount of milliseconds.
 const bucketByDay = (entries: EarnReportEntry[], days: Days): DayBucket[] => {
   if (days < 0) {
     return []
@@ -23,9 +25,8 @@ const bucketByDay = (entries: EarnReportEntry[], days: Days): DayBucket[] => {
   const buckets: DayBucket[] = []
 
   for (let index = days - 1; index >= 0; index--) {
-    const dayStart = new Date(now.getTime() - index * MILLISECONDS_IN_A_DAY)
-    dayStart.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(dayStart.getTime() + MILLISECONDS_IN_A_DAY)
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - index)
+    const dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() - index + 1)
 
     const dayEntries = entries.filter(
       (entry) => entry.timestamp >= dayStart && entry.timestamp < dayEnd && entry.earnedAmount != null,
