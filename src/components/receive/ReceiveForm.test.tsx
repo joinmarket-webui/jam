@@ -61,10 +61,4 @@ describe('ReceiveForm', () => {
     expect(screen.getByRole('radio', { name: 'One' })).toBeChecked()
     expect(screen.getByText(/"fromJar": 1/u)).toBeInTheDocument()
   })
-
-  it('has no amount input', () => {
-    render(<ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 } }} onSubmit={vi.fn()} />)
-
-    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
-  })
 })

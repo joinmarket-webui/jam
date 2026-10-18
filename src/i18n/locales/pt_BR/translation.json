@@ -277,7 +277,6 @@
     "button_copy_address": "Copiar",
     "text_copy_address_confirmed": "Copiado",
     "button_settings": "Opções de recebimento",
-    "label_amount": "Valor a solicitar em sats",
     "button_new_address": "Obter novo endereço",
     "text_getting_address": "Obtendo novo endereço"
   },
