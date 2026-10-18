@@ -38,9 +38,11 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => {
     displaywalletOptions: queryOption,
     docoinjoinMutation: mutationOption,
     freezeMutation: mutationOption,
+    getaddressOptions: queryOption,
     getrescaninfoOptions: queryOption,
     getscheduleOptions: queryOption,
     getseedOptions: queryOption,
+    gettimelockaddressOptions: queryOption,
     listutxosOptions: queryOption,
     listwalletsOptions: queryOption,
     lockwalletOptions: queryOption,
@@ -69,6 +71,23 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => {
     },
   )
 })
+
+vi.mock('html5-qrcode', () => ({
+  Html5Qrcode: class {
+    isScanning = false
+    start() {
+      this.isScanning = true
+      return Promise.resolve()
+    }
+    stop() {
+      this.isScanning = false
+      return Promise.resolve()
+    }
+    scanFile() {
+      return Promise.resolve('mock-qr-text')
+    }
+  },
+}))
 
 const walletMocks = vi.hoisted(() => {
   const emptyBalanceSummary = {
