@@ -1,6 +1,7 @@
+import { HDKey } from '@scure/bip32'
 import { mnemonicToSeedSync } from '@scure/bip39'
 import { describe, it, expect } from 'vitest'
-import { deriveAccountXpubFromMasterSeed } from './bip32'
+import { deriveAccountXpub, deriveAccountXpubFromMasterSeed } from './bip32'
 import { DUMMY_SEED_PHRASE } from './utils'
 
 describe('deriveAccountXpub', () => {
@@ -19,6 +20,16 @@ describe('deriveAccountXpub', () => {
     )
     expect(xpub84_4).toBe(
       'xpub6CatWdiZiodmeXswr13Gd5aNtNqr2UHCBEsCoL3eEFVaM7n8kY5kS4daaP83gWQncmzL3Wzt79mEiLix6XZs6XQmGcQNeQ4HcjfVTn9TuXE',
+    )
+  })
+
+  it('should derive account xpubs directly from an HDKey root', () => {
+    const seed = mnemonicToSeedSync(DUMMY_SEED_PHRASE.join(' '))
+    const root = HDKey.fromMasterSeed(seed)
+
+    const xpub84_0 = deriveAccountXpub(root, `m/84'/0'/0'`)
+    expect(xpub84_0).toBe(
+      'xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V',
     )
   })
 })
