@@ -6,6 +6,8 @@ import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import {
   cn,
   debounce,
+  isWalletFileName,
+  sanitizeWalletName,
   walletDisplayName,
   walletDisplayNameToFileName,
   sortWallets,
@@ -28,6 +30,12 @@ import {
   isRelativeOffer,
   isAbsoluteOffer,
   SEGWIT_ACTIVATION_BLOCK,
+  AVERAGE_BLOCKS_PER_HOUR,
+  AVERAGE_BLOCKS_PER_DAY,
+  AVERAGE_BLOCKS_PER_YEAR,
+  MEAN_DURATION_BETWEEN_BLOCKS_MINUTES,
+  MEAN_DURATION_BETWEEN_BLOCKS_SECONDS,
+  BITCOIN_GENESIS_DATE,
   delayedPromise,
   pseudoRandomInteger,
   pseudoRandomFloat,
@@ -50,6 +58,44 @@ describe('cn', () => {
   it('should handle conflicting classes with tailwind-merge', () => {
     expect(cn('text-red-500', 'text-blue-500')).toBe('text-blue-500')
     expect(cn('p-4 px-8')).toBe('p-4 px-8')
+  })
+})
+
+describe('isWalletFileName', () => {
+  it('should return true for valid .jmdat filenames', () => {
+    expect(isWalletFileName('mywallet.jmdat')).toBe(true)
+    expect(isWalletFileName('Satoshi.jmdat')).toBe(true)
+    expect(isWalletFileName('.jmdat')).toBe(true)
+    expect(isWalletFileName('wallet.name.with.dots.jmdat')).toBe(true)
+  })
+
+  it('should return false for invalid or missing .jmdat extension', () => {
+    expect(isWalletFileName('mywallet.txt')).toBe(false)
+    expect(isWalletFileName('mywallet.jmdat.bak')).toBe(false)
+    expect(isWalletFileName('mywallet')).toBe(false)
+    expect(isWalletFileName('.jmdat_backup')).toBe(false)
+    expect(isWalletFileName('')).toBe(false)
+  })
+
+  it('should return false for non-string inputs', () => {
+    expect(isWalletFileName(null)).toBe(false)
+    expect(isWalletFileName(undefined)).toBe(false)
+    expect(isWalletFileName(12345)).toBe(false)
+    expect(isWalletFileName({})).toBe(false)
+    expect(isWalletFileName([])).toBe(false)
+    expect(isWalletFileName(true)).toBe(false)
+  })
+})
+
+describe('sanitizeWalletName', () => {
+  it('should strip .jmdat extension', () => {
+    expect(sanitizeWalletName('Satoshi.jmdat')).toBe('Satoshi')
+    expect(sanitizeWalletName('test_wallet.jmdat')).toBe('test_wallet')
+  })
+
+  it('should roundtrip with walletDisplayNameToFileName', () => {
+    const rawName = 'alice_vault'
+    expect(sanitizeWalletName(walletDisplayNameToFileName(rawName))).toBe(rawName)
   })
 })
 
@@ -196,6 +242,35 @@ describe('setIntervalDebounced', () => {
     expect(callback).toHaveBeenCalledTimes(1)
 
     await vi.advanceTimersByTimeAsync(4000)
+    expect(callback).toHaveBeenCalledTimes(2)
+  })
+
+  it('should call onError handler when callback throws synchronously', async () => {
+    const error = new Error('Sync error')
+    const callback = vi.fn().mockImplementation(() => {
+      throw error
+    })
+    const onTimerIdChanged = vi.fn()
+    const onError = vi.fn()
+
+    setIntervalDebounced(callback, 1000, onTimerIdChanged, onError)
+
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(onError).toHaveBeenCalledWith(error, expect.any(Function))
+  })
+
+  it('should default to continuing the loop when onError is not provided and callback throws', async () => {
+    const callback = vi.fn().mockRejectedValueOnce(new Error('Async error')).mockResolvedValueOnce(undefined)
+    const onTimerIdChanged = vi.fn()
+
+    setIntervalDebounced(callback, 1000, onTimerIdChanged)
+
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(callback).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(1000)
     expect(callback).toHaveBeenCalledTimes(2)
   })
 })
@@ -359,6 +434,24 @@ describe('UNKNOWN_VERSION', () => {
   })
 })
 
+describe('percentageToFactorString', () => {
+  it('should expose the formatted factor string with default precision of 6', () => {
+    expect(percentageToFactorString(12.345678)).toBe('0.123457')
+    expect(percentageToFactorString(100)).toBe('1.000000')
+    expect(percentageToFactorString(0)).toBe('0.000000')
+  })
+
+  it('should respect custom precision parameter', () => {
+    expect(percentageToFactorString(33.333333, 2)).toBe('0.33')
+    expect(percentageToFactorString(50, 1)).toBe('0.5')
+    expect(percentageToFactorString(0.1234, 4)).toBe('0.0012')
+  })
+
+  it('should handle negative percentages', () => {
+    expect(percentageToFactorString(-25, 2)).toBe('-0.25')
+  })
+})
+
 describe('percentageToFactor', () => {
   it('should expose the formatted factor string', () => {
     expect(percentageToFactorString(12.345678)).toBe('0.123457')
@@ -516,10 +609,12 @@ describe('factorToPercentage', () => {
 
 describe('formatBtc', () => {
   it('should format BTC values with 8 decimal places', () => {
-    expect(formatBtc(1)).toBe('1.00000000')
-    expect(formatBtc(0.5)).toBe('0.50000000')
-    expect(formatBtc(0.12345678)).toBe('0.12345678')
-    expect(formatBtc(0)).toBe('0.00000000')
+    withRuntimeLocale('en-US', () => {
+      expect(formatBtc(1)).toBe('1.00000000')
+      expect(formatBtc(0.5)).toBe('0.50000000')
+      expect(formatBtc(0.12345678)).toBe('0.12345678')
+      expect(formatBtc(0)).toBe('0.00000000')
+    })
   })
 
   it('should handle large BTC values', () => {
@@ -530,23 +625,38 @@ describe('formatBtc', () => {
   })
 
   it('should handle very small BTC values', () => {
-    expect(formatBtc(0.00000001)).toBe('0.00000001')
-    expect(formatBtc(0.000000001)).toBe('0.00000000')
+    withRuntimeLocale('en-US', () => {
+      expect(formatBtc(0.00000001)).toBe('0.00000001')
+      expect(formatBtc(0.000000001)).toBe('0.00000000')
+    })
   })
 
   it('should handle negative BTC values', () => {
-    expect(formatBtc(-1)).toBe('-1.00000000')
-    expect(formatBtc(-0.12345678)).toBe('-0.12345678')
+    withRuntimeLocale('en-US', () => {
+      expect(formatBtc(-1)).toBe('-1.00000000')
+      expect(formatBtc(-0.12345678)).toBe('-0.12345678')
+    })
   })
 })
 
 describe('getBtcParts', () => {
   it('should decompose a BTC value into semantic parts', () => {
-    const parts = getBtcParts(1.5)
-    expect(parts.integerPart).toBe('1')
-    expect(parts.fractionalPart).toBe('50000000')
-    expect(parts.sign).toBeUndefined()
-    expect(parts.formatted).toBe('1.50000000')
+    withRuntimeLocale('en-US', () => {
+      const parts = getBtcParts(1.5)
+      expect(parts.integerPart).toBe('1')
+      expect(parts.fractionalPart).toBe('50000000')
+      expect(parts.sign).toBeUndefined()
+      expect(parts.formatted).toBe('1.50000000')
+    })
+  })
+
+  it('should use the decimal separator of the runtime locale', () => {
+    withRuntimeLocale('de-DE', () => {
+      const parts = getBtcParts(1.5)
+      expect(parts.integerPart).toBe('1')
+      expect(parts.fractionalPart).toBe('50000000')
+      expect(parts.formatted).toBe('1,50000000')
+    })
   })
 
   it('should handle negative values', () => {
@@ -670,6 +780,20 @@ describe('isAbsoluteOffer', () => {
 describe('SEGWIT_ACTIVATION_BLOCK', () => {
   it('should have the correct block number for SegWit activation', () => {
     expect(SEGWIT_ACTIVATION_BLOCK).toBe(481_824)
+  })
+})
+
+describe('blockchain block-time constants', () => {
+  it('should have the correct bitcoin genesis date', () => {
+    expect(BITCOIN_GENESIS_DATE.toISOString()).toBe('2009-01-03T18:15:05.000Z')
+  })
+
+  it('should calculate expected average blocks and durations', () => {
+    expect(AVERAGE_BLOCKS_PER_HOUR).toBe(6)
+    expect(AVERAGE_BLOCKS_PER_DAY).toBe(144)
+    expect(AVERAGE_BLOCKS_PER_YEAR).toBe(52_560)
+    expect(MEAN_DURATION_BETWEEN_BLOCKS_MINUTES).toBe(10)
+    expect(MEAN_DURATION_BETWEEN_BLOCKS_SECONDS).toBe(600)
   })
 })
 
@@ -1053,7 +1177,14 @@ describe('time', () => {
     expect(time.humanReadableDuration({ locale: 'hi', to: now, from: now })).toBe('0 सेकंड में')
     expect(time.humanReadableDuration({ locale: 'it', to: now, from: now })).toBe('tra 0 secondi')
     expect(time.humanReadableDuration({ locale: 'zh', to: now, from: now })).toBe('0秒钟后')
-    // fallback to english
-    expect(time.humanReadableDuration({ locale: 'xx', to: now, from: now })).toBe('in 0 seconds')
+  })
+
+  it('should fall back to the runtime locale for unsupported locales', () => {
+    withRuntimeLocale('en-US', () => {
+      expect(time.humanReadableDuration({ locale: 'xx', to: now, from: now })).toBe('in 0 seconds')
+    })
+    withRuntimeLocale('de-DE', () => {
+      expect(time.humanReadableDuration({ locale: 'xx', to: now, from: now })).toBe('in 0 Sekunden')
+    })
   })
 })

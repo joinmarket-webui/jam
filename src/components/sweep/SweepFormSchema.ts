@@ -127,9 +127,7 @@ export const sweepFormSchema = (
 ): yup.ObjectSchema<SweepFormValues> => {
   const invalidDestinationAddressMessage = t('scheduler.feedback_invalid_destination_address')
   const networkMismatchDestinationAddressMessage = t('scheduler.feedback_destination_network_mismatch')
-  const invalidNumberOfDestinationsMessage = t('send.feedback_invalid_number_of_destination_addresses', {
-    // TODO: i18n
-    defaultValue: 'Please provide between {{ min }} and {{ max }} destination addresses.',
+  const invalidNumberOfDestinationsMessage = t('scheduler.feedback_invalid_number_of_destination_addresses', {
     min: minNumberOfDestinations.toLocaleString(),
     max: maxNumberOfDestinations.toLocaleString(),
   })

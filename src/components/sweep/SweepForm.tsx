@@ -263,10 +263,16 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.minNumberOfCollaborators?.message ? (
-                  <FieldError>{t('scheduler.feedback_invalid_min_value')}</FieldError>
+                  <FieldError>
+                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
+                    {t('scheduler.feedback_invalid_min_value')}
+                  </FieldError>
                 ) : null}
                 {formState.errors.maxNumberOfCollaborators?.message ? (
-                  <FieldError>{t('scheduler.feedback_invalid_max_value')}</FieldError>
+                  <FieldError>
+                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
+                    {t('scheduler.feedback_invalid_max_value')}
+                  </FieldError>
                 ) : null}
               </Field>
 
@@ -295,7 +301,10 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.minNumberOfTransactionsPerJar?.message ? (
-                  <FieldError>{t('scheduler.feedback_invalid_value')}</FieldError>
+                  <FieldError>
+                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
+                    {t('scheduler.feedback_invalid_value')}
+                  </FieldError>
                 ) : null}
               </Field>
 
@@ -303,10 +312,10 @@ export const SweepForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col items-start gap-0">
                     <FieldLabel htmlFor="slider-rounding-chance-in-percent">
-                      {t('scheduler.label_round_amount_probability')}
+                      {t('scheduler.label_rounding_chance')}
                     </FieldLabel>
                     <FieldDescription className="text-xs">
-                      {t('scheduler.description_round_amount_probability')}
+                      {t('scheduler.description_rounding_chance')}
                     </FieldDescription>
                   </div>
                   <span className="text-foreground">{formWatch.roundingChanceInPercent}%</span>
@@ -322,7 +331,10 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.roundingChanceInPercent?.message ? (
-                  <FieldError>{t('scheduler.feedback_invalid_value')}</FieldError>
+                  <FieldError>
+                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
+                    {t('scheduler.feedback_invalid_value')}
+                  </FieldError>
                 ) : null}
               </Field>
             </FieldSet>

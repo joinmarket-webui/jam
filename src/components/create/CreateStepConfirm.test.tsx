@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import '@/i18n/config'
+import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import type { MnemonicPhrase } from '@/types/global'
 import { CreateStepConfirm } from './CreateStepConfirm'
 
@@ -69,16 +70,18 @@ describe('<CreateStepConfirm />', () => {
   })
 
   it('renders explicit creation date and block height when provided', () => {
-    const fixedDate = new Date('2024-05-15T12:00:00Z')
-    renderConfirm({ createdAt: fixedDate, blockHeight: 840_000 })
+    withRuntimeLocale('en-US', () => {
+      const fixedDate = new Date('2024-05-15T12:00:00Z')
+      renderConfirm({ createdAt: fixedDate, blockHeight: 840_000 })
 
-    const expectedDate = fixedDate.toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
+      const expectedDate = fixedDate.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+      })
+
+      expect(screen.getByText(expectedDate)).toBeInTheDocument()
+      expect(screen.getByText('(Block #840,000)')).toBeInTheDocument()
     })
-
-    expect(screen.getByText(expectedDate)).toBeInTheDocument()
-    expect(screen.getByText('(Block #840,000)')).toBeInTheDocument()
   })
 
   it('handles genesis block (block 0) correctly', () => {
