@@ -109,4 +109,13 @@ describe('xpubs', () => {
       'zpub6rFR7y4Q2AijM8GBWicX3FmPEK8juiGC1TueN7qQzGFLTKQbFrQsgBwrco3DgKidS4DwYUC12UULUux5XvPtgzmy1HoDpDhGABnnEyBQzsL',
     )
   })
+
+  it('trims whitespace and handles valid xpub with surrounding spaces', () => {
+    const vector0 = BIP32_TEST_VECTOR_1[0]
+    expect(convertExtendedPublicKey(`  ${vector0}  `, 'xpub')).toBe(vector0)
+  })
+
+  it('throws descriptive error if base58 decoding fails with empty string', () => {
+    expect(() => convertExtendedPublicKey('', 'zpub')).toThrow(/Invalid extended public key/)
+  })
 })
