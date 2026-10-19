@@ -14,7 +14,6 @@ import { toast } from 'sonner'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { HistoryEntry } from '@/hooks/useQueryWalletHistory'
-import { parseHistoryTimestamp } from '@/lib/historyTimestamp'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import { Alert, AlertDescription } from '../ui/alert'
 import { Button } from '../ui/button'
@@ -49,12 +48,18 @@ const roleLabel = (entry: HistoryEntry, t: TFunction) => {
   return role ? t(`tx_history.label_role_${role}`) : entry.role || ''
 }
 
+const hasTimeZoneDesignator = (value: string) => /(Z|[+-]\d{2}:?\d{2})$/i.test(value)
+
+const toDate = (value: string) => new Date(hasTimeZoneDesignator(value) ? value : `${value}Z`)
+
 const dateTimeValue = (value: string) => {
-  return parseHistoryTimestamp(value)?.getTime() ?? 0
+  const date = toDate(value)
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
 }
 
 const formatDateTime = (value: string) => {
-  return parseHistoryTimestamp(value)?.toLocaleString() ?? value
+  const date = toDate(value)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
 
 const TxHistoryDetails = ({ entry }: { entry: HistoryEntry }) => {

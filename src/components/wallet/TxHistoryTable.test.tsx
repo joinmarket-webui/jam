@@ -89,6 +89,14 @@ describe('TxHistoryTable', () => {
     })
   })
 
+  it('respects the time zone designator of timestamps', () => {
+    withTimeZone('America/New_York', () => {
+      render(<TxHistoryTable history={[{ ...mockDeposit, timestamp: '2026-07-28T17:30:00+05:30' }]} />)
+
+      expect(screen.getByText(new Date(Date.UTC(2026, 6, 28, 12, 0, 0)).toLocaleString())).toBeInTheDocument()
+    })
+  })
+
   it('renders empty history alert', () => {
     render(<TxHistoryTable history={[]} />)
     expect(screen.getByText('tx_history.empty_history')).toBeInTheDocument()
