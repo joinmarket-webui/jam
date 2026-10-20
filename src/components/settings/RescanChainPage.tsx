@@ -112,8 +112,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
             }
             disabled={disabled || isSubmitting || rescanInfo.rescanning}
           >
-            {/* TODO: i18n */}
-            Last {AVERAGE_BLOCKS_PER_DAY.toLocaleString()} blocks (~24 hours)
+            {t('rescan_chain.button_preset_day', { count: AVERAGE_BLOCKS_PER_DAY.toLocaleString() })}
           </Button>
         ) : null}
 
@@ -133,8 +132,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
             }
             disabled={disabled || isSubmitting || rescanInfo.rescanning}
           >
-            {/* TODO: i18n */}
-            Last {AVERAGE_BLOCKS_PER_YEAR.toLocaleString()} blocks (~1 year)
+            {t('rescan_chain.button_preset_year', { count: AVERAGE_BLOCKS_PER_YEAR.toLocaleString() })}
           </Button>
         ) : null}
 
@@ -152,11 +150,10 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
                 }
                 disabled={disabled || isSubmitting || rescanInfo.rescanning}
               >
-                {/* TODO: i18n */}
-                From block #{SEGWIT_ACTIVATION_BLOCK.toLocaleString()}
+                {t('rescan_chain.button_preset_segwit', { block: SEGWIT_ACTIVATION_BLOCK.toLocaleString() })}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Segwit Activation Block</TooltipContent>
+            <TooltipContent>{t('rescan_chain.tooltip_segwit_activation_block')}</TooltipContent>
           </Tooltip>
         ) : null}
       </div>

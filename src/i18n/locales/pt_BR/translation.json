@@ -31,7 +31,6 @@
     "experimental": "Experimental"
   },
   "navbar": {
-    "title": "Jam",
     "tab_send": "Enviar",
     "tab_receive": "Receber",
     "tab_earn": "Lucrar",
@@ -44,9 +43,7 @@
     "warning": "Este é um software em beta.<br /><1>Leia isso antes de utilizá-lo.</1>",
     "warning_alert_title": "Atenção",
     "warning_alert_button_ok": "Por mim tudo bem.",
-    "cheatsheet": "Dicas",
-    "connected": "Conectado",
-    "disconnected": "Desconectado"
+    "cheatsheet": "Dicas"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -85,7 +82,6 @@
   "wallets": {
     "subtitle_no_wallets": "Parece que você ainda não tem uma carteira.",
     "button_new_wallet": "Crie uma carteira nova",
-    "alert_wallet_open": "Só pode haver uma carteira ativa. Se você deseja abrir outra carteira, tranque '{{ currentWalletName }}' primeiro.",
     "error_loading_failed": "Falha no carregamento das carteiras.",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} trancada com sucesso.",
@@ -122,7 +118,6 @@
     "confirmation_toggle_reveal_info": "Revelar informações confidenciais",
     "confirmation_toggle_info_written_down": "Eu anotei as informações acima.",
     "confirmation_button_fund_wallet": "Adicionar Fundos a Carteira",
-    "feedback_seed_confirmed": "Seeds confirmadas.",
     "back_button": "Voltar",
     "next_button": "Próximo",
     "hint_duration_text": "Por favor, aguarde, isso pode levar alguns minutos."
@@ -172,9 +167,6 @@
     "show_logs": "Mostrar logs",
     "show_fee_config": "Ajustar os limites de taxas",
     "button_lock_wallet": "Trancar carteira",
-    "button_switch_wallet": "Trocar carteira",
-    "button_create_wallet": "Criar nova carteira",
-    "seed_modal_info_text": "Por favor, anote sua seed e senha! Sem esta informação não conseguirá acessar e recuperar a sua carteira!",
     "documentation": "Documentação",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -190,7 +182,6 @@
       "feedback_invalid_tx_fees_blocks": "Forneça um bloco alvo válido entre {{ min }} e {{ max }}.",
       "feedback_invalid_tx_fees_satspervbyte": "Forneça uma taxa de transação válida em sats/vByte entre {{ min }} e {{ max }}.",
       "label_tx_fees_factor": "Aleatoriedade de taxa",
-      "description_tx_fees_factor": "Taxas aleatórias melhoram a privacidade. A porcentagem deve ser entendida como +/- em torno da taxa básica. Exemplo: Se você definir a taxa base para 10 sats/vByte e a aleatoridade em 30%, um valor entre 7 e 13 sats/vByte será usado. Padrão: 20%.",
       "feedback_invalid_tx_fees_factor": "Forneça um valor válido de aleatoridade de taxa entre {{ min }} e {{ max }}.",
       "title_max_cj_fee_settings": "Taxas de colaboração",
       "subtitle_max_cj_fee": "Nota: A oferta será rejeitada apenas se ambos os limites forem excedidos.",
@@ -214,7 +205,6 @@
     "title": "Enviar",
     "subtitle": "Use uma transação colaborativa para maior segurança e privacidade.",
     "label_num_collaborators": "Número de colaboradores: {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Outro",
     "description_num_collaborators": "Um número maior é melhor para privacidade, mas também aumenta a taxa de transação.",
     "error_invalid_num_collaborators": "Por favor, use entre {{ minNumCollaborators }} e {{ maxNumCollaborators }} colaboradores.",
     "taker_error_message_max_fees_config_missing": "Variáveis de configuração 'max_cj_fee_rel' e 'max_cj_fee_abs' devem ser definidas em seu joinmarket.cfg para enviar transações colaborativas. Considere adicioná-las à sua configuração manualmente.",
@@ -227,8 +217,6 @@
     "feedback_reused_address": "Este endereço já foi usado. Para preservar sua privacidade, escolha outro.",
     "label_source_jar": "Enviar de",
     "title_jar_selector": "Selecione um frasco de sua carteira para enviar os fundos.",
-    "label_amount": "Quantidade de sats",
-    "placeholder_amount": "Digite a quantidade...",
     "feedback_invalid_amount": "Forneça um valor válido.",
     "sending_options": "Opções de envio",
     "toggle_coinjoin": "Enviar como transação colaborativa",
@@ -276,10 +264,7 @@
     "subtitle": "Envie sats para o endereço abaixo para financiar sua carteira.",
     "text_copy_address": "Endereço copiado",
     "error_copy_address_failed": "Não foi possível copiar o endereço.",
-    "button_copy_address": "Copiar",
-    "text_copy_address_confirmed": "Copiado",
     "button_settings": "Opções de recebimento",
-    "label_amount": "Valor a solicitar em sats",
     "feedback_invalid_amount": "Forneça um valor válido.",
     "button_new_address": "Obter novo endereço",
     "text_getting_address": "Obtendo novo endereço"
@@ -292,7 +277,6 @@
     "alert_starting": "O serviço está começando.",
     "alert_stopping": "O serviço está parando.",
     "alert_running": "Oferecendo sats para ganhar mais sats...",
-    "alert_no_spendable_balance_description": "<0>Financie sua carteira</0> para começar a lucrar.",
     "radio_abs_offer_label": "Oferta absoluta",
     "radio_rel_offer_label": "Oferta relativa",
     "label_rel_fee": "Taxa relativa {{ fee }}",
@@ -301,7 +285,6 @@
     "label_abs_fee": "Taxas absolutas {{ fee }}",
     "description_abs_fee": "A taxa que cobrará dos outros, como um valor absoluto denominado em sats.",
     "feedback_invalid_abs_fee": "Taxa absoluta inválida.",
-    "label_min_amount": "Valor mínimo em sats",
     "feedback_invalid_min_amount": "Forneça um valor mínimo.",
     "button_start": "Comece a lucrar!",
     "button_stop": "Parar",
