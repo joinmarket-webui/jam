@@ -429,12 +429,12 @@ export const SettingsAdvancedContent = ({ walletFileName }: SettingsAdvancedCont
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Developer Mode</CardTitle>
+              <CardTitle>{t('settings.developer_mode_title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <SettingsSwitch
                 icon={TerminalIcon}
-                title="Enable Developer Mode"
+                title={t('settings.developer_mode_switch_title')}
                 disabled={!isDevMode()}
                 checked={jamSettings.state.developerMode}
                 onCheckedChange={(checked) => {
