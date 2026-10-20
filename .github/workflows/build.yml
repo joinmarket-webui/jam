@@ -50,6 +50,9 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      - name: i18n check
+        run: npm run i18n:check
+
       - name: Test
         run: npm run test:coverage
 

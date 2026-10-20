@@ -56,7 +56,6 @@
     "alert_rescan_in_progress_with_progress": "Rescanning in progress ({{progress}}%)..."
   },
   "navbar": {
-    "title": "Jam",
     "text_rescan_in_progress": "Rescanning...",
     "text_rescan_in_progress_with_progress": "Rescanning ({{progress}}%)...",
     "tab_send": "Send",
@@ -200,8 +199,6 @@
     "subtitle_wallet_created": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",
     "alert_other_wallet_unlocked_generic": "Another wallet is active. You need to lock it first. <1>Go back</1>.",
-    "alert_rescan_in_progress": "Rescanning the timechain is currently in progress. Please wait until the process finishes and then try again. <1>Go back</1>.",
-    "feedback_valid": "Looks good!",
     "label_wallet_name": "Wallet name",
     "placeholder_wallet_name": "Your Wallet...",
     "feedback_invalid_wallet_name": "Please choose a valid wallet name: Use only letters, numbers, underscores or hyphens.",
@@ -422,7 +419,9 @@
       "error_loading_fee_config_failed": "Error while loading fee config values. Reason: {{ reason }}",
       "error_reloading_fee_config_failed": "Error while reloading fee config values. Reason: {{ reason }}",
       "success_message": "Fee settings updated successfully."
-    }
+    },
+    "developer_mode_title": "Developer Mode",
+    "developer_mode_switch_title": "Enable Developer Mode"
   },
   "rescan_chain": {
     "title": "Rescan timechain",
@@ -434,7 +433,11 @@
     "success_rescan_started": "Rescan started successfully.",
     "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
     "text_button_submit": "Rescan timechain",
-    "text_button_submitting": "Rescanning timechain..."
+    "text_button_submitting": "Rescanning timechain...",
+    "button_preset_day": "Last {{ count }} blocks (~24 hours)",
+    "button_preset_year": "Last {{ count }} blocks (~1 year)",
+    "button_preset_segwit": "From block #{{ block }}",
+    "tooltip_segwit_activation_block": "Segwit Activation Block"
   },
   "logs": {
     "title": "Logs",
@@ -452,7 +455,6 @@
     "title": "Send",
     "subtitle": "Use a collaborative transaction for increased security and privacy.",
     "label_num_collaborators": "Number of collaborators: {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Other",
     "description_num_collaborators": "A higher number is better for privacy, but also increases the transaction fee.",
     "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
     "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg to send collaborative transactions. Consider adding them to your config manually.",
@@ -676,8 +678,7 @@
         "form_label_month": "Month",
         "description": "Fidelity bond expiration date:",
         "subtitle": "Choose when your funds will be unlocked",
-        "label_selected_lock_date": "Selected lock date",
-        "warning_fb_with_same_expiry": "<strong>Warning</strong>: A Fidelity Bond with the same expiry date already exists."
+        "label_selected_lock_date": "Selected lock date"
       },
       "select_jar": {
         "title": "Select Source Jar",
@@ -687,8 +688,6 @@
       "select_utxos": {
         "title": "Select UTXOs",
         "description": "Select one UTXO from Jar {{ jar }} to use for the Fidelity Bond.",
-        "button_select_all": "Select All",
-        "button_deselect_all": "Deselect All",
         "label_total_selected": "Total Selected",
         "utxo_card": {
           "confirmations_one": "{{ count }} confirmation",
@@ -1043,5 +1042,11 @@
     "label_role_taker": "Taker",
     "label_role_send": "Send",
     "label_role_deposit": "Deposit"
+  },
+  "beta_info": {
+    "badge_beta": "Beta",
+    "text_thanks": "Thanks for testing!",
+    "text_report": "Please report anything that looks off.",
+    "button_report_bug": "I found a bug"
   }
 }

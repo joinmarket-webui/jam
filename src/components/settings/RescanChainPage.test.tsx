@@ -94,9 +94,13 @@ describe('RescanChainPage', () => {
       expect(screen.getByRole('spinbutton', { name: 'rescan_chain.label_blockheight' })).toBeInTheDocument()
       expect(screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')).toBeInTheDocument()
 
-      expect(screen.getByRole('button', { name: 'Last 144 blocks (~24 hours)' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Last 52,560 blocks (~1 year)' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'From block #481,824' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'rescan_chain.button_preset_day {"count":"144"}' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'rescan_chain.button_preset_year {"count":"52,560"}' }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'rescan_chain.button_preset_segwit {"block":"481,824"}' }),
+      ).toBeInTheDocument()
 
       expect(screen.getByRole('button', { name: 'rescan_chain.text_button_submit' })).toBeInTheDocument()
     })

@@ -302,7 +302,7 @@ describe('SettingsPage', () => {
     expect(screen.getByText('settings.sign_message')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_expert_features')).toBeInTheDocument()
     expect(screen.getByText('settings.section_title_feature_preview')).toBeInTheDocument()
-    expect(screen.getByText('Developer Mode')).toBeInTheDocument()
+    expect(screen.getByText('settings.developer_mode_title')).toBeInTheDocument()
 
     clickItem('settings.sign_message')
     expect(screen.getByText('sign-message-dialog')).toBeInTheDocument()
@@ -317,7 +317,7 @@ describe('SettingsPage', () => {
 
     renderSettingsPage('advanced')
 
-    clickItem('Enable Developer Mode')
+    clickItem('settings.developer_mode_switch_title')
     expect(mocks.updateJamSettings).toHaveBeenCalledWith({ developerMode: false })
 
     clickItem('Dev page')
