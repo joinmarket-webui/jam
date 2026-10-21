@@ -131,6 +131,7 @@ export const CreateWalletForm = ({
               variant="link"
               size="icon"
               onClick={() => setShowPassword((val) => !val)}
+              aria-label={showPassword ? t('global.hide_password') : t('global.show_password')}
             >
               {showPassword ? <EyeIcon /> : <EyeOffIcon />}
             </Button>
@@ -162,6 +163,7 @@ export const CreateWalletForm = ({
               variant="link"
               size="icon"
               onClick={() => setShowConfirmPassword((val) => !val)}
+              aria-label={showConfirmPassword ? t('global.hide_password') : t('global.show_password')}
             >
               {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
             </Button>
