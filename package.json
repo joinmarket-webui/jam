@@ -127,7 +127,7 @@
     "@playwright/test": "1.62.1",
     "@storybook/addon-a11y": "10.6.0",
     "@storybook/addon-docs": "10.6.0",
-    "@storybook/addon-vitest": "10.6.0",
+    "@storybook/addon-vitest": "10.6.2",
     "@storybook/react-vite": "10.6.0",
     "@tanstack/eslint-plugin-query": "5.104.1",
     "@testing-library/jest-dom": "7.0.1",
