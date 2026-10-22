@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PaymentAttempt, TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
-import { ActiveCollaborativeSendAlert } from './ActiveCollaborativeSendAlert'
+import { TakerStatusCard } from './TakerStatusCard'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -82,16 +82,9 @@ const sampleTakerInfo: TakerInfo = {
   },
 }
 
-describe('ActiveCollaborativeSendAlert', () => {
+describe('TakerStatusCard', () => {
   it('renders title and details for active collaborative send to external address', () => {
-    render(
-      <ActiveCollaborativeSendAlert
-        takerInfo={sampleTakerInfo}
-        jars={sampleJars}
-        isAborting={false}
-        onAbort={vi.fn()}
-      />,
-    )
+    render(<TakerStatusCard takerInfo={sampleTakerInfo} jars={sampleJars} isAborting={false} onAbort={vi.fn()} />)
 
     expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
     expect(screen.getByText('Jar Zero')).toBeInTheDocument()
@@ -113,14 +106,7 @@ describe('ActiveCollaborativeSendAlert', () => {
       },
     }
 
-    render(
-      <ActiveCollaborativeSendAlert
-        takerInfo={internalTakerInfo}
-        jars={sampleJars}
-        isAborting={false}
-        onAbort={vi.fn()}
-      />,
-    )
+    render(<TakerStatusCard takerInfo={internalTakerInfo} jars={sampleJars} isAborting={false} onAbort={vi.fn()} />)
 
     expect(screen.getByText('Jar One')).toBeInTheDocument()
     expect(screen.getByText('#1')).toBeInTheDocument()
@@ -130,28 +116,14 @@ describe('ActiveCollaborativeSendAlert', () => {
     const user = userEvent.setup()
     const onAbort = vi.fn()
 
-    render(
-      <ActiveCollaborativeSendAlert
-        takerInfo={sampleTakerInfo}
-        jars={sampleJars}
-        isAborting={false}
-        onAbort={onAbort}
-      />,
-    )
+    render(<TakerStatusCard takerInfo={sampleTakerInfo} jars={sampleJars} isAborting={false} onAbort={onAbort} />)
 
     await user.click(screen.getByRole('button', { name: 'global.abort' }))
     expect(onAbort).toHaveBeenCalledTimes(1)
   })
 
   it('disables abort button when stopping coinjoin', () => {
-    render(
-      <ActiveCollaborativeSendAlert
-        takerInfo={sampleTakerInfo}
-        jars={sampleJars}
-        isAborting={true}
-        onAbort={vi.fn()}
-      />,
-    )
+    render(<TakerStatusCard takerInfo={sampleTakerInfo} jars={sampleJars} isAborting={true} onAbort={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: 'global.abort' })).toBeDisabled()
   })
