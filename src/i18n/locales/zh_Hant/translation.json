@@ -29,7 +29,10 @@
       "error_freezing_utxos": "無法凍結 UTXOs。"
     },
     "next": "繼續",
-    "experimental": "試驗性"
+    "experimental": "試驗性",
+    "text_address_copied": "已複製地址",
+    "error_copy_address_failed": "無法複製地址。",
+    "label_jar_n": "罐子 {{ jar }}"
   },
   "app": {
     "alert_rescan_in_progress": "正在進行重新掃描..."
@@ -49,9 +52,7 @@
     "warning": "這是測試版軟件。<br /><1>使用前請先閱讀。</1>",
     "warning_alert_title": "警告",
     "warning_alert_button_ok": "沒問題。",
-    "cheatsheet": "備忘單",
-    "connected": "已連接",
-    "disconnected": "已斷連"
+    "cheatsheet": "備忘單"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -91,7 +92,6 @@
     "subtitle_no_wallets": "看起來你目前還沒有任何錢包。",
     "button_new_wallet": "創建新錢包",
     "button_import_wallet": "導入現有的錢包",
-    "alert_wallet_open": "只允許一個活躍錢包。如果你想打開另一個錢包，請先鎖上 '{{ currentWalletName }}'。",
     "error_loading_failed": "加載錢包失敗。",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} 已成功鎖上。",
@@ -128,7 +128,6 @@
     "confirmation_toggle_reveal_info": "顯示敏感信息",
     "confirmation_toggle_info_written_down": "我已經寫下了以上的信息。",
     "confirmation_button_fund_wallet": "充值錢包",
-    "feedback_seed_confirmed": "種子詞已確認。",
     "back_button": "返回",
     "next_button": "繼續",
     "hint_duration_text": "請耐心等待，這可能需要幾分鐘。"
@@ -207,9 +206,6 @@
     "show_logs": "顯示日誌",
     "show_fee_config": "調整費用限制",
     "button_lock_wallet": "鎖上錢包",
-    "button_switch_wallet": "切換錢包",
-    "button_create_wallet": "創建錢包",
-    "seed_modal_info_text": "請寫下你的種子詞和密碼！沒有這些信息，你將無法訪問和恢復你的錢包！",
     "documentation": "文檔",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -226,7 +222,6 @@
       "feedback_invalid_tx_fees_blocks": "請提供一個有效的區塊目標，從{{ min }}到{{ max }}。",
       "feedback_invalid_tx_fees_satspervbyte": "請提供一個有效的，以聰/字節為單位的交易費，從{{ min }}到{{ max }}。",
       "label_tx_fees_factor": "費用隨機化",
-      "description_tx_fees_factor": "隨機費用改善隱私。該百分比應理解為圍繞基本費用的正負。例：如果將基本費用設為10聰/字節，並將隨機化值設為30%，則將使用7到13聰/字節之間的費用。默認：20%。",
       "feedback_invalid_tx_fees_factor": "請提供一個有效的費用隨機化值，從{{ min }}到{{ max }}。",
       "title_max_cj_fee_settings": "協作方費用",
       "description_max_cj_fee_settings": "協作方費用關聯流動性價格並取決於市場狀況。每個交易的總費用取決於協作方總數。額外的協作方會增加隱私，但也會增加費用。",
@@ -240,7 +235,7 @@
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
       "error_saving_fee_config_failed": "保存費用配置值時出錯了。原因：{{ reason }}",
-      "error_loading_fee_config_failed": "加載費用設置時出錯了。"
+      "error_loading_fee_config_failed": "加載費用設置時出錯了。原因：{{ reason }}"
     }
   },
   "logs": {
@@ -251,11 +246,10 @@
     "title": "發送",
     "subtitle": "使用協作式交易來提高安全性和隱秘性。",
     "label_num_collaborators": "協作方數量：{{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "其他",
     "description_num_collaborators": "更高的數量會提高隱秘性，但同時也會增加交易費用。",
     "error_invalid_num_collaborators": "請使用{{ minNumCollaborators }}到{{ maxNumCollaborators }}個協作方。",
     "taker_error_message_max_fees_config_missing": "必須在你的 joinmarket.cfg 中先設置配置變量 'max_cj_fee_rel' 和 'max_cj_fee_abs' 才能發送協作式交易。請考慮手動將它們添加到你的配置中。",
-    "error_loading_min_makers_failed": "加載配置值 'minimum_makers' 失敗了。",
+    "error_loading_min_makers_failed": "加載配置值 'minimum_makers' 失敗了。原因：{{ reason }}",
     "alert_payment_successful": "付款成功：在交易 {{ txid }} 中發送了 {{ amount }} 聰到 {{ address }}。",
     "text_maker_running": "收益處於活躍狀態。停止服務以發送協作式交易。",
     "text_coinjoin_already_running": "協作式交易正在進行中。",
@@ -264,8 +258,6 @@
     "feedback_reused_address": "這個地址已經被使用過了。為了保護你的隱私，請選另一個地址。",
     "label_source_jar": "來源",
     "title_jar_selector": "選擇一個你自己錢包中的罐子作為收款方。",
-    "label_amount": "聰金額",
-    "placeholder_amount": "輸入金額...",
     "feedback_invalid_amount": "請輸入有效的金額。",
     "sending_options": "發送選項",
     "toggle_coinjoin": "作為協作式交易發送",
@@ -314,12 +306,8 @@
   "receive": {
     "title": "接收",
     "subtitle": "將聰發送到以下的地址來充值你的錢包。",
-    "text_copy_address": "已複製地址",
     "error_copy_address_failed": "無法複製地址。",
-    "button_copy_address": "複製",
-    "text_copy_address_confirmed": "已複製",
     "button_settings": "接收選項",
-    "label_amount": "要求的聰金額",
     "feedback_invalid_amount": "請輸入有效的金額。",
     "button_new_address": "獲取新地址",
     "text_getting_address": "正在獲取新地址"
@@ -332,7 +320,6 @@
     "alert_starting": "服務正在開始。",
     "alert_stopping": "服務正在停止。",
     "alert_running": "正在提供流動性並以此賺取收益...",
-    "alert_no_spendable_balance_description": "<0>充值你的錢包</0>以開始收益。",
     "radio_abs_offer_label": "絕對報價",
     "radio_rel_offer_label": "相對報價",
     "label_rel_fee": "相對費用{{ fee }}",
@@ -341,7 +328,6 @@
     "label_abs_fee": "絕對費用{{ fee }}",
     "description_abs_fee": "向他人收取的費用，以聰為單位的絕對金額。",
     "feedback_invalid_abs_fee": "絕對費用無效。",
-    "label_min_amount": "最低聰金額",
     "feedback_invalid_min_amount": "請輸入最低金額。",
     "button_start": "開始收益！",
     "button_stop": "停止",
@@ -407,7 +393,6 @@
         "text_primary_button": "創建保證金",
         "label_lock_date": "鎖定至",
         "label_jar": "來源",
-        "label_jar_n": "罐子 {{ jar }}",
         "label_amount": "將鎖定的金額",
         "label_address": "資金將被時間鎖定並發送至"
       },
@@ -558,6 +543,11 @@
       "column_title_confirmations": "確認",
       "column_title_label_and_status": "標籤",
       "row_button_details": "詳情"
+    },
+    "address_list": {
+      "column_title_address": "地址",
+      "column_title_balance": "價值",
+      "column_title_tags": "標籤"
     }
   },
   "sidebar": {
