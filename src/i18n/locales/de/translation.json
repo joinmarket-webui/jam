@@ -340,8 +340,6 @@
     "button_copy_address": "Kopieren",
     "text_copy_address_confirmed": "Kopiert",
     "button_settings": "Empfangsoptionen",
-    "label_amount": "genauen Betrag anfordern ",
-    "feedback_invalid_amount": "Bitte einen gültigen Betrag angeben.",
     "button_new_address": "neue Adresse generieren",
     "text_getting_address": "Generiere neue Adresse"
   },
