@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import '@/i18n/config'
 import { CreateWalletForm } from './CreateWalletForm'
 
@@ -64,6 +65,53 @@ describe('<CreateWalletForm />', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Given passwords do not match.')).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('shows the translated feedback for an empty password', async () => {
+    const { onSubmit } = renderCreateWalletForm()
+
+    await userEvent.type(screen.getByLabelText('Wallet name'), 'new-wallet')
+    await userEvent.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(await screen.findByText('Please set a password.')).toBeInTheDocument()
+    expect(screen.queryByText(/must be at least/)).not.toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('shows the translated feedback for a wallet name that is too long', async () => {
+    const { onSubmit } = renderCreateWalletForm()
+
+    await userEvent.click(screen.getByLabelText('Wallet name'))
+    await userEvent.paste('a'.repeat(MAX_WALLET_NAME_LENGTH + 1))
+    await userEvent.type(screen.getByLabelText('Password to unlock the wallet'), 'secret')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'secret')
+    await userEvent.click(screen.getByRole('button', { name: 'Create' }))
+
+    expect(
+      await screen.findByText(
+        `Please choose a shorter wallet name: Use at most ${MAX_WALLET_NAME_LENGTH.toLocaleString()} characters.`,
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/must be at most/)).not.toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('accepts a wallet name of maximum length', async () => {
+    const { onSubmit } = renderCreateWalletForm()
+    const walletName = 'a'.repeat(MAX_WALLET_NAME_LENGTH)
+
+    await userEvent.click(screen.getByLabelText('Wallet name'))
+    await userEvent.paste(walletName)
+    await userEvent.type(screen.getByLabelText('Password to unlock the wallet'), 'secret')
+    await userEvent.type(screen.getByLabelText('Confirm password'), 'secret')
+    await userEvent.click(screen.getByRole('button', { name: 'Create' }))
+
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith(
+        { walletName, password: 'secret', confirmPassword: 'secret' },
+        expect.anything(),
+      ),
+    )
   })
 
   it('toggles password visibility and supports disabled state', async () => {
