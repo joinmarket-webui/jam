@@ -23,19 +23,14 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card
 import { CopyButton } from '../ui/jam/CopyButton'
 import { Label } from '../ui/label'
 
-export interface ActiveCollaborativeSendAlertProps {
+export interface TakerStatusCardProps {
   takerInfo: TakerInfo
   jars: Jar[]
   isAborting: boolean
   onAbort?: () => void
 }
 
-export const ActiveCollaborativeSendAlert = ({
-  takerInfo,
-  jars,
-  isAborting,
-  onAbort,
-}: ActiveCollaborativeSendAlertProps) => {
+export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerStatusCardProps) => {
   const { t } = useTranslation()
 
   const data = takerInfo.currentPaymentAttempt?.data
