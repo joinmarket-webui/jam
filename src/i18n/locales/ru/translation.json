@@ -248,7 +248,7 @@
       "text_button_submit": "Сохранить",
       "text_button_submitting": "Отправка",
       "error_saving_fee_config_failed": "Ошибка при сохранении значений конфигурации комиссии. Причина: {{ reason }}",
-      "error_loading_fee_config_failed": "Ошибка при загрузке значений конфигурации комиссии."
+      "error_loading_fee_config_failed": "Ошибка при загрузке значений конфигурации комиссии. Причина: {{ reason }}"
     }
   },
   "rescan_chain": {
@@ -315,6 +315,8 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "Оценка высокого приоритета (следующий блок)",
+      "text_miner_fee_in_targeted_blocks_few": "Использование оценки для включения в следующие {{ count }} блока",
+      "text_miner_fee_in_targeted_blocks_many": "Использование оценки для включения в следующие {{ count }} блоков",
       "text_miner_fee_in_targeted_blocks_other": "Использование оценки для включения в следующие {{ count }} блоков"
     },
     "confirm_abort_modal": {
@@ -381,8 +383,12 @@
     "report": {
       "title": "Отчет о доходах",
       "text_report_summary_one": "{{ count }} запись",
+      "text_report_summary_few": "{{ count }} записи",
+      "text_report_summary_many": "{{ count }} записей",
       "text_report_summary_other": "{{ count }} записей",
       "text_report_summary_filtered_one": "найдена {{ count }} запись",
+      "text_report_summary_filtered_few": "найдены {{ count }} записи",
+      "text_report_summary_filtered_many": "найдено {{ count }} записей",
       "text_report_summary_filtered_other": "найдено {{ count }} записей",
       "placeholder_search": "Поиск",
       "heading_timestamp": "Дата\\Время",
@@ -400,6 +406,8 @@
     },
     "title_fidelity_bonds_zero": "Создать Fidelity Bond",
     "title_fidelity_bonds_one": "Ваш Fidelity Bond",
+    "title_fidelity_bonds_few": "Ваши Fidelity Bond",
+    "title_fidelity_bonds_many": "Ваши Fidelity Bond",
     "title_fidelity_bonds_other": "Ваши Fidelity Bond",
     "subtitle_fidelity_bonds": "Fidelity Bond — это долгосрочный депозит, который делает криптографические идентификаторы намеренно дорогими. Криптографически блокируя средства на определенный срок, вы показываете, что являетесь серьезным участником рынка, и увеличиваете вероятность того, что ваши предложения будут приняты.",
     "fidelity_bond": {
@@ -530,8 +538,12 @@
   "orderbook": {
     "title": "Книга заказов",
     "text_orderbook_summary_one": "{{ count }} предложение от {{ counterpartyCount }} участников",
+    "text_orderbook_summary_few": "{{ count }} предложения от {{ counterpartyCount }} участников",
+    "text_orderbook_summary_many": "{{ count }} предложений от {{ counterpartyCount }} участников",
     "text_orderbook_summary_other": "{{ count }} предложений от {{ counterpartyCount }} участников",
     "text_orderbook_summary_filtered_one": "найдено {{ count }} предложение от {{ counterpartyCount }} участников",
+    "text_orderbook_summary_filtered_few": "найдены {{ count }} предложения от {{ counterpartyCount }} участников",
+    "text_orderbook_summary_filtered_many": "найдено {{ count }} предложений от {{ counterpartyCount }} участников",
     "text_orderbook_summary_filtered_other": "найдено {{ count }} предложений от {{ counterpartyCount }} участников",
     "alert_empty_orderbook": "Книга заказов пуста",
     "error_loading_orderbook_failed": "Ошибка при загрузке ордербука. Ваша текущая локальная настройка может не поддерживать загрузку ордербука. Причина: {{ reason }}",
@@ -592,7 +604,9 @@
     "utxo_list": {
       "title_zero": "Нет UTXOs в банке {{ jar }}",
       "title_one": "{{ count }} UTXO в банке {{ jar }}",
-      "title_other": "{{ count }} UTXOs в банке{{ jar }}",
+      "title_few": "{{ count }} UTXO в банке {{ jar }}",
+      "title_many": "{{ count }} UTXO в банке {{ jar }}",
+      "title_other": "{{ count }} UTXO в банке {{ jar }}",
       "text_balance_sum_total": "<0></0> всего",
       "button_freeze": "Заморозить",
       "button_unfreeze": "Разморозить",
@@ -614,6 +628,8 @@
     "title": "Выбрать доступные UTXOs",
     "subtitle_zero": "Пожалуйста, выберите один или несколько UTXO для возможного включения в транзакцию.",
     "subtitle_one": "Выбранный UTXO имеет право быть включенным в транзакцию.",
+    "subtitle_few": "Выбранные UTXO имеют право на включение в транзакцию.",
+    "subtitle_many": "Выбранные UTXO имеют право на включение в транзакцию.",
     "subtitle_other": "Выбранные UTXO имеют право на включение в транзакцию.",
     "text_subtitle_addon": "Невыбранные UTXO будут заморожены и могут быть разморожены позже в любое время."
   },

@@ -240,7 +240,7 @@
       "text_button_submit": "Speichern",
       "text_button_submitting": "Speichern...",
       "error_saving_fee_config_failed": "Fehler beim Speichern der Konfiguration. Begründung: {{ reason }}",
-      "error_loading_fee_config_failed": "Fehler beim Laden der Konfigurationswerte."
+      "error_loading_fee_config_failed": "Fehler beim Laden der Konfigurationswerte. Grund: {{ reason }}"
     }
   },
   "rescan_chain": {
@@ -536,7 +536,7 @@
     "progress_done_awaiting_stop": "Alle Transaktionen erfolgreich durchgeführt. Der Scheduler wird in Kürze stoppen. ",
     "precondition": {
       "hint_missing_utxos": "Um den Scheduler zu starten, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
-      "hint_missing_confirmations": "Um den Scheduler zu starten, brauchen deine UTXOs {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
+      "hint_missing_confirmations": "Um den Scheduler zu starten, brauchen deine UTXOs {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Zu viele Versuche, Commitments für dieses Glas zu beschaffen, sind fehlgeschlagen. Aus Sicherheitsgründen brauchst du einen frischen UTXO, um es erneut zu probieren. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
       "nested_hint_wait_for_block": "Warte auf einen weiteren Block. ",
       "nested_hint_wait_for_block_other": "Warte auf {{ count }} weitere Blöcke.",

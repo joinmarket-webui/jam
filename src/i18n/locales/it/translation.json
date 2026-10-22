@@ -198,7 +198,7 @@
       "text_button_submit": "Salva",
       "text_button_submitting": "Salvataggio in corso...",
       "error_saving_fee_config_failed": "Errore durante il salvataggio dei valori di configurazione delle commissioni. Motivo: {{ reason }}",
-      "error_loading_fee_config_failed": "Errore durante il caricamento dei valori di configurazione delle commissioni."
+      "error_loading_fee_config_failed": "Errore durante il caricamento dei valori di configurazione delle commissioni. Motivo: {{ reason }}"
     }
   },
   "logs": {
@@ -247,6 +247,7 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "Stima per alta priorità (blocco successivo)",
+      "text_miner_fee_in_targeted_blocks_many": "Utilizzo della stima per l'inclusione nei prossimi {{ count }} blocchi",
       "text_miner_fee_in_targeted_blocks_other": "Utilizzo della stima per l'inclusione nei prossimi {{ count }} blocchi"
     },
     "confirm_abort_modal": {
@@ -306,8 +307,10 @@
     "report": {
       "title": "Resoconto guadagni",
       "text_report_summary_one": "{{ count }} voce",
+      "text_report_summary_many": "{{ count }} voci",
       "text_report_summary_other": "{{ count }} voci",
       "text_report_summary_filtered_one": "trovata {{ count }} voce",
+      "text_report_summary_filtered_many": "trovate {{ count }} voci",
       "text_report_summary_filtered_other": "trovate {{ count }} voci",
       "placeholder_search": "Cerca",
       "heading_timestamp": "Timestamp",
@@ -319,6 +322,7 @@
     },
     "title_fidelity_bonds_zero": "Crea un Fidelity Bond",
     "title_fidelity_bonds_one": "Il tuo Fidelity Bond",
+    "title_fidelity_bonds_many": "I tuoi Fidelity Bonds",
     "title_fidelity_bonds_other": "I tuoi Fidelity Bonds",
     "subtitle_fidelity_bonds": "Un Fidelity Bond è un deposito a lunga scadenza che rende deliberatamente costose le identità crittografiche. Bloccando crittograficamente i fondi per una durata specifica, segnali di essere un serio partecipante al mercato e aumenti la possibilità che le tue offerte vengano accettate.",
     "fidelity_bond": {
@@ -340,6 +344,7 @@
         "description": "Selezionare uno o più UTXO dal vaso {{ jar }} da utilizzare per il Fidelity Bond.",
         "utxo_card": {
           "confirmations_one": "{{ count }} conferma",
+          "confirmations_many": "{{ count }} conferme",
           "confirmations_other": "{{ count }} conferme"
         }
       },
@@ -433,8 +438,10 @@
   "orderbook": {
     "title": "Registro ordini",
     "text_orderbook_summary_one": "{{ count }} offerta dalla controparte {{ counterpartyCount }}",
+    "text_orderbook_summary_many": "{{ count }} offerte dalla controparte {{ counterpartyCount }}",
     "text_orderbook_summary_other": "{{ count }} offerte dalla controparte {{ counterpartyCount }}",
     "text_orderbook_summary_filtered_one": "trovata {{ count }} offerta da {{ counterpartyCount  }} controparte",
+    "text_orderbook_summary_filtered_many": "trovate {{ count }} offerte da {{ counterpartyCount }} controparti",
     "text_orderbook_summary_filtered_other": "trovate {{ count }} offerte da {{ counterpartyCount }} controparti",
     "alert_empty_orderbook": "Il registro degli ordini è vuoto",
     "error_loading_orderbook_failed": "Errore durante il caricamento del registro ordini. L'attuale configurazione locale potrebbe non supportare il caricamento del registro degli ordini. Motivo: {{ reason }}",
@@ -492,6 +499,7 @@
     "utxo_list": {
       "title_zero": "Nessun UTXO nel vaso {{ jar }}",
       "title_one": "{{ count }} UTXO nel vaso {{ jar }}",
+      "title_many": "{{ count }} UTXO nel vaso {{ jar }}",
       "title_other": "{{ count }} UTXO nel vaso {{ jar }}",
       "text_balance_sum_total": "<0></0> totale",
       "button_freeze": "Blocca",

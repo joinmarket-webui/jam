@@ -198,7 +198,7 @@
       "text_button_submit": "Salvar",
       "text_button_submitting": "Salvando...",
       "error_saving_fee_config_failed": "Erro ao salvar valores de configuração de taxa. Motivo: {{ reason }}",
-      "error_loading_fee_config_failed": "Erro ao carregar valores de configuração de taxa. "
+      "error_loading_fee_config_failed": "Erro ao carregar valores de configuração de taxa. Motivo: {{ reason }}"
     }
   },
   "logs": {
@@ -247,6 +247,7 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "Estimativa de alta prioridade (próximo bloco)",
+      "text_miner_fee_in_targeted_blocks_many": "Usando estimativa para inclusão nos próximos {{ count }} blocos",
       "text_miner_fee_in_targeted_blocks_other": "Usando estimativa para inclusão nos próximos {{ count }} blocos"
     },
     "confirm_abort_modal": {
@@ -306,8 +307,10 @@
     "report": {
       "title": "Relatório de Lucros",
       "text_report_summary_one": "{{ count }} registro",
+      "text_report_summary_many": "{{ count }} registros",
       "text_report_summary_other": "{{ count }} registros",
       "text_report_summary_filtered_one": "encontrado {{ count }} registro",
+      "text_report_summary_filtered_many": "encontrado {{ count }} registros",
       "text_report_summary_filtered_other": "encontrado {{ count }} registros",
       "placeholder_search": "Pesquisa",
       "heading_timestamp": "Data/Hora",
@@ -319,6 +322,7 @@
     },
     "title_fidelity_bonds_zero": "Criar um Título de Fidelidade",
     "title_fidelity_bonds_one": "Seu Título de Fidelidade",
+    "title_fidelity_bonds_many": "Seus Títulos de Fidelidade",
     "title_fidelity_bonds_other": "Seus Títulos de Fidelidade",
     "subtitle_fidelity_bonds": "Um título de fidelidade é um depósito de longo prazo que torna as identidades criptográficas deliberadamente caras. Ao bloquear fundos criptograficamente por um período específico, você sinaliza que é um participante sério do mercado e aumenta a chance de suas ofertas serem aceitas.",
     "fidelity_bond": {
@@ -340,6 +344,7 @@
         "description": "Selecione um ou mais UTXOs do frasco {{ jar }} para usar no título de fidelidade.",
         "utxo_card": {
           "confirmations_one": "{{ count }} confirmação",
+          "confirmations_many": "{{ count }} confirmações",
           "confirmations_other": "{{ count }} confirmações"
         }
       },
@@ -433,8 +438,10 @@
   "orderbook": {
     "title": "Livro de ordens",
     "text_orderbook_summary_one": "{{ count }} oferta por {{ counterpartyCount }} contraparte",
+    "text_orderbook_summary_many": "{{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "text_orderbook_summary_other": "{{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "text_orderbook_summary_filtered_one": "encontrado {{ count }} oferta por {{ counterpartyCount }} contraparte",
+    "text_orderbook_summary_filtered_many": "encontrado {{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "text_orderbook_summary_filtered_other": "encontrado {{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "alert_empty_orderbook": "Livro de ordens vazio",
     "error_loading_orderbook_failed": "Erro ao carregar o livro de ordens. Sua configuração local atual não suporta a busca do livro de ordens. Motivo: {{ reason }}",
@@ -492,6 +499,7 @@
     "utxo_list": {
       "title_zero": "Nenhum UTXO no frasco {{ jar }}",
       "title_one": "{{ count }} UTXO no frasco {{ jar }}",
+      "title_many": "{{ count }} UTXOs no frasco {{ jar }}",
       "title_other": "{{ count }} UTXOs no frasco {{ jar }}",
       "text_balance_sum_total": "<0></0> total",
       "button_freeze": "Congelados",

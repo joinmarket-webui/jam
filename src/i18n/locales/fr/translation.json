@@ -55,7 +55,7 @@
       "button_locking": "Verrouillage",
       "button_unlocking": "Déverrouillage ",
       "modal_lock_wallet_title": "Confirmez le verrouillage",
-      "modal_lock_wallet_maker_running_text": "<0>Générer</0> est actif. Le verrouillage du porte-monnaie arrêtera le service.",
+      "modal_lock_wallet_maker_running_text": "Générer est actif. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Une transaction collaborative est actuellement en cours. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_alternative_action_text": "Vous pouvez également fermer la fenêtre pour vous déconnecter."
     }
@@ -174,7 +174,7 @@
     "label_rel_fee": "Frais relatifs  {{ fee }}",
     "description_rel_fee": "En pourcentage des montants, vous aidez les autres à améliorer leur vie privée.",
     "feedback_invalid_rel_fee": "Veuillez fournir un tarif relatif entre {{feeRelPercentageMin}} et {{feeRelPercentageMax}}.",
-    "label_abs_fee": "Frais absolus en sats",
+    "label_abs_fee": "Frais absolus {{ fee }}",
     "description_abs_fee": "Un montant absolu que vous recevez pour aider les autres à améliorer leur vie privée.",
     "feedback_invalid_abs_fee": "Veuillez fournir un tarif absolu.",
     "feedback_invalid_min_amount": "Veuillez indiquer un montant minimum.",

@@ -235,7 +235,7 @@
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
       "error_saving_fee_config_failed": "保存費用配置值時出錯了。原因：{{ reason }}",
-      "error_loading_fee_config_failed": "加載費用設置時出錯了。"
+      "error_loading_fee_config_failed": "加載費用設置時出錯了。原因：{{ reason }}"
     }
   },
   "logs": {
