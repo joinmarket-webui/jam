@@ -243,6 +243,22 @@
       "error_loading_fee_config_failed": "Fehler beim Laden der Konfigurationswerte."
     }
   },
+  "rescan_chain": {
+    "title": "Timechain neu scannen",
+    "subtitle": "Scanne die lokale Timechain nach wallet-bezogenen Transaktionen.",
+    "label_blockheight": "Rescan-Höhe",
+    "description_blockheight": "Die Blockhöhe der Chain, bei der der Rescan-Prozess gestartet wird.",
+    "placeholder_blockheight": "Blockhöhe eingeben",
+    "preset_blocks_day": "Letzte {{ count }} Blöcke (~24 Stunden)",
+    "preset_blocks_year": "Letzte {{ count }} Blöcke (~1 Jahr)",
+    "preset_from_block": "Ab Block #{{ blockHeight }}",
+    "tooltip_segwit_activation": "Segwit-Aktivierungsblock",
+    "error_rescanning_failed": "Fehler beim Starten des Rescan-Prozesses. Begründung: {{ reason }}",
+    "success_rescan_started": "Rescan erfolgreich gestartet.",
+    "feedback_invalid_blockheight": "Bitte gib einen gültigen Wert zwischen {{ min }} und der aktuellen Blockhöhe ein.",
+    "text_button_submit": "Timechain neu scannen",
+    "text_button_submitting": "Timechain wird gescannt..."
+  },
   "logs": {
     "title": "Logs",
     "error_loading_logs_failed": "Log Datei konnte nicht geladen werden. "
@@ -553,6 +569,7 @@
       "button_freeze": "Einfrieren",
       "button_unfreeze": "Auftauen",
       "utxo_tag_fb": "Bond",
+      "column_title_index": "Index",
       "column_title_balance": "Wert",
       "column_title_address": "Adresse",
       "column_title_confirmations": "Confs.",
