@@ -39,11 +39,11 @@ import type { JarIndex } from '@/types/global'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
 import { Spinner } from '../ui/spinner'
-import { ActiveCollaborativeSendAlert } from './ActiveCollaborativeSendAlert'
 import { PaymentAbortDialog } from './PaymentAbortDialog'
 import PaymentConfirmDialog from './PaymentConfirmDialog'
 import { SendForm } from './SendForm'
 import { ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL } from './SendForm.schema'
+import { TakerStatusCard } from './TakerStatusCard'
 import { UtxoSelectionDialog } from './UtxoSelectionDialog'
 import { buildCollaborativeSendRequest, buildNonCollaborativeSendRequest } from './collaborativeSend'
 import type { SendFormValues } from './types'
@@ -497,7 +497,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         }
 
         {(takerRunning && !schedulerRunning) || takerInfo.currentPaymentAttempt !== undefined ? (
-          <ActiveCollaborativeSendAlert
+          <TakerStatusCard
             takerInfo={takerInfo}
             jars={jars}
             isAborting={isWaitingCoinjoinStop}

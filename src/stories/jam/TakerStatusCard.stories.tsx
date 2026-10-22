@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { ActiveCollaborativeSendAlert } from '@/components/send/ActiveCollaborativeSendAlert'
+import { TakerStatusCard } from '@/components/send/TakerStatusCard'
 import type { PaymentAttempt, TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 
-const meta: Meta<typeof ActiveCollaborativeSendAlert> = {
-  title: 'Jam/ActiveCollaborativeSendAlert',
-  component: ActiveCollaborativeSendAlert,
+const meta: Meta<typeof TakerStatusCard> = {
+  title: 'Jam/TakerStatusCard',
+  component: TakerStatusCard,
   tags: ['autodocs'],
   args: {
     jars: [],
@@ -16,7 +16,7 @@ const meta: Meta<typeof ActiveCollaborativeSendAlert> = {
 }
 export default meta
 
-type Story = StoryObj<typeof ActiveCollaborativeSendAlert>
+type Story = StoryObj<typeof TakerStatusCard>
 
 const statusUnknown: TakerInfo['status'] = {
   value: null,
