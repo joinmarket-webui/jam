@@ -29,11 +29,18 @@ export const BitcoinAmountInput = ({
       {label && <Label>{label}</Label>}
       <div className="flex w-full items-center gap-2">
         <div className="relative flex-1">
-          <div onClick={toggleCurrencyUnit} className="absolute inset-y-0 left-0 flex items-center px-1">
+          {/* mouse shortcut only: the toggle button next to the input is the accessible control */}
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden="true"
+            onClick={toggleCurrencyUnit}
+            className="absolute inset-y-0 left-0 flex items-center px-1"
+          >
             <span className="text-muted-foreground px-1">
               <CurrencySymbol currency={currency} isPrivate={isPrivate} />
             </span>
-          </div>
+          </button>
           <Input
             type="number"
             placeholder={placeholder}
