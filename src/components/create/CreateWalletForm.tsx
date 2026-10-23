@@ -26,7 +26,10 @@ const createFormSchema = (wallets: WalletFileName[], t: TFunction) => {
       walletName: yup
         .string()
         .trim()
-        .max(MAX_WALLET_NAME_LENGTH)
+        .max(
+          MAX_WALLET_NAME_LENGTH,
+          t('create_wallet.feedback_wallet_name_too_long', { max: MAX_WALLET_NAME_LENGTH.toLocaleString() }),
+        )
         .required(t('create_wallet.feedback_invalid_wallet_name'))
         .test('valid-wallet-name-test', t('create_wallet.feedback_invalid_wallet_name'), (value) => {
           return /^[\w-]+$/.test(value)
@@ -34,7 +37,7 @@ const createFormSchema = (wallets: WalletFileName[], t: TFunction) => {
         .test('valid-wallet-name-unique-test', t('create_wallet.feedback_wallet_name_already_exists'), (value) => {
           return !wallets.includes((value + JM_WALLET_FILE_EXTENSION) as WalletFileName)
         }),
-      password: yup.string().min(1).required(t('create_wallet.feedback_invalid_password')),
+      password: yup.string().required(t('create_wallet.feedback_invalid_password')),
       confirmPassword: yup
         .string()
         .required(t('create_wallet.feedback_invalid_password_confirm'))

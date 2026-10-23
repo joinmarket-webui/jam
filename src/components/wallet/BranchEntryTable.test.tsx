@@ -97,9 +97,9 @@ describe('BranchEntryTable', () => {
     await user.click(screen.getByText('jar_details.utxo_list.column_title_address'))
     expect(screen.getByText('bc1qbranch-a')).toBeInTheDocument()
 
-    // the derivation-index column has an empty header; click it via the column header role
-    const headers = screen.getAllByRole('columnheader')
-    await user.click(headers[0])
+    const indexHeader = screen.getByText('jar_details.utxo_list.column_title_index')
+    expect(indexHeader).toBeInTheDocument()
+    await user.click(indexHeader)
     expect(screen.getByText('bc1qbranch-b')).toBeInTheDocument()
   })
 
