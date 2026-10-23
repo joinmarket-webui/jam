@@ -594,7 +594,7 @@ describe('SendPage', () => {
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     await waitFor(() =>
-      expect(mocks.toastError).toHaveBeenCalledWith(expect.stringContaining('send.error_loading_min_makers_failed')),
+      expect(mocks.toastError).toHaveBeenCalledWith('send.error_loading_min_makers_failed:{"reason":"config boom"}'),
     )
   })
 
