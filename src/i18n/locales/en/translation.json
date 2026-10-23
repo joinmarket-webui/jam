@@ -878,6 +878,8 @@
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
     "description_fees": "A Scheduled Sweep will pay all occurring fees automatically.",
+    "label_use_insecure_testing_settings": "Use insecure testing settings",
+    "description_use_insecure_testing_settings": "This is completely insecure but makes testing the schedule much faster.",
     "scheduler_options": "Scheduled Sweep options",
     "label_include_maker_sessions": "Include maker sessions",
     "description_include_maker_sessions": "Occasionally switch from taker to maker, which aids privacy.",

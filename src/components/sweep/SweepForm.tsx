@@ -154,11 +154,11 @@ export const SweepForm = ({
           />
           <Label htmlFor="switch-use-insecure-schedule-testing" className="flex flex-col items-start gap-0">
             <div className="flex items-center gap-2 font-medium">
-              Use insecure testing settings
+              {t('scheduler.label_use_insecure_testing_settings')}
               <DevBadge />
             </div>
             <div className="text-muted-foreground text-sm">
-              This is completely insecure but makes testing the schedule much faster.
+              {t('scheduler.description_use_insecure_testing_settings')}
             </div>
           </Label>
         </div>

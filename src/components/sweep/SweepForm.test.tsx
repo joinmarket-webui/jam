@@ -11,6 +11,10 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+vi.mock('@/constants/debugFeatures', () => ({
+  isDebugFeatureEnabled: () => true,
+}))
+
 const jars = [{ jarIndex: 0 }, { jarIndex: 1 }] as unknown as Jar[]
 
 describe('SweepForm', () => {
@@ -46,5 +50,12 @@ describe('SweepForm', () => {
     ]) {
       expect(screen.getByText(key)).toBeInTheDocument()
     }
+  })
+
+  it('renders insecure testing settings with translated labels when enabled', () => {
+    render(<SweepForm jars={jars} addressSummary={{}} network={Network.regtest} onSubmit={vi.fn()} debug={true} />)
+
+    expect(screen.getByText('scheduler.label_use_insecure_testing_settings')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.description_use_insecure_testing_settings')).toBeInTheDocument()
   })
 })
