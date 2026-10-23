@@ -30,6 +30,39 @@ JMOBWATCH_PORT=8000 \
 npm run dev
 ```
 
+## JoinMarket NG Regtest Smoke Test
+
+An automated end-to-end smoke test verifies the core browser-driven wallet journey against an isolated, pinned JoinMarket NG and Bitcoin Core regtest backend.
+
+The smoke journey validates:
+
+- Disposable wallet creation and backup confirmation
+- Wallet lock and unlock via UI
+- Receiving confirmed regtest funds and exact balance display
+- Direct sending with real transaction output and fee verification via Bitcoin Core RPC
+- Browser reload session persistence
+
+### Running the smoke test
+
+1. Start the isolated smoke regtest services:
+
+   ```bash
+   npm run smoke:up
+   ```
+
+2. Run the Playwright smoke test:
+
+   ```bash
+   npm run test:smoke
+   ```
+
+3. When finished, tear down the isolated smoke environment:
+   ```bash
+   npm run smoke:down
+   ```
+
+Test evidence (screenshots and logs) is saved to `test-evidence/` and `test-results/`.
+
 ## Storybook
 
 Storybook is used to inspect reusable UI and Jam components in isolation without running a full wallet flow.

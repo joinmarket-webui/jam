@@ -59,7 +59,7 @@ export const BranchEntryTable = ({
     () =>
       columnHelper.columns([
         columnHelper.accessor('derivationIndex', {
-          header: () => <div className="flex items-center">{/* TODO: i18n */}</div>,
+          header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_index')}</div>,
           sortFn: (a, b) => {
             return a.original.derivationIndex - b.original.derivationIndex
           },
