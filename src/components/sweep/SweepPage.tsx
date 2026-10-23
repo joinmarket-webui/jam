@@ -238,7 +238,6 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     makerRunning ||
     takerRunning ||
     rescanInfo.rescanning ||
-    makerRunning ||
     !preconditionSummary.isFulfilled
 
   const isStartDisabled =
