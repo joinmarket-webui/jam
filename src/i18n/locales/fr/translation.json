@@ -408,11 +408,7 @@
       "feedback_invalid_tx_fees_blocks": "Veuillez fournir une cible en blocs valide entre {{ min }} et {{ max }}.",
       "feedback_invalid_tx_fees_satspervbyte": "Veuillez fournir des frais de transaction valides en sats/vByte entre {{ min }} et {{ max }}.",
       "label_tx_fees_factor": "Randomisation des frais",
-      "description_tx_fees_factor_^0": {
-        "9": {
-          "10": "Des frais aléatoires améliorent la confidentialité. Le pourcentage est un facteur de randomisation à la hausse des frais de base. Exemple : avec des frais de base de 10 sats/vByte et une randomisation de 30 %, une valeur entre 10 et 13 sats/vByte sera utilisée. Par défaut : 20 %."
-        }
-      },
+      "description_tx_fees_factor_^0.9.10": "Des frais aléatoires améliorent la confidentialité. Le pourcentage est un facteur de randomisation à la hausse des frais de base. Exemple : avec des frais de base de 10 sats/vByte et une randomisation de 30 %, une valeur entre 10 et 13 sats/vByte sera utilisée. Par défaut : 20 %.",
       "feedback_invalid_tx_fees_factor": "Veuillez fournir une valeur de randomisation valide entre {{ min }} et {{ max }}.",
       "title_max_cj_fee_settings": "Frais des collaborateurs",
       "description_max_cj_fee_settings": "Les frais des collaborateurs correspondent au prix de la liquidité et dépendent du marché. Le total des frais payés pour chaque transaction dépend du nombre de collaborateurs. Plus de collaborateurs améliorent la confidentialité, mais augmentent aussi les frais.",
