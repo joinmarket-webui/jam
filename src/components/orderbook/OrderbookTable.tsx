@@ -55,6 +55,14 @@ export const OrderbookTable = ({
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: ITEMS_PER_PAGE })
   const [isShowAll, setIsShowAll] = useState(false)
 
+  const counterpartyCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    tableEntries.forEach((entry) => {
+      counts.set(entry.counterparty, (counts.get(entry.counterparty) || 0) + 1)
+    })
+    return counts
+  }, [tableEntries])
+
   const columns = useMemo(
     () =>
       columnHelper.columns([
@@ -68,7 +76,32 @@ export const OrderbookTable = ({
             const bid = Number(b.original.orderId)
             return aid - bid
           },
-          cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
+          cell: (info) => {
+            const counterparty = info.getValue()
+            const count = counterpartyCounts.get(counterparty) ?? 1
+            const isDuplicate = count > 1
+
+            return (
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-sm select-all">{counterparty}</span>
+                {isDuplicate && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge
+                        variant="secondary"
+                        className="border-primary/20 bg-primary/10 text-primary cursor-default px-1.5 py-0 text-[10px] font-normal select-none"
+                      >
+                        {t('orderbook.table.duplicate_identity_badge', { count })}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('orderbook.table.duplicate_identity_tooltip', { count })}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            )
+          },
           meta: {
             alphabetic: true,
           },
@@ -196,7 +229,7 @@ export const OrderbookTable = ({
           },
         }),
       ]),
-    [t],
+    [t, counterpartyCounts],
   )
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>({ minerFeeContribution: false })
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
