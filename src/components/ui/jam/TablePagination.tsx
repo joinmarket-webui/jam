@@ -98,10 +98,10 @@ const TablePagination = ({
             </PaginationItem>
             {[currentPage, currentPage - 1, currentPage + 1, currentPage - 2, currentPage + 2]
               .filter((it) => it >= 1 && it <= totalPages)
-              .toSorted()
               .slice(0, 3)
-              .map((it, index) => (
-                <PaginationItem key={index}>
+              .toSorted((a, b) => a - b)
+              .map((it) => (
+                <PaginationItem key={it}>
                   <PaginationLink isActive={it === currentPage} onClick={() => handlePageChange(it)}>
                     {it}
                   </PaginationLink>
