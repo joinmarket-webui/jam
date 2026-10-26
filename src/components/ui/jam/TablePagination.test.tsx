@@ -114,4 +114,70 @@ describe('<TablePagination />', () => {
 
     expect(onItemsPerPageChange).toHaveBeenCalledWith(50)
   })
+
+  it('renders a centered page window with the active page on double-digit totals', () => {
+    const { rerender } = render(
+      <TablePagination
+        currentPage={9}
+        totalPages={15}
+        itemsPerPage={25}
+        totalItems={375}
+        onPageChange={vi.fn()}
+        onItemsPerPageChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: '8' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '9' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('button', { name: '10' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '7' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '11' })).not.toBeInTheDocument()
+
+    rerender(
+      <TablePagination
+        currentPage={8}
+        totalPages={15}
+        itemsPerPage={25}
+        totalItems={375}
+        onPageChange={vi.fn()}
+        onItemsPerPageChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: '7' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '8' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('button', { name: '9' })).toBeInTheDocument()
+  })
+
+  it('clips the page window at the first and last page', () => {
+    const { rerender } = render(
+      <TablePagination
+        currentPage={1}
+        totalPages={15}
+        itemsPerPage={25}
+        totalItems={375}
+        onPageChange={vi.fn()}
+        onItemsPerPageChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: '1' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '3' })).toBeInTheDocument()
+
+    rerender(
+      <TablePagination
+        currentPage={15}
+        totalPages={15}
+        itemsPerPage={25}
+        totalItems={375}
+        onPageChange={vi.fn()}
+        onItemsPerPageChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: '13' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '14' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '15' })).toHaveAttribute('aria-current', 'page')
+  })
 })
