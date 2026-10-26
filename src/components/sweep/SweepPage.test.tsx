@@ -792,4 +792,22 @@ describe('SweepPage', async () => {
       expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
     })
   })
+
+  describe('Scheduled Sweep Options Labels & Descriptions', () => {
+    it('renders translated labels and descriptions for all sweep options', () => {
+      render(<SweepPage walletFileName="wallet.jmdat" />)
+
+      // Open the accordion
+      fireEvent.click(screen.getByText('scheduler.scheduler_options'))
+
+      expect(screen.getByText('scheduler.label_include_maker_sessions')).toBeInTheDocument()
+      expect(screen.getByText('scheduler.description_include_maker_sessions')).toBeInTheDocument()
+      expect(screen.getByText('scheduler.label_number_of_collaborators')).toBeInTheDocument()
+      expect(screen.getByText('scheduler.description_number_of_collaborators')).toBeInTheDocument()
+      expect(screen.getByText('scheduler.label_transactions_per_jar')).toBeInTheDocument()
+      expect(screen.getByText('scheduler.description_transactions_per_jar')).toBeInTheDocument()
+      expect(screen.getByText('scheduler.label_rounding_chance')).toBeInTheDocument()
+      expect(screen.getByText('scheduler.description_rounding_chance')).toBeInTheDocument()
+    })
+  })
 })
