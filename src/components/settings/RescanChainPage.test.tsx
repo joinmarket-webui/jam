@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { routes } from '@/constants/routes'
 import { type RescanInfo } from '@/context/JamSessionInfoContext'
 import { SEGWIT_ACTIVATION_BLOCK, type WalletFileName } from '@/lib/utils'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
@@ -102,13 +103,13 @@ describe('RescanChainPage', () => {
     })
   })
 
-  it('renders the form and navigates back', async () => {
-    await renderPage({ backLinkTarget: 'settings' })
+  it('renders the form and navigates to the requested back link', async () => {
+    await renderPage({ backLinkTarget: 'home' })
 
     expect(screen.getByText('global.back')).toBeInTheDocument()
     fireEvent.click(screen.getByTitle('global.back'))
 
-    expect(navigateMock).toHaveBeenCalled()
+    expect(navigateMock).toHaveBeenCalledWith(routes.home)
   })
 
   it('shows the in-progress alert without progress', async () => {
