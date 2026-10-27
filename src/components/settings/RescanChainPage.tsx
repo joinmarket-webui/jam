@@ -231,7 +231,7 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
           <Button
             variant="ghost"
             className="shrink-0"
-            onClick={() => void navigate(routes.settings)}
+            onClick={() => void navigate(routes[backLinkTarget])}
             title={t('global.back')}
           >
             <ArrowLeftIcon />
