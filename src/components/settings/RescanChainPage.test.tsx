@@ -56,6 +56,7 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSessionInfoContext: () => ({ operations: { rescan: { enabled: !rescanInfo.rescanning } } }),
   useRescanStatus: () => ({ rescanInfo, setRescanInfo }),
   useCurrentBlockHeight: () => ({ currentBlockHeight: SEGWIT_ACTIVATION_BLOCK }),
 }))
