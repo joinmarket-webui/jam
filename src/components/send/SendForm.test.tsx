@@ -518,6 +518,46 @@ describe('SendForm', () => {
     await flushActUpdates()
   })
 
+  it('sets the minimum amount according to the destination address type', async () => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+    expect(amountInput).toHaveAttribute('min', '294')
+
+    fireEvent.change(destinationInput, {
+      target: { value: 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr' },
+    })
+    await flushActUpdates()
+    expect(amountInput).toHaveAttribute('min', '330')
+
+    fireEvent.change(destinationInput, { target: { value: '1BitcoinEaterAddressDontSend8MUo1T' } })
+    await flushActUpdates()
+    expect(amountInput).toHaveAttribute('min', '546')
+  })
+
+  it('revalidates the amount against the dust limit when the destination changes', async () => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+    const dustLimitError = 'send.feedback_amount_below_dust_limit {"dustLimit":330}'
+
+    fireEvent.change(destinationInput, {
+      target: { value: 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr' },
+    })
+    fireEvent.change(amountInput, { target: { value: '300' } })
+    fireEvent.submit(document.querySelector('form')!)
+    await flushActUpdates()
+
+    expect(await screen.findByText(dustLimitError)).toBeInTheDocument()
+
+    fireEvent.change(destinationInput, { target: { value: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq' } })
+    await flushActUpdates()
+
+    await waitFor(() => expect(screen.queryByText(dustLimitError)).not.toBeInTheDocument())
+  })
+
   it('shows a network badge for a non-mainnet destination address', async () => {
     renderForm()
 

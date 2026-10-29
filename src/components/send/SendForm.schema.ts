@@ -6,7 +6,7 @@ import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import * as fb from '@/lib/fidelityBondUtils'
-import { destinationAddressField, sourceJarField } from '@/lib/formValidation'
+import { destinationAddressField, dustLimitForAddress, sourceJarField } from '@/lib/formValidation'
 import { isValidInteger, pseudoRandomInteger } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { toTxFeeFormDefaultValues, createTxFeeFormSchema } from './TxFeeForm.schema'
@@ -18,8 +18,9 @@ export const initialNumberOfCollaborators = (minValue: number): number => {
   return Math.min(baseValue, MAX_NUM_COLLABORATORS)
 }
 
-// min amount joinmarket is able to send (without erroring, last check with v0.9.11 on 2026-04-26)
-export const MIN_SEND_AMOUNT: AmountSats = 292
+// lowest dust limit of any output type (p2wpkh) - the limit of the actual destination
+// address is checked separately (see `dustLimitForAddress`)
+export const MIN_SEND_AMOUNT: AmountSats = 294
 export const MAX_SEND_AMOUNT: AmountSats = TOTAL_COIN_SUPPLY
 
 export const ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL = 'valid-source-jar-needs-manual-coin-control-test'
@@ -216,6 +217,21 @@ export const createSendFormSchema = (
           root.amount.amount,
           'amount.amount',
           'amount-exceeds-balance-test',
+          true,
+        )
+      })
+      .test((root) => {
+        if (root.amount.isSweep) return true
+        if (root.amount.amount === undefined || root.amount.amount === null) return true
+
+        const dustLimit = dustLimitForAddress(root.destination.address)
+        if (dustLimit === undefined || root.amount.amount >= dustLimit) return true
+
+        return new yup.ValidationError(
+          t('send.feedback_amount_below_dust_limit', { dustLimit }),
+          root.amount.amount,
+          'amount.amount',
+          'amount-below-dust-limit-test',
           true,
         )
       })
