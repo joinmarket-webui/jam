@@ -75,7 +75,7 @@ const addressSummary = {
 const validFormValues = {
   source: { fromJar: 0 },
   destination: { address: validMainnetAddress },
-  amount: { isSweep: false, amount: MIN_SEND_AMOUNT },
+  amount: { isSweep: false, amount: 1_000 },
   isCoinJoin: true,
   numCollaborators: 4,
   txFee: {
@@ -246,6 +246,34 @@ describe('createSendFormSchema', () => {
         numCollaborators: null,
       }),
     ).rejects.toThrow('send.error_invalid_num_collaborators:{"minNumCollaborators":4,"maxNumCollaborators":20}')
+  })
+
+  it.each([
+    ['p2wpkh', 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', 294],
+    ['p2wsh', 'bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3', 330],
+    ['p2tr', 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr', 330],
+    ['p2sh', '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy', 540],
+    ['p2pkh', validMainnetAddress, 546],
+  ])('rejects amounts below the dust limit of %s destinations', async (_, address, dustLimit) => {
+    const withAmount = (amount: number) => ({
+      ...validFormValues,
+      destination: { address },
+      amount: { isSweep: false, amount },
+    })
+
+    await expect(schema.validate(withAmount(dustLimit - 1))).rejects.toThrow(
+      `send.feedback_amount_below_dust_limit:{"dustLimit":${dustLimit}}`,
+    )
+    await expect(schema.validate(withAmount(dustLimit))).resolves.toMatchObject(withAmount(dustLimit))
+  })
+
+  it('does not apply the dust limit to sweeps', async () => {
+    await expect(
+      schema.validate({
+        ...validFormValues,
+        amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT, sweepUtxos: ['tx:0'] },
+      }),
+    ).resolves.toMatchObject({ amount: { isSweep: true, sweepAmount: MIN_SEND_AMOUNT } })
   })
 
   it('supports sweep sends with a sweep amount', async () => {
