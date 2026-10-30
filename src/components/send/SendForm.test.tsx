@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import type { BalanceSummary } from '@/lib/balanceSummary'
@@ -579,5 +580,23 @@ describe('SendForm', () => {
     expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
 
     await flushActUpdates()
+  })
+
+  it('allows typing a number of collaborators whose first digit is below the minimum', async () => {
+    const user = userEvent.setup()
+    renderForm({ debug: true })
+
+    await user.click(screen.getByRole('button', { name: /send.sending_options/i }))
+
+    const input = document.querySelector<HTMLInputElement>('[data-slot="slider-input"]')!
+    expect(input).toHaveAttribute('min', '4')
+
+    await user.tripleClick(input)
+    await user.keyboard('12')
+    await user.tab()
+
+    expect(input).toHaveValue(12)
+    const valuesJson = screen.getByText('values:').nextElementSibling?.textContent ?? '{}'
+    expect((JSON.parse(valuesJson) as { numCollaborators?: number }).numCollaborators).toBe(12)
   })
 })
