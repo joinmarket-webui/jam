@@ -18,11 +18,10 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   }),
 }))
 
+// like the real component, selecting a jar changes a radio input (and therefore emits a form `change` event)
 vi.mock('@/components/ui/jam/SelectableJar', () => ({
   SelectableJar: ({ name, isSelected, onSelect }: { name: string; isSelected: boolean; onSelect: () => void }) => (
-    <button type="button" aria-pressed={isSelected} onClick={onSelect}>
-      {name}
-    </button>
+    <input type="radio" aria-label={name} checked={isSelected} onChange={onSelect} />
   ),
 }))
 
@@ -50,41 +49,16 @@ const jars = [
 ] as unknown as Jar[]
 
 describe('ReceiveForm', () => {
-  it('submits selected jar and amount changes', async () => {
+  it('submits the selected jar', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
 
-    render(
-      <ReceiveForm
-        jars={jars}
-        defaultValues={{ source: { fromJar: 0 }, amount: undefined }}
-        onSubmit={onSubmit}
-        debug={true}
-      />,
-    )
+    render(<ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 } }} onSubmit={onSubmit} debug={true} />)
 
-    await user.click(screen.getByRole('button', { name: 'One' }))
-    await user.type(screen.getByLabelText('receive.label_amount_input'), '2100')
+    await user.click(screen.getByRole('radio', { name: 'One' }))
 
-    await waitFor(() =>
-      expect(onSubmit).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          source: { fromJar: 1 },
-          amount: 2100,
-        }),
-        expect.anything(),
-      ),
-    )
+    await waitFor(() => expect(onSubmit).toHaveBeenLastCalledWith({ source: { fromJar: 1 } }, expect.anything()))
+    expect(screen.getByRole('radio', { name: 'One' })).toBeChecked()
     expect(screen.getByText(/"fromJar": 1/u)).toBeInTheDocument()
-  })
-
-  it('shows validation feedback for invalid amounts', async () => {
-    const user = userEvent.setup()
-
-    render(<ReceiveForm jars={jars} defaultValues={{ source: { fromJar: 0 } }} onSubmit={vi.fn()} />)
-
-    await user.type(screen.getByLabelText('receive.label_amount_input'), '0')
-
-    expect(await screen.findByText('receive.feedback_invalid_amount')).toBeInTheDocument()
   })
 })

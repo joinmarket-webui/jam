@@ -342,9 +342,6 @@
     "text_copy_address_confirmed": "Скопировано",
     "button_settings": "Параметры получения",
     "label_source_jar": "Получить в",
-    "label_amount_input": "Сумма",
-    "placeholder_amount_input": "Введите сумму в sats",
-    "feedback_invalid_amount": "Пожалуйста, укажите действительную сумму.",
     "button_new_address": "Получить новый адрес",
     "text_getting_address": "Получение нового адреса"
   },
