@@ -81,6 +81,18 @@ describe('buildCollaborativeSendRequest', () => {
     expect(request.txfee).toBe(1_334)
   })
 
+  it('passes txfee in sats/kvbyte without floating point rounding errors', () => {
+    const request = buildCollaborativeSendRequest({
+      ...baseValues(),
+      txFee: {
+        txFeeUnit: TX_FEE_UNITS.SATS_PER_VBYTE,
+        txFeeInSatsPerVbyte: 4.03,
+      },
+    })
+
+    expect(request.txfee).toBe(4_030)
+  })
+
   it('throws for invalid destination address', () => {
     expect(() =>
       buildCollaborativeSendRequest({

@@ -25,7 +25,7 @@ import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { getErrorReason } from '@/lib/errorReason'
-import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { satsPerVbyteToSatsPerKvbyte, TX_FEE_UNITS } from '@/lib/feeConfig'
 import { cn, factorToPercentage, isValidInteger, isValidNumber, percentageToFactorString } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
@@ -136,7 +136,7 @@ export const FeeConfigDialog = ({
 
       const txFeesSatsPerKvByteValue =
         miningData.txFee.txFeeInSatsPerVbyte !== undefined && isValidNumber(miningData.txFee.txFeeInSatsPerVbyte)
-          ? String(Math.ceil(miningData.txFee.txFeeInSatsPerVbyte * 1_000))
+          ? String(satsPerVbyteToSatsPerKvbyte(miningData.txFee.txFeeInSatsPerVbyte))
           : ''
       const txFeesValue =
         miningData.txFee.txFeeUnit === TX_FEE_UNITS.BLOCKS ? txFeesBlocksValue : txFeesSatsPerKvByteValue
