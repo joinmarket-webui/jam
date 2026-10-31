@@ -9,6 +9,12 @@ type SliderWithInputProps = React.ComponentProps<typeof SliderPrimitive.Root> & 
   inputClassName?: string
 }
 
+const parseValue = (rawText: string) => {
+  if (rawText.trim() === '') return undefined
+  const parsed = Number(rawText)
+  return Number.isNaN(parsed) ? undefined : parsed
+}
+
 /**
  * A single-thumb {@link Slider} paired with a companion numeric input, so users
  * can type an exact value instead of dragging. Keeps the base `ui/slider`
@@ -34,6 +40,8 @@ function SliderWithInput({
   const currentValue = _values[0]
   const disabled = props.disabled
 
+  const [draft, setDraft] = React.useState<string | null>(null)
+
   const clamp = (raw: number) => {
     let next = Math.min(max, Math.max(min, raw))
     if (typeof step === 'number' && step > 0) {
@@ -44,11 +52,21 @@ function SliderWithInput({
     return next
   }
 
-  const commitValue = (rawText: string) => {
-    if (rawText.trim() === '') return
-    const parsed = Number(rawText)
-    if (Number.isNaN(parsed)) return
-    props.onValueChange?.([clamp(parsed)])
+  const onInputChange = (rawText: string) => {
+    setDraft(rawText)
+    const parsed = parseValue(rawText)
+    if (parsed !== undefined && clamp(parsed) === parsed) {
+      props.onValueChange?.([parsed])
+    }
+  }
+
+  const commitDraft = () => {
+    if (draft === null) return
+    const parsed = parseValue(draft)
+    if (parsed !== undefined) {
+      props.onValueChange?.([clamp(parsed)])
+    }
+    setDraft(null)
   }
 
   return (
@@ -60,10 +78,14 @@ function SliderWithInput({
         min={min}
         max={max}
         step={step}
-        value={currentValue ?? ''}
+        value={draft ?? currentValue ?? ''}
         disabled={disabled}
         aria-label={props['aria-label']}
-        onChange={(event) => commitValue(event.target.value)}
+        onChange={(event) => onInputChange(event.target.value)}
+        onBlur={commitDraft}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') commitDraft()
+        }}
         className={cn('h-8 w-20 shrink-0 text-center', inputClassName)}
       />
       <Slider
