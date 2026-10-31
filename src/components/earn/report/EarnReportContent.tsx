@@ -19,14 +19,18 @@ import { SortIcon } from '@/components/ui/jam/SortIcon'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { BITCOIN_GENESIS_DATE, cn, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
+import { cn, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
 import { earnReportTableFeatures } from './EarnReportContent.schema'
 
-const sumEarned = (entries: EarnReportEntry[], since: Date): AmountSats => {
-  return entries.filter((entry) => entry.timestamp >= since).reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
+const isValidDate = (date: Date) => !Number.isNaN(date.getTime())
+
+const sumEarned = (entries: EarnReportEntry[], since?: Date): AmountSats => {
+  return entries
+    .filter((entry) => since === undefined || entry.timestamp >= since)
+    .reduce((sum, entry) => sum + (entry.earnedAmount ?? 0), 0)
 }
 
 const generateDemoEntry = () => {
@@ -80,9 +84,14 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
       columnHelper.columns([
         columnHelper.accessor('timestamp', {
           header: () => t('earn.report.heading_timestamp'),
-          sortFn: (a, b) => a.original.timestamp.getTime() - b.original.timestamp.getTime(),
+          sortFn: (a, b) => {
+            const timeA = isValidDate(a.original.timestamp) ? a.original.timestamp.getTime() : 0
+            const timeB = isValidDate(b.original.timestamp) ? b.original.timestamp.getTime() : 0
+            return timeA - timeB
+          },
           cell: (info) => {
             const ts = info.getValue()
+            if (!isValidDate(ts)) return <span>-</span>
             return <span title={ts.toISOString()}>{ts.toLocaleString()}</span>
           },
         }),
@@ -142,7 +151,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
     const rows = getSortedRowModel().rows.map((row) =>
       [
-        row.original.timestamp.toISOString(),
+        isValidDate(row.original.timestamp) ? row.original.timestamp.toISOString() : '',
         row.original.cjTotalAmount ?? '',
         row.original.inputCount ?? '',
         row.original.inputAmount ?? '',
@@ -164,7 +173,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
     }, 0)
   }, [getSortedRowModel])
 
-  const earnedTotal = useMemo(() => sumEarned(allEntries, BITCOIN_GENESIS_DATE), [allEntries])
+  const earnedTotal = useMemo(() => sumEarned(allEntries), [allEntries])
 
   // TODO: `since` date should be on start of day
   const earned90Days = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_90_DAYS)), [allEntries, now])
