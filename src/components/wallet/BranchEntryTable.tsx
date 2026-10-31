@@ -59,7 +59,7 @@ export const BranchEntryTable = ({
     () =>
       columnHelper.columns([
         columnHelper.accessor('derivationIndex', {
-          header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_index')}</div>,
+          header: () => <div className="flex items-center">{t('jar_details.address_list.column_title_index')}</div>,
           sortFn: (a, b) => {
             return a.original.derivationIndex - b.original.derivationIndex
           },
@@ -75,11 +75,7 @@ export const BranchEntryTable = ({
           },
         }),
         columnHelper.accessor('address', {
-          header: () => (
-            <div className="flex items-center">
-              {t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_address')}
-            </div>
-          ),
+          header: () => <div className="flex items-center">{t('jar_details.address_list.column_title_address')}</div>,
           sortFn: (a, b) => {
             const val = a.original.address.localeCompare(b.original.address)
             if (val !== 0) return val
@@ -92,11 +88,7 @@ export const BranchEntryTable = ({
           },
         }),
         columnHelper.accessor('balance', {
-          header: () => (
-            <div className="flex items-center">
-              {t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_balance')}
-            </div>
-          ),
+          header: () => <div className="flex items-center">{t('jar_details.address_list.column_title_balance')}</div>,
           sortFn: (a, b) => {
             const val = a.original.balance - b.original.balance
             if (val !== 0) return val
@@ -110,7 +102,7 @@ export const BranchEntryTable = ({
           },
         }),
         columnHelper.accessor('tags', {
-          header: () => t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_label_and_status'),
+          header: () => t('jar_details.address_list.column_title_tags'),
           cell: (info) => (
             <div className="flex items-center gap-2">
               {info.row.original.tags.map((it, index) => {

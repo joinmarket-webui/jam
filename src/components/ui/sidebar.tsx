@@ -230,11 +230,7 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      title={
-        isSidebarOpen
-          ? /*TODO: t('sidebar.trigger.title_close')*/ t('global.close')
-          : /*TODO: t('sidebar.trigger.title_open')*/ undefined
-      }
+      title={isSidebarOpen ? t('sidebar.trigger.title_close') : t('sidebar.trigger.title_open')}
       className={className}
       onClick={(event) => {
         onClick?.(event)

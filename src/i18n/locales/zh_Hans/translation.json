@@ -29,7 +29,10 @@
       "error_freezing_utxos": "无法冻结 UTXOs。"
     },
     "next": "继续",
-    "experimental": "试验性"
+    "experimental": "试验性",
+    "text_address_copied": "已复制地址",
+    "error_copy_address_failed": "无法复制地址。",
+    "label_jar_n": "罐子 {{ jar }}"
   },
   "app": {
     "alert_rescan_in_progress": "正在进行重新扫描..."
@@ -49,9 +52,7 @@
     "warning": "这是测试版软件。<br /><1>使用前请先参阅。</1>",
     "warning_alert_title": "警告",
     "warning_alert_button_ok": "没问题。",
-    "cheatsheet": "备忘单",
-    "connected": "已连接",
-    "disconnected": "已断连"
+    "cheatsheet": "备忘单"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -91,7 +92,6 @@
     "subtitle_no_wallets": "看起来你目前还没有任何钱包。",
     "button_new_wallet": "创建新钱包",
     "button_import_wallet": "导入现有的钱包",
-    "alert_wallet_open": "只允许一个活跃钱包。如果你想要打开另一个钱包，请先锁上 '{{ currentWalletName }}'。",
     "error_loading_failed": "加载钱包失败。",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} 已成功锁上。",
@@ -128,7 +128,6 @@
     "confirmation_toggle_reveal_info": "显示敏感信息",
     "confirmation_toggle_info_written_down": "我已经写下了以上的信息。",
     "confirmation_button_fund_wallet": "充值钱包",
-    "feedback_seed_confirmed": "种子词已确认。",
     "back_button": "返回",
     "next_button": "继续",
     "hint_duration_text": "请耐心等待，这可能需要几分钟。"
@@ -207,9 +206,6 @@
     "show_logs": "显示日志",
     "show_fee_config": "调整费用限制",
     "button_lock_wallet": "锁上钱包",
-    "button_switch_wallet": "切换钱包",
-    "button_create_wallet": "创建新钱包",
-    "seed_modal_info_text": "请写下你的种子词和密码！没有这些信息，你将无法访问和恢复你的钱包！",
     "documentation": "文档",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -226,7 +222,6 @@
       "feedback_invalid_tx_fees_blocks": "请提供一个有效的区块目标，从 {{ min }} 到 {{ max }}。",
       "feedback_invalid_tx_fees_satspervbyte": "请提供一个有效的，以聪/字节为单位的交易费，从 {{ min }} 到 {{ max }}。",
       "label_tx_fees_factor": "费用随机化",
-      "description_tx_fees_factor": "随机费用改善隐私。该百分比应理解为围绕基本费用的正负。例：如果将基本费用设为10聪/字节，并将随机化值设为30%，则将使用7到13聪/字节之间的费用。默认：20%。",
       "feedback_invalid_tx_fees_factor": "请提供一个有效的费用随机化值，从{{ min }}到{{ max }}。",
       "title_max_cj_fee_settings": "协作方费用",
       "description_max_cj_fee_settings": "协作方费用关联流动性价格并取决于市场状况。每个交易的总费用取决于协作方总数。额外的协作方会增加隐私，但也会增加费用。",
@@ -240,7 +235,7 @@
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
       "error_saving_fee_config_failed": "保存费用配置值时出错了。原因：{{ reason }}",
-      "error_loading_fee_config_failed": "加载费用设置时出错了。"
+      "error_loading_fee_config_failed": "加载费用设置时出错了。原因：{{ reason }}"
     }
   },
   "logs": {
@@ -251,11 +246,10 @@
     "title": "发送",
     "subtitle": "使用协作式交易来提高安全性和隐秘性。",
     "label_num_collaborators": "协作方数量：{{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "其他",
     "description_num_collaborators": "更高的数量会提高隐秘性，但同时也会增加交易费用。",
     "error_invalid_num_collaborators": "请使用{{ minNumCollaborators }}到{{ maxNumCollaborators }}个协作方。",
     "taker_error_message_max_fees_config_missing": "必须在你的 joinmarket.cfg 中先设置配置变量 'max_cj_fee_rel' 和 'max_cj_fee_abs' 才能发送协作式交易。请考虑手动将它们添加到你的配置中。",
-    "error_loading_min_makers_failed": "加载配置值 'minimum_makers' 失败了。",
+    "error_loading_min_makers_failed": "加载配置值 'minimum_makers' 失败了。原因：{{ reason }}",
     "alert_payment_successful": "付款成功：在交易 {{ txid }} 中发送了 {{ amount }} 聪到 {{ address }}。",
     "text_maker_running": "收益处于活跃状态。停止服务以发送协作式交易。",
     "text_coinjoin_already_running": "协作式交易正在进行中。",
@@ -264,8 +258,6 @@
     "feedback_reused_address": "这个地址已经被使用过了。为了保护你的隐私，请选另一个地址。",
     "label_source_jar": "来源",
     "title_jar_selector": "选择一个你自己钱包中的罐子作为收款方。",
-    "label_amount": "聪金额",
-    "placeholder_amount": "输入金额...",
     "feedback_invalid_amount": "请输入有效的金额。",
     "sending_options": "发送选项",
     "toggle_coinjoin": "作为协作式交易发送",
@@ -314,12 +306,8 @@
   "receive": {
     "title": "接收",
     "subtitle": "将聪发送到以下的地址来充值你的钱包。",
-    "text_copy_address": "已复制地址",
     "error_copy_address_failed": "无法复制地址。",
-    "button_copy_address": "复制",
-    "text_copy_address_confirmed": "已复制",
     "button_settings": "接收选项",
-    "label_amount": "要求的聪金额",
     "feedback_invalid_amount": "请输入有效的金额。",
     "button_new_address": "获取新地址",
     "text_getting_address": "正在获取新地址"
@@ -332,7 +320,6 @@
     "alert_starting": "服务正在开始。",
     "alert_stopping": "服务正在停止。",
     "alert_running": "正在提供流动性并以此赚取收益...",
-    "alert_no_spendable_balance_description": "<0>充值你的钱包</0>以开始收益。",
     "radio_abs_offer_label": "绝对报价",
     "radio_rel_offer_label": "相对报价",
     "label_rel_fee": "相对费用{{ fee }}",
@@ -341,7 +328,6 @@
     "label_abs_fee": "绝对费用{{ fee }}",
     "description_abs_fee": "向他人收取的费用，以聪为单位的绝对金额。",
     "feedback_invalid_abs_fee": "绝对费用无效。",
-    "label_min_amount": "最低聪金额",
     "feedback_invalid_min_amount": "请输入最低金额。",
     "button_start": "开始收益！",
     "button_stop": "停止",
@@ -407,7 +393,6 @@
         "text_primary_button": "创建保证金",
         "label_lock_date": "锁定至",
         "label_jar": "来源",
-        "label_jar_n": "罐子 {{ jar }}",
         "label_amount": "将锁定的金额",
         "label_address": "资金将被时间锁定并被发送至"
       },
@@ -558,6 +543,11 @@
       "column_title_confirmations": "确认",
       "column_title_label_and_status": "标签",
       "row_button_details": "详情"
+    },
+    "address_list": {
+      "column_title_address": "地址",
+      "column_title_balance": "价值",
+      "column_title_tags": "标签"
     }
   },
   "sidebar": {
