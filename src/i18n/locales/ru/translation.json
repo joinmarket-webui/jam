@@ -36,7 +36,6 @@
     "alert_rescan_in_progress": "Повторное сканирование в процессе"
   },
   "navbar": {
-    "title": "Jam",
     "text_rescan_in_progress": "Повторное сканирование",
     "tab_send": "Отправить",
     "tab_receive": "Получить",
@@ -93,7 +92,6 @@
     "subtitle_no_wallets": "Похоже, у вас пока нет кошелька.",
     "button_new_wallet": "Создать новый кошелек",
     "button_import_wallet": "Импортировать кошелек",
-    "alert_wallet_open": "Только один кошелек может быть активным. Если нужно открыть другой кошелек, сначала заблокируйте '{{ currentWalletName }}'.",
     "error_loading_failed": "Ошибка загрузки кошельков.",
     "wallet_preview": {
       "alert_wallet_locked_successfully": "{{ walletName }} заблокирован.",
@@ -131,7 +129,6 @@
     "confirmation_toggle_reveal_info": "Раскрыть конфиденциальную информацию",
     "confirmation_toggle_info_written_down": "Я записал информацию выше.",
     "confirmation_button_fund_wallet": "Пополнить кошелек",
-    "feedback_seed_confirmed": "Подтверждена исходная фраза.",
     "back_button": "Назад",
     "next_button": "След",
     "hint_duration_text": "Пожалуйста, проявите терпение, это может занять несколько минут."
@@ -213,8 +210,6 @@
     "show_logs": "Показать журнал",
     "show_fee_config": "Изменить лимиты комиссий",
     "button_lock_wallet": "Блокировка кошелька",
-    "button_switch_wallet": "Сменить кошелек",
-    "seed_modal_info_text": "Пожалуйста, запишите вашу сид-фразу и пароль! Без этой информации вы не сможете получить доступ и восстановить свой кошелек!",
     "documentation": "Документация",
     "github": "GitHub",
     "matrix": "Matrix",
@@ -270,7 +265,6 @@
     "title": "Отправить",
     "subtitle": "Используйте Совместную Транзакцию для повышения безопасности и конфиденциальности.",
     "label_num_collaborators": "Количество соавторов: {{ numCollaborators }}",
-    "input_num_collaborators_placeholder": "Другое",
     "description_num_collaborators": "Большее число лучше для конфиденциальности, но также увеличивает комиссию за транзакцию.",
     "error_invalid_num_collaborators": "Пожалуйста, используйте значение между {{ minNumCollaborators }} и {{ maxNumCollaborators }} соавторов.",
     "taker_error_message_max_fees_config_missing": "Переменные конфигурации 'max_cj_fee_rel' и 'max_cj_fee_abs' должны быть установлены в joinmarket.cfg для отправки Совместных Транзакций. Рассмотрите возможность добавления их в конфигурацию вручную.",
@@ -338,8 +332,6 @@
     "subtitle": "Отправьте sats на указанный ниже адрес, чтобы пополнить свой кошелек.",
     "text_copy_address": "Адрес скопирован",
     "error_copy_address_failed": "Не удалось скопировать адрес.",
-    "button_copy_address": "Скопировать",
-    "text_copy_address_confirmed": "Скопировано",
     "button_settings": "Параметры получения",
     "label_source_jar": "Получить в",
     "label_amount_input": "Сумма",
@@ -356,7 +348,6 @@
     "alert_starting": "Старт службы",
     "alert_stopping": "Остановка службы",
     "alert_running": "Предлагаем sats, чтобы заработать больше sats",
-    "alert_no_spendable_balance_description": "<0>Пополните свой кошелек</0>, чтобы начать зарабатывать.",
     "radio_abs_offer_label": "Абсолютная комиссия",
     "radio_rel_offer_label": "Относительная комиссия",
     "label_rel_fee": "Относительная комиссия {{ fee }}",
@@ -419,8 +410,7 @@
       "select_date": {
         "form_label_year": "Год",
         "form_label_month": "Месяц",
-        "description": "Срок блокировки средств:",
-        "warning_fb_with_same_expiry": "<strong>Внимание</strong>: Fidelity Bond с тем же сроком блокировки уже существует."
+        "description": "Срок блокировки средств:"
       },
       "select_jar": {
         "description": "Выберите банку, из которой вы будете финансировать Fidelity Bond."
@@ -588,10 +578,6 @@
       "nested_hint_wait_for_block_other": "Подождите еще {{ count }} блоков.",
       "nested_hint_fund_wallet": "Пополните свой кошелек и ждите еще один блок.",
       "nested_hint_fund_wallet_other": "Пополните свой кошелек и ждите еще {{count}} блоков."
-    },
-    "confirm_modal": {
-      "title": "Начать запланированный Перенос",
-      "body": "Вы уверены, что хотите начать запланированный Перенос?"
     }
   },
   "modal": {
