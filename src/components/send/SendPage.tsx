@@ -245,8 +245,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       .catch((error: unknown) => {
         if (abortCtrl.signal.aborted) return
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
-        // TODO: i18n, add reason as param
-        toast.error(`${t('send.error_loading_min_makers_failed')} ${reason}`)
+        toast.error(t('send.error_loading_min_makers_failed', { reason }))
       })
 
     return () => abortCtrl.abort()
