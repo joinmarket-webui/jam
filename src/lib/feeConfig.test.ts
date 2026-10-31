@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { MAX_TX_FEE_IN_BLOCKS, MIN_TX_FEE_IN_SATS_PER_VBYTE } from '@/components/send/TxFeeForm.schema'
-import { isMaxFeesConfigMissing, toJamFeeConfigValues, TX_FEE_UNITS } from './feeConfig'
+import { isMaxFeesConfigMissing, satsPerVbyteToSatsPerKvbyte, toJamFeeConfigValues, TX_FEE_UNITS } from './feeConfig'
 
 describe('toJamFeeConfigValues', () => {
   it('should parse raw values successfully', () => {
@@ -200,5 +200,35 @@ describe('isMaxFeesConfigMissing', () => {
       max_cj_fee_rel: '0.00025',
     })
     expect(isMaxFeesConfigMissing(values)).toBe(false)
+  })
+})
+
+describe('satsPerVbyteToSatsPerKvbyte', () => {
+  it('should convert sats/vbyte to sats/kvbyte', () => {
+    expect(satsPerVbyteToSatsPerKvbyte(1.001)).toBe(1_001)
+    expect(satsPerVbyteToSatsPerKvbyte(5)).toBe(5_000)
+    expect(satsPerVbyteToSatsPerKvbyte(350)).toBe(350_000)
+  })
+
+  it('should not round up because of floating point noise', () => {
+    // e.g. 4.03 * 1_000 === 4030.0000000000005
+    expect(satsPerVbyteToSatsPerKvbyte(2.007)).toBe(2_007)
+    expect(satsPerVbyteToSatsPerKvbyte(4.03)).toBe(4_030)
+    expect(satsPerVbyteToSatsPerKvbyte(4.001)).toBe(4_001)
+  })
+
+  it('should round up fractions of a sat/kvbyte', () => {
+    expect(satsPerVbyteToSatsPerKvbyte(1 + 1 / 3)).toBe(1_334)
+    expect(satsPerVbyteToSatsPerKvbyte(4.0301)).toBe(4_031)
+  })
+
+  it('should return the value of "tx_fees" it was parsed from', () => {
+    const mismatches: string[] = []
+    for (let txFees = 1_001; txFees <= 350_000; txFees++) {
+      const { txFee } = toJamFeeConfigValues({ tx_fees: String(txFees) })
+      const result = satsPerVbyteToSatsPerKvbyte(txFee.txFeeInSatsPerVbyte!)
+      if (result !== txFees) mismatches.push(`${txFees} -> ${result}`)
+    }
+    expect(mismatches).toStrictEqual([])
   })
 })

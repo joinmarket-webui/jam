@@ -245,6 +245,37 @@ describe('FeeConfigDialog', () => {
     })
   })
 
+  it('saves the sats per vbyte value unchanged', async () => {
+    h.mutateAsync = vi.fn().mockResolvedValue({})
+    const refetchAll = vi.fn().mockResolvedValue(undefined)
+    renderDialog(
+      makeValidValidation({
+        refetchAll,
+        feeConfigValues: {
+          txFeeFactor: 0.1,
+          maxSweepFeeChangeFactor: 0.8,
+          maxCjAbsoluteFee: 100,
+          maxCjRelativeFee: 0.001,
+          txFee: {
+            txFeeUnit: 'sats/vbyte',
+            txFeeInBlocks: undefined,
+            txFeeInSatsPerVbyte: 4.03,
+          },
+        },
+      }),
+    )
+
+    fireEvent.click(screen.getByText('settings.fees.text_button_submit'))
+
+    await waitFor(() => {
+      expect(h.toastSuccess).toHaveBeenCalled()
+    })
+    expect(h.mutateAsync).toHaveBeenCalledWith({
+      path: { walletname: 'test.jmdat' },
+      body: { section: 'POLICY', field: 'tx_fees', value: '4030' },
+    })
+  })
+
   it('skips validation when form validation is disabled in developer mode', async () => {
     h.developerModeEnabled = true
     h.mutateAsync = vi.fn().mockResolvedValue({})
