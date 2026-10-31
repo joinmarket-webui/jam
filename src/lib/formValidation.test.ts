@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
 import {
   destinationAddressField,
+  dustLimitForAddress,
   isAddressOnNetwork,
   isReusedAddress,
   isValidAddress,
@@ -147,6 +148,28 @@ describe('isReusedAddress', () => {
 
     expect(isReusedAddress(mainnetBech32Address, usedSummary)).toBe(true)
     expect(isReusedAddress(mainnetBech32Address.toUpperCase(), usedSummary)).toBe(true)
+  })
+})
+
+describe('dustLimitForAddress', () => {
+  it('returns the dust limit of the address type', () => {
+    expect(dustLimitForAddress(mainnetBech32Address)).toBe(294)
+    expect(dustLimitForAddress(regtestBech32Address)).toBe(294)
+    expect(dustLimitForAddress('bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3')).toBe(330)
+    expect(dustLimitForAddress(mainnetTaprootAddress)).toBe(330)
+    expect(dustLimitForAddress(regtestTaprootAddress)).toBe(330)
+    expect(dustLimitForAddress('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')).toBe(540)
+    expect(dustLimitForAddress(mainnetAddress)).toBe(546)
+    expect(dustLimitForAddress(testnetAddress)).toBe(546)
+  })
+
+  it('handles uppercase bech32 addresses', () => {
+    expect(dustLimitForAddress(mainnetBech32Address.toUpperCase())).toBe(294)
+  })
+
+  it('returns undefined for invalid addresses', () => {
+    expect(dustLimitForAddress('')).toBeUndefined()
+    expect(dustLimitForAddress('notavalidaddress')).toBeUndefined()
   })
 })
 
