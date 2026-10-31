@@ -25,7 +25,10 @@ const toTypeHeading = (type: string, t: TFunction) => {
   return type
 }
 
-const toLastHdPathIndex = (hdPath: HdPath): number | null => {
+const toLastHdPathIndex = (hdPath?: HdPath | string | null): number | null => {
+  if (!hdPath || typeof hdPath !== 'string') {
+    return null
+  }
   const indexOfLastSeparator = hdPath.lastIndexOf('/')
   if (indexOfLastSeparator === -1 || indexOfLastSeparator === hdPath.length - 1) {
     return null
@@ -42,7 +45,7 @@ const toLastHdPathIndex = (hdPath: HdPath): number | null => {
 const branchToTableEntry = (value: BranchEntryApiObject): BranchEntryTableRow => {
   return {
     ...value,
-    derivationIndex: toLastHdPathIndex(value.hd_path as HdPath) ?? -1,
+    derivationIndex: toLastHdPathIndex(value.hd_path) ?? -1,
     derivationPath: (value.hd_path !== undefined ? value.hd_path : 'm/-1') as HdPath,
     address: value.address || '',
     balance: tryBtcToSat(value.amount || '0') ?? 0,
