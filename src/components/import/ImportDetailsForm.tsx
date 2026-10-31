@@ -4,15 +4,8 @@ import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { validateMnemonic } from '@scure/bip39'
 import { wordlist } from '@scure/bip39/wordlists/english.js'
 import type { TFunction } from 'i18next'
-import {
-  AlertTriangleIcon,
-  BlocksIcon,
-  CheckCircle2Icon,
-  InfoIcon,
-  OctagonAlertIcon,
-  UnfoldHorizontalIcon,
-} from 'lucide-react'
-import { useForm, useWatch, type Mode, type SubmitHandler } from 'react-hook-form'
+import { AlertTriangleIcon, CheckCircle2Icon, InfoIcon, OctagonAlertIcon, UnfoldHorizontalIcon } from 'lucide-react'
+import { Controller, useForm, useWatch, type Mode, type SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
@@ -30,6 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/input-group'
 import { Textarea } from '../ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { RescanHeightSelector } from './RescanHeightSelector'
 
 const DUMMY_SEED_PHRASE_STRING = DUMMY_SEED_PHRASE.join(' ')
 const VALID_SEED_WORD_COUNTS = [12, 15, 18, 21, 24]
@@ -250,29 +244,24 @@ export const ImportDetailsForm = ({
               {t('import_wallet.import_details.import_options')}
             </div>
           </AccordionTrigger>
-          <AccordionContent className={cn('space-y-2', 'mx-1' /* add x-spacing for input component focus state*/)}>
-            <Field data-invalid={errors.blockheight !== undefined}>
-              <FieldLabel htmlFor="blockheight">{t('import_wallet.import_details.label_blockheight')}</FieldLabel>
-              <FieldDescription className="text-xs">
-                {t('import_wallet.import_details.description_blockheight')}
-              </FieldDescription>
-              <InputGroup>
-                <InputGroupInput
+          <AccordionContent className={cn('space-y-4', 'mx-1' /* add x-spacing for input component focus state*/)}>
+            <Controller
+              control={control}
+              name="blockheight"
+              render={({ field }) => (
+                <RescanHeightSelector
                   id="blockheight"
-                  placeholder={t('import_wallet.import_details.placeholder_blockheight')}
-                  {...register('blockheight', {
-                    required: true,
-                    disabled,
-                  })}
-                  type="number"
-                  step={1}
+                  value={field.value}
+                  onChange={(val) => {
+                    field.onChange(val)
+                  }}
+                  currentBlockHeight={sessionInfo?.block_height ?? undefined}
+                  disabled={disabled}
+                  error={errors.blockheight?.message}
                 />
-                <InputGroupAddon align="inline-start">
-                  <BlocksIcon />
-                </InputGroupAddon>
-              </InputGroup>
-              {errors.blockheight?.message && <FieldError>{errors.blockheight.message}</FieldError>}
-            </Field>
+              )}
+            />
+
             <div className="space-y-2">
               <Field data-invalid={errors.gaplimit !== undefined}>
                 <FieldLabel htmlFor="gaplimit">{t('import_wallet.import_details.label_gaplimit')}</FieldLabel>
