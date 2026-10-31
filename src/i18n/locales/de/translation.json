@@ -279,6 +279,8 @@
     "feedback_reused_address": "Diese Adresse wurde bereits verwendet. Nimm eine andere, um deine Privatsphäre zu bewahren. ",
     "label_source_jar": "Senden von",
     "title_jar_selector": "Wähle ein Glas aus, um deine Coins dorthin zu senden. ",
+    "label_amount_input": "Betrag",
+    "placeholder_amount_input": "Betrag in Sats eingeben...",
     "feedback_invalid_amount": "Bitte einen gültigen Betrag eingeben.",
     "sending_options": "Sendeoptionen",
     "toggle_coinjoin": "Mit einer gemeinschaftlichen Transaktion senden",
@@ -499,6 +501,10 @@
     "text_orderbook_summary_filtered_one": "{{ count }} Angebot von {{ counterpartyCount }} Gegenpartei gefunden",
     "text_orderbook_summary_filtered_other": "{{ count }} Angebote von {{ counterpartyCount }} Gegenparteien gefunden",
     "alert_empty_orderbook": "Orderbook ist leer",
+    "alert_precheck_empty_title": "Keine aktiven Maker gefunden",
+    "alert_precheck_empty_description": "Dein lokales Orderbook scheint derzeit leer zu sein. Gemeinschaftliche Transaktionen könnten fehlschlagen. Bitte überprüfe <1>dein lokales Orderbook</1>.",
+    "alert_precheck_empty_text_button_check": "Erneut prüfen",
+    "alert_precheck_empty_text_button_checking": "Wird überprüft...",
     "error_loading_orderbook_failed": "Fehler beim Laden des Orderbooks. Dein derzeitiges lokales Setup unterstützt dies womöglich nicht. Grund: {{ reason }}",
     "text_offer_type_absolute": "absolut",
     "text_offer_type_relative": "relativ",
@@ -579,5 +585,8 @@
     "item_settings": {
       "label": "Einstellungen"
     }
+  },
+  "show_utxos": {
+    "text_select_utxos_tooltip": "UTXOs auswählen"
   }
 }
