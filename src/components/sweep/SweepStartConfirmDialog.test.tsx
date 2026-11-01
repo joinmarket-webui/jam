@@ -30,6 +30,14 @@ vi.mock('../ui/spinner', () => ({
   Spinner: () => <span data-testid="spinner">spinner</span>,
 }))
 
+vi.mock('../ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span data-testid="balance">{valueString}</span>,
+}))
+
+vi.mock('../ui/jam/Address', () => ({
+  Address: ({ value }: { value: string }) => <span data-testid="address">{value}</span>,
+}))
+
 describe('SweepStartConfirmDialog', () => {
   it('renders content correctly when open', () => {
     render(
@@ -101,5 +109,50 @@ describe('SweepStartConfirmDialog', () => {
 
     fireEvent.click(screen.getByText('modal.confirm_button_reject'))
     expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('renders schedule details when provided', () => {
+    const mockSchedule = {
+      entries: [{ id: '1' }, { id: '2' }],
+      summary: {
+        externalDestinations: [{ address: 'bc1qdestination1' }, { address: 'bc1qdestination2' }],
+      },
+    }
+
+    render(
+      <SweepStartConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        disabled={false}
+        isStarting={false}
+        totalBalanceInSats={150000}
+        schedule={mockSchedule as never}
+      />,
+    )
+
+    expect(screen.getByText('scheduler.complete_wallet_title')).toBeInTheDocument()
+    expect(screen.getByText('150000')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.section_details_title')).toBeInTheDocument()
+    expect(screen.getByText('2 actions')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.section_destinations_title')).toBeInTheDocument()
+    expect(screen.getByText('bc1qdestination1')).toBeInTheDocument()
+    expect(screen.getByText('bc1qdestination2')).toBeInTheDocument()
+  })
+
+  it('renders explicit destinationAddresses when provided', () => {
+    render(
+      <SweepStartConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        disabled={false}
+        isStarting={false}
+        destinationAddresses={['bc1qcustomaddress']}
+      />,
+    )
+
+    expect(screen.getByText('scheduler.section_destinations_title')).toBeInTheDocument()
+    expect(screen.getByText('bc1qcustomaddress')).toBeInTheDocument()
   })
 })

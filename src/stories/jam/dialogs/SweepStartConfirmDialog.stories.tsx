@@ -49,3 +49,12 @@ export const Disabled: Story = {
     isStarting: false,
   },
 }
+
+export const WithScheduleSummary: Story = {
+  args: {
+    disabled: false,
+    isStarting: false,
+    totalBalanceInSats: 2500000,
+    destinationAddresses: ['bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', 'bc1qc7slrfxkvy5l643lydnw9re59gtzzwf5mdqxyz'],
+  },
+}

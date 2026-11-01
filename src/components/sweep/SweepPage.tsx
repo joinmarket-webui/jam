@@ -288,6 +288,9 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         onConfirm={startSchedule}
         disabled={isStartDisabled}
         isStarting={isWaitingSchedulerStart}
+        schedule={currentSchedule}
+        totalBalanceInSats={walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats}
+        destinationAddresses={planSchedule.variables?.body.destinations}
       />
       <div className="mx-auto max-w-4xl space-y-3 p-4" ref={pageTopElementRef}>
         <PageTitle
