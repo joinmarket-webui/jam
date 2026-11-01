@@ -106,8 +106,20 @@ LANG=de_DE.UTF-8 LC_ALL=de_DE.UTF-8 TZ=America/New_York npm run test:unit
 
 ## Linting
 
-We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).
-You'll see linting issues in the console when running the app with `npm run dev`.
+We use [ESLint](https://eslint.org/) with Flat Config (`eslint.config.js`) to ensure code quality and consistency across the codebase.
+
+To check for linting errors:
+
+```bash
+npm run lint
+```
+
+To automatically fix fixable lint issues:
+
+```bash
+npm run lint:fix
+```
+
 Pull request builds will fail if ESLint is not happy with the code.
 
 ## Code Formatting
@@ -118,7 +130,12 @@ There's a couple of options on how to setup Prettier so that it formats your cod
 
 ### NPM Script
 
-Running `npm run format` will format the whole codebase.
+Running `npm run format` will format the whole codebase (runs `lint:fix` followed by `format:write`).
+You can also check formatting without modifying files by running:
+
+```bash
+npm run format:check
+```
 
 ### Editor Integration
 
@@ -126,7 +143,7 @@ Prettier has great [editor integrations](https://prettier.io/docs/en/editors.htm
 
 ### Git Pre-Commit Hook
 
-You can use a pre-commit hook that will automatically format all changes before comitting them to Git.
+You can use a pre-commit hook that will automatically format all changes before committing them to Git.
 We use [husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/okonet/lint-staged) for that.
 
 By default, the hook will be installed automatically as an [NPM postinstall script](https://docs.npmjs.com/cli/v6/using-npm/scripts#npm-install).
