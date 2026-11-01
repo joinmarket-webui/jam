@@ -232,6 +232,23 @@ export function SendForm({
     onSourceJarChange?.(sourceJarIndex)
   }, [onSourceJarChange, sourceJarIndex])
 
+  // A sweep pins the utxos that were spendable when "Sweep" was clicked. If they change while the
+  // form is editable, e.g. after (un)freezing utxos in the utxo selection dialog, end the sweep and
+  // let the user sweep again or enter an amount, instead of silently changing what is sent.
+  useEffect(() => {
+    if (disabled || isSweep !== true) return
+
+    const sweepUtxos = availableUtxosForSweep(sourceJar)
+    const currentSweepUtxos = getValues('amount.sweepUtxos') ?? []
+    const isUnchanged =
+      sweepUtxos.length === currentSweepUtxos.length && sweepUtxos.every((it) => currentSweepUtxos.includes(it))
+    if (isUnchanged) return
+
+    setValue('amount.isSweep', false, { shouldValidate: true })
+    setValue('amount.sweepAmount', undefined, { shouldValidate: true })
+    setValue('amount.sweepUtxos', undefined, { shouldValidate: true })
+  }, [disabled, isSweep, sourceJar, getValues, setValue])
+
   useEffect(() => {
     if (formState.dirtyFields.source?.fromJar) {
       console.debug(
