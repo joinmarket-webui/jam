@@ -232,8 +232,9 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       // The wallet's coins are not yet old enough for the taker (`taker_utxo_age`), so the
       // attempt fails right away with a reason - the successful path is covered by the
       // (long running) regression suite, which needs makers.
+      const coinjoinDestinationAddress = await getNewAddressFromBitcoinCore()
       await submitCollaborativeSend(page, {
-        address: await getNewAddressFromBitcoinCore(),
+        address: coinjoinDestinationAddress,
         amountSats: COINJOIN_AMOUNT_SATS,
       })
 
@@ -253,10 +254,11 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
         fullPage: false,
       })
 
-      // acknowledging the outcome hides the card and resets the form
+      // acknowledging the outcome hides the card and keeps the form values for a retry
       await doneButton.click()
       await expect(statusCard).toBeHidden()
-      await expect(page.locator('#send-destination')).toHaveValue('')
+      await expect(page.locator('#send-destination')).toHaveValue(coinjoinDestinationAddress)
+      await expect(page.locator('#send-amount')).toHaveValue(String(COINJOIN_AMOUNT_SATS))
     })
 
     // H. Lock wallet, so that subsequent suites can use the backend
