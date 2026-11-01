@@ -44,7 +44,7 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Start isolated JoinMarket NG regtest services
-        run: bash tests/e2e/smoke-setup.sh up
+        run: npm run e2e:smoke:up
 
       - name: Run Playwright smoke test journey
         run: npm run test:e2e:smoke
@@ -53,7 +53,7 @@ jobs:
         if: failure()
         run: |
           mkdir -p test-results
-          bash tests/e2e/smoke-setup.sh logs > test-results/docker-compose-smoke.log 2>&1 || true
+          npm run --silent e2e:smoke:logs > test-results/docker-compose-smoke.log 2>&1 || true
 
       - name: Upload smoke evidence & test artifacts
         if: always()
@@ -68,4 +68,4 @@ jobs:
 
       - name: Teardown isolated containers
         if: always()
-        run: bash tests/e2e/smoke-setup.sh down
+        run: npm run e2e:smoke:down

@@ -5,7 +5,8 @@ import {
   createWalletViaUi,
   dismissOverlays,
   fundWalletViaUi,
-  lockWalletViaUi,
+  lockWalletAndVerifyLogout,
+  lockWalletIfActive,
   submitCollaborativeSend,
   takerStatusCard,
   waitForBackendAndOpenJam,
@@ -20,8 +21,8 @@ import {
 const EVIDENCE_DIR = path.resolve(import.meta.dirname, '../../test-evidence')
 
 /**
- * Long running regression suite: needs makers, e.g. the full regtest environment (`npm run regtest:up`).
- * The isolated smoke environment has no makers and cannot run this suite.
+ * Long running regression suite: needs makers, e.g. the isolated smoke environment started with makers
+ * (`npm run e2e:regression:up`) or the full regtest environment (`npm run regtest:up`).
  */
 test.describe('JoinMarket NG Regtest CoinJoin Regression Suite', () => {
   let walletName: string
@@ -36,6 +37,12 @@ test.describe('JoinMarket NG Regtest CoinJoin Regression Suite', () => {
     const uniqueSuffix = Date.now().toString(36)
     walletName = `regression_${uniqueSuffix}`
     walletPassword = `RegressionPass_${uniqueSuffix}_!99`
+  })
+
+  test.afterEach(async ({ page }, testInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus) {
+      await lockWalletIfActive(page)
+    }
   })
 
   test('Collaborative send completes and reports the taker status until acknowledged', async ({ page }) => {
@@ -98,8 +105,13 @@ test.describe('JoinMarket NG Regtest CoinJoin Regression Suite', () => {
       await expect(page.locator('#send-destination')).toHaveValue('')
     })
 
-    await test.step('D. Lock wallet', async () => {
-      await lockWalletViaUi(page)
+    await test.step('D. Lock wallet and verify logout', async () => {
+      await lockWalletAndVerifyLogout(page)
+
+      await page.screenshot({
+        path: path.join(EVIDENCE_DIR, 'regression-02-wallet-locked.png'),
+        fullPage: false,
+      })
     })
   })
 })
