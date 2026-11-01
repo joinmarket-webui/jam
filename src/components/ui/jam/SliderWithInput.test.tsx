@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { Slider } from '../slider'
 import { SliderWithInput } from './SliderWithInput'
@@ -33,32 +35,115 @@ describe('SliderWithInput', () => {
     expect(onValueChange).toHaveBeenCalledWith([7])
   })
 
-  it('clamps values above max down to max', () => {
+  it('clamps values above max down to max once done typing', () => {
     const onValueChange = vi.fn()
     render(<SliderWithInput value={[5]} min={0} max={10} onValueChange={onValueChange} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '99' } })
+    const input = screen.getByRole('spinbutton')
+    fireEvent.change(input, { target: { value: '99' } })
+    expect(onValueChange).not.toHaveBeenCalled()
+    fireEvent.blur(input)
     expect(onValueChange).toHaveBeenCalledWith([10])
   })
 
-  it('clamps values below min up to min', () => {
+  it('clamps values below min up to min once done typing', () => {
     const onValueChange = vi.fn()
     render(<SliderWithInput value={[5]} min={2} max={10} onValueChange={onValueChange} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '-3' } })
+    const input = screen.getByRole('spinbutton')
+    fireEvent.change(input, { target: { value: '-3' } })
+    expect(onValueChange).not.toHaveBeenCalled()
+    fireEvent.blur(input)
     expect(onValueChange).toHaveBeenCalledWith([2])
   })
 
-  it('snaps typed values to the nearest step', () => {
+  it('snaps typed values to the nearest step once done typing', () => {
     const onValueChange = vi.fn()
     render(<SliderWithInput value={[0]} min={0} max={100} step={5} onValueChange={onValueChange} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '13' } })
+    const input = screen.getByRole('spinbutton')
+    fireEvent.change(input, { target: { value: '13' } })
+    expect(onValueChange).not.toHaveBeenCalled()
+    fireEvent.blur(input)
     expect(onValueChange).toHaveBeenCalledWith([15])
+  })
+
+  it('commits a clamped value on Enter', () => {
+    const onValueChange = vi.fn()
+    render(<SliderWithInput value={[5]} min={0} max={10} onValueChange={onValueChange} />)
+    const input = screen.getByRole('spinbutton')
+    fireEvent.change(input, { target: { value: '99' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(onValueChange).toHaveBeenCalledWith([10])
   })
 
   it('ignores empty or non-numeric input', () => {
     const onValueChange = vi.fn()
     render(<SliderWithInput value={[5]} min={0} max={10} onValueChange={onValueChange} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } })
+    const input = screen.getByRole('spinbutton')
+    fireEvent.change(input, { target: { value: '' } })
+    fireEvent.blur(input)
     expect(onValueChange).not.toHaveBeenCalled()
+  })
+
+  describe('typing', () => {
+    const ControlledSliderWithInput = ({
+      initialValue,
+      min,
+      max,
+    }: {
+      initialValue: number
+      min: number
+      max: number
+    }) => {
+      const [value, setValue] = useState(initialValue)
+      return <SliderWithInput value={[value]} min={min} max={max} onValueChange={(values) => setValue(values[0])} />
+    }
+
+    it('allows typing a multi-digit value whose first digit is below min', async () => {
+      const user = userEvent.setup()
+      render(<ControlledSliderWithInput initialValue={9} min={4} max={20} />)
+      const input = screen.getByRole('spinbutton')
+
+      await user.tripleClick(input)
+      await user.keyboard('12')
+      expect(input).toHaveValue(12)
+
+      await user.tab()
+      expect(input).toHaveValue(12)
+    })
+
+    it('allows clearing the input before typing a new value', async () => {
+      const user = userEvent.setup()
+      render(<ControlledSliderWithInput initialValue={9} min={4} max={20} />)
+      const input = screen.getByRole('spinbutton')
+
+      await user.clear(input)
+      expect(input).toHaveValue(null)
+
+      await user.keyboard('15')
+      expect(input).toHaveValue(15)
+    })
+
+    it('restores the committed value when left empty', async () => {
+      const user = userEvent.setup()
+      render(<ControlledSliderWithInput initialValue={9} min={4} max={20} />)
+      const input = screen.getByRole('spinbutton')
+
+      await user.clear(input)
+      await user.tab()
+      expect(input).toHaveValue(9)
+    })
+
+    it('clamps an out-of-range value when leaving the input', async () => {
+      const user = userEvent.setup()
+      render(<ControlledSliderWithInput initialValue={9} min={4} max={20} />)
+      const input = screen.getByRole('spinbutton')
+
+      await user.tripleClick(input)
+      await user.keyboard('1')
+      expect(input).toHaveValue(1)
+
+      await user.tab()
+      expect(input).toHaveValue(4)
+    })
   })
 
   it('disables the companion input when the slider is disabled', () => {
