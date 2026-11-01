@@ -232,9 +232,9 @@ export function SendForm({
     onSourceJarChange?.(sourceJarIndex)
   }, [onSourceJarChange, sourceJarIndex])
 
-  // A sweep pins the utxos that were spendable when "Sweep" was clicked. Keep them in sync with
-  // the jar while the form is editable, e.g. after (un)freezing utxos in the utxo selection dialog:
-  // the backend rejects a frozen or spent input, and newly unfrozen utxos belong in the sweep too.
+  // A sweep pins the utxos that were spendable when "Sweep" was clicked. If they change while the
+  // form is editable, e.g. after (un)freezing utxos in the utxo selection dialog, end the sweep and
+  // let the user sweep again or enter an amount, instead of silently changing what is sent.
   useEffect(() => {
     if (disabled || isSweep !== true) return
 
@@ -244,15 +244,9 @@ export function SendForm({
       sweepUtxos.length === currentSweepUtxos.length && sweepUtxos.every((it) => currentSweepUtxos.includes(it))
     if (isUnchanged) return
 
-    if (sweepUtxos.length === 0) {
-      setValue('amount.isSweep', false, { shouldValidate: true })
-      setValue('amount.sweepAmount', undefined, { shouldValidate: true })
-      setValue('amount.sweepUtxos', undefined, { shouldValidate: true })
-      return
-    }
-
-    setValue('amount.sweepAmount', sourceJar?.balanceSummary.calculatedAvailableBalanceInSats, { shouldValidate: true })
-    setValue('amount.sweepUtxos', sweepUtxos, { shouldValidate: true })
+    setValue('amount.isSweep', false, { shouldValidate: true })
+    setValue('amount.sweepAmount', undefined, { shouldValidate: true })
+    setValue('amount.sweepUtxos', undefined, { shouldValidate: true })
   }, [disabled, isSweep, sourceJar, getValues, setValue])
 
   useEffect(() => {

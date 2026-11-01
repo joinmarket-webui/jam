@@ -136,6 +136,13 @@ const readDebugAmountValues = (): DebugAmountValues => {
   return parsed.amount ?? {}
 }
 
+const expectSweepEnded = async () => {
+  await waitFor(() => expect(readDebugAmountValues().isSweep).toBe(false))
+  expect(readDebugAmountValues().sweepAmount).toBeUndefined()
+  expect(readDebugAmountValues().sweepUtxos).toBeUndefined()
+  expect(document.querySelector('#send-amount-sweep-from-jar')?.parentElement).toHaveClass('hidden')
+}
+
 describe('SendForm', () => {
   const mockJars = [
     {
@@ -373,7 +380,7 @@ describe('SendForm', () => {
       { utxo: UTXO_B, frozen: false },
     ]
 
-    it('drops a pinned utxo that gets frozen', async () => {
+    it('ends the sweep when a pinned utxo gets frozen', async () => {
       const { rerender } = await startSweep(jarsWith(bothUnfrozen, 3000))
 
       rerender(
@@ -388,39 +395,27 @@ describe('SendForm', () => {
         ),
       )
 
-      await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toEqual([UTXO_A]))
-      expect(readDebugAmountValues().isSweep).toBe(true)
-      expect(readDebugAmountValues().sweepAmount).toBe(1000)
+      await expectSweepEnded()
     })
 
-    it('adds a utxo that gets unfrozen', async () => {
+    it('ends the sweep when a utxo gets unfrozen', async () => {
       const { rerender } = await startSweep(jarsWith(bothUnfrozen, 3000))
 
       const UTXO_C = 'cccc'.repeat(16) + ':2'
       rerender(renderWithJars(jarsWith([...bothUnfrozen, { utxo: UTXO_C, frozen: false }], 6000)))
 
-      await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toEqual([UTXO_A, UTXO_B, UTXO_C]))
-      expect(readDebugAmountValues().sweepAmount).toBe(6000)
+      await expectSweepEnded()
     })
 
-    it('ends the sweep when no utxo is spendable anymore', async () => {
+    it('keeps the sweep when the spendable utxos are unchanged', async () => {
       const { rerender } = await startSweep(jarsWith(bothUnfrozen, 3000))
 
-      rerender(
-        renderWithJars(
-          jarsWith(
-            [
-              { utxo: UTXO_A, frozen: true },
-              { utxo: UTXO_B, frozen: true },
-            ],
-            0,
-          ),
-        ),
-      )
+      rerender(renderWithJars(jarsWith(bothUnfrozen.toReversed(), 3000)))
+      await flushActUpdates()
 
-      await waitFor(() => expect(readDebugAmountValues().isSweep).toBe(false))
-      expect(readDebugAmountValues().sweepUtxos).toBeUndefined()
-      expect(document.querySelector('#send-amount-sweep-from-jar')?.parentElement).toHaveClass('hidden')
+      expect(readDebugAmountValues().isSweep).toBe(true)
+      expect(readDebugAmountValues().sweepAmount).toBe(3000)
+      expect(readDebugAmountValues().sweepUtxos).toEqual([UTXO_A, UTXO_B])
     })
 
     it('does not touch the sweep while the form is disabled', async () => {
