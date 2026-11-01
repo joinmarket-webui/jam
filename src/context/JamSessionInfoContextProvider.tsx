@@ -109,9 +109,8 @@ export const JamSessionInfoContextProvider = ({
       path: { walletname: activeWalletFileName || '' },
     }),
     enabled: !!activeWalletFileName,
+    // only poll while a taker is active (e.g. no endless polling if the backend does not support the endpoint)
     refetchInterval: (query) => {
-      // do not poll endlessly if the backend does not support the endpoint
-      if (query.state.status === 'error' && !sessionTakerIsActive) return false
       return sessionTakerIsActive || query.state.data?.running === true ? JAM.RUNNING_COINJOIN_POLLING_INTERVAL : false
     },
     refetchIntervalInBackground: true,
