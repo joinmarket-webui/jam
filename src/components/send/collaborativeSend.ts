@@ -1,5 +1,5 @@
 import type { DirectSendRequest, DoCoinjoinRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { satsPerVbyteToSatsPerKvbyte, TX_FEE_UNITS } from '@/lib/feeConfig'
 import { isValidAddress, normalizeBitcoinAddress } from '@/lib/formValidation'
 import { isValidInteger, isValidNumber } from '@/lib/utils'
 import type { SendFormValues } from './types'
@@ -15,7 +15,7 @@ const txFeeValueForRequest = (data: SendFormValues): number | undefined => {
   if (data.txFee.txFeeUnit === TX_FEE_UNITS.BLOCKS && data.txFee.txFeeInBlocks !== undefined) {
     return data.txFee.txFeeInBlocks
   } else if (data.txFee.txFeeUnit === TX_FEE_UNITS.SATS_PER_VBYTE && data.txFee.txFeeInSatsPerVbyte !== undefined) {
-    return Math.ceil(data.txFee.txFeeInSatsPerVbyte * 1_000)
+    return satsPerVbyteToSatsPerKvbyte(data.txFee.txFeeInSatsPerVbyte)
   }
   return undefined
 }
