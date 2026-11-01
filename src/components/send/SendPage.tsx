@@ -204,7 +204,12 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     },
   })
 
-  const isWaitingCoinjoinStart = startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !takerRunning)
+  // a collaborative send can end (e.g. fail right away) before the taker has ever been observed running
+  const takerEndedForCurrentAttempt =
+    takerInfo.currentPaymentAttempt !== undefined && takerInfo.__raw !== undefined && !takerRunning
+  const takerStartedOrEnded = takerRunning || takerEndedForCurrentAttempt
+  const isWaitingCoinjoinStart =
+    startCoinjoinMutationIsPending || (startCoinjoinMutationIsSuccess && !takerStartedOrEnded)
   const isWaitingCoinjoinStop = stopCoinjoinMutationIsPending || (stopCoinjoinMutationIsSuccess && takerRunning)
 
   useRefreshSession({
@@ -220,10 +225,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   })
 
   useEffect(() => {
-    if (takerRunning && startCoinjoinMutationIsSuccess) {
+    if (takerStartedOrEnded && startCoinjoinMutationIsSuccess) {
       startCoinjoinMutationReset()
     }
-  }, [takerRunning, startCoinjoinMutationIsSuccess, startCoinjoinMutationReset])
+  }, [takerStartedOrEnded, startCoinjoinMutationIsSuccess, startCoinjoinMutationReset])
 
   useEffect(() => {
     if (!takerRunning && stopCoinjoinMutationIsSuccess) {
