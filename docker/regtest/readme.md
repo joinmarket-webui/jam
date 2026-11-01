@@ -157,8 +157,8 @@ npm run regtest:rebuild
 ### Debug logs
 
 ```sh
-# logs and follows content of log file in primary joinmarket container
-npm run regtest:logs:jmwalletd
+# logs and follows the output of the primary joinmarket container
+npm run regtest:logs
 ```
 
 ### Display running JoinMarket version
