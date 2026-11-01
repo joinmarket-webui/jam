@@ -36,6 +36,7 @@
     "test:e2e:smoke": "playwright test --config tests/e2e/playwright.config.ts --project smoke",
     "test:e2e:regression": "playwright test --config tests/e2e/playwright.config.ts --project regression",
     "e2e:smoke:up": "bash tests/e2e/smoke-setup.sh up",
+    "e2e:regression:up": "bash tests/e2e/smoke-setup.sh up --with-makers",
     "e2e:smoke:down": "bash tests/e2e/smoke-setup.sh down",
     "e2e:smoke:logs": "bash tests/e2e/smoke-setup.sh logs",
     "check": "npm run format && npm run test && npm run build",

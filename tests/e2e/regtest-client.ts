@@ -149,3 +149,17 @@ export async function countOrderbookOffers(baseUrl: string = 'http://localhost:3
   const data = (await response.json()) as { offers?: unknown[] }
   return data.offers?.length ?? 0
 }
+
+/**
+ * Fetch the session of the NG backend via the Jam proxy.
+ */
+export async function fetchNgBackendSession(
+  baseUrl: string = 'http://localhost:3000',
+): Promise<{ session: boolean; wallet_name?: string }> {
+  const response = await fetch(`${baseUrl}/api/v1/session`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(5_000),
+  })
+  if (!response.ok) throw new Error(`Session: HTTP ${response.status}`)
+  return (await response.json()) as { session: boolean; wallet_name?: string }
+}
