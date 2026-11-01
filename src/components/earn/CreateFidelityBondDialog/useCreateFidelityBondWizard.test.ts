@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => {
     freezeMutateAsync: vi.fn(),
     walletInfoRefetch: vi.fn(),
     toastSuccess: vi.fn(),
+    toastError: vi.fn(),
     queryAddress: undefined as string | undefined,
     isDeveloperMode: false,
     walletInfo: {
@@ -53,6 +54,7 @@ vi.mock('react-i18next', () => ({
 vi.mock('sonner', () => ({
   toast: {
     success: mocks.toastSuccess,
+    error: mocks.toastError,
   },
 }))
 
@@ -111,6 +113,29 @@ const submitFromReview = async (result: { current: ReturnType<typeof useCreateFi
 
   act(() => result.current.setConfirmationChecked(true))
   await act(async () => result.current.handleNext())
+}
+
+const freezeToReview = async (result: { current: ReturnType<typeof useCreateFidelityBondWizard> }) => {
+  act(() => result.current.setSelectedLockdate(minLockdateOption()))
+  act(() => result.current.setSelectedJarIndex(0))
+  act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+  act(() => result.current.setStep('freeze_utxos'))
+  await act(async () => result.current.handleNext())
+  expect(result.current.step).toBe('review')
+  expect(result.current.frozenUtxos.map((it) => it.utxo)).toEqual(['small:0'])
+}
+
+type FreezeRequest = { path: { walletname: string }; body: { 'utxo-string': string; freeze: boolean } }
+
+const unfreezeCalls = () =>
+  (mocks.freezeMutateAsync.mock.calls as Array<[FreezeRequest]>)
+    .filter(([options]) => !options.body.freeze)
+    .map(([options]) => options.body['utxo-string'])
+
+const rejectUnfreeze = () => {
+  mocks.freezeMutateAsync.mockImplementation((options: FreezeRequest) =>
+    options.body.freeze ? Promise.resolve(undefined) : Promise.reject(new Error('unfreeze failed')),
+  )
 }
 
 describe('useCreateFidelityBondWizard', () => {
@@ -610,6 +635,121 @@ describe('useCreateFidelityBondWizard', () => {
       act(() => result.current.handleBack())
 
       expect(result.current.step).toBe('freeze_utxos')
+    })
+  })
+
+  describe('utxos frozen for the bond', () => {
+    it('unfreezes them when the dialog is closed before the bond is created', async () => {
+      const onOpenChange = vi.fn()
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, onOpenChange, 'wallet.jmdat'))
+      await freezeToReview(result)
+
+      act(() => result.current.handleOpenChange(false))
+      expect(onOpenChange).not.toHaveBeenCalled()
+      await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+
+      expect(unfreezeCalls()).toEqual(['small:0'])
+      expect(result.current.frozenUtxos).toEqual([])
+      expect(result.current.step).toBe('select_date')
+      expect(mocks.walletInfoRefetch).toHaveBeenCalled()
+      expect(mocks.toastError).not.toHaveBeenCalled()
+    })
+
+    it('still closes the dialog and reports utxos that could not be unfrozen', async () => {
+      const onOpenChange = vi.fn()
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, onOpenChange, 'wallet.jmdat'))
+      await freezeToReview(result)
+      rejectUnfreeze()
+
+      act(() => result.current.handleOpenChange(false))
+      await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+
+      expect(unfreezeCalls()).toEqual(['small:0'])
+      expect(mocks.toastError).toHaveBeenCalledWith(
+        'earn.fidelity_bond.create_fidelity_bond.error_unfreezing_utxos_on_close',
+      )
+      expect(result.current.step).toBe('select_date')
+      expect(mocks.walletInfoRefetch).not.toHaveBeenCalled()
+    })
+
+    it('ignores further close requests while unfreezing', async () => {
+      const onOpenChange = vi.fn()
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, onOpenChange, 'wallet.jmdat'))
+      await freezeToReview(result)
+      let resolveUnfreeze: ((value: unknown) => void) | undefined
+      mocks.freezeMutateAsync.mockImplementation((options: FreezeRequest) =>
+        options.body.freeze
+          ? Promise.resolve(undefined)
+          : new Promise((resolve) => {
+              resolveUnfreeze = resolve
+            }),
+      )
+
+      act(() => result.current.handleOpenChange(false))
+      act(() => result.current.handleOpenChange(false))
+      expect(unfreezeCalls()).toEqual(['small:0'])
+
+      act(() => resolveUnfreeze?.(undefined))
+      await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+      expect(onOpenChange).toHaveBeenCalledTimes(1)
+    })
+
+    it('unfreezes them when going back to the utxo selection', async () => {
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+      await freezeToReview(result)
+
+      act(() => result.current.handleBack())
+      expect(result.current.step).toBe('freeze_utxos')
+      expect(unfreezeCalls()).toEqual([])
+
+      act(() => result.current.handleBack())
+      await waitFor(() => expect(result.current.step).toBe('select_utxos'))
+      expect(unfreezeCalls()).toEqual(['small:0'])
+      expect(result.current.frozenUtxos).toEqual([])
+    })
+
+    it('stays on the freeze step when they cannot be unfrozen on the way back', async () => {
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+      await freezeToReview(result)
+      act(() => result.current.handleBack())
+      rejectUnfreeze()
+
+      act(() => result.current.handleBack())
+      await act(async () => new Promise((resolve) => setTimeout(resolve, 0)))
+
+      expect(unfreezeCalls()).toEqual(['small:0'])
+      expect(result.current.step).toBe('freeze_utxos')
+      expect(result.current.frozenUtxos.map((it) => it.utxo)).toEqual(['small:0'])
+    })
+
+    it('does not offer to unfreeze them again after the bond was created', async () => {
+      const onOpenChange = vi.fn()
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, onOpenChange, 'wallet.jmdat'))
+
+      await submitFromReview(result)
+
+      expect(result.current.step).toBe('success')
+      expect(unfreezeCalls()).toEqual(['small:0'])
+      expect(result.current.frozenUtxos).toEqual([])
+
+      act(() => result.current.handleOpenChange(false))
+      expect(onOpenChange).toHaveBeenCalledWith(false)
+      expect(unfreezeCalls()).toEqual(['small:0'])
+    })
+
+    it('offers to unfreeze only those that could not be unfrozen after the bond was created', async () => {
+      rejectUnfreeze()
+      const onOpenChange = vi.fn()
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, onOpenChange, 'wallet.jmdat'))
+
+      await submitFromReview(result)
+
+      expect(result.current.step).toBe('success')
+      expect(result.current.frozenUtxos.map((it) => it.utxo)).toEqual(['small:0'])
+
+      act(() => result.current.handleOpenChange(false))
+      expect(onOpenChange).toHaveBeenCalledWith(false)
+      expect(unfreezeCalls()).toEqual(['small:0'])
     })
   })
 
