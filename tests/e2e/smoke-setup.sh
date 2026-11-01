@@ -14,14 +14,12 @@ die() {
   exit "$code"
 }
 
-# Compose interpolates the whole file even for logs/down. Use the generated
-# directory address consistently, including after a partially failed startup.
+# Use the generated settings consistently, including after a partially failed startup.
 compose() {
   if [ -f "${ENV_FILE}" ]; then
     docker compose -p "${PROJECT_NAME}" --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" "$@"
   else
-    JM_ALL_DIRECTORY_NODES=unused.onion:5222 JM_NG_DIRECTORY_NODES=unused.onion:5222 \
-      docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" "$@"
+    docker compose -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" "$@"
   fi
 }
 
@@ -164,10 +162,7 @@ if [ "$action" = "up" ]; then
     die "Invalid onion address generated: ${NG_ONION_ADDRESS}"
   fi
 
-  cat <<EOF > "${ENV_FILE}"
-JM_NG_DIRECTORY_NODES=${NG_ONION_ADDRESS}:5222
-JM_ALL_DIRECTORY_NODES=${NG_ONION_ADDRESS}:5222
-EOF
+  : > "${ENV_FILE}"
 
   if [ "${with_makers}" = true ]; then
     echo "COMPOSE_PROFILES=makers" >> "${ENV_FILE}"

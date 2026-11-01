@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => ({
   setCurrentPaymentAttempt: vi.fn(),
   setWaitForUtxosToBeSpent: vi.fn(),
   startCoinjoin: vi.fn(),
+  startCoinjoinIsSuccess: false,
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
   takerStatus: undefined as string | undefined,
@@ -59,7 +60,7 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: vi.fn((options: MutationOptions) => ({
     error: undefined,
     isPending: false,
-    isSuccess: false,
+    isSuccess: options.mutationFn === mocks.startCoinjoin ? mocks.startCoinjoinIsSuccess : false,
     mutateAsync: async (input?: unknown) => {
       options.onMutate?.()
       try {
@@ -190,6 +191,7 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
       status: toTakerStatusInfo(
         mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
       ),
+      __raw: mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
       running: mocks.takerRunning,
       scheduler: {
         running: mocks.schedulerRunning,
@@ -357,6 +359,7 @@ describe('SendPage', () => {
     mocks.setCurrentPaymentAttempt.mockReset()
     mocks.setWaitForUtxosToBeSpent.mockReset()
     mocks.startCoinjoin.mockReset()
+    mocks.startCoinjoinIsSuccess = false
     mocks.stopCoinjoinRefetch.mockReset()
     mocks.stopCoinjoinRefetch.mockResolvedValue({ data: {} })
     mocks.takerRunning = false
@@ -587,6 +590,32 @@ describe('SendPage', () => {
     expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'global.done' }))
     expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
+  })
+
+  it('keeps waiting for the taker to start after the collaborative send has been accepted', async () => {
+    mocks.startCoinjoinIsSuccess = true
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = undefined
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.alert_collaborative_starting')).toBeInTheDocument()
+    expect(screen.queryByText('send.taker_status.title')).not.toBeInTheDocument()
+    await flushActUpdates()
+  })
+
+  it('shows the outcome of a collaborative send that ended before the taker was observed running', async () => {
+    mocks.startCoinjoinIsSuccess = true
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = 'failed'
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('send.alert_collaborative_starting')).not.toBeInTheDocument()
+    expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
+    await flushActUpdates()
   })
 
   it.each(['failed', 'cancelled'])('keeps the form values of a %s attempt for a retry', async (takerStatus) => {
