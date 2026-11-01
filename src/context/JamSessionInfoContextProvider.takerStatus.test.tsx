@@ -11,6 +11,7 @@ const POLLING_INTERVAL = 50
 
 const mocks = vi.hoisted(() => ({
   takerStatusQueryFn: vi.fn<() => Promise<TakerStatusResponse>>(),
+  pollingInterval: 50,
 }))
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
@@ -33,7 +34,9 @@ vi.mock('@/constants/jam', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/constants/jam')>()
   return {
     ...actual,
-    RUNNING_COINJOIN_POLLING_INTERVAL: 50,
+    get RUNNING_COINJOIN_POLLING_INTERVAL() {
+      return mocks.pollingInterval
+    },
   }
 })
 
@@ -87,6 +90,7 @@ describe('<JamSessionInfoContextProvider /> taker status', () => {
   beforeEach(() => {
     sessionStorage.clear()
     mocks.takerStatusQueryFn.mockReset()
+    mocks.pollingInterval = POLLING_INTERVAL
     setSessionTakerActive(false)
   })
 
@@ -132,7 +136,9 @@ describe('<JamSessionInfoContextProvider /> taker status', () => {
     expect(mocks.takerStatusQueryFn).toHaveBeenCalledTimes(callCount)
   })
 
-  it('refetches the final outcome when the session reports the taker has stopped', async () => {
+  it('refetches the final outcome immediately when the session reports the taker has stopped', async () => {
+    // polling must not be able to pick up the outcome during this test
+    mocks.pollingInterval = 60_000
     setSessionTakerActive(true)
     mocks.takerStatusQueryFn.mockResolvedValue({ running: true, status: 'collecting_signatures' })
 
@@ -140,10 +146,13 @@ describe('<JamSessionInfoContextProvider /> taker status', () => {
 
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('collecting_signatures'))
 
+    expect(mocks.takerStatusQueryFn).toHaveBeenCalledTimes(1)
+
     mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'failed', error: 'boom' })
     act(() => setSessionTakerActive(false))
 
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('failed'))
+    expect(mocks.takerStatusQueryFn).toHaveBeenCalledTimes(2)
     expect(screen.getByTestId('running')).toHaveTextContent('false')
   })
 

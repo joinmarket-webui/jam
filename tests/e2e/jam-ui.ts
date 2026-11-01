@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import {
   checkNgBackendSession,
+  fetchNgBackendSession,
   fundAddressViaBitcoinCore,
   initializeFundingWallet,
   mineBlocksViaBitcoinCore,
@@ -156,6 +157,40 @@ export async function lockWalletViaUi(page: Page): Promise<void> {
 
   // Verify reached locked / login screen
   await expect(page).toHaveURL(/.*login/, { timeout: 20_000 })
+}
+
+/**
+ * Lock the active wallet and verify the logout in the UI as well as in the backend.
+ */
+export async function lockWalletAndVerifyLogout(page: Page): Promise<void> {
+  await lockWalletViaUi(page)
+
+  await expect(page.getByText(/locked successfully/i)).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('#login-password')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: /lock wallet/i })).toBeHidden()
+
+  await expect
+    .poll(
+      async () => {
+        const session = await fetchNgBackendSession()
+        return session.session
+      },
+      { message: 'Backend must not have an active wallet session after locking', timeout: 15_000 },
+    )
+    .toBe(false)
+}
+
+/**
+ * Best effort cleanup after a failed test: lock a wallet left unlocked, so that subsequent runs can use the backend.
+ */
+export async function lockWalletIfActive(page: Page): Promise<void> {
+  const session = await fetchNgBackendSession().catch(() => undefined)
+  if (session?.session !== true) return
+  try {
+    await lockWalletViaUi(page)
+  } catch (error: unknown) {
+    console.warn(`Could not lock wallet '${session.wallet_name}' after failed test`, error)
+  }
 }
 
 /**
