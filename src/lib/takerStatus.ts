@@ -29,11 +29,15 @@ export interface TakerStatusInfo {
   completedUnverified: boolean
   failed: boolean
   cancelled: boolean
+  // the run has an outcome (the taker might still report `running` while shutting down)
+  final: boolean
 }
 
 export const toTakerStatusInfo = (response?: TakerStatusResponse): TakerStatusInfo => {
   const value = response?.status ?? undefined
   const completed = value === 'complete'
+  const failed = value === 'failed'
+  const cancelled = value === 'cancelled'
   return {
     value,
     idle: value === 'idle',
@@ -44,7 +48,8 @@ export const toTakerStatusInfo = (response?: TakerStatusResponse): TakerStatusIn
     broadcasting: value === 'broadcasting',
     completed,
     completedUnverified: completed && !!response?.broadcast_method?.startsWith(UNVERIFIED_BROADCAST_METHOD_PREFIX),
-    failed: value === 'failed',
-    cancelled: value === 'cancelled',
+    failed,
+    cancelled,
+    final: completed || failed || cancelled,
   }
 }

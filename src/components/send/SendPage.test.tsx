@@ -197,6 +197,7 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
         completedUnverified: false,
         failed: false,
         cancelled: false,
+        final: false,
       },
       running: mocks.takerRunning,
       scheduler: {

@@ -96,7 +96,13 @@ export async function getNewAddressFromBitcoinCore(): Promise<string> {
  * Fund a target address with the given amount in BTC.
  */
 export async function fundAddressViaBitcoinCore(address: string, amountBtc: number | string): Promise<string> {
-  const txid = await bitcoinRpcCall<string>('sendtoaddress', [address, amountBtc], FUNDING_WALLET)
+  // explicit fee rate (sat/vB), so funding does not depend on `-fallbackfee` being configured
+  const feeRateSatPerVbyte = 2
+  const txid = await bitcoinRpcCall<string>(
+    'sendtoaddress',
+    [address, amountBtc, '', '', false, true, null, 'unset', null, feeRateSatPerVbyte],
+    FUNDING_WALLET,
+  )
   return txid
 }
 

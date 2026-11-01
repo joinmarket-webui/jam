@@ -29,4 +29,11 @@ describe('toTakerStatusInfo', () => {
       completedUnverified: true,
     })
   })
+
+  it('marks completed, failed and cancelled runs as final', () => {
+    expect(toTakerStatusInfo({ running: true, status: 'broadcasting' }).final).toBe(false)
+    expect(toTakerStatusInfo({ running: true, status: 'complete' }).final).toBe(true)
+    expect(toTakerStatusInfo({ running: false, status: 'failed' }).final).toBe(true)
+    expect(toTakerStatusInfo({ running: false, status: 'cancelled' }).final).toBe(true)
+  })
 })

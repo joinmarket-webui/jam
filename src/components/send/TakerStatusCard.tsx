@@ -74,13 +74,14 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }
   const txid = takerInfo.__raw?.txid ?? undefined
   const error = takerInfo.__raw?.error ?? undefined
   const hasEndedWithUnknownOutcome = !takerInfo.running && takerInfo.status.value === undefined
+  const isActive = takerInfo.running && !takerInfo.status.final
   const hasAdditionalInfo = data !== undefined || !!txid || !!error
 
   return (
     <>
       <Card
         className={cn('ring-ring/50 ring-2', {
-          'ring-muted-foreground': takerInfo.running,
+          'ring-muted-foreground': isActive,
           'ring-brand-success': takerInfo.status.completed && !takerInfo.status.completedUnverified,
           'ring-destructive/50': takerInfo.status.failed,
           'ring-brand-warning': takerInfo.status.cancelled || takerInfo.status.completedUnverified,
@@ -92,12 +93,14 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }
         <CardContent className={cn('flex flex-col gap-2', { 'md:flex-row md:gap-8': hasAdditionalInfo })}>
           <div className="col-span-full flex flex-col items-center justify-center md:col-span-1">
             <CookingPotIcon
-              animate={takerInfo.running}
-              className={takerInfo.running ? 'animate-pulse' : undefined}
+              animate={isActive}
+              className={isActive ? 'animate-pulse' : undefined}
               sourceJarIndex={data?.source?.fromJar}
               destinationJarIndex={data?.destination?.fromJar}
             />
-            <TakerStatusText takerInfo={takerInfo} />
+            <span data-testid="taker-status-text">
+              <TakerStatusText takerInfo={takerInfo} />
+            </span>
           </div>
           {hasAdditionalInfo && (
             <>
@@ -224,9 +227,9 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }
           )}
         </CardContent>
 
-        {(onAbort || onDone) && (
+        {((onAbort && isActive) || onDone) && (
           <CardFooter className="justify-end gap-2">
-            {onAbort && (
+            {onAbort && isActive && (
               <Button type="button" variant="ghost" onClick={onAbort} disabled={isAborting}>
                 {t('global.abort')}
               </Button>
