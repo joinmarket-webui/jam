@@ -55,18 +55,18 @@ The smoke journey validates:
 1. Start the isolated smoke regtest services:
 
    ```bash
-   npm run smoke:up
+   npm run e2e:smoke:up
    ```
 
 2. Run the Playwright smoke test:
 
    ```bash
-   npm run test:smoke
+   npm run test:e2e:smoke
    ```
 
 3. When finished, tear down the isolated smoke environment:
    ```bash
-   npm run smoke:down
+   npm run e2e:smoke:down
    ```
 
 Test evidence (screenshots and logs) is saved to `test-evidence/` and `test-results/`.
@@ -87,7 +87,7 @@ reported taker status and the transaction on chain. It needs the full regtest en
 2. Run the regression suite (the smoke suite runs first; add `--no-deps` to skip it):
 
    ```bash
-   npm run test:regression
+   npm run test:e2e:regression
    ```
 
 The suite fails right away if the orderbook contains no offers.
