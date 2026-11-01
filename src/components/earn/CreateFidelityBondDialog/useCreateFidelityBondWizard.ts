@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { gettimelockaddressOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -40,6 +40,7 @@ export function useCreateFidelityBondWizard(
   const [frozenUtxos, setFrozenUtxos] = useState<Utxo[]>([])
   const [utxoPage, setUtxoPage] = useState(0)
   const [txResult, setTxResult] = useState<DirectSendResponse | undefined>()
+  const isUnfreezingRef = useRef(false)
 
   const { freezeUtxo, unfreezeUtxo, directSend, error, setError } = useFidelityBondMutations({
     unfreezeErrorKey: 'earn.fidelity_bond.error_unfreezing_utxos',
@@ -166,11 +167,67 @@ export function useCreateFidelityBondWizard(
     setError(undefined)
   }
 
+  // Best-effort rollback of the freeze step — returns the UTXOs that could not be unfrozen
+  const unfreezeFrozenUtxos = async () => {
+    isUnfreezingRef.current = true
+    const stillFrozen: Utxo[] = []
+    for (const utxo of frozenUtxos) {
+      try {
+        await unfreezeUtxo.mutateAsync({
+          path: { walletname: walletFileName },
+          body: { 'utxo-string': utxo.utxo, freeze: false },
+        })
+      } catch {
+        // logged via onError
+        stillFrozen.push(utxo)
+      }
+    }
+    isUnfreezingRef.current = false
+    setFrozenUtxos(stillFrozen)
+    if (stillFrozen.length < frozenUtxos.length) {
+      walletInfo.refetch().catch((error: unknown) => {
+        console.warn('Error while refetching wallet info after unfreezing UTXOs.', error)
+      })
+    }
+    return stillFrozen
+  }
+
+  const closeAfterUnfreezing = async () => {
+    const stillFrozen = await unfreezeFrozenUtxos()
+    if (stillFrozen.length > 0) {
+      toast.error(t('earn.fidelity_bond.create_fidelity_bond.error_unfreezing_utxos_on_close'))
+    }
+    handleReset()
+    onOpenChange(false)
+  }
+
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
+      if (isUnfreezingRef.current) return
+      // The bond was not created, so the UTXOs frozen for it must not stay frozen
+      if (frozenUtxos.length > 0 && step !== 'creating' && step !== 'success') {
+        void closeAfterUnfreezing()
+        return
+      }
       handleReset()
     }
     onOpenChange(newOpen)
+  }
+
+  const showUtxoSelection = () => {
+    setUtxoPage(0)
+    setStep('select_utxos')
+  }
+
+  // Going back to the UTXO selection undoes the freeze step, as another UTXO may be selected
+  const backToUtxoSelection = () => {
+    if (frozenUtxos.length === 0) {
+      showUtxoSelection()
+      return
+    }
+    void unfreezeFrozenUtxos().then((stillFrozen) => {
+      if (stillFrozen.length === 0) showUtxoSelection()
+    })
   }
 
   const handleBack = () => {
@@ -191,15 +248,13 @@ export function useCreateFidelityBondWizard(
         }
         break
       case 'freeze_utxos':
-        setUtxoPage(0)
-        setStep('select_utxos')
+        backToUtxoSelection()
         break
       case 'review':
         if (utxosToFreeze.length > 0) {
           setStep('freeze_utxos')
         } else {
-          setUtxoPage(0)
-          setStep('select_utxos')
+          backToUtxoSelection()
         }
         break
     }
@@ -291,6 +346,7 @@ export function useCreateFidelityBondWizard(
       broadcasted = true
 
       // Best-effort cleanup — tx already broadcast, don't throw on unfreeze failure
+      const stillFrozen: Utxo[] = []
       for (const utxo of frozenUtxos) {
         try {
           await unfreezeUtxo.mutateAsync({
@@ -301,8 +357,11 @@ export function useCreateFidelityBondWizard(
         } catch (_ignoredOnPurpose: unknown) {
           // only debug output
           console.debug('Error while unfreezing previously frozen UTXO.')
+          stillFrozen.push(utxo)
         }
       }
+      // only offer to unfreeze what could not be unfrozen automatically
+      setFrozenUtxos(stillFrozen)
 
       // freeze resulting fidelity bond output
       if (JAM_TRY_FREEZE_CREATED_FIDELITY_BOND_OUTPUTS) {
