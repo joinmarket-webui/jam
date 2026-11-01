@@ -8,7 +8,7 @@ type DialogProps = ChildrenProps & { open?: boolean; onOpenChange?: (open: boole
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, values?: { count?: number }) => (values?.count !== undefined ? `${key}:${values.count}` : key),
   }),
 }))
 
@@ -112,13 +112,6 @@ describe('SweepStartConfirmDialog', () => {
   })
 
   it('renders schedule details when provided', () => {
-    const mockSchedule = {
-      entries: [{ id: '1' }, { id: '2' }],
-      summary: {
-        externalDestinations: [{ address: 'bc1qdestination1' }, { address: 'bc1qdestination2' }],
-      },
-    }
-
     render(
       <SweepStartConfirmDialog
         open={true}
@@ -127,32 +120,17 @@ describe('SweepStartConfirmDialog', () => {
         disabled={false}
         isStarting={false}
         totalBalanceInSats={150000}
-        schedule={mockSchedule as never}
+        totalActions={2}
+        destinationAddresses={['bc1qdestination1', 'bc1qdestination2']}
       />,
     )
 
     expect(screen.getByText('scheduler.complete_wallet_title')).toBeInTheDocument()
     expect(screen.getByText('150000')).toBeInTheDocument()
     expect(screen.getByText('scheduler.section_details_title')).toBeInTheDocument()
-    expect(screen.getByText('2 actions')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_start_modal.actions_count:2')).toBeInTheDocument()
     expect(screen.getByText('scheduler.section_destinations_title')).toBeInTheDocument()
     expect(screen.getByText('bc1qdestination1')).toBeInTheDocument()
     expect(screen.getByText('bc1qdestination2')).toBeInTheDocument()
-  })
-
-  it('renders explicit destinationAddresses when provided', () => {
-    render(
-      <SweepStartConfirmDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        onConfirm={vi.fn()}
-        disabled={false}
-        isStarting={false}
-        destinationAddresses={['bc1qcustomaddress']}
-      />,
-    )
-
-    expect(screen.getByText('scheduler.section_destinations_title')).toBeInTheDocument()
-    expect(screen.getByText('bc1qcustomaddress')).toBeInTheDocument()
   })
 })
