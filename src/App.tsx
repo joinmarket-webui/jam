@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ComponentType, PropsWithChildren } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
+import { CancelledError, QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -429,6 +429,19 @@ const RELOAD_WALLET_INFO_DELAY: {
   AFTER_TX_MESSAGE: 210,
 }
 
+const logAutoReloadError = (
+  log: (...data: unknown[]) => void,
+  trigger: keyof typeof RELOAD_WALLET_INFO_DELAY,
+  error: unknown,
+) => {
+  // cancelled on purpose, e.g. the wallet has been locked in the meantime
+  if (error instanceof CancelledError) {
+    console.debug(`Auto-reloading wallet info ${trigger} has been cancelled.`)
+    return
+  }
+  log(`Error while auto-reloading wallet info ${trigger} finished`, error)
+}
+
 /**
  * A component that automatically reloads wallet information on certain state changes,
  * e.g. when the wallet is unlocked or rescanning the chain finished successfully.
@@ -472,7 +485,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.warn('Error while auto-reloading wallet info AFTER_RESCAN finished', error)
+        logAutoReloadError(console.warn, 'AFTER_RESCAN', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_RESCAN) ended')
     },
@@ -497,7 +510,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.warn('Error while auto-reloading wallet info AFTER_BLOCK_HEIGHT_CHANGE finished', error)
+        logAutoReloadError(console.warn, 'AFTER_BLOCK_HEIGHT_CHANGE', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_BLOCK_HEIGHT_CHANGE) ended')
     },
@@ -521,7 +534,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.error('Error while auto-reloading wallet info AFTER_UTXO_CHANGE finished', error)
+        logAutoReloadError(console.error, 'AFTER_UTXO_CHANGE', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_UTXO_CHANGE) ended')
     },
@@ -541,7 +554,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.warn('Error while auto-reloading wallet info AFTER_TX_MESSAGE finished', error)
+        logAutoReloadError(console.warn, 'AFTER_TX_MESSAGE', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_TX_MESSAGE) ended')
     },
@@ -561,7 +574,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.error('Error while auto-reloading wallet info AFTER_TAKER_STOPPED finished', error)
+        logAutoReloadError(console.error, 'AFTER_TAKER_STOPPED', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_TAKER_STOPPED) ended')
     },

@@ -1,9 +1,11 @@
 import { type ReactNode, StrictMode } from 'react'
 import { token as tokenMock } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { CancelledError } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createBrowserRouter } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { setIntervalDebounced as setIntervalDebouncedMock } from '@/lib/utils'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import App, { WalletInfoAutoReload } from './App'
 
 type Holders = {
@@ -93,11 +95,15 @@ vi.mock('@/constants/debugFeatures', () => ({
   isDebugFeatureEnabled: () => true,
 }))
 
-vi.mock('@tanstack/react-query', () => ({
-  QueryClientProvider: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  useQuery: () => ({ refetch: vi.fn().mockResolvedValue({}) }),
-  useMutation: () => ({ mutateAsync }),
-}))
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const { CancelledError } = await importOriginal<typeof import('@tanstack/react-query')>()
+  return {
+    CancelledError,
+    QueryClientProvider: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+    useQuery: () => ({ refetch: vi.fn().mockResolvedValue({}) }),
+    useMutation: () => ({ mutateAsync }),
+  }
+})
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   lockwalletOptions: () => ({ queryKey: ['lock'] }),
@@ -343,6 +349,7 @@ describe('WalletInfoAutoReload', () => {
     holders.refreshToken = 'refresh'
     holders.jmSession = { maker_running: true, coinjoin_in_process: false, schedule: [] }
     holders.utxosHashHex = 'initial-hash'
+    holders.takerRunning = false
   })
 
   it('skips refetch on initial mount but refetches on subsequent utxosHashHex changes', async () => {
@@ -389,5 +396,45 @@ describe('WalletInfoAutoReload', () => {
       </StrictMode>,
     )
     expect(refetchWalletBalance).toHaveBeenCalledTimes(2)
+  })
+
+  describe('when the taker stopped', () => {
+    const renderAndStopTaker = async () => {
+      holders.takerRunning = true
+      const { rerender } = render(<WalletInfoAutoReload />)
+      holders.takerRunning = false
+      rerender(<WalletInfoAutoReload />)
+      await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(1))
+    }
+
+    it('does not report a cancelled reload as error (e.g. wallet has been locked meanwhile)', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      refetchWalletBalance.mockRejectedValueOnce(new CancelledError())
+
+      await renderAndStopTaker()
+
+      await flushActUpdates()
+      expect(consoleError).not.toHaveBeenCalledWith(
+        'Error while auto-reloading wallet info AFTER_TAKER_STOPPED finished',
+        expect.anything(),
+      )
+      consoleError.mockRestore()
+    })
+
+    it('reports a failed reload as error', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const error = new Error('boom')
+      refetchWalletBalance.mockRejectedValueOnce(error)
+
+      await renderAndStopTaker()
+
+      await waitFor(() =>
+        expect(consoleError).toHaveBeenCalledWith(
+          'Error while auto-reloading wallet info AFTER_TAKER_STOPPED finished',
+          error,
+        ),
+      )
+      consoleError.mockRestore()
+    })
   })
 })

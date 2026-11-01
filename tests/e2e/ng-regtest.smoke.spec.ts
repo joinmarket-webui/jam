@@ -5,6 +5,8 @@ import {
   createWalletViaUi,
   dismissOverlays,
   fundWalletViaUi,
+  lockWalletAndVerifyLogout,
+  lockWalletIfActive,
   lockWalletViaUi,
   submitCollaborativeSend,
   takerStatusCard,
@@ -33,6 +35,12 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
     const uniqueSuffix = Date.now().toString(36)
     walletName = `smoke_${uniqueSuffix}`
     walletPassword = `SmokePass_${uniqueSuffix}_!99`
+  })
+
+  test.afterEach(async ({ page }, testInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus) {
+      await lockWalletIfActive(page)
+    }
   })
 
   test('Execute complete live NG wallet journey (A-H)', async ({ page }) => {
@@ -261,9 +269,15 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       await expect(page.locator('#send-amount')).toHaveValue(String(COINJOIN_AMOUNT_SATS))
     })
 
-    // H. Lock wallet, so that subsequent suites can use the backend
-    await test.step('H. Lock wallet', async () => {
-      await lockWalletViaUi(page)
+    // H. Lock wallet and verify logout, so that subsequent suites can use the backend
+    await test.step('H. Lock wallet and verify logout', async () => {
+      await lockWalletAndVerifyLogout(page)
+
+      // Capture Evidence 06: Locked wallet and logged out
+      await page.screenshot({
+        path: path.join(EVIDENCE_DIR, '06-wallet-locked.png'),
+        fullPage: false,
+      })
     })
   })
 })
