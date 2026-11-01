@@ -65,8 +65,8 @@ Some things that will increase the chance that your pull request is accepted:
 - Make sure your code is formatted. This should happen automatically using a Git commit-hook. If not, see [docs/developing.md](docs/developing.md) for more details.
 - Write a meaningful pull request description message.
 
-If your pull request is accepted, a maintainer will squash it into master.
-We follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) convention when squashing pull requests to master.
+If your pull request is accepted, a maintainer will squash it into devel.
+We follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) convention when squashing pull requests to devel.
 You can follow this convention for commits on your fork but this isn't a requirement for your pull request to be accepted.
 
 ## Testing the Latest Iteration
@@ -77,10 +77,11 @@ Clone this repo:
 git clone git@github.com:joinmarket-webui/jam.git
 ```
 
-Checkout the version you want to test. If you want to test the cutting edge development version, simply skip this step and test directly on master.
+Checkout the version you want to test. If you want to test the cutting edge development version, simply skip this step and test directly on devel.
 
 ```sh
-git fetch --tags git checkout <version>
+git fetch --tags
+git checkout <version>
 ```
 
 Follow the [Local setup (regtest and UI)](#local-setup-regtest-and-ui) above.
