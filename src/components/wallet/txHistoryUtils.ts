@@ -23,4 +23,3 @@ export const txHistoryToCsv = (entries: HistoryEntry[]): string => {
   )
   return [header, ...rows].join('\n')
 }
-
