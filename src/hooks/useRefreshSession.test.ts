@@ -1,20 +1,36 @@
-import { createElement, type PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { useQuery } from '@tanstack/react-query'
+import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useRefreshSession } from './useRefreshSession'
 
 const mocks = vi.hoisted(() => ({
   jmSession: undefined as SessionResponse | undefined,
-  refetchSessionData: vi.fn(() => Promise.reject(new Error('boom'))),
+}))
+
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+  sessionOptions: vi.fn(() => ({
+    queryKey: ['session'],
+    queryFn: vi.fn(),
+  })),
+}))
+
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(),
 }))
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSessionInfoContext: () => ({
     jmSession: mocks.jmSession,
-    refetchSessionData: mocks.refetchSessionData,
   }),
+}))
+
+vi.mock('@/hooks/useApiClient', () => ({
+  useApiClient: () => ({}),
+}))
+
+vi.mock('@/lib/queryClient', () => ({
+  withQueryDelay: (queryFn: unknown) => queryFn,
 }))
 
 const sessionData = {
@@ -23,59 +39,35 @@ const sessionData = {
   coinjoin_in_process: false,
 } as SessionResponse
 
-function createQueryWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-  })
-
-  return function QueryWrapper({ children }: PropsWithChildren) {
-    return createElement(QueryClientProvider, { client: queryClient, children })
-  }
-}
-
 describe('useRefreshSession', () => {
   beforeEach(() => {
     mocks.jmSession = undefined
-    mocks.refetchSessionData.mockReset()
-    mocks.refetchSessionData.mockResolvedValue(undefined as never)
+    vi.mocked(useQuery).mockReset()
   })
 
-  it('returns the session state from context and refreshes it through the query', async () => {
+  it('returns the session state from context', () => {
     mocks.jmSession = sessionData
 
-    const { result } = renderHook(() => useRefreshSession({ enabled: true, refetchInterval: 5_000, refetchDelay: 0 }), {
-      wrapper: createQueryWrapper(),
-    })
+    const { result } = renderHook(() => useRefreshSession({ enabled: true, refetchInterval: 5_000 }))
 
     expect(result.current.data).toBe(sessionData)
-    await waitFor(() => expect(mocks.refetchSessionData).toHaveBeenCalledTimes(1))
   })
 
-  it('returns updated context session state after a rerender', () => {
-    const { result, rerender } = renderHook(() => useRefreshSession({ enabled: false, refetchInterval: 5_000 }), {
-      wrapper: createQueryWrapper(),
-    })
+  it('observes the shared session query with the given interval', () => {
+    renderHook(() => useRefreshSession({ enabled: true, refetchInterval: 5_000 }))
 
-    expect(result.current.data).toBeUndefined()
-
-    act(() => {
-      mocks.jmSession = sessionData
-    })
-    rerender()
-
-    expect(result.current.data).toBe(sessionData)
-    expect(mocks.refetchSessionData).not.toHaveBeenCalled()
+    expect(useQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['session'],
+        enabled: true,
+        refetchInterval: 5_000,
+      }),
+    )
   })
 
-  it('does not refetch when disabled', () => {
-    renderHook(() => useRefreshSession({ enabled: false, refetchInterval: 5_000 }), {
-      wrapper: createQueryWrapper(),
-    })
+  it('passes the enabled flag to the query', () => {
+    renderHook(() => useRefreshSession({ enabled: false, refetchInterval: 5_000 }))
 
-    expect(mocks.refetchSessionData).not.toHaveBeenCalled()
+    expect(useQuery).toHaveBeenCalledWith(expect.objectContaining({ enabled: false }))
   })
 })
