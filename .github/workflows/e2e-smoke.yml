@@ -1,4 +1,4 @@
-name: Regtest Smoke
+name: E2E Smoke
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   smoke:
-    name: NG Regtest Smoke
+    name: E2E Smoke (NG Regtest)
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -47,7 +47,7 @@ jobs:
         run: bash tests/e2e/smoke-setup.sh up
 
       - name: Run Playwright smoke test journey
-        run: npm run test:smoke
+        run: npm run test:e2e:smoke
 
       - name: Capture service logs on failure
         if: failure()
@@ -59,7 +59,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
-          name: regtest-smoke-evidence
+          name: e2e-smoke-evidence
           path: |
             test-evidence/
             test-results/
