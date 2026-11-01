@@ -25,6 +25,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
   const FUNDING_AMOUNT_BTC = '0.001'
   const FUNDING_AMOUNT_SATS = 100_000
   const SEND_AMOUNT_SATS = 25_000
+  const COINJOIN_AMOUNT_SATS = 30_000
 
   test.beforeAll(async () => {
     fs.mkdirSync(EVIDENCE_DIR, { recursive: true })
@@ -33,7 +34,10 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
     walletPassword = `SmokePass_${uniqueSuffix}_!99`
   })
 
-  test('Execute complete live NG wallet journey (A-F)', async ({ page }) => {
+  test('Execute complete live NG wallet journey (A-G)', async ({ page }) => {
+    // the collaborative send (G) waits for makers, which takes a while
+    test.setTimeout(420_000)
+
     // 0. Auto-dismiss splashscreen, post-login tour, and cheatsheet popup
     await page.addInitScript(() => {
       try {
@@ -171,7 +175,15 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
       // Verify reached locked / login screen
       await expect(page).toHaveURL(/.*login/, { timeout: 20_000 })
 
-      // Unlock wallet
+      // Unlock wallet (it is only preselected if it is the only wallet of the backend)
+      const walletSelect = page.getByRole('combobox')
+      await expect(walletSelect).toBeVisible({ timeout: 15_000 })
+      if (!((await walletSelect.textContent()) ?? '').includes(walletName)) {
+        await walletSelect.click()
+        await page.getByRole('option', { name: walletName, exact: true }).click()
+      }
+      await expect(walletSelect).toContainText(walletName)
+
       const passwordInput = page.locator('#login-password')
       await expect(passwordInput).toBeVisible({ timeout: 15_000 })
       await passwordInput.fill(walletPassword)
@@ -369,6 +381,80 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
         path: path.join(EVIDENCE_DIR, '04-wallet-after-reload.png'),
         fullPage: false,
       })
+    })
+
+    // G. Collaborative send reports the taker status until acknowledged
+    await test.step('G. Collaborative send reports the taker status until acknowledged', async () => {
+      // the taker only spends coins with enough confirmations (`taker_utxo_age`)
+      await mineBlocksViaBitcoinCore(5)
+
+      const coinjoinDestinationAddress = await getNewAddressFromBitcoinCore()
+
+      await page.goto('/send')
+      await expect(page.getByRole('heading', { name: 'Send', exact: true })).toBeVisible({ timeout: 20_000 })
+
+      const sourceJar = page.getByRole('button', { name: /Apricot/ })
+      await expect(sourceJar.getByRole('radio')).toBeEnabled({ timeout: 30_000 })
+      await sourceJar.click()
+
+      await page.locator('#send-destination').fill(coinjoinDestinationAddress)
+      await page.locator('#send-amount').fill(String(COINJOIN_AMOUNT_SATS))
+
+      await page.getByRole('button', { name: /sending options/i }).click()
+      const collabSwitch = page.locator('#switch-is-collaborative-transaction')
+      if ((await collabSwitch.getAttribute('aria-checked')) !== 'true') {
+        await collabSwitch.click()
+      }
+      await expect(collabSwitch).toHaveAttribute('aria-checked', 'true')
+
+      // use the minimum number of collaborators the backend allows
+      const collaboratorsSlider = page.locator('#send-num-collaborators').getByRole('slider')
+      await collaboratorsSlider.focus()
+      await collaboratorsSlider.press('Home')
+
+      await page.getByRole('radio', { name: /sats.*vbyte/i }).click()
+      await page.locator('#txFeeInSatsPerVbyte').fill('2')
+
+      await page.locator('button[type="submit"]').click()
+      const confirmDialog = page.getByRole('dialog')
+      await expect(confirmDialog).toBeVisible({ timeout: 15_000 })
+      await confirmDialog.getByRole('button', { name: /^confirm$/i }).click()
+
+      // the status card appears while the taker is running ...
+      const takerStatusCard = page.locator('[data-slot="card"]').filter({ hasText: 'Taker status' })
+      await expect(takerStatusCard).toBeVisible({ timeout: 30_000 })
+
+      // ... and stays visible with the final outcome once the taker stopped
+      const doneButton = takerStatusCard.getByRole('button', { name: /^done$/i })
+      await expect(doneButton).toBeVisible({ timeout: 300_000 })
+      await expect(takerStatusCard.getByRole('button', { name: /^abort$/i })).toBeHidden()
+
+      await page.screenshot({
+        path: path.join(EVIDENCE_DIR, '05-collaborative-send-outcome.png'),
+        fullPage: false,
+      })
+
+      // without makers (e.g. the isolated smoke environment) the attempt fails with a reason,
+      // with makers available (e.g. the full regtest environment) it completes
+      const outcome = takerStatusCard.getByTestId('taker-status-text')
+      await expect(outcome).toHaveText(/^(Completed|Completed \(unverified\)|Failed)$/)
+      const outcomeText = (await outcome.textContent()) ?? ''
+      if (outcomeText.startsWith('Completed')) {
+        const rawCardContent = (await takerStatusCard.textContent()) ?? ''
+        const txidMatch = rawCardContent.match(/[0-9a-f]{64}/)
+        expect(txidMatch, 'Completed taker status must contain the transaction ID').not.toBeNull()
+        const rawTx = await getRawTransactionDetails(txidMatch![0])
+        const destinationOutput = rawTx.vout.find((out) => out.scriptPubKey?.address === coinjoinDestinationAddress)
+        expect(Math.round((destinationOutput?.value || 0) * 100_000_000)).toBe(COINJOIN_AMOUNT_SATS)
+        await mineBlocksViaBitcoinCore(1)
+      } else {
+        await expect(takerStatusCard.getByText('Error', { exact: true })).toBeVisible()
+      }
+
+      // acknowledging the outcome hides the card and resets the form
+      await doneButton.click()
+      await expect(takerStatusCard).toBeHidden()
+      await expect(page.locator('#send-destination')).toHaveValue('')
     })
   })
 })

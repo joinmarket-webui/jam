@@ -152,6 +152,18 @@ describe('TakerStatusCard', () => {
       expect(screen.getByText('send.taker_status.status_unmapped:{"value":"brand_new_phase"}')).toBeInTheDocument()
     })
 
+    it('does not offer to abort once the run has an outcome but the taker is still shutting down', () => {
+      const takerInfo = {
+        ...sampleTakerInfo,
+        running: true,
+        status: toTakerStatusInfo({ running: true, status: 'complete', txid: 'ab'.repeat(32) }),
+      }
+      render(<TakerStatusCard takerInfo={takerInfo} jars={sampleJars} isAborting={false} onAbort={vi.fn()} />)
+
+      expect(screen.getByText('send.taker_status.status_complete')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
+    })
+
     it('renders txid and done button when completed', async () => {
       const user = userEvent.setup()
       const onDone = vi.fn()
