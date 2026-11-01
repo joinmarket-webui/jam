@@ -10,7 +10,10 @@ x-ng-jmwalletd: &ng-jmwalletd
     BITCOIN__RPC_PASSWORD: regtest
     NETWORK_CONFIG__NETWORK: testnet
     NETWORK_CONFIG__BITCOIN_NETWORK: regtest
-    NETWORK_CONFIG__DIRECTORY_SERVERS: ${JM_ALL_DIRECTORY_NODES:?Directory nodes address must be set}
+    # Connect directly to the directory node: reaching its onion service via the public Tor network
+    # can take several minutes, which makes the maker setup unreliable in CI.
+    NETWORK_CONFIG__DIRECTORY_SERVERS: joinmarket_ng_directory_node:5223
+    NETWORK_CONFIG__ALLOW_CLEARNET_CONNECTIONS: 'true'
     ORDERBOOK_WATCHER__HTTP_HOST: joinmarket_ng_orderbook_watcher
     ORDERBOOK_WATCHER__HTTP_PORT: 8000
     OBWATCH_URL: http://joinmarket_ng_orderbook_watcher:8000
@@ -188,7 +191,8 @@ services:
     environment:
       NETWORK_CONFIG__NETWORK: testnet
       NETWORK_CONFIG__BITCOIN_NETWORK: regtest
-      DIRECTORY_NODES: ${JM_ALL_DIRECTORY_NODES:?Directory nodes address must be set}
+      DIRECTORY_NODES: joinmarket_ng_directory_node:5223
+      NETWORK_CONFIG__ALLOW_CLEARNET_CONNECTIONS: 'true'
       TOR__SOCKS_HOST: tor
       TOR__SOCKS_PORT: 9050
       LOGGING__LEVEL: DEBUG
