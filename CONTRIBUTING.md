@@ -38,7 +38,7 @@ npm run regtest:init
 
 This creates and funds a wallet `Satoshi` with password `test`.
 
-Start the UI on port 3000:
+Start the UI on port 5173:
 
 ```sh
 npm run dev
@@ -91,7 +91,7 @@ Enjoy the test drive!
 
 When running Jam in dev mode, additional Jam instances are provided by default. These instances can be used to set up different wallets and simulate collaborative transactions. A block explorer and RPC terminal are also available for directly interacting with the regtest node.
 
-Information on how to access these development features can be found at [http://localhost:3000/dev-setup](http://localhost:3000/dev-setup).
+Information on how to access these development features can be found at [http://localhost:5173/dev/setup](http://localhost:5173/dev/setup).
 
 ### Resetting regtest (clean slate)
 
