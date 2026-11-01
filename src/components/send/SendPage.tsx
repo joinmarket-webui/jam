@@ -96,6 +96,11 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const scrollToPageTop = () => scrollIntoView(pageTopElementRef, {})
 
   const [formId, setFormId] = useState<number>(0)
+  const [formInitialValues, setFormInitialValues] = useState<SendFormValues>()
+  const resetForm = (initialValues?: SendFormValues) => {
+    setFormInitialValues(initialValues)
+    setFormId((current) => current + 1)
+  }
   const feeConfigValidation = useFeeConfigValidation({ walletFileName })
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false)
@@ -281,7 +286,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       jmTxStore.getState().add(tx)
 
       setWaitForUtxosToBeSpent(inputUtxoIds)
-      setFormId((current) => current + 1)
+      resetForm()
       setNonCollaborativePaymentSuccessInfoAlert({
         variant: 'success',
         title: t('send.alert_direct_payment_success_title'),
@@ -460,7 +465,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
                 takerRunning
                   ? undefined
                   : () => {
-                      setFormId((current) => current + 1)
+                      // keep the values of an attempt that did not spend any coins, so it can easily be retried
+                      const canRetry = takerInfo.status.failed || takerInfo.status.cancelled
+                      resetForm(canRetry ? takerInfo.currentPaymentAttempt?.data : undefined)
                       clearCurrentPaymentAttempt()
                     }
               }
@@ -521,6 +528,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           <CardContent>
             <SendForm
               key={formId}
+              initialValues={formInitialValues}
               onSubmit={onSubmit}
               walletFileName={walletFileName}
               minNumberOfCollaborators={minimumCollaborators}
