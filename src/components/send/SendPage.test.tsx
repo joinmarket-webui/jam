@@ -6,6 +6,7 @@ import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { toTakerStatusInfo } from '@/lib/takerStatus'
 import { jmTxStore } from '@/store/jmTxStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import { SendPage } from './SendPage'
@@ -26,6 +27,7 @@ const mocks = vi.hoisted(() => ({
   startCoinjoin: vi.fn(),
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
+  takerStatus: undefined as string | undefined,
   schedulerRunning: false,
   makerRunning: false,
   toastError: vi.fn(),
@@ -185,20 +187,9 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     setCurrentPaymentAttempt: mocks.setCurrentPaymentAttempt,
     takerInfo: {
       currentPaymentAttempt: mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
-      status: {
-        value: undefined,
-        idle: false,
-        fetchingOrderbook: false,
-        filling: false,
-        authenticating: false,
-        collectingSignatures: false,
-        broadcasting: false,
-        completed: false,
-        completedUnverified: false,
-        failed: false,
-        cancelled: false,
-        final: false,
-      },
+      status: toTakerStatusInfo(
+        mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
+      ),
       running: mocks.takerRunning,
       scheduler: {
         running: mocks.schedulerRunning,
@@ -252,17 +243,20 @@ vi.mock('./PaymentConfirmDialog', () => ({
 vi.mock('./SendForm', () => ({
   SendForm: ({
     disabled,
+    initialValues,
     onSourceJarChange,
     onSubmit,
     sourceJarLabelButton,
   }: {
     disabled?: boolean
+    initialValues?: Partial<SendFormValues>
     onSourceJarChange?: (jarIndex: number | undefined) => void
     onSubmit: (values: SendFormValues) => void
     sourceJarLabelButton?: () => React.ReactElement
   }) => (
     <div>
       send-form:{JSON.stringify({ disabled })}
+      <div>send-form-initial-address:{initialValues?.destination?.address ?? 'none'}</div>
       <div>{sourceJarLabelButton?.()}</div>
       <button
         onClick={() => {
@@ -347,6 +341,7 @@ describe('SendPage', () => {
   beforeEach(() => {
     mocks.clearCurrentPaymentAttempt.mockReset()
     mocks.currentPaymentAttemptPresent = false
+    mocks.takerStatus = undefined
     mocks.directSend.mockReset()
     mocks.fetchIfMissing.mockReset()
     mocks.fetchIfMissing.mockResolvedValue({ value: '4' })
@@ -592,6 +587,33 @@ describe('SendPage', () => {
     expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'global.done' }))
     expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
+  })
+
+  it.each(['failed', 'cancelled'])('keeps the form values of a %s attempt for a retry', async (takerStatus) => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = takerStatus
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send-form-initial-address:none')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(
+      screen.getByText(`send-form-initial-address:${collaborativeValues.data.destination.address}`),
+    ).toBeInTheDocument()
+  })
+
+  it.each(['complete', undefined])('resets the form values after an attempt with outcome %s', async (takerStatus) => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = takerStatus
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(screen.getByText('send-form-initial-address:none')).toBeInTheDocument()
   })
 
   it('handles errors loading minimum makers config', async () => {
