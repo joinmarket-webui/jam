@@ -5,15 +5,11 @@ import { jmSessionStore } from './jmSessionStore'
 describe('jmSessionStore', () => {
   it('stores the latest JoinMarket session response', () => {
     const session = { session: true } as unknown as SessionResponse
-    const updatedAt = Date.now()
 
     expect(jmSessionStore.getState().state).toBeUndefined()
 
-    jmSessionStore.getState().update(session, updatedAt)
+    jmSessionStore.getState().update(session)
 
-    expect(jmSessionStore.getState().state).toEqual({
-      ...session,
-      __updatedAt: updatedAt,
-    })
+    expect(jmSessionStore.getState().state).toBe(session)
   })
 })

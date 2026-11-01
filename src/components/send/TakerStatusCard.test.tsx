@@ -1,3 +1,4 @@
+import type { TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js'
 import { render, screen } from '@testing-library/react'
@@ -6,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PaymentAttempt, TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { toTakerStatusInfo } from '@/lib/takerStatus'
 import { TakerStatusCard } from './TakerStatusCard'
 
 vi.mock('react-i18next', () => ({
@@ -65,22 +67,18 @@ const sampleAttempt: PaymentAttempt = {
 const sampleTakerInfo: TakerInfo = {
   currentPaymentAttempt: sampleAttempt,
   running: true,
-  status: {
-    value: 'idle',
-    idle: true,
-    fetchingOrderbook: false,
-    filling: false,
-    authenticating: false,
-    collectingSignatures: false,
-    broadcasting: false,
-    completed: false,
-    failed: false,
-    cancelled: false,
-  },
+  status: toTakerStatusInfo({ running: true, status: 'idle' }),
   scheduler: {
     running: false,
   },
 }
+
+const endedTakerInfo = (raw?: TakerStatusResponse): TakerInfo => ({
+  ...sampleTakerInfo,
+  running: false,
+  status: toTakerStatusInfo(raw),
+  __raw: raw,
+})
 
 describe('TakerStatusCard', () => {
   it('renders title and details for active collaborative send to external address', () => {
@@ -126,5 +124,92 @@ describe('TakerStatusCard', () => {
     render(<TakerStatusCard takerInfo={sampleTakerInfo} jars={sampleJars} isAborting={true} onAbort={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: 'global.abort' })).toBeDisabled()
+  })
+
+  describe('status', () => {
+    it('renders the current phase of a running taker', () => {
+      const takerInfo = {
+        ...sampleTakerInfo,
+        status: toTakerStatusInfo({ running: true, status: 'collecting_signatures' }),
+      }
+      render(<TakerStatusCard takerInfo={takerInfo} jars={sampleJars} isAborting={false} onAbort={vi.fn()} />)
+
+      expect(screen.getByText('send.taker_status.status_collecting_signatures')).toBeInTheDocument()
+    })
+
+    it('renders a waiting state instead of an empty value while running without status', () => {
+      const takerInfo = { ...sampleTakerInfo, status: toTakerStatusInfo(undefined) }
+      render(<TakerStatusCard takerInfo={takerInfo} jars={sampleJars} isAborting={false} onAbort={vi.fn()} />)
+
+      expect(screen.getByText('send.taker_status.status_idle')).toBeInTheDocument()
+      expect(screen.queryByText(/undefined|null/u)).not.toBeInTheDocument()
+    })
+
+    it('renders unknown status values verbatim', () => {
+      const takerInfo = { ...sampleTakerInfo, status: toTakerStatusInfo({ running: true, status: 'brand_new_phase' }) }
+      render(<TakerStatusCard takerInfo={takerInfo} jars={sampleJars} isAborting={false} onAbort={vi.fn()} />)
+
+      expect(screen.getByText('send.taker_status.status_unmapped:{"value":"brand_new_phase"}')).toBeInTheDocument()
+    })
+
+    it('renders txid and done button when completed', async () => {
+      const user = userEvent.setup()
+      const onDone = vi.fn()
+      const txid = 'ab'.repeat(32)
+      render(
+        <TakerStatusCard
+          takerInfo={endedTakerInfo({ running: false, status: 'complete', txid, broadcast_method: 'self' })}
+          jars={sampleJars}
+          isAborting={false}
+          onDone={onDone}
+        />,
+      )
+
+      expect(screen.getByText('send.taker_status.status_complete')).toBeInTheDocument()
+      expect(screen.getByText(txid)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'global.done' }))
+      expect(onDone).toHaveBeenCalledTimes(1)
+    })
+
+    it('marks a completion delivered by makers as unverified', () => {
+      render(
+        <TakerStatusCard
+          takerInfo={endedTakerInfo({
+            running: false,
+            status: 'complete',
+            txid: 'ab'.repeat(32),
+            broadcast_method: 'makers-unverified:random-peer',
+          })}
+          jars={sampleJars}
+          isAborting={false}
+        />,
+      )
+
+      expect(screen.getByText('send.taker_status.status_complete_unverified')).toBeInTheDocument()
+      expect(screen.getByText('send.taker_status.text_complete_unverified')).toBeInTheDocument()
+    })
+
+    it('renders the error when failed', () => {
+      render(
+        <TakerStatusCard
+          takerInfo={endedTakerInfo({ running: false, status: 'failed', txid: null, error: 'not enough makers' })}
+          jars={sampleJars}
+          isAborting={false}
+        />,
+      )
+
+      expect(screen.getByText('send.taker_status.status_failed')).toBeInTheDocument()
+      expect(screen.getByText('not enough makers')).toBeInTheDocument()
+      expect(screen.queryByText('scheduler.label_transaction_id')).not.toBeInTheDocument()
+    })
+
+    it('points to the transaction history when ended without a reported outcome', () => {
+      render(<TakerStatusCard takerInfo={endedTakerInfo(undefined)} jars={sampleJars} isAborting={false} />)
+
+      expect(screen.getByText('send.taker_status.status_unknown')).toBeInTheDocument()
+      expect(screen.getByText('send.alert_collaborative_stopped_description')).toBeInTheDocument()
+    })
   })
 })

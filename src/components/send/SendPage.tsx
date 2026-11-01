@@ -73,7 +73,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { fetchIfMissing } = useJmConfig({ walletFileName })
   const {
     isLoading: walletInfoIsLoading,
-    isFetching: walletInfoIsFetching,
     utxosHashHex,
     waitForUtxosToBeSpent,
     setWaitForUtxosToBeSpent,
@@ -445,65 +444,29 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
         {
           /*
-           * With backend "joinmarket-clientserver" there is no direct way of verifying
-           * that a collaborative send attempt was successful.
-           * We have to rely on local data `takerCurrentAttempt`
-           * (which might not be present, e.g. taker was started from a different session)
-           * for displaying success/error information.
-           * If data `takerCurrentAttempt` is not present, no message is shown
-           * when the taker service stops - this is not ideal, but okay.
+           * The taker status reports the outcome of the most recent collaborative send.
+           * Once it has ended, the card stays visible until the user acknowledges it.
+           * While a new attempt is starting, the card is hidden to avoid briefly showing
+           * an "ended" state before the taker is reported as running.
            */
-          takerInfo.currentPaymentAttempt?.data.isCoinJoin === true &&
-            !isWaitingCoinjoinStart &&
-            takerRunning === false && (
-              <>
-                {walletInfoIsFetching ? (
-                  <>
-                    <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
-                      <Spinner className="motion-reduce:hidden" />
-                      <AlertTitle>{t('send.alert_collaborative_awaiting_completion')}</AlertTitle>
-                    </Alert>
-                  </>
-                ) : (
-                  /**
-                   * Whether the utxo set changed during the attempt is not proof that a
-                   * coinjoin was actually made (see joinmarket-webui/jam#1475): a deposit
-                   * landing mid-attempt flips this to "changed" with no send having
-                   * happened. Until there's a real signal to check against, we don't
-                   * distinguish "completed" from "ended" here and show one message
-                   * pointing the user at their transaction history either way.
-                   */
-                  <Alert variant="warning">
-                    <AlertTriangleIcon />
-                    <AlertTitle>{t('send.alert_collaborative_stopped_title')}</AlertTitle>
-                    <AlertDescription className="flex flex-col gap-2">
-                      <div>{t('send.alert_collaborative_stopped_description')}</div>
-                      <div>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setFormId((current) => current + 1)
-                            clearCurrentPaymentAttempt()
-                          }}
-                        >
-                          {t('global.done')}
-                        </Button>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </>
-            )
+          (takerRunning && !schedulerRunning) ||
+          (takerInfo.currentPaymentAttempt !== undefined && !isWaitingCoinjoinStart) ? (
+            <TakerStatusCard
+              takerInfo={takerInfo}
+              jars={jars}
+              isAborting={isWaitingCoinjoinStop}
+              onAbort={takerRunning ? () => setShowAbortCoinjoinDialog(true) : undefined}
+              onDone={
+                takerRunning
+                  ? undefined
+                  : () => {
+                      setFormId((current) => current + 1)
+                      clearCurrentPaymentAttempt()
+                    }
+              }
+            />
+          ) : null
         }
-
-        {(takerRunning && !schedulerRunning) || takerInfo.currentPaymentAttempt !== undefined ? (
-          <TakerStatusCard
-            takerInfo={takerInfo}
-            jars={jars}
-            isAborting={isWaitingCoinjoinStop}
-            onAbort={takerInfo.running ? () => setShowAbortCoinjoinDialog(true) : undefined}
-          />
-        ) : null}
 
         {triggerNonCollaborativeTransaction.error ? (
           <Alert variant="destructive">

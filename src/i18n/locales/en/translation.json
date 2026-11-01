@@ -560,14 +560,17 @@
       "title": "Taker status",
       "status_idle": "Waiting...",
       "status_fetching_orderbook": "Evaluating offers...",
-      "status_filling": "Build transaction...",
+      "status_filling": "Building transaction...",
       "status_authenticating": "Authenticating...",
       "status_collecting_signatures": "Collecting signatures...",
       "status_broadcasting": "Broadcasting...",
       "status_complete": "Completed",
+      "status_complete_unverified": "Completed (unverified)",
       "status_failed": "Failed",
       "status_cancelled": "Cancelled",
-      "status_unmapped": "{{ value }}"
+      "status_unknown": "Ended",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "The transaction has been handed to the collaborators for broadcasting, but its presence in the mempool could not be verified. Check your transaction history to confirm it went through."
     }
   },
   "receive": {
