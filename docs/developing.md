@@ -30,7 +30,14 @@ JMOBWATCH_PORT=8000 \
 npm run dev
 ```
 
-## JoinMarket NG Regtest Smoke Test
+## JoinMarket NG Regtest e2e Tests
+
+The end-to-end tests are split into two tiers (Playwright projects):
+
+- **smoke**: a fast journey that gates everything else. Runs against the isolated smoke environment.
+- **regression**: long running tests that need makers (e.g. a successful collaborative send). Runs against the full regtest environment and only after the smoke suite passed.
+
+### Smoke Test
 
 An automated end-to-end smoke test verifies the core browser-driven wallet journey against an isolated, pinned JoinMarket NG and Bitcoin Core regtest backend.
 
@@ -41,6 +48,7 @@ The smoke journey validates:
 - Receiving confirmed regtest funds and exact balance display
 - Direct sending with real transaction output and fee verification via Bitcoin Core RPC
 - Browser reload session persistence
+- Collaborative send reporting its (failed) outcome in the taker status until acknowledged
 
 ### Running the smoke test
 
@@ -62,6 +70,27 @@ The smoke journey validates:
    ```
 
 Test evidence (screenshots and logs) is saved to `test-evidence/` and `test-results/`.
+
+### Regression Tests
+
+The regression suite verifies a successful collaborative send (CoinJoin) with real makers, including the
+reported taker status and the transaction on chain. It needs the full regtest environment with running makers
+(see `docker/regtest/readme.md`), which uses the same ports as the smoke environment - only run one of them at a time.
+
+1. Start the full regtest environment and start the makers:
+
+   ```bash
+   npm run regtest:up
+   npm run regtest:init
+   ```
+
+2. Run the regression suite (the smoke suite runs first; add `--no-deps` to skip it):
+
+   ```bash
+   npm run test:regression
+   ```
+
+The suite fails right away if the orderbook contains no offers.
 
 ## Storybook
 

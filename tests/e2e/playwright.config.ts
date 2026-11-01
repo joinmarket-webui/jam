@@ -2,11 +2,15 @@ import { defineConfig, devices } from '@playwright/test'
 import path from 'node:path'
 
 /**
- * Playwright configuration for isolated JoinMarket NG Regtest Smoke Tests.
+ * Playwright configuration for JoinMarket NG Regtest e2e tests.
+ *
+ * Tiered suites:
+ * - `smoke`: fast journey, gates everything else (runs in the isolated smoke environment)
+ * - `regression`: long running, needs makers (e.g. the full regtest environment);
+ *   runs only after `smoke` passed (use `--no-deps` to skip it)
  */
 export default defineConfig({
   testDir: '.',
-  testMatch: /.*\.spec\.ts/,
   timeout: 180_000,
   expect: {
     timeout: 30_000,
@@ -31,7 +35,16 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'smoke',
+      testMatch: /.*\.smoke\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'regression',
+      testMatch: /.*\.regression\.spec\.ts/,
+      dependencies: ['smoke'],
       use: {
         ...devices['Desktop Chrome'],
       },
