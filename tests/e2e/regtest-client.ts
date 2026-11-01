@@ -136,3 +136,16 @@ export async function checkNgBackendSession(baseUrl: string = 'http://localhost:
     return false
   }
 }
+
+/**
+ * Count the offers of the orderbook watcher reachable via the Jam proxy.
+ */
+export async function countOrderbookOffers(baseUrl: string = 'http://localhost:3000'): Promise<number> {
+  const response = await fetch(`${baseUrl}/obwatch/orderbook.json`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(10_000),
+  })
+  if (!response.ok) throw new Error(`Orderbook: HTTP ${response.status}`)
+  const data = (await response.json()) as { offers?: unknown[] }
+  return data.offers?.length ?? 0
+}
