@@ -6,6 +6,7 @@ import type { Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { toTakerStatusInfo } from '@/lib/takerStatus'
 import { jmTxStore } from '@/store/jmTxStore'
 import { flushActUpdates } from '@/test/flushActUpdates'
 import { SendPage } from './SendPage'
@@ -24,8 +25,10 @@ const mocks = vi.hoisted(() => ({
   setCurrentPaymentAttempt: vi.fn(),
   setWaitForUtxosToBeSpent: vi.fn(),
   startCoinjoin: vi.fn(),
+  startCoinjoinIsSuccess: false,
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
+  takerStatus: undefined as string | undefined,
   schedulerRunning: false,
   makerRunning: false,
   toastError: vi.fn(),
@@ -57,7 +60,7 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: vi.fn((options: MutationOptions) => ({
     error: undefined,
     isPending: false,
-    isSuccess: false,
+    isSuccess: options.mutationFn === mocks.startCoinjoin ? mocks.startCoinjoinIsSuccess : false,
     mutateAsync: async (input?: unknown) => {
       options.onMutate?.()
       try {
@@ -103,7 +106,7 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('@/components/settings/fees/FeeConfigDialog', () => ({
-  FeeConfigDialog: ({ open }: { open: boolean }) => <div>fee-config-dialog:{String(open)}</div>,
+  FeeConfigDialog: ({ open }: { open: boolean }) => <div>fee-config-dialog:{JSON.stringify({ open })}</div>,
 }))
 
 vi.mock('@/components/ui/jam/FeeConfigErrorAlert', () => ({
@@ -184,7 +187,11 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     rescanInfo: { rescanning: false },
     setCurrentPaymentAttempt: mocks.setCurrentPaymentAttempt,
     takerInfo: {
-      currentPaymentAttempt: mocks.takerRunning || mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
+      currentPaymentAttempt: mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
+      status: toTakerStatusInfo(
+        mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
+      ),
+      __raw: mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
       running: mocks.takerRunning,
       scheduler: {
         running: mocks.schedulerRunning,
@@ -212,7 +219,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
 vi.mock('./PaymentAbortDialog', () => ({
   PaymentAbortDialog: ({ open, onConfirm }: { open: boolean; onConfirm: () => Promise<void> }) => (
     <div>
-      abort-dialog:{String(open)}
+      abort-dialog:{JSON.stringify({ open })}
       {open ? <button onClick={() => void onConfirm()}>confirm-abort</button> : null}
     </div>
   ),
@@ -238,17 +245,20 @@ vi.mock('./PaymentConfirmDialog', () => ({
 vi.mock('./SendForm', () => ({
   SendForm: ({
     disabled,
+    initialValues,
     onSourceJarChange,
     onSubmit,
     sourceJarLabelButton,
   }: {
     disabled?: boolean
+    initialValues?: Partial<SendFormValues>
     onSourceJarChange?: (jarIndex: number | undefined) => void
     onSubmit: (values: SendFormValues) => void
     sourceJarLabelButton?: () => React.ReactElement
   }) => (
     <div>
-      send-form:{String(disabled)}
+      send-form:{JSON.stringify({ disabled })}
+      <div>send-form-initial-address:{initialValues?.destination?.address ?? 'none'}</div>
       <div>{sourceJarLabelButton?.()}</div>
       <button
         onClick={() => {
@@ -333,6 +343,7 @@ describe('SendPage', () => {
   beforeEach(() => {
     mocks.clearCurrentPaymentAttempt.mockReset()
     mocks.currentPaymentAttemptPresent = false
+    mocks.takerStatus = undefined
     mocks.directSend.mockReset()
     mocks.fetchIfMissing.mockReset()
     mocks.fetchIfMissing.mockResolvedValue({ value: '4' })
@@ -348,6 +359,7 @@ describe('SendPage', () => {
     mocks.setCurrentPaymentAttempt.mockReset()
     mocks.setWaitForUtxosToBeSpent.mockReset()
     mocks.startCoinjoin.mockReset()
+    mocks.startCoinjoinIsSuccess = false
     mocks.stopCoinjoinRefetch.mockReset()
     mocks.stopCoinjoinRefetch.mockResolvedValue({ data: {} })
     mocks.takerRunning = false
@@ -404,25 +416,29 @@ describe('SendPage', () => {
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
+    expect(screen.getByText('fee-config-dialog:{"open":false}')).toBeInTheDocument()
+
     await user.click(screen.getByText('submit-coinjoin'))
 
     expect(mocks.startCoinjoin).not.toHaveBeenCalled()
     expect(mocks.toastError).toHaveBeenCalledWith('send.taker_error_message_max_fees_config_missing')
-    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+    expect(screen.getByText('fee-config-dialog:{"open":true}')).toBeInTheDocument()
   })
 
   it('shows the running CoinJoin state and confirms abort', async () => {
     const user = userEvent.setup()
     mocks.takerRunning = true
+    mocks.currentPaymentAttemptPresent = true
     mocks.schedulerRunning = false
 
     render(<SendPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
+    expect(screen.getByText('abort-dialog:{"open":false}')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'global.abort' }))
-    expect(screen.getByText('abort-dialog:true')).toBeInTheDocument()
+    expect(screen.getByText('abort-dialog:{"open":true}')).toBeInTheDocument()
 
     await user.click(screen.getByText('confirm-abort'))
     expect(mocks.stopCoinjoinRefetch).toHaveBeenCalledWith({ throwOnError: true })
@@ -436,7 +452,7 @@ describe('SendPage', () => {
     await flushActUpdates()
 
     expect(screen.getByText('send.text_coinjoin_already_running')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
   })
 
@@ -537,9 +553,10 @@ describe('SendPage', () => {
     mocks.feeConfigMissing = true
 
     render(<SendPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('fee-config-dialog:{"open":false}')).toBeInTheDocument()
 
     await user.click(screen.getByText('open-fee-config'))
-    expect(screen.getByText('fee-config-dialog:true')).toBeInTheDocument()
+    expect(screen.getByText('fee-config-dialog:{"open":true}')).toBeInTheDocument()
   })
 
   it('shows the maker running warning', async () => {
@@ -548,7 +565,7 @@ describe('SendPage', () => {
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('send.text_maker_running')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
     await flushActUpdates()
   })
 
@@ -558,34 +575,74 @@ describe('SendPage', () => {
     render(<SendPage walletFileName="wallet.jmdat" />)
 
     expect(screen.getByText('send.alert_waiting_utxos_spent')).toBeInTheDocument()
-    expect(screen.getByText('send-form:true')).toBeInTheDocument()
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
     await flushActUpdates()
   })
 
-  it('shows the collaborative awaiting completion alert while wallet info is fetching', async () => {
-    mocks.currentPaymentAttemptPresent = true
-    mocks.walletInfoIsFetching = true
-
-    render(<SendPage walletFileName="wallet.jmdat" />)
-
-    expect(screen.getByText('send.alert_collaborative_awaiting_completion')).toBeInTheDocument()
-    await flushActUpdates()
-  })
-
-  it('shows the same neutral stopped alert regardless of whether the utxo set changed, and clears the attempt', async () => {
+  it('shows the taker status of an ended collaborative send until acknowledged, and clears the attempt', async () => {
     const user = userEvent.setup()
     mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
 
-    // collaborativeValues has utxosHashHex 'hash-before', matching the wallet's
-    // current 'hash-before' mock (see JamWalletInfoContext mock above). A utxo
-    // hash match/mismatch no longer decides which message is shown.
     render(<SendPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('send.alert_collaborative_stopped_title')).toBeInTheDocument()
-    expect(screen.queryByText('send.alert_collaborative_completed_title')).not.toBeInTheDocument()
-    expect(screen.queryByText('send.alert_collaborative_ended_title')).not.toBeInTheDocument()
+    expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'global.done' }))
     expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
+  })
+
+  it('keeps waiting for the taker to start after the collaborative send has been accepted', async () => {
+    mocks.startCoinjoinIsSuccess = true
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = undefined
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.alert_collaborative_starting')).toBeInTheDocument()
+    expect(screen.queryByText('send.taker_status.title')).not.toBeInTheDocument()
+    await flushActUpdates()
+  })
+
+  it('shows the outcome of a collaborative send that ended before the taker was observed running', async () => {
+    mocks.startCoinjoinIsSuccess = true
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = 'failed'
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.queryByText('send.alert_collaborative_starting')).not.toBeInTheDocument()
+    expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
+    await flushActUpdates()
+  })
+
+  it.each(['failed', 'cancelled'])('keeps the form values of a %s attempt for a retry', async (takerStatus) => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = takerStatus
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send-form-initial-address:none')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(
+      screen.getByText(`send-form-initial-address:${collaborativeValues.data.destination.address}`),
+    ).toBeInTheDocument()
+  })
+
+  it.each(['complete', undefined])('resets the form values after an attempt with outcome %s', async (takerStatus) => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = takerStatus
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(screen.getByText('send-form-initial-address:none')).toBeInTheDocument()
   })
 
   it('handles errors loading minimum makers config', async () => {
