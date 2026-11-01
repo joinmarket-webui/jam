@@ -376,6 +376,9 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     updateSessionInfo: vi.fn(),
   }),
   useJamSessionInfoContext: () => ({
+    operations: {
+      sweep: { enabled: !mocks.makerRunning && !mocks.coinjoinInProcess && !mocks.rescanning },
+    },
     rescanInfo: { rescanning: mocks.rescanning },
     takerInfo: {
       running: mocks.coinjoinInProcess,

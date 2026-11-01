@@ -180,6 +180,9 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     updateSessionInfo: vi.fn(),
   }),
   useJamSessionInfoContext: () => ({
+    operations: {
+      send: { enabled: !mocks.makerRunning && !mocks.takerRunning && !mocks.schedulerRunning },
+    },
     clearCurrentPaymentAttempt: mocks.clearCurrentPaymentAttempt,
     rescanInfo: { rescanning: false },
     setCurrentPaymentAttempt: mocks.setCurrentPaymentAttempt,
