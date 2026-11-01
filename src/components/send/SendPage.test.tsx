@@ -186,7 +186,7 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     takerInfo: {
       currentPaymentAttempt: mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
       status: {
-        value: null,
+        value: undefined,
         idle: false,
         fetchingOrderbook: false,
         filling: false,
@@ -194,6 +194,7 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
         collectingSignatures: false,
         broadcasting: false,
         completed: false,
+        completedUnverified: false,
         failed: false,
         cancelled: false,
       },
@@ -579,28 +580,15 @@ describe('SendPage', () => {
     await flushActUpdates()
   })
 
-  it('shows the collaborative awaiting completion alert while wallet info is fetching', async () => {
-    mocks.currentPaymentAttemptPresent = true
-    mocks.walletInfoIsFetching = true
-
-    render(<SendPage walletFileName="wallet.jmdat" />)
-
-    expect(screen.getByText('send.alert_collaborative_awaiting_completion')).toBeInTheDocument()
-    await flushActUpdates()
-  })
-
-  it('shows the same neutral stopped alert regardless of whether the utxo set changed, and clears the attempt', async () => {
+  it('shows the taker status of an ended collaborative send until acknowledged, and clears the attempt', async () => {
     const user = userEvent.setup()
     mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
 
-    // collaborativeValues has utxosHashHex 'hash-before', matching the wallet's
-    // current 'hash-before' mock (see JamWalletInfoContext mock above). A utxo
-    // hash match/mismatch no longer decides which message is shown.
     render(<SendPage walletFileName="wallet.jmdat" />)
 
-    expect(screen.getByText('send.alert_collaborative_stopped_title')).toBeInTheDocument()
-    expect(screen.queryByText('send.alert_collaborative_completed_title')).not.toBeInTheDocument()
-    expect(screen.queryByText('send.alert_collaborative_ended_title')).not.toBeInTheDocument()
+    expect(screen.getByText('send.taker_status.title')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'global.done' }))
     expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
   })

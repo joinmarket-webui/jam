@@ -1,8 +1,10 @@
+import type { TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { TakerStatusCard } from '@/components/send/TakerStatusCard'
 import type { PaymentAttempt, TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { TX_FEE_UNITS } from '@/lib/feeConfig'
+import { toTakerStatusInfo } from '@/lib/takerStatus'
 
 const meta: Meta<typeof TakerStatusCard> = {
   title: 'Jam/TakerStatusCard',
@@ -18,41 +20,26 @@ export default meta
 
 type Story = StoryObj<typeof TakerStatusCard>
 
-const statusUnknown: TakerInfo['status'] = {
-  value: null,
-  idle: false,
-  fetchingOrderbook: false,
-  filling: false,
-  authenticating: false,
-  collectingSignatures: false,
-  broadcasting: false,
-  completed: false,
-  failed: false,
-  cancelled: false,
+const statusFetchingOrderbook = toTakerStatusInfo({ running: true, status: 'fetching_orderbook' })
+
+const rawFailed: TakerStatusResponse = {
+  running: false,
+  status: 'failed',
+  error: 'Not enough counterparties responded to fill the order.',
 }
 
-const statusFetchingOrderbook: TakerInfo['status'] = {
-  ...statusUnknown,
-  value: 'fetching_orderbook',
-  fetchingOrderbook: true,
+const rawCancelled: TakerStatusResponse = { running: false, status: 'cancelled' }
+
+const rawCompleted: TakerStatusResponse = {
+  running: false,
+  status: 'complete',
+  txid: 'ab'.repeat(32),
+  broadcast_method: 'self',
 }
 
-const statusFailed: TakerInfo['status'] = {
-  ...statusUnknown,
-  value: 'failed',
-  failed: true,
-}
-
-const statusCancelled: TakerInfo['status'] = {
-  ...statusUnknown,
-  value: 'cancelled',
-  cancelled: true,
-}
-
-const statusCompleted: TakerInfo['status'] = {
-  ...statusUnknown,
-  value: 'completed',
-  completed: true,
+const rawCompletedUnverified: TakerStatusResponse = {
+  ...rawCompleted,
+  broadcast_method: 'makers-unverified:random-peer',
 }
 
 const takerInfo: TakerInfo = {
@@ -131,35 +118,54 @@ export const WithSweepPaymentAttempt: Story = {
   },
 }
 
+const endedTakerInfo = (raw?: TakerStatusResponse): TakerInfo => ({
+  ...takerInfoWithPaymentAttempt,
+  running: false,
+  status: toTakerStatusInfo(raw),
+  __raw: raw,
+})
+
 export const Failed: Story = {
   args: {
-    takerInfo: {
-      ...takerInfoWithPaymentAttempt,
-      status: statusFailed,
-      running: false,
-    },
+    takerInfo: endedTakerInfo(rawFailed),
     jars,
+    onAbort: undefined,
+    onDone: () => alert('onDone clicked'),
   },
 }
 
 export const Completed: Story = {
   args: {
-    takerInfo: {
-      ...takerInfoWithPaymentAttempt,
-      status: statusCompleted,
-      running: false,
-    },
+    takerInfo: endedTakerInfo(rawCompleted),
     jars,
+    onAbort: undefined,
+    onDone: () => alert('onDone clicked'),
+  },
+}
+
+export const CompletedUnverified: Story = {
+  args: {
+    takerInfo: endedTakerInfo(rawCompletedUnverified),
+    jars,
+    onAbort: undefined,
+    onDone: () => alert('onDone clicked'),
   },
 }
 
 export const Cancelled: Story = {
   args: {
-    takerInfo: {
-      ...takerInfoWithPaymentAttempt,
-      status: statusCancelled,
-      running: false,
-    },
+    takerInfo: endedTakerInfo(rawCancelled),
     jars,
+    onAbort: undefined,
+    onDone: () => alert('onDone clicked'),
+  },
+}
+
+export const EndedWithUnknownOutcome: Story = {
+  args: {
+    takerInfo: endedTakerInfo(undefined),
+    jars,
+    onAbort: undefined,
+    onDone: () => alert('onDone clicked'),
   },
 }

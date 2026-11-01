@@ -17,20 +17,49 @@ import { Balance } from '@/components/ui/jam/Balance'
 import { CookingPotIcon } from '@/components/ui/jam/CookingPotIcon'
 import type { TakerInfo } from '@/context/JamSessionInfoContext'
 import type { Jar } from '@/context/JamWalletInfoContext'
+import type { TakerStatus } from '@/lib/takerStatus'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '../ui/button-variants'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { CopyButton } from '../ui/jam/CopyButton'
 import { Label } from '../ui/label'
 
+const STATUS_I18N_KEYS: Record<string, string> = {
+  idle: 'send.taker_status.status_idle',
+  fetching_orderbook: 'send.taker_status.status_fetching_orderbook',
+  filling: 'send.taker_status.status_filling',
+  authenticating: 'send.taker_status.status_authenticating',
+  collecting_signatures: 'send.taker_status.status_collecting_signatures',
+  broadcasting: 'send.taker_status.status_broadcasting',
+  complete: 'send.taker_status.status_complete',
+  failed: 'send.taker_status.status_failed',
+  cancelled: 'send.taker_status.status_cancelled',
+} satisfies Partial<Record<TakerStatus, string>>
+
+const TakerStatusText = ({ takerInfo }: { takerInfo: TakerInfo }) => {
+  const { t } = useTranslation()
+  const { value, completedUnverified } = takerInfo.status
+
+  if (value === undefined) {
+    // no status reported (yet), e.g. right after start or if not supported by the backend
+    return <>{takerInfo.running ? t('send.taker_status.status_idle') : t('send.taker_status.status_unknown')}</>
+  }
+  if (completedUnverified) {
+    return <>{t('send.taker_status.status_complete_unverified')}</>
+  }
+  const i18nKey = STATUS_I18N_KEYS[value]
+  return <>{i18nKey ? t(i18nKey) : t('send.taker_status.status_unmapped', { value })}</>
+}
+
 export interface TakerStatusCardProps {
   takerInfo: TakerInfo
   jars: Jar[]
   isAborting: boolean
   onAbort?: () => void
+  onDone?: () => void
 }
 
-export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerStatusCardProps) => {
+export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }: TakerStatusCardProps) => {
   const { t } = useTranslation()
 
   const data = takerInfo.currentPaymentAttempt?.data
@@ -42,20 +71,23 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerS
       ? undefined
       : jars.find((index) => index.jarIndex === data.destination.fromJar)
 
-  const hasAdditionalInfo =
-    data !== undefined || takerInfo.__raw?.txid !== undefined || takerInfo.__raw?.error !== undefined
+  const txid = takerInfo.__raw?.txid ?? undefined
+  const error = takerInfo.__raw?.error ?? undefined
+  const hasEndedWithUnknownOutcome = !takerInfo.running && takerInfo.status.value === undefined
+  const hasAdditionalInfo = data !== undefined || !!txid || !!error
+
   return (
     <>
       <Card
         className={cn('ring-ring/50 ring-2', {
-          'ring-mute-foreground': takerInfo.running,
-          'ring-brand-success': takerInfo.status.completed,
+          'ring-muted-foreground': takerInfo.running,
+          'ring-brand-success': takerInfo.status.completed && !takerInfo.status.completedUnverified,
           'ring-destructive/50': takerInfo.status.failed,
-          'ring-brand-warning': takerInfo.status.cancelled,
+          'ring-brand-warning': takerInfo.status.cancelled || takerInfo.status.completedUnverified,
         })}
       >
         <CardHeader className="mb-4">
-          {<CardTitle className="text-base">{t('send.taker_status.title')}</CardTitle>}
+          <CardTitle className="text-base">{t('send.taker_status.title')}</CardTitle>
         </CardHeader>
         <CardContent className={cn('flex flex-col gap-2', { 'md:flex-row md:gap-8': hasAdditionalInfo })}>
           <div className="col-span-full flex flex-col items-center justify-center md:col-span-1">
@@ -65,13 +97,7 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerS
               sourceJarIndex={data?.source?.fromJar}
               destinationJarIndex={data?.destination?.fromJar}
             />
-            {(() => {
-              const i18nKey = 'send.taker_status.status_' + takerInfo.status.value
-              const translation = t(i18nKey)
-              return translation !== i18nKey
-                ? translation
-                : t('send.taker_status.status_unmapped', { value: takerInfo.status.value })
-            })()}
+            <TakerStatusText takerInfo={takerInfo} />
           </div>
           {hasAdditionalInfo && (
             <>
@@ -141,7 +167,7 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerS
                   </>
                 )}
 
-                {takerInfo.__raw?.txid && (
+                {txid && (
                   <>
                     <div className="col-span-full flex min-w-0 items-start gap-4">
                       <FingerprintIcon className="mt-0.5 shrink-0" />
@@ -149,9 +175,9 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerS
                         <Label className="font-semibold">{t('scheduler.label_transaction_id')}</Label>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-md block font-mono break-all select-all">{takerInfo.__raw.txid}</span>
+                          <span className="text-md block font-mono break-all select-all">{txid}</span>
                           <CopyButton
-                            value={takerInfo.__raw.txid}
+                            value={txid}
                             text={
                               <>
                                 <CopyIcon />
@@ -172,13 +198,25 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerS
                   </>
                 )}
 
-                {takerInfo.__raw?.error ? (
+                {error ? (
                   <div className="text-destructive col-span-full flex min-w-0 items-start gap-4">
                     <AlertTriangleIcon className="mt-0.5 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <Label className="font-semibold">{t('global.error')}</Label>
-                      {takerInfo.__raw?.error ?? t('global.errors.reason_unknown')}
+                      {error}
                     </div>
+                  </div>
+                ) : null}
+
+                {takerInfo.status.completedUnverified ? (
+                  <div className="text-muted-foreground col-span-full text-sm">
+                    {t('send.taker_status.text_complete_unverified')}
+                  </div>
+                ) : null}
+
+                {hasEndedWithUnknownOutcome ? (
+                  <div className="text-muted-foreground col-span-full text-sm">
+                    {t('send.alert_collaborative_stopped_description')}
                   </div>
                 ) : null}
               </div>
@@ -186,13 +224,20 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort }: TakerS
           )}
         </CardContent>
 
-        <CardFooter className="justify-end">
-          {onAbort && (
-            <Button type="button" variant="ghost" onClick={onAbort} disabled={isAborting}>
-              {t('global.abort')}
-            </Button>
-          )}
-        </CardFooter>
+        {(onAbort || onDone) && (
+          <CardFooter className="justify-end gap-2">
+            {onAbort && (
+              <Button type="button" variant="ghost" onClick={onAbort} disabled={isAborting}>
+                {t('global.abort')}
+              </Button>
+            )}
+            {onDone && (
+              <Button type="button" variant="outline" onClick={onDone}>
+                {t('global.done')}
+              </Button>
+            )}
+          </CardFooter>
+        )}
       </Card>
     </>
   )
