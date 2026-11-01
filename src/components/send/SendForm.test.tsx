@@ -129,9 +129,10 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => ({
 
 // Reads the `amount` slice of the debug panel's `values:` JSON dump (only
 // rendered when `debug` is set), typed just enough for the sweep assertions.
-const readDebugAmountValues = (): { isSweep?: boolean; sweepUtxos?: string[] } => {
+type DebugAmountValues = { isSweep?: boolean; sweepAmount?: number; sweepUtxos?: string[] }
+const readDebugAmountValues = (): DebugAmountValues => {
   const valuesJson = screen.getByText('values:').nextElementSibling?.textContent ?? '{}'
-  const parsed = JSON.parse(valuesJson) as { amount?: { isSweep?: boolean; sweepUtxos?: string[] } }
+  const parsed = JSON.parse(valuesJson) as { amount?: DebugAmountValues }
   return parsed.amount ?? {}
 }
 
@@ -168,6 +169,16 @@ describe('SendForm', () => {
     maxCjAbsoluteFee: 100,
     txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3, txFeeInSatsPerVbyte: undefined },
   } as unknown as JamFeeConfigValues
+
+  const jarsWith = (utxos: Array<{ utxo: string; frozen: boolean }>, availableBalance: number) =>
+    [
+      {
+        ...mockJars[0],
+        balanceSummary: { ...mockJars[0].balanceSummary, calculatedAvailableBalanceInSats: availableBalance },
+        utxos: utxos.map((it) => ({ ...it, locktime: undefined })),
+      },
+      mockJars[1],
+    ] as unknown as Jar[]
 
   const renderForm = (extra?: { disabled?: boolean; debug?: boolean }) =>
     render(
@@ -329,6 +340,99 @@ describe('SendForm', () => {
     fireEvent.click(document.querySelector('#btn-sweep-clear-trigger')!)
 
     await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toBeUndefined())
+  })
+
+  describe('keeps an active sweep in sync with the source jar', () => {
+    const UTXO_A = 'aaaa'.repeat(16) + ':0'
+    const UTXO_B = 'bbbb'.repeat(16) + ':1'
+
+    const renderWithJars = (jars: Jar[], disabled = false) => (
+      <SendForm
+        onSubmit={vi.fn()}
+        walletFileName="test.jmdat"
+        jars={jars}
+        walletBalanceSummary={mockBalanceSummary}
+        addressSummary={mockAddressSummary}
+        feeConfigValues={mockFeeConfigValues}
+        disabled={disabled}
+        debug
+      />
+    )
+
+    const startSweep = async (jars: Jar[], disabled = false) => {
+      const view = render(renderWithJars(jars))
+      fireEvent.click(screen.getByRole('button', { name: 'Jar 0' }))
+      fireEvent.click(document.querySelector('#btn-sweep-trigger')!)
+      await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toEqual([UTXO_A, UTXO_B]))
+      if (disabled) view.rerender(renderWithJars(jars, true))
+      return view
+    }
+
+    const bothUnfrozen = [
+      { utxo: UTXO_A, frozen: false },
+      { utxo: UTXO_B, frozen: false },
+    ]
+
+    it('drops a pinned utxo that gets frozen', async () => {
+      const { rerender } = await startSweep(jarsWith(bothUnfrozen, 3000))
+
+      rerender(
+        renderWithJars(
+          jarsWith(
+            [
+              { utxo: UTXO_A, frozen: false },
+              { utxo: UTXO_B, frozen: true },
+            ],
+            1000,
+          ),
+        ),
+      )
+
+      await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toEqual([UTXO_A]))
+      expect(readDebugAmountValues().isSweep).toBe(true)
+      expect(readDebugAmountValues().sweepAmount).toBe(1000)
+    })
+
+    it('adds a utxo that gets unfrozen', async () => {
+      const { rerender } = await startSweep(jarsWith(bothUnfrozen, 3000))
+
+      const UTXO_C = 'cccc'.repeat(16) + ':2'
+      rerender(renderWithJars(jarsWith([...bothUnfrozen, { utxo: UTXO_C, frozen: false }], 6000)))
+
+      await waitFor(() => expect(readDebugAmountValues().sweepUtxos).toEqual([UTXO_A, UTXO_B, UTXO_C]))
+      expect(readDebugAmountValues().sweepAmount).toBe(6000)
+    })
+
+    it('ends the sweep when no utxo is spendable anymore', async () => {
+      const { rerender } = await startSweep(jarsWith(bothUnfrozen, 3000))
+
+      rerender(
+        renderWithJars(
+          jarsWith(
+            [
+              { utxo: UTXO_A, frozen: true },
+              { utxo: UTXO_B, frozen: true },
+            ],
+            0,
+          ),
+        ),
+      )
+
+      await waitFor(() => expect(readDebugAmountValues().isSweep).toBe(false))
+      expect(readDebugAmountValues().sweepUtxos).toBeUndefined()
+      expect(document.querySelector('#send-amount-sweep-from-jar')?.parentElement).toHaveClass('hidden')
+    })
+
+    it('does not touch the sweep while the form is disabled', async () => {
+      const { rerender } = await startSweep(jarsWith(bothUnfrozen, 3000), true)
+
+      // e.g. the sweep transaction was broadcast and its inputs are gone
+      rerender(renderWithJars(jarsWith([], 0), true))
+      await flushActUpdates()
+
+      expect(readDebugAmountValues().isSweep).toBe(true)
+      expect(readDebugAmountValues().sweepUtxos).toEqual([UTXO_A, UTXO_B])
+    })
   })
 
   it('applies a scanned bip21 result', async () => {
