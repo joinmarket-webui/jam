@@ -93,4 +93,19 @@ describe('AccountDetailsTabContent', () => {
     expect(entries[0].derivationIndex).toBe(84)
     expect(entries[1].derivationIndex).toBe(-1)
   })
+
+  it('handles entries with undefined hd_path without crashing', () => {
+    h.tableProps = []
+    const account = makeAccount([
+      makeBranch('external addresses', [{ hd_path: undefined, address: 'bc1g', amount: '0.2', status: 'new' }]),
+    ])
+    render(<AccountDetailsTabContent value={account} />)
+    const entries = h.tableProps.at(-1)?.tableEntries as Array<{
+      derivationIndex: number
+      derivationPath: string
+    }>
+    expect(entries).toHaveLength(1)
+    expect(entries[0].derivationIndex).toBe(-1)
+    expect(entries[0].derivationPath).toBe('m/-1')
+  })
 })

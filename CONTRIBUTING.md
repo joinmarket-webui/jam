@@ -38,7 +38,7 @@ npm run regtest:init
 
 This creates and funds a wallet `Satoshi` with password `test`.
 
-Start the UI on port 3000:
+Start the UI on port 5173:
 
 ```sh
 npm run dev
@@ -65,8 +65,8 @@ Some things that will increase the chance that your pull request is accepted:
 - Make sure your code is formatted. This should happen automatically using a Git commit-hook. If not, see [docs/developing.md](docs/developing.md) for more details.
 - Write a meaningful pull request description message.
 
-If your pull request is accepted, a maintainer will squash it into master.
-We follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) convention when squashing pull requests to master.
+If your pull request is accepted, a maintainer will squash it into devel.
+We follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) convention when squashing pull requests to devel.
 You can follow this convention for commits on your fork but this isn't a requirement for your pull request to be accepted.
 
 ## Testing the Latest Iteration
@@ -77,10 +77,11 @@ Clone this repo:
 git clone git@github.com:joinmarket-webui/jam.git
 ```
 
-Checkout the version you want to test. If you want to test the cutting edge development version, simply skip this step and test directly on master.
+Checkout the version you want to test. If you want to test the cutting edge development version, simply skip this step and test directly on devel.
 
 ```sh
-git fetch --tags git checkout <version>
+git fetch --tags
+git checkout <version>
 ```
 
 Follow the [Local setup (regtest and UI)](#local-setup-regtest-and-ui) above.
@@ -91,7 +92,7 @@ Enjoy the test drive!
 
 When running Jam in dev mode, additional Jam instances are provided by default. These instances can be used to set up different wallets and simulate collaborative transactions. A block explorer and RPC terminal are also available for directly interacting with the regtest node.
 
-Information on how to access these development features can be found at [http://localhost:3000/dev-setup](http://localhost:3000/dev-setup).
+Information on how to access these development features can be found at [http://localhost:5173/dev/setup](http://localhost:5173/dev/setup).
 
 ### Resetting regtest (clean slate)
 

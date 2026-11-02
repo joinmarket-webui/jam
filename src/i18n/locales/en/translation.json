@@ -505,6 +505,7 @@
     "placeholder_amount_input": "Enter amount in sats...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "feedback_amount_exceeds_balance": "Amount exceeds the available balance in the selected jar.",
+    "feedback_amount_below_dust_limit": "Amount is below the minimum of {{ dustLimit }} sats for this address type.",
     "button_choose_jar": "Choose Jar",
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
