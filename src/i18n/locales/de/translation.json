@@ -563,6 +563,12 @@
       "nested_hint_wait_for_block_other": "Warte auf {{ count }} weitere Blöcke.",
       "nested_hint_fund_wallet": "Lade deine Wallet auf und warte auf einen zusätzlichen Block.",
       "nested_hint_fund_wallet_other": "Lade deine Wallet auf und warte auf {{ count }} weitere Blöcke."
+    },
+    "confirm_start_modal": {
+      "title": "Geplanten Sweep starten",
+      "text_body": "Bist du sicher, dass du einen geplanten Sweep starten möchtest?",
+      "actions_count_one": "{{ count }} Aktion",
+      "actions_count_other": "{{ count }} Aktionen"
     }
   },
   "modal": {

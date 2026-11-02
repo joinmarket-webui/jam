@@ -923,7 +923,9 @@
     },
     "confirm_start_modal": {
       "title": "Start Scheduled Sweep",
-      "text_body": "Are you sure you want to start a Scheduled Sweep?"
+      "text_body": "Are you sure you want to start a Scheduled Sweep?",
+      "actions_count_one": "{{ count }} action",
+      "actions_count_other": "{{ count }} actions"
     },
     "alert_schedule_completed_title": "Scheduled sweep finished successfully.",
     "alert_schedule_failed_title": "Scheduled sweep failed.",
