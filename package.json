@@ -11,12 +11,12 @@
     "npm": ">=11.16.0"
   },
   "scripts": {
-    "dev": "npm run dev:ng:native",
+    "dev": "node api.js && npm run dev:ng:native",
     "dev:ng:native": "JAM_BACKEND=joinmarket-ng JMOBWATCH_PORT=31800 VITE_JAM_DEV_MODE=true vite",
     "dev:ng:jam-standalone": "JAM_BACKEND=jam-standalone JAM_API_PORT=29080 VITE_JAM_DEV_MODE=true vite",
     "dev:clientserver:native": "JAM_BACKEND=joinmarket-clientserver JMWALLETD_API_PORT=30183 JMWALLETD_WEBSOCKET_PORT=30283 JMOBWATCH_PORT=30601 VITE_JAM_DEV_MODE=true vite",
     "dev:clientserver:jam-standalone": "JAM_BACKEND=jam-standalone JAM_API_PORT=31080 VITE_JAM_DEV_MODE=true vite",
-    "build": "tsc -b && vite build",
+    "build": "node api.js && tsc -b && vite build",
     "lint": "npm run lint:check",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",

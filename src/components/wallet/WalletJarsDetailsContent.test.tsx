@@ -12,6 +12,7 @@ const { walletInfoRefetch, toastMocks, freezebatchMutationFn, ...mocks } = vi.ho
   rescanning: false,
   takerRunning: false,
   makerRunning: false,
+  jarList: [] as Jar[],
 }))
 
 vi.mock('sonner', () => ({
@@ -157,7 +158,7 @@ vi.mock('@/context/JamWalletInfoContext', async (importOriginal) => ({
     isFetching: false,
     refetch: walletInfoRefetch,
   }),
-  useJars: () => ({ jars }),
+  useJars: () => ({ jars: mocks.jarList }),
 }))
 
 describe('WalletJarsDetailsContent', () => {
@@ -172,6 +173,7 @@ describe('WalletJarsDetailsContent', () => {
     mocks.rescanning = false
     mocks.takerRunning = false
     mocks.makerRunning = false
+    mocks.jarList = jars
     // vi.resetAllMocks()
   })
 
@@ -215,6 +217,22 @@ describe('WalletJarsDetailsContent', () => {
     await user.click(screen.getByRole('tab', { name: 'jar_details.title_tab_jar_details' }))
 
     expect(screen.getByText('jar_details.utxo_list.alert_no_account_info_title')).toBeInTheDocument()
+  })
+
+  it('navigates sparse jar indexes in their sorted list order', async () => {
+    const user = userEvent.setup()
+    mocks.jarList = [jars[0], { ...jars[2], jarIndex: 7, name: 'Seven' }]
+
+    render(<WalletJarsDetailsContent enabled walletFileName="wallet.jmdat" selectedJarIndex={0} />)
+
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByText('bc1qwallet-c')).toBeInTheDocument()
+
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByText('bc1qwallet-a')).toBeInTheDocument()
+
+    await user.keyboard('{ArrowLeft}')
+    expect(screen.getByText('bc1qwallet-c')).toBeInTheDocument()
   })
 
   it('does not register jar keyboard navigation when disabled', async () => {

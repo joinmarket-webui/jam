@@ -14,6 +14,11 @@ import type { AmountSats, BitcoinAddress, HdPath, JarIndex, Milliseconds } from 
 type MainJarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 // Comments for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 // "text-[#808080]", "group-hover/jar:text-[#808080]"
+// "text-[#4c8c6b]", "group-hover/jar:text-[#4c8c6b]"
+// "text-[#d16d3a]", "group-hover/jar:text-[#d16d3a]"
+// "text-[#547f9b]", "group-hover/jar:text-[#547f9b]"
+// "text-[#9b6b8f]", "group-hover/jar:text-[#9b6b8f]"
+// "text-[#8a8f45]", "group-hover/jar:text-[#8a8f45]"
 type UnknownJarColor = '#808080'
 
 export type JarColor = MainJarColor | UnknownJarColor | `#${string}`

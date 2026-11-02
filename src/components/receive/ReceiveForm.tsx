@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import type { TFunction } from 'i18next'
 import { useForm, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form'
@@ -79,6 +79,13 @@ export const ReceiveForm = ({ className, defaultValues, onSubmit, jars, disabled
   })
 
   const values = useWatch({ control })
+  const selectedSourceJarIndex = useWatch({ control, name: 'source.fromJar' })
+
+  useEffect(() => {
+    const fallbackJarIndex = jars[0]?.jarIndex
+    if (fallbackJarIndex === undefined || jars.some((jar) => jar.jarIndex === selectedSourceJarIndex)) return
+    setValue('source.fromJar', fallbackJarIndex, { shouldValidate: true })
+  }, [jars, selectedSourceJarIndex, setValue])
 
   const doOnChange = handleSubmit(onSubmit)
 

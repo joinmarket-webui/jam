@@ -278,16 +278,20 @@ export const WalletJarsDetailsContent = ({
   )
 
   const nextJar = useCallback(() => {
-    setActiveJarIndex(
-      (current) => (current ? (jars.find((it) => it.jarIndex === current + 1) ?? jars[0]) : jars[0])?.jarIndex,
-    )
+    setActiveJarIndex((current) => {
+      const currentPosition = jars.findIndex((jar) => jar.jarIndex === current)
+      const nextPosition = currentPosition === -1 ? 0 : (currentPosition + 1) % jars.length
+      return jars[nextPosition]?.jarIndex
+    })
   }, [jars])
 
   const previousJar = useCallback(
     () =>
-      setActiveJarIndex(
-        (current) => (current ? (jars.find((it) => it.jarIndex === current - 1) ?? jars.at(-1)) : jars[0])?.jarIndex,
-      ),
+      setActiveJarIndex((current) => {
+        const currentPosition = jars.findIndex((jar) => jar.jarIndex === current)
+        const previousPosition = currentPosition === -1 ? 0 : (currentPosition - 1 + jars.length) % jars.length
+        return jars[previousPosition]?.jarIndex
+      }),
     [jars],
   )
 
