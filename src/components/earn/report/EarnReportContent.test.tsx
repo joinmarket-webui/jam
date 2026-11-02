@@ -104,6 +104,8 @@ describe('EarnReportContent', () => {
     mocks.refetch.mockResolvedValue(undefined)
     mocks.createObjectURL.mockClear()
     mocks.revokeObjectURL.mockClear()
+    // jsdom does not implement navigation, which clicking the download anchor would trigger
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
     Object.defineProperties(URL, {
       createObjectURL: {
         configurable: true,
