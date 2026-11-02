@@ -269,7 +269,6 @@
     "subtitle": "Envie sats para o endereço abaixo para financiar sua carteira.",
     "error_copy_address_failed": "Não foi possível copiar o endereço.",
     "button_settings": "Opções de recebimento",
-    "feedback_invalid_amount": "Forneça um valor válido.",
     "button_new_address": "Obter novo endereço",
     "text_getting_address": "Obtendo novo endereço"
   },

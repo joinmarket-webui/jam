@@ -269,7 +269,6 @@
     "subtitle": "Invia sats all'indirizzo sottostante per depositare nel tuo wallet.",
     "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
     "button_settings": "Opzioni di ricezione",
-    "feedback_invalid_amount": "Si prega di fornire un importo valido.",
     "button_new_address": "Ottieni un nuovo indirizzo",
     "text_getting_address": "Ottenere un nuovo indirizzo"
   },

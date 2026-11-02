@@ -308,7 +308,6 @@
     "subtitle": "將聰發送到以下的地址來充值你的錢包。",
     "error_copy_address_failed": "無法複製地址。",
     "button_settings": "接收選項",
-    "feedback_invalid_amount": "請輸入有效的金額。",
     "button_new_address": "獲取新地址",
     "text_getting_address": "正在獲取新地址"
   },

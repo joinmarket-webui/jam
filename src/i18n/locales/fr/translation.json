@@ -160,7 +160,6 @@
     "subtitle": "Envoyez du bitcoin à l'adresse ci-dessous.",
     "error_copy_address_failed": "L'adresse n'a pu être copiée.",
     "button_settings": "Paramètres",
-    "feedback_invalid_amount": "Veuillez fournir un montant valide.",
     "button_new_address": "Obtenir une nouvelle adresse",
     "text_getting_address": "Obtention d'une nouvelle adresse"
   },
