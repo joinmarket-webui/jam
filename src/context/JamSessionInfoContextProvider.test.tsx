@@ -48,6 +48,8 @@ const Consumer = () => {
       <span>{context.takerInfo.running ? 'running' : 'idle'}</span>
       <span>{context.takerInfo.currentPaymentAttempt?.walletFileName ?? 'no-payment'}</span>
       <span>{context.rescanInfo.progress ?? 0}</span>
+      <span data-testid="send-enabled">{String(context.operations.send.enabled)}</span>
+      <span data-testid="receive-enabled">{String(context.operations.receive.enabled)}</span>
       <button type="button" onClick={() => context.setCurrentPaymentAttempt(paymentAttempt)}>
         set
       </button>
@@ -81,6 +83,8 @@ describe('<JamSessionInfoContextProvider />', () => {
     expect(screen.getByText('123')).toBeInTheDocument()
     expect(screen.getByText('running')).toBeInTheDocument()
     expect(screen.getByText('no-payment')).toBeInTheDocument()
+    expect(screen.getByTestId('send-enabled')).toHaveTextContent('false')
+    expect(screen.getByTestId('receive-enabled')).toHaveTextContent('true')
 
     act(() => screen.getByRole('button', { name: 'set' }).click())
     expect(screen.getByText('wallet.jmdat')).toBeInTheDocument()
@@ -105,5 +109,6 @@ describe('<JamSessionInfoContextProvider />', () => {
     )
 
     expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByTestId('receive-enabled')).toHaveTextContent('false')
   })
 })

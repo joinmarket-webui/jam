@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { routes } from '@/constants/routes'
-import { useRawJmSession } from '@/context/JamSessionInfoContext'
+import { useJamSessionInfoContext, useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { hashPassword } from '@/lib/hash'
@@ -27,9 +27,12 @@ const LoginPage = () => {
   const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
   const { jmSession } = useRawJmSession()
+  const { operations } = useJamSessionInfoContext()
 
-  const makerRunning = jmSession?.maker_running === true
-  const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
+  const makerRunning = operations.walletLock.reasons.includes('makerRunning')
+  const coinjoinInProgress =
+    operations.walletLock.reasons.includes('coinjoinRunning') ||
+    operations.walletLock.reasons.includes('schedulePending')
 
   const listwalletsQueryOptions = listwalletsOptions({ client })
 

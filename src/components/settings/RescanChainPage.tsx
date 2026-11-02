@@ -14,7 +14,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { routes, type Route } from '@/constants/routes'
-import { useCurrentBlockHeight, useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
+import {
+  useCurrentBlockHeight,
+  useJamSessionInfoContext,
+  useRescanStatus,
+  type RescanInfo,
+} from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { blockHeightField, INPUT_BLOCK_HEIGHT_MIN } from '@/lib/formValidation'
@@ -82,7 +87,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
           <InputGroupInput
             id="inputRescanBlockheight"
             {...register('blockHeight', {
-              disabled: disabled || rescanInfo.rescanning,
+              disabled,
             })}
             placeholder={t('rescan_chain.placeholder_blockheight')}
             type="number"
@@ -110,7 +115,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
                 },
               )
             }
-            disabled={disabled || isSubmitting || rescanInfo.rescanning}
+            disabled={disabled || isSubmitting}
           >
             {t('rescan_chain.preset_blocks_day', { count: AVERAGE_BLOCKS_PER_DAY.toLocaleString() })}
           </Button>
@@ -130,7 +135,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
                 },
               )
             }
-            disabled={disabled || isSubmitting || rescanInfo.rescanning}
+            disabled={disabled || isSubmitting}
           >
             {t('rescan_chain.preset_blocks_year', { count: AVERAGE_BLOCKS_PER_YEAR.toLocaleString() })}
           </Button>
@@ -148,7 +153,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
                     shouldValidate: true,
                   })
                 }
-                disabled={disabled || isSubmitting || rescanInfo.rescanning}
+                disabled={disabled || isSubmitting}
               >
                 {t('rescan_chain.preset_from_block', {
                   blockHeight: SEGWIT_ACTIVATION_BLOCK.toLocaleString(),
@@ -159,7 +164,7 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
           </Tooltip>
         ) : null}
       </div>
-      <Button type="submit" disabled={disabled || isSubmitting || rescanInfo.rescanning} className="w-full" size="xxl">
+      <Button type="submit" disabled={disabled || isSubmitting} className="w-full" size="xxl">
         {isSubmitting || rescanInfo.rescanning
           ? t('rescan_chain.text_button_submitting')
           : t('rescan_chain.text_button_submit')}
@@ -178,6 +183,7 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
   const navigate = useNavigate()
   const client = useApiClient()
   const { currentBlockHeight } = useCurrentBlockHeight()
+  const { operations } = useJamSessionInfoContext()
 
   const [defaultValues] = useState<Partial<RescanChainFormValues>>(() => ({
     blockHeight:
@@ -255,7 +261,7 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
             defaultValues={defaultValues}
             currentBlockHeight={currentBlockHeight}
             onSubmit={onSubmit}
-            disabled={rescanInfo.rescanning || rescanMutation.isPending}
+            disabled={!operations.rescan.enabled || rescanMutation.isPending}
           />
           {rescanInfo.rescanning && (
             <div className="bg-muted/50 mt-4 animate-pulse rounded-lg p-3 duration-100">
