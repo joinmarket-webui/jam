@@ -31,6 +31,7 @@
     "storybook:serve-static": "cd storybook-static/ && python3 -m http.server",
     "test": "NODE_OPTIONS=--no-webstorage vitest run",
     "test:unit": "NODE_OPTIONS=--no-webstorage vitest run --project unit",
+    "test:slow": "NODE_OPTIONS=--no-webstorage vitest run --config vitest.slow.config.ts",
     "test:storybook": "NODE_OPTIONS=--no-webstorage vitest run --project storybook",
     "test:coverage": "npm test -- --coverage.enabled",
     "test:smoke": "playwright test --config tests/e2e/playwright.config.ts",
