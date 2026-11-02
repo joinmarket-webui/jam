@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { HistoryEntry } from '@/hooks/useQueryWalletHistory'
+import { withTimeZone } from '@/test/withTimeZone'
 import { TxHistoryTable } from './TxHistoryTable'
 
 const mocks = vi.hoisted(() => ({
@@ -78,6 +79,22 @@ describe('TxHistoryTable', () => {
     const dateHeader = screen.getByText('tx_history.column_title_date')
     fireEvent.click(dateHeader)
     expect(dateHeader).toBeInTheDocument()
+  })
+
+  it('displays timestamps without a time zone designator as UTC', () => {
+    withTimeZone('America/New_York', () => {
+      render(<TxHistoryTable history={[{ ...mockDeposit, timestamp: '2026-07-28T12:00:00.123456' }]} />)
+
+      expect(screen.getByText(new Date(Date.UTC(2026, 6, 28, 12, 0, 0, 123)).toLocaleString())).toBeInTheDocument()
+    })
+  })
+
+  it('respects the time zone designator of timestamps', () => {
+    withTimeZone('America/New_York', () => {
+      render(<TxHistoryTable history={[{ ...mockDeposit, timestamp: '2026-07-28T17:30:00+05:30' }]} />)
+
+      expect(screen.getByText(new Date(Date.UTC(2026, 6, 28, 12, 0, 0)).toLocaleString())).toBeInTheDocument()
+    })
   })
 
   it('renders empty history alert', () => {

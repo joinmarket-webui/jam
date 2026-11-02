@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { PercentIcon } from 'lucide-react'
 import { FormProvider, type UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { JM_MAX_SWEEP_FEE_CHANGE_DEFAULT, JM_TX_FEES_FACTOR_DEFAULT } from '@/constants/jm'
+import { JM_MAX_SWEEP_FEE_CHANGE_DEFAULT } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
 import { TxFeeForm } from '../../send/TxFeeForm'
 import { Field, FieldDescription, FieldError, FieldLabel } from '../../ui/field'
@@ -35,12 +35,7 @@ export const MiningFeesForm = ({
         <TxFeeForm />
 
         <Field data-invalid={errors.txFeesFactorInPercent !== undefined}>
-          <FieldLabel htmlFor="mining-fees-tx-fees-factor">
-            {t('settings.fees.label_tx_fees_factor', {
-              // TODO: i18n - change variable name.. `defaultValue` is used by the library!
-              defaultValue: `${factorToPercentage(JM_TX_FEES_FACTOR_DEFAULT)}%`,
-            })}
-          </FieldLabel>
+          <FieldLabel htmlFor="mining-fees-tx-fees-factor">{t('settings.fees.label_tx_fees_factor')}</FieldLabel>
           <FieldDescription className="text-xs">
             {t('settings.fees.description_tx_fees_factor_^0.9.10')}
           </FieldDescription>
@@ -70,8 +65,7 @@ export const MiningFeesForm = ({
           </FieldLabel>
           <FieldDescription className="text-xs">
             {t('settings.fees.description_max_sweep_fee_change', {
-              // TODO: i18n - change variable name.. `defaultValue` is used by the library!
-              defaultValue: `${factorToPercentage(JM_MAX_SWEEP_FEE_CHANGE_DEFAULT)}%`,
+              defaultPercentage: `${factorToPercentage(JM_MAX_SWEEP_FEE_CHANGE_DEFAULT)}%`,
             })}
           </FieldDescription>
           <InputGroup>

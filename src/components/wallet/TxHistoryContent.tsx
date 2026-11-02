@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { AlertTriangleIcon, ListIcon, PlusIcon, RefreshCwIcon } from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
+import { AlertTriangleIcon, DownloadIcon, ListIcon, PlusIcon, RefreshCwIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -10,6 +10,7 @@ import { useQueryWalletHistory, type HistoryEntry } from '@/hooks/useQueryWallet
 import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { TxHistoryTable } from './TxHistoryTable'
+import { txHistoryToCsv } from './txHistoryUtils'
 
 interface TxHistoryContentProps {
   walletFileName: WalletFileName
@@ -60,6 +61,27 @@ export const TxHistoryContent = ({
 
   const combinedHistory = useMemo(() => [...demoEntries, ...history], [demoEntries, history])
 
+  const downloadCsv = useCallback(() => {
+    if (combinedHistory.length === 0) return
+
+    const cleanWalletName = walletFileName.replace(/\.jmdat$/i, '')
+    const dateString = new Date().toISOString().slice(0, 10)
+    const downloadFilename = cleanWalletName
+      ? `tx-history-${cleanWalletName}-${dateString}.csv`
+      : `tx-history-${dateString}.csv`
+
+    const csvContent = txHistoryToCsv(combinedHistory)
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = downloadFilename
+    anchor.click()
+    setTimeout(() => {
+      URL.revokeObjectURL(url)
+    }, 0)
+  }, [combinedHistory, walletFileName])
+
   return (
     <section className={cn('flex flex-col gap-3', className)}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -98,6 +120,18 @@ export const TxHistoryContent = ({
           >
             <RefreshCwIcon className={historyIsFetching ? 'motion-safe:animate-spin' : undefined} />
             <span className="hidden sm:inline">{t('global.refresh')}</span>
+          </Button>
+
+          <Button
+            type="button"
+            className="hover:[&>svg]:motion-safe:animate-bounce"
+            variant="outline"
+            onClick={downloadCsv}
+            disabled={historyIsLoading || combinedHistory.length === 0}
+            title={t('global.download')}
+          >
+            <DownloadIcon className="group/download" />
+            <span className="hidden sm:inline">{t('global.download')}</span>
           </Button>
 
           {compact && onViewAll ? (

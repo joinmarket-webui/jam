@@ -416,7 +416,7 @@
       "description_max_cj_fee_rel": "The maximum fee you are willing to pay per collaborator, as a percentage of the transaction amount. Example: if you send 2 million sats and the maximum fee is set to 0.1%, you will at most pay 2,000 sats to a single collaborator.",
       "feedback_invalid_max_cj_fee_rel": "Please provide a valid maximum relative fee between {{ min }} and {{ max }}.",
       "label_max_sweep_fee_change": "Collaborative sweep fee change",
-      "description_max_sweep_fee_change": "The maximum fee increase you are willing to pay on collaborative sweep transactions, as a percentage of the estimated transaction fee. Example: when set to 60% with 10 sats/vByte, the actual fee for collaborative sweeps can be between 4 and 16 sats/vByte. Default: {{ defaultValue }}",
+      "description_max_sweep_fee_change": "The maximum fee increase you are willing to pay on collaborative sweep transactions, as a percentage of the estimated transaction fee. Example: when set to 60% with 10 sats/vByte, the actual fee for collaborative sweeps can be between 4 and 16 sats/vByte. Default: {{ defaultPercentage }}",
       "feedback_invalid_max_sweep_fee_change": "Please provide a valid maximum sweep fee change between {{ min }} and {{ max }}.",
       "text_button_reset": "Reset",
       "text_button_submit": "Save",
@@ -507,6 +507,7 @@
     "placeholder_amount_input": "Enter amount in sats...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "feedback_amount_exceeds_balance": "Amount exceeds the available balance in the selected jar.",
+    "feedback_amount_below_dust_limit": "Amount is below the minimum of {{ dustLimit }} sats for this address type.",
     "button_choose_jar": "Choose Jar",
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
@@ -924,7 +925,9 @@
     },
     "confirm_start_modal": {
       "title": "Start Scheduled Sweep",
-      "text_body": "Are you sure you want to start a Scheduled Sweep?"
+      "text_body": "Are you sure you want to start a Scheduled Sweep?",
+      "actions_count_one": "{{ count }} action",
+      "actions_count_other": "{{ count }} actions"
     },
     "alert_schedule_completed_title": "Scheduled sweep finished successfully.",
     "alert_schedule_failed_title": "Scheduled sweep failed.",

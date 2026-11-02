@@ -238,6 +238,35 @@ describe('EarnReportContent', () => {
     expect(lines.at(-1)).toContain('2026-01-01T12:00:00.000Z')
   })
 
+  it('renders and exports rows with an invalid timestamp', async () => {
+    mocks.entries = [
+      entry({ notes: 'valid maker note' }),
+      entry({ notes: 'invalid maker note', timestamp: new Date('invalid') }),
+    ]
+
+    render(<EarnReportContent enabled />)
+
+    expect(screen.getByText('valid maker note')).toBeInTheDocument()
+    expect(screen.getByText('invalid maker note')).toBeInTheDocument()
+    expect(screen.getByText('-')).toBeInTheDocument()
+    // rows without a valid timestamp still count towards the all-time total
+    expect(screen.getByText('balance:200')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'global.download' }))
+
+    const blob = mocks.createObjectURL.mock.calls[0]?.[0]
+    if (!blob) {
+      throw new Error('CSV blob was not created')
+    }
+
+    const csv = await blob.text()
+    const lines = csv.trim().split('\n')
+
+    expect(lines).toHaveLength(3)
+    expect(lines[1]).toMatch(/^2026-06-13T12:00:00.000Z,/u)
+    expect(lines[2]).toMatch(/^,.*invalid maker note$/u)
+  })
+
   it('adds demo rows in developer mode', () => {
     mocks.developerMode = true
 
