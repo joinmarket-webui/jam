@@ -82,6 +82,7 @@ export const SettingsItem = ({
   }
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events -- keyboard users operate the interactive child
     <div className={cn(bleedClassName, rowClassName)} onClick={!disabled && action ? () => void action() : undefined}>
       {content}
     </div>

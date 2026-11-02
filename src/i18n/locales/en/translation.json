@@ -11,6 +11,8 @@
     "abort": "Abort",
     "cancel": "Cancel",
     "clear": "Clear",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "done": "Done",
     "download": "Download",
     "finish": "Finish",

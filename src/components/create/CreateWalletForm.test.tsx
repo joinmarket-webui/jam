@@ -123,11 +123,12 @@ describe('<CreateWalletForm />', () => {
     expect(passwordInput).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled()
 
-    const toggleButtons = screen.getAllByRole('button', { name: '' })
+    const toggleButtons = screen.getAllByRole('button', { name: 'Show password' })
     await userEvent.click(toggleButtons[0])
     await userEvent.click(toggleButtons[1])
 
     expect(passwordInput).toHaveAttribute('type', 'text')
     expect(confirmPasswordInput).toHaveAttribute('type', 'text')
+    expect(screen.getAllByRole('button', { name: 'Hide password' })).toHaveLength(2)
   })
 })
