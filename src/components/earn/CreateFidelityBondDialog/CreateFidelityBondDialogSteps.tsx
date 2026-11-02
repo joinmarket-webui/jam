@@ -344,7 +344,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
               <CopyableField
                 label={t('earn.fidelity_bond.create_fidelity_bond.label_address')}
                 value={address}
-                copiedMessage={t('receive.text_copy_address')}
+                copiedMessage={t('global.text_address_copied')}
               >
                 <Address value={address} className="animate-in blur-in-10 duration-800" copyable={false} />
               </CopyableField>

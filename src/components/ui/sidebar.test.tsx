@@ -122,8 +122,12 @@ describe('sidebar components', () => {
     expect(screen.getByText('Dashboard tooltip')).toBeInTheDocument()
     expect(screen.getByLabelText('Search menu')).toBeInTheDocument()
 
-    await user.click(screen.getAllByRole('button', { name: 'sidebar.button_toggle' })[0])
+    const trigger = screen.getAllByRole('button', { name: 'sidebar.button_toggle' })[0]
+    expect(trigger).toHaveAttribute('title', 'sidebar.trigger.title_close')
+
+    await user.click(trigger)
     expect(sidebar).toHaveAttribute('data-state', 'collapsed')
+    expect(trigger).toHaveAttribute('title', 'sidebar.trigger.title_open')
     expect(document.cookie).toContain('sidebar_state=false')
 
     await user.keyboard('{Control>}b{/Control}')
