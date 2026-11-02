@@ -110,4 +110,76 @@ describe('TxHistoryContent', () => {
     render(<TxHistoryContent walletFileName="wallet.jmdat" compact={false} />)
     expect(screen.queryByRole('button', { name: 'tx_history.button_load_more' })).not.toBeInTheDocument()
   })
+
+  describe('CSV export', () => {
+    it('disables download button when history is empty or loading', () => {
+      mockUseQuery.mockReturnValue({
+        history: [],
+        queryResult: mockQueryResult({ isLoading: true }),
+      })
+
+      const { rerender } = render(<TxHistoryContent walletFileName="wallet.jmdat" compact={false} />)
+      expect(screen.getByRole('button', { name: 'global.download' })).toBeDisabled()
+
+      mockUseQuery.mockReturnValue({
+        history: [],
+        queryResult: mockQueryResult({ isLoading: false }),
+      })
+      rerender(<TxHistoryContent walletFileName="wallet.jmdat" compact={false} />)
+
+      const downloadButton = screen.getByRole('button', { name: 'global.download' })
+      expect(downloadButton).toBeDisabled()
+    })
+
+    it('downloads CSV file when download button is clicked', async () => {
+      const mockHistory = [
+        {
+          timestamp: '2026-11-01T10:00:00.000Z',
+          txid: 'test_txid',
+          role: 'send' as const,
+          amount: 75000,
+          net_fee: -300,
+          confirmations: 6,
+        },
+      ]
+
+      mockUseQuery.mockReturnValue({
+        history: mockHistory,
+        queryResult: mockQueryResult({ isLoading: false }),
+      })
+
+      const createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/mock-blob')
+      const revokeObjectURL = vi.fn()
+      globalThis.URL.createObjectURL = createObjectURL
+      globalThis.URL.revokeObjectURL = revokeObjectURL
+
+      const clickSpy = vi.fn()
+      const originalCreateElement = document.createElement.bind(document)
+      vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+        const element = originalCreateElement(tagName)
+        if (tagName === 'a') {
+          element.click = clickSpy
+        }
+        return element
+      })
+
+      render(<TxHistoryContent walletFileName="test_wallet.jmdat" compact={false} />)
+
+      const downloadButton = screen.getByRole('button', { name: 'global.download' })
+      expect(downloadButton).toBeEnabled()
+
+      fireEvent.click(downloadButton)
+
+      expect(createObjectURL).toHaveBeenCalledTimes(1)
+      const downloadBlob = createObjectURL.mock.calls[0]?.[0] as Blob | undefined
+      expect(downloadBlob).toBeInstanceOf(Blob)
+      const text = await (downloadBlob as Blob).text()
+      expect(text).toContain('timestamp,txid,role,amount,net_fee,confirmations')
+      expect(text).toContain('2026-11-01T10:00:00.000Z,test_txid,send,75000,-300,6')
+
+      expect(clickSpy).toHaveBeenCalledTimes(1)
+
+      vi.restoreAllMocks()
+    })
+  })
 })

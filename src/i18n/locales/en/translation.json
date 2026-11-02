@@ -11,6 +11,8 @@
     "abort": "Abort",
     "cancel": "Cancel",
     "clear": "Clear",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "done": "Done",
     "download": "Download",
     "finish": "Finish",
@@ -511,6 +513,7 @@
     "placeholder_amount_input": "Enter amount in sats...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "feedback_amount_exceeds_balance": "Amount exceeds the available balance in the selected jar.",
+    "feedback_amount_below_dust_limit": "Amount is below the minimum of {{ dustLimit }} sats for this address type.",
     "button_choose_jar": "Choose Jar",
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
@@ -923,7 +926,9 @@
     },
     "confirm_start_modal": {
       "title": "Start Scheduled Sweep",
-      "text_body": "Are you sure you want to start a Scheduled Sweep?"
+      "text_body": "Are you sure you want to start a Scheduled Sweep?",
+      "actions_count_one": "{{ count }} action",
+      "actions_count_other": "{{ count }} actions"
     },
     "alert_schedule_completed_title": "Scheduled sweep finished successfully.",
     "alert_schedule_failed_title": "Scheduled sweep failed.",
