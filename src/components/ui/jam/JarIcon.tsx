@@ -123,8 +123,8 @@ export function JarIcon({
 }: JarIconProps) {
   const fillLevel = calculateJarFillLevel(totalBalance, totalWalletBalance)
   const sizeStyle: CSSProperties = {
-    ...(width !== undefined ? { width } : {}),
-    ...(height !== undefined ? { height } : {}),
+    ...(width !== undefined && { width }),
+    ...(height !== undefined && { height }),
   }
 
   return (

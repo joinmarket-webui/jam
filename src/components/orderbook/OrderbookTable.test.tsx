@@ -147,10 +147,12 @@ describe('OrderbookTable', () => {
       'orderbook.table.heading_order_id',
     ]) {
       const header = screen.queryByText(heading)
-      if (header) {
-        await user.click(header)
-        await user.click(header)
+      if (!header) {
+        continue
       }
+
+      await user.click(header)
+      await user.click(header)
     }
 
     await user.click(screen.getByText('page-two'))

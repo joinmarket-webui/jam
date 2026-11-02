@@ -29,24 +29,22 @@ export function createMiningFeesFormSchema({
     max: factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX).toLocaleString(),
   })
 
-  return (
-    yup
-      .object({
-        txFeesFactorInPercent: yup
-          .number()
-          .transform((value) => (isValidNumber(value) ? value : null))
-          .min(factorToPercentage(TX_FEES_FACTOR_MIN), txFeesFactorMessage)
-          .max(factorToPercentage(TX_FEES_FACTOR_MAX), txFeesFactorMessage)
-          .required(txFeesFactorMessage),
-        maxSweepFeeChangeInPercent: yup
-          .number()
-          .transform((value) => (isValidNumber(value) ? value : null))
-          .min(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN), maxSweepFeeChangeMessage)
-          .max(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX), maxSweepFeeChangeMessage)
-          .required(maxSweepFeeChangeMessage),
-      })
-      // eslint-disable-next-line unicorn/prefer-spread -- false positive
-      .concat(createTxFeeFormSchema({ t }))
-      .required()
-  )
+  return yup
+    .object({
+      txFeesFactorInPercent: yup
+        .number()
+        .transform((value) => (isValidNumber(value) ? value : null))
+        .min(factorToPercentage(TX_FEES_FACTOR_MIN), txFeesFactorMessage)
+        .max(factorToPercentage(TX_FEES_FACTOR_MAX), txFeesFactorMessage)
+        .required(txFeesFactorMessage),
+      maxSweepFeeChangeInPercent: yup
+        .number()
+        .transform((value) => (isValidNumber(value) ? value : null))
+        .min(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN), maxSweepFeeChangeMessage)
+        .max(factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX), maxSweepFeeChangeMessage)
+        .required(maxSweepFeeChangeMessage),
+    })
+
+    .concat(createTxFeeFormSchema({ t }))
+    .required()
 }

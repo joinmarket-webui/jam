@@ -9,6 +9,7 @@ import '@/i18n/config'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 
 const render = (ui: React.ReactNode, options?: Omit<RenderOptions, 'queries'>) => {
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
   const providers = ({ children }: { children: React.ReactNode }) => {
     return (
       <StrictMode>

@@ -107,7 +107,7 @@ describe('toJamFeeConfigValues', () => {
     const values = toJamFeeConfigValues({
       max_cj_fee_abs: String(-1),
       tx_fees: String(999_999),
-      max_sweep_fee_change: String(Number.NaN),
+      max_sweep_fee_change: String(NaN),
     })
 
     expect(values).toStrictEqual({

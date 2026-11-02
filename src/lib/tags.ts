@@ -110,7 +110,7 @@ export const utxoTags = (utxo: Utxo, addressSummary: AddressSummary, t: TFunctio
     })
   }
 
-  __statusTags.forEach((it) => tags.push(it))
+  for (const it of __statusTags) tags.push(it)
 
   if (utxo.label) {
     const isJmLabel = utxo.label.startsWith('jm:')

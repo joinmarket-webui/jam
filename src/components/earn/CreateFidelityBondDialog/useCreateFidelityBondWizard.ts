@@ -132,7 +132,7 @@ export function useCreateFidelityBondWizard(
   const utxosToFreeze = useMemo(() => {
     if (selectedJar === undefined) return []
     return selectedJar.utxos.filter(
-      (utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && !selectedUtxos.some((it) => it.utxo === utxo.utxo),
+      (utxo) => !utxo.frozen && !fb.utxo.isFidelityBond(utxo) && selectedUtxos.every((it) => it.utxo !== utxo.utxo),
     )
   }, [selectedJar, selectedUtxos])
 
@@ -152,7 +152,7 @@ export function useCreateFidelityBondWizard(
       },
     }),
     enabled: open && !!selectedLockdate && step !== 'select_date',
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
     retry: false,
   })
 

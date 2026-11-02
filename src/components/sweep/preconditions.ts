@@ -54,7 +54,7 @@ const calcMissingConfirmations = (utxos: Utxo[], minConfirmations: number): numb
 
   const lowestConfirmations = utxos.reduce((acc, utxo) => {
     return Math.min(acc, Math.max(0, utxo.confirmations))
-  }, Number.POSITIVE_INFINITY)
+  }, Infinity)
 
   return Math.max(0, minConfirmations - lowestConfirmations)
 }

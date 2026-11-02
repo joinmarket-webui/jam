@@ -43,8 +43,7 @@ export function useJmwalletdStdoutLog({
     refetchOnWindowFocus: false,
     // Poll logs continuously only when auto-follow is enabled.
     refetchInterval: (query) => {
-      if (!enabled || !enableAutoFollow || token === undefined) return false
-      if (query.state.error) return false
+      if (!enabled || !enableAutoFollow || token === undefined || query.state.error) return false
       return JAM.JMWALLETD_LOGS_POLLING_INTERVAL
     },
     // Keep previous data during refetch to prevent content flicker on slower networks.

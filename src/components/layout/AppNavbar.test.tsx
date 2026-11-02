@@ -11,7 +11,7 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),
-  Link: ({ children, to }: { children?: ReactNode; to: string }) => <a href={String(to)}>{children}</a>,
+  Link: ({ children, to }: { children?: ReactNode; to: string }) => <a href={to}>{children}</a>,
 }))
 
 vi.mock('@tanstack/react-query', () => ({

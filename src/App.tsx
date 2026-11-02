@@ -397,12 +397,14 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
       .then((values) => {
         const consoleInfo = 'Fee values loaded successfully.'
         console.info(consoleInfo)
-        if (isDevMode) {
-          console.table(values)
-          toast.success(`[DEV] ${consoleInfo}`, {
-            id: 'fee-values-success',
-          })
+        if (!isDevMode) {
+          return
         }
+
+        console.table(values)
+        toast.success(`[DEV] ${consoleInfo}`, {
+          id: 'fee-values-success',
+        })
       })
       .catch((error) => {
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
