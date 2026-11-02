@@ -38,8 +38,7 @@ export const CreateStepVerifyMnemonic = ({ mnemonicPhrase, onVerified, onBack }:
 
   const handleWordClick = useCallback(
     (word: string, shuffledIndex: number) => {
-      if (pickedIndicesSet.has(shuffledIndex)) return
-      if (wrongButtonIndex !== undefined) return
+      if (pickedIndicesSet.has(shuffledIndex) || wrongButtonIndex !== undefined) return
 
       const nextPosition = selectedWords.length
       const expectedWord = mnemonicPhrase[nextPosition]

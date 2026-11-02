@@ -188,7 +188,6 @@ function isLoginFormLoadingGuard(val: LoginFormProps): val is LoginFormLoadingPr
 export const LoginForm = (props: LoginFormProps) => {
   if (isLoginFormLoadingGuard(props)) {
     return <LoginFormSkeleton />
-  } else {
-    return <LoginFormComponent {...props} />
   }
+  return <LoginFormComponent {...props} />
 }

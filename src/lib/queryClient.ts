@@ -45,7 +45,7 @@ async function applyDelay<T>(
   queryFn: () => Promise<T>,
   { delayBefore, delayAfter, throttle }: WithQueryDelayOptions,
 ): Promise<T> {
-  const now = globalThis.performance.now()
+  const now = performance.now()
   if (delayBefore !== undefined && delayBefore > 0) {
     await delayedPromise(delayBefore)
   }
@@ -54,7 +54,7 @@ async function applyDelay<T>(
     await delayedPromise(delayAfter)
   }
   if (throttle != undefined && throttle > 0) {
-    const requestDuration = globalThis.performance.now() - now
+    const requestDuration = performance.now() - now
     const throttleDelay = Math.max(0, throttle - requestDuration)
     if (throttleDelay > 0) {
       await delayedPromise(throttleDelay)

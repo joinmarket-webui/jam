@@ -14,7 +14,8 @@ const ensureInteger = (value: unknown, message: string): number => {
 const txFeeValueForRequest = (data: SendFormValues): number | undefined => {
   if (data.txFee.txFeeUnit === TX_FEE_UNITS.BLOCKS && data.txFee.txFeeInBlocks !== undefined) {
     return data.txFee.txFeeInBlocks
-  } else if (data.txFee.txFeeUnit === TX_FEE_UNITS.SATS_PER_VBYTE && data.txFee.txFeeInSatsPerVbyte !== undefined) {
+  }
+  if (data.txFee.txFeeUnit === TX_FEE_UNITS.SATS_PER_VBYTE && data.txFee.txFeeInSatsPerVbyte !== undefined) {
     return satsPerVbyteToSatsPerKvbyte(data.txFee.txFeeInSatsPerVbyte)
   }
   return undefined

@@ -19,20 +19,21 @@ function isJmTxWebsocketMessage(val: unknown): val is JmTxWebsocketMessage {
     !!val['txdetails'] &&
     'txid' in val['txdetails'] &&
     typeof val['txdetails']['txid'] === 'string' &&
-    val['txdetails']?.['txid'] === val['txid'] &&
-    true
+    val['txdetails']?.['txid'] === val['txid']
   )
 }
 
 const onWebsocketMessage = (message: unknown, onNewTx: (tx: JmTxInfo) => void) => {
-  if (isJmTxWebsocketMessage(message)) {
-    // txs made via the ui are added to the store before the websocket
-    // echoes them, so an unknown txid means an external tx (e.g. earn, deposit)
-    const isKnownTx = jmTxStore.getState().get(message.txid) !== undefined
-    jmTxStore.getState().add(message.txdetails)
-    if (!isKnownTx) {
-      onNewTx(message.txdetails)
-    }
+  if (!isJmTxWebsocketMessage(message)) {
+    return
+  }
+
+  // txs made via the ui are added to the store before the websocket
+  // echoes them, so an unknown txid means an external tx (e.g. earn, deposit)
+  const isKnownTx = jmTxStore.getState().get(message.txid) !== undefined
+  jmTxStore.getState().add(message.txdetails)
+  if (!isKnownTx) {
+    onNewTx(message.txdetails)
   }
 }
 

@@ -110,7 +110,7 @@ const txHistoryTableColumns = (t: TFunction) =>
     columnHelper.accessor('timestamp', {
       header: () => t('tx_history.column_title_date'),
       sortFn: (a, b) => dateTimeValue(a.original.timestamp) - dateTimeValue(b.original.timestamp),
-      cell: (info) => <span className="text-nowrap">{formatDateTime(String(info.getValue()))}</span>,
+      cell: (info) => <span className="text-nowrap">{formatDateTime(info.getValue())}</span>,
       meta: {
         alphabetic: true,
       },
@@ -156,7 +156,7 @@ const txHistoryTableColumns = (t: TFunction) =>
     columnHelper.accessor('txid', {
       header: () => t('tx_history.column_title_txid'),
       cell: (info) => {
-        const txid = String(info.getValue() ?? '')
+        const txid = info.getValue() ?? ''
         return txid ? (
           <div className="flex min-w-0 items-center gap-2">
             <span className="min-w-0 font-mono text-xs slashed-zero select-all">{shortenStringMiddle(txid, 16)}</span>

@@ -196,8 +196,7 @@ export const sweepFormSchema = (
         .required(),
     })
     .test('min-max-collaborators-test', function (root) {
-      if (root.minNumberOfCollaborators === undefined) return true
-      if (root.maxNumberOfCollaborators === undefined) return true
+      if (root.minNumberOfCollaborators === undefined || root.maxNumberOfCollaborators === undefined) return true
 
       if (root.minNumberOfCollaborators > root.maxNumberOfCollaborators) {
         const errorMessage = t('scheduler.feedback_invalid_min_max_collaborators')

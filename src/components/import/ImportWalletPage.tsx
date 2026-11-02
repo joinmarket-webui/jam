@@ -153,12 +153,11 @@ const ImportWalletPage = () => {
   }) => {
     const durationHintToastId = toast.loading(t('create_wallet.hint_duration_text'), {
       id: 'alert-wallet-create-creating-duration-hint',
-      duration: Number.POSITIVE_INFINITY,
+      duration: Infinity,
       position: 'top-center',
     })
 
-    let authState: (Required<Omit<AuthState, 'hashed_password'>> & Pick<AuthState, 'hashed_password'>) | undefined =
-      undefined
+    let authState: (Required<Omit<AuthState, 'hashed_password'>> & Pick<AuthState, 'hashed_password'>) | undefined
     try {
       // Step #1: recover wallet
       const recoverWalletResponse = await recoverWallet.mutateAsync({

@@ -61,10 +61,12 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   // Adds a keyboard shortcut to toggle the logs overlay.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'l' && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault()
-        setIsLogsOverlayOpen((open) => !open)
+      if (!(event.key === 'l' && (event.metaKey || event.ctrlKey))) {
+        return
       }
+
+      event.preventDefault()
+      setIsLogsOverlayOpen((open) => !open)
     }
 
     const abortCtrl = new AbortController()

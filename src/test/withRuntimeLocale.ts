@@ -38,7 +38,6 @@ const withDefaultLocale = (locales: Intl.LocalesArgument, locale: string): (stri
 export function withRuntimeLocale(locale: string, callback: () => Promise<void>): Promise<void>
 export function withRuntimeLocale(locale: string, callback: () => void): void
 export function withRuntimeLocale(locale: string, callback: () => void | Promise<void>): void | Promise<void> {
-  /* eslint-disable unicorn/no-this-outside-of-class -- mocking prototype methods requires `this` */
   const mocks = [
     vi.spyOn(Number.prototype, 'toLocaleString').mockImplementation(function (this: number, locales, options) {
       return new OriginalIntlNumberFormat(withDefaultLocale(locales, locale), options).format(this)
@@ -71,10 +70,9 @@ export function withRuntimeLocale(locale: string, callback: () => void | Promise
       return new OriginalIntlRelativeTimeFormat(withDefaultLocale(locales, locale), options)
     }),
   ]
-  /* eslint-enable unicorn/no-this-outside-of-class */
 
   const restore = () => {
-    mocks.forEach((mock) => mock.mockRestore())
+    for (const mock of mocks) mock.mockRestore()
   }
 
   let result: void | Promise<void>

@@ -231,9 +231,9 @@ vi.mock('@/components/sweep/SweepDestinationInputs', () => ({
       type="button"
       disabled={disabled}
       onClick={() => {
-        VALID_DESTINATIONS.forEach((address, index) => {
+        for (const [index, address] of VALID_DESTINATIONS.entries()) {
           setValue(`destinations.${index}.address`, address, { shouldDirty: true, shouldValidate: true })
-        })
+        }
       }}
     >
       fill-destinations
