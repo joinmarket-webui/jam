@@ -247,8 +247,8 @@ export const AccountXpubsDialog = ({
     refetch: seedQueryRefetch,
   } = useQuery({
     ...seedQueryOptions,
-    staleTime: Number.POSITIVE_INFINITY,
-    gcTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
+    gcTime: Infinity,
     enabled: false,
     retry: false,
     select: (data) => data.seedphrase.split(/\s+/),
@@ -267,8 +267,8 @@ export const AccountXpubsDialog = ({
         throttle: 210,
       },
     ),
-    staleTime: Number.POSITIVE_INFINITY,
-    gcTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
+    gcTime: Infinity,
     enabled: !!seedQueryData,
   })
 
@@ -287,10 +287,12 @@ export const AccountXpubsDialog = ({
     const interval = setInterval(() => {
       const nextTimeLeft = Math.max(0, xpubsDisplayedAt + autoCloseTimeout - Date.now())
       setTimeLeft(nextTimeLeft)
-      if (nextTimeLeft <= 0) {
-        clearInterval(interval)
-        setPasswordVerifiedAt(undefined)
+      if (!(nextTimeLeft <= 0)) {
+        return
       }
+
+      clearInterval(interval)
+      setPasswordVerifiedAt(undefined)
     }, 333)
 
     return () => {

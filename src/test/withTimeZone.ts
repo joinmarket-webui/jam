@@ -11,7 +11,7 @@ export function withTimeZone(timeZone: string, callback: () => Promise<void>): P
 export function withTimeZone(timeZone: string, callback: () => void): void
 export function withTimeZone(timeZone: string, callback: () => void | Promise<void>): void | Promise<void> {
   const originalTz = process.env.TZ
-  const originalTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const originalTimeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone
 
   process.env.TZ = timeZone
 

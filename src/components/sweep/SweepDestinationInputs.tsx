@@ -68,10 +68,12 @@ export const SweepDestinationInputs = ({
         open={qrScannerIndex !== undefined}
         onOpenChange={(open) => !open && setQrScannerIndex(undefined)}
         onScan={(result) => {
-          if (qrScannerIndex !== undefined) {
-            applyBip21Result(result, qrScannerIndex)
-            setQrScannerIndex(undefined)
+          if (qrScannerIndex === undefined) {
+            return
           }
+
+          applyBip21Result(result, qrScannerIndex)
+          setQrScannerIndex(undefined)
         }}
       />
       <div className="space-y-3">

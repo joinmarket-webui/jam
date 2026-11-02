@@ -306,6 +306,7 @@ describe('combinedUtxosHash — optimized vs reference (regression)', () => {
   })
 
   /** Render the provider with the given UTXO list and capture the computed utxosHashHex. */
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
   const captureHash = (utxoList: Utxo[]): string => {
     mocks.utxos = utxoList
     let captured = ''

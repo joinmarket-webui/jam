@@ -104,13 +104,15 @@ describe('EarnReportContent', () => {
     mocks.refetch.mockResolvedValue(undefined)
     mocks.createObjectURL.mockClear()
     mocks.revokeObjectURL.mockClear()
-    Object.defineProperty(URL, 'createObjectURL', {
-      configurable: true,
-      value: mocks.createObjectURL,
-    })
-    Object.defineProperty(URL, 'revokeObjectURL', {
-      configurable: true,
-      value: mocks.revokeObjectURL,
+    Object.defineProperties(URL, {
+      createObjectURL: {
+        configurable: true,
+        value: mocks.createObjectURL,
+      },
+      revokeObjectURL: {
+        configurable: true,
+        value: mocks.revokeObjectURL,
+      },
     })
   })
 
@@ -160,7 +162,6 @@ describe('EarnReportContent', () => {
     const anchorClick = vi.fn()
     const createElement = vi.spyOn(document, 'createElement')
     createElement.mockImplementation((tagName: string) => {
-      // eslint-disable-next-line unicorn/prefer-https -- XHTML namespace URI is an identifier that must be http
       const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName)
       if (tagName === 'a') {
         Object.defineProperty(element, 'click', {

@@ -36,7 +36,7 @@ export const lockdate = (() => {
     return `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Lockdate
   }
   const fromTimestamp = (timestamp: Milliseconds): Lockdate => {
-    if (Number.isNaN(timestamp)) throw new Error('Unsupported input: NaN')
+    if (Number.isNaN(timestamp)) throw new TypeError('Unsupported input: NaN')
     return _fromDate(new Date(timestamp))
   }
   const toTimestamp = (lockdate: Lockdate): Milliseconds => {

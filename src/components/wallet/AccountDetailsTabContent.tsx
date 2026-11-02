@@ -19,7 +19,8 @@ const HIDE_EMPTY_BRANCHES = true
 const toTypeHeading = (type: string, t: TFunction) => {
   if (type === 'external addresses') {
     return t('current_wallet.account_heading_external_addresses')
-  } else if (type === 'internal addresses') {
+  }
+  if (type === 'internal addresses') {
     return t('current_wallet.account_heading_internal_addresses')
   }
   return type
