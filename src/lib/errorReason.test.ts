@@ -84,6 +84,46 @@ describe('normalizeAppError', () => {
     expect(appError.error_message).toBe(undefined)
     expect(appError.error_description).toBe(undefined)
   })
+
+  it('formats FastAPI string arrays in detail', () => {
+    const context = {
+      detail: ['Error message 1', 'Error message 2'],
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Error message 1, Error message 2')
+  })
+
+  it('formats FastAPI validation error without location', () => {
+    const context = {
+      detail: [{ msg: 'Generic error without loc' }],
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Generic error without loc')
+  })
+
+  it('formats FastAPI validation error with non-body/query locations', () => {
+    const context = {
+      detail: [{ loc: ['path', 'param', 0], msg: 'must be valid' }],
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('path.param.0: must be valid')
+  })
+
+  it('handles non-array non-string detail gracefully', () => {
+    const context = {
+      detail: 12345,
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Unknown error')
+  })
+
+  it('handles detail arrays with null or non-object items', () => {
+    const context = {
+      detail: [null, undefined, {}, { msg: '' }],
+    }
+    const appError = normalizeAppError(context)
+    expect(appError.message).toBe('Unknown error')
+  })
 })
 
 describe('getErrorReason', () => {

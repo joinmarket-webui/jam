@@ -136,6 +136,40 @@ describe('sweepFormSchema', () => {
       ],
     })
   })
+
+  it('rejects a number of destinations outside the allowed range', async () => {
+    await expect(
+      validate({
+        ...buildSweepFormValuesDefaultValues(),
+        destinations: [],
+      }),
+    ).rejects.toMatchObject({
+      inner: [
+        expect.objectContaining({
+          path: 'destinations',
+          message: 'scheduler.feedback_invalid_number_of_destination_addresses',
+        }),
+      ],
+    })
+  })
+
+  it('rejects a minimum number of collaborators above the maximum', async () => {
+    await expect(
+      validate({
+        ...buildSweepFormValuesDefaultValues(),
+        destinations: [{ address: validRegtestAddress }],
+        minNumberOfCollaborators: 8,
+        maxNumberOfCollaborators: 6,
+      }),
+    ).rejects.toMatchObject({
+      inner: [
+        expect.objectContaining({
+          path: 'maxNumberOfCollaborators',
+          message: 'scheduler.feedback_invalid_min_max_collaborators',
+        }),
+      ],
+    })
+  })
 })
 
 describe('formValuesToTumblerParameters', () => {

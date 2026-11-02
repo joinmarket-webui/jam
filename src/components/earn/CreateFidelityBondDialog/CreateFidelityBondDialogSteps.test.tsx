@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { withRuntimeLocale } from '@/test/withRuntimeLocale'
 import { CreateFidelityBondDialogSteps } from './CreateFidelityBondDialogSteps'
 import type { useCreateFidelityBondWizard } from './useCreateFidelityBondWizard'
 
@@ -87,12 +88,14 @@ const getBaseWizard = (): Wizard =>
 
 describe('CreateFidelityBondDialogSteps', () => {
   it('renders select_date step', () => {
-    const wizard = getBaseWizard()
-    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+    withRuntimeLocale('en-US', () => {
+      const wizard = getBaseWizard()
+      render(<CreateFidelityBondDialogSteps wizard={wizard} />)
 
-    expect(screen.getByText('earn.fidelity_bond.select_date.description')).toBeInTheDocument()
-    expect(screen.getByText('earn.fidelity_bond.select_date.form_label_month')).toBeInTheDocument()
-    expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
+      expect(screen.getByText('earn.fidelity_bond.select_date.description')).toBeInTheDocument()
+      expect(screen.getByText('earn.fidelity_bond.select_date.form_label_month')).toBeInTheDocument()
+      expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
+    })
   })
 
   it('renders select_jar step with jars', () => {
@@ -170,10 +173,12 @@ describe('CreateFidelityBondDialogSteps', () => {
   })
 
   it('passes existing fidelity-bond lock dates to the date selector', () => {
-    const wizard = getBaseWizard()
-    wizard.existingFbLockdates = ['2025-01']
-    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
-    expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
+    withRuntimeLocale('en-US', () => {
+      const wizard = getBaseWizard()
+      wizard.existingFbLockdates = ['2025-01']
+      render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+      expect(screen.getByText('January 1, 2025')).toBeInTheDocument()
+    })
   })
 
   it('highlights the selected jar and shows the no-jars alert state', () => {

@@ -1,9 +1,10 @@
-import { useState, type ComponentProps, type ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { CheckIcon, XIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { JAM_DOCS_URL } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import type { WithRequiredProperty } from '@/types/global'
@@ -42,37 +43,31 @@ type CheatsheetProps = WithRequiredProperty<Omit<ComponentProps<typeof Dialog>, 
 
 export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
   const { t } = useTranslation()
-  const [isClosing, setIsClosing] = useState(false)
 
-  const handleClose = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      setIsClosing(false)
-      onOpenChange(false)
-    }, 333)
-  }
-
-  if (!open) {
-    return <></>
-  }
+  const close = () => onOpenChange(false)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs">
-      <div className="fixed inset-0 z-0" onClick={handleClose} />
-      <div
-        className={`bg-background dark:bg-brand-shell relative z-10 flex max-h-[95vh] w-full max-w-[640px] flex-col rounded-t-2xl shadow-2xl transition-transform duration-200 ease-out ${
-          isClosing ? 'animate-slide-down' : 'animate-slide-up'
-        }`}
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="bottom"
+        showCloseButton={false}
+        className="dark:bg-brand-shell mx-auto max-h-[95vh] w-full max-w-[640px] gap-0 rounded-t-2xl border-t-0 shadow-2xl"
       >
         <div className="flex-shrink-0 p-4 sm:p-6">
           <div className="flex items-center justify-between gap-2">
-            <PageTitle title={t('cheatsheet.title')} />
-            <Button onClick={handleClose} variant="ghost" size="icon" title={t('global.close')}>
-              <XIcon />
-              <span className="sr-only">{t('global.close')}</span>
-            </Button>
+            <SheetTitle asChild>
+              <div>
+                <PageTitle title={t('cheatsheet.title')} />
+              </div>
+            </SheetTitle>
+            <SheetClose asChild>
+              <Button variant="ghost" size="icon" title={t('global.close')}>
+                <XIcon />
+                <span className="sr-only">{t('global.close')}</span>
+              </Button>
+            </SheetClose>
           </div>
-          <p className="text-muted-foreground mt-2 text-xs leading-relaxed sm:text-sm md:text-base">
+          <SheetDescription className="mt-2 text-xs leading-relaxed sm:text-sm md:text-base">
             <Trans i18nKey="cheatsheet.description">
               Follow the steps below to increase your financial privacy. It is advisable to switch from{' '}
               <a
@@ -102,7 +97,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
                 Learn more.
               </a>
             </Trans>
-          </p>
+          </SheetDescription>
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 pb-8 sm:px-6 sm:pb-10">
@@ -111,7 +106,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               number={1}
               title={
                 <Trans i18nKey="cheatsheet.receive.title">
-                  <Link to={routes.receive} className="font-semibold underline">
+                  <Link to={routes.receive} className="font-semibold underline" onClick={close}>
                     <span>Fund</span>
                   </Link>{' '}
                   your wallet.
@@ -123,7 +118,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               number={2}
               title={
                 <Trans i18nKey="cheatsheet.send.title">
-                  <Link to={routes.send} className="font-semibold underline">
+                  <Link to={routes.send} className="font-semibold underline" onClick={close}>
                     <span>Send</span>
                   </Link>{' '}
                   a collaborative transaction to another jar.
@@ -137,7 +132,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               title={
                 <Trans i18nKey="cheatsheet.bond.title">
                   Optional:
-                  <Link to={routes.earn} className="font-semibold underline">
+                  <Link to={routes.earn} className="font-semibold underline" onClick={close}>
                     <span>Lock</span>
                   </Link>{' '}
                   funds in a fidelity bond.
@@ -150,7 +145,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               number={4}
               title={
                 <Trans i18nKey="cheatsheet.earn.title">
-                  <Link to={routes.earn} className="font-semibold underline">
+                  <Link to={routes.earn} className="font-semibold underline" onClick={close}>
                     <span>Earn</span>
                   </Link>{' '}
                   sats by providing liquidity.
@@ -164,7 +159,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               title={
                 <Trans i18nKey="cheatsheet.schedule.title">
                   Schedule
-                  <Link to={routes.sweep} className="font-semibold underline">
+                  <Link to={routes.sweep} className="font-semibold underline" onClick={close}>
                     sweep
                   </Link>{' '}
                   transactions to empty your wallet.
@@ -192,7 +187,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
             />
           </div>
         </div>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   )
 }

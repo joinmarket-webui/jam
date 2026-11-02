@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { routes } from '@/constants/routes'
 import { type RescanInfo } from '@/context/JamSessionInfoContext'
 import { SEGWIT_ACTIVATION_BLOCK, type WalletFileName } from '@/lib/utils'
 import { withRuntimeLocale } from '@/test/withRuntimeLocale'
@@ -94,21 +95,27 @@ describe('RescanChainPage', () => {
       expect(screen.getByRole('spinbutton', { name: 'rescan_chain.label_blockheight' })).toBeInTheDocument()
       expect(screen.getByPlaceholderText('rescan_chain.placeholder_blockheight')).toBeInTheDocument()
 
-      expect(screen.getByRole('button', { name: 'Last 144 blocks (~24 hours)' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Last 52,560 blocks (~1 year)' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'From block #481,824' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /rescan_chain\.preset_blocks_day/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /rescan_chain\.preset_blocks_year/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /rescan_chain\.preset_from_block/ })).toBeInTheDocument()
 
       expect(screen.getByRole('button', { name: 'rescan_chain.text_button_submit' })).toBeInTheDocument()
     })
   })
 
   it('renders the form and navigates back', async () => {
-    await renderPage({ backLinkTarget: 'settings' })
+    await renderPage({ backLinkTarget: 'home' })
 
     expect(screen.getByText('global.back')).toBeInTheDocument()
     fireEvent.click(screen.getByTitle('global.back'))
 
-    expect(navigateMock).toHaveBeenCalled()
+    expect(navigateMock).toHaveBeenCalledWith(routes.home)
+  })
+
+  it('does not render the back button when backLinkTarget is not provided', async () => {
+    await renderPage()
+
+    expect(screen.queryByTitle('global.back')).not.toBeInTheDocument()
   })
 
   it('shows the in-progress alert without progress', async () => {

@@ -70,7 +70,7 @@ describe('BranchEntryTable', () => {
     expect(screen.getByText('deposit')).toBeInTheDocument()
     expect(onChange).toHaveBeenCalled()
 
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_balance'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_balance'))
 
     expect(screen.getByText('9000')).toBeInTheDocument()
   })
@@ -94,12 +94,12 @@ describe('BranchEntryTable', () => {
     const user = userEvent.setup()
     render(<BranchEntryTable tableEntries={[firstEntry, secondEntry]} selectedEntries={[]} pinnedEntries={[]} />)
 
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_address'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_address'))
     expect(screen.getByText('bc1qbranch-a')).toBeInTheDocument()
 
-    // the derivation-index column has an empty header; click it via the column header role
-    const headers = screen.getAllByRole('columnheader')
-    await user.click(headers[0])
+    const indexHeader = screen.getByText('jar_details.address_list.column_title_index')
+    expect(indexHeader).toBeInTheDocument()
+    await user.click(indexHeader)
     expect(screen.getByText('bc1qbranch-b')).toBeInTheDocument()
   })
 
@@ -111,10 +111,51 @@ describe('BranchEntryTable', () => {
     render(<BranchEntryTable tableEntries={[tieB, tieA]} selectedEntries={[]} pinnedEntries={[]} />)
 
     // balance column: equal balances fall back to derivationIndex
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_balance'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_balance'))
     // address column: equal addresses fall back to derivationIndex
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_address'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_address'))
 
     expect(screen.getAllByText('bc1qsame')).toHaveLength(2)
+  })
+
+  it('pins and selects entries located on pages beyond the first page', async () => {
+    const user = userEvent.setup()
+    // Create 30 entries (default page size is 25)
+    const manyEntries: BranchEntryTableRow[] = Array.from({ length: 30 }, (_, index) =>
+      makeEntry({
+        address: `bc1qbranch-${index}`,
+        balance: 1_000 * (index + 1),
+        derivationIndex: index,
+      }),
+    )
+
+    const targetPage2Entry = manyEntries[28] // index 28 (normally on page 2)
+
+    render(
+      <BranchEntryTable
+        tableEntries={manyEntries}
+        selectedEntries={[targetPage2Entry]}
+        pinnedEntries={[targetPage2Entry]}
+      />,
+    )
+
+    // Fail early if the target entry is not actually located beyond the first page
+    // (e.g. because the default page size changed)
+    const nextButton = screen.getByRole('button', { name: 'global.table.pagination.page_selector.label_next' })
+    expect(nextButton).toBeEnabled()
+    expect(screen.queryByText('bc1qbranch-27')).not.toBeInTheDocument()
+
+    // The pinned entry from page 2 should be rendered in top rows on page 1
+    expect(screen.getByText('bc1qbranch-28')).toBeInTheDocument()
+
+    // Navigate to page 2
+    await user.click(nextButton)
+    expect(screen.queryByText('bc1qbranch-0')).not.toBeInTheDocument()
+
+    // On page 2, the row for bc1qbranch-28 should also have the selected highlight class
+    const page2Rows = screen.getAllByRole('row')
+    const targetRow = page2Rows.find((row) => row.textContent?.includes('bc1qbranch-28'))
+    expect(targetRow).toBeInTheDocument()
+    expect(targetRow).toHaveClass('bg-brand-warning/25!')
   })
 })

@@ -47,14 +47,10 @@ export function useCreateFidelityBondWizard(
   })
 
   const lockdateOptions = useMemo(() => generateLockdateOptions(isDeveloperMode), [isDeveloperMode])
-  const existingFbLockdates = useMemo(() => {
-    return walletInfo.fidelityBondSummary.fbOutputs
-      .map((fbUtxo) => {
-        const locktime = fb.utxo.getLocktime(fbUtxo)
-        return locktime ? fb.lockdate.fromTimestamp(locktime) : null
-      })
-      .filter(Boolean) as fb.Lockdate[]
-  }, [walletInfo.fidelityBondSummary.fbOutputs])
+  const existingFbLockdates = useMemo(
+    () => fb.existingLockdates(walletInfo.fidelityBondSummary.fbOutputs),
+    [walletInfo.fidelityBondSummary.fbOutputs],
+  )
   const availableLockdateOptions = useMemo(
     () => lockdateOptions.filter((option) => !existingFbLockdates.includes(option.value)),
     [existingFbLockdates, lockdateOptions],

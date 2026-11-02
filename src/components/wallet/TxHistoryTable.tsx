@@ -48,13 +48,17 @@ const roleLabel = (entry: HistoryEntry, t: TFunction) => {
   return role ? t(`tx_history.label_role_${role}`) : entry.role || ''
 }
 
+const hasTimeZoneDesignator = (value: string) => /(Z|[+-]\d{2}:?\d{2})$/i.test(value)
+
+const toDate = (value: string) => new Date(hasTimeZoneDesignator(value) ? value : `${value}Z`)
+
 const dateTimeValue = (value: string) => {
-  const date = new Date(value)
+  const date = toDate(value)
   return Number.isNaN(date.getTime()) ? 0 : date.getTime()
 }
 
 const formatDateTime = (value: string) => {
-  const date = new Date(value)
+  const date = toDate(value)
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
 

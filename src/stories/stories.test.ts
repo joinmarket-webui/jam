@@ -38,9 +38,11 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => {
     displaywalletOptions: queryOption,
     docoinjoinMutation: mutationOption,
     freezeMutation: mutationOption,
+    getaddressOptions: queryOption,
     getrescaninfoOptions: queryOption,
     getscheduleOptions: queryOption,
     getseedOptions: queryOption,
+    gettimelockaddressOptions: queryOption,
     listutxosOptions: queryOption,
     listwalletsOptions: queryOption,
     lockwalletOptions: queryOption,
@@ -48,6 +50,7 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => {
     rescanblockchainMutation: mutationOption,
     runscheduleMutation: mutationOption,
     sessionOptions: queryOption,
+    signmessageMutation: mutationOption,
     startmakerMutation: mutationOption,
     stopcoinjoinOptions: queryOption,
     stopmakerOptions: queryOption,
@@ -68,6 +71,23 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/jm', () => {
     },
   )
 })
+
+vi.mock('html5-qrcode', () => ({
+  Html5Qrcode: class {
+    isScanning = false
+    start() {
+      this.isScanning = true
+      return Promise.resolve()
+    }
+    stop() {
+      this.isScanning = false
+      return Promise.resolve()
+    }
+    scanFile() {
+      return Promise.resolve('mock-qr-text')
+    }
+  },
+}))
 
 const walletMocks = vi.hoisted(() => {
   const emptyBalanceSummary = {
@@ -115,6 +135,24 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
   }),
   useJars: () => ({ isLoading: false, jars: [walletMocks.storyJar] }),
   useWalletBalanceSummary: () => ({ isLoading: false, walletBalanceSummary: walletMocks.emptyBalanceSummary }),
+}))
+
+vi.mock('@/context/JamSessionInfoContext', () => ({
+  JamSessionInfoContext: { Provider: ({ children }: { children: React.ReactNode }) => children },
+  useJamSessionInfoContext: () => ({
+    blockHeight: 800_000,
+    takerInfo: { running: false, scheduler: { running: false } },
+    rescanInfo: { updatedAt: 0, rescanning: false },
+    makerInfo: { running: false },
+    jmSession: { session: true },
+    setRescanInfo: vi.fn(),
+    setCurrentPaymentAttempt: vi.fn(),
+    clearCurrentPaymentAttempt: vi.fn(),
+    updateSessionInfo: vi.fn(),
+  }),
+  useRescanStatus: () => ({ rescanInfo: { updatedAt: 0, rescanning: false }, setRescanInfo: vi.fn() }),
+  useCurrentBlockHeight: () => ({ currentBlockHeight: 800_000 }),
+  useRawJmSession: () => ({ jmSession: { session: true }, updateSessionInfo: vi.fn() }),
 }))
 
 vi.mock('qrcode', () => ({

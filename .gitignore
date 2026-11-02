@@ -30,3 +30,10 @@ dist-ssr
 *storybook.log
 storybook-static/
 coverage/
+
+# Isolated browser smoke-test state and evidence
+tests/e2e/.env.smoke
+tests/e2e/out/
+test-evidence/
+test-results/
+playwright-report/

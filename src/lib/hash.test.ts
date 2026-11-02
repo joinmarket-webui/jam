@@ -20,5 +20,10 @@ describe('hash', () => {
         return await hashPassword('', '', -1)
       }).rejects.toThrow('Failed to hash password: "c" expected integer >= 0, got -1')
     })
+    it('hashes password with default iterations when omitted', { timeout: 20_000 }, async () => {
+      const hash = await hashPassword('password', 'salt')
+      expect(hash).toHaveLength(64)
+      expect(typeof hash).toBe('string')
+    })
   })
 })

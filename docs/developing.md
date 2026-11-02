@@ -30,6 +30,39 @@ JMOBWATCH_PORT=8000 \
 npm run dev
 ```
 
+## JoinMarket NG Regtest Smoke Test
+
+An automated end-to-end smoke test verifies the core browser-driven wallet journey against an isolated, pinned JoinMarket NG and Bitcoin Core regtest backend.
+
+The smoke journey validates:
+
+- Disposable wallet creation and backup confirmation
+- Wallet lock and unlock via UI
+- Receiving confirmed regtest funds and exact balance display
+- Direct sending with real transaction output and fee verification via Bitcoin Core RPC
+- Browser reload session persistence
+
+### Running the smoke test
+
+1. Start the isolated smoke regtest services:
+
+   ```bash
+   npm run smoke:up
+   ```
+
+2. Run the Playwright smoke test:
+
+   ```bash
+   npm run test:smoke
+   ```
+
+3. When finished, tear down the isolated smoke environment:
+   ```bash
+   npm run smoke:down
+   ```
+
+Test evidence (screenshots and logs) is saved to `test-evidence/` and `test-results/`.
+
 ## Storybook
 
 Storybook is used to inspect reusable UI and Jam components in isolation without running a full wallet flow.
@@ -52,6 +85,23 @@ Hosted preview:
 
 ```text
 https://joinmarket-webui.github.io/jam/
+```
+
+## Locale and Time Zone in Tests
+
+Jam formats numbers and dates with the runtime locale, and dates with the runtime time zone.
+Unit tests must therefore not depend on the locale or time zone of the machine they run on.
+Besides the regular build, CI runs the unit tests with other locales and time zones (e.g. `de_DE` with `America/New_York`).
+
+- Wrap assertions that expect a specific format in `withRuntimeLocale(locale, callback)` from `src/test/withRuntimeLocale.ts`.
+  It makes `locale` act as the runtime default locale for `toLocaleString()` & co. and `Intl.*Format`.
+- Wrap assertions that depend on local dates in `withTimeZone(timeZone, callback)` from `src/test/withTimeZone.ts`.
+
+Setting environment variables like `LC_ALL` is not sufficient to pin the locale, e.g. Node.js on Windows ignores it.
+To reproduce the CI runs on Linux or macOS:
+
+```bash
+LANG=de_DE.UTF-8 LC_ALL=de_DE.UTF-8 TZ=America/New_York npm run test:unit
 ```
 
 ## Linting

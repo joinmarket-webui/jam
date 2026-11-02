@@ -8,9 +8,6 @@ import viteConfig from './vite.config.ts'
 export default defineConfig((args: ConfigEnv): ViteUserConfig => {
   return mergeConfig(viteConfig(args), {
     test: {
-      env: {
-        LC_ALL: 'en_US.UTF-8',
-      },
       coverage: {
         // 'json-summary' is required for ci coverage report
         reporter: ['text', 'json', 'json-summary'],
@@ -65,7 +62,7 @@ export default defineConfig((args: ConfigEnv): ViteUserConfig => {
             environment: 'jsdom',
             setupFiles: './vitest.setup.ts',
             include: ['**/*.test.{ts,tsx}'],
-            exclude: ['src/lib/hash.slow.test.ts', 'node_modules', '.storybook'],
+            exclude: ['src/lib/hash.slow.test.ts', 'node_modules', '.storybook', 'tests/**'],
           },
           resolve: {
             alias: {
