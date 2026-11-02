@@ -70,7 +70,7 @@ describe('BranchEntryTable', () => {
     expect(screen.getByText('deposit')).toBeInTheDocument()
     expect(onChange).toHaveBeenCalled()
 
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_balance'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_balance'))
 
     expect(screen.getByText('9000')).toBeInTheDocument()
   })
@@ -94,10 +94,10 @@ describe('BranchEntryTable', () => {
     const user = userEvent.setup()
     render(<BranchEntryTable tableEntries={[firstEntry, secondEntry]} selectedEntries={[]} pinnedEntries={[]} />)
 
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_address'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_address'))
     expect(screen.getByText('bc1qbranch-a')).toBeInTheDocument()
 
-    const indexHeader = screen.getByText('jar_details.utxo_list.column_title_index')
+    const indexHeader = screen.getByText('jar_details.address_list.column_title_index')
     expect(indexHeader).toBeInTheDocument()
     await user.click(indexHeader)
     expect(screen.getByText('bc1qbranch-b')).toBeInTheDocument()
@@ -111,9 +111,9 @@ describe('BranchEntryTable', () => {
     render(<BranchEntryTable tableEntries={[tieB, tieA]} selectedEntries={[]} pinnedEntries={[]} />)
 
     // balance column: equal balances fall back to derivationIndex
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_balance'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_balance'))
     // address column: equal addresses fall back to derivationIndex
-    await user.click(screen.getByText('jar_details.utxo_list.column_title_address'))
+    await user.click(screen.getByText('jar_details.address_list.column_title_address'))
 
     expect(screen.getAllByText('bc1qsame')).toHaveLength(2)
   })

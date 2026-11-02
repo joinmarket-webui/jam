@@ -129,11 +129,7 @@ vi.mock('@/store/jamSettingsStore', () => ({
 }))
 
 vi.mock('../ui/jam/BitcoinQrCode', () => ({
-  BitcoinAddressQrCode: ({ address, amount }: { address: string; amount?: number }) => (
-    <div>
-      qr:{address}:{amount ?? 'none'}
-    </div>
-  ),
+  BitcoinAddressQrCode: ({ address }: { address: string }) => <div>qr:{address}</div>,
 }))
 
 vi.mock('../ui/jam/Address', () => ({
@@ -147,8 +143,8 @@ vi.mock('../ui/jam/CopyButton', () => ({
 }))
 
 vi.mock('./ReceiveForm', () => ({
-  ReceiveForm: ({ onSubmit }: { onSubmit: (values: { source?: { fromJar?: number }; amount?: number }) => void }) => (
-    <button onClick={() => onSubmit({ source: { fromJar: 1 }, amount: 2100 })}>update receive form</button>
+  ReceiveForm: ({ onSubmit }: { onSubmit: (values: { source?: { fromJar?: number } }) => void }) => (
+    <button onClick={() => onSubmit({ source: { fromJar: 1 } })}>update receive form</button>
   ),
 }))
 
@@ -170,7 +166,7 @@ describe('ReceivePage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
 
-    await waitFor(() => expect(screen.getByText('qr:bc1qexample:none')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('qr:bc1qexample')).toBeInTheDocument())
     expect(getaddress).toHaveBeenCalledWith(
       expect.objectContaining({
         path: { walletname: 'wallet.jmdat', mixdepth: '0' },
@@ -204,7 +200,7 @@ describe('ReceivePage', () => {
     expect(badge).not.toHaveClass('bg-primary')
   })
 
-  it('copies the plain address when no amount is requested', async () => {
+  it('copies the address', async () => {
     render(<ReceivePage walletFileName="wallet.jmdat" />)
 
     fireEvent.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
@@ -212,21 +208,7 @@ describe('ReceivePage', () => {
     await waitFor(() => expect(screen.getByText('copy:bc1qexample')).toBeInTheDocument())
   })
 
-  it('copies the full payment request once an amount is requested', async () => {
-    const user = userEvent.setup()
-
-    render(<ReceivePage walletFileName="wallet.jmdat" />)
-
-    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
-    await waitFor(() => expect(screen.getByText('copy:bc1qexample')).toBeInTheDocument())
-
-    await user.click(screen.getByRole('button', { name: 'receive.button_settings' }))
-    await user.click(screen.getByRole('button', { name: 'update receive form' }))
-
-    await waitFor(() => expect(screen.getByText('copy:bitcoin:bc1qexample?amount=0.00002100')).toBeInTheDocument())
-  })
-
-  it('shares the plain address when no amount is requested', async () => {
+  it('shares the address', async () => {
     const user = userEvent.setup()
     mocks.share.mockResolvedValue(undefined)
 
@@ -253,7 +235,7 @@ describe('ReceivePage', () => {
     await user.click(screen.getByRole('button', { name: 'update receive form' }))
     await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
 
-    await waitFor(() => expect(screen.getByText('qr:bc1qexample:2100')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('qr:bc1qexample')).toBeInTheDocument())
     const lastAddressRequest = mocks.getAddress.mock.calls.at(-1)?.[0] as { path?: { mixdepth?: string } }
     expect(lastAddressRequest?.path?.mixdepth).toBe('1')
 
@@ -261,7 +243,7 @@ describe('ReceivePage', () => {
 
     expect(mocks.share).toHaveBeenCalledWith({
       title: 'Bitcoin Address',
-      text: 'bitcoin:bc1qexample?amount=0.00002100',
+      text: 'bc1qexample',
     })
     expect(mocks.toastError).toHaveBeenCalledWith('receive.error_share_address_failed')
   })
