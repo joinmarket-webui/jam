@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { AlertTriangleIcon, DownloadIcon, ListIcon, PlusIcon, RefreshCwIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
-import { useQueryWalletHistory, type HistoryEntry } from '@/hooks/useQueryWalletHistory'
+import { useFetchFullWalletHistory, useQueryWalletHistory, type HistoryEntry } from '@/hooks/useQueryWalletHistory'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import { TxHistoryTable } from './TxHistoryTable'
@@ -42,6 +43,7 @@ export const TxHistoryContent = ({
   const [limit, setLimit] = useState(initialLimit)
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const [demoEntries, setDemoEntries] = useState<HistoryEntry[]>([])
+  const [isExporting, setIsExporting] = useState(false)
   const utxosHashHex = useSafeUtxosHashHex()
 
   const {
@@ -60,9 +62,22 @@ export const TxHistoryContent = ({
   })
 
   const combinedHistory = useMemo(() => [...demoEntries, ...history], [demoEntries, history])
+  const fetchFullHistory = useFetchFullWalletHistory(walletFileName)
 
-  const downloadCsv = useCallback(() => {
+  const downloadCsv = useCallback(async () => {
     if (combinedHistory.length === 0) return
+
+    // export the complete history, not just the rows currently loaded for display
+    setIsExporting(true)
+    let fullHistory: HistoryEntry[]
+    try {
+      fullHistory = await fetchFullHistory()
+    } catch {
+      toast.error(t('tx_history.error_loading'))
+      return
+    } finally {
+      setIsExporting(false)
+    }
 
     const cleanWalletName = walletFileName.replace(/\.jmdat$/i, '')
     const dateString = new Date().toISOString().slice(0, 10)
@@ -70,7 +85,7 @@ export const TxHistoryContent = ({
       ? `tx-history-${cleanWalletName}-${dateString}.csv`
       : `tx-history-${dateString}.csv`
 
-    const csvContent = txHistoryToCsv(combinedHistory)
+    const csvContent = txHistoryToCsv([...demoEntries, ...fullHistory])
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -80,7 +95,7 @@ export const TxHistoryContent = ({
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
-  }, [combinedHistory, walletFileName])
+  }, [combinedHistory.length, demoEntries, fetchFullHistory, t, walletFileName])
 
   return (
     <section className={cn('flex flex-col gap-3', className)}>
@@ -126,8 +141,8 @@ export const TxHistoryContent = ({
             type="button"
             className="hover:[&>svg]:motion-safe:animate-bounce"
             variant="outline"
-            onClick={downloadCsv}
-            disabled={historyIsLoading || combinedHistory.length === 0}
+            onClick={() => void downloadCsv()}
+            disabled={historyIsLoading || isExporting || combinedHistory.length === 0}
             title={t('global.download')}
           >
             <DownloadIcon className="group/download" />
