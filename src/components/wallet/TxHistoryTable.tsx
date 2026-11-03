@@ -24,6 +24,7 @@ import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 import { txHistoryTableFeatures } from './TxHistoryTable.schema'
+import { historyEntryAmount } from './txHistoryUtils'
 
 const ITEMS_PER_PAGE = 25
 
@@ -124,9 +125,10 @@ const txHistoryTableColumns = (t: TFunction) =>
         )
       },
     }),
-    columnHelper.accessor('cj_amount', {
+    columnHelper.accessor((row) => historyEntryAmount(row), {
+      id: 'amount',
       header: () => t('tx_history.column_title_amount'),
-      sortFn: (a, b) => (a.original.cj_amount ?? 0) - (b.original.cj_amount ?? 0),
+      sortFn: (a, b) => (historyEntryAmount(a.original) ?? 0) - (historyEntryAmount(b.original) ?? 0),
       cell: (info) => <Balance valueString={String(info.getValue() ?? 0)} />,
       meta: {
         numeric: true,

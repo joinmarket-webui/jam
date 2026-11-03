@@ -1,7 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { txHistoryToCsv } from './txHistoryUtils'
+import { historyEntryAmount, txHistoryToCsv } from './txHistoryUtils'
 
 describe('txHistoryUtils', () => {
+  describe('historyEntryAmount', () => {
+    it('returns the coinjoin amount of maker and taker entries', () => {
+      expect(historyEntryAmount({ timestamp: '', role: 'maker', amount: 100000, cj_amount: 100000 })).toBe(100000)
+      expect(historyEntryAmount({ timestamp: '', role: 'taker', cj_amount: 100000 })).toBe(100000)
+    })
+
+    it('returns the amount of direct sends and deposits', () => {
+      expect(historyEntryAmount({ timestamp: '', role: 'send', amount: 50000, cj_amount: null })).toBe(50000)
+      expect(historyEntryAmount({ timestamp: '', role: 'deposit', amount: 25000, cj_amount: null })).toBe(25000)
+    })
+
+    it('returns undefined if the entry has no amount', () => {
+      expect(historyEntryAmount({ timestamp: '', role: 'send' })).toBeUndefined()
+    })
+  })
+
   describe('txHistoryToCsv', () => {
     it('returns only the header when entries are empty', () => {
       const csv = txHistoryToCsv([])

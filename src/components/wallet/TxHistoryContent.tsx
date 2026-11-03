@@ -97,7 +97,7 @@ export const TxHistoryContent = ({
                   timestamp: new Date().toISOString(),
                   txid: `demo_${Date.now()}`,
                   role: 'send',
-                  cj_amount: 100_000,
+                  amount: 100_000,
                   net_fee: -500,
                   confirmations: 6,
                 }
