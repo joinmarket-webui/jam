@@ -35,6 +35,14 @@ describe('i18n config', () => {
     expect(i18n.t('logs.text_search_matches', { count: 0, searchValue: 'a/b' })).toBe('No matches for "a/b".')
   })
 
+  it('includes the reason in the log file loading error', async () => {
+    await i18n.changeLanguage('en')
+
+    expect(i18n.t('logs.error_loading_logs_failed', { reason: 'Unauthorized' })).toBe(
+      'Could not retrieve log file. Reason: Unauthorized',
+    )
+  })
+
   it('keeps regional variants of a shipped language', async () => {
     await i18n.changeLanguage('de-AT')
     expect(i18n.t('global.cancel')).toBe('Abbrechen')

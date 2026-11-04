@@ -240,7 +240,7 @@
   },
   "logs": {
     "title": "日誌",
-    "error_loading_logs_failed": "無法檢索日誌文件。"
+    "error_loading_logs_failed": "無法檢索日誌文件。原因：{{ reason }}"
   },
   "send": {
     "title": "發送",

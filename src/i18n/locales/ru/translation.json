@@ -263,7 +263,7 @@
   },
   "logs": {
     "title": "Логи",
-    "error_loading_logs_failed": "Не удалось получить лог файл."
+    "error_loading_logs_failed": "Не удалось получить лог файл. Причина: {{ reason }}"
   },
   "send": {
     "title": "Отправить",

@@ -261,7 +261,7 @@
   },
   "logs": {
     "title": "Logs",
-    "error_loading_logs_failed": "Log Datei konnte nicht geladen werden. "
+    "error_loading_logs_failed": "Log Datei konnte nicht geladen werden. Grund: {{ reason }}"
   },
   "send": {
     "title": "Senden",
