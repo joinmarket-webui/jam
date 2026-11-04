@@ -1,8 +1,9 @@
 import type { WalletHistoryResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
-import { useQueryWalletHistory } from '@/hooks/useQueryWalletHistory'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { toast } from 'sonner'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useFetchFullWalletHistory, useQueryWalletHistory } from '@/hooks/useQueryWalletHistory'
 import { TxHistoryContent } from './TxHistoryContent'
 
 vi.mock('react-i18next', () => ({
@@ -13,6 +14,11 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('@/hooks/useQueryWalletHistory', () => ({
   useQueryWalletHistory: vi.fn(),
+  useFetchFullWalletHistory: vi.fn(),
+}))
+
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn() },
 }))
 
 vi.mock('./TxHistoryTable', () => ({
@@ -37,6 +43,16 @@ vi.mock('@/components/ui/spinner', () => ({
 }))
 
 const mockUseQuery = useQueryWalletHistory as unknown as ReturnType<typeof vi.fn>
+const mockUseFetchFullHistory = useFetchFullWalletHistory as unknown as ReturnType<typeof vi.fn>
+
+const historyEntry = (index: number) => ({
+  timestamp: `2026-10-${String(index + 1).padStart(2, '0')}T10:00:00`,
+  txid: `txid_${index + 1}`,
+  role: 'deposit' as const,
+  amount: 1000 * (index + 1),
+  net_fee: 0,
+  confirmations: 6,
+})
 
 const mockQueryResult = (overrides: Partial<UseQueryResult<WalletHistoryResponse, unknown>>) =>
   ({
@@ -112,6 +128,32 @@ describe('TxHistoryContent', () => {
   })
 
   describe('CSV export', () => {
+    const fetchFullHistory = vi.fn()
+
+    beforeEach(() => {
+      fetchFullHistory.mockReset()
+      mockUseFetchFullHistory.mockReturnValue(fetchFullHistory)
+    })
+
+    const mockDownload = () => {
+      const createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/mock-blob')
+      const revokeObjectURL = vi.fn()
+      globalThis.URL.createObjectURL = createObjectURL
+      globalThis.URL.revokeObjectURL = revokeObjectURL
+
+      const clickSpy = vi.fn()
+      const originalCreateElement = document.createElement.bind(document)
+      vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+        const element = originalCreateElement(tagName)
+        if (tagName === 'a') {
+          element.click = clickSpy
+        }
+        return element
+      })
+
+      return { createObjectURL, clickSpy }
+    }
+
     it('disables download button when history is empty or loading', () => {
       mockUseQuery.mockReturnValue({
         history: [],
@@ -147,21 +189,9 @@ describe('TxHistoryContent', () => {
         history: mockHistory,
         queryResult: mockQueryResult({ isLoading: false }),
       })
+      fetchFullHistory.mockResolvedValue(mockHistory)
 
-      const createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/mock-blob')
-      const revokeObjectURL = vi.fn()
-      globalThis.URL.createObjectURL = createObjectURL
-      globalThis.URL.revokeObjectURL = revokeObjectURL
-
-      const clickSpy = vi.fn()
-      const originalCreateElement = document.createElement.bind(document)
-      vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-        const element = originalCreateElement(tagName)
-        if (tagName === 'a') {
-          element.click = clickSpy
-        }
-        return element
-      })
+      const { createObjectURL, clickSpy } = mockDownload()
 
       render(<TxHistoryContent walletFileName="test_wallet.jmdat" compact={false} />)
 
@@ -170,7 +200,7 @@ describe('TxHistoryContent', () => {
 
       fireEvent.click(downloadButton)
 
-      expect(createObjectURL).toHaveBeenCalledTimes(1)
+      await waitFor(() => expect(createObjectURL).toHaveBeenCalledTimes(1))
       const downloadBlob = createObjectURL.mock.calls[0]?.[0] as Blob | undefined
       expect(downloadBlob).toBeInstanceOf(Blob)
       const text = await (downloadBlob as Blob).text()
@@ -178,6 +208,57 @@ describe('TxHistoryContent', () => {
       expect(text).toContain('2026-11-01T10:00:00.000Z,test_txid,send,75000,-300,6')
 
       expect(clickSpy).toHaveBeenCalledTimes(1)
+
+      vi.restoreAllMocks()
+    })
+
+    it('exports the full history, not only the rows loaded for display', async () => {
+      const fullHistory = Array.from({ length: 7 }, (_, index) => historyEntry(6 - index))
+
+      mockUseQuery.mockReturnValue({
+        history: fullHistory.slice(0, 5),
+        queryResult: mockQueryResult({ isLoading: false }),
+      })
+      fetchFullHistory.mockResolvedValue(fullHistory)
+
+      const { createObjectURL } = mockDownload()
+
+      render(<TxHistoryContent walletFileName="test_wallet.jmdat" compact={true} initialLimit={5} />)
+
+      expect(screen.getByText('Mock Table (Rows: 5)')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'global.download' }))
+
+      await waitFor(() => expect(createObjectURL).toHaveBeenCalledTimes(1))
+      expect(fetchFullHistory).toHaveBeenCalledTimes(1)
+
+      const downloadBlob = createObjectURL.mock.calls[0]?.[0] as Blob
+      const csv = await downloadBlob.text()
+      const lines = csv.split('\n')
+
+      expect(lines).toHaveLength(8)
+      expect(lines[1]).toContain('txid_7')
+      expect(lines.at(-1)).toContain('txid_1')
+
+      vi.restoreAllMocks()
+    })
+
+    it('shows an error and downloads nothing when fetching the full history fails', async () => {
+      mockUseQuery.mockReturnValue({
+        history: [{ txid: 'test_txid' }],
+        queryResult: mockQueryResult({ isLoading: false }),
+      })
+      fetchFullHistory.mockRejectedValue(new Error('failed'))
+
+      const { createObjectURL, clickSpy } = mockDownload()
+
+      render(<TxHistoryContent walletFileName="test_wallet.jmdat" compact={false} />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'global.download' }))
+
+      await waitFor(() => expect(toast.error).toHaveBeenCalledWith('tx_history.error_loading'))
+      expect(createObjectURL).not.toHaveBeenCalled()
+      expect(clickSpy).not.toHaveBeenCalled()
 
       vi.restoreAllMocks()
     })
