@@ -24,7 +24,7 @@ import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 import { txHistoryTableFeatures } from './TxHistoryTable.schema'
-import { historyEntryAmount } from './txHistoryUtils'
+import { historyEntryAmount, parseHistoryTimestamp } from './txHistoryUtils'
 
 const ITEMS_PER_PAGE = 25
 
@@ -49,17 +49,13 @@ const roleLabel = (entry: HistoryEntry, t: TFunction) => {
   return role ? t(`tx_history.label_role_${role}`) : entry.role || ''
 }
 
-const hasTimeZoneDesignator = (value: string) => /(Z|[+-]\d{2}:?\d{2})$/i.test(value)
-
-const toDate = (value: string) => new Date(hasTimeZoneDesignator(value) ? value : `${value}Z`)
-
 const dateTimeValue = (value: string) => {
-  const date = toDate(value)
+  const date = parseHistoryTimestamp(value)
   return Number.isNaN(date.getTime()) ? 0 : date.getTime()
 }
 
 const formatDateTime = (value: string) => {
-  const date = toDate(value)
+  const date = parseHistoryTimestamp(value)
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
 
