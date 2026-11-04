@@ -203,7 +203,7 @@
   },
   "logs": {
     "title": "Logs",
-    "error_loading_logs_failed": "Impossibile recuperare il file di log."
+    "error_loading_logs_failed": "Impossibile recuperare il file di log. Motivo: {{ reason }}"
   },
   "send": {
     "title": "Invia",
