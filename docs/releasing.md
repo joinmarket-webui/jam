@@ -4,7 +4,7 @@ This documents our release process.
 
 ## Update the Code
 
-Checkout `master` and make sure to pull all the latest changes that sould be included in the release.
+Checkout `master` and make sure to pull all the latest changes that should be included in the release.
 
 ## Bump the Version
 
@@ -20,10 +20,10 @@ For more details and other possible release types see [the npm docs](https://doc
 This will:
 
 1. Create and checkout a branch for the release preparation: `prepare-v<new-version>-<timestamp>`
-1. Bump the version in `package.json` and `package.lock.json`
-1. Update the changelog
-1. Commit the changes and push the branch
-1. If you have the [GitHub CLI](https://cli.github.com/) installed it will automatically open a _draft_ pull request to `master`
+2. Bump the version in `package.json` and `package-lock.json`
+3. Update the changelog
+4. Commit the changes and push the branch
+5. If you have the [GitHub CLI](https://cli.github.com/) installed it will automatically open a _draft_ pull request to `master`
 
 ## Merge the Release Pull Request
 
@@ -32,5 +32,5 @@ When everyone is happy with the release, merge the pull request to `master`.
 
 ## Tag the Release
 
-Back on `master`, tag the release and based on the new tag crate a release on GitHub.
+Back on `master`, tag the release and based on the new tag create a release on GitHub.
 This is a step we might automate completely via GitHub Actions in the future.
