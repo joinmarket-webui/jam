@@ -2,13 +2,17 @@ import { expect, test } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
-  checkNgBackendSession,
-  initializeFundingWallet,
-  fundAddressViaBitcoinCore,
-  getNewAddressFromBitcoinCore,
-  getRawTransactionDetails,
-  mineBlocksViaBitcoinCore,
-} from './regtest-client'
+  createWalletViaUi,
+  dismissOverlays,
+  fundWalletViaUi,
+  lockWalletAndVerifyLogout,
+  lockWalletIfActive,
+  lockWalletViaUi,
+  submitCollaborativeSend,
+  takerStatusCard,
+  waitForBackendAndOpenJam,
+} from './jam-ui'
+import { getNewAddressFromBitcoinCore, getRawTransactionDetails, mineBlocksViaBitcoinCore } from './regtest-client'
 
 const EVIDENCE_DIR = path.resolve(import.meta.dirname, '../../test-evidence')
 
@@ -16,7 +20,6 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
   // Shared state across the serial journey
   let walletName: string
   let walletPassword: string
-  let receiveAddress: string
   let fundingTxid: string
   let destinationAddress: string
   let transactionId: string
@@ -25,6 +28,7 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
   const FUNDING_AMOUNT_BTC = '0.001'
   const FUNDING_AMOUNT_SATS = 100_000
   const SEND_AMOUNT_SATS = 25_000
+  const COINJOIN_AMOUNT_SATS = 30_000
 
   test.beforeAll(async () => {
     fs.mkdirSync(EVIDENCE_DIR, { recursive: true })
@@ -33,145 +37,39 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
     walletPassword = `SmokePass_${uniqueSuffix}_!99`
   })
 
-  test('Execute complete live NG wallet journey (A-F)', async ({ page }) => {
+  test.afterEach(async ({ page }, testInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus) {
+      await lockWalletIfActive(page)
+    }
+  })
+
+  test('Execute complete live NG wallet journey (A-H)', async ({ page }) => {
     // 0. Auto-dismiss splashscreen, post-login tour, and cheatsheet popup
-    await page.addInitScript(() => {
-      try {
-        window.localStorage.setItem('jam:v2:onboarding:dismissed', '1')
-        window.localStorage.setItem('jam:v2:post-login-tour:dismissed', '1')
-        window.localStorage.setItem(
-          'jam-settings-store',
-          JSON.stringify({
-            // Zustand persists the store's `state` property inside its own `state` envelope.
-            state: {
-              state: {
-                developerMode: false,
-                privateMode: false,
-                addressChunking: false,
-                currencyUnit: 'sats',
-                cheatsheetForceOpenAt: Date.now() + 1000 * 60 * 60 * 24 * 365,
-              },
-            },
-            version: 0,
-          }),
-        )
-      } catch {
-        // ignore
-      }
-    })
+    await dismissOverlays(page)
 
     // A. Startup and backend readiness verification
     await test.step('A. Startup and backend readiness verification', async () => {
-      let isReady = false
-      const maxRetries = 30
-      for (let i = 0; i < maxRetries; i++) {
-        isReady = await checkNgBackendSession('http://localhost:3000')
-        if (isReady) break
-        await page.waitForTimeout(2000)
-      }
-
-      expect(isReady, 'JoinMarket NG backend session endpoint must be reachable via Jam proxy').toBe(true)
-      await initializeFundingWallet()
-
-      await page.goto('/')
-      await expect(page).toHaveTitle(/Jam/i)
+      await waitForBackendAndOpenJam(page)
     })
 
     // B. Create disposable wallet and complete onboarding flow
     await test.step('B. Create disposable wallet and complete onboarding flow', async () => {
-      await page.goto('/create-wallet')
-
-      const skipIntroButton = page.getByRole('button', { name: /skip intro/i })
-      if (await skipIntroButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await skipIntroButton.click()
-      }
-
-      // Fill wallet creation details
-      const walletNameInput = page.locator('#create-wallet-name')
-      await expect(walletNameInput).toBeVisible({ timeout: 15_000 })
-      await walletNameInput.fill(walletName)
-
-      const passwordInput = page.locator('input[name="password"]')
-      await passwordInput.fill(walletPassword)
-
-      const confirmPasswordInput = page.locator('input[name="confirmPassword"]')
-      await confirmPasswordInput.fill(walletPassword)
-
-      // Submit creation form
-      const createButton = page.getByRole('button', { name: /^create$/i })
-      await expect(createButton).toBeEnabled()
-      await createButton.click()
-
-      // Step 2: Confirmation screen with seed phrase
-      // Passwords and seed phrases are excluded from logs and screenshots
-      const revealSwitch = page.locator('#switch-reveal-seed')
-      await expect(revealSwitch).toBeVisible({ timeout: 45_000 })
-      await revealSwitch.click()
-
-      // Read generated mnemonic words in order to complete verification
-      const wordElements = page.locator('.grid.grid-cols-2 .truncate')
-      const wordCount = await wordElements.count()
-      expect(wordCount, 'Mnemonic phrase must contain at least 12 words').toBeGreaterThanOrEqual(12)
-
-      const mnemonicWords: string[] = []
-      for (let i = 0; i < wordCount; i++) {
-        const rawWord = await wordElements.nth(i).textContent()
-        mnemonicWords.push((rawWord ?? '').trim())
-      }
-
-      const confirmBackupSwitch = page.locator('#switch-confirm-backup')
-      await expect(confirmBackupSwitch).toBeEnabled()
-      await confirmBackupSwitch.click()
-
-      // Click Next
-      const nextButton = page.getByRole('button', { name: /^next$/i })
-      await expect(nextButton).toBeEnabled()
-      await nextButton.click()
-
-      // Step 3: Verify Mnemonic phrase by clicking shuffled words
-      await expect(page.getByText(/verify recovery seed|verify mnemonic/i)).toBeVisible({ timeout: 15_000 })
-
-      for (const word of mnemonicWords) {
-        const wordButton = page.getByRole('button', { name: word, exact: true }).first()
-        await expect(wordButton).toBeVisible()
-        await wordButton.click()
-      }
-
-      // Complete wallet setup and fund wallet button
-      const finishButton = page.getByRole('button', { name: /fund wallet|confirm/i })
-      await expect(finishButton).toBeEnabled()
-      await finishButton.click()
-
-      // Ensure we reach the main wallet view
-      await expect(page.getByText(walletName).first()).toBeVisible({ timeout: 45_000 })
-      await expect(page.locator('[data-tour-id="wallet-jars"]')).toBeVisible({ timeout: 30_000 })
-      await expect(page.getByText('Apricot')).toBeVisible()
+      await createWalletViaUi(page, walletName, walletPassword)
     })
 
     // C. Lock wallet and unlock through UI
     await test.step('C. Lock wallet and unlock through UI', async () => {
-      // Dismiss Cheatsheet or any overlay if present
-      const cheatsheetCloseButton = page.locator('div[class*="backdrop-blur-xs"] button[title="Close"]')
-      if (await cheatsheetCloseButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await cheatsheetCloseButton.click()
+      await lockWalletViaUi(page)
+
+      // Unlock wallet (it is only preselected if it is the only wallet of the backend)
+      const walletSelect = page.getByRole('combobox')
+      await expect(walletSelect).toBeVisible({ timeout: 15_000 })
+      if (!((await walletSelect.textContent()) ?? '').includes(walletName)) {
+        await walletSelect.click()
+        await page.getByRole('option', { name: walletName, exact: true }).click()
       }
+      await expect(walletSelect).toContainText(walletName)
 
-      // Find and click the lock button in navbar
-      const lockButton = page.getByRole('button', { name: /lock wallet/i })
-      await expect(lockButton).toBeVisible({ timeout: 15_000 })
-      await lockButton.click()
-
-      // Confirm lock if modal appears
-      const confirmLockModal = page.getByRole('dialog')
-      if (await confirmLockModal.isVisible({ timeout: 2000 }).catch(() => false)) {
-        const confirmLockButton = confirmLockModal.getByRole('button', { name: /lock|confirm/i })
-        await confirmLockButton.click()
-      }
-
-      // Verify reached locked / login screen
-      await expect(page).toHaveURL(/.*login/, { timeout: 20_000 })
-
-      // Unlock wallet
       const passwordInput = page.locator('#login-password')
       await expect(passwordInput).toBeVisible({ timeout: 15_000 })
       await passwordInput.fill(walletPassword)
@@ -188,42 +86,8 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
     // D. Receive confirmed regtest funds and assert exact balance
     await test.step('D. Receive confirmed regtest funds and assert exact balance', async () => {
-      await page.goto('/receive')
-      await expect(page.getByRole('heading', { name: 'Receive', exact: true })).toBeVisible({ timeout: 20_000 })
-
-      // Click "Reveal address"
-      const revealAddressButton = page.getByRole('button', { name: /reveal address/i })
-      await expect(revealAddressButton).toBeVisible()
-      await revealAddressButton.click()
-
-      // Wait for address to render in the DOM
-      const addressElement = page.getByRole('main').getByText(/^bcrt1[0-9a-z]{38,59}$/i)
-      await expect(addressElement).toBeVisible({ timeout: 30_000 })
-
-      // Extract exact displayed address text without spaces
-      const rawAddress = await addressElement.textContent()
-      const displayedAddressText = (rawAddress ?? '').replaceAll(/\s+/g, '').trim()
-      expect(displayedAddressText).toMatch(/^bcrt1[0-9a-z]{38,59}$/i)
-      receiveAddress = displayedAddressText
-
-      // Fund the exact displayed address from Bitcoin Core regtest wallet
-      fundingTxid = await fundAddressViaBitcoinCore(receiveAddress, FUNDING_AMOUNT_BTC)
-      expect(fundingTxid).toHaveLength(64)
-
-      // Mine confirmation block
-      await mineBlocksViaBitcoinCore(1)
-
-      // Navigate to main wallet view to verify updated jar balance
-      await page.goto('/')
-      await expect(page.getByText(walletName).first()).toBeVisible({ timeout: 20_000 })
-
-      // Poll for the balance to reflect the 100,000 sats in UI
-      const fundedJar = page.locator('[data-tour-id="wallet-jars"]').getByRole('button', { name: /Apricot/ })
-      await expect(fundedJar.getByTestId('sats-amount').first()).toHaveAttribute(
-        'data-raw-value',
-        String(FUNDING_AMOUNT_SATS),
-        { timeout: 60_000 },
-      )
+      const funding = await fundWalletViaUi(page, walletName, FUNDING_AMOUNT_BTC, FUNDING_AMOUNT_SATS)
+      fundingTxid = funding.txid
 
       // Capture Evidence 01: Confirmed funded wallet
       await page.screenshot({
@@ -367,6 +231,51 @@ test.describe('JoinMarket NG Regtest Live Wallet Smoke Suite', () => {
 
       await page.screenshot({
         path: path.join(EVIDENCE_DIR, '04-wallet-after-reload.png'),
+        fullPage: false,
+      })
+    })
+
+    // G. Collaborative send reports the taker status until acknowledged
+    await test.step('G. Collaborative send reports the taker status until acknowledged', async () => {
+      // The wallet's coins are not yet old enough for the taker (`taker_utxo_age`), so the
+      // attempt fails right away with a reason - the successful path is covered by the
+      // (long running) regression suite, which needs makers.
+      const coinjoinDestinationAddress = await getNewAddressFromBitcoinCore()
+      await submitCollaborativeSend(page, {
+        address: coinjoinDestinationAddress,
+        amountSats: COINJOIN_AMOUNT_SATS,
+      })
+
+      // the status card stays visible with the final outcome once the taker stopped
+      const statusCard = takerStatusCard(page)
+      await expect(statusCard).toBeVisible({ timeout: 30_000 })
+      const doneButton = statusCard.getByRole('button', { name: /^done$/i })
+      await expect(doneButton).toBeVisible({ timeout: 60_000 })
+      await expect(statusCard.getByRole('button', { name: /^abort$/i })).toBeHidden()
+
+      await expect(statusCard.getByTestId('taker-status-text')).toHaveText('Failed')
+      await expect(statusCard.getByText('Error', { exact: true })).toBeVisible()
+      await expect(statusCard).toContainText(/utxo/i)
+
+      await page.screenshot({
+        path: path.join(EVIDENCE_DIR, '05-collaborative-send-failed.png'),
+        fullPage: false,
+      })
+
+      // acknowledging the outcome hides the card and keeps the form values for a retry
+      await doneButton.click()
+      await expect(statusCard).toBeHidden()
+      await expect(page.locator('#send-destination')).toHaveValue(coinjoinDestinationAddress)
+      await expect(page.locator('#send-amount')).toHaveValue(String(COINJOIN_AMOUNT_SATS))
+    })
+
+    // H. Lock wallet and verify logout, so that subsequent suites can use the backend
+    await test.step('H. Lock wallet and verify logout', async () => {
+      await lockWalletAndVerifyLogout(page)
+
+      // Capture Evidence 06: Locked wallet and logged out
+      await page.screenshot({
+        path: path.join(EVIDENCE_DIR, '06-wallet-locked.png'),
         fullPage: false,
       })
     })

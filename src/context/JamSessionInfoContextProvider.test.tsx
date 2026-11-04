@@ -2,6 +2,7 @@ import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { act, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SendFormValues } from '@/components/send/types'
+import { noop } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { useJamSessionInfoContext, type PaymentAttempt } from './JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './JamSessionInfoContextProvider'
@@ -16,6 +17,14 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
     queryKey: ['rescan-info'],
     queryFn: vi.fn(),
   })),
+  sessionOptions: vi.fn(() => ({
+    queryKey: ['session-info'],
+    queryFn: vi.fn(),
+  })),
+  takerstatusOptions: vi.fn(() => ({
+    queryKey: ['taker-status'],
+    queryFn: vi.fn(),
+  })),
 }))
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
@@ -25,6 +34,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
     useQuery: vi.fn(() => ({
       data: mocks.rescanData,
       dataUpdatedAt: mocks.dataUpdatedAt,
+      refetch: noop,
     })),
   }
 })
