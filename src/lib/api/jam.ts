@@ -40,37 +40,3 @@ export const fetchInfo = async ({ token, signal }: AuthApiRequestContext) => {
     signal,
   }).then((response) => withExpectedContentTypeOrThrow(response, 'application/json'))
 }
-
-/**
- * Fetch features configuration from the server
- * @param token - Authentication token
- * @param signal - AbortSignal for cancelling requests
- * @returns Promise<Response>
- */
-export const fetchFeatures = async ({ token, signal }: AuthApiRequestContext) => {
-  return await fetch(`/jam/api/v0/features`, {
-    headers: { ...buildAuthHeaderMap(token) },
-    signal,
-  }).then((response) => withExpectedContentTypeOrThrow(response, 'application/json'))
-}
-
-/**
- * Fetch log file content from the server
- * @param token - Authentication token
- * @param signal - AbortSignal for cancelling requests
- * @param fileName - Name of the log file to fetch
- * @returns Promise<Response>
- */
-export const fetchLog = async ({
-  token,
-  signal,
-  fileName,
-}: AuthApiRequestContext & {
-  fileName: string
-}) => {
-  const encodedFileName = encodeURIComponent(fileName)
-  return await fetch(`/jam/api/v0/log/${encodedFileName}`, {
-    headers: { ...buildAuthHeaderMap(token) },
-    signal,
-  }).then((response) => withExpectedContentTypeOrThrow(response, 'text/plain'))
-}

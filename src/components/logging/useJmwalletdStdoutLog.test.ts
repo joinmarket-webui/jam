@@ -1,17 +1,19 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as JAM from '@/constants/jam'
-import { fetchLog } from '@/lib/api/jam'
 import { authStore } from '@/store/authStore'
 import { useJmwalletdStdoutLog } from './useJmwalletdStdoutLog'
 
 type QueryOptions = {
   enabled?: boolean
-  queryFn?: (args: { signal: AbortSignal }) => Promise<string>
+  queryKey?: unknown
+  queryFn?: (args: { queryKey: unknown; signal: AbortSignal }) => Promise<string>
   refetchInterval?: ((query: { state: { error?: unknown } }) => number | false) | number | false
 }
 
 const mocks = vi.hoisted(() => ({
+  client: { id: 'api-client' },
+  getlogsQueryFn: vi.fn(),
   queryOptions: undefined as QueryOptions | undefined,
   queryResult: {
     data: undefined as string | undefined,
@@ -34,8 +36,15 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-vi.mock('@/lib/api/jam', () => ({
-  fetchLog: vi.fn(),
+vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
+  getlogsOptions: vi.fn((options: { client: unknown }) => ({
+    queryKey: [{ _id: 'getlogs', ...options }],
+    queryFn: mocks.getlogsQueryFn,
+  })),
+}))
+
+vi.mock('@/hooks/useApiClient', () => ({
+  useApiClient: () => mocks.client,
 }))
 
 describe('useJmwalletdStdoutLog', () => {
@@ -46,7 +55,7 @@ describe('useJmwalletdStdoutLog', () => {
     mocks.queryResult.error = undefined
     mocks.queryResult.isFetched = false
     mocks.queryResult.refetch.mockReset()
-    vi.mocked(fetchLog).mockReset()
+    mocks.getlogsQueryFn.mockReset()
   })
 
   it('reports missing authentication as an initialized alert state', () => {
@@ -61,7 +70,7 @@ describe('useJmwalletdStdoutLog', () => {
     expect(mocks.queryOptions?.enabled).toBe(false)
   })
 
-  it('fetches logs with the current auth token', async () => {
+  it('fetches logs from the joinmarket-ng logs endpoint', async () => {
     authStore.getState().update({
       auth: {
         token: 'token',
@@ -69,20 +78,19 @@ describe('useJmwalletdStdoutLog', () => {
         expiresAt: Date.now() + 1_800_000,
       },
     })
-    vi.mocked(fetchLog).mockResolvedValue(new Response('log body'))
+    mocks.getlogsQueryFn.mockResolvedValue('log body')
 
     const { result } = renderHook(() => useJmwalletdStdoutLog())
 
-    await expect(mocks.queryOptions?.queryFn?.({ signal: new AbortController().signal })).resolves.toBe('log body')
+    expect(mocks.queryOptions?.enabled).toBe(true)
+    expect(mocks.queryOptions?.queryKey).toEqual([{ _id: 'getlogs', client: mocks.client }])
+    await expect(
+      mocks.queryOptions?.queryFn?.({ queryKey: mocks.queryOptions.queryKey, signal: new AbortController().signal }),
+    ).resolves.toBe('log body')
 
     await result.current.refresh()
 
-    const fetchLogRequest = vi.mocked(fetchLog).mock.calls[0]?.[0]
-    expect(fetchLogRequest).toMatchObject({
-      token: 'token',
-      fileName: 'jmwalletd_stdout.log',
-    })
-    expect(fetchLogRequest?.signal).toBeInstanceOf(AbortSignal)
+    expect(mocks.getlogsQueryFn).toHaveBeenCalledTimes(1)
     expect(mocks.queryResult.refetch).toHaveBeenCalled()
   })
 
