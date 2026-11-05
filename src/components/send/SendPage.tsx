@@ -388,6 +388,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         onOpenChange={setShowAbortCoinjoinDialog}
         isConfirming={stopCoinjoinMutationIsPending}
         onConfirm={onAbortCoinjoinConfirmed}
+        paymentAttempt={currentPaymentAttempt?.data.isCoinJoin === true ? currentPaymentAttempt : undefined}
+        jars={jars}
       />
 
       <UtxoSelectionDialog {...utxoSelectionDialog.dialogProps} />

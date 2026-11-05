@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
+import type { Jar } from '@/context/JamWalletInfoContext'
 import { PaymentAbortDialog } from './PaymentAbortDialog'
 
 type ChildrenProps = { children: ReactNode }
@@ -27,6 +29,39 @@ vi.mock('../ui/dialog', () => ({
   DialogFooter: ({ children }: ChildrenProps) => <div>{children}</div>,
 }))
 
+vi.mock('../ui/spinner', () => ({
+  Spinner: () => <span data-testid="spinner">spinner</span>,
+}))
+
+vi.mock('@/components/ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span data-testid="balance">{valueString}</span>,
+}))
+
+vi.mock('@/components/ui/jam/Address', () => ({
+  Address: ({ value }: { value: string }) => <span data-testid="address">{value}</span>,
+}))
+
+const mockJars: Jar[] = [
+  {
+    jarIndex: 0,
+    name: 'Jar 0',
+    utxos: [],
+    totalBalance: 1000000,
+    availableBalance: 1000000,
+    frozenBalance: 0,
+    account: 0,
+  },
+  {
+    jarIndex: 1,
+    name: 'Jar 1',
+    utxos: [],
+    totalBalance: 500000,
+    availableBalance: 500000,
+    frozenBalance: 0,
+    account: 1,
+  },
+]
+
 describe('PaymentAbortDialog', () => {
   it('renders correctly', () => {
     render(<PaymentAbortDialog open={true} onOpenChange={vi.fn()} onConfirm={vi.fn()} isConfirming={false} />)
@@ -51,5 +86,112 @@ describe('PaymentAbortDialog', () => {
 
     fireEvent.click(screen.getByText('global.abort'))
     expect(onConfirm).toHaveBeenCalledTimes(1)
+  })
+
+  it('calls onOpenChange when reject button is clicked', () => {
+    const onOpenChange = vi.fn()
+    render(<PaymentAbortDialog open={true} onOpenChange={onOpenChange} onConfirm={vi.fn()} isConfirming={false} />)
+
+    fireEvent.click(screen.getByText('modal.confirm_button_reject'))
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('renders payment details when paymentAttempt is provided', () => {
+    const paymentAttempt: PaymentAttempt = {
+      createdAt: 123456789,
+      utxosHashHex: 'hash',
+      walletFileName: 'wallet.jmdat',
+      data: {
+        source: { fromJar: 0 },
+        destination: { address: 'bc1qdestinationaddress' },
+        amount: { isSweep: false, amount: 250000 },
+        isCoinJoin: true,
+        numCollaborators: 5,
+        txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3 },
+      },
+    }
+
+    render(
+      <PaymentAbortDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        isConfirming={false}
+        paymentAttempt={paymentAttempt}
+        jars={mockJars}
+      />,
+    )
+
+    expect(screen.getByText('send.confirm_send_modal.label_source_jar')).toBeInTheDocument()
+    expect(screen.getByText('Jar 0')).toBeInTheDocument()
+    expect(screen.getByText('#0')).toBeInTheDocument()
+
+    expect(screen.getByText('send.confirm_send_modal.label_amount')).toBeInTheDocument()
+    expect(screen.getByTestId('balance')).toHaveTextContent('250000')
+
+    expect(screen.getByText('send.confirm_send_modal.label_recipient')).toBeInTheDocument()
+    expect(screen.getByTestId('address')).toHaveTextContent('bc1qdestinationaddress')
+  })
+
+  it('renders internal transfer details with destination jar', () => {
+    const paymentAttempt: PaymentAttempt = {
+      createdAt: 123456789,
+      utxosHashHex: 'hash',
+      walletFileName: 'wallet.jmdat',
+      data: {
+        source: { fromJar: 0 },
+        destination: { fromJar: 1, address: 'bc1qinternaladdress' },
+        amount: { isSweep: false, amount: 150000 },
+        isCoinJoin: true,
+        numCollaborators: 4,
+        txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3 },
+      },
+    }
+
+    render(
+      <PaymentAbortDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        isConfirming={false}
+        paymentAttempt={paymentAttempt}
+        jars={mockJars}
+      />,
+    )
+
+    expect(screen.getByText('Jar 0')).toBeInTheDocument()
+    expect(screen.getByText('Jar 1')).toBeInTheDocument()
+    expect(screen.getByText('#1')).toBeInTheDocument()
+    expect(screen.getByTestId('address')).toHaveTextContent('bc1qinternaladdress')
+  })
+
+  it('renders sweep badge when payment is a sweep', () => {
+    const paymentAttempt: PaymentAttempt = {
+      createdAt: 123456789,
+      utxosHashHex: 'hash',
+      walletFileName: 'wallet.jmdat',
+      data: {
+        source: { fromJar: 0 },
+        destination: { address: 'bc1qdestinationaddress' },
+        amount: { isSweep: true, sweepAmount: 1000000, sweepUtxos: [] },
+        isCoinJoin: true,
+        numCollaborators: 5,
+        txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3 },
+      },
+    }
+
+    render(
+      <PaymentAbortDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        isConfirming={false}
+        paymentAttempt={paymentAttempt}
+        jars={mockJars}
+      />,
+    )
+
+    expect(screen.getByText('Sweep')).toBeInTheDocument()
+    expect(screen.getByTestId('balance')).toHaveTextContent('1000000')
   })
 })
