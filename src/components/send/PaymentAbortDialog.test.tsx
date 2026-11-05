@@ -45,20 +45,28 @@ const mockJars: Jar[] = [
   {
     jarIndex: 0,
     name: 'Jar 0',
+    color: '#e2b86a',
+    balanceSummary: {
+      calculatedTotalBalanceInSats: 1000000,
+      calculatedAvailableBalanceInSats: 1000000,
+      calculatedConfirmedAvailableBalanceInSats: 1000000,
+      calculatedAvailableFrozenBalanceInSats: 0,
+      calculatedFrozenOrLockedBalanceInSats: 0,
+    },
     utxos: [],
-    totalBalance: 1000000,
-    availableBalance: 1000000,
-    frozenBalance: 0,
-    account: 0,
   },
   {
     jarIndex: 1,
     name: 'Jar 1',
+    color: '#3b5ba9',
+    balanceSummary: {
+      calculatedTotalBalanceInSats: 500000,
+      calculatedAvailableBalanceInSats: 500000,
+      calculatedConfirmedAvailableBalanceInSats: 500000,
+      calculatedAvailableFrozenBalanceInSats: 0,
+      calculatedFrozenOrLockedBalanceInSats: 0,
+    },
     utxos: [],
-    totalBalance: 500000,
-    availableBalance: 500000,
-    frozenBalance: 0,
-    account: 1,
   },
 ]
 
@@ -103,8 +111,8 @@ describe('PaymentAbortDialog', () => {
       walletFileName: 'wallet.jmdat',
       data: {
         source: { fromJar: 0 },
-        destination: { address: 'bc1qdestinationaddress' },
-        amount: { isSweep: false, amount: 250000 },
+        destination: { fromJar: undefined, address: 'bc1qdestinationaddress' },
+        amount: { isSweep: false, amount: 250000, sweepAmount: undefined, sweepUtxos: undefined },
         isCoinJoin: true,
         numCollaborators: 5,
         txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3 },
@@ -141,7 +149,7 @@ describe('PaymentAbortDialog', () => {
       data: {
         source: { fromJar: 0 },
         destination: { fromJar: 1, address: 'bc1qinternaladdress' },
-        amount: { isSweep: false, amount: 150000 },
+        amount: { isSweep: false, amount: 150000, sweepAmount: undefined, sweepUtxos: undefined },
         isCoinJoin: true,
         numCollaborators: 4,
         txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3 },
@@ -172,8 +180,8 @@ describe('PaymentAbortDialog', () => {
       walletFileName: 'wallet.jmdat',
       data: {
         source: { fromJar: 0 },
-        destination: { address: 'bc1qdestinationaddress' },
-        amount: { isSweep: true, sweepAmount: 1000000, sweepUtxos: [] },
+        destination: { fromJar: undefined, address: 'bc1qdestinationaddress' },
+        amount: { isSweep: true, amount: undefined, sweepAmount: 1000000, sweepUtxos: [] },
         isCoinJoin: true,
         numCollaborators: 5,
         txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3 },
