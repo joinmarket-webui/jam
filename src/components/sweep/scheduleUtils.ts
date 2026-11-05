@@ -2,6 +2,7 @@ import type { TumblerPhaseResponse, TumblerPlanResponse } from '@joinmarket-webu
 import type { TFunction } from 'i18next'
 import { JM_TUMBLER_MIN_CONFIRMATIONS_BETWEEN_PHASES } from '@/constants/jm'
 import type { Jar } from '@/context/JamWalletInfoContext'
+import { parseTimestamp } from '@/lib/dateUtils'
 import { MEAN_DURATION_BETWEEN_BLOCKS_SECONDS, percentageToFactor } from '@/lib/utils'
 import type { TxId } from '@/store/jmTxStore'
 import type { BitcoinAddress, Factor, JarIndex, Seconds } from '@/types/global'
@@ -200,15 +201,7 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
   }
 }
 
-const hasTimeZoneDesignator = (value: string) => /(Z|[+-]\d{2}:?\d{2})$/i.test(value.trim())
-
-export const parseScheduleTimestamp = (value?: string | null): Date | undefined => {
-  if (value === undefined || value === null) return undefined
-  const trimmed = value.trim()
-  if (trimmed === '') return undefined
-  const timestamp = Date.parse(hasTimeZoneDesignator(trimmed) ? trimmed : `${trimmed}Z`)
-  return Number.isNaN(timestamp) ? undefined : new Date(timestamp)
-}
+export const parseScheduleTimestamp = parseTimestamp
 
 export const toScheduleEntry = (phase: TumblerPhaseResponse, jars: Jar[]): ScheduleEntry => {
   const status: ScheduleEntry['status'] = {

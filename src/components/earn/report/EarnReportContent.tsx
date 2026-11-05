@@ -19,13 +19,12 @@ import { SortIcon } from '@/components/ui/jam/SortIcon'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { isValidDate } from '@/lib/dateUtils'
 import { cn, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
 import { earnReportTableFeatures } from './EarnReportContent.schema'
-
-const isValidDate = (date: Date) => !Number.isNaN(date.getTime())
 
 const sumEarned = (entries: EarnReportEntry[], since?: Date): AmountSats => {
   return entries
