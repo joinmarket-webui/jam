@@ -271,7 +271,7 @@ describe('App', () => {
       maker_running: false,
       coinjoin_in_process: false,
       schedule: [{ id: '1' }],
-    } as never
+    }
     render(<App />)
     await waitFor(() => expect(screen.getByText('lock')).toBeInTheDocument())
 
