@@ -47,4 +47,23 @@ describe('SweepForm', () => {
       expect(screen.getByText(key)).toBeInTheDocument()
     }
   })
+
+  it('displays field error messages resolved from schema validation', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <SweepForm
+        jars={jars}
+        addressSummary={{}}
+        network={Network.regtest}
+        initialValues={{ minNumberOfTransactionsPerJar: 99 }}
+        onSubmit={vi.fn()}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'scheduler.scheduler_options' }))
+    await user.click(screen.getByRole('button', { name: 'scheduler.button_plan' }))
+
+    expect(await screen.findByText('scheduler.feedback_invalid_value')).toBeInTheDocument()
+  })
 })
