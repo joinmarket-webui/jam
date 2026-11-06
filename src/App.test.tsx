@@ -290,6 +290,7 @@ describe('RefreshApiToken', () => {
     holders.developerMode = false
   })
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
   const renderAndGetRenewalCallback = async () => {
     render(<App />)
     await waitFor(() => expect(vi.mocked(setIntervalDebouncedMock)).toHaveBeenCalled())

@@ -22,7 +22,6 @@ describe('PostLoginOnboardingTour', () => {
       value: vi.fn(),
     })
 
-    /* eslint-disable unicorn/no-this-outside-of-class -- mocking HTMLElement.prototype.getBoundingClientRect requires `this` */
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function getBoundingClientRect(
       this: HTMLElement,
     ) {
@@ -41,7 +40,6 @@ describe('PostLoginOnboardingTour', () => {
         toJSON: () => undefined,
       }
     })
-    /* eslint-enable unicorn/no-this-outside-of-class */
   })
 
   it('walks through the tour and persists dismissal', () => {

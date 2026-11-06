@@ -185,7 +185,6 @@ export function EarnForm({
 
   const schema = useMemo(
     () =>
-      // eslint-disable-next-line unicorn/prefer-spread -- false positive
       earnFormBaseSchema(fidelityBonds, t).concat(
         yup.object({
           offerMinAmount: yup

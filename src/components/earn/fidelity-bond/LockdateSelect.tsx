@@ -54,9 +54,11 @@ export function LockdateSelect({ id, value, onChange, unavailableValues = [] }: 
             <SelectContent>
               {monthOptions.map((option) => {
                 const candidate = selectedYear ? (`${selectedYear}-${option.value}` as fb.Lockdate) : undefined
-                const disabled = candidate
-                  ? !availableLockdateOptions.some((lockdate) => lockdate.value === candidate)
-                  : !availableLockdateOptions.some((lockdate) => lockdate.value.endsWith(`-${option.value}`))
+                const disabled = availableLockdateOptions.every(
+                  candidate
+                    ? (lockdate) => lockdate.value !== candidate
+                    : (lockdate) => !lockdate.value.endsWith(`-${option.value}`),
+                )
                 return (
                   <SelectItem key={option.value} value={option.value} disabled={disabled}>
                     {option.label}
@@ -87,9 +89,11 @@ export function LockdateSelect({ id, value, onChange, unavailableValues = [] }: 
             <SelectContent>
               {yearOptions.map((option) => {
                 const candidate = selectedMonth ? (`${option.value}-${selectedMonth}` as fb.Lockdate) : undefined
-                const disabled = candidate
-                  ? !availableLockdateOptions.some((lockdate) => lockdate.value === candidate)
-                  : !availableLockdateOptions.some((lockdate) => lockdate.value.startsWith(`${option.value}-`))
+                const disabled = availableLockdateOptions.every(
+                  candidate
+                    ? (lockdate) => lockdate.value !== candidate
+                    : (lockdate) => !lockdate.value.startsWith(`${option.value}-`),
+                )
                 return (
                   <SelectItem key={option.value} value={option.value} disabled={disabled}>
                     {option.label}

@@ -120,7 +120,7 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction) =>
               .rows.filter((it) => it.original.utxo.address === address)
               .filter((it) => it.getIsSelected() !== checked)
 
-            eligibleRows.forEach((it) => it.toggleSelected(checked === true))
+            for (const it of eligibleRows) it.toggleSelected(checked === true)
 
             if (eligibleRows.length > 1) {
               const affectedCount = eligibleRows.length - 1
@@ -211,8 +211,8 @@ const utxoTableColumns = (enableSelectAllToggle: boolean, t: TFunction) =>
         const val = a.original.utxo.address.localeCompare(b.original.utxo.address)
         if (val !== 0) return val
         // tie-break using confirmations
-        const aid = Number(a.original.utxo.confirmations)
-        const bid = Number(b.original.utxo.confirmations)
+        const aid = a.original.utxo.confirmations
+        const bid = b.original.utxo.confirmations
         return aid - bid
       },
       cell: (info) => <Address value={info.getValue()} className="text-sm" copyable={true} />,
@@ -316,9 +316,9 @@ export const JarUtxosTable = ({
 
   useEffect(() => {
     resetRowPinning(true)
-    getRowModel().rows.forEach((row) => {
+    for (const row of getRowModel().rows) {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
-    })
+    }
   }, [resetRowPinning, getRowModel, pinnedEntries])
 
   useEffect(() => {

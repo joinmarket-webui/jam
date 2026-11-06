@@ -75,7 +75,7 @@ describe('yieldgenReportToEarnReportEntries', () => {
 
     const secondEntry = entries[1]
     expect(secondEntry.timestamp.toUTCString()).toBe('Invalid Date')
-    expect(secondEntry.cjTotalAmount).toBe(Number.NaN)
+    expect(secondEntry.cjTotalAmount).toBe(NaN)
     expect(secondEntry.notes).toBe('unexpected')
   })
 })

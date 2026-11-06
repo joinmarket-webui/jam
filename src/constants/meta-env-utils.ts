@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- okay when trying to parse arbitrary value on purpose
 export const parseAsIntOrDefault = (value: any, defaultValue: number): number => {
-  const parsed = Number.parseInt(`${value ?? Number.NaN}`, 10)
+  const parsed = Number.parseInt(`${value ?? NaN}`, 10)
   return Number.isSafeInteger(parsed) ? parsed : defaultValue
 }
 
@@ -8,7 +8,8 @@ export const parseAsIntOrDefault = (value: any, defaultValue: number): number =>
 export const parseAsBooleanOrDefault = (value: any, defaultValue: boolean): boolean => {
   if (typeof value === 'boolean') {
     return value
-  } else if (typeof value === 'string') {
+  }
+  if (typeof value === 'string') {
     const lowercased = value.trim().toLowerCase()
     if (['true', 'yes', '1'].includes(lowercased)) {
       return true
@@ -17,7 +18,7 @@ export const parseAsBooleanOrDefault = (value: any, defaultValue: boolean): bool
       return false
     }
   } else {
-    const asNumber = parseAsIntOrDefault(value, Number.NaN)
+    const asNumber = parseAsIntOrDefault(value, NaN)
     if (asNumber === 1) {
       return true
     }

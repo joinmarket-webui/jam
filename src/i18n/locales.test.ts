@@ -38,7 +38,7 @@ const enBaseKeys = new Set(Object.keys(en).map((key) => withoutPluralSuffix(key)
 const enVariables = Object.entries(en).reduce<Record<string, Set<string>>>((acc, [key, value]) => {
   const baseKey = withoutPluralSuffix(key)
   acc[baseKey] ??= new Set(['count'])
-  variablesOf(value).forEach((it) => acc[baseKey].add(it))
+  for (const it of variablesOf(value)) acc[baseKey].add(it)
   return acc
 }, {})
 
