@@ -117,7 +117,8 @@ const ProtectedNavbarRoute = () => {
   const walletFileName = useOutletContext<WalletFileName>()
   const { jmSession } = useRawJmSession()
   const makerRunning = jmSession?.maker_running === true
-  const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
+  const schedulerRunning = (jmSession?.schedule?.length || 0) > 0
+  const coinjoinInProgress = jmSession?.coinjoin_in_process === true && !schedulerRunning
   const client = useApiClient()
   const lockWalletQuery = useQuery(
     {
@@ -163,7 +164,7 @@ const ProtectedNavbarRoute = () => {
   }
 
   const doOnLockWallet: LockWalletHandler = async (navigate, t) => {
-    if (makerRunning || coinjoinInProgress) {
+    if (makerRunning || coinjoinInProgress || schedulerRunning) {
       setLockWalletDialogContext({ open: true, navigate, t })
     } else {
       await doOnLockWalletConfirm(navigate, t)
@@ -182,6 +183,7 @@ const ProtectedNavbarRoute = () => {
           onConfirm={() => doOnLockWalletConfirm(lockWalletDialogContext.navigate, lockWalletDialogContext.t)}
           makerRunning={makerRunning}
           coinjoinInProgress={coinjoinInProgress}
+          schedulerRunning={schedulerRunning}
         />
       )}
     </>

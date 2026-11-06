@@ -43,6 +43,7 @@ describe('LockWalletConfirmDialog', () => {
         onConfirm={vi.fn()}
         makerRunning={false}
         coinjoinInProgress={false}
+        schedulerRunning={false}
       />,
     )
 
@@ -60,11 +61,27 @@ describe('LockWalletConfirmDialog', () => {
         onConfirm={vi.fn()}
         makerRunning={true}
         coinjoinInProgress={true}
+        schedulerRunning={false}
       />,
     )
 
     expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_maker_running_text')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')).toBeInTheDocument()
+  })
+
+  it('renders alert when scheduler is running', () => {
+    render(
+      <LockWalletConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        makerRunning={false}
+        coinjoinInProgress={false}
+        schedulerRunning={true}
+      />,
+    )
+
+    expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_scheduler_running_text')).toBeInTheDocument()
   })
 
   it('calls onConfirm when lock button is clicked', () => {
@@ -76,6 +93,7 @@ describe('LockWalletConfirmDialog', () => {
         onConfirm={onConfirm}
         makerRunning={false}
         coinjoinInProgress={false}
+        schedulerRunning={false}
       />,
     )
 
