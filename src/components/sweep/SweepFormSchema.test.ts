@@ -187,21 +187,16 @@ describe('sweepFormSchema', () => {
       JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS - 1,
       JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS + 1,
     ]) {
-      await expect(
-        validate({
-          ...defaultValues,
-          destinations: [{ address: validRegtestAddress }],
-          minNumberOfCollaborators: invalidValue,
-          maxNumberOfCollaborators: Math.max(defaultValues.maxNumberOfCollaborators, invalidValue),
-        }),
-      ).rejects.toMatchObject({
-        inner: expect.arrayContaining([
-          expect.objectContaining({
-            path: 'minNumberOfCollaborators',
-            message: 'scheduler.feedback_invalid_min_value',
-          }),
-        ]),
-      })
+      const error = await validate({
+        ...defaultValues,
+        destinations: [{ address: validRegtestAddress }],
+        minNumberOfCollaborators: invalidValue,
+        maxNumberOfCollaborators: Math.max(defaultValues.maxNumberOfCollaborators, invalidValue),
+      }).catch((error_: unknown) => error_)
+      expect(error).toBeInstanceOf(ValidationError)
+      const validationError = error as ValidationError
+      expect(validationError.inner.map((it) => it.path)).toContain('minNumberOfCollaborators')
+      expect(validationError.inner.map((it) => it.message)).toContain('scheduler.feedback_invalid_min_value')
     }
   })
 
@@ -211,21 +206,16 @@ describe('sweepFormSchema', () => {
       JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS - 1,
       JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS + 1,
     ]) {
-      await expect(
-        validate({
-          ...defaultValues,
-          destinations: [{ address: validRegtestAddress }],
-          minNumberOfCollaborators: Math.min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS, invalidValue),
-          maxNumberOfCollaborators: invalidValue,
-        }),
-      ).rejects.toMatchObject({
-        inner: expect.arrayContaining([
-          expect.objectContaining({
-            path: 'maxNumberOfCollaborators',
-            message: 'scheduler.feedback_invalid_max_value',
-          }),
-        ]),
-      })
+      const error = await validate({
+        ...defaultValues,
+        destinations: [{ address: validRegtestAddress }],
+        minNumberOfCollaborators: Math.min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS, invalidValue),
+        maxNumberOfCollaborators: invalidValue,
+      }).catch((error_: unknown) => error_)
+      expect(error).toBeInstanceOf(ValidationError)
+      const validationError = error as ValidationError
+      expect(validationError.inner.map((it) => it.path)).toContain('maxNumberOfCollaborators')
+      expect(validationError.inner.map((it) => it.message)).toContain('scheduler.feedback_invalid_max_value')
     }
   })
 
@@ -278,134 +268,7 @@ describe('sweepFormSchema', () => {
       {
         minNumberOfDestinations: 1,
         maxNumberOfDestinations: 5,
-        addressSummary: {} as AddressSummary,
-        network: Network.regtest,
-      },
-      tMock,
-    )
-
-    expect(tMock).toHaveBeenCalledWith('scheduler.feedback_invalid_min_value', {
-      min: JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS.toLocaleString(),
-      max: JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS.toLocaleString(),
-    })
-    expect(tMock).toHaveBeenCalledWith('scheduler.feedback_invalid_max_value', {
-      min: JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS.toLocaleString(),
-      max: JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS.toLocaleString(),
-    })
-    expect(tMock).toHaveBeenCalledWith('scheduler.feedback_invalid_value', {
-      min: JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR.toLocaleString(),
-      max: JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR.toLocaleString(),
-    })
-    expect(tMock).toHaveBeenCalledWith('scheduler.feedback_invalid_value', {
-      min: JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT.toLocaleString(),
-      max: JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT.toLocaleString(),
-    })
-  })
-
-  it('rejects minNumberOfCollaborators outside the allowed range', async () => {
-    const defaultValues = buildSweepFormValuesDefaultValues()
-    for (const invalidValue of [
-      JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS - 1,
-      JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS + 1,
-    ]) {
-      await expect(
-        validate({
-          ...defaultValues,
-          destinations: [{ address: validRegtestAddress }],
-          minNumberOfCollaborators: invalidValue,
-          maxNumberOfCollaborators: Math.max(defaultValues.maxNumberOfCollaborators, invalidValue),
-        }),
-      ).rejects.toMatchObject({
-        inner: expect.arrayContaining([
-          expect.objectContaining({
-            path: 'minNumberOfCollaborators',
-            message: 'scheduler.feedback_invalid_min_value',
-          }),
-        ]),
-      })
-    }
-  })
-
-  it('rejects maxNumberOfCollaborators outside the allowed range', async () => {
-    const defaultValues = buildSweepFormValuesDefaultValues()
-    for (const invalidValue of [
-      JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS - 1,
-      JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS + 1,
-    ]) {
-      await expect(
-        validate({
-          ...defaultValues,
-          destinations: [{ address: validRegtestAddress }],
-          minNumberOfCollaborators: Math.min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS, invalidValue),
-          maxNumberOfCollaborators: invalidValue,
-        }),
-      ).rejects.toMatchObject({
-        inner: expect.arrayContaining([
-          expect.objectContaining({
-            path: 'maxNumberOfCollaborators',
-            message: 'scheduler.feedback_invalid_max_value',
-          }),
-        ]),
-      })
-    }
-  })
-
-  it('rejects minNumberOfTransactionsPerJar outside the allowed range', async () => {
-    const defaultValues = buildSweepFormValuesDefaultValues()
-    for (const invalidValue of [
-      JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR - 1,
-      JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR + 1,
-    ]) {
-      await expect(
-        validate({
-          ...defaultValues,
-          destinations: [{ address: validRegtestAddress }],
-          minNumberOfTransactionsPerJar: invalidValue,
-        }),
-      ).rejects.toMatchObject({
-        inner: [
-          expect.objectContaining({
-            path: 'minNumberOfTransactionsPerJar',
-            message: 'scheduler.feedback_invalid_value',
-          }),
-        ],
-      })
-    }
-  })
-
-  it('rejects roundingChanceInPercent outside the allowed range', async () => {
-    const defaultValues = buildSweepFormValuesDefaultValues()
-    for (const invalidValue of [
-      JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT - 1,
-      JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT + 1,
-    ]) {
-      await expect(
-        validate({
-          ...defaultValues,
-          destinations: [{ address: validRegtestAddress }],
-          roundingChanceInPercent: invalidValue,
-        }),
-      ).rejects.toMatchObject({
-        inner: [
-          expect.objectContaining({
-            path: 'roundingChanceInPercent',
-            message: 'scheduler.feedback_invalid_value',
-          }),
-        ],
-      })
-    }
-  })
-
-  it('interpolates dynamic { min, max } parameters into validation error messages', () => {
-    const tMock = vi.fn((key: string, options?: Record<string, unknown>) => {
-      return options ? `${key}:${JSON.stringify(options)}` : key
-    }) as unknown as TFunction<'translation', undefined>
-
-    sweepFormSchema(
-      {
-        minNumberOfDestinations: 1,
-        maxNumberOfDestinations: 5,
-        addressSummary: {} as AddressSummary,
+        addressSummary: {},
         network: Network.regtest,
       },
       tMock,
