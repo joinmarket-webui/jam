@@ -266,6 +266,23 @@ describe('App', () => {
     expect(clearAuth).toHaveBeenCalled()
   })
 
+  it('opens the lock wallet dialog when schedule is running and confirms locking', async () => {
+    holders.jmSession = {
+      maker_running: false,
+      coinjoin_in_process: false,
+      schedule: [{ id: '1' }],
+    }
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('lock')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('lock'))
+    await waitFor(() => expect(screen.getByTestId('confirm-lock')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByTestId('confirm-lock'))
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(clearAuth).toHaveBeenCalled()
+  })
+
   it('logs out directly via the layout', async () => {
     render(<App />)
     await waitFor(() => expect(screen.getByText('logout')).toBeInTheDocument())
