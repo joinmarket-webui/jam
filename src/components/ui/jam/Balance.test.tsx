@@ -283,15 +283,15 @@ describe('<Balance />', () => {
     }
   })
 
-  it('should follow changes of the showBalance prop', async () => {
+  it('should follow changes of the showBalance prop in the same render', () => {
     const { rerender } = render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
     expect(screen.getByText(`*****`)).toBeInTheDocument()
 
     rerender(<Balance valueString={`21`} convertToUnit="sats" showBalance={true} />)
-    expect(await screen.findByTestId(`sats-amount`)).toBeInTheDocument()
+    expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
 
     rerender(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
-    expect(await screen.findByText(`*****`)).toBeInTheDocument()
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
   })
 
   it('should toggle visibility via keyboard (Enter)', async () => {
