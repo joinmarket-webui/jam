@@ -451,7 +451,7 @@
   },
   "logs": {
     "title": "Journaux",
-    "error_loading_logs_failed": "Impossible de récupérer le fichier journal.",
+    "error_loading_logs_failed": "Impossible de récupérer le fichier journal. Raison : {{ reason }}",
     "error_no_auth_token": "Aucun jeton d'authentification disponible. Veuillez vous reconnecter.",
     "button_scroll_to_bottom": "Aller en bas",
     "label_auto_follow": "Suivi automatique",
