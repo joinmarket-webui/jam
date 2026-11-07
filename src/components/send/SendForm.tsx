@@ -19,6 +19,7 @@ import type { BalanceSummary } from '@/lib/balanceSummary'
 import { parseBip21Uri, type Bip21ParseResult } from '@/lib/bip21'
 import type { JamFeeConfigValues } from '@/lib/feeConfig'
 import * as fb from '@/lib/fidelityBondUtils'
+import { dustLimitForAddress } from '@/lib/formValidation'
 import { cn, delayedPromise, factorToPercentage, type WalletFileName } from '@/lib/utils'
 import type { BitcoinAddress, JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
@@ -209,6 +210,18 @@ export function SendForm({
       return undefined
     }
   }, [destinationAddress])
+
+  const minSendAmount = useMemo(
+    () => (destinationAddress !== undefined ? dustLimitForAddress(destinationAddress) : undefined) ?? MIN_SEND_AMOUNT,
+    [destinationAddress],
+  )
+
+  useEffect(() => {
+    // the minimum amount depends on the destination address type
+    if (formState.isSubmitted) {
+      void trigger('amount.amount')
+    }
+  }, [destinationAddress, trigger, formState.isSubmitted])
 
   const sourceJar = useMemo(() => {
     if (sourceJarIndex === undefined) return
@@ -515,7 +528,7 @@ export function SendForm({
                     required: false,
                     disabled,
                   })}
-                  min={MIN_SEND_AMOUNT}
+                  min={minSendAmount}
                   max={MAX_SEND_AMOUNT}
                   type="number"
                   className="pl-9"

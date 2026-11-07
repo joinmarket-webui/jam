@@ -8,7 +8,7 @@ type DialogProps = ChildrenProps & { open?: boolean; onOpenChange?: (open: boole
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, values?: { count?: number }) => (values?.count !== undefined ? `${key}:${values.count}` : key),
   }),
 }))
 
@@ -28,6 +28,14 @@ vi.mock('@/components/ui/dialog', () => ({
 
 vi.mock('../ui/spinner', () => ({
   Spinner: () => <span data-testid="spinner">spinner</span>,
+}))
+
+vi.mock('../ui/jam/Balance', () => ({
+  Balance: ({ valueString }: { valueString: string }) => <span data-testid="balance">{valueString}</span>,
+}))
+
+vi.mock('../ui/jam/Address', () => ({
+  Address: ({ value }: { value: string }) => <span data-testid="address">{value}</span>,
 }))
 
 describe('SweepStartConfirmDialog', () => {
@@ -101,5 +109,28 @@ describe('SweepStartConfirmDialog', () => {
 
     fireEvent.click(screen.getByText('modal.confirm_button_reject'))
     expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('renders schedule details when provided', () => {
+    render(
+      <SweepStartConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        disabled={false}
+        isStarting={false}
+        totalBalanceInSats={150000}
+        totalActions={2}
+        destinationAddresses={['bc1qdestination1', 'bc1qdestination2']}
+      />,
+    )
+
+    expect(screen.getByText('scheduler.complete_wallet_title')).toBeInTheDocument()
+    expect(screen.getByText('150000')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.section_details_title')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_start_modal.actions_count:2')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.section_destinations_title')).toBeInTheDocument()
+    expect(screen.getByText('bc1qdestination1')).toBeInTheDocument()
+    expect(screen.getByText('bc1qdestination2')).toBeInTheDocument()
   })
 })

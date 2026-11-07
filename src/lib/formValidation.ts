@@ -7,7 +7,7 @@ import {
 } from 'bitcoin-address-validation'
 import * as yup from 'yup'
 import type { AddressSummary } from '@/context/JamWalletInfoContext'
-import type { BitcoinAddress, BlockHeight, JarIndex } from '@/types/global'
+import type { AmountSats, BitcoinAddress, BlockHeight, JarIndex } from '@/types/global'
 import { isValidInteger } from './utils'
 
 export const normalizeBitcoinAddress = (value: string): string => {
@@ -62,6 +62,32 @@ export const isAddressOnNetwork = (value: string, expectedNetwork: Network): boo
 
 export const isReusedAddress = (value: string, addressSummary: AddressSummary): boolean =>
   addressSummary[normalizeBitcoinAddress(value)]?.used === true
+
+// Bitcoin Core's default dust limits per output type (`-dustrelayfee` of 3 sat/vB).
+// A transaction with an output below its limit is non-standard and rejected on broadcast.
+// See `GetDustThreshold` in https://github.com/bitcoin/bitcoin/blob/v29.0/src/policy/policy.cpp
+const DUST_LIMIT_BY_ADDRESS_TYPE: ReadonlyMap<AddressType, AmountSats> = new Map([
+  [AddressType.p2wpkh, 294],
+  [AddressType.p2wsh, 330],
+  [AddressType.p2tr, 330],
+  [AddressType.p2sh, 540],
+  [AddressType.p2pkh, 546],
+])
+// highest of the limits above - used for address types without a known limit
+const DUST_LIMIT_FALLBACK: AmountSats = 546
+
+/**
+ * Returns the smallest amount that can be sent to the given address without creating a dust
+ * output, or `undefined` if the address is invalid.
+ */
+export const dustLimitForAddress = (value: string): AmountSats | undefined => {
+  try {
+    const { type } = getAddressInfo(normalizeBitcoinAddress(value))
+    return DUST_LIMIT_BY_ADDRESS_TYPE.get(type) ?? DUST_LIMIT_FALLBACK
+  } catch (_ignoredOnPurpose) {
+    return undefined
+  }
+}
 
 /**
  * Shared "source jar" (`fromJar`) field validator.

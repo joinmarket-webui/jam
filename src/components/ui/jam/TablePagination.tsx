@@ -98,6 +98,8 @@ const TablePagination = ({
             </PaginationItem>
             {[currentPage, currentPage - 1, currentPage + 1, currentPage - 2, currentPage + 2]
               .filter((it) => it >= 1 && it <= totalPages)
+              // candidates are preference-ordered, so slicing before sorting keeps the
+              // window centered on the current page; the sort is for display order only
               .slice(0, 3)
               .toSorted((a, b) => a - b)
               .map((it) => (
