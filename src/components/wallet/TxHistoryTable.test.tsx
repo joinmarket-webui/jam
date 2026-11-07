@@ -34,7 +34,8 @@ const mockDeposit: HistoryEntry = {
   timestamp: '2026-07-28T12:00:00Z',
   role: 'deposit',
   txid: 'tx1',
-  cj_amount: 5000,
+  amount: 5000,
+  cj_amount: null,
   net_fee: 0,
   confirmations: 10,
   success: true,
@@ -45,9 +46,22 @@ const mockSend: HistoryEntry = {
   timestamp: '2026-07-28T13:00:00Z',
   role: 'send',
   txid: 'tx2',
-  cj_amount: 10000,
+  amount: 10000,
+  cj_amount: null,
   net_fee: -100,
   confirmations: 0,
+  success: true,
+  source_mixdepth: 0,
+}
+
+const mockTaker: HistoryEntry = {
+  timestamp: '2026-07-28T15:00:00Z',
+  role: 'taker',
+  txid: 'tx4',
+  amount: 20000,
+  cj_amount: 20000,
+  net_fee: -300,
+  confirmations: 2,
   success: true,
   source_mixdepth: 0,
 }
@@ -95,6 +109,23 @@ describe('TxHistoryTable', () => {
 
       expect(screen.getByText(new Date(Date.UTC(2026, 6, 28, 12, 0, 0)).toLocaleString())).toBeInTheDocument()
     })
+  })
+
+  it('displays the amount of direct sends and deposits', () => {
+    render(<TxHistoryTable history={[mockDeposit, mockSend, mockTaker]} />)
+
+    expect(screen.getByText('5000')).toBeInTheDocument()
+    expect(screen.getByText('10000')).toBeInTheDocument()
+    expect(screen.getByText('20000')).toBeInTheDocument()
+  })
+
+  it('sorts by the amount of all roles', () => {
+    render(<TxHistoryTable history={[mockDeposit, mockTaker, mockSend]} />)
+
+    fireEvent.click(screen.getByText('tx_history.column_title_amount'))
+
+    const txids = screen.getAllByText(/^tx\d$/).map((it) => it.textContent)
+    expect(txids).toEqual(['tx4', 'tx2', 'tx1'])
   })
 
   it('renders empty history alert', () => {

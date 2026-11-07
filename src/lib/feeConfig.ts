@@ -28,6 +28,14 @@ export interface JamFeeConfigValues {
   }
 }
 
+/**
+ * Converts a fee rate in sats/vbyte to the integer sats/kvbyte value used for `tx_fees`.
+ *
+ * The product is rounded to 3 decimals before rounding up, so floating point noise
+ * (e.g. `4.03 * 1_000 === 4030.0000000000005`) doesn't bump the result by 1 sat/kvbyte.
+ */
+export const satsPerVbyteToSatsPerKvbyte = (value: number): number => Math.ceil(Number((value * 1_000).toFixed(3)))
+
 export const isMaxFeesConfigMissing = (values: JamFeeConfigValues | undefined): boolean => {
   return !!values && (values.maxCjAbsoluteFee === undefined || values.maxCjRelativeFee === undefined)
 }

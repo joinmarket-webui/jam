@@ -60,8 +60,9 @@ describe('PasswordVerificationForm', () => {
     renderForm()
     const input = screen.getByPlaceholderText('settings.seed_modal.verification.placeholder_password')
     expect(input).toHaveAttribute('type', 'password')
-    fireEvent.click(screen.getByRole('button', { name: '' }))
+    fireEvent.click(screen.getByRole('button', { name: 'global.show_password' }))
     expect(input).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: 'global.hide_password' })).toBeInTheDocument()
   })
 
   it('submits when the password matches', async () => {

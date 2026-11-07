@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { wallethistoryOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { HistoryEntry, WalletHistoryResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useQuery, type UseQueryResult } from '@tanstack/react-query'
+import { useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
 import { isDevMode } from '@/constants/debugFeatures'
 import { useRawJmSession } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -63,4 +63,25 @@ export function useQueryWalletHistory({
     history: queryResult.data?.history ?? EMPTY_HISTORY,
     queryResult,
   }
+}
+
+/**
+ * Returns a function that fetches the complete wallet history (no `limit`).
+ * Use it for exports: `useQueryWalletHistory` only holds the rows currently
+ * loaded for display.
+ */
+export function useFetchFullWalletHistory(walletFileName: WalletFileName) {
+  const client = useApiClient()
+  const queryClient = useQueryClient()
+
+  return useCallback(async (): Promise<HistoryEntry[]> => {
+    const data = await queryClient.fetchQuery({
+      ...wallethistoryOptions({
+        client,
+        path: { walletname: walletFileName },
+      }),
+      staleTime: 0,
+    })
+    return data.history ?? []
+  }, [client, queryClient, walletFileName])
 }
