@@ -199,7 +199,7 @@ describe('PaymentAbortDialog', () => {
       />,
     )
 
-    expect(screen.getByText('Sweep')).toBeInTheDocument()
+    expect(screen.getByText('send.button_sweep')).toBeInTheDocument()
     expect(screen.getByTestId('balance')).toHaveTextContent('1000000')
   })
 })

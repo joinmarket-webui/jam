@@ -48,7 +48,7 @@ export const PaymentAbortDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
-      <DialogContent className="max-w-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('send.confirm_abort_modal.title')}</DialogTitle>
           <DialogDescription>{t('send.confirm_abort_modal.text_body')}</DialogDescription>
@@ -73,7 +73,7 @@ export const PaymentAbortDialog = ({
                   {t('send.confirm_send_modal.label_amount')}
                   {data.amount.isSweep && (
                     <Badge variant="outline" className="ml-1.5 text-xs">
-                      Sweep
+                      {t('send.button_sweep')}
                     </Badge>
                   )}
                 </span>
