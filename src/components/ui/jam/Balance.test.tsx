@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import '@testing-library/jest-dom/vitest'
-import { render as reactRender, screen, type RenderOptions } from '@testing-library/react'
+import { act, fireEvent, render as reactRender, screen, type RenderOptions } from '@testing-library/react'
 import user from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { Balance } from '@/components/ui/jam/Balance'
@@ -264,6 +264,34 @@ describe('<Balance />', () => {
     const toggleButton = screen.getByRole('button', { name: 'Hide balance' })
     expect(toggleButton).toBeInTheDocument()
     expect(toggleButton).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('should keep the toggled visibility when time passes after the click', () => {
+    vi.useFakeTimers()
+    try {
+      render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'Show balance' }))
+      act(() => {
+        vi.advanceTimersByTime(1_000)
+      })
+
+      expect(screen.getByRole('button', { name: 'Hide balance' })).toBeInTheDocument()
+      expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('should follow changes of the showBalance prop in the same render', () => {
+    const { rerender } = render(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
+
+    rerender(<Balance valueString={`21`} convertToUnit="sats" showBalance={true} />)
+    expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
+
+    rerender(<Balance valueString={`21`} convertToUnit="sats" showBalance={false} />)
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
   })
 
   it('should toggle visibility via keyboard (Enter)', async () => {
