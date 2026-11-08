@@ -2,12 +2,13 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Network } from 'bitcoin-address-validation'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR, JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR } from '@/constants/jam'
 import type { Jar } from '@/context/JamWalletInfoContext'
 import { SweepForm } from './SweepForm'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: Record<string, unknown>) => key + (options ? ' ' + JSON.stringify(options) : ''),
   }),
 }))
 
@@ -64,6 +65,10 @@ describe('SweepForm', () => {
     await user.click(screen.getByRole('button', { name: 'scheduler.scheduler_options' }))
     await user.click(screen.getByRole('button', { name: 'scheduler.button_plan' }))
 
-    expect(await screen.findByText('scheduler.feedback_invalid_value')).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        `scheduler.feedback_invalid_value {"min":"${JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR.toLocaleString()}","max":"${JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR.toLocaleString()}"}`,
+      ),
+    ).toBeInTheDocument()
   })
 })

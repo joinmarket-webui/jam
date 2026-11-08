@@ -219,7 +219,7 @@ export const SweepForm = ({
                   </div>
                 </div>
                 {formState.errors.includeMakerSessions?.message ? (
-                  <FieldError>{formState.errors.includeMakerSessions.message}</FieldError>
+                  <FieldError>{t('scheduler.feedback_invalid_value')}</FieldError>
                 ) : null}
               </Field>
 
