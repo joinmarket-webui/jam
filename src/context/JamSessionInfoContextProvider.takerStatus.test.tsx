@@ -184,4 +184,22 @@ describe('<JamSessionInfoContextProvider /> taker status', () => {
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('fetching_orderbook'))
     expect(screen.getByTestId('running')).toHaveTextContent('true')
   })
+
+  it('reports the outcome of a new payment attempt that ended before it was observed running', async () => {
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'complete', txid: 'old-txid' })
+
+    renderProvider()
+
+    await waitFor(() => expect(screen.getByTestId('txid')).toHaveTextContent('old-txid'))
+
+    // the backend resets the previous outcome before accepting a new attempt, hence
+    // a snapshot fetched after the attempt has been made belongs to the new run
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'failed', error: 'no offers' })
+
+    act(() => screen.getByRole('button', { name: 'start' }).click())
+
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('failed'))
+    expect(screen.getByTestId('txid')).toHaveTextContent('-')
+    expect(screen.getByTestId('running')).toHaveTextContent('false')
+  })
 })
