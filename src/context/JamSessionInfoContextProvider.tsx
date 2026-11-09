@@ -134,7 +134,9 @@ export const JamSessionInfoContextProvider = ({
     const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
     const paymentAttempt = isWalletPayment && isCoinJoin ? currentPaymentAttempt : undefined
 
-    // ignore a snapshot of a previous run fetched before the current payment attempt has been made
+    // ignore a snapshot of a previous run fetched before the current payment attempt has been made.
+    // snapshots fetched afterwards are safe: NG marks the taker as running and clears the previous
+    // outcome before responding to `POST /taker/coinjoin` (and `createdAt` is set after it responded)
     const isStaleTakerStatus =
       paymentAttempt !== undefined &&
       takerStatusData?.running !== true &&

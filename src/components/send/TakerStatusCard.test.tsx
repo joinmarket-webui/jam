@@ -110,6 +110,23 @@ describe('TakerStatusCard', () => {
     expect(screen.getByText('#1')).toBeInTheDocument()
   })
 
+  it('renders sweep badge for a sweep payment', () => {
+    const sweepTakerInfo = {
+      ...sampleTakerInfo,
+      currentPaymentAttempt: {
+        ...sampleAttempt,
+        data: {
+          ...sampleAttempt.data,
+          amount: { amount: undefined, isSweep: true as const, sweepAmount: 50_000, sweepUtxos: [] },
+        },
+      },
+    }
+
+    render(<TakerStatusCard takerInfo={sweepTakerInfo} jars={sampleJars} isAborting={false} onAbort={vi.fn()} />)
+
+    expect(screen.getByText('send.confirm_send_modal.badge_sweep')).toBeInTheDocument()
+  })
+
   it('calls onAbort when abort button is clicked', async () => {
     const user = userEvent.setup()
     const onAbort = vi.fn()

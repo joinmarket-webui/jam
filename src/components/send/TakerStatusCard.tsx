@@ -126,7 +126,7 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }
                           {t('send.confirm_send_modal.label_amount')}
                           {data.amount.isSweep ? (
                             <Badge variant="outline" className="text-xs">
-                              Sweep
+                              {t('send.confirm_send_modal.badge_sweep')}
                             </Badge>
                           ) : null}
                         </Label>
