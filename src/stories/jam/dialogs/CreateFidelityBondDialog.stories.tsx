@@ -167,9 +167,6 @@ export const SingleJar: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/v1/session', () => {
-          return HttpResponse.json({ session: true })
-        }),
         http.get('/api/v1/wallet/:walletFileName/display', () => {
           return HttpResponse.json({
             walletinfo: {
@@ -203,22 +200,7 @@ export const SingleJar: Story = {
             utxos: [mockUtxo1],
           })
         }),
-        http.get('/api/v1/wallet/:walletFileName/address/timelock/new/:lockdate', () => {
-          return HttpResponse.json({
-            address: 'bcrt1qtimelockaddress000000000000000000000000000',
-          })
-        }),
-        http.post('/api/v1/wallet/:walletFileName/freeze', () => {
-          return HttpResponse.json({})
-        }),
-        http.post('/api/v1/wallet/:walletFileName/taker/direct-send', () => {
-          return HttpResponse.json({
-            txinfo: {
-              txid: '4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b',
-              hex: '',
-            },
-          })
-        }),
+        ...defaultHandlers,
       ],
     },
   },
@@ -231,9 +213,6 @@ export const NoEligibleUtxos: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/v1/session', () => {
-          return HttpResponse.json({ session: true })
-        }),
         http.get('/api/v1/wallet/:walletFileName/display', () => {
           return HttpResponse.json({
             walletinfo: {
@@ -267,11 +246,7 @@ export const NoEligibleUtxos: Story = {
             utxos: [mockUtxo2],
           })
         }),
-        http.get('/api/v1/wallet/:walletFileName/address/timelock/new/:lockdate', () => {
-          return HttpResponse.json({
-            address: 'bcrt1qtimelockaddress000000000000000000000000000',
-          })
-        }),
+        ...defaultHandlers,
       ],
     },
   },
@@ -284,25 +259,6 @@ export const CreateError: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/v1/session', () => {
-          return HttpResponse.json({ session: true })
-        }),
-        http.get('/api/v1/wallet/:walletFileName/display', () => {
-          return HttpResponse.json(mockWalletDisplay)
-        }),
-        http.get('/api/v1/wallet/:walletFileName/utxos', () => {
-          return HttpResponse.json({
-            utxos: [mockUtxo1, mockUtxo2, mockUtxo3],
-          })
-        }),
-        http.get('/api/v1/wallet/:walletFileName/address/timelock/new/:lockdate', () => {
-          return HttpResponse.json({
-            address: 'bcrt1qtimelockaddress000000000000000000000000000',
-          })
-        }),
-        http.post('/api/v1/wallet/:walletFileName/freeze', () => {
-          return HttpResponse.json({})
-        }),
         http.post('/api/v1/wallet/:walletFileName/taker/direct-send', () => {
           return HttpResponse.json(
             {
@@ -311,6 +267,7 @@ export const CreateError: Story = {
             { status: 500 },
           )
         }),
+        ...defaultHandlers,
       ],
     },
   },
