@@ -729,7 +729,8 @@
         "label_transaction_id": "Transaction ID",
         "text_copy_transaction_id": "Transaction ID copied",
         "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?",
-        "text_success_subtitle": "Your Fidelity Bond has been created successfully"
+        "text_success_subtitle": "Your Fidelity Bond has been created successfully",
+        "error_unfreezing_utxos_on_close": "Some UTXOs that were frozen for the Fidelity Bond could not be unfrozen. You can unfreeze them in the jar details."
       },
       "unfreeze_utxos": {
         "done": "UTXOs unfrozen"
