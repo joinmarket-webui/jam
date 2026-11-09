@@ -121,7 +121,7 @@ const renderAtReview = async () => {
 
   await userEvent.click(screen.getByText('select-lockdate'))
   await userEvent.click(screen.getByRole('button', { name: 'global.next' }))
-  await userEvent.click(await screen.findByText('large:0'))
+  await screen.findByText('large:0')
   await userEvent.click(screen.getByRole('button', { name: 'global.next' }))
   await userEvent.click(
     await screen.findByRole('button', { name: 'earn.fidelity_bond.freeze_utxos.text_primary_button' }),

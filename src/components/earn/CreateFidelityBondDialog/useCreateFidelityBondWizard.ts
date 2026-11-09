@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { gettimelockaddressOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { DirectSendResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -26,11 +26,21 @@ import {
 import type { Step } from './types'
 import { generateLockdateOptions } from './types'
 
+export type UseCreateFidelityBondWizardOptions = {
+  /**
+   * Automatically preselects the recommended lockdate, the jar with the best eligible
+   * balance, and the highest-value candidate coinjoined UTXO (#372, #650).
+   */
+  preselectDefaults?: boolean
+}
+
 export function useCreateFidelityBondWizard(
   open: boolean,
   onOpenChange: (open: boolean) => void,
   walletFileName: WalletFileName,
+  options?: UseCreateFidelityBondWizardOptions,
 ) {
+  const preselectDefaults = options?.preselectDefaults ?? false
   const { t } = useTranslation()
   const client = useApiClient()
   const walletInfo = useJamWalletInfoContext()
@@ -61,11 +71,68 @@ export function useCreateFidelityBondWizard(
     () => createFidelityBondFormSchema(availableLockdateOptions, jarIndexes, t),
     [availableLockdateOptions, jarIndexes, t],
   )
+  const jarsWithUtxos = useMemo(() => {
+    return walletInfo.jars.filter((jar) => {
+      const availableUtxos = jar.utxos.filter((utxo) =>
+        fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status),
+      )
+      return availableUtxos.length > 0
+    })
+  }, [walletInfo.addressSummary, walletInfo.jars])
+
+  const recommendedLockdate = useMemo(
+    () => fb.getRecommendedLockdate(availableLockdateOptions.map((option) => option.value)),
+    [availableLockdateOptions],
+  )
+
+  const recommendedJar = useMemo(
+    () => fb.findBestFidelityBondJar(jarsWithUtxos, walletInfo.addressSummary),
+    [jarsWithUtxos, walletInfo.addressSummary],
+  )
+
+  const initialDefaultValues = useMemo<CreateFidelityBondFormValues>(() => {
+    if (!preselectDefaults) {
+      return CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES
+    }
+
+    const defaultJar = recommendedJar?.jarIndex
+    const defaultUtxo = recommendedJar
+      ? fb.findBestCandidateUtxo(recommendedJar.utxos, walletInfo.addressSummary)
+      : undefined
+
+    return {
+      lockdate: recommendedLockdate,
+      source: {
+        fromJar: defaultJar,
+      },
+      utxoIds: defaultUtxo ? [defaultUtxo.utxo] : [],
+      confirmationAccepted: false,
+    }
+  }, [preselectDefaults, recommendedJar, recommendedLockdate, walletInfo.addressSummary])
+
   const form = useForm<CreateFidelityBondFormValues, unknown, CreateFidelityBondFormValues>({
     mode: 'onChange',
-    defaultValues: CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES,
+    defaultValues: initialDefaultValues,
     resolver: yupResolver(formSchema),
   })
+
+  // Preselect recommended lockdate, jar, and best candidate UTXO when dialog opens or when wallet data finishes loading
+  useEffect(() => {
+    if (!open || !preselectDefaults) return
+
+    if (!form.getValues('lockdate') && recommendedLockdate) {
+      form.setValue('lockdate', recommendedLockdate, { shouldValidate: true })
+    }
+
+    if (form.getValues('source.fromJar') === undefined && recommendedJar) {
+      const jarIndex = recommendedJar.jarIndex
+      form.setValue('source.fromJar', jarIndex, { shouldValidate: true })
+      const bestUtxo = fb.findBestCandidateUtxo(recommendedJar.utxos, walletInfo.addressSummary)
+      if (bestUtxo && form.getValues('utxoIds').length === 0) {
+        form.setValue('utxoIds', [bestUtxo.utxo], { shouldValidate: true })
+      }
+    }
+  }, [open, preselectDefaults, recommendedLockdate, recommendedJar, walletInfo.addressSummary, form])
 
   const watchedLockdate = useWatch({ control: form.control, name: 'lockdate' })
   const selectedLockdate: fb.Lockdate | '' = watchedLockdate ?? ''
@@ -86,6 +153,15 @@ export function useCreateFidelityBondWizard(
   }
   const setSelectedJarIndex = (jarIndex: JarIndex | undefined) => {
     form.setValue('source.fromJar', jarIndex, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
+    if (preselectDefaults && jarIndex !== undefined) {
+      const jar = walletInfo.jars.find((it) => it.jarIndex === jarIndex)
+      const bestUtxo = fb.findBestCandidateUtxo(jar?.utxos ?? [], walletInfo.addressSummary)
+      form.setValue('utxoIds', bestUtxo ? [bestUtxo.utxo] : [], {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      })
+    }
   }
   const setSelectedUtxoIds = (utxoIds: string[]) => {
     form.setValue('utxoIds', utxoIds, { shouldDirty: true, shouldTouch: true, shouldValidate: true })
@@ -104,15 +180,6 @@ export function useCreateFidelityBondWizard(
     if (selectedJarIndex === undefined) return undefined
     return walletInfo.jars.find((it) => it.jarIndex === selectedJarIndex)
   }, [walletInfo.jars, selectedJarIndex])
-
-  const jarsWithUtxos = useMemo(() => {
-    return walletInfo.jars.filter((jar) => {
-      const availableUtxos = jar.utxos.filter((utxo) =>
-        fb.utxo.isEligibleForCreation(utxo, walletInfo.addressSummary[utxo.address]?.status),
-      )
-      return availableUtxos.length > 0
-    })
-  }, [walletInfo.addressSummary, walletInfo.jars])
 
   const availableUtxos = useMemo(() => {
     if (selectedJar === undefined) return []
@@ -160,7 +227,23 @@ export function useCreateFidelityBondWizard(
 
   const handleReset = () => {
     setStep('select_date')
-    form.reset(CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES)
+    if (preselectDefaults) {
+      const defaultJar = recommendedJar?.jarIndex
+      const defaultUtxo = recommendedJar
+        ? fb.findBestCandidateUtxo(recommendedJar.utxos, walletInfo.addressSummary)
+        : undefined
+
+      form.reset({
+        lockdate: recommendedLockdate,
+        source: {
+          fromJar: defaultJar,
+        },
+        utxoIds: defaultUtxo ? [defaultUtxo.utxo] : [],
+        confirmationAccepted: false,
+      })
+    } else {
+      form.reset(CREATE_FIDELITY_BOND_FORM_DEFAULT_VALUES)
+    }
     setFrozenUtxos([])
     setUtxoPage(0)
     setTxResult(undefined)
@@ -488,6 +571,8 @@ export function useCreateFidelityBondWizard(
     handleCreateFidelityBond,
     handleUnfreezeUtxos,
     canProceed,
+    recommendedLockdate,
+    recommendedJar,
     getStepNumber,
     t,
   }

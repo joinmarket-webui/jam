@@ -778,4 +778,99 @@ describe('useCreateFidelityBondWizard', () => {
       expect(mocks.walletInfoRefetch).not.toHaveBeenCalled()
     })
   })
+
+  describe('smart preselection (preselectDefaults: true)', () => {
+    beforeEach(() => {
+      mocks.walletInfo.jars = [
+        jar(0, [utxo({ utxo: 'jar0-small:0', value: 50_000 })]),
+        jar(1, [utxo({ utxo: 'jar1-large:0', value: 200_000 }), utxo({ utxo: 'jar1-small:0', value: 30_000 })]),
+      ]
+    })
+
+    it('preselects recommended lockdate, best jar, and largest eligible UTXO on mount', () => {
+      const { result } = renderHook(() =>
+        useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat', { preselectDefaults: true }),
+      )
+
+      expect(result.current.selectedLockdate).toBe(minLockdateOption())
+      expect(result.current.selectedJarIndex).toBe(1)
+      expect(result.current.selectedUtxos.map((u) => u.utxo)).toEqual(['jar1-large:0'])
+      expect(result.current.utxosToFreeze.map((u) => u.utxo)).toEqual(['jar1-small:0'])
+      expect(result.current.totalAmount).toBe(200_000)
+    })
+
+    it('enables seamless step-by-step wizard progression without manual selection', async () => {
+      mocks.queryAddress = 'bcrt1qtimelockaddress'
+      const { result } = renderHook(() =>
+        useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat', { preselectDefaults: true }),
+      )
+
+      // Step 1: select_date
+      expect(result.current.step).toBe('select_date')
+      expect(result.current.canProceed()).toBe(true)
+      await act(async () => result.current.handleNext())
+
+      // Step 2: select_jar
+      expect(result.current.step).toBe('select_jar')
+      expect(result.current.selectedJarIndex).toBe(1)
+      expect(result.current.canProceed()).toBe(true)
+      await act(async () => result.current.handleNext())
+
+      // Step 3: select_utxos
+      expect(result.current.step).toBe('select_utxos')
+      expect(result.current.selectedUtxos.map((u) => u.utxo)).toEqual(['jar1-large:0'])
+      expect(result.current.canProceed()).toBe(true)
+      await act(async () => result.current.handleNext())
+
+      // Step 4: freeze_utxos
+      expect(result.current.step).toBe('freeze_utxos')
+      expect(result.current.utxosToFreeze.map((u) => u.utxo)).toEqual(['jar1-small:0'])
+      await act(async () => result.current.handleNext())
+
+      // Step 5: review
+      expect(result.current.step).toBe('review')
+      expect(result.current.frozenUtxos.map((u) => u.utxo)).toEqual(['jar1-small:0'])
+      expect(result.current.totalAmount).toBe(200_000)
+
+      act(() => result.current.setConfirmationChecked(true))
+      expect(result.current.canProceed()).toBe(true)
+      await act(async () => result.current.handleNext())
+
+      expect(result.current.step).toBe('success')
+    })
+
+    it('switches candidate UTXO automatically when user selects a different jar', () => {
+      const { result } = renderHook(() =>
+        useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat', { preselectDefaults: true }),
+      )
+
+      expect(result.current.selectedJarIndex).toBe(1)
+      expect(result.current.selectedUtxos.map((u) => u.utxo)).toEqual(['jar1-large:0'])
+
+      act(() => result.current.setSelectedJarIndex(0))
+
+      expect(result.current.selectedJarIndex).toBe(0)
+      expect(result.current.selectedUtxos.map((u) => u.utxo)).toEqual(['jar0-small:0'])
+      expect(result.current.totalAmount).toBe(50_000)
+    })
+
+    it('restores smart defaults on reset', () => {
+      const { result } = renderHook(() =>
+        useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat', { preselectDefaults: true }),
+      )
+
+      act(() => {
+        result.current.setSelectedLockdate('')
+        result.current.setSelectedJarIndex(0)
+      })
+      expect(result.current.selectedJarIndex).toBe(0)
+
+      act(() => result.current.handleReset())
+
+      expect(result.current.step).toBe('select_date')
+      expect(result.current.selectedLockdate).toBe(minLockdateOption())
+      expect(result.current.selectedJarIndex).toBe(1)
+      expect(result.current.selectedUtxos.map((u) => u.utxo)).toEqual(['jar1-large:0'])
+    })
+  })
 })

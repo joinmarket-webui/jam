@@ -1,5 +1,5 @@
 import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
-import type { Milliseconds, MM, Seconds, YYYY } from '@/types/global'
+import type { JarIndex, Milliseconds, MM, Seconds, YYYY } from '@/types/global'
 
 export type Lockdate = `${YYYY}-${MM}`
 
@@ -150,4 +150,78 @@ export const existingLockdates = (fbUtxos: Array<Utxo>): Lockdate[] => {
     .filter((locktime): locktime is Milliseconds => locktime !== null)
     .map((locktime) => lockdate.fromTimestamp(locktime))
   return [...new Set(lockdates)]
+}
+
+/**
+ * Returns the recommended lockdate from a list of available lockdates.
+ *
+ * Chooses the first available lockdate at or after {@link refTime}.
+ *
+ * @param availableLockdates list of lockdates available for selection
+ * @param refTime current time reference (defaults to Date.now())
+ * @returns the recommended lockdate, or undefined if no lockdates are available
+ */
+export const getRecommendedLockdate = (
+  availableLockdates: readonly Lockdate[],
+  refTime: Milliseconds = Date.now(),
+): Lockdate | undefined => {
+  return availableLockdates.find((d) => lockdate.toTimestamp(d) > refTime) ?? availableLockdates[0]
+}
+
+/**
+ * Finds the single best candidate UTXO to use for creating a fidelity bond.
+ *
+ * Filters for eligible coins (unfrozen, non-bond, cj-out) and selects the one
+ * with the highest satoshi value.
+ *
+ * @param utxos list of UTXOs to search
+ * @param addressSummary optional map of address statuses
+ * @returns the highest-value eligible UTXO, or undefined if none are eligible
+ */
+export const findBestCandidateUtxo = (
+  utxos: readonly Utxo[],
+  addressSummary?: Record<string, { status?: string }>,
+): Utxo | undefined => {
+  const eligible = utxos.filter((u) => utxo.isEligibleForCreation(u, addressSummary?.[u.address]?.status))
+  if (eligible.length === 0) return undefined
+  return eligible.toSorted((a, b) => b.value - a.value)[0]
+}
+
+/**
+ * Identifies the best jar for creating a fidelity bond from a list of jars.
+ *
+ * Ranks jars by the highest-value candidate UTXO they contain, breaking ties
+ * by total eligible balance in the jar.
+ *
+ * @param jars list of jars to compare
+ * @param addressSummary optional map of address statuses
+ * @returns the best jar, or undefined if no jars contain eligible UTXOs
+ */
+export const findBestFidelityBondJar = <T extends { jarIndex: JarIndex; utxos: Utxo[] }>(
+  jars: readonly T[],
+  addressSummary?: Record<string, { status?: string }>,
+): T | undefined => {
+  let bestJar: T | undefined
+  let bestUtxoValue = -1
+  let bestTotalEligible = -1
+
+  for (const jar of jars) {
+    const candidateUtxo = findBestCandidateUtxo(jar.utxos, addressSummary)
+    if (!candidateUtxo) continue
+
+    const totalEligible = jar.utxos
+      .filter((u) => utxo.isEligibleForCreation(u, addressSummary?.[u.address]?.status))
+      .reduce((sum, u) => sum + u.value, 0)
+
+    if (
+      candidateUtxo.value > bestUtxoValue ||
+      (candidateUtxo.value === bestUtxoValue && totalEligible > bestTotalEligible)
+    ) {
+      bestJar = jar
+      bestUtxoValue = candidateUtxo.value
+      bestTotalEligible = totalEligible
+    }
+  }
+
+  return bestJar
 }
