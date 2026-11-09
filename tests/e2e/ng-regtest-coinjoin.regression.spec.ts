@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Request } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 import {
@@ -27,6 +27,7 @@ const EVIDENCE_DIR = path.resolve(import.meta.dirname, '../../test-evidence')
 test.describe('JoinMarket NG Regtest CoinJoin Regression Suite', () => {
   let walletName: string
   let walletPassword: string
+  let previousTxid: string
 
   const FUNDING_AMOUNT_BTC = '0.001'
   const FUNDING_AMOUNT_SATS = 100_000
@@ -103,6 +104,58 @@ test.describe('JoinMarket NG Regtest CoinJoin Regression Suite', () => {
       await doneButton.click()
       await expect(statusCard).toBeHidden()
       await expect(page.locator('#send-destination')).toHaveValue('')
+
+      previousTxid = txidMatch![0]
+    })
+
+    await test.step('C2. A new collaborative send never reports the outcome of the previous run', async () => {
+      // the change of the previous run must be confirmed before it can be spent by the taker
+      await mineBlocksViaBitcoinCore(5)
+
+      // record every taker status the backend reports after it accepted the new attempt
+      let coinjoinAccepted = false
+      const statusRequestsAfterAccept: Request[] = []
+      page.on('response', (response) => {
+        if (response.request().method() === 'POST' && response.url().endsWith('/taker/coinjoin')) {
+          coinjoinAccepted = response.ok()
+        }
+      })
+      page.on('request', (request) => {
+        if (coinjoinAccepted && request.url().endsWith('/taker/status')) {
+          statusRequestsAfterAccept.push(request)
+        }
+      })
+
+      const destinationAddress = await getNewAddressFromBitcoinCore()
+      await submitCollaborativeSend(page, { address: destinationAddress, amountSats: COINJOIN_AMOUNT_SATS })
+
+      const statusCard = takerStatusCard(page)
+      await expect(statusCard).toBeVisible({ timeout: 30_000 })
+      await expect(statusCard).not.toContainText(previousTxid)
+
+      // abort the new run (unless it already ended) to keep the suite short
+      const abortButton = statusCard.getByRole('button', { name: /^abort$/i })
+      const doneButton = statusCard.getByRole('button', { name: /^done$/i })
+      await expect(abortButton.or(doneButton)).toBeVisible({ timeout: 30_000 })
+      if (await abortButton.isVisible()) {
+        await abortButton.click()
+        await page
+          .getByRole('dialog')
+          .getByRole('button', { name: /^abort$/i })
+          .click()
+      }
+      await expect(doneButton).toBeVisible({ timeout: 120_000 })
+      await expect(statusCard).not.toContainText(previousTxid)
+
+      expect(statusRequestsAfterAccept.length, 'Taker status must be fetched after the attempt').toBeGreaterThan(0)
+      for (const request of statusRequestsAfterAccept) {
+        const response = await request.response()
+        const body = (await response?.json()) as { running: boolean; txid?: string | null } | undefined
+        expect(body?.txid, 'Taker status must not report the transaction of the previous run').not.toBe(previousTxid)
+      }
+
+      await doneButton.click()
+      await expect(statusCard).toBeHidden()
     })
 
     await test.step('D. Lock wallet and verify logout', async () => {
