@@ -27,7 +27,11 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
   if (data.destination === undefined || !isValidAddress(data.destination.address)) {
     throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
   }
-  if (data.source?.fromJar === undefined) {
+  const sourceJarIndex = ensureInteger(
+    data.source?.fromJar,
+    'Cannot trigger non-collaborative transaction: Invalid source jar given.',
+  )
+  if (sourceJarIndex < 0) {
     throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
   }
   if (data.amount.isSweep === true && data.amount.amount !== undefined) {
@@ -37,12 +41,22 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
     throw new Error('Cannot trigger non-collaborative transaction: Missing utxos to sweep.')
   }
 
+  const amountSats = data.amount.isSweep
+    ? 0
+    : ensureInteger(data.amount.amount, 'Cannot trigger non-collaborative transaction: Invalid amount given.')
+  if (!data.amount.isSweep && amountSats <= 0) {
+    throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
+  }
+
   const txfee = txFeeValueForRequest(data)
+  if (txfee !== undefined && (!isValidNumber(txfee) || txfee <= 0)) {
+    throw new Error('Cannot trigger non-collaborative transaction: Invalid transaction fee given.')
+  }
 
   return {
-    amount_sats: data.amount.isSweep === true ? 0 : data.amount.amount,
+    amount_sats: amountSats,
     destination: normalizeBitcoinAddress(data.destination.address),
-    mixdepth: data.source.fromJar,
+    mixdepth: sourceJarIndex,
     txfee,
     input_utxos: data.amount.isSweep === true ? data.amount.sweepUtxos : undefined,
   }
