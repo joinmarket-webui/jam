@@ -104,6 +104,7 @@
       "modal_lock_wallet_title": "Wallet sperren",
       "modal_lock_wallet_maker_running_text": "Earn Modus aktiv. Das Sperren der Wallet wird diesen Service stoppen. ",
       "modal_lock_wallet_coinjoin_in_progress_text": "Eine gemeinschaftliche Transaktion ist derzeit im Gange. Das Sperren der Wallet stoppt diese. ",
+      "modal_lock_wallet_scheduler_running_text": "Ein geplanter Sweep ist derzeit im Gange. Das Sperren der Wallet stoppt den Scheduler. ",
       "modal_lock_wallet_alternative_action_text": "Du kannst dein Browser Fenster schließen. Jam wird im Hintergrund weiterlaufen."
     }
   },
