@@ -40,7 +40,7 @@ const createJamAuthenticationMiddleware = () => {
   }
 }
 
-export function unauthorizedResponseInterceptor(response: Response) {
+export function unauthorizedResponseInterceptor(response: Response, request: Request) {
   if (response.status === 401) {
     // "invalid_token" error handling:
     // - joinmarket-clientserver (https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.12/src/jmclient/wallet_rpc.py#L285-L290)
@@ -49,7 +49,13 @@ export function unauthorizedResponseInterceptor(response: Response) {
     const wwwAuthenticate = response.headers.get('WWW-Authenticate')
     const isInvalidToken =
       typeof wwwAuthenticate === 'string' && wwwAuthenticate.toLowerCase().includes('error="invalid_token"')
-    if (isInvalidToken) {
+    const currentToken = authStore.getState().state?.auth?.token
+    // A delayed response must not clear a newer login or refreshed token.
+    if (
+      isInvalidToken &&
+      currentToken &&
+      request.headers.get('x-jm-authorization') === buildAuthHeader(currentToken)[1]
+    ) {
       authStore.getState().clear()
       queryClient.clear()
     }

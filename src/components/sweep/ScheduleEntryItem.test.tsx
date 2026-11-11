@@ -103,4 +103,36 @@ describe('ScheduleEntryItem', () => {
     expect(desc?.textContent).toContain('A collaborative transaction as')
     expect(screen.getByText('maker')).toBeInTheDocument()
   })
+
+  it('renders gracefully without crashing when started_at is malformed or invalid', () => {
+    const entry = toScheduleEntry(
+      {
+        index: 0,
+        kind: 'taker_coinjoin',
+        status: 'running',
+        wait_seconds: 0,
+        started_at: 'invalid-date',
+        finished_at: 'invalid-date',
+        error: null,
+        mixdepth: 0,
+        amount: 0,
+        amount_fraction: null,
+        counterparty_count: 1,
+        destination: 'INTERNAL',
+        txid: null,
+        duration_seconds: null,
+        target_cj_count: null,
+        idle_timeout_seconds: null,
+        cj_served: null,
+        attempt_count: 0,
+      },
+      [],
+    )
+
+    expect(entry.startedAt).toBeUndefined()
+    expect(entry.finishedAt).toBeUndefined()
+
+    render(<ScheduleEntryItem value={entry} active={true} />)
+    expect(screen.queryByText('scheduler.label_started_at')).not.toBeInTheDocument()
+  })
 })

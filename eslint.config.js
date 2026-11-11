@@ -2,6 +2,7 @@
 import js from '@eslint/js'
 import pluginQuery from '@tanstack/eslint-plugin-query'
 import compat from 'eslint-plugin-compat'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import storybook from 'eslint-plugin-storybook'
@@ -134,6 +135,19 @@ export default defineConfig(
 
       'unicorn/switch-case-braces': ['off'], // TODO: enable
       'unicorn/no-null': ['off'], // TODO: enable
+    },
+  },
+  {
+    files: ['./src/**/*.tsx'],
+    ignores: [
+      './src/components/ui/*.tsx', // shadcn components
+      './src/**/*.test.tsx',
+      './src/**/*.stories.tsx',
+    ],
+    extends: [jsxA11y.flatConfigs.recommended],
+    rules: {
+      'jsx-a11y/anchor-has-content': ['off'], // content is injected by <Trans components={...}>
+      'jsx-a11y/no-autofocus': ['error', { ignoreNonDOM: true }],
     },
   },
   compat.configs['flat/recommended'],

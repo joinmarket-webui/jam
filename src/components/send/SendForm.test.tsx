@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { AddressSummary, Jar } from '@/context/JamWalletInfoContext'
 import type { BalanceSummary } from '@/lib/balanceSummary'
@@ -518,6 +519,46 @@ describe('SendForm', () => {
     await flushActUpdates()
   })
 
+  it('sets the minimum amount according to the destination address type', async () => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+    expect(amountInput).toHaveAttribute('min', '294')
+
+    fireEvent.change(destinationInput, {
+      target: { value: 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr' },
+    })
+    await flushActUpdates()
+    expect(amountInput).toHaveAttribute('min', '330')
+
+    fireEvent.change(destinationInput, { target: { value: '1BitcoinEaterAddressDontSend8MUo1T' } })
+    await flushActUpdates()
+    expect(amountInput).toHaveAttribute('min', '546')
+  })
+
+  it('revalidates the amount against the dust limit when the destination changes', async () => {
+    renderForm()
+
+    const destinationInput = document.querySelector('#send-destination') as HTMLInputElement
+    const amountInput = document.querySelector('#send-amount') as HTMLInputElement
+    const dustLimitError = 'send.feedback_amount_below_dust_limit {"dustLimit":330}'
+
+    fireEvent.change(destinationInput, {
+      target: { value: 'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr' },
+    })
+    fireEvent.change(amountInput, { target: { value: '300' } })
+    fireEvent.submit(document.querySelector('form')!)
+    await flushActUpdates()
+
+    expect(await screen.findByText(dustLimitError)).toBeInTheDocument()
+
+    fireEvent.change(destinationInput, { target: { value: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq' } })
+    await flushActUpdates()
+
+    await waitFor(() => expect(screen.queryByText(dustLimitError)).not.toBeInTheDocument())
+  })
+
   it('shows a network badge for a non-mainnet destination address', async () => {
     renderForm()
 
@@ -579,5 +620,23 @@ describe('SendForm', () => {
     expect(screen.queryByText('orderbook.alert_precheck_empty_title')).not.toBeInTheDocument()
 
     await flushActUpdates()
+  })
+
+  it('allows typing a number of collaborators whose first digit is below the minimum', async () => {
+    const user = userEvent.setup()
+    renderForm({ debug: true })
+
+    await user.click(screen.getByRole('button', { name: /send.sending_options/i }))
+
+    const input = document.querySelector<HTMLInputElement>('[data-slot="slider-input"]')!
+    expect(input).toHaveAttribute('min', '4')
+
+    await user.tripleClick(input)
+    await user.keyboard('12')
+    await user.tab()
+
+    expect(input).toHaveValue(12)
+    const valuesJson = screen.getByText('values:').nextElementSibling?.textContent ?? '{}'
+    expect((JSON.parse(valuesJson) as { numCollaborators?: number }).numCollaborators).toBe(12)
   })
 })

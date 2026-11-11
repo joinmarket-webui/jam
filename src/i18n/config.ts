@@ -14,10 +14,18 @@ const resources = languages.reduce((acc, lng) => {
 // Registered before `init` so the initially detected language is applied as well.
 i18n.on('languageChanged', (lng) => (document.documentElement.lang = lng))
 
-void i18n.use(LanguageDetector).use(initReactI18next).init({
-  resources,
-  fallbackLng: 'en',
-})
+void i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: 'en',
+    interpolation: {
+      // React escapes rendered text already. Escaping here again would show
+      // entities like `&#x2F;` or `&#39;` in place of interpolated values.
+      escapeValue: false,
+    },
+  })
 
 // eslint-disable-next-line unicorn/prefer-export-from -- enables nicer syntax
 export default i18n

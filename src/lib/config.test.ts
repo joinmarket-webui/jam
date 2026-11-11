@@ -108,6 +108,7 @@ describe('createApiClient', () => {
 
 describe('unauthorizedResponseInterceptor', () => {
   let queryClientClearSpy: MockInstance<typeof queryClient.clear>
+  let request: Request
 
   beforeEach(() => {
     queryClientClearSpy = vi.spyOn(queryClient, 'clear')
@@ -121,6 +122,7 @@ describe('unauthorizedResponseInterceptor', () => {
       auth: { token: 'tok', refresh_token: 'ref', expiresAt: Date.now() + 1_800_000 },
     })
     queryClientClearSpy.mockReset()
+    request = new Request('https://example.test', { headers: buildAuthHeaderMap('tok') })
   })
 
   afterEach(() => {
@@ -136,6 +138,7 @@ describe('unauthorizedResponseInterceptor', () => {
         status: 401,
         headers: { 'WWW-Authenticate': 'Bearer, error="invalid_token", error_description="Invalid token."' },
       }),
+      request,
     )
 
     expect(authStore.getState().state).toBeUndefined()
@@ -146,25 +149,26 @@ describe('unauthorizedResponseInterceptor', () => {
       status: 401,
       headers: { 'WWW-Authenticate': 'Bearer, error="invalid_token", error_description="Invalid token."' },
     })
-    const result = unauthorizedResponseInterceptor(response)
+    const result = unauthorizedResponseInterceptor(response, request)
     expect(result).toBe(response)
   })
 
   it('should not clear auth on non-auth 401 responses', () => {
-    unauthorizedResponseInterceptor(new Response(null, { status: 401 }))
+    unauthorizedResponseInterceptor(new Response(null, { status: 401 }), request)
     unauthorizedResponseInterceptor(
       new Response(null, {
         status: 401,
         headers: { 'WWW-Authenticate': 'Bearer, error="service_state", error_description="Not running."' },
       }),
+      request,
     )
     expect(authStore.getState().state?.auth?.token).toBe('tok')
   })
 
   it('should not clear auth on non-401 responses', () => {
-    unauthorizedResponseInterceptor(new Response(null, { status: 200 }))
-    unauthorizedResponseInterceptor(new Response(null, { status: 403 }))
-    unauthorizedResponseInterceptor(new Response(null, { status: 500 }))
+    unauthorizedResponseInterceptor(new Response(null, { status: 200 }), request)
+    unauthorizedResponseInterceptor(new Response(null, { status: 403 }), request)
+    unauthorizedResponseInterceptor(new Response(null, { status: 500 }), request)
 
     expect(authStore.getState().state?.auth?.token).toBe('tok')
   })
