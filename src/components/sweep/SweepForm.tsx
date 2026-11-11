@@ -263,16 +263,10 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.minNumberOfCollaborators?.message ? (
-                  <FieldError>
-                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
-                    {t('scheduler.feedback_invalid_min_value')}
-                  </FieldError>
+                  <FieldError>{formState.errors.minNumberOfCollaborators.message}</FieldError>
                 ) : null}
                 {formState.errors.maxNumberOfCollaborators?.message ? (
-                  <FieldError>
-                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
-                    {t('scheduler.feedback_invalid_max_value')}
-                  </FieldError>
+                  <FieldError>{formState.errors.maxNumberOfCollaborators.message}</FieldError>
                 ) : null}
               </Field>
 
@@ -301,10 +295,7 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.minNumberOfTransactionsPerJar?.message ? (
-                  <FieldError>
-                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
-                    {t('scheduler.feedback_invalid_value')}
-                  </FieldError>
+                  <FieldError>{formState.errors.minNumberOfTransactionsPerJar.message}</FieldError>
                 ) : null}
               </Field>
 
@@ -331,10 +322,7 @@ export const SweepForm = ({
                   disabled={disabled}
                 />
                 {formState.errors.roundingChanceInPercent?.message ? (
-                  <FieldError>
-                    {/* TODO: mention the range, e.g. "between {{ min }} and {{ max }}" */}
-                    {t('scheduler.feedback_invalid_value')}
-                  </FieldError>
+                  <FieldError>{formState.errors.roundingChanceInPercent.message}</FieldError>
                 ) : null}
               </Field>
             </FieldSet>
