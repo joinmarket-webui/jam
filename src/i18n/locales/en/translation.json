@@ -200,6 +200,7 @@
       "modal_lock_wallet_title": "Lock Wallet",
       "modal_lock_wallet_maker_running_text": "Earn is active. Locking the wallet will stop the service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "A collaborative transaction is currently in progress. Locking the wallet will stop the service.",
+      "modal_lock_wallet_scheduler_running_text": "A scheduled sweep is currently in progress. Locking the wallet will stop the scheduler.",
       "modal_lock_wallet_alternative_action_text": "You can close the browser window to let it run in the background."
     }
   },
