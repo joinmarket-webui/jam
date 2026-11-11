@@ -16,6 +16,7 @@ import { FeeConfigDialog } from '@/components/settings/fees/FeeConfigDialog'
 import { SweepPreconditionAlert } from '@/components/sweep/SweepPreconditionAlert'
 import { SweepScheduleProgress } from '@/components/sweep/SweepScheduleProgress'
 import { SweepStartConfirmDialog } from '@/components/sweep/SweepStartConfirmDialog'
+import { SweepStopConfirmDialog } from '@/components/sweep/SweepStopConfirmDialog'
 import { buildSweepPreconditionSummary } from '@/components/sweep/preconditions'
 import { isPlanTerminated, toSchedule } from '@/components/sweep/scheduleUtils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -75,6 +76,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [showScheduleConfirmDialog, setShowScheduleConfirmDialog] = useState<TumblerPlanRequest>()
+  const [showStopConfirmDialog, setShowStopConfirmDialog] = useState(false)
   const [alertMessage, setAlertMessage] = useState<string>()
   const {
     hasOrders,
@@ -259,9 +261,13 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }
 
   const stopSchedule = async () => {
-    await stopScheduleMutationMutateAsync({
-      path: { walletname: walletFileName },
-    })
+    try {
+      await stopScheduleMutationMutateAsync({
+        path: { walletname: walletFileName },
+      })
+    } finally {
+      setShowStopConfirmDialog(false)
+    }
   }
 
   const deleteSchedule = async () => {
@@ -291,6 +297,12 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         totalBalanceInSats={walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats}
         destinationAddresses={currentSchedule?.summary.externalDestinations.map((it) => it.address)}
         totalActions={currentSchedule?.entries.length}
+      />
+      <SweepStopConfirmDialog
+        open={showStopConfirmDialog}
+        onOpenChange={setShowStopConfirmDialog}
+        onConfirm={stopSchedule}
+        isStopping={isWaitingSchedulerStop}
       />
       <div className="mx-auto max-w-4xl space-y-3 p-4" ref={pageTopElementRef}>
         <PageTitle
@@ -375,7 +387,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                 {schedulerRunning && currentSchedule.summary.status.running ? (
                   <Button
                     type="button"
-                    onClick={() => void stopSchedule()}
+                    onClick={() => setShowStopConfirmDialog(true)}
                     disabled={isWaitingSchedulerStop}
                     size="lg"
                     className="w-full"

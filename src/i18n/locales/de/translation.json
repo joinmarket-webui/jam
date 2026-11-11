@@ -582,6 +582,10 @@
       "actions_count_one": "{{ count }} Aktion",
       "actions_count_other": "{{ count }} Aktionen"
     },
+    "confirm_stop_modal": {
+      "title": "Geplanten Sweep stoppen",
+      "text_body": "Bist du sicher, dass du den geplanten Sweep abbrechen möchtest? Alle noch ausstehenden Transaktionen im Ablaufplan werden abgebrochen."
+    },
     "alert_schedule_completed_title": "Geplanter Sweep erfolgreich abgeschlossen.",
     "alert_schedule_failed_title": "Geplanter Sweep fehlgeschlagen.",
     "alert_schedule_cancelled_title": "Geplanter Sweep abgebrochen.",
