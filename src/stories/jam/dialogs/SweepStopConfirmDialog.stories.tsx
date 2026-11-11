@@ -34,4 +34,3 @@ export const Stopping: Story = {
     onConfirm: async () => alert('Confirm stop clicked!'),
   },
 }
-

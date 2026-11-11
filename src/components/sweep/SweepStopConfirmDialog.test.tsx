@@ -52,4 +52,3 @@ describe('SweepStopConfirmDialog', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1)
   })
 })
-
