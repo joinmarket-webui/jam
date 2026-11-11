@@ -62,7 +62,7 @@ export function CreateFidelityBondDialog({
         onCancel={() => handleOpenChange(false)}
         onPrimary={() => void handleNext()}
         primaryDisabled={!canProceed()}
-        isLoading={freezeUtxo.isPending || directSend.isPending}
+        isLoading={freezeUtxo.isPending || unfreezeUtxo.isPending || directSend.isPending}
         primaryLabel={
           step === 'freeze_utxos'
             ? utxosToFreeze.length > 0
