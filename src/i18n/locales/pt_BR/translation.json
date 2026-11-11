@@ -28,7 +28,10 @@
       "error_freezing_utxos": "Não foi possível congelar os UTXOs."
     },
     "next": "Próximo",
-    "experimental": "Experimental"
+    "experimental": "Experimental",
+    "text_address_copied": "Endereço copiado",
+    "error_copy_address_failed": "Não foi possível copiar o endereço.",
+    "label_jar_n": "Frasco {{ jar }}"
   },
   "navbar": {
     "tab_send": "Enviar",
@@ -194,12 +197,12 @@
       "text_button_submit": "Salvar",
       "text_button_submitting": "Salvando...",
       "error_saving_fee_config_failed": "Erro ao salvar valores de configuração de taxa. Motivo: {{ reason }}",
-      "error_loading_fee_config_failed": "Erro ao carregar valores de configuração de taxa. "
+      "error_loading_fee_config_failed": "Erro ao carregar valores de configuração de taxa. Motivo: {{ reason }}"
     }
   },
   "logs": {
     "title": "Logs",
-    "error_loading_logs_failed": "Não foi possível recuperar o arquivo de log."
+    "error_loading_logs_failed": "Não foi possível recuperar o arquivo de log. Motivo: {{ reason }}"
   },
   "send": {
     "title": "Enviar",
@@ -208,7 +211,7 @@
     "description_num_collaborators": "Um número maior é melhor para privacidade, mas também aumenta a taxa de transação.",
     "error_invalid_num_collaborators": "Por favor, use entre {{ minNumCollaborators }} e {{ maxNumCollaborators }} colaboradores.",
     "taker_error_message_max_fees_config_missing": "Variáveis de configuração 'max_cj_fee_rel' e 'max_cj_fee_abs' devem ser definidas em seu joinmarket.cfg para enviar transações colaborativas. Considere adicioná-las à sua configuração manualmente.",
-    "error_loading_min_makers_failed": "Falha ao carregar valor de configuração 'minimum_makers'.",
+    "error_loading_min_makers_failed": "Falha ao carregar valor de configuração 'minimum_makers'. Motivo: {{ reason }}",
     "alert_payment_successful": "Pagamento bem-sucedido: {{ amount }} sats enviados para {{ address }} na transação {{ txid }}.",
     "text_maker_running": "'Lucrar' está ativo. Pare o serviço para enviar transações colaborativas.",
     "text_coinjoin_already_running": "Uma transação colaborativa está em andamento.",
@@ -243,6 +246,7 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "Estimativa de alta prioridade (próximo bloco)",
+      "text_miner_fee_in_targeted_blocks_many": "Usando estimativa para inclusão nos próximos {{ count }} blocos",
       "text_miner_fee_in_targeted_blocks_other": "Usando estimativa para inclusão nos próximos {{ count }} blocos"
     },
     "confirm_abort_modal": {
@@ -262,10 +266,8 @@
   "receive": {
     "title": "Receber",
     "subtitle": "Envie sats para o endereço abaixo para financiar sua carteira.",
-    "text_copy_address": "Endereço copiado",
     "error_copy_address_failed": "Não foi possível copiar o endereço.",
     "button_settings": "Opções de recebimento",
-    "feedback_invalid_amount": "Forneça um valor válido.",
     "button_new_address": "Obter novo endereço",
     "text_getting_address": "Obtendo novo endereço"
   },
@@ -303,8 +305,10 @@
     "report": {
       "title": "Relatório de Lucros",
       "text_report_summary_one": "{{ count }} registro",
+      "text_report_summary_many": "{{ count }} registros",
       "text_report_summary_other": "{{ count }} registros",
       "text_report_summary_filtered_one": "encontrado {{ count }} registro",
+      "text_report_summary_filtered_many": "encontrado {{ count }} registros",
       "text_report_summary_filtered_other": "encontrado {{ count }} registros",
       "placeholder_search": "Pesquisa",
       "heading_timestamp": "Data/Hora",
@@ -316,6 +320,7 @@
     },
     "title_fidelity_bonds_zero": "Criar um Título de Fidelidade",
     "title_fidelity_bonds_one": "Seu Título de Fidelidade",
+    "title_fidelity_bonds_many": "Seus Títulos de Fidelidade",
     "title_fidelity_bonds_other": "Seus Títulos de Fidelidade",
     "subtitle_fidelity_bonds": "Um título de fidelidade é um depósito de longo prazo que torna as identidades criptográficas deliberadamente caras. Ao bloquear fundos criptograficamente por um período específico, você sinaliza que é um participante sério do mercado e aumenta a chance de suas ofertas serem aceitas.",
     "fidelity_bond": {
@@ -337,6 +342,7 @@
         "description": "Selecione um ou mais UTXOs do frasco {{ jar }} para usar no título de fidelidade.",
         "utxo_card": {
           "confirmations_one": "{{ count }} confirmação",
+          "confirmations_many": "{{ count }} confirmações",
           "confirmations_other": "{{ count }} confirmações"
         }
       },
@@ -349,7 +355,6 @@
         "text_primary_button": "Criar título de fidelidade",
         "label_lock_date": "Trancado até",
         "label_jar": "Financiado por",
-        "label_jar_n": "Frasco {{ jar }}",
         "label_amount": "Valor a ser bloqueado",
         "label_address": "Os fundos serão bloqueados no tempo e enviados para"
       },
@@ -431,8 +436,10 @@
   "orderbook": {
     "title": "Livro de ordens",
     "text_orderbook_summary_one": "{{ count }} oferta por {{ counterpartyCount }} contraparte",
+    "text_orderbook_summary_many": "{{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "text_orderbook_summary_other": "{{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "text_orderbook_summary_filtered_one": "encontrado {{ count }} oferta por {{ counterpartyCount }} contraparte",
+    "text_orderbook_summary_filtered_many": "encontrado {{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "text_orderbook_summary_filtered_other": "encontrado {{ count }} ofertas por {{ counterpartyCount }} contrapartes",
     "alert_empty_orderbook": "Livro de ordens vazio",
     "error_loading_orderbook_failed": "Erro ao carregar o livro de ordens. Sua configuração local atual não suporta a busca do livro de ordens. Motivo: {{ reason }}",
@@ -490,6 +497,7 @@
     "utxo_list": {
       "title_zero": "Nenhum UTXO no frasco {{ jar }}",
       "title_one": "{{ count }} UTXO no frasco {{ jar }}",
+      "title_many": "{{ count }} UTXOs no frasco {{ jar }}",
       "title_other": "{{ count }} UTXOs no frasco {{ jar }}",
       "text_balance_sum_total": "<0></0> total",
       "button_freeze": "Congelados",
@@ -500,6 +508,11 @@
       "column_title_confirmations": "Conf.",
       "column_title_label_and_status": "Tags",
       "row_button_details": "Detalhes"
+    },
+    "address_list": {
+      "column_title_address": "Endereço",
+      "column_title_balance": "Valor",
+      "column_title_tags": "Tags"
     }
   },
   "sidebar": {

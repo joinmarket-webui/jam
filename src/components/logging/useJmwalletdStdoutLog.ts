@@ -70,10 +70,7 @@ export function useJmwalletdStdoutLog({
     if (!logQueryError) return undefined
 
     const reason = getErrorReason(logQueryError, t('global.errors.reason_unknown'))
-    const errorMessage = t('logs.error_loading_logs_failed', {
-      /* TODO: add reason to i18n string */
-      reason,
-    })
+    const errorMessage = t('logs.error_loading_logs_failed', { reason })
 
     return {
       variant: 'warning',

@@ -28,7 +28,10 @@
       "error_freezing_utxos": "Impossibile congelare gli UTXO."
     },
     "next": "Successivo",
-    "experimental": "sperimentale"
+    "experimental": "sperimentale",
+    "text_address_copied": "Indirizzo copiato",
+    "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
+    "label_jar_n": "Vaso {{ jar }}"
   },
   "navbar": {
     "tab_send": "Invia",
@@ -194,12 +197,12 @@
       "text_button_submit": "Salva",
       "text_button_submitting": "Salvataggio in corso...",
       "error_saving_fee_config_failed": "Errore durante il salvataggio dei valori di configurazione delle commissioni. Motivo: {{ reason }}",
-      "error_loading_fee_config_failed": "Errore durante il caricamento dei valori di configurazione delle commissioni."
+      "error_loading_fee_config_failed": "Errore durante il caricamento dei valori di configurazione delle commissioni. Motivo: {{ reason }}"
     }
   },
   "logs": {
     "title": "Logs",
-    "error_loading_logs_failed": "Impossibile recuperare il file di log."
+    "error_loading_logs_failed": "Impossibile recuperare il file di log. Motivo: {{ reason }}"
   },
   "send": {
     "title": "Invia",
@@ -208,7 +211,7 @@
     "description_num_collaborators": "Un numero più alto è meglio per la privacy, ma aumenta anche la commissione di transazione.",
     "error_invalid_num_collaborators": "Utilizza tra {{ minNumCollaborators }} e {{ maxNumCollaborators }} collaboratori.",
     "taker_error_message_max_fees_config_missing": "Le variabili di configurazione 'max_cj_fee_rel' e 'max_cj_fee_abs' devono essere impostate nel tuo joinmarket.cfg per poter inviare transazioni collaborative. Considera di aggiungerli alla tua configurazione manualmente.",
-    "error_loading_min_makers_failed": "Caricamento del valore di configurazione 'minimum_makers' fallito.",
+    "error_loading_min_makers_failed": "Caricamento del valore di configurazione 'minimum_makers' fallito. Motivo: {{ reason }}",
     "alert_payment_successful": "Pagamento riuscito: Inviati {{ amount }} sats a {{ address }} nella transazione {{ txid }}.",
     "text_maker_running": "La funzione Guadagna è attiva. Interrompere il servizio per inviare transazioni collaborative.",
     "text_coinjoin_already_running": "È attualmente in corso una transazione collaborativa.",
@@ -243,6 +246,7 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "Stima per alta priorità (blocco successivo)",
+      "text_miner_fee_in_targeted_blocks_many": "Utilizzo della stima per l'inclusione nei prossimi {{ count }} blocchi",
       "text_miner_fee_in_targeted_blocks_other": "Utilizzo della stima per l'inclusione nei prossimi {{ count }} blocchi"
     },
     "confirm_abort_modal": {
@@ -262,10 +266,8 @@
   "receive": {
     "title": "Ricevi",
     "subtitle": "Invia sats all'indirizzo sottostante per depositare nel tuo wallet.",
-    "text_copy_address": "Indirizzo copiato",
     "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
     "button_settings": "Opzioni di ricezione",
-    "feedback_invalid_amount": "Si prega di fornire un importo valido.",
     "button_new_address": "Ottieni un nuovo indirizzo",
     "text_getting_address": "Ottenere un nuovo indirizzo"
   },
@@ -303,8 +305,10 @@
     "report": {
       "title": "Resoconto guadagni",
       "text_report_summary_one": "{{ count }} voce",
+      "text_report_summary_many": "{{ count }} voci",
       "text_report_summary_other": "{{ count }} voci",
       "text_report_summary_filtered_one": "trovata {{ count }} voce",
+      "text_report_summary_filtered_many": "trovate {{ count }} voci",
       "text_report_summary_filtered_other": "trovate {{ count }} voci",
       "placeholder_search": "Cerca",
       "heading_timestamp": "Timestamp",
@@ -316,6 +320,7 @@
     },
     "title_fidelity_bonds_zero": "Crea un Fidelity Bond",
     "title_fidelity_bonds_one": "Il tuo Fidelity Bond",
+    "title_fidelity_bonds_many": "I tuoi Fidelity Bonds",
     "title_fidelity_bonds_other": "I tuoi Fidelity Bonds",
     "subtitle_fidelity_bonds": "Un Fidelity Bond è un deposito a lunga scadenza che rende deliberatamente costose le identità crittografiche. Bloccando crittograficamente i fondi per una durata specifica, segnali di essere un serio partecipante al mercato e aumenti la possibilità che le tue offerte vengano accettate.",
     "fidelity_bond": {
@@ -337,6 +342,7 @@
         "description": "Selezionare uno o più UTXO dal vaso {{ jar }} da utilizzare per il Fidelity Bond.",
         "utxo_card": {
           "confirmations_one": "{{ count }} conferma",
+          "confirmations_many": "{{ count }} conferme",
           "confirmations_other": "{{ count }} conferme"
         }
       },
@@ -349,7 +355,6 @@
         "text_primary_button": "Crea un Fidelity Bond",
         "label_lock_date": "Bloccato fino al",
         "label_jar": "Finanziato da",
-        "label_jar_n": "Vaso {{ jar }}",
         "label_amount": "Quantità da bloccare",
         "label_address": "I fondi saranno bloccati e inviati a"
       },
@@ -431,8 +436,10 @@
   "orderbook": {
     "title": "Registro ordini",
     "text_orderbook_summary_one": "{{ count }} offerta dalla controparte {{ counterpartyCount }}",
+    "text_orderbook_summary_many": "{{ count }} offerte dalla controparte {{ counterpartyCount }}",
     "text_orderbook_summary_other": "{{ count }} offerte dalla controparte {{ counterpartyCount }}",
     "text_orderbook_summary_filtered_one": "trovata {{ count }} offerta da {{ counterpartyCount  }} controparte",
+    "text_orderbook_summary_filtered_many": "trovate {{ count }} offerte da {{ counterpartyCount }} controparti",
     "text_orderbook_summary_filtered_other": "trovate {{ count }} offerte da {{ counterpartyCount }} controparti",
     "alert_empty_orderbook": "Il registro degli ordini è vuoto",
     "error_loading_orderbook_failed": "Errore durante il caricamento del registro ordini. L'attuale configurazione locale potrebbe non supportare il caricamento del registro degli ordini. Motivo: {{ reason }}",
@@ -490,6 +497,7 @@
     "utxo_list": {
       "title_zero": "Nessun UTXO nel vaso {{ jar }}",
       "title_one": "{{ count }} UTXO nel vaso {{ jar }}",
+      "title_many": "{{ count }} UTXO nel vaso {{ jar }}",
       "title_other": "{{ count }} UTXO nel vaso {{ jar }}",
       "text_balance_sum_total": "<0></0> totale",
       "button_freeze": "Blocca",
@@ -500,6 +508,11 @@
       "column_title_confirmations": "Conf.",
       "column_title_label_and_status": "Tags",
       "row_button_details": "Dettagli"
+    },
+    "address_list": {
+      "column_title_address": "Indirizzo",
+      "column_title_balance": "Valore",
+      "column_title_tags": "Tags"
     }
   },
   "sidebar": {

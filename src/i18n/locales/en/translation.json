@@ -11,6 +11,8 @@
     "abort": "Abort",
     "cancel": "Cancel",
     "clear": "Clear",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "done": "Done",
     "download": "Download",
     "finish": "Finish",
@@ -48,7 +50,10 @@
     },
     "next": "Next",
     "experimental": "Experimental",
-    "preview": "Preview"
+    "preview": "Preview",
+    "text_address_copied": "Address copied.",
+    "error_copy_address_failed": "Could not copy address.",
+    "label_jar_n": "Jar {{ jar }}"
   },
   "app": {
     "alert_new_transaction": "New transaction: {{ txid }}",
@@ -99,6 +104,10 @@
     },
     "item_settings": {
       "label": "Settings"
+    },
+    "trigger": {
+      "title_open": "Open sidebar",
+      "title_close": "Close sidebar"
     }
   },
   "footer": {
@@ -190,6 +199,7 @@
       "modal_lock_wallet_title": "Lock Wallet",
       "modal_lock_wallet_maker_running_text": "Earn is active. Locking the wallet will stop the service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "A collaborative transaction is currently in progress. Locking the wallet will stop the service.",
+      "modal_lock_wallet_scheduler_running_text": "A scheduled sweep is currently in progress. Locking the wallet will stop the scheduler.",
       "modal_lock_wallet_alternative_action_text": "You can close the browser window to let it run in the background."
     }
   },
@@ -438,11 +448,12 @@
     "success_rescan_started": "Rescan started successfully.",
     "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
     "text_button_submit": "Rescan timechain",
-    "text_button_submitting": "Rescanning timechain..."
+    "text_button_submitting": "Rescanning timechain...",
+    "tooltip_segwit_activation": "Segwit activation block"
   },
   "logs": {
     "title": "Logs",
-    "error_loading_logs_failed": "Could not retrieve log file.",
+    "error_loading_logs_failed": "Could not retrieve log file. Reason: {{ reason }}",
     "error_no_auth_token": "No authentication token available. Please login again.",
     "button_scroll_to_bottom": "Scroll to bottom",
     "label_auto_follow": "Auto-follow",
@@ -459,7 +470,7 @@
     "description_num_collaborators": "A higher number is better for privacy, but also increases the transaction fee.",
     "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
     "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg to send collaborative transactions. Consider adding them to your config manually.",
-    "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
+    "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed. Reason: {{ reason }}",
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }} in transaction {{ txid }}.",
     "alert_direct_payment_success_title": "Successfully sent non-collaborative transaction",
     "alert_direct_payment_pending": "Initiating non-collaborative transaction...",
@@ -558,16 +569,12 @@
   "receive": {
     "title": "Receive",
     "subtitle": "Send sats to the address below to fund your wallet.",
-    "text_copy_address": "Address copied.",
     "error_copy_address_failed": "Could not copy address.",
     "error_share_address_failed": "Could not share address.",
     "button_share_address": "Share",
     "button_settings": "Receive options",
     "label_source_jar": "Receive to",
     "feedback_invalid_source_jar": "Please select a source jar.",
-    "label_amount_input": "Amount",
-    "placeholder_amount_input": "Enter amount in sats...",
-    "feedback_invalid_amount": "Please provide a valid amount.",
     "button_new_address": "Get new address",
     "button_reveal_address": "Reveal address",
     "button_download_qr": "Save QR Code to file",
@@ -711,7 +718,6 @@
         "text_primary_button": "Create Fidelity Bond",
         "label_lock_date": "Locked until",
         "label_jar": "Funded from",
-        "label_jar_n": "Jar {{ jar }}",
         "label_amount": "Amount to be locked",
         "label_address": "Funds will be time-locked and sent to"
       },
@@ -724,7 +730,8 @@
         "label_transaction_id": "Transaction ID",
         "text_copy_transaction_id": "Transaction ID copied",
         "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?",
-        "text_success_subtitle": "Your Fidelity Bond has been created successfully"
+        "text_success_subtitle": "Your Fidelity Bond has been created successfully",
+        "error_unfreezing_utxos_on_close": "Some UTXOs that were frozen for the Fidelity Bond could not be unfrozen. You can unfreeze them in the jar details."
       },
       "unfreeze_utxos": {
         "done": "UTXOs unfrozen"
@@ -918,7 +925,9 @@
     },
     "confirm_start_modal": {
       "title": "Start Scheduled Sweep",
-      "text_body": "Are you sure you want to start a Scheduled Sweep?"
+      "text_body": "Are you sure you want to start a Scheduled Sweep?",
+      "actions_count_one": "{{ count }} action",
+      "actions_count_other": "{{ count }} actions"
     },
     "alert_schedule_completed_title": "Scheduled sweep finished successfully.",
     "alert_schedule_failed_title": "Scheduled sweep failed.",
@@ -979,7 +988,6 @@
       "utxo_tag_tooltip_pending": "Part of a pending transaction",
       "utxo_tag_tooltip_bond": "Fidelity bond",
       "utxo_tag_tooltip_jm_autofrozen_reuse": "Automatically frozen due to address reuse detected",
-      "column_title_index": "Index",
       "column_title_balance": "Value",
       "column_title_address": "Address",
       "column_title_confirmations": "Confs.",
@@ -1013,6 +1021,12 @@
       "toast_auto_unfreeze_description_other": "Automatically unfreezing {{ count }} additional UTXOs. They should be spent together.",
       "alert_no_account_info_title": "No account information present",
       "alert_no_account_info_description": "Account information is not yet loaded or not present."
+    },
+    "address_list": {
+      "column_title_address": "Address",
+      "column_title_balance": "Value",
+      "column_title_tags": "Tags",
+      "column_title_index": "Index"
     }
   },
   "show_utxos": {

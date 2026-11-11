@@ -1,6 +1,7 @@
 import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { describe, expect, it } from 'vitest'
-import { formatDuration, toSchedule } from './scheduleUtils'
+import { withTimeZone } from '@/test/withTimeZone'
+import { formatDuration, parseScheduleTimestamp, toSchedule } from './scheduleUtils'
 
 describe('scheduleUtils', () => {
   it('creates schedule from tumbler plan', () => {
@@ -610,5 +611,30 @@ describe('formatDuration', () => {
     // 9,119m 3s -- previously rendered as "9,119m 3s"
     const seconds = 9119 * 60 + 3
     expect(formatDuration(seconds, t)).toBe('global.duration_days_hours(days=6,hours=7)')
+  })
+
+  describe('parseScheduleTimestamp', () => {
+    it('parses timestamps without a time zone designator as UTC', () => {
+      withTimeZone('America/New_York', () => {
+        const parsed = parseScheduleTimestamp('2026-07-28T12:00:00.123456')
+        expect(parsed?.toISOString()).toBe('2026-07-28T12:00:00.123Z')
+      })
+    })
+
+    it('respects the time zone designator of timestamps', () => {
+      withTimeZone('America/New_York', () => {
+        const parsed = parseScheduleTimestamp('2026-07-28T17:30:00+05:30')
+        expect(parsed?.toISOString()).toBe('2026-07-28T12:00:00.000Z')
+      })
+    })
+
+    it('returns undefined for invalid, empty, or nil timestamp values', () => {
+      expect(parseScheduleTimestamp(undefined)).toBeUndefined()
+      expect(parseScheduleTimestamp(null)).toBeUndefined()
+      expect(parseScheduleTimestamp('')).toBeUndefined()
+      expect(parseScheduleTimestamp(' '.repeat(3))).toBeUndefined()
+      expect(parseScheduleTimestamp('invalid-date')).toBeUndefined()
+      expect(parseScheduleTimestamp('not-a-timestamp')).toBeUndefined()
+    })
   })
 })

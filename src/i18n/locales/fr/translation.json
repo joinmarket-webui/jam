@@ -3,7 +3,9 @@
     "errors": {
       "error_loading_wallet_failed": "Le chargement du portefeuille a échoué. {{ reason }}",
       "error_loading_address_failed": "Le chargement de la nouvelle adresse a échoué."
-    }
+    },
+    "text_address_copied": "Adresse copiée",
+    "error_copy_address_failed": "L'adresse n'a pu être copiée."
   },
   "navbar": {
     "tab_send": "Envoyer",
@@ -52,7 +54,7 @@
       "button_locking": "Verrouillage",
       "button_unlocking": "Déverrouillage ",
       "modal_lock_wallet_title": "Confirmez le verrouillage",
-      "modal_lock_wallet_maker_running_text": "<0>Générer</0> est actif. Le verrouillage du porte-monnaie arrêtera le service.",
+      "modal_lock_wallet_maker_running_text": "Générer est actif. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Une transaction collaborative est actuellement en cours. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_alternative_action_text": "Vous pouvez également fermer la fenêtre pour vous déconnecter."
     }
@@ -137,7 +139,7 @@
     "description_num_collaborators": "Un nombre plus élevé est meilleur pour la confidentialité, mais augmente également les frais.",
     "error_invalid_num_collaborators": "Veuillez utiliser entre {{ minNumCollaborators }} et {{ maxNumCollaborators }} collaborateurs.",
     "taker_error_message_max_fees_config_missing": "Les variables de configuration 'max_cj_fee_rel' et 'max_cj_fee_abs' doivent être définies dans votre fichier joinmarket.cfg afin d'envoyer des transactions collaboratives. Pensez à les ajouter manuellement à votre configuration.",
-    "error_loading_min_makers_failed": "Le chargement de la valeur de configuration 'minimum_makers' a échoué.",
+    "error_loading_min_makers_failed": "Le chargement de la valeur de configuration 'minimum_makers' a échoué. Raison : {{ reason }}",
     "alert_payment_successful": "Paiement réussi : Envoyé {{ amount }} sats à {{ address }} en transaction {{ txid }}.",
     "text_maker_running": "Générer est actif. Arrêtez le service afin d'envoyer des transactions collaboratives.",
     "text_coinjoin_already_running": "Une transaction collaborative est actuellement en cours.",
@@ -155,10 +157,8 @@
   "receive": {
     "title": "Recevoir",
     "subtitle": "Envoyez du bitcoin à l'adresse ci-dessous.",
-    "text_copy_address": "Adresse copiée",
     "error_copy_address_failed": "L'adresse n'a pu être copiée.",
     "button_settings": "Paramètres",
-    "feedback_invalid_amount": "Veuillez fournir un montant valide.",
     "button_new_address": "Obtenir une nouvelle adresse",
     "text_getting_address": "Obtention d'une nouvelle adresse"
   },
@@ -172,7 +172,7 @@
     "label_rel_fee": "Frais relatifs  {{ fee }}",
     "description_rel_fee": "En pourcentage des montants, vous aidez les autres à améliorer leur vie privée.",
     "feedback_invalid_rel_fee": "Veuillez fournir un tarif relatif entre {{feeRelPercentageMin}} et {{feeRelPercentageMax}}.",
-    "label_abs_fee": "Frais absolus en sats",
+    "label_abs_fee": "Frais absolus {{ fee }}",
     "description_abs_fee": "Un montant absolu que vous recevez pour aider les autres à améliorer leur vie privée.",
     "feedback_invalid_abs_fee": "Veuillez fournir un tarif absolu.",
     "feedback_invalid_min_amount": "Veuillez indiquer un montant minimum.",

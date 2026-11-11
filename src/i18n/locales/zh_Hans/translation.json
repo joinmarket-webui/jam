@@ -29,7 +29,10 @@
       "error_freezing_utxos": "无法冻结 UTXOs。"
     },
     "next": "继续",
-    "experimental": "试验性"
+    "experimental": "试验性",
+    "text_address_copied": "已复制地址",
+    "error_copy_address_failed": "无法复制地址。",
+    "label_jar_n": "罐子 {{ jar }}"
   },
   "app": {
     "alert_rescan_in_progress": "正在进行重新扫描..."
@@ -231,12 +234,12 @@
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
       "error_saving_fee_config_failed": "保存费用配置值时出错了。原因：{{ reason }}",
-      "error_loading_fee_config_failed": "加载费用设置时出错了。"
+      "error_loading_fee_config_failed": "加载费用设置时出错了。原因：{{ reason }}"
     }
   },
   "logs": {
     "title": "日志",
-    "error_loading_logs_failed": "无法检索日志文件。"
+    "error_loading_logs_failed": "无法检索日志文件。原因：{{ reason }}"
   },
   "send": {
     "title": "发送",
@@ -245,7 +248,7 @@
     "description_num_collaborators": "更高的数量会提高隐秘性，但同时也会增加交易费用。",
     "error_invalid_num_collaborators": "请使用{{ minNumCollaborators }}到{{ maxNumCollaborators }}个协作方。",
     "taker_error_message_max_fees_config_missing": "必须在你的 joinmarket.cfg 中先设置配置变量 'max_cj_fee_rel' 和 'max_cj_fee_abs' 才能发送协作式交易。请考虑手动将它们添加到你的配置中。",
-    "error_loading_min_makers_failed": "加载配置值 'minimum_makers' 失败了。",
+    "error_loading_min_makers_failed": "加载配置值 'minimum_makers' 失败了。原因：{{ reason }}",
     "alert_payment_successful": "付款成功：在交易 {{ txid }} 中发送了 {{ amount }} 聪到 {{ address }}。",
     "text_maker_running": "收益处于活跃状态。停止服务以发送协作式交易。",
     "text_coinjoin_already_running": "协作式交易正在进行中。",
@@ -302,10 +305,8 @@
   "receive": {
     "title": "接收",
     "subtitle": "将聪发送到以下的地址来充值你的钱包。",
-    "text_copy_address": "已复制地址",
     "error_copy_address_failed": "无法复制地址。",
     "button_settings": "接收选项",
-    "feedback_invalid_amount": "请输入有效的金额。",
     "button_new_address": "获取新地址",
     "text_getting_address": "正在获取新地址"
   },
@@ -390,7 +391,6 @@
         "text_primary_button": "创建保证金",
         "label_lock_date": "锁定至",
         "label_jar": "来源",
-        "label_jar_n": "罐子 {{ jar }}",
         "label_amount": "将锁定的金额",
         "label_address": "资金将被时间锁定并被发送至"
       },
@@ -541,6 +541,11 @@
       "column_title_confirmations": "确认",
       "column_title_label_and_status": "标签",
       "row_button_details": "详情"
+    },
+    "address_list": {
+      "column_title_address": "地址",
+      "column_title_balance": "价值",
+      "column_title_tags": "标签"
     }
   },
   "sidebar": {

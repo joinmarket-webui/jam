@@ -15,6 +15,7 @@ type LockWalletConfirmDialogProps = WithRequiredProperty<
   onConfirm: () => Promise<void>
   makerRunning: boolean
   coinjoinInProgress: boolean
+  schedulerRunning: boolean
 }
 
 export const LockWalletConfirmDialog = ({
@@ -23,6 +24,7 @@ export const LockWalletConfirmDialog = ({
   onConfirm,
   makerRunning,
   coinjoinInProgress,
+  schedulerRunning,
   ...dialogProps
 }: LockWalletConfirmDialogProps) => {
   const { t } = useTranslation()
@@ -50,6 +52,12 @@ export const LockWalletConfirmDialog = ({
             <AlertDescription>
               {t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')}
             </AlertDescription>
+          </Alert>
+        )}
+        {schedulerRunning && (
+          <Alert variant="warning">
+            <AlertTriangleIcon />
+            <AlertDescription>{t('wallets.wallet_preview.modal_lock_wallet_scheduler_running_text')}</AlertDescription>
           </Alert>
         )}
         <p className="text-muted-foreground">{t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}</p>

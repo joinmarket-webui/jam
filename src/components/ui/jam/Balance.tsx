@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type KeyboardEvent, type MouseEvent, type PropsWithChildren } from 'react'
+import { useMemo, useState, type KeyboardEvent, type MouseEvent, type PropsWithChildren } from 'react'
 import { SnowflakeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
@@ -189,14 +189,16 @@ export const BalanceComponent = ({
 }: BalanceComponentProps) => {
   const { t } = useTranslation()
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
+  // reset the local toggle when `showBalance` changes, but not on mount: a delayed
+  // reset (e.g. via setTimeout in an effect) could undo a click that happened in between
+  const [previousShowBalance, setPreviousShowBalance] = useState(showBalance)
+  if (showBalance !== previousShowBalance) {
+    setPreviousShowBalance(showBalance)
+    setIsBalanceVisible(showBalance)
+  }
   const displayMode = useMemo<DisplayMode>(() => {
     return isBalanceVisible ? (convertToUnit ?? 'default') : 'hidden'
   }, [isBalanceVisible, convertToUnit])
-
-  useEffect(() => {
-    const timerId = setTimeout(() => setIsBalanceVisible(showBalance), 4)
-    return () => clearTimeout(timerId)
-  }, [showBalance])
 
   const elementProps = useMemo(() => {
     const toggleVisibility = () => setIsBalanceVisible((current) => !current)

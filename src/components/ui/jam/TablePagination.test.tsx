@@ -127,9 +127,11 @@ describe('<TablePagination />', () => {
       />,
     )
 
-    expect(screen.getByRole('button', { name: '9' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('button', { name: '8' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '9' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('button', { name: '10' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '7' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '11' })).not.toBeInTheDocument()
 
     rerender(
       <TablePagination
@@ -155,8 +157,9 @@ describe('<TablePagination />', () => {
         onItemsPerPageChange={vi.fn()}
       />,
     )
-    expect(screen.getByRole('button', { name: '15' })).toHaveAttribute('aria-current', 'page')
+
     expect(screen.getByRole('button', { name: '13' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '14' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '15' })).toHaveAttribute('aria-current', 'page')
   })
 })
