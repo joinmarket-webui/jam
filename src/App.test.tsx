@@ -207,10 +207,27 @@ vi.mock('@/components/ui/sonner', () => ({ Toaster: () => <div data-testid="toas
 vi.mock('./components/ui/spinner', () => ({ Spinner: () => <div data-testid="spinner" /> }))
 
 vi.mock('./components/ui/jam/LockWalletConfirmDialog', () => ({
-  LockWalletConfirmDialog: ({ onConfirm }: { onConfirm: () => void }) => (
-    <button data-testid="confirm-lock" onClick={onConfirm}>
-      confirm
-    </button>
+  LockWalletConfirmDialog: ({
+    onConfirm,
+    schedulerRunning,
+    coinjoinInProgress,
+    makerRunning,
+  }: {
+    onConfirm: () => void
+    schedulerRunning?: boolean
+    coinjoinInProgress?: boolean
+    makerRunning?: boolean
+  }) => (
+    <div
+      data-testid="lock-dialog"
+      data-scheduler-running={schedulerRunning}
+      data-coinjoin-in-progress={coinjoinInProgress}
+      data-maker-running={makerRunning}
+    >
+      <button data-testid="confirm-lock" onClick={onConfirm}>
+        confirm
+      </button>
+    </div>
   ),
 }))
 
@@ -260,6 +277,25 @@ describe('App', () => {
 
     fireEvent.click(screen.getByText('lock'))
     await waitFor(() => expect(screen.getByTestId('confirm-lock')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByTestId('confirm-lock'))
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(clearAuth).toHaveBeenCalled()
+  })
+
+  it('opens the lock wallet dialog when schedule is running and confirms locking', async () => {
+    holders.jmSession = {
+      maker_running: false,
+      coinjoin_in_process: false,
+      schedule: [{ id: '1' }],
+    }
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('lock')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('lock'))
+    await waitFor(() => expect(screen.getByTestId('confirm-lock')).toBeInTheDocument())
+    expect(screen.getByTestId('lock-dialog')).toHaveAttribute('data-scheduler-running', 'true')
+    expect(screen.getByTestId('lock-dialog')).toHaveAttribute('data-coinjoin-in-progress', 'false')
 
     fireEvent.click(screen.getByTestId('confirm-lock'))
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
