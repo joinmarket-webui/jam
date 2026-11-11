@@ -299,6 +299,20 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             address && <AddressPreview label={t('earn.fidelity_bond.review_inputs.label_address')} address={address} />
           )}
 
+          {isUsingAllFunds && (
+            <Alert variant="warning">
+              <AlertTriangleIcon className="h-4 w-4" />
+              <AlertDescription>
+                <Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use">
+                  <strong>Keep in mind</strong>: As you are using all available funds for the creation of this fidelity
+                  bond, you will not have any UTXOs left. A fidelity bond{' '}
+                  <strong>will not participate in collaborative transactions</strong> and you{' '}
+                  <strong>have to fund your wallet again</strong> to start sending or earning.
+                </Trans>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Alert variant="warning">
             <AlertTriangleIcon className="h-4 w-4" />
             <AlertTitle>{t('earn.fidelity_bond.confirm_modal.title')}</AlertTitle>

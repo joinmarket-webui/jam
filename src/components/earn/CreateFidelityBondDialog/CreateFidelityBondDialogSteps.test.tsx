@@ -152,6 +152,16 @@ describe('CreateFidelityBondDialogSteps', () => {
     expect(screen.getByText('earn.fidelity_bond.review_inputs.label_lock_date')).toBeInTheDocument()
     expect(screen.getByText('bc1...')).toBeInTheDocument()
     expect(screen.queryByTestId('qr-code')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('trans-earn.fidelity_bond.alert_all_funds_in_use')).not.toBeInTheDocument()
+  })
+
+  it('renders all-funds warning on review step when isUsingAllFunds is true', () => {
+    const wizard = getBaseWizard()
+    wizard.step = 'review'
+    wizard.isUsingAllFunds = true
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+
+    expect(screen.getByTestId('trans-earn.fidelity_bond.alert_all_funds_in_use')).toBeInTheDocument()
   })
 
   it('renders creating step', () => {
