@@ -927,6 +927,10 @@
       "actions_count_one": "{{ count }} action",
       "actions_count_other": "{{ count }} actions"
     },
+    "confirm_stop_modal": {
+      "title": "Stop Scheduled Sweep",
+      "text_body": "Are you sure you want to stop the Scheduled Sweep? Any pending transactions in the schedule will be cancelled."
+    },
     "alert_schedule_completed_title": "Scheduled sweep finished successfully.",
     "alert_schedule_failed_title": "Scheduled sweep failed.",
     "alert_schedule_cancelled_title": "Scheduled sweep cancelled.",
