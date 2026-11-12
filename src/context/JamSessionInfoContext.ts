@@ -1,6 +1,7 @@
 import { createContext, useContext, type Dispatch, type SetStateAction } from 'react'
-import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { SessionResponse, TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { SendFormValues } from '@/components/send/types'
+import type { TakerStatusInfo } from '@/lib/takerStatus'
 import type { WalletFileName } from '@/lib/utils'
 import type { Factor } from '@/types/global'
 
@@ -16,11 +17,16 @@ export interface PaymentAttempt {
   utxosHashHex: string
   walletFileName: WalletFileName
   data: SendFormValues
+  // the taker status as reported when the attempt ended, so it is not mixed up with a later run
+  outcome?: TakerStatusResponse
 }
 
 export interface TakerInfo {
-  currentPaymentAttempt?: PaymentAttempt
   running: boolean
+  status: TakerStatusInfo
+  __raw?: TakerStatusResponse
+  currentPaymentAttempt?: PaymentAttempt
+  // move to own "schedulerInfo"
   scheduler: {
     running: boolean
   }

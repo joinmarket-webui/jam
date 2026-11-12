@@ -128,6 +128,8 @@ interface SendFormProps {
   addressSummary: AddressSummary
   disabled?: boolean
   debug?: boolean
+  // e.g. to restore the values of a failed payment attempt
+  initialValues?: Partial<SendFormValues>
 }
 
 export function SendForm({
@@ -144,6 +146,7 @@ export function SendForm({
   walletBalanceSummary,
   addressSummary,
   debug,
+  initialValues,
 }: SendFormProps) {
   const { t } = useTranslation()
 
@@ -158,8 +161,11 @@ export function SendForm({
   )
 
   const defaultValues = useMemo<Partial<SendFormValues>>(() => {
-    return toSendFormDefaultValues({ minNumberOfCollaborators, feeConfigValues })
-  }, [minNumberOfCollaborators, feeConfigValues])
+    return {
+      ...toSendFormDefaultValues({ minNumberOfCollaborators, feeConfigValues }),
+      ...initialValues,
+    }
+  }, [minNumberOfCollaborators, feeConfigValues, initialValues])
 
   const { control, register, handleSubmit, formState, setValue, trigger, getValues, ...sendFormMethods } = useForm<
     SendFormValues,
@@ -205,7 +211,7 @@ export function SendForm({
 
   const destinationAddressInfo = useMemo(() => {
     try {
-      return destinationAddress !== undefined ? getAddressInfo(destinationAddress) : undefined
+      return destinationAddress ? getAddressInfo(destinationAddress) : undefined
     } catch (_ignoredOnPurpose) {
       return undefined
     }
@@ -394,7 +400,7 @@ export function SendForm({
                         if (destinationJarIndex === jar.jarIndex) {
                           setValue('destination.address', '', { shouldValidate: true })
                           setValue('destination.fromJar', undefined, { shouldValidate: true })
-                        } else if (destinationAddress !== undefined) {
+                        } else if (destinationAddress) {
                           void trigger('destination.address')
                         }
                       }}
