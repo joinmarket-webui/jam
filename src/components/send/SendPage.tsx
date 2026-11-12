@@ -393,7 +393,11 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   const onAbortCoinjoinConfirmed = async () => {
     setShowAbortCoinjoinDialog(false)
-    await stopCoinjoinMutationMutateAsync()
+    try {
+      await stopCoinjoinMutationMutateAsync()
+    } catch (error: unknown) {
+      console.error('Error while stopping collaborative transaction', error)
+    }
   }
 
   if (!jmSessionActive || walletInfoIsLoading) {
