@@ -1,30 +1,16 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { authStore } from '@/store/authStore'
+import { parseSemanticVersion } from '@/lib/utils'
 import { useFeatures } from './useFeatures'
 
 const mocks = vi.hoisted(() => ({
   developerMode: false,
-  queryData: undefined as
-    { features?: Record<string, boolean> | Array<{ name: string; enabled: boolean }> } | undefined,
+  backend: undefined as string | undefined,
 }))
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn(
-    (options: {
-      enabled: boolean
-      select: (data: { features?: Record<string, boolean> | Array<{ name: string; enabled: boolean }> }) => unknown
-    }) => ({
-      data: options.enabled && mocks.queryData ? options.select(mocks.queryData) : undefined,
-      error: null,
-      isFetching: false,
-      isLoading: false,
-    }),
-  ),
-}))
-
-vi.mock('@/lib/api/jam', () => ({
-  fetchFeatures: vi.fn(),
+vi.mock('@/hooks/useQueryJmInfo', () => ({
+  useQueryJmInfo: () =>
+    mocks.backend === undefined ? {} : { info: { backend: mocks.backend, version: parseSemanticVersion('0.43.0') } },
 }))
 
 vi.mock('@/store/jamSettingsStore', async (importOriginal) => ({
@@ -34,18 +20,12 @@ vi.mock('@/store/jamSettingsStore', async (importOriginal) => ({
 
 describe('useFeatures', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    sessionStorage.clear()
     mocks.developerMode = false
-    mocks.queryData = undefined
-    authStore.getState().clear()
+    mocks.backend = undefined
   })
 
-  it('normalizes object feature responses', () => {
-    authStore
-      .getState()
-      .update({ auth: { token: 'token', refresh_token: 'refresh', expiresAt: Date.now() + 1_800_000 } })
-    mocks.queryData = { features: { logs: true } }
+  it('supports logs on joinmarket-ng', () => {
+    mocks.backend = 'joinmarket-ng'
 
     const { result } = renderHook(() => useFeatures())
 
@@ -54,12 +34,19 @@ describe('useFeatures', () => {
     expect(result.current.isFeatureEnabled('logs')).toBe(true)
   })
 
-  it('supports array responses and developer-mode fallback', () => {
-    authStore
-      .getState()
-      .update({ auth: { token: 'token', refresh_token: 'refresh', expiresAt: Date.now() + 1_800_000 } })
+  it('does not support logs on other backends', () => {
+    mocks.backend = 'joinmarket-clientserver'
+
+    const { result } = renderHook(() => useFeatures())
+
+    expect(result.current.features).toEqual([{ name: 'logs', enabled: false }])
+    expect(result.current.isFeatureSupported('logs')).toBe(false)
+    expect(result.current.isFeatureEnabled('logs')).toBe(false)
+  })
+
+  it('enables logs in developer mode even if unsupported', () => {
+    mocks.backend = 'joinmarket-clientserver'
     mocks.developerMode = true
-    mocks.queryData = { features: [{ name: 'logs', enabled: false }] }
 
     const { result } = renderHook(() => useFeatures())
 
@@ -67,9 +54,7 @@ describe('useFeatures', () => {
     expect(result.current.isFeatureEnabled('logs')).toBe(true)
   })
 
-  it('keeps features empty without an auth token', () => {
-    mocks.queryData = { features: { logs: true } }
-
+  it('keeps features empty while the backend info is unknown', () => {
     const { result } = renderHook(() => useFeatures())
 
     expect(result.current.features).toBeUndefined()

@@ -1,69 +1,29 @@
-import { useQuery } from '@tanstack/react-query'
-import { useStore } from 'zustand'
-import { fetchFeatures } from '@/lib/api/jam'
-import { authStore } from '@/store/authStore'
+import { useMemo } from 'react'
+import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 
 type SupportedFeature = 'logs' // add on demand
 
 type FeatureItem = {
-  name: string
+  name: SupportedFeature
   enabled: boolean
 }
 
-type FeaturesApiResponse = {
-  features: Record<string, boolean> | FeatureItem[]
-}
+// joinmarket-ng serves its recent log output via `GET /api/v1/logs`.
+// see https://github.com/joinmarket-ng/joinmarket-ng/blob/0.43.0/jmwalletd/src/jmwalletd/routers/logs.py
+const BACKEND_JOINMARKET_NG = 'joinmarket-ng'
 
 export const useFeatures = () => {
   const { enabled: isDeveloperMode } = useDeveloperMode()
-  const token = useStore(authStore, (state) => state.state?.auth?.token)
+  const { info } = useQueryJmInfo()
 
-  const {
-    data: features,
-    error,
-    isLoading,
-    isFetching,
-  } = useQuery({
-    queryKey: ['features'],
-    queryFn: async ({ signal }) => {
-      if (token === undefined) {
-        throw new Error('No authentication token available')
-      }
-
-      const response = await fetchFeatures({
-        token,
-        signal,
-      })
-
-      if (!response.ok) {
-        throw new Error(`Features request failed with status ${response.status}`)
-      }
-
-      return (await response.json()) as FeaturesApiResponse
-    },
-    enabled: token !== undefined,
-    retry: false,
-    select: (data: FeaturesApiResponse): FeatureItem[] => {
-      if (!data.features) {
-        return []
-      }
-      // New format: { features: [{ name: 'logs', enabled: true }] }
-      else if (Array.isArray(data.features)) {
-        return data.features
-      }
-      // Old format: { features: { logs: true } }
-      else if (typeof data.features === 'object') {
-        return Object.entries(data.features).map(([name, enabled]) => ({ name, enabled }))
-      } else {
-        console.warn('Could not parse feature response. Disabling all optional features.')
-        return []
-      }
-    },
-  })
+  const features = useMemo<FeatureItem[] | undefined>(() => {
+    if (info === undefined) return undefined
+    return [{ name: 'logs', enabled: info.backend === BACKEND_JOINMARKET_NG }]
+  }, [info])
 
   const isFeatureSupported = (featureName: SupportedFeature) => {
-    return features?.some((feature) => feature.name === featureName && feature.enabled === true)
+    return features?.some((feature) => feature.name === featureName && feature.enabled === true) === true
   }
   const isFeatureEnabled = (featureName: SupportedFeature) => {
     return isFeatureSupported(featureName) || isDeveloperMode
@@ -71,9 +31,6 @@ export const useFeatures = () => {
 
   return {
     features,
-    error,
-    isLoading,
-    isFetching,
     isFeatureSupported: isFeatureSupported,
     isFeatureEnabled: isFeatureEnabled,
   }
