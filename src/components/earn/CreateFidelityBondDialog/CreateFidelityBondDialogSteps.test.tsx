@@ -76,6 +76,7 @@ const getBaseWizard = (): Wizard =>
     toggleUtxoSelection: vi.fn(),
     totalAmount: 1000,
     isUsingAllFunds: false,
+    isUsingAllCoinjoinedFunds: false,
     utxosToFreeze: [],
     confirmationChecked: false,
     setConfirmationChecked: vi.fn(),
@@ -162,6 +163,27 @@ describe('CreateFidelityBondDialogSteps', () => {
     render(<CreateFidelityBondDialogSteps wizard={wizard} />)
 
     expect(screen.getByTestId('trans-earn.fidelity_bond.alert_all_funds_in_use')).toBeInTheDocument()
+  })
+
+  it('renders the coinjoined-funds warning on review step when isUsingAllCoinjoinedFunds is true', () => {
+    const wizard = getBaseWizard()
+    wizard.step = 'review'
+    wizard.isUsingAllCoinjoinedFunds = true
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+
+    expect(screen.getByTestId('trans-earn.fidelity_bond.alert_all_coinjoined_funds_in_use')).toBeInTheDocument()
+    expect(screen.queryByTestId('trans-earn.fidelity_bond.alert_all_funds_in_use')).not.toBeInTheDocument()
+  })
+
+  it('renders only the all-funds warning when both warnings would apply', () => {
+    const wizard = getBaseWizard()
+    wizard.step = 'select_utxos'
+    wizard.isUsingAllFunds = true
+    wizard.isUsingAllCoinjoinedFunds = true
+    render(<CreateFidelityBondDialogSteps wizard={wizard} />)
+
+    expect(screen.getByTestId('trans-earn.fidelity_bond.alert_all_funds_in_use')).toBeInTheDocument()
+    expect(screen.queryByTestId('trans-earn.fidelity_bond.alert_all_coinjoined_funds_in_use')).not.toBeInTheDocument()
   })
 
   it('renders creating step', () => {

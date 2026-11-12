@@ -678,6 +678,7 @@
       "error_loading_address": "Could not load time-locked address.",
       "error_creating_fidelity_bond": "The transaction to create the Fidelity Bond failed.",
       "alert_all_funds_in_use": "<strong>Keep in mind</strong>: As you are using all available funds for the creation of this Fidelity Bond, you will not have any UTXOs left. <br /><br />A Fidelity Bond <strong>will not participate in collaborative transactions</strong> and you <strong>have to fund your wallet again</strong> to start sending or earning.",
+      "alert_all_coinjoined_funds_in_use": "<strong>Keep in mind</strong>: You are using all of your coinjoined funds for the creation of this Fidelity Bond. <br /><br />A Fidelity Bond <strong>will not participate in collaborative transactions</strong>, so until it expires, only funds that have not been coinjoined remain available for sending or earning.",
       "text_loading": "Loading...",
       "text_creating": "Creating...",
       "text_creating_subtitle": "This may take a moment...",

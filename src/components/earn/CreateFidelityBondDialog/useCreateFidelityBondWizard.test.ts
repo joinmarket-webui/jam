@@ -779,6 +779,70 @@ describe('useCreateFidelityBondWizard', () => {
     })
   })
 
+  describe('funds-in-use warnings', () => {
+    it('does not warn while other coinjoined utxos remain in the wallet', () => {
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+      act(() => result.current.setSelectedJarIndex(0))
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+
+      expect(result.current.isUsingAllFunds).toBe(false)
+      expect(result.current.isUsingAllCoinjoinedFunds).toBe(false)
+    })
+
+    it('warns when the only coinjoined utxo is selected and just change remains', () => {
+      mocks.walletInfo.addressSummary = {
+        bcrt1qsource: { status: 'cj-out' },
+        bcrt1qchange: { status: 'change-out' },
+      }
+      mocks.walletInfo.jars = [
+        jar(0, [utxo({ utxo: 'mixed:0', value: 500_000 }), utxo({ utxo: 'change:0', address: 'bcrt1qchange' })]),
+      ]
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+      act(() => result.current.setSelectedJarIndex(0))
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+
+      expect(result.current.selectedUtxos.map((it) => it.utxo)).toEqual(['mixed:0'])
+      expect(result.current.isUsingAllFunds).toBe(false)
+      expect(result.current.isUsingAllCoinjoinedFunds).toBe(true)
+    })
+
+    it('does not warn about coinjoined funds once the wizard froze the remaining coinjoined utxos', async () => {
+      mocks.walletInfo.jars = [
+        jar(0, [utxo({ utxo: 'large:0', value: 50_000 }), utxo({ utxo: 'small:0', value: 10_000 })]),
+      ]
+      const { result, rerender } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+      act(() => result.current.setSelectedLockdate(minLockdateOption()))
+      act(() => result.current.setSelectedJarIndex(0))
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+      act(() => result.current.setStep('freeze_utxos'))
+      await act(async () => result.current.handleNext())
+      expect(result.current.step).toBe('review')
+
+      // wallet info reloads with the utxo frozen by the wizard
+      mocks.walletInfo.jars = [
+        jar(0, [utxo({ utxo: 'large:0', value: 50_000 }), utxo({ utxo: 'small:0', value: 10_000, frozen: true })]),
+      ]
+      rerender()
+
+      expect(result.current.selectedUtxos.map((it) => it.utxo)).toEqual(['large:0'])
+      expect(result.current.isUsingAllCoinjoinedFunds).toBe(false)
+    })
+
+    it('only raises the all-funds warning when the selected utxo is the last one in the wallet', () => {
+      mocks.walletInfo.jars = [jar(0, [utxo({ utxo: 'only:0' })])]
+      const { result } = renderHook(() => useCreateFidelityBondWizard(true, vi.fn(), 'wallet.jmdat'))
+
+      act(() => result.current.setSelectedJarIndex(0))
+      act(() => result.current.toggleUtxoSelection(result.current.availableUtxos[0]))
+
+      expect(result.current.isUsingAllFunds).toBe(true)
+      expect(result.current.isUsingAllCoinjoinedFunds).toBe(false)
+    })
+  })
+
   describe('smart preselection (preselectDefaults: true)', () => {
     beforeEach(() => {
       mocks.walletInfo.jars = [
