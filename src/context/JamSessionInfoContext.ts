@@ -17,6 +17,8 @@ export interface PaymentAttempt {
   utxosHashHex: string
   walletFileName: WalletFileName
   data: SendFormValues
+  // the taker status as reported when the attempt ended, so it is not mixed up with a later run
+  outcome?: TakerStatusResponse
 }
 
 export interface TakerInfo {

@@ -36,6 +36,8 @@ const mocks = vi.hoisted(() => ({
   toastSuccess: vi.fn(),
   utxoSelectorDisabled: false,
   walletInfoIsFetching: false,
+  currentPaymentAttemptIsSweep: false,
+  currentPaymentAttemptEnded: false,
   walletInfoIsLoading: false,
   waitForUtxosToBeSpent: [] as string[],
   hasOrders: true,
@@ -187,7 +189,12 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
     rescanInfo: { rescanning: false },
     setCurrentPaymentAttempt: mocks.setCurrentPaymentAttempt,
     takerInfo: {
-      currentPaymentAttempt: mocks.currentPaymentAttemptPresent ? collaborativeValues : undefined,
+      currentPaymentAttempt: mocks.currentPaymentAttemptPresent
+        ? {
+            ...(mocks.currentPaymentAttemptIsSweep ? collaborativeSweepValues : collaborativeValues),
+            outcome: mocks.currentPaymentAttemptEnded ? { running: false, status: mocks.takerStatus } : undefined,
+          }
+        : undefined,
       status: toTakerStatusInfo(
         mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
       ),
@@ -259,6 +266,7 @@ vi.mock('./SendForm', () => ({
     <div>
       send-form:{JSON.stringify({ disabled })}
       <div>send-form-initial-address:{initialValues?.destination?.address ?? 'none'}</div>
+      <div>send-form-initial-amount:{JSON.stringify(initialValues?.amount) ?? 'none'}</div>
       <div>{sourceJarLabelButton?.()}</div>
       <button
         onClick={() => {
@@ -339,10 +347,20 @@ const collaborativeValues = {
   walletFileName: 'wallet.jmdat',
 }
 
+const collaborativeSweepValues = {
+  ...collaborativeValues,
+  data: {
+    ...collaborativeValues.data,
+    amount: { amount: undefined, isSweep: true, sweepAmount: 1_000, sweepUtxos: ['aaaa'.repeat(16) + ':0'] },
+  },
+}
+
 describe('SendPage', () => {
   beforeEach(() => {
     mocks.clearCurrentPaymentAttempt.mockReset()
     mocks.currentPaymentAttemptPresent = false
+    mocks.currentPaymentAttemptIsSweep = false
+    mocks.currentPaymentAttemptEnded = false
     mocks.takerStatus = undefined
     mocks.directSend.mockReset()
     mocks.fetchIfMissing.mockReset()
@@ -631,6 +649,49 @@ describe('SendPage', () => {
     expect(
       screen.getByText(`send-form-initial-address:${collaborativeValues.data.destination.address}`),
     ).toBeInTheDocument()
+  })
+
+  it('allows to acknowledge an ended attempt while an unrelated taker is running', async () => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+    mocks.currentPaymentAttemptEnded = true
+    mocks.takerRunning = true
+    mocks.takerStatus = 'failed'
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByText('send.taker_status.status_failed')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
+  })
+
+  it('does not restore the pinned utxos of a failed sweep attempt', async () => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+    mocks.currentPaymentAttemptIsSweep = true
+    mocks.takerRunning = false
+    mocks.takerStatus = 'failed'
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(
+      screen.getByText(`send-form-initial-address:${collaborativeSweepValues.data.destination.address}`),
+    ).toBeInTheDocument()
+    expect(screen.getByText('send-form-initial-amount:none')).toBeInTheDocument()
+  })
+
+  it('does not allow to acknowledge the outcome while the wallet info is being reloaded', async () => {
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = 'complete'
+    mocks.walletInfoIsFetching = true
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    expect(screen.getByRole('button', { name: 'global.done' })).toBeDisabled()
+    await flushActUpdates()
   })
 
   it.each(['complete', undefined])('resets the form values after an attempt with outcome %s', async (takerStatus) => {

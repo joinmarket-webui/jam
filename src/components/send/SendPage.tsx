@@ -73,6 +73,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { fetchIfMissing } = useJmConfig({ walletFileName })
   const {
     isLoading: walletInfoIsLoading,
+    isFetching: walletInfoIsFetching,
     utxosHashHex,
     waitForUtxosToBeSpent,
     setWaitForUtxosToBeSpent,
@@ -88,6 +89,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   } = useJamSessionInfoContext()
 
   const takerRunning = takerInfo.running
+  // the outcome is kept with the attempt, as a taker started afterwards (e.g. by the scheduler) is unrelated to it
+  const paymentAttemptEnded = takerInfo.currentPaymentAttempt?.outcome !== undefined
   const schedulerRunning = takerInfo.scheduler.running
 
   const { enabled: isDeveloperMode } = useDeveloperMode()
@@ -96,8 +99,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const scrollToPageTop = () => scrollIntoView(pageTopElementRef, {})
 
   const [formId, setFormId] = useState<number>(0)
-  const [formInitialValues, setFormInitialValues] = useState<SendFormValues>()
-  const resetForm = (initialValues?: SendFormValues) => {
+  const [formInitialValues, setFormInitialValues] = useState<Partial<SendFormValues>>()
+  const resetForm = (initialValues?: Partial<SendFormValues>) => {
     setFormInitialValues(initialValues)
     setFormId((current) => current + 1)
   }
@@ -372,6 +375,20 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
     setShowPaymentConfirmDialog(true)
   }
 
+  const onTakerOutcomeAcknowledged = () => {
+    // keep the values of an attempt that did not spend any coins, so it can easily be retried
+    const canRetry = takerInfo.status.failed || takerInfo.status.cancelled
+    const data = canRetry ? takerInfo.currentPaymentAttempt?.data : undefined
+    if (data?.amount.isSweep === true) {
+      // the utxos pinned for a sweep might have changed in the meantime, so it must be selected again
+      const { amount: _sweepAmount, ...dataWithoutAmount } = data
+      resetForm(dataWithoutAmount)
+    } else {
+      resetForm(data)
+    }
+    clearCurrentPaymentAttempt()
+  }
+
   const onAbortCoinjoinConfirmed = async () => {
     setShowAbortCoinjoinDialog(false)
     await stopCoinjoinMutationMutateAsync()
@@ -395,7 +412,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         onOpenChange={setShowAbortCoinjoinDialog}
         isConfirming={stopCoinjoinMutationIsPending}
         onConfirm={onAbortCoinjoinConfirmed}
-        paymentAttempt={currentPaymentAttempt?.data.isCoinJoin === true ? currentPaymentAttempt : undefined}
+        paymentAttempt={takerInfo.currentPaymentAttempt}
         jars={jars}
       />
 
@@ -466,17 +483,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
               takerInfo={takerInfo}
               jars={jars}
               isAborting={isWaitingCoinjoinStop}
-              onAbort={takerRunning ? () => setShowAbortCoinjoinDialog(true) : undefined}
-              onDone={
-                takerRunning
-                  ? undefined
-                  : () => {
-                      // keep the values of an attempt that did not spend any coins, so it can easily be retried
-                      const canRetry = takerInfo.status.failed || takerInfo.status.cancelled
-                      resetForm(canRetry ? takerInfo.currentPaymentAttempt?.data : undefined)
-                      clearCurrentPaymentAttempt()
-                    }
-              }
+              onAbort={takerRunning && !paymentAttemptEnded ? () => setShowAbortCoinjoinDialog(true) : undefined}
+              // the form must not be released before the wallet info reflects the outcome of the attempt
+              isDoneDisabled={walletInfoIsFetching}
+              onDone={takerRunning && !paymentAttemptEnded ? undefined : onTakerOutcomeAcknowledged}
             />
           ) : null
         }

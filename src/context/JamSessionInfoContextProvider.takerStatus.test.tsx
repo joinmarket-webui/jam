@@ -52,7 +52,7 @@ const createPaymentAttempt = (createdAt: number): PaymentAttempt => ({
 })
 
 const Consumer = () => {
-  const { takerInfo, setCurrentPaymentAttempt } = useJamSessionInfoContext()
+  const { takerInfo, setCurrentPaymentAttempt, clearCurrentPaymentAttempt } = useJamSessionInfoContext()
   return (
     <div>
       <span data-testid="running">{String(takerInfo.running)}</span>
@@ -60,6 +60,9 @@ const Consumer = () => {
       <span data-testid="txid">{takerInfo.__raw?.txid ?? '-'}</span>
       <button type="button" onClick={() => setCurrentPaymentAttempt(createPaymentAttempt(Date.now()))}>
         start
+      </button>
+      <button type="button" onClick={clearCurrentPaymentAttempt}>
+        clear
       </button>
     </div>
   )
@@ -84,10 +87,19 @@ const renderProvider = () => {
   )
 }
 
+// the payment attempt is kept in memory, hence it must not leak into the next test
+const clearPaymentAttempt = () => {
+  mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: null })
+  const { unmount } = renderProvider()
+  act(() => screen.getByRole('button', { name: 'clear' }).click())
+  unmount()
+}
+
 const sleep = (ms: number) => act(() => new Promise((resolve) => setTimeout(resolve, ms)))
 
 describe('<JamSessionInfoContextProvider /> taker status', () => {
   beforeEach(() => {
+    clearPaymentAttempt()
     sessionStorage.clear()
     mocks.takerStatusQueryFn.mockReset()
     mocks.pollingInterval = POLLING_INTERVAL
@@ -201,5 +213,48 @@ describe('<JamSessionInfoContextProvider /> taker status', () => {
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('failed'))
     expect(screen.getByTestId('txid')).toHaveTextContent('-')
     expect(screen.getByTestId('running')).toHaveTextContent('false')
+  })
+
+  it('keeps the outcome of a payment attempt when another taker run starts afterwards', async () => {
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'failed', error: 'no offers' })
+
+    renderProvider()
+
+    act(() => screen.getByRole('button', { name: 'start' }).click())
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('failed'))
+
+    // e.g. a taker started by the scheduler or from another session
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: true, status: 'filling' })
+    act(() => setSessionTakerActive(true))
+    await waitFor(() => expect(screen.getByTestId('running')).toHaveTextContent('true'))
+
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'complete', txid: 'unrelated-txid' })
+    act(() => setSessionTakerActive(false))
+    await waitFor(() => expect(screen.getByTestId('running')).toHaveTextContent('false'))
+    await sleep(POLLING_INTERVAL * 2)
+
+    expect(screen.getByTestId('status')).toHaveTextContent('failed')
+    expect(screen.getByTestId('txid')).toHaveTextContent('-')
+  })
+
+  it('keeps polling for the outcome of a payment attempt after a failed request', async () => {
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'complete', txid: 'old-txid' })
+
+    renderProvider()
+
+    await waitFor(() => expect(screen.getByTestId('txid')).toHaveTextContent('old-txid'))
+
+    mocks.takerStatusQueryFn
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValue({ running: false, status: 'failed', error: 'no offers' })
+
+    act(() => screen.getByRole('button', { name: 'start' }).click())
+
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('failed'))
+
+    // polling stops once the outcome is known
+    const callCount = mocks.takerStatusQueryFn.mock.calls.length
+    await sleep(POLLING_INTERVAL * 4)
+    expect(mocks.takerStatusQueryFn).toHaveBeenCalledTimes(callCount)
   })
 })

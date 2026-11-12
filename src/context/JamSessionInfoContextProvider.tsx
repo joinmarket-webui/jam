@@ -6,7 +6,7 @@ import {
   takerstatusOptions,
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { TakerStatusResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, type QueryFunction, type QueryKey } from '@tanstack/react-query'
 import { createStore, useStore } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
@@ -39,6 +39,17 @@ const paymentAttemptStore = createStore<PaymentAttemptStoreState>()(
     },
   ),
 )
+
+// the time of the request (not of the response) tells whether a snapshot can belong to a payment attempt
+const withRequestTime = <TQueryFnData, TQueryKey extends QueryKey>(
+  queryFn: QueryFunction<TQueryFnData, TQueryKey> | undefined,
+): QueryFunction<{ requestedAt: number; response: TQueryFnData }, TQueryKey> | undefined => {
+  if (queryFn === undefined) return undefined
+  return async (context) => {
+    const requestedAt = Date.now()
+    return { requestedAt, response: await queryFn(context) }
+  }
+}
 
 interface JamSessionInfoContextProviderProps {
   walletFileName?: WalletFileName
@@ -97,21 +108,34 @@ export const JamSessionInfoContextProvider = ({
   } = useStore(paymentAttemptStore, (state) => state)
 
   const sessionTakerIsActive = state?.coinjoin_in_process === true
-  const paymentAttemptCreatedAt = currentPaymentAttempt?.createdAt
 
-  const {
-    data: takerStatusData,
-    dataUpdatedAt: takerStatusDataUpdatedAt,
-    refetch: refetchTakerStatus,
-  } = useQuery({
-    ...takerstatusOptions({
-      client,
-      path: { walletname: activeWalletFileName || '' },
-    }),
+  const paymentAttempt = useMemo(() => {
+    const isWalletPayment = currentPaymentAttempt?.walletFileName === activeWalletFileName
+    const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
+    return isWalletPayment && isCoinJoin ? currentPaymentAttempt : undefined
+  }, [currentPaymentAttempt, activeWalletFileName])
+  const paymentAttemptCreatedAt = paymentAttempt?.createdAt
+  const paymentAttemptIsPending = paymentAttempt !== undefined && paymentAttempt.outcome === undefined
+
+  const takerStatusQueryOptions = useMemo(
+    () =>
+      takerstatusOptions({
+        client,
+        path: { walletname: activeWalletFileName || '' },
+      }),
+    [client, activeWalletFileName],
+  )
+
+  const { data: takerStatusData, refetch: refetchTakerStatus } = useQuery({
+    queryKey: takerStatusQueryOptions.queryKey,
+    queryFn: withRequestTime(takerStatusQueryOptions.queryFn),
     enabled: !!activeWalletFileName,
-    // only poll while a taker is active (e.g. no endless polling if the backend does not support the endpoint)
+    // only poll while a taker is active or the outcome of a payment attempt is still unknown
+    // (e.g. no endless polling if the backend does not support the endpoint)
     refetchInterval: (query) => {
-      return sessionTakerIsActive || query.state.data?.running === true ? JAM.RUNNING_COINJOIN_POLLING_INTERVAL : false
+      return sessionTakerIsActive || paymentAttemptIsPending || query.state.data?.response.running === true
+        ? JAM.RUNNING_COINJOIN_POLLING_INTERVAL
+        : false
     },
     refetchIntervalInBackground: true,
     retry: false,
@@ -129,21 +153,29 @@ export const JamSessionInfoContextProvider = ({
     [activeWalletFileName, sessionTakerIsActive, paymentAttemptCreatedAt, refetchTakerStatus],
   )
 
+  // ignore a snapshot of a previous run requested before the current payment attempt has been made.
+  // snapshots requested afterwards are safe: NG marks the taker as running and clears the previous
+  // outcome before responding to `POST /taker/coinjoin` (and `createdAt` is set after it responded)
+  const isStaleTakerStatus =
+    paymentAttempt !== undefined &&
+    takerStatusData !== undefined &&
+    takerStatusData.response.running !== true &&
+    takerStatusData.requestedAt < paymentAttempt.createdAt
+  const liveTakerStatus: TakerStatusResponse | undefined = isStaleTakerStatus ? undefined : takerStatusData?.response
+  const takerIsRunning = sessionTakerIsActive || liveTakerStatus?.running === true
+
+  useEffect(
+    function keepOutcomeOfPaymentAttempt() {
+      // any taker run started afterwards (e.g. by the scheduler) must not be reported as outcome of this attempt
+      if (paymentAttempt === undefined || paymentAttempt.outcome !== undefined) return
+      if (takerIsRunning || liveTakerStatus === undefined) return
+      setCurrentPaymentAttempt({ ...paymentAttempt, outcome: liveTakerStatus })
+    },
+    [paymentAttempt, takerIsRunning, liveTakerStatus, setCurrentPaymentAttempt],
+  )
+
   const takerInfo = useMemo<TakerInfo>(() => {
-    const isWalletPayment = currentPaymentAttempt?.walletFileName === activeWalletFileName
-    const isCoinJoin = currentPaymentAttempt?.data.isCoinJoin === true
-    const paymentAttempt = isWalletPayment && isCoinJoin ? currentPaymentAttempt : undefined
-
-    // ignore a snapshot of a previous run fetched before the current payment attempt has been made.
-    // snapshots fetched afterwards are safe: NG marks the taker as running and clears the previous
-    // outcome before responding to `POST /taker/coinjoin` (and `createdAt` is set after it responded)
-    const isStaleTakerStatus =
-      paymentAttempt !== undefined &&
-      takerStatusData?.running !== true &&
-      takerStatusDataUpdatedAt < paymentAttempt.createdAt
-    const takerStatus: TakerStatusResponse | undefined = isStaleTakerStatus ? undefined : takerStatusData
-
-    const takerIsRunning = sessionTakerIsActive || takerStatus?.running === true
+    const takerStatus = paymentAttempt?.outcome ?? liveTakerStatus
     const schedulerIsRunning = takerIsRunning && !!state?.schedule
     return {
       currentPaymentAttempt: paymentAttempt,
@@ -156,14 +188,7 @@ export const JamSessionInfoContextProvider = ({
         running: schedulerIsRunning,
       },
     }
-  }, [
-    sessionTakerIsActive,
-    takerStatusData,
-    takerStatusDataUpdatedAt,
-    state?.schedule,
-    activeWalletFileName,
-    currentPaymentAttempt,
-  ])
+  }, [paymentAttempt, liveTakerStatus, takerIsRunning, state?.schedule])
 
   const makerInfo = useMemo<MakerInfo>(() => {
     const makerIsRunning = state?.maker_running === true
