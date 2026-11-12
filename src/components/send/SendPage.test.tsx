@@ -387,6 +387,7 @@ describe('SendPage', () => {
     mocks.stopCoinjoinRefetch.mockResolvedValue({ data: {} })
     mocks.takerRunning = false
     mocks.schedulerRunning = false
+    mocks.makerRunning = false
     mocks.toastError.mockReset()
     mocks.toastInfo.mockReset()
     mocks.toastSuccess.mockReset()
@@ -465,6 +466,24 @@ describe('SendPage', () => {
 
     await user.click(screen.getByText('confirm-abort'))
     expect(mocks.stopCoinjoinRefetch).toHaveBeenCalledWith({ throwOnError: true })
+  })
+
+  it('shows an error when aborting the CoinJoin fails', async () => {
+    const user = userEvent.setup()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mocks.takerRunning = true
+    mocks.stopCoinjoinRefetch.mockRejectedValue({ message: 'stop boom' })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    await user.click(screen.getByRole('button', { name: 'global.abort' }))
+    await user.click(screen.getByText('confirm-abort'))
+
+    const message = 'send.error_stopping_collaborative_transaction:{"reason":"stop boom"}'
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith(message))
+    expect(screen.getByText(message)).toBeInTheDocument()
+    expect(screen.getByText('abort-dialog:{"open":false}')).toBeInTheDocument()
+    consoleError.mockRestore()
   })
 
   it('shows the running CoinJoin state with abort button not present', async () => {
@@ -686,6 +705,52 @@ describe('SendPage', () => {
       expect(screen.getByText('send-form-initial-address:none')).toBeInTheDocument()
     },
   )
+
+  it('allows to acknowledge the outcome once the wallet info has been reloaded', async () => {
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = 'complete'
+    mocks.walletInfoIsFetching = true
+
+    const { rerender } = render(<SendPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByRole('button', { name: 'global.done' })).toBeDisabled()
+
+    mocks.walletInfoIsFetching = false
+    rerender(<SendPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByRole('button', { name: 'global.done' })).toBeEnabled()
+    await flushActUpdates()
+  })
+
+  it('keeps the form disabled until the outcome of an attempt is acknowledged', async () => {
+    const user = userEvent.setup()
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = false
+    mocks.takerStatus = 'failed'
+    mocks.clearCurrentPaymentAttempt.mockImplementation(() => {
+      mocks.currentPaymentAttemptPresent = false
+    })
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+    expect(screen.getByText('send-form:{"disabled":true}')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'global.done' }))
+    expect(screen.getByText('send-form:{"disabled":false}')).toBeInTheDocument()
+    expect(screen.queryByText('send.taker_status.title')).not.toBeInTheDocument()
+  })
+
+  it('does not offer to abort or acknowledge a running attempt without an outcome', async () => {
+    mocks.currentPaymentAttemptPresent = true
+    mocks.takerRunning = true
+    mocks.takerStatus = 'failed'
+
+    render(<SendPage walletFileName="wallet.jmdat" />)
+
+    // the taker is still shutting down
+    expect(screen.getByText('send.taker_status.status_failed')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'global.done' })).not.toBeInTheDocument()
+    await flushActUpdates()
+  })
 
   it('does not restore the pinned utxos of a failed sweep attempt', async () => {
     const user = userEvent.setup()

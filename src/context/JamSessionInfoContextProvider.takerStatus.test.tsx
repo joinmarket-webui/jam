@@ -237,6 +237,88 @@ describe('<JamSessionInfoContextProvider /> taker status', () => {
     expect(screen.getByTestId('txid')).toHaveTextContent('-')
   })
 
+  it('keeps the outcome of a payment attempt across a remount', async () => {
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'failed', error: 'no offers' })
+
+    const { unmount } = renderProvider()
+
+    act(() => screen.getByRole('button', { name: 'start' }).click())
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('failed'))
+    unmount()
+
+    // an unrelated run has ended in the meantime
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'complete', txid: 'unrelated-txid' })
+    renderProvider()
+
+    await waitFor(() => expect(mocks.takerStatusQueryFn).toHaveBeenCalled())
+    await sleep(POLLING_INTERVAL * 2)
+    expect(screen.getByTestId('status')).toHaveTextContent('failed')
+    expect(screen.getByTestId('txid')).toHaveTextContent('-')
+  })
+
+  it('reports the live taker status again once the payment attempt has been cleared', async () => {
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'failed', error: 'no offers' })
+
+    renderProvider()
+
+    act(() => screen.getByRole('button', { name: 'start' }).click())
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('failed'))
+
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: true, status: 'filling' })
+    act(() => setSessionTakerActive(true))
+    await waitFor(() => expect(screen.getByTestId('running')).toHaveTextContent('true'))
+    expect(screen.getByTestId('status')).toHaveTextContent('failed')
+
+    act(() => screen.getByRole('button', { name: 'clear' }).click())
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('filling'))
+  })
+
+  it('does not keep an outcome while the taker is still running', async () => {
+    setSessionTakerActive(true)
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: true, status: 'filling' })
+
+    renderProvider()
+
+    act(() => screen.getByRole('button', { name: 'start' }).click())
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('filling'))
+
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: true, status: 'broadcasting' })
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('broadcasting'))
+
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'complete', txid: 'new-txid' })
+    act(() => setSessionTakerActive(false))
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('complete'))
+    expect(screen.getByTestId('txid')).toHaveTextContent('new-txid')
+  })
+
+  it('ignores a snapshot requested before the payment attempt even if it arrives afterwards', async () => {
+    let resolveInFlightStatus: ((value: TakerStatusResponse) => void) | undefined
+    mocks.takerStatusQueryFn.mockImplementationOnce(
+      () =>
+        new Promise<TakerStatusResponse>((resolve) => {
+          resolveInFlightStatus = resolve
+        }),
+    )
+    mocks.takerStatusQueryFn.mockResolvedValue({ running: true, status: 'fetching_orderbook' })
+
+    renderProvider()
+    await waitFor(() => expect(mocks.takerStatusQueryFn).toHaveBeenCalledTimes(1))
+
+    await sleep(5)
+    act(() => screen.getByRole('button', { name: 'start' }).click())
+
+    // the response of the request made before the attempt reports the outcome of a previous run
+    await act(async () => {
+      resolveInFlightStatus?.({ running: false, status: 'complete', txid: 'old-txid' })
+      await Promise.resolve()
+    })
+    expect(screen.getByTestId('txid')).toHaveTextContent('-')
+    expect(screen.getByTestId('status')).not.toHaveTextContent('complete')
+
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('fetching_orderbook'))
+    expect(screen.getByTestId('txid')).toHaveTextContent('-')
+  })
+
   it('keeps polling for the outcome of a payment attempt after a failed request', async () => {
     mocks.takerStatusQueryFn.mockResolvedValue({ running: false, status: 'complete', txid: 'old-txid' })
 
