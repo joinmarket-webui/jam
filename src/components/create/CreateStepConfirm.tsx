@@ -84,7 +84,7 @@ export const CreateStepConfirm = ({
       id: 'save-seed-phrase-reminder',
       icon: <AlertCircleIcon />,
       description: t('create_wallet.subtitle_wallet_created'),
-      duration: Number.POSITIVE_INFINITY,
+      duration: Infinity,
     })
 
     return () => {

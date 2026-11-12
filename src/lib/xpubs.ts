@@ -42,6 +42,6 @@ export function convertExtendedPublicKey(xpub: string, targetFormat: XpubFormat)
     return base58check.encode(merged)
   } catch (error: unknown) {
     const reason = error instanceof Error ? error.message : undefined
-    throw new Error(`Invalid extended public key: ${reason ?? 'Unknown reason.'}`)
+    throw new Error(`Invalid extended public key: ${reason ?? 'Unknown reason.'}`, { cause: error })
   }
 }

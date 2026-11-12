@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
 import type { BlockHeight, Factor, Milliseconds, Minutes, MnemonicPhrase, Seconds } from '@/types/global'
 
-const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
+const HORIZONTAL_ELLIPSIS = '\u{2026}' // Horizontal Ellipsis `…`
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -46,9 +46,8 @@ export const sortWallets = (
 ): WalletFileName[] => {
   if (activeWalletFileName && wallets.includes(activeWalletFileName)) {
     return [activeWalletFileName, ...sortWallets(wallets.filter((a) => a !== activeWalletFileName))]
-  } else {
-    return wallets.toSorted((a, b) => a.localeCompare(b))
   }
+  return wallets.toSorted((a, b) => a.localeCompare(b))
 }
 
 export const noop: () => Promise<void> = async () => {}
@@ -56,7 +55,7 @@ export const noop: () => Promise<void> = async () => {}
 export const shortenStringMiddle = (value: string, chars = 8, separator = HORIZONTAL_ELLIPSIS) => {
   const prefixLength = Math.max(Math.floor(chars / 2), 1)
   if (value.length <= prefixLength * 2) {
-    return `${value}`
+    return value
   }
   return `${value.substring(0, prefixLength)}${separator}${value.substring(value.length - prefixLength)}`
 }
@@ -265,7 +264,7 @@ export const delayedPromise = async (delay: Milliseconds | undefined = 210) => {
  * - Return min.
  */
 export const clamp = (value: number, lower: number, upper: number) => {
-  if (Number.isNaN(value) || Number.isNaN(lower) || Number.isNaN(upper)) return Number.NaN
+  if (Number.isNaN(value) || Number.isNaN(lower) || Number.isNaN(upper)) return NaN
   return Math.min(Math.max(value, lower), upper)
 }
 

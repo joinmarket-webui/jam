@@ -107,7 +107,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     queryResult: { data: orderbookData, isFetching: orderbookIsFetching, isError: orderbookIsError },
   } = useQueryOrderbook({
     enabled: makerRunning && !!currentOffer && !!jmSession?.nickname,
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
     refetchInterval: (query) =>
       query.state.error || !query.state.data?.offers.some((offer) => isCurrentOrderbookOffer(offer))
         ? JAM.WAIT_FOR_UPDATE_ORDERBOOK_POLLING_INTERVAL

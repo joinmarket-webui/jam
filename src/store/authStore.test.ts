@@ -23,7 +23,7 @@ describe('computeAuthExpiresAt', () => {
   it('falls back to the configured token lifetime for a non-positive or non-finite value', () => {
     expect(computeAuthExpiresAt(0)).toBe(JM_API_AUTH_TOKEN_EXPIRY)
     expect(computeAuthExpiresAt(-1)).toBe(JM_API_AUTH_TOKEN_EXPIRY)
-    expect(computeAuthExpiresAt(Number.NaN)).toBe(JM_API_AUTH_TOKEN_EXPIRY)
+    expect(computeAuthExpiresAt(NaN)).toBe(JM_API_AUTH_TOKEN_EXPIRY)
   })
 })
 

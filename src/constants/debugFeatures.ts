@@ -33,7 +33,7 @@ type DebugFeature = keyof DebugFeatures
 export const isDevMode = (): boolean => developmentMode
 
 export const isDebugFeatureEnabled = (name: DebugFeature): boolean => {
-  return debugFeatures[name] || false
+  return debugFeatures[name]
 }
 
 // only to be used in tests

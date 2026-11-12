@@ -107,7 +107,7 @@ export default defineConfig(
           },
         },
       ],
-      'unicorn/prevent-abbreviations': [
+      'unicorn/name-replacements': [
         'error',
         {
           checkFilenames: false,
@@ -135,6 +135,45 @@ export default defineConfig(
 
       'unicorn/switch-case-braces': ['off'], // TODO: enable
       'unicorn/no-null': ['off'], // TODO: enable
+
+      // rules added to `recommended` in eslint-plugin-unicorn v66–v79
+      'unicorn/consistent-boolean-name': ['off'], // TODO: enable
+      'unicorn/no-asterisk-prefix-in-documentation-comments': ['off'], // keep JSDoc style
+      'unicorn/single-line-block-comment-style': ['off'], // keep JSDoc style
+      'unicorn/max-nested-calls': ['off'], // too restrictive for tests and jsx
+      'unicorn/no-unnecessary-boolean-comparison': ['off'], // not type-aware: `x === false` differs from `!x` for optional booleans
+      'unicorn/prefer-await': ['off'], // promise chaining can improve readability
+      'unicorn/prefer-number-coercion': ['off'], // TODO: enable
+      'unicorn/prefer-smaller-scope': ['off'], // can improve readability
+      'unicorn/no-top-level-assignment-in-function': ['off'], // TODO: enable
+      'unicorn/no-non-function-verb-prefix': ['off'], // TODO: enable
+      'unicorn/prefer-simple-condition-first': ['off'], // can improve comprehensibility
+      'unicorn/no-unnecessary-parameters': ['off'], // TODO: enable
+      'unicorn/no-unreadable-object-destructuring': ['off'], // TODO: enable
+      'unicorn/no-unreadable-array-destructuring': ['off'], // TODO: enable
+      'unicorn/no-unreadable-for-of-expression': ['off'], // TODO: enable
+      'unicorn/prefer-iterator-to-array': ['off'], // requires ES2025 iterator helpers
+      'unicorn/prefer-iterator-helpers': ['off'], // requires ES2025 iterator helpers
+      'unicorn/prefer-group-by': ['off'], // requires ES2024 `Map.groupBy`
+      'unicorn/prefer-promise-with-resolvers': ['off'], // requires ES2024 `Promise.withResolvers`
+      'unicorn/prefer-number-is-safe-integer': ['off'], // not equivalent to `Number.isInteger`
+      'unicorn/prefer-math-constants': ['off'], // approximate values are used intentionally in tests
+      'unicorn/no-declarations-before-early-exit': ['off'], // TODO: enable
+      'unicorn/prefer-default-parameters': ['off'], // TODO: enable
+      'unicorn/prefer-logical-operator-over-ternary': ['off'], // TODO: enable
+      'unicorn/prefer-early-return': ['off'], // TODO: enable
+      'unicorn/no-useless-else': ['off'], // TODO: enable
+      'unicorn/no-useless-template-literals': ['off'], // TODO: enable
+      'unicorn/prefer-hoisting-branch-code': ['off'], // TODO: enable
+      'unicorn/prefer-else-if': ['off'], // TODO: enable
+      'unicorn/prefer-then-catch': ['off'], // TODO: enable
+      'unicorn/prefer-object-define-properties': ['off'], // TODO: enable
+      'unicorn/default-export-style': ['off'], // TODO: enable
+      'unicorn/require-array-sort-compare': ['off'], // TODO: enable
+      'unicorn/no-error-property-assignment': ['off'], // TODO: enable
+      'unicorn/no-global-object-property-assignment': ['off'], // TODO: enable
+      'unicorn/no-unnecessary-array-flat-map': ['off'], // TODO: enable
+      'unicorn/no-unsafe-string-replacement': ['off'], // TODO: enable
     },
   },
   {

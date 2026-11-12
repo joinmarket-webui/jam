@@ -63,177 +63,172 @@ export const createSendFormSchema = (
     minNumCollaborators: minNumberOfCollaborators,
     maxNumCollaborators: MAX_NUM_COLLABORATORS,
   })
-  return (
-    yup
-      .object({
-        source: yup
-          .object({
-            fromJar: sourceJarField(t('send.feedback_invalid_source_jar'), (jarIndex) =>
-              jars.some((it) => it.jarIndex === jarIndex),
-            )
-              .test(
-                ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL,
-                t('send.feedback_invalid_source_jar_must_unfreeze_utxos'),
-                (jarIndex) => {
-                  const jar = jars.find((it) => it.jarIndex === jarIndex)
-                  if (!jar) return true
-                  if (jar.balanceSummary.calculatedAvailableBalanceInSats > 0) return true
-                  return jar.balanceSummary.calculatedAvailableFrozenBalanceInSats <= 0
-                },
-              )
-              .test(
-                'valid-source-jar-has-funds-test',
-                t('send.feedback_invalid_source_jar_no_available_utxos'),
-                (jarIndex) => {
-                  const jar = jars.find((it) => it.jarIndex === jarIndex)
-                  if (!jar) return true
-                  return jar.balanceSummary.calculatedAvailableBalanceInSats > 0
-                },
-              ),
-          })
-          .required(),
-        destination: yup
-          .object({
-            fromJar: yup.number().optional(),
-            address: destinationAddressField({
-              network,
-              addressSummary,
-              messages: {
-                invalid: t('send.feedback_invalid_destination_address'),
-                networkMismatch: t('send.feedback_destination_network_mismatch'),
-                reused: t('send.feedback_reused_address'),
+  return yup
+    .object({
+      source: yup
+        .object({
+          fromJar: sourceJarField(t('send.feedback_invalid_source_jar'), (jarIndex) =>
+            jars.some((it) => it.jarIndex === jarIndex),
+          )
+            .test(
+              ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL,
+              t('send.feedback_invalid_source_jar_must_unfreeze_utxos'),
+              (jarIndex) => {
+                const jar = jars.find((it) => it.jarIndex === jarIndex)
+                if (!jar || jar.balanceSummary.calculatedAvailableBalanceInSats > 0) return true
+                return jar.balanceSummary.calculatedAvailableFrozenBalanceInSats <= 0
               },
-            }),
-          })
-          .required(),
-        amount: yup
-          .object()
-          .shape({
-            isSweep: yup.boolean().default(false).required(),
-            sweepAmount: yup.number().when('isSweep', {
-              is: (val: boolean) => val === true,
-              then: (schema) => schema.integer().min(1).max(MAX_SEND_AMOUNT).required(),
-              otherwise: (schema) =>
-                schema
-                  .transform(() => null)
-                  .nullable()
-                  .optional(),
-            }),
-            sweepUtxos: yup.array().when('isSweep', {
-              is: (val: boolean) => val === true,
-              then: (schema) => schema.of(yup.string().required()).min(1, t('send.feedback_invalid_amount')).required(),
-              otherwise: (schema) =>
-                schema
-                  .transform(() => null)
-                  .nullable()
-                  .optional(),
-            }),
-            amount: yup.number().when('isSweep', {
-              is: (val: boolean) => val === true,
-              then: (schema) =>
-                schema
-                  .transform(() => null)
-                  .nullable()
-                  .optional(),
-              otherwise: (schema) =>
-                schema
-                  .integer(t('send.feedback_invalid_amount'))
-                  .transform((value) => (isValidInteger(value) ? value : null))
-                  .nonNullable(t('send.feedback_invalid_amount'))
-                  .min(MIN_SEND_AMOUNT, t('send.feedback_invalid_amount'))
-                  .max(MAX_SEND_AMOUNT, t('send.feedback_invalid_amount'))
-                  .required(t('send.feedback_invalid_amount')),
-            }),
-          })
-          .required(),
-        isCoinJoin: yup.boolean().default(true).required(),
-        numCollaborators: yup.number().when('isCoinJoin', {
-          is: (val: boolean) => val === true,
-          then: (schema) =>
-            schema
-              .integer()
-              .default(initialNumberOfCollaborators(minNumberOfCollaborators))
-              .transform((value) => (isValidInteger(value) ? value : null))
-              .min(minNumberOfCollaborators, invalidNumberOfCollaboratorsMessage)
-              .max(MAX_NUM_COLLABORATORS, invalidNumberOfCollaboratorsMessage)
-              .required(invalidNumberOfCollaboratorsMessage),
-          otherwise: (schema) =>
-            schema
-              .transform(() => null)
-              .nullable()
-              .optional(),
-        }),
-      })
-      // eslint-disable-next-line unicorn/prefer-spread -- false positive
-      .concat(createTxFeeFormSchema({ t }))
-      .required()
-      .test((root) => {
-        const jar = jars.find((it) => it.jarIndex === root.source.fromJar)
-        const unfrozenFidelityBondOutputs = (jar?.utxos ?? [])
-          .filter((it) => fb.utxo.isFidelityBond(it))
-          .filter((it) => it.frozen !== true)
-
-        if (unfrozenFidelityBondOutputs.length === 0) return true
-
-        const errorMessage = t('send.feedback_invalid_source_jar_must_freeze_fidelity_bond', {
-          count: unfrozenFidelityBondOutputs.length,
+            )
+            .test(
+              'valid-source-jar-has-funds-test',
+              t('send.feedback_invalid_source_jar_no_available_utxos'),
+              (jarIndex) => {
+                const jar = jars.find((it) => it.jarIndex === jarIndex)
+                if (!jar) return true
+                return jar.balanceSummary.calculatedAvailableBalanceInSats > 0
+              },
+            ),
         })
-        return new yup.ValidationError(
-          errorMessage,
-          root.destination.address,
-          'source.fromJar',
-          ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL,
-          true,
-        )
+        .required(),
+      destination: yup
+        .object({
+          fromJar: yup.number().optional(),
+          address: destinationAddressField({
+            network,
+            addressSummary,
+            messages: {
+              invalid: t('send.feedback_invalid_destination_address'),
+              networkMismatch: t('send.feedback_destination_network_mismatch'),
+              reused: t('send.feedback_reused_address'),
+            },
+          }),
+        })
+        .required(),
+      amount: yup
+        .object()
+        .shape({
+          isSweep: yup.boolean().default(false).required(),
+          sweepAmount: yup.number().when('isSweep', {
+            is: (val: boolean) => val === true,
+            then: (schema) => schema.integer().min(1).max(MAX_SEND_AMOUNT).required(),
+            otherwise: (schema) =>
+              schema
+                .transform(() => null)
+                .nullable()
+                .optional(),
+          }),
+          sweepUtxos: yup.array().when('isSweep', {
+            is: (val: boolean) => val === true,
+            then: (schema) => schema.of(yup.string().required()).min(1, t('send.feedback_invalid_amount')).required(),
+            otherwise: (schema) =>
+              schema
+                .transform(() => null)
+                .nullable()
+                .optional(),
+          }),
+          amount: yup.number().when('isSweep', {
+            is: (val: boolean) => val === true,
+            then: (schema) =>
+              schema
+                .transform(() => null)
+                .nullable()
+                .optional(),
+            otherwise: (schema) =>
+              schema
+                .integer(t('send.feedback_invalid_amount'))
+                .transform((value) => (isValidInteger(value) ? value : null))
+                .nonNullable(t('send.feedback_invalid_amount'))
+                .min(MIN_SEND_AMOUNT, t('send.feedback_invalid_amount'))
+                .max(MAX_SEND_AMOUNT, t('send.feedback_invalid_amount'))
+                .required(t('send.feedback_invalid_amount')),
+          }),
+        })
+        .required(),
+      isCoinJoin: yup.boolean().default(true).required(),
+      numCollaborators: yup.number().when('isCoinJoin', {
+        is: (val: boolean) => val === true,
+        then: (schema) =>
+          schema
+            .integer()
+            .default(initialNumberOfCollaborators(minNumberOfCollaborators))
+            .transform((value) => (isValidInteger(value) ? value : null))
+            .min(minNumberOfCollaborators, invalidNumberOfCollaboratorsMessage)
+            .max(MAX_NUM_COLLABORATORS, invalidNumberOfCollaboratorsMessage)
+            .required(invalidNumberOfCollaboratorsMessage),
+        otherwise: (schema) =>
+          schema
+            .transform(() => null)
+            .nullable()
+            .optional(),
+      }),
+    })
+
+    .concat(createTxFeeFormSchema({ t }))
+    .required()
+    .test((root) => {
+      const jar = jars.find((it) => it.jarIndex === root.source.fromJar)
+      const unfrozenFidelityBondOutputs = (jar?.utxos ?? [])
+        .filter((it) => fb.utxo.isFidelityBond(it))
+        .filter((it) => it.frozen !== true)
+
+      if (unfrozenFidelityBondOutputs.length === 0) return true
+
+      const errorMessage = t('send.feedback_invalid_source_jar_must_freeze_fidelity_bond', {
+        count: unfrozenFidelityBondOutputs.length,
       })
-      .test((root) => {
-        // Note: `fromJar` might still be `undefined` at this point
-        if (root.source.fromJar === undefined) return true
-        const addressIsFromSourceJar = addressSummary[root.destination.address]?.jarIndex === root.source.fromJar
-        if (!addressIsFromSourceJar) return true
+      return new yup.ValidationError(
+        errorMessage,
+        root.destination.address,
+        'source.fromJar',
+        ERROR_SOURCE_JAR_NEEDS_MANUAL_COIN_CONTROL,
+        true,
+      )
+    })
+    .test((root) => {
+      // Note: `fromJar` might still be `undefined` at this point
+      if (root.source.fromJar === undefined) return true
+      const addressIsFromSourceJar = addressSummary[root.destination.address]?.jarIndex === root.source.fromJar
+      if (!addressIsFromSourceJar) return true
 
-        const errorMessage = t('send.feedback_address_from_source_jar')
+      const errorMessage = t('send.feedback_address_from_source_jar')
 
-        return new yup.ValidationError(
-          errorMessage,
-          root.destination.address,
-          'destination.address',
-          'address-not-from-source-jar-test',
-          true,
-        )
-      })
-      .test((root) => {
-        if (root.amount.isSweep) return true
-        if (root.amount.amount === undefined || root.amount.amount === null) return true
+      return new yup.ValidationError(
+        errorMessage,
+        root.destination.address,
+        'destination.address',
+        'address-not-from-source-jar-test',
+        true,
+      )
+    })
+    .test((root) => {
+      if (root.amount.isSweep || root.amount.amount === undefined || root.amount.amount === null) return true
 
-        const sourceJar = jars.find((it) => it.jarIndex === root.source.fromJar)
-        if (!sourceJar) return true
+      const sourceJar = jars.find((it) => it.jarIndex === root.source.fromJar)
+      if (!sourceJar) return true
 
-        const available = sourceJar.balanceSummary.calculatedAvailableBalanceInSats
-        if (root.amount.amount <= available) return true
+      const available = sourceJar.balanceSummary.calculatedAvailableBalanceInSats
+      if (root.amount.amount <= available) return true
 
-        return new yup.ValidationError(
-          t('send.feedback_amount_exceeds_balance'),
-          root.amount.amount,
-          'amount.amount',
-          'amount-exceeds-balance-test',
-          true,
-        )
-      })
-      .test((root) => {
-        if (root.amount.isSweep) return true
-        if (root.amount.amount === undefined || root.amount.amount === null) return true
+      return new yup.ValidationError(
+        t('send.feedback_amount_exceeds_balance'),
+        root.amount.amount,
+        'amount.amount',
+        'amount-exceeds-balance-test',
+        true,
+      )
+    })
+    .test((root) => {
+      if (root.amount.isSweep || root.amount.amount === undefined || root.amount.amount === null) return true
 
-        const dustLimit = dustLimitForAddress(root.destination.address)
-        if (dustLimit === undefined || root.amount.amount >= dustLimit) return true
+      const dustLimit = dustLimitForAddress(root.destination.address)
+      if (dustLimit === undefined || root.amount.amount >= dustLimit) return true
 
-        return new yup.ValidationError(
-          t('send.feedback_amount_below_dust_limit', { dustLimit }),
-          root.amount.amount,
-          'amount.amount',
-          'amount-below-dust-limit-test',
-          true,
-        )
-      })
-  )
+      return new yup.ValidationError(
+        t('send.feedback_amount_below_dust_limit', { dustLimit }),
+        root.amount.amount,
+        'amount.amount',
+        'amount-below-dust-limit-test',
+        true,
+      )
+    })
 }

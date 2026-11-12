@@ -104,6 +104,16 @@ To reproduce the CI runs on Linux or macOS:
 LANG=de_DE.UTF-8 LC_ALL=de_DE.UTF-8 TZ=America/New_York npm run test:unit
 ```
 
+## Slow Tests
+
+Long running or blocking tests, e.g. hashing with production-strength parameters, go into files named `*.slow.test.ts`.
+They are excluded from `npm test` and the coverage report, as generating code coverage via v8 slows them down considerably.
+Run them with:
+
+```bash
+npm run test:slow
+```
+
 ## Linting
 
 We use [ESLint](https://eslint.org/) with Flat Config (`eslint.config.js`) to ensure code quality and consistency across the codebase.

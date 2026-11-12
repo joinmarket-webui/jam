@@ -103,7 +103,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
           <FidelityBondJarSelector
             selectedJarIndex={selectedJarIndex}
             onSelect={setSelectedJarIndex}
-            isJarDisabled={(jar) => !jarsWithUtxos.some((eligible) => eligible.jarIndex === jar.jarIndex)}
+            isJarDisabled={(jar) => jarsWithUtxos.every((eligible) => eligible.jarIndex !== jar.jarIndex)}
           />
           {jarsWithUtxos.length === 0 && (
             <Alert variant="warning">
