@@ -376,8 +376,10 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   const onTakerOutcomeAcknowledged = () => {
-    // keep the values of an attempt that did not spend any coins, so it can easily be retried
-    const canRetry = takerInfo.status.failed || takerInfo.status.cancelled
+    // keep the values of an attempt that did not spend any coins, so it can easily be retried.
+    // an attempt reporting a txid might still have been broadcast: a retry could pay twice
+    const hasTxid = !!takerInfo.__raw?.txid
+    const canRetry = (takerInfo.status.failed || takerInfo.status.cancelled) && !hasTxid
     const data = canRetry ? takerInfo.currentPaymentAttempt?.data : undefined
     if (data?.amount.isSweep === true) {
       // the utxos pinned for a sweep might have changed in the meantime, so it must be selected again

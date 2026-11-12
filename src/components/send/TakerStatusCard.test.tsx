@@ -269,6 +269,19 @@ describe('TakerStatusCard', () => {
       expect(screen.getByRole('button', { name: 'global.done' })).toBeInTheDocument()
     })
 
+    it('points to the transaction history when failed with a txid', () => {
+      render(
+        <TakerStatusCard
+          takerInfo={endedTakerInfo({ running: false, status: 'failed', txid: 'ab'.repeat(32), error: 'boom' })}
+          jars={sampleJars}
+          isAborting={false}
+        />,
+      )
+
+      expect(screen.getByText('send.taker_status.status_failed')).toBeInTheDocument()
+      expect(screen.getByText('send.alert_collaborative_stopped_description')).toBeInTheDocument()
+    })
+
     it('points to the transaction history when ended without a reported outcome', () => {
       render(<TakerStatusCard takerInfo={endedTakerInfo(undefined)} jars={sampleJars} isAborting={false} />)
 

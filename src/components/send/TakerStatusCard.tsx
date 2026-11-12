@@ -89,6 +89,8 @@ export const TakerStatusCard = ({
   const running = takerInfo.running && takerInfo.currentPaymentAttempt?.outcome === undefined
   const hasEndedWithUnknownOutcome = !running && !takerInfo.status.final
   const isActive = running && !takerInfo.status.final
+  // a transaction of an unsuccessful attempt might still have been broadcast
+  const hasEndedWithUnconfirmedTx = (takerInfo.status.failed || takerInfo.status.cancelled) && !!txid
   const hasAdditionalInfo = data !== undefined || !!txid || !!error
 
   return (
@@ -231,7 +233,7 @@ export const TakerStatusCard = ({
                   </div>
                 ) : null}
 
-                {hasEndedWithUnknownOutcome ? (
+                {hasEndedWithUnknownOutcome || hasEndedWithUnconfirmedTx ? (
                   <div className="text-muted-foreground col-span-full text-sm">
                     {t('send.alert_collaborative_stopped_description')}
                   </div>
