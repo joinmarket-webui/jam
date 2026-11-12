@@ -255,6 +255,46 @@ describe('buildNonCollaborativeSendRequest', () => {
       buildNonCollaborativeSendRequest({
         ...baseValues(),
         isCoinJoin: false,
+        source: { fromJar: -1 },
+      }),
+    ).toThrow('Invalid source jar given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        source: { fromJar: 1.5 },
+      }),
+    ).toThrow('Invalid source jar given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        amount: { isSweep: false, amount: 0, sweepAmount: undefined, sweepUtxos: undefined },
+      }),
+    ).toThrow('Invalid amount given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        amount: { isSweep: false, amount: -100, sweepAmount: undefined, sweepUtxos: undefined },
+      }),
+    ).toThrow('Invalid amount given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        amount: { isSweep: false, amount: 100.5, sweepAmount: undefined, sweepUtxos: undefined },
+      }),
+    ).toThrow('Invalid amount given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
         amount: {
           isSweep: true,
           amount: 100_000,
@@ -262,5 +302,16 @@ describe('buildNonCollaborativeSendRequest', () => {
         },
       } as unknown as SendFormValues),
     ).toThrow('Invalid amount given for sweep.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        txFee: {
+          txFeeUnit: TX_FEE_UNITS.SATS_PER_VBYTE,
+          txFeeInSatsPerVbyte: 0,
+        },
+      }),
+    ).toThrow('Invalid transaction fee given.')
   })
 })
