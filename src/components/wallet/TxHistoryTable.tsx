@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { HistoryEntry } from '@/hooks/useQueryWalletHistory'
+import { parseTimestamp } from '@/lib/dateUtils'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import { Alert, AlertDescription } from '../ui/alert'
 import { Button } from '../ui/button'
@@ -24,7 +25,7 @@ import { CopyButton } from '../ui/jam/CopyButton'
 import { SortIcon } from '../ui/jam/SortIcon'
 import { StatusBadge } from '../ui/jam/StatusBadge'
 import { txHistoryTableFeatures } from './TxHistoryTable.schema'
-import { historyEntryAmount, parseHistoryTimestamp } from './txHistoryUtils'
+import { historyEntryAmount } from './txHistoryUtils'
 
 const ITEMS_PER_PAGE = 25
 
@@ -49,15 +50,9 @@ const roleLabel = (entry: HistoryEntry, t: TFunction) => {
   return role ? t(`tx_history.label_role_${role}`) : entry.role || ''
 }
 
-const dateTimeValue = (value: string) => {
-  const date = parseHistoryTimestamp(value)
-  return Number.isNaN(date.getTime()) ? 0 : date.getTime()
-}
+const dateTimeValue = (value: string) => parseTimestamp(value)?.getTime() ?? 0
 
-const formatDateTime = (value: string) => {
-  const date = parseHistoryTimestamp(value)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
-}
+const formatDateTime = (value: string) => parseTimestamp(value)?.toLocaleString() ?? value
 
 const TxHistoryDetails = ({ entry }: { entry: HistoryEntry }) => {
   return (
