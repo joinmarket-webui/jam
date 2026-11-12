@@ -37,7 +37,7 @@ const generateDemoEntry = () => {
   const cjTotalAmount = pseudoRandomInteger(50_000, 1_000_000_000)
   return {
     timestamp: new Date(Date.now() - pseudoRandomInteger(0, daysAgo * MILLISECONDS_IN_A_DAY)),
-    cjTotalAmount: pseudoRandomInteger(50_000, 1_000_000_000),
+    cjTotalAmount,
     inputCount: pseudoRandomInteger(1, 8),
     earnedAmount: pseudoRandomInteger(100, 5_000),
     inputAmount: Math.floor(cjTotalAmount * pseudoRandomFloat(0.1, 0.9)),
