@@ -279,4 +279,44 @@ describe('EarnReportContent', () => {
 
     expect(screen.getByText('earn.report.text_report_summary:{"count":4}')).toBeInTheDocument()
   })
+
+  it('never shows a demo row with a larger input amount than its coinjoin amount', async () => {
+    mocks.developerMode = true
+    // a large first draw followed by a small one would expose a second, independent coinjoin amount
+    const random = vi
+      .spyOn(Math, 'random')
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0.99)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0)
+      .mockReturnValue(0.5)
+
+    try {
+      render(<EarnReportContent enabled />)
+      fireEvent.click(screen.getByRole('button', { name: /Add Demo Entry/u }))
+      fireEvent.click(screen.getByRole('button', { name: 'global.download' }))
+
+      const blob = mocks.createObjectURL.mock.calls[0]?.[0]
+      if (!blob) {
+        throw new Error('CSV blob was not created')
+      }
+
+      const csv = await blob.text()
+      // demo rows have no notes, unlike the report rows of this test
+      const demoRow = csv
+        .trim()
+        .split('\n')
+        .slice(1)
+        .find((line) => line.endsWith(','))
+      if (!demoRow) {
+        throw new Error('Demo row was not exported')
+      }
+
+      const [, cjAmount, , inputAmount] = demoRow.split(',').map(Number)
+      expect(inputAmount).toBeGreaterThan(0)
+      expect(inputAmount).toBeLessThanOrEqual(cjAmount)
+    } finally {
+      random.mockRestore()
+    }
+  })
 })
