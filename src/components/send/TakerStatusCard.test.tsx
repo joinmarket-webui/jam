@@ -234,6 +234,41 @@ describe('TakerStatusCard', () => {
       expect(screen.queryByText('scheduler.label_transaction_id')).not.toBeInTheDocument()
     })
 
+    it('renders a stopped taker without an outcome as ended instead of its last phase', () => {
+      render(
+        <TakerStatusCard
+          takerInfo={endedTakerInfo({ running: false, status: 'idle' })}
+          jars={sampleJars}
+          isAborting={false}
+        />,
+      )
+
+      expect(screen.getByText('send.taker_status.status_unknown')).toBeInTheDocument()
+      expect(screen.queryByText('send.taker_status.status_idle')).not.toBeInTheDocument()
+      expect(screen.getByText('send.alert_collaborative_stopped_description')).toBeInTheDocument()
+    })
+
+    it('does not offer to abort an ended attempt while an unrelated taker is running', () => {
+      const outcome: TakerStatusResponse = { running: false, status: 'failed', error: 'not enough makers' }
+      render(
+        <TakerStatusCard
+          takerInfo={{
+            ...endedTakerInfo(outcome),
+            running: true,
+            currentPaymentAttempt: { ...sampleAttempt, outcome },
+          }}
+          jars={sampleJars}
+          isAborting={false}
+          onAbort={vi.fn()}
+          onDone={vi.fn()}
+        />,
+      )
+
+      expect(screen.getByText('send.taker_status.status_failed')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'global.abort' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'global.done' })).toBeInTheDocument()
+    })
+
     it('points to the transaction history when ended without a reported outcome', () => {
       render(<TakerStatusCard takerInfo={endedTakerInfo(undefined)} jars={sampleJars} isAborting={false} />)
 

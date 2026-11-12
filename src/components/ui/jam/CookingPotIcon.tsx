@@ -50,15 +50,15 @@ export const CookingPotIcon = ({ sourceJarIndex, destinationJarIndex, className,
           transform: rotate(8.5deg) translateY(-5px) translateX(6px);
         }
         .animation-lid {
-          animation: lidRattle 2.2s ease-in-out infinite;
           transform-origin: 35px 50px;
         }
-        .animation-wave {
-          animation: waveShift 2.8s ease-in-out infinite;
+        @media (prefers-reduced-motion: no-preference) {
+          .animation-lid { animation: lidRattle 2.2s ease-in-out infinite; }
+          .animation-wave { animation: waveShift 2.8s ease-in-out infinite; }
+          .animation-steam-1 { animation: steamRise 2.2s ease-in-out infinite; }
+          .animation-steam-2 { animation: steamRise 2.6s ease-in-out 0.7s infinite; }
+          .animation-steam-3 { animation: steamRise 2.4s ease-in-out 1.2s infinite; }
         }
-        .animation-steam-1 { animation: steamRise 2.2s ease-in-out infinite; }
-        .animation-steam-2 { animation: steamRise 2.6s ease-in-out 0.7s infinite; }
-        .animation-steam-3 { animation: steamRise 2.4s ease-in-out 1.2s infinite; }
       `}</style>
 
       <div className="relative z-10 flex size-36 items-center justify-center md:size-42">

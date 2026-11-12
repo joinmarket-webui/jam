@@ -36,13 +36,17 @@ const STATUS_I18N_KEYS: Record<string, string> = {
   cancelled: 'send.taker_status.status_cancelled',
 } satisfies Partial<Record<TakerStatus, string>>
 
-const TakerStatusText = ({ takerInfo }: { takerInfo: TakerInfo }) => {
+const TakerStatusText = ({ takerInfo, running }: { takerInfo: TakerInfo; running: boolean }) => {
   const { t } = useTranslation()
-  const { value, completedUnverified } = takerInfo.status
+  const { value, completedUnverified, final } = takerInfo.status
 
+  if (!running && !final) {
+    // ended without a reported outcome, e.g. if not supported by the backend or it has been restarted
+    return <>{t('send.taker_status.status_unknown')}</>
+  }
   if (value === undefined) {
-    // no status reported (yet), e.g. right after start or if not supported by the backend
-    return <>{takerInfo.running ? t('send.taker_status.status_idle') : t('send.taker_status.status_unknown')}</>
+    // no status reported (yet), e.g. right after start
+    return <>{t('send.taker_status.status_idle')}</>
   }
   if (completedUnverified) {
     return <>{t('send.taker_status.status_complete_unverified')}</>
@@ -55,11 +59,19 @@ export interface TakerStatusCardProps {
   takerInfo: TakerInfo
   jars: Jar[]
   isAborting: boolean
+  isDoneDisabled?: boolean
   onAbort?: () => void
   onDone?: () => void
 }
 
-export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }: TakerStatusCardProps) => {
+export const TakerStatusCard = ({
+  takerInfo,
+  jars,
+  isAborting,
+  isDoneDisabled,
+  onAbort,
+  onDone,
+}: TakerStatusCardProps) => {
   const { t } = useTranslation()
 
   const data = takerInfo.currentPaymentAttempt?.data
@@ -73,8 +85,10 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }
 
   const txid = takerInfo.__raw?.txid ?? undefined
   const error = takerInfo.__raw?.error ?? undefined
-  const hasEndedWithUnknownOutcome = !takerInfo.running && takerInfo.status.value === undefined
-  const isActive = takerInfo.running && !takerInfo.status.final
+  // an attempt with a known outcome has ended, even if another taker (e.g. the scheduler) is running by now
+  const running = takerInfo.running && takerInfo.currentPaymentAttempt?.outcome === undefined
+  const hasEndedWithUnknownOutcome = !running && !takerInfo.status.final
+  const isActive = running && !takerInfo.status.final
   const hasAdditionalInfo = data !== undefined || !!txid || !!error
 
   return (
@@ -94,12 +108,12 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }
           <div className="col-span-full flex flex-col items-center justify-center md:col-span-1">
             <CookingPotIcon
               animate={isActive}
-              className={isActive ? 'animate-pulse' : undefined}
+              className={isActive ? 'motion-safe:animate-pulse' : undefined}
               sourceJarIndex={data?.source?.fromJar}
               destinationJarIndex={data?.destination?.fromJar}
             />
-            <span data-testid="taker-status-text">
-              <TakerStatusText takerInfo={takerInfo} />
+            <span data-testid="taker-status-text" aria-live="polite">
+              <TakerStatusText takerInfo={takerInfo} running={running} />
             </span>
           </div>
           {hasAdditionalInfo && (
@@ -235,7 +249,7 @@ export const TakerStatusCard = ({ takerInfo, jars, isAborting, onAbort, onDone }
               </Button>
             )}
             {onDone && (
-              <Button type="button" variant="outline" onClick={onDone}>
+              <Button type="button" variant="outline" onClick={onDone} disabled={isDoneDisabled}>
                 {t('global.done')}
               </Button>
             )}
