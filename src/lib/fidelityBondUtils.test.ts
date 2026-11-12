@@ -335,4 +335,118 @@ describe('utils', () => {
       expect(fb.existingLockdates([])).toEqual([])
     })
   })
+
+  describe('getRecommendedLockdate', () => {
+    it('returns the first available lockdate in the future', () => {
+      const lockdates: fb.Lockdate[] = ['2026-06', '2026-07', '2026-08']
+      const refTime = Date.UTC(2026, 4, 1) // 2026-05-01
+      expect(fb.getRecommendedLockdate(lockdates, refTime)).toBe('2026-06')
+    })
+
+    it('skips past lockdates and selects the next future one', () => {
+      const lockdates: fb.Lockdate[] = ['2025-01', '2025-06', '2026-01', '2026-06']
+      const refTime = Date.UTC(2025, 11, 15) // 2025-12-15
+      expect(fb.getRecommendedLockdate(lockdates, refTime)).toBe('2026-01')
+    })
+
+    it('falls back to the first available lockdate if all are in the past', () => {
+      const lockdates: fb.Lockdate[] = ['2020-01', '2020-02']
+      const refTime = Date.UTC(2026, 0, 1)
+      expect(fb.getRecommendedLockdate(lockdates, refTime)).toBe('2020-01')
+    })
+
+    it('returns undefined if availableLockdates is empty', () => {
+      expect(fb.getRecommendedLockdate([])).toBeUndefined()
+    })
+  })
+
+  describe('findBestCandidateUtxo', () => {
+    const addressSummary = {
+      'bcrt1q-cj': { status: 'cj-out' },
+      'bcrt1q-deposit': { status: 're-deposit' },
+    }
+
+    it('returns undefined if utxos list is empty', () => {
+      expect(fb.findBestCandidateUtxo([], addressSummary)).toBeUndefined()
+    })
+
+    it('returns undefined if no utxos are eligible', () => {
+      const utxos = [
+        { ...makeUtxo('u1', 'bcrt1q-deposit'), value: 50_000 },
+        { ...makeUtxo('u2', 'bcrt1q-cj', true), value: 100_000 }, // frozen
+        makeBond('bond:0', 1748736000), // fidelity bond
+      ]
+      expect(fb.findBestCandidateUtxo(utxos, addressSummary)).toBeUndefined()
+    })
+
+    it('selects the single eligible coin', () => {
+      const eligible = { ...makeUtxo('u1', 'bcrt1q-cj'), value: 50_000 }
+      const ineligible = { ...makeUtxo('u2', 'bcrt1q-deposit'), value: 200_000 }
+      expect(fb.findBestCandidateUtxo([eligible, ineligible], addressSummary)).toEqual(eligible)
+    })
+
+    it('selects the eligible coin with the largest satoshi value', () => {
+      const small = { ...makeUtxo('small', 'bcrt1q-cj'), value: 25_000 }
+      const large = { ...makeUtxo('large', 'bcrt1q-cj'), value: 150_000 }
+      const medium = { ...makeUtxo('medium', 'bcrt1q-cj'), value: 75_000 }
+      expect(fb.findBestCandidateUtxo([small, large, medium], addressSummary)).toEqual(large)
+    })
+  })
+
+  describe('findBestFidelityBondJar', () => {
+    const addressSummary = {
+      'bcrt1q-cj': { status: 'cj-out' },
+      'bcrt1q-deposit': { status: 're-deposit' },
+    }
+
+    it('returns undefined if no jars contain eligible utxos', () => {
+      const jars = [
+        { jarIndex: 0 as const, utxos: [{ ...makeUtxo('u1', 'bcrt1q-deposit'), value: 100_000 }] },
+        { jarIndex: 1 as const, utxos: [] },
+      ]
+      expect(fb.findBestFidelityBondJar(jars, addressSummary)).toBeUndefined()
+    })
+
+    it('returns the only jar with eligible utxos', () => {
+      const jar0 = {
+        jarIndex: 0 as const,
+        utxos: [{ ...makeUtxo('u1', 'bcrt1q-cj'), value: 50_000 }],
+      }
+      const jar1 = {
+        jarIndex: 1 as const,
+        utxos: [{ ...makeUtxo('u2', 'bcrt1q-deposit'), value: 200_000 }],
+      }
+      expect(fb.findBestFidelityBondJar([jar0, jar1], addressSummary)).toEqual(jar0)
+    })
+
+    it('selects the jar with the largest eligible coin', () => {
+      const jar0 = {
+        jarIndex: 0 as const,
+        utxos: [{ ...makeUtxo('u1', 'bcrt1q-cj'), value: 50_000 }],
+      }
+      const jar1 = {
+        jarIndex: 1 as const,
+        utxos: [{ ...makeUtxo('u2', 'bcrt1q-cj'), value: 200_000 }],
+      }
+      expect(fb.findBestFidelityBondJar([jar0, jar1], addressSummary)).toEqual(jar1)
+    })
+
+    it('breaks ties using total eligible balance across the jar', () => {
+      const jar0 = {
+        jarIndex: 0 as const,
+        utxos: [
+          { ...makeUtxo('u1', 'bcrt1q-cj'), value: 100_000 },
+          { ...makeUtxo('u2', 'bcrt1q-cj'), value: 10_000 },
+        ],
+      }
+      const jar1 = {
+        jarIndex: 1 as const,
+        utxos: [
+          { ...makeUtxo('u3', 'bcrt1q-cj'), value: 100_000 },
+          { ...makeUtxo('u4', 'bcrt1q-cj'), value: 80_000 },
+        ],
+      }
+      expect(fb.findBestFidelityBondJar([jar0, jar1], addressSummary)).toEqual(jar1)
+    })
+  })
 })

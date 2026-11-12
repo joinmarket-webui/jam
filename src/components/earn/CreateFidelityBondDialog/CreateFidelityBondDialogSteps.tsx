@@ -34,6 +34,35 @@ type CreateFidelityBondDialogStepsProps = {
   wizard: Wizard
 }
 
+function FundsInUseAlert({
+  isUsingAllFunds,
+  isUsingAllCoinjoinedFunds,
+}: Pick<Wizard, 'isUsingAllFunds' | 'isUsingAllCoinjoinedFunds'>) {
+  if (!isUsingAllFunds && !isUsingAllCoinjoinedFunds) return null
+
+  return (
+    <Alert variant="warning">
+      <AlertTriangleIcon className="h-4 w-4" />
+      <AlertDescription>
+        {isUsingAllFunds ? (
+          <Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use">
+            <strong>Keep in mind</strong>: As you are using all available funds for the creation of this fidelity bond,
+            you will not have any UTXOs left. A fidelity bond{' '}
+            <strong>will not participate in collaborative transactions</strong> and you{' '}
+            <strong>have to fund your wallet again</strong> to start sending or earning.
+          </Trans>
+        ) : (
+          <Trans i18nKey="earn.fidelity_bond.alert_all_coinjoined_funds_in_use">
+            <strong>Keep in mind</strong>: You are using all of your coinjoined funds for the creation of this fidelity
+            bond. A fidelity bond <strong>will not participate in collaborative transactions</strong>, so until it
+            expires, only funds that have not been coinjoined remain available for sending or earning.
+          </Trans>
+        )}
+      </AlertDescription>
+    </Alert>
+  )
+}
+
 export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDialogStepsProps) {
   const {
     step,
@@ -50,6 +79,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
     toggleUtxoSelection,
     totalAmount,
     isUsingAllFunds,
+    isUsingAllCoinjoinedFunds,
     utxosToFreeze,
     confirmationChecked,
     setConfirmationChecked,
@@ -211,19 +241,7 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
             </div>
           )}
 
-          {isUsingAllFunds && (
-            <Alert variant="warning">
-              <AlertTriangleIcon className="h-4 w-4" />
-              <AlertDescription>
-                <Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use">
-                  <strong>Keep in mind</strong>: As you are using all available funds for the creation of this fidelity
-                  bond, you will not have any UTXOs left. A fidelity bond{' '}
-                  <strong>will not participate in collaborative transactions</strong> and you{' '}
-                  <strong>have to fund your wallet again</strong> to start sending or earning.
-                </Trans>
-              </AlertDescription>
-            </Alert>
-          )}
+          <FundsInUseAlert isUsingAllFunds={isUsingAllFunds} isUsingAllCoinjoinedFunds={isUsingAllCoinjoinedFunds} />
         </div>
       )
 
@@ -298,6 +316,8 @@ export function CreateFidelityBondDialogSteps({ wizard }: CreateFidelityBondDial
           ) : (
             address && <AddressPreview label={t('earn.fidelity_bond.review_inputs.label_address')} address={address} />
           )}
+
+          <FundsInUseAlert isUsingAllFunds={isUsingAllFunds} isUsingAllCoinjoinedFunds={isUsingAllCoinjoinedFunds} />
 
           <Alert variant="warning">
             <AlertTriangleIcon className="h-4 w-4" />
