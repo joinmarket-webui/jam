@@ -201,8 +201,6 @@ export const toSchedule = (plan: TumblerPlanResponse, jars: Jar[]): Schedule => 
   }
 }
 
-export const parseScheduleTimestamp = parseTimestamp
-
 export const toScheduleEntry = (phase: TumblerPhaseResponse, jars: Jar[]): ScheduleEntry => {
   const status: ScheduleEntry['status'] = {
     value: phase.status,
@@ -220,8 +218,8 @@ export const toScheduleEntry = (phase: TumblerPhaseResponse, jars: Jar[]): Sched
     derivedStatus: {
       terminated: !status.pending && !status.running,
     },
-    startedAt: parseScheduleTimestamp(phase.started_at),
-    finishedAt: parseScheduleTimestamp(phase.finished_at),
+    startedAt: parseTimestamp(phase.started_at),
+    finishedAt: parseTimestamp(phase.finished_at),
     waitTimeInSeconds: phase.wait_seconds ?? 0,
     transactionId: phase.txid ?? undefined,
     __raw: phase,

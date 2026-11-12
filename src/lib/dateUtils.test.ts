@@ -1,8 +1,31 @@
 import { describe, expect, it } from 'vitest'
 import { withTimeZone } from '@/test/withTimeZone'
-import { hasTimeZoneDesignator, isValidDate, parseTimestamp } from './dateUtils'
+import { hasTimeZoneDesignator, isValidDate, normalizeTimestamp, parseTimestamp } from './dateUtils'
 
 describe('dateUtils', () => {
+  describe('normalizeTimestamp', () => {
+    it('converts slash-separated dates to hyphenated format', () => {
+      expect(normalizeTimestamp('2026/11/09 07:22:05')).toBe('2026-11-09T07:22:05')
+      expect(normalizeTimestamp('2008/10/31 02:42:54')).toBe('2008-10-31T02:42:54')
+    })
+
+    it('replaces space between date and time with T', () => {
+      expect(normalizeTimestamp('2026-10-31 13:10:05')).toBe('2026-10-31T13:10:05')
+      expect(normalizeTimestamp('2026-10-14 10:38:39.123456')).toBe('2026-10-14T10:38:39.123456')
+    })
+
+    it('normalizes trailing GMT or UTC indicators to Z', () => {
+      expect(normalizeTimestamp('2026/11/09 07:22:05 GMT')).toBe('2026-11-09T07:22:05Z')
+      expect(normalizeTimestamp('2026/11/09 07:22:05 UTC')).toBe('2026-11-09T07:22:05Z')
+      expect(normalizeTimestamp('2026-10-31 13:10:05 GMT')).toBe('2026-10-31T13:10:05Z')
+    })
+
+    it('preserves existing ISO 8601 formatting and explicit offsets', () => {
+      expect(normalizeTimestamp('2026-07-28T12:00:00Z')).toBe('2026-07-28T12:00:00Z')
+      expect(normalizeTimestamp('2026-07-28T17:30:00+05:30')).toBe('2026-07-28T17:30:00+05:30')
+      expect(normalizeTimestamp('2026-10-31 18:40:05+05:30')).toBe('2026-10-31T18:40:05+05:30')
+    })
+  })
   describe('hasTimeZoneDesignator', () => {
     it('detects Z or z time zone indicator', () => {
       expect(hasTimeZoneDesignator('2026-07-28T12:00:00Z')).toBe(true)
@@ -80,6 +103,16 @@ describe('dateUtils', () => {
 
         const parsedGmt = parseTimestamp('2008/10/31 02:42:54 GMT')
         expect(parsedGmt?.toISOString()).toBe('2008-10-31T02:42:54.000Z')
+
+        const parsedUtc = parseTimestamp('2026/11/09 07:22:05 UTC')
+        expect(parsedUtc?.toISOString()).toBe('2026-11-09T07:22:05.000Z')
+      })
+    })
+
+    it('parses space-separated date-time strings without offset as UTC', () => {
+      withTimeZone('America/New_York', () => {
+        const parsed = parseTimestamp('2026-10-31 13:10:05')
+        expect(parsed?.toISOString()).toBe('2026-10-31T13:10:05.000Z')
       })
     })
 

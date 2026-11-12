@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { historyEntryAmount, parseHistoryTimestamp, txHistoryToCsv } from './txHistoryUtils'
+import { historyEntryAmount, txHistoryToCsv } from './txHistoryUtils'
 
 describe('txHistoryUtils', () => {
   describe('historyEntryAmount', () => {
@@ -15,22 +15,6 @@ describe('txHistoryUtils', () => {
 
     it('returns undefined if the entry has no amount', () => {
       expect(historyEntryAmount({ timestamp: '', role: 'send' })).toBeUndefined()
-    })
-  })
-
-  describe('parseHistoryTimestamp', () => {
-    it('treats timestamps without an offset as UTC', () => {
-      expect(parseHistoryTimestamp('2026-10-31T13:10:05').toISOString()).toBe('2026-10-31T13:10:05.000Z')
-      expect(parseHistoryTimestamp('2026-10-14T10:38:39.123456').toISOString()).toBe('2026-10-14T10:38:39.123Z')
-    })
-
-    it('respects an explicit offset', () => {
-      expect(parseHistoryTimestamp('2026-10-31T13:10:05Z').toISOString()).toBe('2026-10-31T13:10:05.000Z')
-      expect(parseHistoryTimestamp('2026-10-31T18:40:05+05:30').toISOString()).toBe('2026-10-31T13:10:05.000Z')
-    })
-
-    it('returns an invalid date for unparsable values', () => {
-      expect(Number.isNaN(parseHistoryTimestamp('unknown').getTime())).toBe(true)
     })
   })
 

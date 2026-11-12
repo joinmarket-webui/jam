@@ -9,13 +9,6 @@ import { parseTimestamp } from '@/lib/dateUtils'
  */
 export const historyEntryAmount = (entry: HistoryEntry): number | undefined => entry.cj_amount ?? entry.amount
 
-/**
- * Parses a history entry timestamp.
- *
- * joinmarket-ng sends timestamps without an offset; they are UTC (see #1542).
- */
-export const parseHistoryTimestamp = (value: string): Date => parseTimestamp(value) ?? new Date(Number.NaN)
-
 const formatCsvTimestamp = (value: string): string => {
   const date = parseTimestamp(value)
   return date ? date.toISOString() : value
