@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
 import type { WalletFileName } from '@/lib/utils'
@@ -232,5 +232,81 @@ describe('SignMessageDialog', () => {
     fireEvent.click(screen.getByText('global.close'))
     expect(onOpenChange).toHaveBeenCalledWith(false)
     expect(h.reset).toHaveBeenCalled()
+  })
+
+  it.each(['button', 'dismiss', 'external'] as const)(
+    'discards a pending signature after %s close and reopen',
+    async (closeMethod) => {
+      let resolveSignature!: (value: { signature: string }) => void
+      const pendingSignature = new Promise<{ signature: string }>((resolve) => {
+        resolveSignature = resolve
+      })
+      h.mutateAsync.mockReturnValueOnce(pendingSignature)
+      const onOpenChange = vi.fn()
+      const { rerender } = render(
+        <SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />,
+      )
+      fireEvent.change(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_address'), {
+        target: { value: "m/84'/0'/0'/0/0" },
+      })
+      fireEvent.change(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_message'), {
+        target: { value: 'Old message' },
+      })
+      fireEvent.click(screen.getByText('settings.sign_message_modal.button_sign'))
+      await waitFor(() => expect(h.mutateAsync).toHaveBeenCalledOnce())
+
+      if (closeMethod !== 'external') {
+        fireEvent.click(screen.getByText(closeMethod === 'button' ? 'global.close' : 'Close Dialog'))
+        expect(onOpenChange).toHaveBeenCalledWith(false)
+      }
+      rerender(<SignMessageDialog open={false} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+      rerender(<SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+      await act(async () => {
+        resolveSignature({ signature: 'obsolete-signature' })
+        await pendingSignature
+      })
+
+      expect(screen.queryByText('settings.sign_message_modal.label_signature')).not.toBeInTheDocument()
+      expect(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_message')).toHaveValue('')
+      expect(screen.getByText('settings.sign_message_modal.button_sign')).toBeDisabled()
+    },
+  )
+
+  it('keeps the new signature when an operation from the previous opening completes later', async () => {
+    let resolveOldSignature!: (value: { signature: string }) => void
+    const pendingSignature = new Promise<{ signature: string }>((resolve) => {
+      resolveOldSignature = resolve
+    })
+    h.mutateAsync.mockReturnValueOnce(pendingSignature).mockResolvedValueOnce({ signature: 'current-signature' })
+    const onOpenChange = vi.fn()
+    const { rerender } = render(
+      <SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />,
+    )
+    const submitMessage = (message: string) => {
+      fireEvent.change(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_address'), {
+        target: { value: "m/84'/0'/0'/0/0" },
+      })
+      fireEvent.change(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_message'), {
+        target: { value: message },
+      })
+      fireEvent.click(screen.getByText('settings.sign_message_modal.button_sign'))
+    }
+    submitMessage('Old message')
+    await waitFor(() => expect(h.mutateAsync).toHaveBeenCalledOnce())
+    fireEvent.click(screen.getByText('global.close'))
+    rerender(<SignMessageDialog open={false} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+    rerender(<SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+    submitMessage('Current message')
+    await waitFor(() => expect(screen.getAllByDisplayValue('current-signature')).not.toHaveLength(0))
+    await act(async () => {
+      resolveOldSignature({ signature: 'obsolete-signature' })
+      await pendingSignature
+    })
+
+    expect(screen.getAllByDisplayValue('current-signature')).not.toHaveLength(0)
+    expect(screen.queryByDisplayValue('obsolete-signature')).not.toBeInTheDocument()
+    expect(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_message')).toHaveValue(
+      'Current message',
+    )
   })
 })
