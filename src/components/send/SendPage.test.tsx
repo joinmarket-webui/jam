@@ -29,6 +29,7 @@ const mocks = vi.hoisted(() => ({
   stopCoinjoinRefetch: vi.fn(),
   takerRunning: false,
   takerStatus: undefined as string | undefined,
+  takerTxid: undefined as string | undefined,
   schedulerRunning: false,
   makerRunning: false,
   toastError: vi.fn(),
@@ -198,7 +199,10 @@ vi.mock('@/context/JamSessionInfoContext', () => ({
       status: toTakerStatusInfo(
         mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
       ),
-      __raw: mocks.takerStatus === undefined ? undefined : { running: false, status: mocks.takerStatus },
+      __raw:
+        mocks.takerStatus === undefined
+          ? undefined
+          : { running: false, status: mocks.takerStatus, txid: mocks.takerTxid },
       running: mocks.takerRunning,
       scheduler: {
         running: mocks.schedulerRunning,
@@ -362,6 +366,7 @@ describe('SendPage', () => {
     mocks.currentPaymentAttemptIsSweep = false
     mocks.currentPaymentAttemptEnded = false
     mocks.takerStatus = undefined
+    mocks.takerTxid = undefined
     mocks.directSend.mockReset()
     mocks.fetchIfMissing.mockReset()
     mocks.fetchIfMissing.mockResolvedValue({ value: '4' })
@@ -665,6 +670,22 @@ describe('SendPage', () => {
     await user.click(screen.getByRole('button', { name: 'global.done' }))
     expect(mocks.clearCurrentPaymentAttempt).toHaveBeenCalled()
   })
+
+  it.each(['failed', 'cancelled'])(
+    'does not keep the form values of a %s attempt that reports a txid',
+    async (takerStatus) => {
+      const user = userEvent.setup()
+      mocks.currentPaymentAttemptPresent = true
+      mocks.takerRunning = false
+      mocks.takerStatus = takerStatus
+      mocks.takerTxid = 'ab'.repeat(32)
+
+      render(<SendPage walletFileName="wallet.jmdat" />)
+
+      await user.click(screen.getByRole('button', { name: 'global.done' }))
+      expect(screen.getByText('send-form-initial-address:none')).toBeInTheDocument()
+    },
+  )
 
   it('does not restore the pinned utxos of a failed sweep attempt', async () => {
     const user = userEvent.setup()
