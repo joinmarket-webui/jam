@@ -9,6 +9,7 @@ import {
 import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { DevBadge } from '@/components/dev/DevBadge'
+import { earnReportToCsv } from '@/components/earn/report/hooks/earnReportParser'
 import { useQueryYieldgenReport, type EarnReportEntry } from '@/components/earn/report/hooks/useQueryYieldgenReport'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -148,20 +149,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   }, [setPageSize, isShowAll, allEntries.length])
 
   const downloadCsv = useCallback(() => {
-    const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
-    const rows = getSortedRowModel().rows.map((row) =>
-      [
-        isValidDate(row.original.timestamp) ? row.original.timestamp.toISOString() : '',
-        row.original.cjTotalAmount ?? '',
-        row.original.inputCount ?? '',
-        row.original.inputAmount ?? '',
-        row.original.fee ?? '',
-        row.original.earnedAmount ?? '',
-        row.original.confirmationDuration ?? '',
-        row.original.notes ?? '',
-      ].join(','),
-    )
-    const value = header + '\n' + rows.join('\n')
+    const value = earnReportToCsv(getSortedRowModel().rows.map((row) => row.original))
     const blob = new Blob([value], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')

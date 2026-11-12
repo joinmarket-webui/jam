@@ -19,10 +19,13 @@ const parseYieldgenTimestamp = (val: string) => {
 }
 
 const yieldgenReportLineToEntry = (line: string): EarnReportEntry | null => {
-  if (!line.includes(',')) return null
+  const cleanLine = line.replace(/\r?\n$/, '')
+  if (!cleanLine.includes(',')) return null
 
-  const values = line.split(',')
+  const values = cleanLine.split(',')
   if (values.length < 8) return null
+
+  const rawNotes = values[7].trim()
 
   return {
     timestamp: parseYieldgenTimestamp(values[0]),
@@ -32,7 +35,7 @@ const yieldgenReportLineToEntry = (line: string): EarnReportEntry | null => {
     fee: values[4] !== '' ? Number.parseInt(values[4], 10) : null,
     earnedAmount: values[5] !== '' ? Number.parseInt(values[5], 10) : null,
     confirmationDuration: values[6] !== '' ? Number.parseFloat(values[6]) : null,
-    notes: values[7] !== '' ? values[7] : null,
+    notes: rawNotes !== '' ? rawNotes : null,
   }
 }
 
@@ -44,4 +47,32 @@ export const yieldgenReportToEarnReportEntries = (lines: string[]): EarnReportEn
   return linesWithoutHeader
     .map((line) => yieldgenReportLineToEntry(line))
     .filter((entry): entry is EarnReportEntry => entry !== null)
+}
+
+const isValidDate = (date: Date) => !Number.isNaN(date.getTime())
+
+const formatCsvField = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined) return ''
+  const stringValue = String(value)
+  if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+    return `"${stringValue.replaceAll('"', '""')}"`
+  }
+  return stringValue
+}
+
+export const earnReportToCsv = (entries: EarnReportEntry[]): string => {
+  const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
+  const rows = entries.map((entry) =>
+    [
+      formatCsvField(isValidDate(entry.timestamp) ? entry.timestamp.toISOString() : ''),
+      formatCsvField(entry.cjTotalAmount),
+      formatCsvField(entry.inputCount),
+      formatCsvField(entry.inputAmount),
+      formatCsvField(entry.fee),
+      formatCsvField(entry.earnedAmount),
+      formatCsvField(entry.confirmationDuration),
+      formatCsvField(entry.notes),
+    ].join(','),
+  )
+  return [header, ...rows].join('\n')
 }
