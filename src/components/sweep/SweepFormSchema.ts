@@ -131,6 +131,22 @@ export const sweepFormSchema = (
     min: minNumberOfDestinations.toLocaleString(),
     max: maxNumberOfDestinations.toLocaleString(),
   })
+  const invalidMinCollaboratorsMessage = t('scheduler.feedback_invalid_min_value', {
+    min: JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS.toLocaleString(),
+    max: JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS.toLocaleString(),
+  })
+  const invalidMaxCollaboratorsMessage = t('scheduler.feedback_invalid_max_value', {
+    min: JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS.toLocaleString(),
+    max: JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS.toLocaleString(),
+  })
+  const invalidTransactionsPerJarMessage = t('scheduler.feedback_invalid_value', {
+    min: JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR.toLocaleString(),
+    max: JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR.toLocaleString(),
+  })
+  const invalidRoundingChanceMessage = t('scheduler.feedback_invalid_value', {
+    min: JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT.toLocaleString(),
+    max: JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT.toLocaleString(),
+  })
 
   return yup
     .object({
@@ -168,27 +184,27 @@ export const sweepFormSchema = (
       roundingChanceInPercent: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))
-        .min(JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT)
-        .max(JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT)
-        .required(),
+        .min(JAM_SWEEP_MIN_ROUNDING_CHANCE_PERCENT, invalidRoundingChanceMessage)
+        .max(JAM_SWEEP_MAX_ROUNDING_CHANCE_PERCENT, invalidRoundingChanceMessage)
+        .required(invalidRoundingChanceMessage),
       minNumberOfCollaborators: yup
         .number()
         .transform((value) => (isValidInteger(value) ? value : null))
-        .min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS)
-        .max(JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS)
-        .required(),
+        .min(JAM_SWEEP_MIN_MIN_NUMBER_OF_COLLABORATORS, invalidMinCollaboratorsMessage)
+        .max(JAM_SWEEP_MAX_MIN_NUMBER_OF_COLLABORATORS, invalidMinCollaboratorsMessage)
+        .required(invalidMinCollaboratorsMessage),
       maxNumberOfCollaborators: yup
         .number()
         .transform((value) => (isValidInteger(value) ? value : null))
-        .min(JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS)
-        .max(JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS)
-        .required(),
+        .min(JAM_SWEEP_MIN_MAX_NUMBER_OF_COLLABORATORS, invalidMaxCollaboratorsMessage)
+        .max(JAM_SWEEP_MAX_MAX_NUMBER_OF_COLLABORATORS, invalidMaxCollaboratorsMessage)
+        .required(invalidMaxCollaboratorsMessage),
       minNumberOfTransactionsPerJar: yup
         .number()
         .transform((value) => (isValidInteger(value) ? value : null))
-        .min(JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR)
-        .max(JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR)
-        .required(),
+        .min(JAM_SWEEP_MIN_TRANSACTIONS_PER_JAR, invalidTransactionsPerJarMessage)
+        .max(JAM_SWEEP_MAX_TRANSACTIONS_PER_JAR, invalidTransactionsPerJarMessage)
+        .required(invalidTransactionsPerJarMessage),
       makerSessionIdleTimeoutSeconds: yup
         .number()
         .transform((value) => (isValidNumber(value) ? value : null))

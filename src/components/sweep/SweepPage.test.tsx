@@ -264,6 +264,32 @@ vi.mock('@/components/sweep/SweepStartConfirmDialog', () => ({
     ) : null,
 }))
 
+vi.mock('@/components/sweep/SweepStopConfirmDialog', () => ({
+  SweepStopConfirmDialog: ({
+    isStopping,
+    onConfirm,
+    onOpenChange,
+    open,
+  }: {
+    isStopping: boolean
+    onConfirm: () => void
+    onOpenChange: (open: boolean) => void
+    open: boolean
+  }) =>
+    open ? (
+      <div data-testid="sweep-stop-confirm-dialog">
+        <span>scheduler.confirm_stop_modal.title</span>
+        <span>scheduler.confirm_stop_modal.text_body</span>
+        <button type="button" onClick={() => onOpenChange(false)} disabled={isStopping}>
+          modal.confirm_button_reject
+        </button>
+        <button type="button" onClick={onConfirm} disabled={isStopping}>
+          confirm-stop-sweep
+        </button>
+      </div>
+    ) : null,
+}))
+
 vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString: string }) => <span>{valueString}</span>,
 }))
@@ -509,7 +535,7 @@ describe('SweepPage', async () => {
     })
   })
 
-  it('stops a running sweep schedule', async () => {
+  it('stops a running sweep schedule after confirmation', async () => {
     setSession({ coinjoin_in_process: true, schedule: ['anything'] })
     mocks.tumblerStatusData = activePlan
 
@@ -517,6 +543,14 @@ describe('SweepPage', async () => {
 
     expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
+
+    // Dialog is shown; stopTumbler is not yet called
+    expect(screen.getByText('scheduler.confirm_stop_modal.title')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_stop_modal.text_body')).toBeInTheDocument()
+    expect(mocks.stopTumbler).not.toHaveBeenCalled()
+
+    // Confirm in dialog
+    fireEvent.click(screen.getByRole('button', { name: 'confirm-stop-sweep' }))
 
     await waitFor(() =>
       expect(mocks.stopTumbler).toHaveBeenCalledWith({
@@ -636,6 +670,8 @@ describe('SweepPage', async () => {
 
     expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
+
+    fireEvent.click(await screen.findByRole('button', { name: 'confirm-stop-sweep' }))
 
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
     expect(screen.getByText('global.error')).toBeInTheDocument() // title

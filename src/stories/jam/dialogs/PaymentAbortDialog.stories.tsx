@@ -2,6 +2,51 @@ import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { PaymentAbortDialog } from '@/components/send/PaymentAbortDialog'
 import { Button } from '@/components/ui/button'
+import type { PaymentAttempt } from '@/context/JamSessionInfoContext'
+import type { Jar } from '@/context/JamWalletInfoContext'
+
+const mockJars: Jar[] = [
+  {
+    jarIndex: 0,
+    name: 'Jar 0',
+    color: '#e2b86a',
+    balanceSummary: {
+      calculatedTotalBalanceInSats: 1000000,
+      calculatedAvailableBalanceInSats: 1000000,
+      calculatedConfirmedAvailableBalanceInSats: 1000000,
+      calculatedAvailableFrozenBalanceInSats: 0,
+      calculatedFrozenOrLockedBalanceInSats: 0,
+    },
+    utxos: [],
+  },
+  {
+    jarIndex: 1,
+    name: 'Jar 1',
+    color: '#3b5ba9',
+    balanceSummary: {
+      calculatedTotalBalanceInSats: 500000,
+      calculatedAvailableBalanceInSats: 500000,
+      calculatedConfirmedAvailableBalanceInSats: 500000,
+      calculatedAvailableFrozenBalanceInSats: 0,
+      calculatedFrozenOrLockedBalanceInSats: 0,
+    },
+    utxos: [],
+  },
+]
+
+const samplePaymentAttempt: PaymentAttempt = {
+  createdAt: 123456789,
+  utxosHashHex: 'hash',
+  walletFileName: 'wallet.jmdat',
+  data: {
+    source: { fromJar: 0 },
+    destination: { fromJar: undefined, address: 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq' },
+    amount: { isSweep: false, amount: 250000, sweepAmount: undefined, sweepUtxos: undefined },
+    isCoinJoin: true,
+    numCollaborators: 5,
+    txFee: { txFeeUnit: 'blocks', txFeeInBlocks: 3 },
+  },
+}
 
 const meta: Meta<typeof PaymentAbortDialog> = {
   title: 'Dialog/PaymentAbortDialog',
@@ -32,5 +77,44 @@ export const Confirming: Story = {
   args: {
     isConfirming: true,
     onConfirm: async () => alert('Confirm clicked!'),
+  },
+}
+
+export const WithPaymentDetails: Story = {
+  args: {
+    isConfirming: false,
+    onConfirm: async () => alert('Confirm clicked!'),
+    paymentAttempt: samplePaymentAttempt,
+    jars: mockJars,
+  },
+}
+
+export const WithInternalTransfer: Story = {
+  args: {
+    isConfirming: false,
+    onConfirm: async () => alert('Confirm clicked!'),
+    paymentAttempt: {
+      ...samplePaymentAttempt,
+      data: {
+        ...samplePaymentAttempt.data,
+        destination: { fromJar: 1, address: 'bc1qc7slrfxkvy5l643lydnw9re59gtzzwf5mdqxyz' },
+      },
+    },
+    jars: mockJars,
+  },
+}
+
+export const WithSweep: Story = {
+  args: {
+    isConfirming: false,
+    onConfirm: async () => alert('Confirm clicked!'),
+    paymentAttempt: {
+      ...samplePaymentAttempt,
+      data: {
+        ...samplePaymentAttempt.data,
+        amount: { isSweep: true, amount: undefined, sweepAmount: 1000000, sweepUtxos: [] },
+      },
+    },
+    jars: mockJars,
   },
 }

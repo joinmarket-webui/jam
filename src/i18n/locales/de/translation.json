@@ -543,9 +543,9 @@
     "description_transactions_per_jar": "Mindestanzahl kollaborativer Transaktionen pro Glas.",
     "label_rounding_chance": "Wahrscheinlichkeit für gerundete Beträge",
     "description_rounding_chance": "Wahrscheinlichkeit, dass ein Zwischenbetrag gerundet wird, um menschliches Verhalten nachzuahmen.",
-    "feedback_invalid_value": "Bitte gib einen gültigen Wert ein.",
-    "feedback_invalid_min_value": "Bitte gib einen gültigen Mindestwert ein.",
-    "feedback_invalid_max_value": "Bitte gib einen gültigen Maximalwert ein.",
+    "feedback_invalid_value": "Bitte gib einen gültigen Wert zwischen {{ min }} und {{ max }} ein.",
+    "feedback_invalid_min_value": "Bitte gib einen gültigen Mindestwert zwischen {{ min }} und {{ max }} ein.",
+    "feedback_invalid_max_value": "Bitte gib einen gültigen Maximalwert zwischen {{ min }} und {{ max }} ein.",
     "feedback_invalid_min_max_collaborators": "Bitte gib gültige Werte für die minimale und maximale Anzahl an Teilnehmern ein.",
     "feedback_invalid_number_of_destination_addresses": "Bitte gib zwischen {{ min }} und {{ max }} Zieladressen an.",
     "button_add_destination": "Weitere Zieladresse hinzufügen",
@@ -581,6 +581,10 @@
       "text_body": "Bist du sicher, dass du einen geplanten Sweep starten möchtest?",
       "actions_count_one": "{{ count }} Aktion",
       "actions_count_other": "{{ count }} Aktionen"
+    },
+    "confirm_stop_modal": {
+      "title": "Geplanten Sweep stoppen",
+      "text_body": "Bist du sicher, dass du den geplanten Sweep abbrechen möchtest? Alle noch ausstehenden Transaktionen im Ablaufplan werden abgebrochen."
     },
     "alert_schedule_completed_title": "Geplanter Sweep erfolgreich abgeschlossen.",
     "alert_schedule_failed_title": "Geplanter Sweep fehlgeschlagen.",
