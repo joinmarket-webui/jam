@@ -167,6 +167,7 @@ const ImportWalletPage = () => {
           password: walletDetails.password,
           wallettype: JM_DEFAULT_WALLET_TYPE,
           seedphrase: importDetails.mnemonicPhrase,
+          scan_range: importDetails.gaplimit,
         },
       })
 

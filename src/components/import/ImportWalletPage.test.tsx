@@ -233,6 +233,26 @@ describe('ImportWalletPage', () => {
     expect(mocks.toastDismiss).toHaveBeenCalledWith('toast-id')
   })
 
+  it('passes the address import limit to the recover request as scan_range', async () => {
+    const user = userEvent.setup()
+
+    render(<ImportWalletPage />)
+
+    await user.click(screen.getByRole('button', { name: 'wallet details' }))
+    await user.click(screen.getByRole('button', { name: 'import details' }))
+    await user.click(screen.getByRole('button', { name: 'confirm import' }))
+
+    await waitFor(() => expect(mocks.recoverWallet).toHaveBeenCalledTimes(1))
+    expect(mocks.recoverWallet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          walletname: 'restored.jmdat',
+          scan_range: 12,
+        }) as unknown,
+      }),
+    )
+  })
+
   it('still signs the user in and shows a warning (not an error) when resetting gaplimit fails', async () => {
     const user = userEvent.setup()
     mocks.configSet.mockResolvedValueOnce({}).mockRejectedValueOnce(new Error('reset failed'))
