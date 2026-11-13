@@ -8,7 +8,6 @@ const mocks = vi.hoisted(() => ({
   debugFeatures: new Set<string>(),
   developerMode: false,
   devMode: false,
-  logsFeature: false,
   toggleSidebar: vi.fn(),
 }))
 
@@ -69,12 +68,6 @@ vi.mock('@/constants/debugFeatures', () => ({
   isDevMode: () => mocks.devMode,
 }))
 
-vi.mock('@/hooks/useFeatures', () => ({
-  useFeatures: () => ({
-    isFeatureEnabled: (feature: string) => feature === 'logs' && mocks.logsFeature,
-  }),
-}))
-
 vi.mock('@/store/jamSettingsStore', () => ({
   useDeveloperMode: () => ({ enabled: mocks.developerMode }),
   usePreviewFeatures: () => ({
@@ -91,7 +84,6 @@ describe('AppSidebar', () => {
     mocks.debugFeatures = new Set()
     mocks.developerMode = false
     mocks.devMode = false
-    mocks.logsFeature = false
     mocks.toggleSidebar.mockReset()
   })
 
@@ -110,7 +102,7 @@ describe('AppSidebar', () => {
     expect(screen.getByText('sidebar.item_orderbook.label')).toBeInTheDocument()
     expect(screen.getByText('sidebar.item_settings.label')).toBeInTheDocument()
     expect(screen.getByText('sidebar.item_rescan.label')).toBeInTheDocument()
-    expect(screen.queryByText('sidebar.item_logs.label')).not.toBeInTheDocument()
+    expect(screen.getByText('sidebar.item_logs.label')).toBeInTheDocument()
     expect(screen.queryByText('Development')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByTitle('global.close'))
@@ -123,8 +115,7 @@ describe('AppSidebar', () => {
     window.removeEventListener(POST_LOGIN_TOUR_EVENT, onTour)
   })
 
-  it('shows optional logs and developer links when enabled', () => {
-    mocks.logsFeature = true
+  it('shows developer links when enabled', () => {
     mocks.devMode = true
     mocks.developerMode = true
     mocks.debugFeatures = new Set(['devPage', 'devSetupPage', 'devErrorExamplePage'])

@@ -41,7 +41,6 @@ import { useSidebar } from '@/components/ui/use-sidebar'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { POST_LOGIN_TOUR_EVENT } from '@/constants/onboarding'
 import { routes, type Route } from '@/constants/routes'
-import { useFeatures } from '@/hooks/useFeatures'
 import { useDeveloperMode, usePreviewFeatures } from '@/store/jamSettingsStore'
 import { DevBadge } from '../dev/DevBadge'
 import { Badge } from '../ui/badge'
@@ -63,7 +62,6 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const previewFeatures = usePreviewFeatures()
 
-  const { isFeatureEnabled } = useFeatures()
   const mainItems = useMemo<JamMenuItem[]>(
     () => [
       {
@@ -139,17 +137,13 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         icon: PackageSearchIcon,
         experimental: true,
       },
-      ...((!isFeatureEnabled('logs')
-        ? []
-        : [
-            {
-              title: t('sidebar.item_logs.label'),
-              url: routes.logs,
-              icon: LogsIcon,
-            },
-          ]) as JamMenuItem[]),
+      {
+        title: t('sidebar.item_logs.label'),
+        url: 'logs',
+        icon: LogsIcon,
+      },
     ],
-    [t, isFeatureEnabled, toggleSidebar],
+    [t, toggleSidebar],
   )
 
   const devItems = useMemo<JamMenuItem[]>(

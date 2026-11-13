@@ -28,7 +28,6 @@ const mocks = vi.hoisted(() => ({
   hashedPassword: undefined as string | undefined,
   isPrivate: false,
   lockWalletPending: false,
-  logsFeature: false,
   navigate: vi.fn(),
   open: vi.fn(),
   setTheme: vi.fn(),
@@ -176,12 +175,6 @@ vi.mock('@/context/JamDisplayContext', () => ({
   }),
 }))
 
-vi.mock('@/hooks/useFeatures', () => ({
-  useFeatures: () => ({
-    isFeatureEnabled: (feature: string) => feature === 'logs' && mocks.logsFeature,
-  }),
-}))
-
 vi.mock('@/hooks/useFeeConfigValidation', () => ({
   useFeeConfigValidation: () => mocks.feeConfigValidation,
 }))
@@ -212,7 +205,6 @@ describe('SettingsPage', () => {
     mocks.hashedPassword = undefined
     mocks.isPrivate = false
     mocks.lockWalletPending = false
-    mocks.logsFeature = false
     mocks.theme = 'dark'
     mocks.navigate.mockReset()
     mocks.open.mockReset()
@@ -265,10 +257,7 @@ describe('SettingsPage', () => {
     })
   })
 
-  it('handles internal, external, feature-gated links', async () => {
-    mocks.developerMode = true
-    mocks.logsFeature = true
-
+  it('handles internal and external links', async () => {
     renderSettingsPage('basic')
 
     clickItem('settings.rescan_chain')
