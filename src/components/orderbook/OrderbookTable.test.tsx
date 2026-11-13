@@ -221,4 +221,28 @@ describe('OrderbookTable', () => {
 
     debugSpy.mockRestore()
   })
+
+  it('displays duplicate identity badge and tooltip when a counterparty has multiple offers', () => {
+    const entry1 = makeEntry({
+      counterparty: 'maker-duplicate',
+      orderId: '0',
+    })
+    const entry2 = makeEntry({
+      counterparty: 'maker-duplicate',
+      orderId: '1',
+    })
+    const entrySingle = makeEntry({
+      counterparty: 'maker-unique',
+      orderId: '0',
+    })
+
+    render(<OrderbookTable tableEntries={[entry1, entry2, entrySingle]} selectedEntries={[]} pinnedEntries={[]} />)
+
+    // Two badges for the duplicate maker (one per row)
+    const duplicateBadges = screen.getAllByText('orderbook.table.duplicate_identity_badge')
+    expect(duplicateBadges).toHaveLength(2)
+
+    // Tooltip content rendered for the duplicate maker
+    expect(screen.getAllByText('orderbook.table.duplicate_identity_tooltip')).toHaveLength(2)
+  })
 })
