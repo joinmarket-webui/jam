@@ -8,9 +8,9 @@ type DialogProps = ChildrenProps & { open?: boolean; onOpenChange?: (open: boole
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: Record<string, unknown>) => {
+    t: (key: string, values?: { count?: number; [key: string]: unknown }) => {
       if (values?.count !== undefined) {
-        return `${key}:${String(values.count)}`
+        return `${key}:${values.count}`
       }
       if (values && Object.keys(values).length > 0) {
         const sorted = Object.entries(values)
