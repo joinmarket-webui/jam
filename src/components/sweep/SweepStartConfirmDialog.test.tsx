@@ -10,11 +10,11 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, values?: Record<string, unknown>) => {
       if (values?.count !== undefined) {
-        return `${key}:${values.count}`
+        return `${key}:${String(values.count)}`
       }
       if (values && Object.keys(values).length > 0) {
         const sorted = Object.entries(values)
-          .map(([k, v]) => `${k}=${v}`)
+          .map(([k, v]) => `${k}=${String(v)}`)
           .join(',')
         return `${key}(${sorted})`
       }
