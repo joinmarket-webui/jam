@@ -580,7 +580,8 @@
       "title": "Geplanten Sweep starten",
       "text_body": "Bist du sicher, dass du einen geplanten Sweep starten möchtest?",
       "actions_count_one": "{{ count }} Aktion",
-      "actions_count_other": "{{ count }} Aktionen"
+      "actions_count_other": "{{ count }} Aktionen",
+      "estimated_duration": "Geschätzte Dauer"
     },
     "confirm_stop_modal": {
       "title": "Geplanten Sweep stoppen",

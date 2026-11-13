@@ -8,7 +8,18 @@ type DialogProps = ChildrenProps & { open?: boolean; onOpenChange?: (open: boole
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: { count?: number }) => (values?.count !== undefined ? `${key}:${values.count}` : key),
+    t: (key: string, values?: Record<string, unknown>) => {
+      if (values?.count !== undefined) {
+        return `${key}:${values.count}`
+      }
+      if (values && Object.keys(values).length > 0) {
+        const sorted = Object.entries(values)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(',')
+        return `${key}(${sorted})`
+      }
+      return key
+    },
   }),
 }))
 
@@ -121,6 +132,7 @@ describe('SweepStartConfirmDialog', () => {
         isStarting={false}
         totalBalanceInSats={150000}
         totalActions={2}
+        estimatedTotalDurationInSeconds={9015}
         destinationAddresses={['bc1qdestination1', 'bc1qdestination2']}
       />,
     )
@@ -129,6 +141,8 @@ describe('SweepStartConfirmDialog', () => {
     expect(screen.getByText('150000')).toBeInTheDocument()
     expect(screen.getByText('scheduler.section_details_title')).toBeInTheDocument()
     expect(screen.getByText('scheduler.confirm_start_modal.actions_count:2')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_start_modal.estimated_duration')).toBeInTheDocument()
+    expect(screen.getByText('global.duration_hours_minutes(hours=2,minutes=30)')).toBeInTheDocument()
     expect(screen.getByText('scheduler.section_destinations_title')).toBeInTheDocument()
     expect(screen.getByText('bc1qdestination1')).toBeInTheDocument()
     expect(screen.getByText('bc1qdestination2')).toBeInTheDocument()
