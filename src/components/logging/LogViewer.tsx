@@ -16,6 +16,8 @@ interface LogViewerProps {
   onToggleAutoFollow?: (enabled: boolean) => void
 }
 
+const MAX_VISIBLE_LOG_LINES = 1000
+
 export function LogViewer({ fileName, value, refresh, enableAutoFollow = false, onToggleAutoFollow }: LogViewerProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
@@ -38,6 +40,9 @@ export function LogViewer({ fileName, value, refresh, enableAutoFollow = false, 
     if (normalizedSearchValue.length === 0) return 0
     return filteredLines.length
   }, [filteredLines.length, normalizedSearchValue])
+
+  // Bound DOM rendering while retaining the full input for search and download.
+  const visibleLines = useMemo(() => filteredLines.slice(-MAX_VISIBLE_LOG_LINES), [filteredLines])
 
   const scrollToLogBottom = () => {
     logContentRef.current?.scrollTo({
@@ -214,6 +219,11 @@ export function LogViewer({ fileName, value, refresh, enableAutoFollow = false, 
           {t('logs.text_search_matches', { count: matchingLineCount, searchValue })}
         </div>
       )}
+      {filteredLines.length > MAX_VISIBLE_LOG_LINES && (
+        <div className="text-muted-foreground px-6 pb-2 text-xs">
+          {t('logs.text_display_limit', { shown: visibleLines.length, count: filteredLines.length })}
+        </div>
+      )}
       <CardContent className="relative flex-1 overflow-hidden rounded-b-xl p-0">
         <pre
           onScroll={logScrollHandler}
@@ -223,10 +233,10 @@ export function LogViewer({ fileName, value, refresh, enableAutoFollow = false, 
           {/* Render filtered lines with search highlights */}
           {filteredLines.length === 0 && normalizedSearchValue.length > 0
             ? ''
-            : filteredLines.map((line, index) => (
-                <span key={`${line}-${index}`}>
+            : visibleLines.map((line, index) => (
+                <span key={`${line}-${filteredLines.length - visibleLines.length + index}`}>
                   {renderHighlightedLine(line)}
-                  {index < filteredLines.length - 1 ? '\n' : null}
+                  {index < visibleLines.length - 1 ? '\n' : null}
                 </span>
               ))}
         </pre>
