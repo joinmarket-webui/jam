@@ -14,7 +14,6 @@ import { useRawJmSession, useRescanStatus } from '@/context/JamSessionInfoContex
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useJmWebsocketContext } from '@/context/JmWebsocketContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
-import { useFeatures } from '@/hooks/useFeatures'
 import { useQueryJamInfo } from '@/hooks/useQueryJamInfo'
 import { type WalletFileName } from '@/lib/utils'
 import { LogsOverlay } from '../LogsOverlay'
@@ -54,7 +53,6 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
   const [isLogsOverlayOpen, setIsLogsOverlayOpen] = useState(false)
-  const { isFeatureEnabled } = useFeatures()
   const isHomeRoute = location.pathname === routes.home
   const hasBlockingOverlayOpen = cheatsheet.open || isOrderbookOverlayOpen || isLogsOverlayOpen
 
@@ -108,7 +106,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         backendName={backendName}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
-        onClickLogs={isFeatureEnabled('logs') ? () => setIsLogsOverlayOpen(true) : undefined}
+        onClickLogs={() => setIsLogsOverlayOpen(true)}
       />
 
       <Cheatsheet open={cheatsheet.open} onOpenChange={cheatsheet.onOpenChange} />
