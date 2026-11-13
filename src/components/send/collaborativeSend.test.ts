@@ -315,3 +315,21 @@ describe('buildNonCollaborativeSendRequest', () => {
     ).toThrow('Invalid transaction fee given.')
   })
 })
+
+describe('shared request validation', () => {
+  const invalidInputs: Array<[string, Partial<SendFormValues>]> = [
+    ['a negative source jar', { source: { fromJar: -1 } }],
+    ['a fractional source jar', { source: { fromJar: 0.5 } }],
+    ['a zero amount', { amount: { isSweep: false, amount: 0, sweepAmount: undefined, sweepUtxos: undefined } }],
+    ['a fractional amount', { amount: { isSweep: false, amount: 1.5, sweepAmount: undefined, sweepUtxos: undefined } }],
+    ['a sweep without utxos', { amount: { isSweep: true, amount: undefined, sweepAmount: 500_000, sweepUtxos: [] } }],
+    ['a zero fee', { txFee: { txFeeUnit: TX_FEE_UNITS.SATS_PER_VBYTE, txFeeInSatsPerVbyte: 0 } }],
+  ]
+
+  it.each(invalidInputs)('rejects %s in both request builders', (_, overrides) => {
+    const values = { ...baseValues(), ...overrides }
+
+    expect(() => buildCollaborativeSendRequest(values)).toThrow()
+    expect(() => buildNonCollaborativeSendRequest({ ...values, isCoinJoin: false })).toThrow()
+  })
+})

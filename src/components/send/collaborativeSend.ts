@@ -2,7 +2,7 @@ import type { DirectSendRequest, DoCoinjoinRequest } from '@joinmarket-webui/joi
 import { satsPerVbyteToSatsPerKvbyte, TX_FEE_UNITS } from '@/lib/feeConfig'
 import { isValidAddress, normalizeBitcoinAddress } from '@/lib/formValidation'
 import { isValidInteger, isValidNumber } from '@/lib/utils'
-import type { SendFormValues } from './types'
+import type { AmountValue, SendFormValues } from './types'
 
 const ensureInteger = (value: unknown, message: string): number => {
   if (!isValidInteger(value)) {
@@ -20,53 +20,69 @@ const txFeeValueForRequest = (data: SendFormValues): number | undefined => {
   return undefined
 }
 
-export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSendRequest => {
-  if (data.amount === undefined) {
-    throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
-  }
-  if (data.destination === undefined || !isValidAddress(data.destination.address)) {
-    throw new Error('Cannot trigger non-collaborative transaction: Invalid bitcoin address given.')
-  }
-  const sourceJarIndex = ensureInteger(
-    data.source?.fromJar,
-    'Cannot trigger non-collaborative transaction: Invalid source jar given.',
-  )
+// Shared request validators: each builder passes its own message, so both builders
+// apply the same rules and can't drift apart again (see #1630).
+const validSourceJarIndex = (data: SendFormValues, message: string): number => {
+  const sourceJarIndex = ensureInteger(data.source?.fromJar, message)
   if (sourceJarIndex < 0) {
-    throw new Error('Cannot trigger non-collaborative transaction: Invalid source jar given.')
+    throw new Error(message)
   }
-  if (data.amount.isSweep === true && data.amount.amount !== undefined) {
-    throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given for sweep.')
-  }
-  if (data.amount.isSweep === true && (data.amount.sweepUtxos === undefined || data.amount.sweepUtxos.length === 0)) {
-    throw new Error('Cannot trigger non-collaborative transaction: Missing utxos to sweep.')
-  }
+  return sourceJarIndex
+}
 
-  const amountSats = data.amount.isSweep
-    ? 0
-    : ensureInteger(data.amount.amount, 'Cannot trigger non-collaborative transaction: Invalid amount given.')
-  if (!data.amount.isSweep && amountSats <= 0) {
-    throw new Error('Cannot trigger non-collaborative transaction: Invalid amount given.')
+const validAmountSats = (amount: AmountValue, message: string): number => {
+  if (amount.isSweep) return 0
+  const amountSats = ensureInteger(amount.amount, message)
+  if (amountSats <= 0) {
+    throw new Error(message)
   }
+  return amountSats
+}
 
+const validSweepUtxos = (amount: AmountValue, message: string): string[] | undefined => {
+  if (!amount.isSweep) return undefined
+  if (amount.sweepUtxos === undefined || amount.sweepUtxos.length === 0) {
+    throw new Error(message)
+  }
+  return amount.sweepUtxos
+}
+
+const validTxFee = (data: SendFormValues, message: string): number | undefined => {
   const txfee = txFeeValueForRequest(data)
   if (txfee !== undefined && (!isValidNumber(txfee) || txfee <= 0)) {
-    throw new Error('Cannot trigger non-collaborative transaction: Invalid transaction fee given.')
+    throw new Error(message)
   }
+  return txfee
+}
+
+const NON_COLLABORATIVE_ERROR_PREFIX = 'Cannot trigger non-collaborative transaction:'
+
+export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSendRequest => {
+  if (data.amount === undefined) {
+    throw new Error(`${NON_COLLABORATIVE_ERROR_PREFIX} Invalid amount given.`)
+  }
+  if (data.destination === undefined || !isValidAddress(data.destination.address)) {
+    throw new Error(`${NON_COLLABORATIVE_ERROR_PREFIX} Invalid bitcoin address given.`)
+  }
+  const sourceJarIndex = validSourceJarIndex(data, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid source jar given.`)
+  if (data.amount.isSweep === true && data.amount.amount !== undefined) {
+    throw new Error(`${NON_COLLABORATIVE_ERROR_PREFIX} Invalid amount given for sweep.`)
+  }
+  const inputUtxos = validSweepUtxos(data.amount, `${NON_COLLABORATIVE_ERROR_PREFIX} Missing utxos to sweep.`)
+  const amountSats = validAmountSats(data.amount, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid amount given.`)
+  const txfee = validTxFee(data, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid transaction fee given.`)
 
   return {
     amount_sats: amountSats,
     destination: normalizeBitcoinAddress(data.destination.address),
     mixdepth: sourceJarIndex,
     txfee,
-    input_utxos: data.amount.isSweep === true ? data.amount.sweepUtxos : undefined,
+    input_utxos: inputUtxos,
   }
 }
 
 export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinRequest => {
-  const sourceJarIndex = ensureInteger(data.source?.fromJar, 'Invalid source jar.')
-  if (sourceJarIndex < 0) {
-    throw new Error('Invalid source jar.')
-  }
+  const sourceJarIndex = validSourceJarIndex(data, 'Invalid source jar.')
 
   const rawAddress: unknown = data.destination.address
   const address = typeof rawAddress === 'string' ? normalizeBitcoinAddress(rawAddress) : rawAddress
@@ -79,18 +95,9 @@ export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinR
     throw new Error('Invalid number of collaborators.')
   }
 
-  const amountSats = data.amount.isSweep ? 0 : ensureInteger(data.amount.amount, 'Invalid amount.')
-  if (!data.amount.isSweep && amountSats <= 0) {
-    throw new Error('Invalid amount.')
-  }
-  if (data.amount.isSweep && (data.amount.sweepUtxos === undefined || data.amount.sweepUtxos.length === 0)) {
-    throw new Error('Missing utxos to sweep.')
-  }
-
-  const txfee = txFeeValueForRequest(data)
-  if (txfee !== undefined && (!isValidNumber(txfee) || txfee <= 0)) {
-    throw new Error('Invalid transaction fee.')
-  }
+  const amountSats = validAmountSats(data.amount, 'Invalid amount.')
+  const inputUtxos = validSweepUtxos(data.amount, 'Missing utxos to sweep.')
+  const txfee = validTxFee(data, 'Invalid transaction fee.')
 
   return {
     mixdepth: sourceJarIndex,
@@ -98,6 +105,6 @@ export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinR
     counterparties,
     destination: address,
     txfee,
-    input_utxos: data.amount.isSweep ? data.amount.sweepUtxos : undefined,
+    input_utxos: inputUtxos,
   }
 }
