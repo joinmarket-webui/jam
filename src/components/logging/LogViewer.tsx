@@ -234,7 +234,7 @@ export function LogViewer({ fileName, value, refresh, enableAutoFollow = false, 
           {filteredLines.length === 0 && normalizedSearchValue.length > 0
             ? ''
             : visibleLines.map((line, index) => (
-                <span key={`${line}-${index}`}>
+                <span key={`${line}-${filteredLines.length - visibleLines.length + index}`}>
                   {renderHighlightedLine(line)}
                   {index < visibleLines.length - 1 ? '\n' : null}
                 </span>

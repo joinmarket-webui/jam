@@ -232,4 +232,32 @@ describe('LogViewer', () => {
       scrollTo.mockRestore()
     }
   })
+
+  it.each(['plain', 'filtered', 'repeated'] as const)(
+    'preserves retained line nodes when the %s window slides',
+    async (mode) => {
+      const user = userEvent.setup()
+      const value = Array.from({ length: 1005 }, (_, index) =>
+        mode === 'repeated' ? 'entry repeated' : `entry-${index}`,
+      ).join('\n')
+      const { container, rerender } = render(<LogViewer fileName="large.log" value={value} refresh={vi.fn()} />)
+      if (mode === 'filtered') {
+        await user.type(screen.getByLabelText('logs.label_search'), 'entry')
+      }
+      const originalLines = [...container.querySelectorAll('pre > span')]
+      expect(originalLines).toHaveLength(1000)
+      const retainedText = originalLines[500].firstChild
+
+      rerender(<LogViewer fileName="large.log" value={`${value}\nentry-new`} refresh={vi.fn()} />)
+
+      const updatedLines = [...container.querySelectorAll('pre > span')]
+      expect(updatedLines).toHaveLength(1000)
+      for (let index = 0; index < updatedLines.length - 1; index++) {
+        expect(updatedLines[index]).toBe(originalLines[index + 1])
+      }
+      expect(updatedLines[499].firstChild).toBe(retainedText)
+      expect(originalLines[0].isConnected).toBe(false)
+      expect(updatedLines[999]).toHaveTextContent('entry-new')
+    },
+  )
 })
