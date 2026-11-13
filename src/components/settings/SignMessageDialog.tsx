@@ -41,7 +41,11 @@ type SignMessageDialogProps = WithRequiredProperty<
   walletFileName: WalletFileName
 }
 
-export const SignMessageDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: SignMessageDialogProps) => {
+export const SignMessageDialog = (props: SignMessageDialogProps) =>
+  // Keep pending results and mutation state scoped to a single opening.
+  props.open ? <OpenSignMessageDialog {...props} /> : null
+
+const OpenSignMessageDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: SignMessageDialogProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const { walletInfo } = useQueryDisplayWallet({ walletFileName })
