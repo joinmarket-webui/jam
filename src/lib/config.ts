@@ -3,6 +3,7 @@ import type { UnlockWalletResponse } from '@joinmarket-webui/joinmarket-api-ts/j
 import { isDevMode } from '@/constants/debugFeatures'
 import { normalizeAppError } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
+import { jmConfigStore } from '@/store/jmConfigStore'
 import { queryClient } from './queryClient'
 
 export type ApiToken = UnlockWalletResponse['token']
@@ -58,6 +59,7 @@ export function unauthorizedResponseInterceptor(response: Response, request: Req
     ) {
       authStore.getState().clear()
       queryClient.clear()
+      jmConfigStore.getState().clear()
     }
   }
 

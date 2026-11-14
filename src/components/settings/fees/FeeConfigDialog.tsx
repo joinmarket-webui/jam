@@ -195,7 +195,7 @@ export const FeeConfigDialog = ({
           <DialogDescription>
             <Trans i18nKey="settings.fees.description">
               Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default
-              values when the JoinMarket service restarts, e.g. on a system reboot. For more information, see the
+              values when the wallet is locked or the JoinMarket service restarts. For more information, see the
               documentation on fees.
               <a href={`${JAM_DOCS_URL}/market/fees/`} target="_blank" rel="noopener noreferrer" className="underline">
                 see the documentation on fees
