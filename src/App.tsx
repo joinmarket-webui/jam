@@ -50,6 +50,7 @@ import { queryClient, withMutationDelay } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore, computeAuthExpiresAt } from '@/store/authStore'
 import { jamSettingsStore, useDeveloperMode } from '@/store/jamSettingsStore'
+import { jmConfigStore } from '@/store/jmConfigStore'
 import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { RootLayout } from './components/layout/RootLayout'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
@@ -71,6 +72,7 @@ const DevErrorThrowingComponent = lazy(() => import('@/components/dev/DevErrorTh
 const clearAuthAndQueryCache = () => {
   authStore.getState().clear()
   queryClient.clear()
+  jmConfigStore.getState().clear()
 }
 
 const doOnLogout = async (navigate: NavigateFunction) => {
@@ -385,7 +387,7 @@ function RefreshJmSession() {
 
 function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName }) {
   const { t } = useTranslation()
-  const { fetchMissing } = useFeeConfigValidation({ walletFileName })
+  const { refetchAll } = useFeeConfigValidation({ walletFileName })
 
   useEffect(() => {
     const isDevMode = jamSettingsStore.getState().state.developerMode
@@ -393,7 +395,7 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
       console.debug('[DEV] Reloading fee values...')
     }
 
-    fetchMissing()
+    refetchAll()
       .then((values) => {
         const consoleInfo = 'Fee values loaded successfully.'
         console.info(consoleInfo)
@@ -410,7 +412,7 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
         toast.error(errorMessage)
         console.error(errorMessage)
       })
-  }, [fetchMissing, t])
+  }, [refetchAll, t])
 
   return <></>
 }

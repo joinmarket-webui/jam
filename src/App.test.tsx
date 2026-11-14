@@ -27,7 +27,8 @@ const {
   navigateStub,
   refetchWalletBalance,
   mutateAsync,
-  fetchMissing,
+  refetchAllFeeConfig,
+  clearJmConfig,
 } = vi.hoisted(() => {
   const holders: Holders = {
     walletFileName: 'wallet.jmdat',
@@ -49,7 +50,8 @@ const {
     navigateStub: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     refetchWalletBalance: vi.fn<() => Promise<unknown>>().mockResolvedValue(undefined),
     mutateAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue(undefined),
-    fetchMissing: vi.fn<() => Promise<unknown>>().mockResolvedValue([]),
+    refetchAllFeeConfig: vi.fn<() => Promise<unknown>>().mockResolvedValue([]),
+    clearJmConfig: vi.fn(),
   }
 })
 
@@ -77,6 +79,10 @@ vi.mock('@/store/authStore', () => ({
   },
   computeAuthExpiresAt: (expiresInSeconds: number | undefined) =>
     Date.now() + (expiresInSeconds !== undefined ? expiresInSeconds * 1_000 : 1_800_000),
+}))
+
+vi.mock('@/store/jmConfigStore', () => ({
+  jmConfigStore: { getState: () => ({ clear: clearJmConfig }) },
 }))
 
 const mockJmTxStoreState = { state: {} }
@@ -135,7 +141,9 @@ vi.mock('./lib/errorReason', () => ({
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({ useApiClient: () => ({}) }))
-vi.mock('@/hooks/useFeeConfigValidation', () => ({ useFeeConfigValidation: () => ({ fetchMissing }) }))
+vi.mock('@/hooks/useFeeConfigValidation', () => ({
+  useFeeConfigValidation: () => ({ refetchAll: refetchAllFeeConfig }),
+}))
 vi.mock('@/hooks/useRefreshSession', () => ({ useRefreshSession: () => undefined }))
 
 vi.mock('./context/JamSessionInfoContext', () => ({
@@ -281,6 +289,7 @@ describe('App', () => {
     fireEvent.click(screen.getByTestId('confirm-lock'))
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
     expect(clearAuth).toHaveBeenCalled()
+    expect(clearJmConfig).toHaveBeenCalled()
   })
 
   it('opens the lock wallet dialog when schedule is running and confirms locking', async () => {
@@ -307,6 +316,13 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText('logout')).toBeInTheDocument())
     fireEvent.click(screen.getByText('logout'))
     await waitFor(() => expect(clearAuth).toHaveBeenCalled())
+    expect(clearJmConfig).toHaveBeenCalled()
+  })
+
+  it('refetches the fee config when a wallet is unlocked', async () => {
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+    expect(refetchAllFeeConfig).toHaveBeenCalled()
   })
 
   it('includes developer routes when developer mode is enabled', async () => {
