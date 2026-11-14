@@ -22,7 +22,7 @@ const txFeeValueForRequest = (data: SendFormValues): number | undefined => {
 
 // Shared request validators: each builder passes its own message, so both builders
 // apply the same rules and can't drift apart again (see #1630).
-const validSourceJarIndex = (data: SendFormValues, message: string): number => {
+const requireSourceJarIndex = (data: SendFormValues, message: string): number => {
   const sourceJarIndex = ensureInteger(data.source?.fromJar, message)
   if (sourceJarIndex < 0) {
     throw new Error(message)
@@ -30,7 +30,7 @@ const validSourceJarIndex = (data: SendFormValues, message: string): number => {
   return sourceJarIndex
 }
 
-const validAmountSats = (amount: AmountValue, message: string): number => {
+const requireAmountSats = (amount: AmountValue, message: string): number => {
   if (amount.isSweep) return 0
   const amountSats = ensureInteger(amount.amount, message)
   if (amountSats <= 0) {
@@ -39,7 +39,7 @@ const validAmountSats = (amount: AmountValue, message: string): number => {
   return amountSats
 }
 
-const validSweepUtxos = (amount: AmountValue, message: string): string[] | undefined => {
+const requireSweepUtxos = (amount: AmountValue, message: string): string[] | undefined => {
   if (!amount.isSweep) return undefined
   if (amount.sweepUtxos === undefined || amount.sweepUtxos.length === 0) {
     throw new Error(message)
@@ -47,7 +47,7 @@ const validSweepUtxos = (amount: AmountValue, message: string): string[] | undef
   return amount.sweepUtxos
 }
 
-const validTxFee = (data: SendFormValues, message: string): number | undefined => {
+const requireTxFee = (data: SendFormValues, message: string): number | undefined => {
   const txfee = txFeeValueForRequest(data)
   if (txfee !== undefined && (!isValidNumber(txfee) || txfee <= 0)) {
     throw new Error(message)
@@ -64,13 +64,13 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
   if (data.destination === undefined || !isValidAddress(data.destination.address)) {
     throw new Error(`${NON_COLLABORATIVE_ERROR_PREFIX} Invalid bitcoin address given.`)
   }
-  const sourceJarIndex = validSourceJarIndex(data, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid source jar given.`)
+  const sourceJarIndex = requireSourceJarIndex(data, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid source jar given.`)
   if (data.amount.isSweep === true && data.amount.amount !== undefined) {
     throw new Error(`${NON_COLLABORATIVE_ERROR_PREFIX} Invalid amount given for sweep.`)
   }
-  const inputUtxos = validSweepUtxos(data.amount, `${NON_COLLABORATIVE_ERROR_PREFIX} Missing utxos to sweep.`)
-  const amountSats = validAmountSats(data.amount, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid amount given.`)
-  const txfee = validTxFee(data, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid transaction fee given.`)
+  const inputUtxos = requireSweepUtxos(data.amount, `${NON_COLLABORATIVE_ERROR_PREFIX} Missing utxos to sweep.`)
+  const amountSats = requireAmountSats(data.amount, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid amount given.`)
+  const txfee = requireTxFee(data, `${NON_COLLABORATIVE_ERROR_PREFIX} Invalid transaction fee given.`)
 
   return {
     amount_sats: amountSats,
@@ -82,7 +82,7 @@ export const buildNonCollaborativeSendRequest = (data: SendFormValues): DirectSe
 }
 
 export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinRequest => {
-  const sourceJarIndex = validSourceJarIndex(data, 'Invalid source jar.')
+  const sourceJarIndex = requireSourceJarIndex(data, 'Invalid source jar.')
 
   const rawAddress: unknown = data.destination.address
   const address = typeof rawAddress === 'string' ? normalizeBitcoinAddress(rawAddress) : rawAddress
@@ -95,9 +95,9 @@ export const buildCollaborativeSendRequest = (data: SendFormValues): DoCoinjoinR
     throw new Error('Invalid number of collaborators.')
   }
 
-  const amountSats = validAmountSats(data.amount, 'Invalid amount.')
-  const inputUtxos = validSweepUtxos(data.amount, 'Missing utxos to sweep.')
-  const txfee = validTxFee(data, 'Invalid transaction fee.')
+  const amountSats = requireAmountSats(data.amount, 'Invalid amount.')
+  const inputUtxos = requireSweepUtxos(data.amount, 'Missing utxos to sweep.')
+  const txfee = requireTxFee(data, 'Invalid transaction fee.')
 
   return {
     mixdepth: sourceJarIndex,
