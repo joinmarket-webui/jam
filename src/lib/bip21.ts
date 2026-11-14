@@ -62,9 +62,14 @@ export const parseBip21Uri = (raw: string): Bip21ParseResult | undefined => {
 
     const amountBtc = parameters.get('amount')
     if (amountBtc !== undefined) {
-      const satValue = tryBtcToSat(amountBtc)
-      if (satValue !== undefined && satValue > 0) {
-        result.amount = satValue
+      const decimalPart = amountBtc.split('.', 2)[1]
+      const hasExcessDecimals = decimalPart !== undefined && decimalPart.length > 8
+
+      if (!hasExcessDecimals) {
+        const satValue = tryBtcToSat(amountBtc)
+        if (satValue !== undefined && satValue > 0) {
+          result.amount = satValue
+        }
       }
     }
     const label = parameters.get('label')

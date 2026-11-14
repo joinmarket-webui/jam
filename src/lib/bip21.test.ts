@@ -130,6 +130,16 @@ describe('parseBip21Uri', () => {
       expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true })
     })
 
+    it('ignores amounts with more than 8 decimal places', () => {
+      const result = parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=0.123456789`)
+      expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true })
+    })
+
+    it('accepts amounts with exactly 8 decimal places', () => {
+      const result = parseBip21Uri(`bitcoin:${VALID_ADDRESS}?amount=0.12345678`)
+      expect(result).toEqual({ address: VALID_ADDRESS, fromUri: true, amount: 12_345_678 })
+    })
+
     it('returns undefined for non-bitcoin URI scheme', () => {
       expect(parseBip21Uri(`lnurl:${VALID_ADDRESS}`)).toBeUndefined()
     })
