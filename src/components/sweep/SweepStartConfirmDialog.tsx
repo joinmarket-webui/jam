@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { formatDuration } from '@/components/sweep/scheduleUtils'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Address } from '../ui/jam/Address'
@@ -14,6 +15,7 @@ interface SweepStartConfirmDialogProps {
   totalBalanceInSats?: number
   destinationAddresses?: string[]
   totalActions?: number
+  estimatedTotalDurationInSeconds?: number
 }
 
 export const SweepStartConfirmDialog = ({
@@ -25,11 +27,13 @@ export const SweepStartConfirmDialog = ({
   totalBalanceInSats,
   destinationAddresses,
   totalActions,
+  estimatedTotalDurationInSeconds,
 }: SweepStartConfirmDialogProps) => {
   const { t } = useTranslation()
 
   const hasBalance = totalBalanceInSats !== undefined
   const hasActions = totalActions !== undefined && totalActions > 0
+  const hasDuration = estimatedTotalDurationInSeconds !== undefined && estimatedTotalDurationInSeconds > 0
   const hasDestinations = destinationAddresses && destinationAddresses.length > 0
 
   return (
@@ -40,7 +44,7 @@ export const SweepStartConfirmDialog = ({
         </DialogHeader>
         <p className="text-muted-foreground text-sm">{t('scheduler.confirm_start_modal.text_body')}</p>
 
-        {(hasBalance || hasActions || hasDestinations) && (
+        {(hasBalance || hasActions || hasDuration || hasDestinations) && (
           <div className="bg-muted/40 space-y-3 rounded-lg border p-4 text-sm">
             {hasBalance && (
               <div className="flex items-center justify-between gap-2">
@@ -56,6 +60,17 @@ export const SweepStartConfirmDialog = ({
                 <span className="text-muted-foreground font-medium">{t('scheduler.section_details_title')}</span>
                 <span className="text-foreground font-medium">
                   {t('scheduler.confirm_start_modal.actions_count', { count: totalActions })}
+                </span>
+              </div>
+            )}
+
+            {hasDuration && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground font-medium">
+                  {t('scheduler.confirm_start_modal.estimated_duration')}
+                </span>
+                <span className="text-foreground font-medium">
+                  {formatDuration(estimatedTotalDurationInSeconds, t)}
                 </span>
               </div>
             )}
