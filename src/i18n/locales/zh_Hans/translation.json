@@ -38,7 +38,6 @@
     "alert_rescan_in_progress": "正在进行重新扫描..."
   },
   "navbar": {
-    "title": "Jam",
     "text_rescan_in_progress": "正在重新扫描...",
     "tab_send": "发送",
     "tab_receive": "接收",

@@ -8,7 +8,6 @@
     "error_copy_address_failed": "L'adresse n'a pu être copiée."
   },
   "navbar": {
-    "title": "Jam",
     "tab_send": "Envoyer",
     "tab_receive": "Recevoir",
     "tab_earn": "Générer",

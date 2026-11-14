@@ -34,7 +34,6 @@
     "label_jar_n": "Vaso {{ jar }}"
   },
   "navbar": {
-    "title": "Jam",
     "tab_send": "Invia",
     "tab_receive": "Ricevi",
     "tab_earn": "Guadagna",
