@@ -147,4 +147,35 @@ describe('SweepStartConfirmDialog', () => {
     expect(screen.getByText('bc1qdestination1')).toBeInTheDocument()
     expect(screen.getByText('bc1qdestination2')).toBeInTheDocument()
   })
+
+  it('does not render estimated duration when omitted or zero', () => {
+    const { rerender } = render(
+      <SweepStartConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        disabled={false}
+        isStarting={false}
+        totalBalanceInSats={150000}
+        totalActions={2}
+      />,
+    )
+
+    expect(screen.queryByText('scheduler.confirm_start_modal.estimated_duration')).not.toBeInTheDocument()
+
+    rerender(
+      <SweepStartConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        disabled={false}
+        isStarting={false}
+        totalBalanceInSats={150000}
+        totalActions={2}
+        estimatedTotalDurationInSeconds={0}
+      />,
+    )
+
+    expect(screen.queryByText('scheduler.confirm_start_modal.estimated_duration')).not.toBeInTheDocument()
+  })
 })
