@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent } from '@testing-library/react'
 import { Network } from 'bitcoin-address-validation'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 import { AccountXpubsAccordion, AccountXpubsDialog } from './AccountXpubsDialog'
 
 type ChildrenProps = { children: ReactNode }
@@ -138,6 +138,12 @@ const setXpubs = (state: Partial<XpubsQueryState>) => {
 
 const verify = () => {
   fireEvent.click(screen.getByText('Verify Password'))
+}
+
+const advance = (ms: number) => {
+  act(() => {
+    vi.advanceTimersByTime(ms)
+  })
 }
 
 beforeEach(() => {
@@ -279,6 +285,64 @@ describe('AccountXpubsDialog', () => {
     fireEvent.click(screen.getByText('global.close'))
     expect(onOpenChange).toHaveBeenCalledWith(false)
     expect(h.removeQueries).toHaveBeenCalled()
+  })
+
+  describe('auto-close timeout', () => {
+    const NOW = 1_700_000_000_000
+    const AUTO_CLOSE_TIMEOUT = 5_000
+    const SEED_QUERY_KEY = { queryKey: ['mock'] }
+    const XPUBS_QUERY_KEY = { queryKey: ['test.jmdat', 'xpubs'] }
+
+    beforeEach(() => {
+      vi.useFakeTimers({ now: NOW })
+      setSeed({ data: ['word'] })
+      setXpubs({ data: [], dataUpdatedAt: NOW })
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('keeps the xpubs and the cached seed until the timeout expires', () => {
+      renderDialog()
+      verify()
+      h.removeQueries.mockClear()
+
+      advance(AUTO_CLOSE_TIMEOUT - 1_000)
+
+      expect(screen.getByText('settings.xpubs_modal.title')).toBeInTheDocument()
+      expect(screen.getByText('1s')).toBeInTheDocument()
+      expect(h.removeQueries).not.toHaveBeenCalled()
+    })
+
+    it('hides the xpubs and removes the seed and xpubs from the cache once the timeout expires', () => {
+      const onOpenChange = vi.fn()
+      renderDialog(onOpenChange)
+      verify()
+      h.removeQueries.mockClear()
+
+      advance(AUTO_CLOSE_TIMEOUT + 500)
+
+      expect(screen.queryByText('settings.xpubs_modal.title')).not.toBeInTheDocument()
+      expect(screen.getByText('settings.xpubs_modal.verification.title')).toBeInTheDocument()
+      expect(h.removeQueries).toHaveBeenCalledWith(SEED_QUERY_KEY)
+      expect(h.removeQueries).toHaveBeenCalledWith(XPUBS_QUERY_KEY)
+      // the dialog falls back to the password step instead of closing
+      expect(onOpenChange).not.toHaveBeenCalled()
+    })
+
+    it('counts the timeout from when the xpubs were derived, not from the password verification', () => {
+      // the xpubs finished deriving 3 seconds after the password was verified
+      setXpubs({ data: [], dataUpdatedAt: NOW + 3_000 })
+      renderDialog()
+      verify()
+
+      advance(AUTO_CLOSE_TIMEOUT + 500)
+      expect(screen.getByText('settings.xpubs_modal.title')).toBeInTheDocument()
+
+      advance(3_000)
+      expect(screen.getByText('settings.xpubs_modal.verification.title')).toBeInTheDocument()
+    })
   })
 
   it('clears cached queries when verification is cancelled', () => {
