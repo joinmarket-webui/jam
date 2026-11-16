@@ -204,7 +204,7 @@ export default function PaymentConfirmDialog({
                 &le;
                 <Balance valueString={String(estimatedMaxCollaboratorFee.maxFee)} />
                 <span className="text-muted-foreground text-xs">
-                  ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount)}%)
+                  ({factorToPercentage(estimatedMaxCollaboratorFee.fractionOfAmount, 2)}%)
                 </span>
                 <Tooltip>
                   <TooltipTrigger asChild>
