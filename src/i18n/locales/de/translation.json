@@ -38,7 +38,6 @@
     "alert_rescan_in_progress": "Erneuter Scan läuft..."
   },
   "navbar": {
-    "title": "Jam",
     "text_rescan_in_progress": "Scanne erneut...",
     "tab_send": "Senden",
     "tab_receive": "Empfangen",

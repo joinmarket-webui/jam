@@ -34,7 +34,6 @@
     "label_jar_n": "Frasco {{ jar }}"
   },
   "navbar": {
-    "title": "Jam",
     "tab_send": "Enviar",
     "tab_receive": "Receber",
     "tab_earn": "Lucrar",
