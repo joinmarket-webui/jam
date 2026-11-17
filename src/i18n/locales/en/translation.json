@@ -928,7 +928,8 @@
       "title": "Start Scheduled Sweep",
       "text_body": "Are you sure you want to start a Scheduled Sweep?",
       "actions_count_one": "{{ count }} action",
-      "actions_count_other": "{{ count }} actions"
+      "actions_count_other": "{{ count }} actions",
+      "estimated_duration": "Estimated duration"
     },
     "confirm_stop_modal": {
       "title": "Stop Scheduled Sweep",

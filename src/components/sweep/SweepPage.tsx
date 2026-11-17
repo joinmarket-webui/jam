@@ -297,6 +297,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         totalBalanceInSats={walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats}
         destinationAddresses={currentSchedule?.summary.externalDestinations.map((it) => it.address)}
         totalActions={currentSchedule?.entries.length}
+        estimatedTotalDurationInSeconds={currentSchedule?.summary.estimatedTotalDurationInSeconds}
       />
       <SweepStopConfirmDialog
         open={showStopConfirmDialog}
