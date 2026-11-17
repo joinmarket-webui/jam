@@ -15,7 +15,7 @@ export interface EarnReportEntry {
 }
 
 // Yieldgen CSV timestamp format: yyyy/MM/dd HH:mm:ss
-const parseYieldgenTimestamp = (val: string) => parseTimestamp(val) ?? new Date(Number.NaN)
+const parseYieldgenTimestamp = (val: string) => parseTimestamp(val) ?? new Date(NaN)
 
 const yieldgenReportLineToEntry = (line: string): EarnReportEntry | null => {
   const cleanLine = line.replace(/\r?\n$/, '')

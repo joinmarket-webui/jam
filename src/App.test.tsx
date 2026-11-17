@@ -453,6 +453,7 @@ describe('WalletInfoAutoReload', () => {
   })
 
   describe('when the taker stopped', () => {
+    // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
     const renderAndStopTaker = async () => {
       holders.takerRunning = true
       const { rerender } = render(<WalletInfoAutoReload />)

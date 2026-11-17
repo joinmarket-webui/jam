@@ -213,14 +213,16 @@ export const findBestFidelityBondJar = <T extends { jarIndex: JarIndex; utxos: U
       .filter((u) => utxo.isEligibleForCreation(u, addressSummary?.[u.address]?.status))
       .reduce((sum, u) => sum + u.value, 0)
 
-    if (
+    if (!(
       candidateUtxo.value > bestUtxoValue ||
       (candidateUtxo.value === bestUtxoValue && totalEligible > bestTotalEligible)
-    ) {
-      bestJar = jar
-      bestUtxoValue = candidateUtxo.value
-      bestTotalEligible = totalEligible
+    )) {
+      continue
     }
+
+    bestJar = jar
+    bestUtxoValue = candidateUtxo.value
+    bestTotalEligible = totalEligible
   }
 
   return bestJar

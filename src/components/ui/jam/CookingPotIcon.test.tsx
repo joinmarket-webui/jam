@@ -44,19 +44,19 @@ describe('CookingPotIcon', () => {
   it('colors the pot by source and destination jar', () => {
     const { container } = render(<CookingPotIcon animate={false} sourceJarIndex={0} destinationJarIndex={1} />)
 
-    expect(container.querySelector('#potDiagonalHatch .stroke-jar0')).toBeInTheDocument()
-    expect(container.querySelector('#potDiagonalHatch .stroke-jar1')).toBeInTheDocument()
+    expect(container.querySelector(':scope #potDiagonalHatch .stroke-jar0')).toBeInTheDocument()
+    expect(container.querySelector(':scope #potDiagonalHatch .stroke-jar1')).toBeInTheDocument()
   })
 
   it('falls back to the source jar color when there is no destination jar', () => {
     const { container } = render(<CookingPotIcon animate={false} sourceJarIndex={2} />)
 
-    expect(container.querySelectorAll('#potDiagonalHatch .stroke-jar2')).toHaveLength(2)
+    expect(container.querySelectorAll(':scope #potDiagonalHatch .stroke-jar2')).toHaveLength(2)
   })
 
   it('uses a neutral color when no jar is known', () => {
     const { container } = render(<CookingPotIcon animate={false} />)
 
-    expect(container.querySelectorAll('#potDiagonalHatch .stroke-jar-unknown')).toHaveLength(2)
+    expect(container.querySelectorAll(':scope #potDiagonalHatch .stroke-jar-unknown')).toHaveLength(2)
   })
 })
