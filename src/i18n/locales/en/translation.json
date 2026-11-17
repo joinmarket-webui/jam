@@ -401,7 +401,7 @@
     "rescan_chain": "Rescan chain",
     "fees": {
       "title": "Fee Limits",
-      "description": "Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default values when the JoinMarket service restarts, e.g. on a system reboot. For more information, <1>see the documentation on fees</1>.",
+      "description": "Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default values when the wallet is locked or the JoinMarket service restarts. For more information, <1>see the documentation on fees</1>.",
       "title_general_fee_settings": "Mining fees",
       "description_general_fee_settings": "Mining fees relate to transaction priority and depend on mempool conditions.",
       "radio_tx_fees_blocks": "Block target",
