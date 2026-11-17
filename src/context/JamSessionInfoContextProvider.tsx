@@ -127,11 +127,12 @@ export const JamSessionInfoContextProvider = ({
   )
 
   const { data: takerStatusData, refetch: refetchTakerStatus } = useQuery({
-    queryKey: takerStatusQueryOptions.queryKey,
+    queryKey: [
+      ...takerStatusQueryOptions.queryKey,
+      'withRequestTime',
+    ] as unknown as typeof takerStatusQueryOptions.queryKey,
     queryFn: withRequestTime(takerStatusQueryOptions.queryFn),
     enabled: !!activeWalletFileName,
-    // only poll while a taker is active or the outcome of a payment attempt is still unknown
-    // (e.g. no endless polling if the backend does not support the endpoint)
     refetchInterval: (query) => {
       return sessionTakerIsActive || paymentAttemptIsPending || query.state.data?.response.running === true
         ? JAM.RUNNING_COINJOIN_POLLING_INTERVAL

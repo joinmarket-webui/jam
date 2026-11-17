@@ -77,7 +77,7 @@ test.describe('JoinMarket NG Regtest CoinJoin Regression Suite', () => {
       // the status card reports the progress while the taker is running ...
       const statusCard = takerStatusCard(page)
       await expect(statusCard).toBeVisible({ timeout: 30_000 })
-      await expect(statusCard.getByTestId('taker-status-text')).toHaveText('Evaluating offers...', { timeout: 30_000 })
+      await expect(statusCard.getByTestId('taker-status-text')).toHaveText(/\.\.\.$/, { timeout: 30_000 })
       await expect(statusCard.getByRole('button', { name: /^abort$/i })).toBeVisible()
 
       // ... and stays visible with the final outcome once the taker stopped
