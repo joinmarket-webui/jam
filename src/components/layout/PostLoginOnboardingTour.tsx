@@ -113,7 +113,7 @@ export const PostLoginOnboardingTour = ({ enabled = true }: PostLoginOnboardingT
     updateTargetRect()
 
     window.addEventListener('resize', updateTargetRect)
-    window.addEventListener('scroll', updateTargetRect, true)
+    window.addEventListener('scroll', updateTargetRect, { capture: true })
     return () => {
       window.removeEventListener('resize', updateTargetRect)
       window.removeEventListener('scroll', updateTargetRect, true)

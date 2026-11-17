@@ -168,8 +168,13 @@ export const JamSessionInfoContextProvider = ({
   useEffect(
     function keepOutcomeOfPaymentAttempt() {
       // any taker run started afterwards (e.g. by the scheduler) must not be reported as outcome of this attempt
-      if (paymentAttempt === undefined || paymentAttempt.outcome !== undefined) return
-      if (takerIsRunning || liveTakerStatus === undefined) return
+      if (
+        paymentAttempt === undefined ||
+        paymentAttempt.outcome !== undefined ||
+        takerIsRunning ||
+        liveTakerStatus === undefined
+      )
+        return
       setCurrentPaymentAttempt({ ...paymentAttempt, outcome: liveTakerStatus })
     },
     [paymentAttempt, takerIsRunning, liveTakerStatus, setCurrentPaymentAttempt],

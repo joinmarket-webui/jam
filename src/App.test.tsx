@@ -348,6 +348,7 @@ describe('RefreshApiToken', () => {
     holders.developerMode = false
   })
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
   const renderAndGetRenewalCallback = async () => {
     render(<App />)
     await waitFor(() => expect(vi.mocked(setIntervalDebouncedMock)).toHaveBeenCalled())
@@ -452,6 +453,7 @@ describe('WalletInfoAutoReload', () => {
   })
 
   describe('when the taker stopped', () => {
+    // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
     const renderAndStopTaker = async () => {
       holders.takerRunning = true
       const { rerender } = render(<WalletInfoAutoReload />)

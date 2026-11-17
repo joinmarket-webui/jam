@@ -118,7 +118,7 @@ export function RenewBondDialog({ open, onOpenChange, walletFileName, utxo }: Re
       },
     }),
     enabled: open && !!selectedLockdate && step !== 'select_date',
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
     retry: false,
   })
 

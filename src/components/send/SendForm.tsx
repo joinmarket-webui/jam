@@ -256,12 +256,14 @@ export function SendForm({
   }, [disabled, isSweep, sourceJar, getValues, setValue])
 
   useEffect(() => {
-    if (formState.dirtyFields.source?.fromJar) {
-      console.debug(
-        'Validating `source.fromJar` as wallet balance summary changed (e.g. frozen/unfrozen utxos, new transaction, etc.)',
-      )
-      void trigger('source.fromJar')
+    if (!formState.dirtyFields.source?.fromJar) {
+      return
     }
+
+    console.debug(
+      'Validating `source.fromJar` as wallet balance summary changed (e.g. frozen/unfrozen utxos, new transaction, etc.)',
+    )
+    void trigger('source.fromJar')
   }, [walletBalanceSummary, trigger, formState.dirtyFields.source?.fromJar])
 
   const destinationJar = useMemo(() => {
