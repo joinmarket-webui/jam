@@ -10,6 +10,8 @@ type DialogProps = ChildrenProps & { open?: boolean; onOpenChange?: (open: boole
 
 const h = vi.hoisted(() => ({
   walletInfo: undefined as WalletInfoApiObject | undefined,
+  queryMount: vi.fn(),
+  queryUnmount: vi.fn(),
   mutateAsync: vi.fn(),
   reset: vi.fn(),
   isPending: false,
@@ -36,11 +38,20 @@ vi.mock('@/hooks/useApiClient', () => ({
   useApiClient: () => ({}),
 }))
 
-vi.mock('@/hooks/useQueryDisplayWallet', () => ({
-  useQueryDisplayWallet: () => ({
-    walletInfo: h.walletInfo,
-  }),
-}))
+vi.mock('@/hooks/useQueryDisplayWallet', async () => {
+  const { useEffect } = await import('react')
+  return {
+    useQueryDisplayWallet: () => {
+      useEffect(() => {
+        h.queryMount()
+        return () => {
+          h.queryUnmount()
+        }
+      }, [])
+      return { walletInfo: h.walletInfo }
+    },
+  }
+})
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   signmessageMutation: vi.fn(() => ({})),
@@ -57,14 +68,14 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open, onOpenChange }: DialogProps) =>
-    open ? (
-      <div data-testid="dialog">
-        <button onClick={() => onOpenChange?.(false)}>Close Dialog</button>
-        {children}
-      </div>
-    ) : null,
-  DialogContent: ({ children }: ChildrenProps) => <div>{children}</div>,
+  // Retain closed content to model the interval before Radix finishes its exit animation.
+  Dialog: ({ children, open, onOpenChange }: DialogProps) => (
+    <div data-testid="dialog" data-state={open ? 'open' : 'closed'}>
+      <button onClick={() => onOpenChange?.(false)}>Close Dialog</button>
+      {children}
+    </div>
+  ),
+  DialogContent: ({ children }: ChildrenProps) => <div data-testid="dialog-content">{children}</div>,
   DialogHeader: ({ children }: ChildrenProps) => <div>{children}</div>,
   DialogTitle: ({ children }: ChildrenProps) => <div>{children}</div>,
   DialogDescription: ({ children }: ChildrenProps) => <div>{children}</div>,
@@ -88,6 +99,8 @@ describe('SignMessageDialog', () => {
   const walletFileName = 'wallet.jmdat' as WalletFileName
 
   beforeEach(() => {
+    h.queryMount.mockClear()
+    h.queryUnmount.mockClear()
     h.walletInfo = undefined
     h.mutateAsync.mockReset()
     h.reset.mockReset()
@@ -308,5 +321,53 @@ describe('SignMessageDialog', () => {
     expect(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_message')).toHaveValue(
       'Current message',
     )
+  })
+
+  it('retains the dialog shell and discards results during closing and rapid reopening', async () => {
+    let resolveSignature!: (value: { signature: string }) => void
+    const pendingSignature = new Promise<{ signature: string }>((resolve) => {
+      resolveSignature = resolve
+    })
+    h.mutateAsync.mockReturnValueOnce(pendingSignature)
+    const onOpenChange = vi.fn()
+    const { rerender } = render(
+      <SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />,
+    )
+    const shell = screen.getByTestId('dialog-content')
+    fireEvent.change(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_address'), {
+      target: { value: "m/84'/0'/0'/0/0" },
+    })
+    fireEvent.change(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_message'), {
+      target: { value: 'Old message' },
+    })
+    fireEvent.click(screen.getByText('settings.sign_message_modal.button_sign'))
+    await waitFor(() => expect(h.mutateAsync).toHaveBeenCalledOnce())
+
+    rerender(<SignMessageDialog open={false} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+    expect(screen.getByTestId('dialog-content')).toBe(shell)
+    expect(screen.getByTestId('dialog')).toHaveAttribute('data-state', 'closed')
+    await act(async () => {
+      resolveSignature({ signature: 'obsolete-signature' })
+      await pendingSignature
+    })
+    expect(screen.queryByDisplayValue('obsolete-signature')).not.toBeInTheDocument()
+
+    rerender(<SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+    expect(screen.getByTestId('dialog-content')).toBe(shell)
+    expect(screen.getByPlaceholderText('settings.sign_message_modal.placeholder_message')).toHaveValue('')
+    expect(screen.queryByDisplayValue('obsolete-signature')).not.toBeInTheDocument()
+  })
+
+  it('keeps the wallet query mounted across dialog open and close transitions', () => {
+    const onOpenChange = vi.fn()
+    const { rerender } = render(
+      <SignMessageDialog open={false} onOpenChange={onOpenChange} walletFileName={walletFileName} />,
+    )
+    expect(h.queryMount).toHaveBeenCalledOnce()
+    rerender(<SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+    rerender(<SignMessageDialog open={false} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+    rerender(<SignMessageDialog open={true} onOpenChange={onOpenChange} walletFileName={walletFileName} />)
+    expect(h.queryMount).toHaveBeenCalledOnce()
+    expect(h.queryUnmount).not.toHaveBeenCalled()
   })
 })
