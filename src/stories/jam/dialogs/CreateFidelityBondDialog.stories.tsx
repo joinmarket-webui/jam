@@ -7,7 +7,7 @@ import type { Utxo } from '@/hooks/useQueryUtxos'
 
 const mockUtxo1: Utxo = {
   utxo: '4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b:0',
-  address: 'bcrt1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+  address: 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk',
   value: 5_000_000,
   tries: 0,
   tries_remaining: 3,
@@ -22,7 +22,7 @@ const mockUtxo1: Utxo = {
 
 const mockUtxo2: Utxo = {
   utxo: '4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b:1',
-  address: 'bcrt1qab2kgdygjrsqtzq2n0yrf2493p83kkfjhx0abc',
+  address: 'bcrt1qt5yxk3xzrx66q9wd5sdyynklqynqcyf7uh74j3',
   value: 2_500_000,
   tries: 0,
   tries_remaining: 3,
@@ -37,7 +37,7 @@ const mockUtxo2: Utxo = {
 
 const mockUtxo3: Utxo = {
   utxo: '9b5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda999:0',
-  address: 'bcrt1qcd2kgdygjrsqtzq2n0yrf2493p83kkfjhx0xyz',
+  address: 'bcrt1qn8804dw5fahuc5cwqteuq5j4xlhk2cnkq7a8kw',
   value: 10_000_000,
   tries: 0,
   tries_remaining: 3,
@@ -64,13 +64,13 @@ const mockWalletDisplay = {
             balance: '7500000',
             entries: [
               {
-                address: 'bcrt1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+                address: 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk',
                 amount: '5000000',
                 status: 'cj-out',
                 ext_info: "m/84'/1'/0'/0/0",
               },
               {
-                address: 'bcrt1qab2kgdygjrsqtzq2n0yrf2493p83kkfjhx0abc',
+                address: 'bcrt1qt5yxk3xzrx66q9wd5sdyynklqynqcyf7uh74j3',
                 amount: '2500000',
                 status: 're-deposit',
                 ext_info: "m/84'/1'/0'/0/1",
@@ -88,7 +88,7 @@ const mockWalletDisplay = {
             balance: '10000000',
             entries: [
               {
-                address: 'bcrt1qcd2kgdygjrsqtzq2n0yrf2493p83kkfjhx0xyz',
+                address: 'bcrt1qn8804dw5fahuc5cwqteuq5j4xlhk2cnkq7a8kw',
                 amount: '10000000',
                 status: 'cj-out',
                 ext_info: "m/84'/1'/1'/0/0",
@@ -115,7 +115,7 @@ const defaultHandlers = [
   }),
   http.get('/api/v1/wallet/:walletFileName/address/timelock/new/:lockdate', () => {
     return HttpResponse.json({
-      address: 'bcrt1qtimelockaddress000000000000000000000000000',
+      address: 'bcrt1q7war3lusq3ez633rzzfkp75unfcgrqqcu80sgp0ellhrdvkzxh5swspygk',
     })
   }),
   http.post('/api/v1/wallet/:walletFileName/freeze', () => {
@@ -182,7 +182,7 @@ export const SingleJar: Story = {
                       balance: '7500000',
                       entries: [
                         {
-                          address: 'bcrt1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+                          address: 'bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk',
                           amount: '5000000',
                           status: 'cj-out',
                           ext_info: "m/84'/1'/0'/0/0",
@@ -228,7 +228,7 @@ export const NoEligibleUtxos: Story = {
                       balance: '2500000',
                       entries: [
                         {
-                          address: 'bcrt1qab2kgdygjrsqtzq2n0yrf2493p83kkfjhx0abc',
+                          address: 'bcrt1qt5yxk3xzrx66q9wd5sdyynklqynqcyf7uh74j3',
                           amount: '2500000',
                           status: 're-deposit',
                           ext_info: "m/84'/1'/0'/0/1",

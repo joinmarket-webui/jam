@@ -15,6 +15,11 @@ vi.stubGlobal(
   },
 )
 
+const ControlledSliderWithInput = ({ initialValue, min, max }: { initialValue: number; min: number; max: number }) => {
+  const [value, setValue] = useState(initialValue)
+  return <SliderWithInput value={[value]} min={min} max={max} onValueChange={(values) => setValue(values[0])} />
+}
+
 describe('SliderWithInput', () => {
   it('leaves the base Slider without a companion input', () => {
     render(<Slider value={[5]} min={0} max={10} />)
@@ -84,19 +89,6 @@ describe('SliderWithInput', () => {
   })
 
   describe('typing', () => {
-    const ControlledSliderWithInput = ({
-      initialValue,
-      min,
-      max,
-    }: {
-      initialValue: number
-      min: number
-      max: number
-    }) => {
-      const [value, setValue] = useState(initialValue)
-      return <SliderWithInput value={[value]} min={min} max={max} onValueChange={(values) => setValue(values[0])} />
-    }
-
     it('allows typing a multi-digit value whose first digit is below min', async () => {
       const user = userEvent.setup()
       render(<ControlledSliderWithInput initialValue={9} min={4} max={20} />)

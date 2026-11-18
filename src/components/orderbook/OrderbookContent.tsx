@@ -161,9 +161,9 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
     }
 
     const fidelityBondsMap = new Map<string, OrderbookFidelityBond>()
-    orderbookData?.fidelitybonds?.forEach((bond) => {
+    for (const bond of orderbookData?.fidelitybonds ?? []) {
       fidelityBondsMap.set(bond.counterparty, bond)
-    })
+    }
 
     return allOffers.map((offer) => offerToTableEntry(offer, fidelityBondsMap.get(offer.counterparty), i18n))
   }, [orderbookData, demoOffers, i18n])
@@ -194,7 +194,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
 
     const absoluteOfferFees: AmountSats[] = []
     const relativeOfferFees: number[] = []
-    let minOfferSize = Number.POSITIVE_INFINITY
+    let minOfferSize = Infinity
     let maxOfferSize = 0
 
     const counterpartyMaxSizes = new Map<string, number>()
@@ -233,7 +233,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       medianAbsFee: median(absoluteOfferFees),
       medianRelFee: median(relativeOfferFees),
       totalLiquidity,
-      minOfferSize: minOfferSize === Number.POSITIVE_INFINITY ? 0 : minOfferSize,
+      minOfferSize: minOfferSize === Infinity ? 0 : minOfferSize,
       maxOfferSize,
       bondedMakers,
       unbondedMakers: counterpartyBonds.size - bondedMakers,

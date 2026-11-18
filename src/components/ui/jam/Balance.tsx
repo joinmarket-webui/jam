@@ -63,11 +63,13 @@ const ElementWithSymbols = ({
           onClick()
         }}
         onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            event.stopPropagation()
-            onClick()
+          if (!(event.key === 'Enter' || event.key === ' ')) {
+            return
           }
+
+          event.preventDefault()
+          event.stopPropagation()
+          onClick()
         }}
       >
         {content}
