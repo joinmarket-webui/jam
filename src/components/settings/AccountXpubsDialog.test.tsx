@@ -136,6 +136,8 @@ const setXpubs = (state: Partial<XpubsQueryState>) => {
   Object.assign(h.xpubs, state)
 }
 
+const AUTO_CLOSE_TIMEOUT = 5_000
+
 const verify = () => {
   fireEvent.click(screen.getByText('Verify Password'))
 }
@@ -191,7 +193,7 @@ describe('AccountXpubsDialog', () => {
         onOpenChange={vi.fn()}
         walletFileName="test.jmdat"
         hashedPassword="hash"
-        autoCloseTimeout={5000}
+        autoCloseTimeout={AUTO_CLOSE_TIMEOUT}
       />,
     )
 
@@ -206,7 +208,7 @@ describe('AccountXpubsDialog', () => {
         onOpenChange={vi.fn()}
         walletFileName="test.jmdat"
         hashedPassword="hash"
-        autoCloseTimeout={5000}
+        autoCloseTimeout={AUTO_CLOSE_TIMEOUT}
       />,
     )
 
@@ -222,7 +224,7 @@ describe('AccountXpubsDialog', () => {
         onOpenChange={onOpenChange}
         walletFileName="test.jmdat"
         hashedPassword="hash"
-        autoCloseTimeout={5000}
+        autoCloseTimeout={AUTO_CLOSE_TIMEOUT}
       />,
     )
 
@@ -289,7 +291,6 @@ describe('AccountXpubsDialog', () => {
 
   describe('auto-close timeout', () => {
     const NOW = 1_700_000_000_000
-    const AUTO_CLOSE_TIMEOUT = 5_000
     const SEED_QUERY_KEY = { queryKey: ['mock'] }
     const XPUBS_QUERY_KEY = { queryKey: ['test.jmdat', 'xpubs'] }
 
@@ -331,7 +332,7 @@ describe('AccountXpubsDialog', () => {
       expect(onOpenChange).not.toHaveBeenCalled()
     })
 
-    it('counts the timeout from when the xpubs were derived, not from the password verification', () => {
+    it('counts the timeout from when the xpubs were derived if that was after the password verification', () => {
       // the xpubs finished deriving 3 seconds after the password was verified
       setXpubs({ data: [], dataUpdatedAt: NOW + 3_000 })
       renderDialog()
@@ -341,6 +342,19 @@ describe('AccountXpubsDialog', () => {
       expect(screen.getByText('settings.xpubs_modal.title')).toBeInTheDocument()
 
       advance(3_000)
+      expect(screen.getByText('settings.xpubs_modal.verification.title')).toBeInTheDocument()
+    })
+
+    it('counts the timeout from the password verification if the xpubs were derived before', () => {
+      // e.g. xpubs still cached from an earlier verification
+      setXpubs({ data: [], dataUpdatedAt: NOW - 3_000 })
+      renderDialog()
+      verify()
+
+      advance(AUTO_CLOSE_TIMEOUT - 500)
+      expect(screen.getByText('settings.xpubs_modal.title')).toBeInTheDocument()
+
+      advance(1_000)
       expect(screen.getByText('settings.xpubs_modal.verification.title')).toBeInTheDocument()
     })
   })
