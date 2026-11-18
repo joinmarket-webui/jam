@@ -151,14 +151,14 @@ describe('LogViewer', () => {
   it('bounds a growing log to the latest 1000 lines and explains the omitted lines', () => {
     const value = Array.from({ length: 10000 }, (_, index) => `line-${index}`).join('\n')
     const { container, rerender } = render(<LogViewer fileName="large.log" value={value} refresh={vi.fn()} />)
-    expect(container.querySelectorAll('pre > span')).toHaveLength(1000)
+    expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1000)
     expect(screen.queryByText('line-0')).not.toBeInTheDocument()
     expect(screen.getByText('line-9999')).toBeInTheDocument()
     expect(screen.getByText('logs.text_display_limit')).toBeInTheDocument()
     expect(translations.t).toHaveBeenCalledWith('logs.text_display_limit', { shown: 1000, count: 10000 })
 
     rerender(<LogViewer fileName="large.log" value={`${value}\nlatest-entry`} refresh={vi.fn()} />)
-    expect(container.querySelectorAll('pre > span')).toHaveLength(1000)
+    expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1000)
     expect(screen.queryByText('line-9000')).not.toBeInTheDocument()
     expect(screen.getByText('latest-entry')).toBeInTheDocument()
   })
@@ -168,18 +168,18 @@ describe('LogViewer', () => {
     const value = 'old-needle\n' + Array.from({ length: 10000 }, (_, index) => `line-${index}`).join('\n')
     const { container } = render(<LogViewer fileName="large.log" value={value} refresh={vi.fn()} />)
     await user.type(screen.getByLabelText('logs.label_search'), 'old-needle')
-    expect(container.querySelectorAll('pre > span')).toHaveLength(1)
+    expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1)
     expect(screen.getByText('old-needle')).toBeInTheDocument()
     expect(screen.queryByText('logs.text_display_limit')).not.toBeInTheDocument()
 
     await user.click(screen.getByTitle('global.clear'))
     await user.type(screen.getByLabelText('logs.label_search'), 'line-')
-    expect(container.querySelectorAll('pre > span')).toHaveLength(1000)
+    expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1000)
     expect(translations.t).toHaveBeenCalledWith('logs.text_search_matches', { count: 10000, searchValue: 'line-' })
     expect(translations.t).toHaveBeenCalledWith('logs.text_display_limit', { shown: 1000, count: 10000 })
     expect(container.querySelector('mark')).toHaveTextContent('line-')
     await user.click(screen.getByTitle('global.clear'))
-    expect(container.querySelectorAll('pre > span')).toHaveLength(1000)
+    expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1000)
     expect(screen.getByText('line-9999')).toBeInTheDocument()
   })
 
@@ -190,7 +190,7 @@ describe('LogViewer', () => {
     try {
       const { container } = render(<LogViewer fileName="large.log" value={value} refresh={vi.fn()} />)
       await user.type(screen.getByLabelText('logs.label_search'), 'line-')
-      expect(container.querySelectorAll('pre > span')).toHaveLength(1000)
+      expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1000)
       await user.click(screen.getByRole('button', { name: 'global.download' }))
       const blob = createObjectURLMock.mock.calls[0][0] as Blob
       const text = await blob.text()
@@ -203,12 +203,12 @@ describe('LogViewer', () => {
   it('does not show a limit notice at the boundary and removes it after log rotation', () => {
     const value = Array.from({ length: 1000 }, (_, index) => `line-${index}`).join('\n')
     const { container, rerender } = render(<LogViewer fileName="large.log" value={value} refresh={vi.fn()} />)
-    expect(container.querySelectorAll('pre > span')).toHaveLength(1000)
+    expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1000)
     expect(screen.queryByText('logs.text_display_limit')).not.toBeInTheDocument()
     rerender(<LogViewer fileName="large.log" value={`${value}\nextra`} refresh={vi.fn()} />)
     expect(screen.getByText('logs.text_display_limit')).toBeInTheDocument()
     rerender(<LogViewer fileName="large.log" value="rotated" refresh={vi.fn()} />)
-    expect(container.querySelectorAll('pre > span')).toHaveLength(1)
+    expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1)
     expect(screen.getByText('rotated')).toBeInTheDocument()
     expect(screen.queryByText('logs.text_display_limit')).not.toBeInTheDocument()
   })
@@ -226,7 +226,7 @@ describe('LogViewer', () => {
         <LogViewer fileName="large.log" value={`${value}\nlatest-entry`} refresh={vi.fn()} enableAutoFollow={true} />,
       )
       await waitFor(() => expect(scrollTo).toHaveBeenCalled())
-      expect(container.querySelectorAll('pre > span')).toHaveLength(1000)
+      expect(container.querySelectorAll(':scope pre > span')).toHaveLength(1000)
       expect(screen.getByText('latest-entry')).toBeInTheDocument()
     } finally {
       scrollTo.mockRestore()
@@ -244,13 +244,13 @@ describe('LogViewer', () => {
       if (mode === 'filtered') {
         await user.type(screen.getByLabelText('logs.label_search'), 'entry')
       }
-      const originalLines = [...container.querySelectorAll('pre > span')]
+      const originalLines = [...container.querySelectorAll(':scope pre > span')]
       expect(originalLines).toHaveLength(1000)
       const retainedText = originalLines[500].firstChild
 
       rerender(<LogViewer fileName="large.log" value={`${value}\nentry-new`} refresh={vi.fn()} />)
 
-      const updatedLines = [...container.querySelectorAll('pre > span')]
+      const updatedLines = [...container.querySelectorAll(':scope pre > span')]
       expect(updatedLines).toHaveLength(1000)
       for (let index = 0; index < updatedLines.length - 1; index++) {
         expect(updatedLines[index]).toBe(originalLines[index + 1])
