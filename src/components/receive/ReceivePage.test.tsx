@@ -143,8 +143,21 @@ vi.mock('../ui/jam/CopyButton', () => ({
 }))
 
 vi.mock('./ReceiveForm', () => ({
-  ReceiveForm: ({ onSubmit }: { onSubmit: (values: { source?: { fromJar?: number } }) => void }) => (
-    <button onClick={() => onSubmit({ source: { fromJar: 1 } })}>update receive form</button>
+  ReceiveForm: ({
+    jars,
+    onSubmit,
+  }: {
+    jars: Jar[]
+    onSubmit: (values: { source?: { fromJar?: number } }) => void
+  }) => (
+    <div>
+      <button onClick={() => onSubmit({ source: { fromJar: 1 } })}>update receive form</button>
+      {jars.map((jar) => (
+        <button key={jar.jarIndex} onClick={() => onSubmit({ source: { fromJar: jar.jarIndex } })}>
+          select jar {jar.jarIndex}
+        </button>
+      ))}
+    </div>
   ),
 }))
 
@@ -248,36 +261,37 @@ describe('ReceivePage', () => {
     expect(mocks.toastError).toHaveBeenCalledWith('receive.error_share_address_failed')
   })
 
-  it('correctly looks up jar by jarIndex when jars array is not 0-indexed or out of order', async () => {
+  it('correctly looks up jar when wallet has non-contiguous mixdepths (0 to 4 plus 7)', async () => {
     const user = userEvent.setup()
-    const nonSequentialJars = [
+    const jarsWithGap = [
+      ...[0, 1, 2, 3, 4].map((jarIndex) => ({
+        jarIndex,
+        name: `Jar #${jarIndex}`,
+        color: '#808080',
+        balanceSummary: mocks.defaultJars[0].balanceSummary,
+      })),
       {
-        jarIndex: 2,
-        name: 'Two',
+        jarIndex: 7,
+        name: 'Jar #7',
         color: '#ff0000',
         balanceSummary: mocks.defaultJars[0].balanceSummary,
       },
-      {
-        jarIndex: 0,
-        name: 'Zero',
-        color: '#00ff00',
-        balanceSummary: mocks.defaultJars[1].balanceSummary,
-      },
     ] as unknown as Jar[]
-    mocks.jars = nonSequentialJars
+    mocks.jars = jarsWithGap
 
     render(<ReceivePage walletFileName="wallet.jmdat" />)
 
-    // Initially selects nonSequentialJars[0] which has jarIndex: 2
-    expect(screen.getByText('Two')).toBeInTheDocument()
-    expect(screen.getByText('#2')).toBeInTheDocument()
+    // Open settings and pick Jar 7 (array index 5, jarIndex 7)
+    await user.click(screen.getByRole('button', { name: 'receive.button_settings' }))
+    await user.click(screen.getByRole('button', { name: 'select jar 7' }))
 
+    // Reveal address for Jar 7
     await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
 
     await waitFor(() => expect(screen.getByText('qr:bc1qexample')).toBeInTheDocument())
     const lastAddressRequest = mocks.getAddress.mock.calls.at(-1)?.[0] as { path?: { mixdepth?: string } }
-    expect(lastAddressRequest?.path?.mixdepth).toBe('2')
-    expect(screen.getByText('Two')).toBeInTheDocument()
-    expect(screen.getByText('#2')).toBeInTheDocument()
+    expect(lastAddressRequest?.path?.mixdepth).toBe('7')
+    expect(screen.getByText('Jar #7')).toBeInTheDocument()
+    expect(screen.getByText('#7')).toBeInTheDocument()
   })
 })
