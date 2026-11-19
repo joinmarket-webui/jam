@@ -28,10 +28,8 @@ import { Layout } from '@/components/layout/Layout'
 import LoginPage from '@/components/login/LoginPage'
 import { OrderbookPage } from '@/components/orderbook/OrderbookPage'
 import { ReceivePage } from '@/components/receive/ReceivePage'
-import { SendPage } from '@/components/send/SendPage'
 import { RescanChainPage } from '@/components/settings/RescanChainPage'
 import { SettingsPage } from '@/components/settings/SettingsPage'
-import { SweepPage } from '@/components/sweep/SweepPage'
 import { Toaster } from '@/components/ui/sonner'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import {
@@ -63,6 +61,8 @@ import { getErrorReason } from './lib/errorReason'
 import { jmTxStore, type JmTxInfos } from './store/jmTxStore'
 import type { Milliseconds } from './types/global'
 
+const SendPage = lazy(() => import('@/components/send/SendPage').then((module) => ({ default: module.SendPage })))
+const SweepPage = lazy(() => import('@/components/sweep/SweepPage').then((module) => ({ default: module.SweepPage })))
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
 const DevErrorThrowingComponent = lazy(() => import('@/components/dev/DevErrorThrowingComponent'))
@@ -253,10 +253,24 @@ const router = createBrowserRouter(
         <Route id="protected-with-navbar" element={<ProtectedNavbarRoute />}>
           <Route path={routes.home} element={<WalletPageRoute component={MainWalletPage} />} />
           <Route path={routes.receive} element={<WalletPageRoute component={ReceivePage} />} />
-          <Route path={routes.send} element={<WalletPageRoute component={SendPage} />} />
+          <Route
+            path={routes.send}
+            element={
+              <Suspense fallback={<Loading />}>
+                <WalletPageRoute component={SendPage} />
+              </Suspense>
+            }
+          />
           <Route path={routes.earn} element={<WalletPageRoute component={EarnPage} />} />
           <Route path={routes.earnReport} element={<WalletPageRoute component={EarnReportPage} />} />
-          <Route path={routes.sweep} element={<WalletPageRoute component={SweepPage} />} />
+          <Route
+            path={routes.sweep}
+            element={
+              <Suspense fallback={<Loading />}>
+                <WalletPageRoute component={SweepPage} />
+              </Suspense>
+            }
+          />
           <Route path={routes.settings} element={<SettingsRoute />} />
           <Route path={routes.orderbook} element={<OrderbookPage />} />
           <Route path={routes.logs} element={<LogsPage />} />
