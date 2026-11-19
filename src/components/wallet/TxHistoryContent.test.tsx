@@ -115,6 +115,20 @@ describe('TxHistoryContent', () => {
     expect(mockUseQuery).toHaveBeenLastCalledWith(expect.objectContaining({ limit: 20 }))
   })
 
+  it('keeps the table and a disabled Load More button while the next page loads', () => {
+    const mockHistory = Array.from({ length: 10 }, (_, index) => historyEntry(index))
+
+    mockUseQuery.mockReturnValue({
+      history: mockHistory,
+      queryResult: mockQueryResult({ isFetching: true, isPlaceholderData: true }),
+    })
+
+    render(<TxHistoryContent walletFileName="wallet.jmdat" compact={false} initialLimit={20} />)
+
+    expect(screen.getByText('Mock Table (Rows: 10)')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'tx_history.button_load_more' })).toBeDisabled()
+  })
+
   it('hides Load More button if history length is less than limit', () => {
     const mockHistory = Array.from({ length: 5 }, () => ({ txid: 'mock' }))
 

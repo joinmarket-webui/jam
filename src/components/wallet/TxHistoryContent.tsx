@@ -51,6 +51,7 @@ export const TxHistoryContent = ({
     queryResult: {
       isFetching: historyIsFetching,
       isLoading: historyIsLoading,
+      isPlaceholderData: historyIsPlaceholderData,
       error: historyError,
       refetch: historyRefetch,
     },
@@ -172,7 +173,8 @@ export const TxHistoryContent = ({
         <TxHistoryTable history={compact ? combinedHistory.slice(0, 5) : combinedHistory} compact={compact} />
       )}
 
-      {!compact && combinedHistory.length >= limit ? (
+      {/* keep the button (with its spinner) while the next page loads: the previous, shorter page is still shown */}
+      {!compact && (combinedHistory.length >= limit || historyIsPlaceholderData) ? (
         <div className="flex justify-center">
           <Button
             type="button"
