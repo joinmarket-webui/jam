@@ -42,6 +42,8 @@ type ScannerSession = {
   timeout?: ReturnType<typeof setTimeout>
 }
 
+let fileReaderCount = 0
+
 const stopSession = (session: ScannerSession): Promise<void> => {
   if (!session.scanner) return Promise.resolve()
   session.stop ??= (async () => {
@@ -212,7 +214,7 @@ export default function QrScannerDialog({ open, onOpenChange, onScan, ...dialogP
       // File decoding must not share a reader with a pending camera startup.
       // Keep this reader attached until decoding finishes, even if the dialog closes.
       const reader = document.createElement('div')
-      reader.id = `qr-scanner-file-${crypto.randomUUID()}`
+      reader.id = `qr-scanner-file-${++fileReaderCount}`
       reader.hidden = true
       document.body.append(reader)
       try {
