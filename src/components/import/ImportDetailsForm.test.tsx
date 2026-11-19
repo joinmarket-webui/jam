@@ -14,6 +14,15 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+vi.stubGlobal(
+  'ResizeObserver',
+  class ResizeObserver {
+    observe = vi.fn()
+    unobserve = vi.fn()
+    disconnect = vi.fn()
+  },
+)
+
 vi.mock('../ui/accordion', () => ({
   Accordion: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   AccordionItem: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
