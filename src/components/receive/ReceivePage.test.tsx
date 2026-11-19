@@ -247,4 +247,37 @@ describe('ReceivePage', () => {
     })
     expect(mocks.toastError).toHaveBeenCalledWith('receive.error_share_address_failed')
   })
+
+  it('correctly looks up jar by jarIndex when jars array is not 0-indexed or out of order', async () => {
+    const user = userEvent.setup()
+    const nonSequentialJars = [
+      {
+        jarIndex: 2,
+        name: 'Two',
+        color: '#ff0000',
+        balanceSummary: mocks.defaultJars[0].balanceSummary,
+      },
+      {
+        jarIndex: 0,
+        name: 'Zero',
+        color: '#00ff00',
+        balanceSummary: mocks.defaultJars[1].balanceSummary,
+      },
+    ] as unknown as Jar[]
+    mocks.jars = nonSequentialJars
+
+    render(<ReceivePage walletFileName="wallet.jmdat" />)
+
+    // Initially selects nonSequentialJars[0] which has jarIndex: 2
+    expect(screen.getByText('Two')).toBeInTheDocument()
+    expect(screen.getByText('#2')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'receive.button_reveal_address' }))
+
+    await waitFor(() => expect(screen.getByText('qr:bc1qexample')).toBeInTheDocument())
+    const lastAddressRequest = mocks.getAddress.mock.calls.at(-1)?.[0] as { path?: { mixdepth?: string } }
+    expect(lastAddressRequest?.path?.mixdepth).toBe('2')
+    expect(screen.getByText('Two')).toBeInTheDocument()
+    expect(screen.getByText('#2')).toBeInTheDocument()
+  })
 })
