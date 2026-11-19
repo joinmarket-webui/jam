@@ -143,13 +143,7 @@ vi.mock('../ui/jam/CopyButton', () => ({
 }))
 
 vi.mock('./ReceiveForm', () => ({
-  ReceiveForm: ({
-    jars,
-    onSubmit,
-  }: {
-    jars: Jar[]
-    onSubmit: (values: { source?: { fromJar?: number } }) => void
-  }) => (
+  ReceiveForm: ({ jars, onSubmit }: { jars: Jar[]; onSubmit: (values: { source?: { fromJar?: number } }) => void }) => (
     <div>
       <button onClick={() => onSubmit({ source: { fromJar: 1 } })}>update receive form</button>
       {jars.map((jar) => (
