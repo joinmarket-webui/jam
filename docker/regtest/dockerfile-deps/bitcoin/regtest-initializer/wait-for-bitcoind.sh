@@ -1,4 +1,4 @@
 #!/bin/sh
-set -Eeuo pipefail
+set -eu
 
-source /usr/local/bin/wait-for-blocks.sh 0
+wait-for-blocks.sh 0
