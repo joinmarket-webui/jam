@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
@@ -74,5 +74,18 @@ describe('EarnForm in private mode', () => {
     const feedback = await screen.findByText(/^earn\.feedback_invalid_min_amount_range/)
     expect(feedback).toHaveTextContent(LARGEST_JAR_BALANCE.toLocaleString())
     expect(input).toHaveAttribute('max', String(LARGEST_JAR_BALANCE))
+  })
+
+  it('hides the balance when private mode is turned on while the feedback is shown', async () => {
+    jamSettingsStore.getState().update({ privateMode: false })
+
+    renderForm()
+    await submitTooLargeMinAmount()
+
+    act(() => jamSettingsStore.getState().update({ privateMode: true }))
+
+    const feedback = await screen.findByText(/^earn\.feedback_invalid_min_amount_range/)
+    expect(feedback).toHaveTextContent('*****')
+    expect(feedback).not.toHaveTextContent(LARGEST_JAR_BALANCE.toLocaleString())
   })
 })

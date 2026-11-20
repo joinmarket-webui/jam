@@ -392,7 +392,15 @@ export function EarnForm({
                   {offerMinsizeMax < JAM.OFFER_MINSIZE_MIN ? (
                     <>{t('earn.feedback_invalid_min_amount_insufficient_funds')}</>
                   ) : (
-                    <>{errors.offerMinAmount?.message || t('earn.feedback_invalid_min_amount')}</>
+                    <>
+                      {/* built at render time, so toggling private mode updates an already shown message */}
+                      {errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max'
+                        ? t('earn.feedback_invalid_min_amount_range', {
+                            minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
+                            minAmountMax: offerMinsizeMaxText,
+                          })
+                        : errors.offerMinAmount.message || t('earn.feedback_invalid_min_amount')}
+                    </>
                   )}
                 </FieldError>
               )}
