@@ -12,7 +12,8 @@ const h = vi.hoisted(() => ({
   scanFileImpl: vi.fn<() => Promise<string>>().mockResolvedValue('decoded-text'),
   t: (key: string) => key,
   deferRender: false,
-  instances: [] as Array<{ isScanning: boolean }>,
+  retainDialogContent: false,
+  instances: [] as Array<{ isScanning: boolean; reader: HTMLElement | null }>,
   stopped: [] as Array<{ isScanning: boolean }>,
   decodeCallbacks: [] as Array<(text: string) => void>,
 }))
@@ -77,7 +78,8 @@ vi.mock('html5-qrcode', () => ({
 }))
 
 vi.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: { children?: ReactNode; open?: boolean }) => (open ? <div>{children}</div> : null),
+  Dialog: ({ children, open }: { children?: ReactNode; open?: boolean }) =>
+    open || h.retainDialogContent ? <div>{children}</div> : null,
   DialogContent: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   DialogDescription: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   DialogFooter: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
@@ -111,6 +113,7 @@ describe('QrScannerDialog', () => {
     h.scanFileImpl = vi.fn<() => Promise<string>>().mockResolvedValue('decoded-text')
     h.stopImpl.mockReset().mockResolvedValue(undefined)
     h.deferRender = false
+    h.retainDialogContent = false
     h.instances = []
     h.stopped = []
     h.decodeCallbacks = []
@@ -338,6 +341,36 @@ describe('QrScannerDialog', () => {
     await act(async () => oldDecode('bitcoin:bc1qscan'))
     expect(callbacks.onScan).not.toHaveBeenCalled()
     expect(callbacks.onOpenChange).not.toHaveBeenCalled()
+  })
+
+  it('uses a new reader when reopened while closing content is still mounted', async () => {
+    vi.useFakeTimers()
+    h.retainDialogContent = true
+    const pendingStop = deferred<void>()
+    h.stopImpl.mockReturnValueOnce(pendingStop.promise)
+    const callbacks = { onOpenChange: vi.fn(), onScan: vi.fn() }
+    const view = render(<QrScannerDialog open {...callbacks} />)
+    await act(async () => vi.advanceTimersByTimeAsync(301))
+    const oldScanner = h.instances[0]
+    const oldReader = oldScanner.reader
+    expect(oldScanner.isScanning).toBe(true)
+
+    view.rerender(<QrScannerDialog open={false} {...callbacks} />)
+    view.rerender(<QrScannerDialog open {...callbacks} />)
+    await act(async () => vi.advanceTimersByTimeAsync(301))
+
+    const newScanner = h.instances[1]
+    const readers = document.querySelectorAll('#qr-scanner-reader')
+    expect(readers).toHaveLength(1)
+    expect(newScanner.reader).toBe(readers[0])
+    expect(newScanner.reader).not.toBe(oldReader)
+    expect(oldReader).toBeInTheDocument()
+    expect(h.stopped).toEqual([oldScanner])
+
+    await act(async () => pendingStop.resolve())
+    expect(oldReader).not.toBeInTheDocument()
+    expect(newScanner.reader).toBeInTheDocument()
+    expect(newScanner.isScanning).toBe(true)
   })
 
   it('shares a pending stop between a decode and closing the dialog', async () => {

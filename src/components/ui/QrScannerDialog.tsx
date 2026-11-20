@@ -161,6 +161,8 @@ export default function QrScannerDialog({ open, onOpenChange, onScan, ...dialogP
     return () => {
       session.cancelled = true
       clearTimeout(session.timeout)
+      // The closing dialog may stay mounted during its exit animation.
+      session.reader?.removeAttribute('id')
       // html5-qrcode needs a laid-out reader to finish rendering after getUserMedia.
       // Retain the owned reader off-screen until startup and stop complete.
       let retainedReader: HTMLDivElement | undefined
@@ -177,12 +179,10 @@ export default function QrScannerDialog({ open, onOpenChange, onScan, ...dialogP
           width: `${session.readerWidth}px`,
           pointerEvents: 'none',
         })
-        // A reopened dialog must own the public reader ID.
-        session.reader.removeAttribute('id')
         retainedReader.append(session.reader)
         document.body.append(retainedReader)
       }
-      void stopSession(session).then(() => retainedReader?.remove())
+      void stopSession(session).then(() => (retainedReader ?? session.reader)?.remove())
       if (sessionRef.current === session) sessionRef.current = null
     }
   }, [open, createScanner, handleResult, isCurrentSession])
