@@ -459,6 +459,7 @@
     "label_auto_follow": "Auto-follow",
     "label_search": "Search logs",
     "placeholder_search": "Search logs...",
+    "text_display_limit": "Showing the latest {{shown}} of {{count}} lines. Search and download include all loaded lines.",
     "text_search_matches_zero": "No matches for \"{{ searchValue }}\".",
     "text_search_matches_one": "{{ count }} matching line.",
     "text_search_matches_other": "{{ count }} matching lines."
