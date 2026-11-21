@@ -372,8 +372,8 @@ describe('EarnReportContent', () => {
 
       render(<EarnReportContent enabled />)
 
-      // Stat card (350) + table row (350)
-      expect(screen.getAllByText('balance:350')).toHaveLength(2)
+      // Total (350), 90 days (350), 30 days (350) cards + 1 table row (350)
+      expect(screen.getAllByText('balance:350')).toHaveLength(4)
     })
   })
 })
