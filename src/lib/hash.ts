@@ -25,6 +25,6 @@ export async function hashPassword(
     return bytesToHex(derivedKey)
   } catch (error: unknown) {
     const reason = (error instanceof Error ? (error.message ?? '') : '') || 'Unknown error'
-    throw new Error(`Failed to hash password: ${reason}`)
+    throw new Error(`Failed to hash password: ${reason}`, { cause: error })
   }
 }

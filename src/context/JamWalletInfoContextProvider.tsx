@@ -29,7 +29,7 @@ const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
     const branches = (__raw.branches || [])
       .filter((it) => it.branch !== undefined)
       .map((it) => {
-        const [type, derivation] = it.branch.split('\t')
+        const [type, derivation] = it.branch.split('\t', 2)
         return {
           type,
           derivation,
@@ -38,7 +38,7 @@ const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
       })
 
     const meta: AccountMeta = {
-      jarIndex: Number.parseInt(String(__raw.account), 10),
+      jarIndex: Number.parseInt(__raw.account, 10),
       branches,
       __raw,
     }
@@ -91,9 +91,8 @@ const toFidelityBondSummary = (utxos: Utxo[]): FidelityBondSummary => {
 
       if (aLocked && bLocked) {
         return b.value - a.value
-      } else {
-        return aLocked ? -1 : 1
       }
+      return aLocked ? -1 : 1
     })
   return {
     fbOutputs,
@@ -150,13 +149,13 @@ export const JamWalletInfoContextProvider = ({
 
   const utxosByJarIndex = utxos.reduce((acc, utxo) => {
     const key: JarIndex = utxo.mixdepth
-    acc[key] = acc[key] || []
+    acc[key] ||= []
     acc[key].push(utxo)
     return acc
   }, {} as UtxosByJarIndex)
 
   const jars: Jar[] = []
-  Object.entries(utxosByJarIndex).forEach(([jarIndexString, utxos]) => {
+  for (const [jarIndexString, utxos] of Object.entries(utxosByJarIndex)) {
     const jarIndex = Number.parseInt(jarIndexString, 10)
     const balanceSummary = toBalanceSummary(utxos)
 
@@ -176,9 +175,9 @@ export const JamWalletInfoContextProvider = ({
         utxos,
       })
     }
-  })
+  }
 
-  Object.values(jarTemplatesByJarIndex).forEach((jarTemplate) => {
+  for (const jarTemplate of Object.values(jarTemplatesByJarIndex)) {
     const jarPresent = jars.some((it) => it.jarIndex === jarTemplate.jarIndex)
     if (!jarPresent) {
       jars.push({
@@ -187,7 +186,7 @@ export const JamWalletInfoContextProvider = ({
         utxos: EMPTY_UTXOS,
       })
     }
-  })
+  }
 
   jars.sort((a, b) => a.jarIndex - b.jarIndex)
 

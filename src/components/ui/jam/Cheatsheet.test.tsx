@@ -95,7 +95,7 @@ describe('Cheatsheet', () => {
 
     const documentationLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('target') === '_blank')
     expect(documentationLinks.length).toBeGreaterThan(0)
-    documentationLinks.forEach((link) => expect(link).toHaveAttribute('rel', 'noopener noreferrer'))
+    for (const link of documentationLinks) expect(link).toHaveAttribute('rel', 'noopener noreferrer')
 
     // prevent jsdom from trying to open a new window
     documentationLinks[0].addEventListener('click', (event) => event.preventDefault())

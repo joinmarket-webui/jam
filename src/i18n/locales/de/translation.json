@@ -213,7 +213,7 @@
     "telegram": "Telegram",
     "fees": {
       "title": "Fee Limits",
-      "description": "Verändere die Mining- und Collaborator-Fees deinen Ansprüchen entsprechend. Die Einstellung wird zurückgesetzt, wenn der Joinmarket Service oder dein System neu gestartet wird. Mehr Informationen zu den Fees befinden sich in <1>der Dokumentation</1>.",
+      "description": "Verändere die Mining- und Collaborator-Fees deinen Ansprüchen entsprechend. Die Einstellung wird zurückgesetzt, wenn die Wallet gesperrt oder der Joinmarket Service neu gestartet wird. Mehr Informationen zu den Fees befinden sich in <1>der Dokumentation</1>.",
       "title_general_fee_settings": "Mining Fees",
       "description_general_fee_settings": "Die Mining-Fees haben einen Einfluss auf die Transaktionspriorität und hängen von der Auslastung des Mempools ab.",
       "radio_tx_fees_blocks": "Block-Target",
@@ -581,7 +581,8 @@
       "title": "Geplanten Sweep starten",
       "text_body": "Bist du sicher, dass du einen geplanten Sweep starten möchtest?",
       "actions_count_one": "{{ count }} Aktion",
-      "actions_count_other": "{{ count }} Aktionen"
+      "actions_count_other": "{{ count }} Aktionen",
+      "estimated_duration": "Geschätzte Dauer"
     },
     "confirm_stop_modal": {
       "title": "Geplanten Sweep stoppen",

@@ -82,7 +82,7 @@ export const BranchEntryTable = ({
             // tie-break using derivationIndex
             return a.original.derivationIndex - b.original.derivationIndex
           },
-          cell: (info) => <Address value={String(info.getValue())} className="text-sm" copyable={true} />,
+          cell: (info) => <Address value={info.getValue()} className="text-sm" copyable={true} />,
           meta: {
             alphabetic: true,
           },
@@ -165,16 +165,16 @@ export const BranchEntryTable = ({
 
   useEffect(() => {
     resetRowPinning(true)
-    getPrePaginatedRowModel().rows.forEach((row) => {
+    for (const row of getPrePaginatedRowModel().rows) {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
-    })
+    }
   }, [resetRowPinning, getPrePaginatedRowModel, pinnedEntries])
 
   useEffect(() => {
     resetRowSelection(true)
-    getPrePaginatedRowModel().rows.forEach((row) => {
+    for (const row of getPrePaginatedRowModel().rows) {
       row.toggleSelected(highlightedEntries.includes(row.original))
-    })
+    }
   }, [resetRowSelection, getPrePaginatedRowModel, highlightedEntries])
 
   useEffect(() => {

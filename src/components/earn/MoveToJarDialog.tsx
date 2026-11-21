@@ -92,7 +92,7 @@ export function MoveToJarDialog({ open, onOpenChange, walletFileName, utxo }: Mo
     ...getAddressQueryOptions,
     queryKey: [...getAddressQueryOptions.queryKey, operationId] as unknown as typeof getAddressQueryOptions.queryKey,
     enabled: open && selectedJarIndex !== undefined && step !== 'select_jar',
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
     retry: false,
   })
 

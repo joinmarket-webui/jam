@@ -401,7 +401,7 @@
     "rescan_chain": "Rescan chain",
     "fees": {
       "title": "Fee Limits",
-      "description": "Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default values when the JoinMarket service restarts, e.g. on a system reboot. For more information, <1>see the documentation on fees</1>.",
+      "description": "Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default values when the wallet is locked or the JoinMarket service restarts. For more information, <1>see the documentation on fees</1>.",
       "title_general_fee_settings": "Mining fees",
       "description_general_fee_settings": "Mining fees relate to transaction priority and depend on mempool conditions.",
       "radio_tx_fees_blocks": "Block target",
@@ -459,6 +459,7 @@
     "label_auto_follow": "Auto-follow",
     "label_search": "Search logs",
     "placeholder_search": "Search logs...",
+    "text_display_limit": "Showing the latest {{shown}} of {{count}} lines. Search and download include all loaded lines.",
     "text_search_matches_zero": "No matches for \"{{ searchValue }}\".",
     "text_search_matches_one": "{{ count }} matching line.",
     "text_search_matches_other": "{{ count }} matching lines."
@@ -481,8 +482,6 @@
     "error_sending_direct_payment": "Error while sending non-collaborative transaction: {{ reason }}",
     "alert_collaborative_starting": "Starting collaborative transaction...",
     "alert_collaborative_stopping": "Aborting collaborative transaction...",
-    "alert_collaborative_awaiting_completion": "Awaiting completion of collaborative transaction...",
-    "alert_collaborative_stopped_title": "Collaborative flow stopped",
     "alert_collaborative_stopped_description": "The collaborative flow has stopped. Please check your transaction history to confirm whether the transaction went through.",
     "error_starting_collaborative_transaction": "Error while starting collaborative transaction: {{ reason }}",
     "error_stopping_collaborative_transaction": "Error while stopping collaborative transaction: {{ reason }}",
@@ -532,6 +531,7 @@
     "confirm_send_modal": {
       "title": "Confirm payment",
       "label_amount": "Amount",
+      "badge_sweep": "Sweep",
       "text_sweep_balance": "Sweep (<1></1>)",
       "text_sweep_info_popover": "The exact transaction amount can only be calculated by JoinMarket at the point when the transaction is made.",
       "label_recipient": "Recipient",
@@ -564,6 +564,22 @@
       "nested_hint_wait_for_block_other": "Select another jar to send from or wait for {{ count }} more blocks.",
       "nested_hint_fund_jar": "Select another jar to send from or fund this jar and wait for one block.",
       "nested_hint_fund_jar_other": "Select another jar to send from or fund this jar and wait for {{ count }} blocks."
+    },
+    "taker_status": {
+      "title": "Taker status",
+      "status_idle": "Waiting...",
+      "status_fetching_orderbook": "Evaluating offers...",
+      "status_filling": "Building transaction...",
+      "status_authenticating": "Authenticating...",
+      "status_collecting_signatures": "Collecting signatures...",
+      "status_broadcasting": "Broadcasting...",
+      "status_complete": "Completed",
+      "status_complete_unverified": "Completed (unverified)",
+      "status_failed": "Failed",
+      "status_cancelled": "Cancelled",
+      "status_unknown": "Ended",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "The transaction has been handed to the collaborators for broadcasting, but its presence in the mempool could not be verified. Check your transaction history to confirm it went through."
     }
   },
   "receive": {
@@ -929,7 +945,8 @@
       "title": "Start Scheduled Sweep",
       "text_body": "Are you sure you want to start a Scheduled Sweep?",
       "actions_count_one": "{{ count }} action",
-      "actions_count_other": "{{ count }} actions"
+      "actions_count_other": "{{ count }} actions",
+      "estimated_duration": "Estimated duration"
     },
     "confirm_stop_modal": {
       "title": "Stop Scheduled Sweep",

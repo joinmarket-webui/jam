@@ -89,7 +89,6 @@ export default function ErrorPage() {
 
   if (error instanceof Error) {
     return <ErrorWithDetails error={error} />
-  } else {
-    return <UnknownError error={error} />
   }
+  return <UnknownError error={error} />
 }

@@ -539,9 +539,9 @@ describe('isValidNumber', () => {
   it('should return false for invalid values', () => {
     expect(isValidNumber(undefined)).toBe(false)
     expect(isValidNumber(null)).toBe(false)
-    expect(isValidNumber(Number.POSITIVE_INFINITY)).toBe(false)
-    expect(isValidNumber(Number.NEGATIVE_INFINITY)).toBe(false)
-    expect(isValidNumber(Number.NaN)).toBe(false)
+    expect(isValidNumber(Infinity)).toBe(false)
+    expect(isValidNumber(-Infinity)).toBe(false)
+    expect(isValidNumber(NaN)).toBe(false)
     expect(isValidNumber(Number('2e308'))).toBe(false) // Number(2e308) := Number.POSITIVE_INFINITY
     expect(isValidNumber(Number('-2e308'))).toBe(false) // Number(-2e308) := Number.NEGATIVE_INFINITY
   })
@@ -572,9 +572,9 @@ describe('isValidInteger', () => {
     expect(isValidInteger(Number.MAX_SAFE_INTEGER + 1)).toBe(false)
     expect(isValidInteger(Number.MIN_VALUE)).toBe(false)
     expect(isValidInteger(Number.MAX_VALUE)).toBe(false)
-    expect(isValidInteger(Number.POSITIVE_INFINITY)).toBe(false)
-    expect(isValidInteger(Number.NEGATIVE_INFINITY)).toBe(false)
-    expect(isValidInteger(Number.NaN)).toBe(false)
+    expect(isValidInteger(Infinity)).toBe(false)
+    expect(isValidInteger(-Infinity)).toBe(false)
+    expect(isValidInteger(NaN)).toBe(false)
     expect(isValidInteger(Number('2e308'))).toBe(false) // Number(2e308) := Number.POSITIVE_INFINITY
     expect(isValidInteger(Number('-2e308'))).toBe(false) // Number(-2e308) := Number.NEGATIVE_INFINITY
   })
@@ -1001,9 +1001,9 @@ describe('median', () => {
     expect(median(__shuffle([-1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))).toBe(1)
     expect(median(__shuffle([-1, 1, 1, 1, 1, 1, 2, 2, 2, 2]))).toBe(1)
     expect(median(__shuffle([-3, 3, 3, 3, 1, 1, 1, 1, 1, 1]))).toBe(1)
-    expect(median(__shuffle([Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]))).toBe(null)
-    expect(median(__shuffle([Number.NaN, Number.NaN]))).toBe(null)
-    expect(median(__shuffle([Number.NaN, Number.NaN, Number.NaN]))).toBe(null)
+    expect(median(__shuffle([-Infinity, Infinity]))).toBe(null)
+    expect(median(__shuffle([NaN, NaN]))).toBe(null)
+    expect(median(__shuffle([NaN, NaN, NaN]))).toBe(null)
   })
 })
 
@@ -1022,10 +1022,10 @@ describe('clamp', () => {
       expect(clamp(i, 0, 99)).toBe(i)
     }
 
-    expect(clamp(Number.NaN, 1, 2)).toBe(Number.NaN)
-    expect(clamp(1, Number.NaN, 2)).toBe(Number.NaN)
-    expect(clamp(1, 2, Number.NaN)).toBe(Number.NaN)
-    expect(clamp(Number.NaN, Number.NaN, Number.NaN)).toBe(Number.NaN)
+    expect(clamp(NaN, 1, 2)).toBe(NaN)
+    expect(clamp(1, NaN, 2)).toBe(NaN)
+    expect(clamp(1, 2, NaN)).toBe(NaN)
+    expect(clamp(NaN, NaN, NaN)).toBe(NaN)
 
     expect(clamp(1, 2, 2)).toBe(2)
     expect(clamp(1, 1, 2)).toBe(1)
