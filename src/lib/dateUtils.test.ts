@@ -132,26 +132,34 @@ describe('dateUtils', () => {
   })
 
   describe('startOfDay', () => {
-    it('sets hours, minutes, seconds, and milliseconds to 0 UTC from a Date', () => {
-      const date = new Date('2026-11-21T18:45:30.123Z')
+    it('sets hours, minutes, seconds, and milliseconds to 0 in local time from a Date', () => {
+      const date = new Date(2026, 10, 21, 18, 45, 30, 123)
       const result = startOfDay(date)
 
-      expect(result.toISOString()).toBe('2026-11-21T00:00:00.000Z')
-      expect(result.getUTCHours()).toBe(0)
-      expect(result.getUTCMinutes()).toBe(0)
-      expect(result.getUTCSeconds()).toBe(0)
-      expect(result.getUTCMilliseconds()).toBe(0)
+      expect(result.getFullYear()).toBe(2026)
+      expect(result.getMonth()).toBe(10)
+      expect(result.getDate()).toBe(21)
+      expect(result.getHours()).toBe(0)
+      expect(result.getMinutes()).toBe(0)
+      expect(result.getSeconds()).toBe(0)
+      expect(result.getMilliseconds()).toBe(0)
     })
 
-    it('sets hours, minutes, seconds, and milliseconds to 0 UTC from a timestamp number', () => {
-      const timestamp = new Date('2026-05-10T14:22:10.500Z').getTime()
+    it('sets hours, minutes, seconds, and milliseconds to 0 in local time from a timestamp number', () => {
+      const timestamp = new Date(2026, 4, 10, 14, 22, 10, 500).getTime()
       const result = startOfDay(timestamp)
 
-      expect(result.toISOString()).toBe('2026-05-10T00:00:00.000Z')
+      expect(result.getFullYear()).toBe(2026)
+      expect(result.getMonth()).toBe(4)
+      expect(result.getDate()).toBe(10)
+      expect(result.getHours()).toBe(0)
+      expect(result.getMinutes()).toBe(0)
+      expect(result.getSeconds()).toBe(0)
+      expect(result.getMilliseconds()).toBe(0)
     })
 
     it('does not mutate the original Date object', () => {
-      const original = new Date('2026-11-21T18:45:30.123Z')
+      const original = new Date(2026, 10, 21, 18, 45, 30, 123)
       const copy = new Date(original)
       startOfDay(original)
 

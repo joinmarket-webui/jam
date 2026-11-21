@@ -323,26 +323,26 @@ describe('EarnReportContent', () => {
     }
   })
 
-  it('aligns 30-day and 90-day earnings cutoff to start of day UTC', () => {
-    // Current time at 18:00:00 UTC on day 100
-    const mockNow = new Date('2026-04-10T18:00:00.000Z').getTime()
+  it('aligns 30-day and 90-day earnings cutoff to start of day', () => {
+    // Current time at 18:00:00 on day 100
+    const mockNow = new Date(2026, 3, 10, 18, 0, 0, 0).getTime()
     vi.spyOn(Date, 'now').mockReturnValue(mockNow)
 
     const MS_IN_DAY = 24 * 60 * 60 * 1000
 
-    // Entry 30 days ago at 06:00:00 UTC (earlier in the day than now's 18:00:00 UTC)
-    // Before the fix (subtracting raw 30 * 24h), cutoff was day 70 at 18:00:00 UTC,
+    // Entry 30 days ago at 06:00:00 (earlier in the day than now's 18:00:00)
+    // Before the fix (subtracting raw 30 * 24h), cutoff was day 70 at 18:00:00,
     // which wrongly excluded this transaction (06:00 < 18:00).
-    // With startOfDay, cutoff is day 70 at 00:00:00 UTC, so it is included.
+    // With startOfDay, cutoff is day 70 at 00:00:00, so it is included.
     const entry30DaysAgoMorning = entry({
       earnedAmount: 250,
-      timestamp: new Date(mockNow - 30 * MS_IN_DAY - 12 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000), // Day 70 at 06:00:00 UTC
+      timestamp: new Date(mockNow - 30 * MS_IN_DAY - 12 * 60 * 60 * 1000), // Day 70 at 06:00:00
     })
 
-    // Entry 90 days ago at 04:00:00 UTC
+    // Entry 90 days ago at 04:00:00
     const entry90DaysAgoMorning = entry({
       earnedAmount: 500,
-      timestamp: new Date(mockNow - 90 * MS_IN_DAY - 14 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000), // Day 10 at 04:00:00 UTC
+      timestamp: new Date(mockNow - 90 * MS_IN_DAY - 14 * 60 * 60 * 1000), // Day 10 at 04:00:00
     })
 
     mocks.entries = [entry30DaysAgoMorning, entry90DaysAgoMorning]
