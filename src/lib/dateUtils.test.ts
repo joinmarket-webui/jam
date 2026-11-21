@@ -152,7 +152,7 @@ describe('dateUtils', () => {
 
     it('does not mutate the original Date object', () => {
       const original = new Date('2026-11-21T18:45:30.123Z')
-      const copy = new Date(original.getTime())
+      const copy = new Date(original)
       startOfDay(original)
 
       expect(original.getTime()).toBe(copy.getTime())

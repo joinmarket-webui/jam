@@ -346,9 +346,8 @@ describe('EarnReportContent', () => {
 
     render(<EarnReportContent enabled />)
 
-    // Total: 250 + 500 = 750
-    expect(screen.getByText('balance:750')).toBeInTheDocument()
-    // 90 days includes both (250 + 500 = 750)
+    // Total and 90 days both equal 750 (250 + 500 = 750)
+    expect(screen.getAllByText('balance:750')).toHaveLength(2)
     // 30 days includes 30-day entry (250)
     expect(screen.getByText('balance:250')).toBeInTheDocument()
   })
