@@ -346,9 +346,9 @@ describe('EarnReportContent', () => {
 
     render(<EarnReportContent enabled />)
 
-    // Total and 90 days both equal 750 (250 + 500 = 750)
+    // Total (750) and 90 days (750) stat cards
     expect(screen.getAllByText('balance:750')).toHaveLength(2)
-    // 30 days includes 30-day entry (250)
-    expect(screen.getByText('balance:250')).toBeInTheDocument()
+    // 30 days card (250) + table row for entry30DaysAgoMorning (250)
+    expect(screen.getAllByText('balance:250')).toHaveLength(2)
   })
 })
