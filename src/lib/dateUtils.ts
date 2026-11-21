@@ -44,3 +44,13 @@ export const parseTimestamp = (value?: string | null): Date | undefined => {
   const timestamp = Date.parse(hasTimeZoneDesignator(normalized) ? normalized : `${normalized}Z`)
   return Number.isNaN(timestamp) ? undefined : new Date(timestamp)
 }
+
+/**
+ * Returns a new Date object representing the start of the day (00:00:00.000)
+ * in UTC for the given date.
+ */
+export const startOfDay = (date: Date | number): Date => {
+  const result = new Date(date)
+  result.setUTCHours(0, 0, 0, 0)
+  return result
+}

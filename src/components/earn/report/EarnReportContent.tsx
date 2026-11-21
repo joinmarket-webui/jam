@@ -20,7 +20,7 @@ import { SortIcon } from '@/components/ui/jam/SortIcon'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { isValidDate } from '@/lib/dateUtils'
+import { isValidDate, startOfDay } from '@/lib/dateUtils'
 import { cn, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, Milliseconds } from '@/types/global'
@@ -162,9 +162,14 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
 
   const earnedTotal = useMemo(() => sumEarned(allEntries), [allEntries])
 
-  // TODO: `since` date should be on start of day
-  const earned90Days = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_90_DAYS)), [allEntries, now])
-  const earned30Days = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_30_DAYS)), [allEntries, now])
+  const earned90Days = useMemo(
+    () => sumEarned(allEntries, startOfDay(now - MILLISECONDS_IN_90_DAYS)),
+    [allEntries, now],
+  )
+  const earned30Days = useMemo(
+    () => sumEarned(allEntries, startOfDay(now - MILLISECONDS_IN_30_DAYS)),
+    [allEntries, now],
+  )
   const earned24Hours = useMemo(() => sumEarned(allEntries, new Date(now - MILLISECONDS_IN_A_DAY)), [allEntries, now])
 
   return (
