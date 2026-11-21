@@ -8,7 +8,18 @@ type DialogProps = ChildrenProps & { open?: boolean; onOpenChange?: (open: boole
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, values?: { count?: number }) => (values?.count !== undefined ? `${key}:${values.count}` : key),
+    t: (key: string, values?: { count?: number; [key: string]: unknown }) => {
+      if (values?.count !== undefined) {
+        return `${key}:${values.count}`
+      }
+      if (values && Object.keys(values).length > 0) {
+        const sorted = Object.entries(values)
+          .map(([k, v]) => `${k}=${String(v)}`)
+          .join(',')
+        return `${key}(${sorted})`
+      }
+      return key
+    },
   }),
 }))
 
@@ -121,6 +132,7 @@ describe('SweepStartConfirmDialog', () => {
         isStarting={false}
         totalBalanceInSats={150000}
         totalActions={2}
+        estimatedTotalDurationInSeconds={9015}
         destinationAddresses={['bc1qdestination1', 'bc1qdestination2']}
       />,
     )
@@ -129,8 +141,41 @@ describe('SweepStartConfirmDialog', () => {
     expect(screen.getByText('150000')).toBeInTheDocument()
     expect(screen.getByText('scheduler.section_details_title')).toBeInTheDocument()
     expect(screen.getByText('scheduler.confirm_start_modal.actions_count:2')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_start_modal.estimated_duration')).toBeInTheDocument()
+    expect(screen.getByText('global.duration_hours_minutes(hours=2,minutes=30)')).toBeInTheDocument()
     expect(screen.getByText('scheduler.section_destinations_title')).toBeInTheDocument()
     expect(screen.getByText('bc1qdestination1')).toBeInTheDocument()
     expect(screen.getByText('bc1qdestination2')).toBeInTheDocument()
+  })
+
+  it('does not render estimated duration when omitted or zero', () => {
+    const { rerender } = render(
+      <SweepStartConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        disabled={false}
+        isStarting={false}
+        totalBalanceInSats={150000}
+        totalActions={2}
+      />,
+    )
+
+    expect(screen.queryByText('scheduler.confirm_start_modal.estimated_duration')).not.toBeInTheDocument()
+
+    rerender(
+      <SweepStartConfirmDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        onConfirm={vi.fn()}
+        disabled={false}
+        isStarting={false}
+        totalBalanceInSats={150000}
+        totalActions={2}
+        estimatedTotalDurationInSeconds={0}
+      />,
+    )
+
+    expect(screen.queryByText('scheduler.confirm_start_modal.estimated_duration')).not.toBeInTheDocument()
   })
 })

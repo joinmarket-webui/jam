@@ -203,8 +203,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   })
 
   const currentSchedule = useMemo(() => {
-    if (getScheduleQuery.error) return
-    if (getScheduleQuery.data === undefined) return
+    if (getScheduleQuery.error || getScheduleQuery.data === undefined) return
 
     return toSchedule(getScheduleQuery.data, walletInfo.jars)
   }, [getScheduleQuery.error, getScheduleQuery.data, walletInfo.jars])
@@ -297,6 +296,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
         totalBalanceInSats={walletInfo.walletBalanceSummary.calculatedAvailableBalanceInSats}
         destinationAddresses={currentSchedule?.summary.externalDestinations.map((it) => it.address)}
         totalActions={currentSchedule?.entries.length}
+        estimatedTotalDurationInSeconds={currentSchedule?.summary.estimatedTotalDurationInSeconds}
       />
       <SweepStopConfirmDialog
         open={showStopConfirmDialog}
@@ -509,7 +509,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
                   onSubmit={async (values) => {
                     const parameters: Partial<TumblerParameters> = {
                       ...formValuesToTumblerParameters(values),
-                      ...(values.useInsecureTestingSettings ? { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS } : {}),
+                      ...(values.useInsecureTestingSettings && { ...INSECURE_SCHEDULE_TUMBLER_OPTIONS }),
                     }
 
                     const body: TumblerPlanRequest = {

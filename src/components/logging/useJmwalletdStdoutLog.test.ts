@@ -160,9 +160,11 @@ describe('useJmwalletdStdoutLog', () => {
 
     const refetchInterval = mocks.queryOptions?.refetchInterval
     expect(typeof refetchInterval).toBe('function')
-    if (typeof refetchInterval === 'function') {
-      expect(refetchInterval({ state: { error: undefined } })).toBe(JAM.JMWALLETD_LOGS_POLLING_INTERVAL)
-      expect(refetchInterval({ state: { error: new Error('err') } })).toBe(false)
+    if (typeof refetchInterval !== 'function') {
+      return
     }
+
+    expect(refetchInterval({ state: { error: undefined } })).toBe(JAM.JMWALLETD_LOGS_POLLING_INTERVAL)
+    expect(refetchInterval({ state: { error: new Error('err') } })).toBe(false)
   })
 })

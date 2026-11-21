@@ -36,7 +36,7 @@ export const lockdate = (() => {
     return `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Lockdate
   }
   const fromTimestamp = (timestamp: Milliseconds): Lockdate => {
-    if (Number.isNaN(timestamp)) throw new Error('Unsupported input: NaN')
+    if (Number.isNaN(timestamp)) throw new TypeError('Unsupported input: NaN')
     return _fromDate(new Date(timestamp))
   }
   const toTimestamp = (lockdate: Lockdate): Milliseconds => {
@@ -213,14 +213,16 @@ export const findBestFidelityBondJar = <T extends { jarIndex: JarIndex; utxos: U
       .filter((u) => utxo.isEligibleForCreation(u, addressSummary?.[u.address]?.status))
       .reduce((sum, u) => sum + u.value, 0)
 
-    if (
+    if (!(
       candidateUtxo.value > bestUtxoValue ||
       (candidateUtxo.value === bestUtxoValue && totalEligible > bestTotalEligible)
-    ) {
-      bestJar = jar
-      bestUtxoValue = candidateUtxo.value
-      bestTotalEligible = totalEligible
+    )) {
+      continue
     }
+
+    bestJar = jar
+    bestUtxoValue = candidateUtxo.value
+    bestTotalEligible = totalEligible
   }
 
   return bestJar

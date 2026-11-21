@@ -64,7 +64,7 @@ describe('dateUtils', () => {
 
     it('returns false for invalid Date instances or non-Date values', () => {
       expect(isValidDate(new Date('invalid'))).toBe(false)
-      expect(isValidDate(new Date(Number.NaN))).toBe(false)
+      expect(isValidDate(new Date(NaN))).toBe(false)
       expect(isValidDate(undefined)).toBe(false)
       expect(isValidDate(null)).toBe(false)
       expect(isValidDate('2026-07-28T12:00:00Z')).toBe(false)

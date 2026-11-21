@@ -280,7 +280,7 @@ export const TOTAL_COIN_SUPPLY: AmountSats = Number(
 
       while (subsidy > 0n) {
         total += BLOCKS_PER_HALVING * subsidy
-        subsidy = subsidy / 2n
+        subsidy /= 2n
         halving += 1n
         // Safety: break if loop would be infinite (not needed here but good practice)
         if (halving > 1_000n) break
