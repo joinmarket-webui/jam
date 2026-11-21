@@ -44,3 +44,23 @@ export const parseTimestamp = (value?: string | null): Date | undefined => {
   const timestamp = Date.parse(hasTimeZoneDesignator(normalized) ? normalized : `${normalized}Z`)
   return Number.isNaN(timestamp) ? undefined : new Date(timestamp)
 }
+
+/**
+ * Returns a new Date object representing the start of the day (00:00:00.000)
+ * in local time for the given date.
+ */
+export const startOfDay = (date: Date | number): Date => {
+  const result = new Date(date)
+  result.setHours(0, 0, 0, 0)
+  return result
+}
+
+/**
+ * Returns a new Date object representing the start of the day (00:00:00.000)
+ * in local time `days` days ago from `from` (defaults to now).
+ * Uses calendar math (year, month, date) to correctly handle daylight saving time transitions.
+ */
+export const startOfDayDaysAgo = (days: number, from: Date | number = new Date()): Date => {
+  const date = new Date(from)
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - days)
+}

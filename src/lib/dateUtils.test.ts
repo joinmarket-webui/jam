@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { withTimeZone } from '@/test/withTimeZone'
-import { hasTimeZoneDesignator, isValidDate, normalizeTimestamp, parseTimestamp } from './dateUtils'
+import {
+  hasTimeZoneDesignator,
+  isValidDate,
+  normalizeTimestamp,
+  parseTimestamp,
+  startOfDay,
+  startOfDayDaysAgo,
+} from './dateUtils'
 
 describe('dateUtils', () => {
   describe('normalizeTimestamp', () => {
@@ -128,6 +135,70 @@ describe('dateUtils', () => {
       expect(parseTimestamp(' '.repeat(3))).toBeUndefined()
       expect(parseTimestamp('invalid-date')).toBeUndefined()
       expect(parseTimestamp('not-a-timestamp')).toBeUndefined()
+    })
+  })
+
+  describe('startOfDay', () => {
+    it('sets hours, minutes, seconds, and milliseconds to 0 in local time from a Date', () => {
+      const date = new Date(2026, 10, 21, 18, 45, 30, 123)
+      const result = startOfDay(date)
+
+      expect(result.getFullYear()).toBe(2026)
+      expect(result.getMonth()).toBe(10)
+      expect(result.getDate()).toBe(21)
+      expect(result.getHours()).toBe(0)
+      expect(result.getMinutes()).toBe(0)
+      expect(result.getSeconds()).toBe(0)
+      expect(result.getMilliseconds()).toBe(0)
+    })
+
+    it('sets hours, minutes, seconds, and milliseconds to 0 in local time from a timestamp number', () => {
+      const timestamp = new Date(2026, 4, 10, 14, 22, 10, 500).getTime()
+      const result = startOfDay(timestamp)
+
+      expect(result.getFullYear()).toBe(2026)
+      expect(result.getMonth()).toBe(4)
+      expect(result.getDate()).toBe(10)
+      expect(result.getHours()).toBe(0)
+      expect(result.getMinutes()).toBe(0)
+      expect(result.getSeconds()).toBe(0)
+      expect(result.getMilliseconds()).toBe(0)
+    })
+
+    it('does not mutate the original Date object', () => {
+      const original = new Date(2026, 10, 21, 18, 45, 30, 123)
+      const copy = new Date(original)
+      startOfDay(original)
+
+      expect(original.getTime()).toBe(copy.getTime())
+    })
+  })
+
+  describe('startOfDayDaysAgo', () => {
+    it('returns the start of day N days ago in local time', () => {
+      const from = new Date(2026, 3, 10, 18, 30, 0)
+      const result = startOfDayDaysAgo(29, from)
+
+      expect(result.getFullYear()).toBe(2026)
+      expect(result.getMonth()).toBe(2) // March
+      expect(result.getDate()).toBe(12)
+      expect(result.getHours()).toBe(0)
+      expect(result.getMinutes()).toBe(0)
+      expect(result.getSeconds()).toBe(0)
+    })
+
+    it('handles daylight saving time transitions correctly without skipping days', () => {
+      withTimeZone('America/New_York', () => {
+        // DST transition in US in 2026 is March 8 at 02:00
+        const from = new Date('2026-03-09T00:30:00-04:00') // just after DST switch
+        const result = startOfDayDaysAgo(30, from)
+
+        // 30 calendar days before March 9 is February 7
+        expect(result.getFullYear()).toBe(2026)
+        expect(result.getMonth()).toBe(1) // February
+        expect(result.getDate()).toBe(7)
+        expect(result.getHours()).toBe(0)
+      })
     })
   })
 })
