@@ -49,6 +49,9 @@ export function useQueryWalletHistory({
       throttle: isDevMode() ? 210 : 0,
     }),
     enabled: enabled && !!walletFileName && !!jmSession?.session,
+    // `limit` is part of the query key, so "load more" starts a new query: keep showing the
+    // rows already loaded until the larger page arrives instead of falling back to loading.
+    placeholderData: (previousData) => previousData,
   })
 
   const { refetch } = queryResult
