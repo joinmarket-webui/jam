@@ -102,7 +102,7 @@ const CreateWalletPage = () => {
   const handleCreateWallet = async ({ walletName, password }: WalletDetailsValues) => {
     const durationHintToastId = toast.loading(t('create_wallet.hint_duration_text'), {
       id: 'alert-wallet-create-creating-duration-hint',
-      duration: Number.POSITIVE_INFINITY,
+      duration: Infinity,
       position: 'top-center',
     })
     try {

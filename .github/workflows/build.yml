@@ -53,6 +53,9 @@ jobs:
       - name: Test
         run: npm run test:coverage
 
+      - name: Test (slow)
+        run: npm run test:slow
+
       - name: Build
         run: npm run build
 

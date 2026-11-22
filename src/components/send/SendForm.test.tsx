@@ -353,6 +353,7 @@ describe('SendForm', () => {
     const UTXO_A = 'aaaa'.repeat(16) + ':0'
     const UTXO_B = 'bbbb'.repeat(16) + ':1'
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
     const renderWithJars = (jars: Jar[], disabled = false) => (
       <SendForm
         onSubmit={vi.fn()}

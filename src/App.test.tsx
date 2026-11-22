@@ -1,9 +1,11 @@
 import { type ReactNode, StrictMode } from 'react'
 import { token as tokenMock } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { CancelledError } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createBrowserRouter } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { setIntervalDebounced as setIntervalDebouncedMock } from '@/lib/utils'
+import { flushActUpdates } from '@/test/flushActUpdates'
 import App, { WalletInfoAutoReload } from './App'
 
 type Holders = {
@@ -27,7 +29,8 @@ const {
   navigateStub,
   refetchWalletBalance,
   mutateAsync,
-  fetchMissing,
+  refetchAllFeeConfig,
+  clearJmConfig,
 } = vi.hoisted(() => {
   const holders: Holders = {
     walletFileName: 'wallet.jmdat',
@@ -49,7 +52,8 @@ const {
     navigateStub: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     refetchWalletBalance: vi.fn<() => Promise<unknown>>().mockResolvedValue(undefined),
     mutateAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue(undefined),
-    fetchMissing: vi.fn<() => Promise<unknown>>().mockResolvedValue([]),
+    refetchAllFeeConfig: vi.fn<() => Promise<unknown>>().mockResolvedValue([]),
+    clearJmConfig: vi.fn(),
   }
 })
 
@@ -79,6 +83,10 @@ vi.mock('@/store/authStore', () => ({
     Date.now() + (expiresInSeconds !== undefined ? expiresInSeconds * 1_000 : 1_800_000),
 }))
 
+vi.mock('@/store/jmConfigStore', () => ({
+  jmConfigStore: { getState: () => ({ clear: clearJmConfig }) },
+}))
+
 const mockJmTxStoreState = { state: {} }
 vi.mock('./store/jmTxStore', () => ({
   jmTxStore: { getState: () => mockJmTxStoreState },
@@ -93,11 +101,15 @@ vi.mock('@/constants/debugFeatures', () => ({
   isDebugFeatureEnabled: () => true,
 }))
 
-vi.mock('@tanstack/react-query', () => ({
-  QueryClientProvider: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  useQuery: () => ({ refetch: vi.fn().mockResolvedValue({}) }),
-  useMutation: () => ({ mutateAsync }),
-}))
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const { CancelledError } = await importOriginal<typeof import('@tanstack/react-query')>()
+  return {
+    CancelledError,
+    QueryClientProvider: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+    useQuery: () => ({ refetch: vi.fn().mockResolvedValue({}) }),
+    useMutation: () => ({ mutateAsync }),
+  }
+})
 
 vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   lockwalletOptions: () => ({ queryKey: ['lock'] }),
@@ -135,7 +147,9 @@ vi.mock('./lib/errorReason', () => ({
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({ useApiClient: () => ({}) }))
-vi.mock('@/hooks/useFeeConfigValidation', () => ({ useFeeConfigValidation: () => ({ fetchMissing }) }))
+vi.mock('@/hooks/useFeeConfigValidation', () => ({
+  useFeeConfigValidation: () => ({ refetchAll: refetchAllFeeConfig }),
+}))
 vi.mock('@/hooks/useRefreshSession', () => ({ useRefreshSession: () => undefined }))
 
 vi.mock('./context/JamSessionInfoContext', () => ({
@@ -281,6 +295,7 @@ describe('App', () => {
     fireEvent.click(screen.getByTestId('confirm-lock'))
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
     expect(clearAuth).toHaveBeenCalled()
+    expect(clearJmConfig).toHaveBeenCalled()
   })
 
   it('opens the lock wallet dialog when schedule is running and confirms locking', async () => {
@@ -307,6 +322,13 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText('logout')).toBeInTheDocument())
     fireEvent.click(screen.getByText('logout'))
     await waitFor(() => expect(clearAuth).toHaveBeenCalled())
+    expect(clearJmConfig).toHaveBeenCalled()
+  })
+
+  it('refetches the fee config when a wallet is unlocked', async () => {
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('main-wallet-page')).toBeInTheDocument())
+    expect(refetchAllFeeConfig).toHaveBeenCalled()
   })
 
   it('includes developer routes when developer mode is enabled', async () => {
@@ -326,6 +348,7 @@ describe('RefreshApiToken', () => {
     holders.developerMode = false
   })
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
   const renderAndGetRenewalCallback = async () => {
     render(<App />)
     await waitFor(() => expect(vi.mocked(setIntervalDebouncedMock)).toHaveBeenCalled())
@@ -380,6 +403,7 @@ describe('WalletInfoAutoReload', () => {
     holders.refreshToken = 'refresh'
     holders.jmSession = { maker_running: true, coinjoin_in_process: false, schedule: [] }
     holders.utxosHashHex = 'initial-hash'
+    holders.takerRunning = false
   })
 
   it('skips refetch on initial mount but refetches on subsequent utxosHashHex changes', async () => {
@@ -426,5 +450,46 @@ describe('WalletInfoAutoReload', () => {
       </StrictMode>,
     )
     expect(refetchWalletBalance).toHaveBeenCalledTimes(2)
+  })
+
+  describe('when the taker stopped', () => {
+    // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
+    const renderAndStopTaker = async () => {
+      holders.takerRunning = true
+      const { rerender } = render(<WalletInfoAutoReload />)
+      holders.takerRunning = false
+      rerender(<WalletInfoAutoReload />)
+      await waitFor(() => expect(refetchWalletBalance).toHaveBeenCalledTimes(1))
+    }
+
+    it('does not report a cancelled reload as error (e.g. wallet has been locked meanwhile)', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      refetchWalletBalance.mockRejectedValueOnce(new CancelledError())
+
+      await renderAndStopTaker()
+
+      await flushActUpdates()
+      expect(consoleError).not.toHaveBeenCalledWith(
+        'Error while auto-reloading wallet info AFTER_TAKER_STOPPED finished',
+        expect.anything(),
+      )
+      consoleError.mockRestore()
+    })
+
+    it('reports a failed reload as error', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const error = new Error('boom')
+      refetchWalletBalance.mockRejectedValueOnce(error)
+
+      await renderAndStopTaker()
+
+      await waitFor(() =>
+        expect(consoleError).toHaveBeenCalledWith(
+          'Error while auto-reloading wallet info AFTER_TAKER_STOPPED finished',
+          error,
+        ),
+      )
+      consoleError.mockRestore()
+    })
   })
 })

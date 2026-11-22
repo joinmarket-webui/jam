@@ -1,7 +1,6 @@
 import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import test from 'node:test'
 import type { UseFormReturn } from 'react-hook-form'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -231,9 +230,9 @@ vi.mock('@/components/sweep/SweepDestinationInputs', () => ({
       type="button"
       disabled={disabled}
       onClick={() => {
-        VALID_DESTINATIONS.forEach((address, index) => {
+        for (const [index, address] of VALID_DESTINATIONS.entries()) {
           setValue(`destinations.${index}.address`, address, { shouldDirty: true, shouldValidate: true })
-        })
+        }
       }}
     >
       fill-destinations
@@ -424,7 +423,7 @@ const setSession = (overrides: Record<string, unknown> = {}) => {
     overrides.schedule !== undefined && Array.isArray(overrides.schedule) && overrides.schedule.length > 0
 }
 
-describe('SweepPage', async () => {
+describe('SweepPage', () => {
   beforeEach(() => {
     mocks.debugFeatureEnabled = false
     mocks.feeConfigLoading = false
@@ -621,7 +620,7 @@ describe('SweepPage', async () => {
   })
 
   // TODO: currently skipped as the session schedule is a necessary flag - can be revisited on demand
-  await test.skip('renders the schedule converted from tumbler status when no session schedule is set', () => {
+  it.skip('renders the schedule converted from tumbler status when no session schedule is set', () => {
     setSession({ coinjoin_in_process: true })
     mocks.tumblerStatusData = activePlan
 
@@ -678,8 +677,7 @@ describe('SweepPage', async () => {
     expect(screen.getByText('scheduler.error_stopping_schedule_failed:{"reason":"stop-boom"}')).toBeInTheDocument() // description
   })
 
-  // TODO: do not skip this
-  await test.skip('does not render non-running tumbler plans as a running schedule', () => {
+  it('does not render non-running tumbler plans as a running schedule', () => {
     setSession({ coinjoin_in_process: true, schedule: ['anything'] })
     mocks.tumblerStatusData = { ...activePlan, status: 'completed' }
 

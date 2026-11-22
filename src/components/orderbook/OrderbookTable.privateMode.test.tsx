@@ -27,7 +27,6 @@ vi.mock('@/components/ui/jam/TablePagination', () => ({
 // readable (see issue #1453). vi.mock factories are hoisted above all imports,
 // so the store stub has to be built inside vi.hoisted.
 const mockStore = vi.hoisted(() => {
-  // eslint-disable-next-line unicorn/consistent-function-scoping -- needs to live inside the hoisted stub
   const noop = () => {}
   const storeState = {
     state: {

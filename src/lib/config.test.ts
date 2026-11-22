@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
 import { authStore } from '@/store/authStore'
+import { jmConfigStore } from '@/store/jmConfigStore'
 import { buildAuthHeader, buildAuthHeaderMap, createApiClient, unauthorizedResponseInterceptor } from './config'
 import { queryClient } from './queryClient'
 
@@ -122,6 +123,7 @@ describe('unauthorizedResponseInterceptor', () => {
       auth: { token: 'tok', refresh_token: 'ref', expiresAt: Date.now() + 1_800_000 },
     })
     queryClientClearSpy.mockReset()
+    jmConfigStore.getState().set({ key: { section: 'POLICY', field: 'max_cj_fee_rel' }, value: '0.0003' })
     request = new Request('https://example.test', { headers: buildAuthHeaderMap('tok') })
   })
 
@@ -143,6 +145,7 @@ describe('unauthorizedResponseInterceptor', () => {
 
     expect(authStore.getState().state).toBeUndefined()
     expect(queryClientClearSpy).toBeCalledTimes(1)
+    expect(jmConfigStore.getState().state).toEqual({})
   })
   it('should return the response after clearing', () => {
     const response = new Response(null, {
@@ -163,6 +166,7 @@ describe('unauthorizedResponseInterceptor', () => {
       request,
     )
     expect(authStore.getState().state?.auth?.token).toBe('tok')
+    expect(jmConfigStore.getState().get({ section: 'POLICY', field: 'max_cj_fee_rel' })?.value).toBe('0.0003')
   })
 
   it('should not clear auth on non-401 responses', () => {
@@ -171,5 +175,6 @@ describe('unauthorizedResponseInterceptor', () => {
     unauthorizedResponseInterceptor(new Response(null, { status: 500 }), request)
 
     expect(authStore.getState().state?.auth?.token).toBe('tok')
+    expect(jmConfigStore.getState().get({ section: 'POLICY', field: 'max_cj_fee_rel' })?.value).toBe('0.0003')
   })
 })
