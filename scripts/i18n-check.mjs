@@ -110,30 +110,28 @@ function runCheck() {
   }
 
   // 3. Resolve transitive $t(...) nesting in translation strings
+  // repeat until a pass finds no new keys (nested references can be several levels deep)
   let addedNew = true
   while (addedNew) {
-    addedNew = false
+    const discoveredKeys = new Set()
     for (const key of referencedKeys) {
       const value = enKeysMap[key]
-      if (typeof value === 'string' && value.includes('$t(')) {
-        const matches = value.matchAll(/\$t\(([\w.-]+)/g)
-        for (const match of matches) {
-          const targetKey = match[1]
-          if (allEnKeys.has(targetKey) && !referencedKeys.has(targetKey)) {
-            referencedKeys.add(targetKey)
-            addedNew = true
-          }
-          // Plural variants
-          for (const suffix of ['_one', '_other', '_few', '_many']) {
-            const variantKey = `${targetKey}${suffix}`
-            if (allEnKeys.has(variantKey) && !referencedKeys.has(variantKey)) {
-              referencedKeys.add(variantKey)
-              addedNew = true
-            }
-          }
+      if (typeof value !== 'string' || !value.includes('$t(')) continue
+
+      const matches = value.matchAll(/\$t\(([\w.-]+)/g)
+      for (const match of matches) {
+        const targetKey = match[1]
+        // the referenced key itself and its plural variants
+        const candidates = [targetKey, ...['_one', '_other', '_few', '_many'].map((suffix) => `${targetKey}${suffix}`)]
+        for (const candidate of candidates) {
+          if (!allEnKeys.has(candidate) || referencedKeys.has(candidate)) continue
+          discoveredKeys.add(candidate)
         }
       }
     }
+    // add after the loop, so the set is not mutated while it is iterated
+    for (const key of discoveredKeys) referencedKeys.add(key)
+    addedNew = discoveredKeys.size > 0
   }
 
   // 4. Find dead / unused keys in EN
@@ -158,10 +156,7 @@ function runCheck() {
       if (allEnKeys.has(key)) return false
       // Check if it's a valid locale-specific plural form of an existing EN key
       const pluralBase = getPluralBase(key)
-      if (pluralBase && (allEnKeys.has(`${pluralBase}_one`) || allEnKeys.has(`${pluralBase}_other`))) {
-        return false
-      }
-      return true
+      return !(pluralBase && (allEnKeys.has(`${pluralBase}_one`) || allEnKeys.has(`${pluralBase}_other`)))
     })
 
     if (orphaned.length > 0) {

@@ -50,10 +50,7 @@ describe('i18n locale keys parity', () => {
     const orphaned = localeKeys.filter((key) => {
       if (enKeys.has(key)) return false
       const pluralBase = getPluralBase(key)
-      if (pluralBase && (enKeys.has(`${pluralBase}_one`) || enKeys.has(`${pluralBase}_other`))) {
-        return false
-      }
-      return true
+      return !(pluralBase && (enKeys.has(`${pluralBase}_one`) || enKeys.has(`${pluralBase}_other`)))
     })
 
     expect(orphaned).toEqual([])
