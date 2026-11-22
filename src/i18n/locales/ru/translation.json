@@ -331,6 +331,22 @@
       "nested_hint_wait_for_block_other": "Выберите другую банку для отправки или подождите еще {{count}} блоков.",
       "nested_hint_fund_jar": "Выберите другую банку для отправки или пополните эту банку и подождите один блок.",
       "nested_hint_fund_jar_other": "Выберите другую банку для отправки или пополните эту банку и подождите {{count}} блоков."
+    },
+    "taker_status": {
+      "title": "Статус тейкера",
+      "status_idle": "Ожидание...",
+      "status_fetching_orderbook": "Оценка предложений...",
+      "status_filling": "Создание транзакции...",
+      "status_authenticating": "Аутентификация...",
+      "status_collecting_signatures": "Сбор подписей...",
+      "status_broadcasting": "Отправка в сеть...",
+      "status_complete": "Завершено",
+      "status_complete_unverified": "Завершено (не проверено)",
+      "status_failed": "Ошибка",
+      "status_cancelled": "Отменено",
+      "status_unknown": "Окончено",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "Транзакция передана соавторам для отправки в сеть, но её наличие в мемпуле проверить не удалось. Проверьте историю транзакций, чтобы убедиться, что она прошла."
     }
   },
   "receive": {

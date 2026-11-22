@@ -262,6 +262,22 @@
       "nested_hint_wait_for_block_other": "Seleziona un altro vaso da cui inviare o attendi altri {{ count }} ulteriori blocchi.",
       "nested_hint_fund_jar": "Seleziona un altro vaso da cui inviare, oppure deposita in questo vaso e attendi un blocco.",
       "nested_hint_fund_jar_other": "Seleziona un altro vaso da cui inviare, oppure deposita in questo vaso e attendi {{ count }} blocchi."
+    },
+    "taker_status": {
+      "title": "Stato del taker",
+      "status_idle": "In attesa...",
+      "status_fetching_orderbook": "Valutazione delle offerte...",
+      "status_filling": "Creazione della transazione...",
+      "status_authenticating": "Autenticazione...",
+      "status_collecting_signatures": "Raccolta delle firme...",
+      "status_broadcasting": "Trasmissione...",
+      "status_complete": "Completato",
+      "status_complete_unverified": "Completato (non verificato)",
+      "status_failed": "Fallito",
+      "status_cancelled": "Annullato",
+      "status_unknown": "Terminato",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "La transazione è stata consegnata ai collaboratori per la trasmissione, ma non è stato possibile verificarne la presenza nella mempool. Controlla la cronologia delle transazioni per confermare che sia andata a buon fine."
     }
   },
   "receive": {

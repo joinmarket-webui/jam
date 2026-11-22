@@ -262,6 +262,22 @@
       "nested_hint_wait_for_block_other": "Selecione outro frasco para enviar ou aguarde mais {{ count }} blocos.",
       "nested_hint_fund_jar": "Selecione outro frasco para enviar ou financiar. Aguarde mais um bloco.",
       "nested_hint_fund_jar_other": "Selecione outro frasco para enviar ou financiar. Aguarde mais {{ count }} blocos."
+    },
+    "taker_status": {
+      "title": "Status do taker",
+      "status_idle": "Aguardando...",
+      "status_fetching_orderbook": "Avaliando ofertas...",
+      "status_filling": "Criando transação...",
+      "status_authenticating": "Autenticando...",
+      "status_collecting_signatures": "Coletando assinaturas...",
+      "status_broadcasting": "Transmitindo...",
+      "status_complete": "Concluído",
+      "status_complete_unverified": "Concluído (não verificado)",
+      "status_failed": "Falhou",
+      "status_cancelled": "Cancelado",
+      "status_unknown": "Encerrado",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "A transação foi entregue aos colaboradores para transmissão, mas sua presença na mempool não pôde ser verificada. Verifique seu histórico de transações para confirmar se ela foi concluída."
     }
   },
   "receive": {

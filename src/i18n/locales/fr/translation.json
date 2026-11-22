@@ -153,7 +153,23 @@
     "button_send": "Envoyer",
     "text_sending": "Envoi de ",
     "button_sweep": "Balayer",
-    "button_clear_sweep": "Effacer"
+    "button_clear_sweep": "Effacer",
+    "taker_status": {
+      "title": "Statut du taker",
+      "status_idle": "En attente...",
+      "status_fetching_orderbook": "Évaluation des offres...",
+      "status_filling": "Création de la transaction...",
+      "status_authenticating": "Authentification...",
+      "status_collecting_signatures": "Collecte des signatures...",
+      "status_broadcasting": "Diffusion...",
+      "status_complete": "Effectué",
+      "status_complete_unverified": "Effectué (non vérifié)",
+      "status_failed": "Échec",
+      "status_cancelled": "Annulé",
+      "status_unknown": "Terminé",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "La transaction a été transmise aux collaborateurs pour diffusion, mais sa présence dans la mempool n'a pas pu être vérifiée. Consultez votre historique de transactions pour vérifier qu'elle a abouti."
+    }
   },
   "receive": {
     "title": "Recevoir",
