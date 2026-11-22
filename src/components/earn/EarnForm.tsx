@@ -17,6 +17,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import * as JAM from '@/constants/jam'
 import { OFFERTYPE_ABS, OFFERTYPE_REL, type OfferType } from '@/constants/jm'
+import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn, factorToPercentage, isValidInteger, isValidNumber } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
@@ -182,6 +183,9 @@ export function EarnForm({
   debug = false,
 }: EarnFormProps) {
   const { t } = useTranslation()
+  const { isPrivate, hiddenAmountPlaceholder } = useJamDisplayContext()
+  // the upper limit is the largest confirmed jar balance, hence it must not be shown if balances are hidden
+  const offerMinsizeMaxText = isPrivate ? hiddenAmountPlaceholder : offerMinsizeMax.toLocaleString()
 
   const schema = useMemo(
     () =>
@@ -195,20 +199,20 @@ export function EarnForm({
               JAM.OFFER_MINSIZE_MIN,
               t('earn.feedback_invalid_min_amount_range', {
                 minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
-                minAmountMax: offerMinsizeMax.toLocaleString(),
+                minAmountMax: offerMinsizeMaxText,
               }),
             )
             .max(
               offerMinsizeMax,
               t('earn.feedback_invalid_min_amount_range', {
                 minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
-                minAmountMax: offerMinsizeMax.toLocaleString(),
+                minAmountMax: offerMinsizeMaxText,
               }),
             )
             .required(t('earn.feedback_invalid_min_amount')),
         }),
       ),
-    [t, fidelityBonds, offerMinsizeMax],
+    [t, fidelityBonds, offerMinsizeMax, offerMinsizeMaxText],
   )
 
   const {
@@ -376,7 +380,7 @@ export function EarnForm({
                     disabled,
                   })}
                   type="number"
-                  max={offerMinsizeMax}
+                  max={isPrivate ? undefined : offerMinsizeMax}
                   step={1}
                   placeholder={t('earn.placeholder_min_amount_input')}
                 />
@@ -388,7 +392,15 @@ export function EarnForm({
                   {offerMinsizeMax < JAM.OFFER_MINSIZE_MIN ? (
                     <>{t('earn.feedback_invalid_min_amount_insufficient_funds')}</>
                   ) : (
-                    <>{errors.offerMinAmount?.message || t('earn.feedback_invalid_min_amount')}</>
+                    <>
+                      {/* built at render time, so toggling private mode updates an already shown message */}
+                      {errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max'
+                        ? t('earn.feedback_invalid_min_amount_range', {
+                            minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
+                            minAmountMax: offerMinsizeMaxText,
+                          })
+                        : errors.offerMinAmount.message || t('earn.feedback_invalid_min_amount')}
+                    </>
                   )}
                 </FieldError>
               )}

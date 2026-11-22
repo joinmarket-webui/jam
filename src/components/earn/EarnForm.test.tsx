@@ -19,6 +19,10 @@ vi.mock('@/components/ui/jam/Balance', () => ({
   Balance: ({ valueString }: { valueString: string }) => <span>{valueString}</span>,
 }))
 
+vi.mock('@/context/JamDisplayContext', () => ({
+  useJamDisplayContext: () => ({ isPrivate: false, hiddenAmountPlaceholder: '*****' }),
+}))
+
 describe('EarnForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
