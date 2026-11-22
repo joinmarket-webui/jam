@@ -255,6 +255,46 @@ describe('buildNonCollaborativeSendRequest', () => {
       buildNonCollaborativeSendRequest({
         ...baseValues(),
         isCoinJoin: false,
+        source: { fromJar: -1 },
+      }),
+    ).toThrow('Invalid source jar given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        source: { fromJar: 1.5 },
+      }),
+    ).toThrow('Invalid source jar given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        amount: { isSweep: false, amount: 0, sweepAmount: undefined, sweepUtxos: undefined },
+      }),
+    ).toThrow('Invalid amount given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        amount: { isSweep: false, amount: -100, sweepAmount: undefined, sweepUtxos: undefined },
+      }),
+    ).toThrow('Invalid amount given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        amount: { isSweep: false, amount: 100.5, sweepAmount: undefined, sweepUtxos: undefined },
+      }),
+    ).toThrow('Invalid amount given.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
         amount: {
           isSweep: true,
           amount: 100_000,
@@ -262,5 +302,46 @@ describe('buildNonCollaborativeSendRequest', () => {
         },
       } as unknown as SendFormValues),
     ).toThrow('Invalid amount given for sweep.')
+
+    expect(() =>
+      buildNonCollaborativeSendRequest({
+        ...baseValues(),
+        isCoinJoin: false,
+        txFee: {
+          txFeeUnit: TX_FEE_UNITS.SATS_PER_VBYTE,
+          txFeeInSatsPerVbyte: 0,
+        },
+      }),
+    ).toThrow('Invalid transaction fee given.')
+  })
+})
+
+describe('shared request validation', () => {
+  const invalidInputs: Array<[string, Partial<SendFormValues>, RegExp]> = [
+    ['a negative source jar', { source: { fromJar: -1 } }, /source jar/i],
+    ['a fractional source jar', { source: { fromJar: 0.5 } }, /source jar/i],
+    [
+      'a zero amount',
+      { amount: { isSweep: false, amount: 0, sweepAmount: undefined, sweepUtxos: undefined } },
+      /invalid amount/i,
+    ],
+    [
+      'a fractional amount',
+      { amount: { isSweep: false, amount: 1.5, sweepAmount: undefined, sweepUtxos: undefined } },
+      /invalid amount/i,
+    ],
+    [
+      'a sweep without utxos',
+      { amount: { isSweep: true, amount: undefined, sweepAmount: 500_000, sweepUtxos: [] } },
+      /utxos to sweep/i,
+    ],
+    ['a zero fee', { txFee: { txFeeUnit: TX_FEE_UNITS.SATS_PER_VBYTE, txFeeInSatsPerVbyte: 0 } }, /transaction fee/i],
+  ]
+
+  it.each(invalidInputs)('rejects %s in both request builders', (_, overrides, reason) => {
+    const values = { ...baseValues(), ...overrides }
+
+    expect(() => buildCollaborativeSendRequest(values)).toThrow(reason)
+    expect(() => buildNonCollaborativeSendRequest({ ...values, isCoinJoin: false })).toThrow(reason)
   })
 })

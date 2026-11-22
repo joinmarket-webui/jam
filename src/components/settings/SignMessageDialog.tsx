@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useApiClient } from '@/hooks/useApiClient'
-import { useQueryDisplayWallet } from '@/hooks/useQueryDisplayWallet'
+import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
 import { getErrorReason } from '@/lib/errorReason'
 import type { WalletFileName } from '@/lib/utils'
 import type { WithRequiredProperty } from '@/types/global'
@@ -42,9 +42,32 @@ type SignMessageDialogProps = WithRequiredProperty<
 }
 
 export const SignMessageDialog = ({ open, onOpenChange, walletFileName, ...dialogProps }: SignMessageDialogProps) => {
+  const { walletInfo } = useQueryDisplayWallet({ walletFileName })
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange} {...dialogProps}>
+      <DialogContent className="sm:max-w-2xl">
+        {/* Reset operations on both transitions, even while Radix retains content for its exit animation. */}
+        <SignMessageForm
+          key={open ? 'open' : 'closed'}
+          walletFileName={walletFileName}
+          walletInfo={walletInfo}
+          onClose={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+type SignMessageFormProps = {
+  walletFileName: WalletFileName
+  walletInfo: WalletInfoApiObject | undefined
+  onClose: () => void
+}
+
+const SignMessageForm = ({ walletFileName, walletInfo, onClose }: SignMessageFormProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
-  const { walletInfo } = useQueryDisplayWallet({ walletFileName })
 
   const [signature, setSignature] = useState<string>()
 
@@ -116,7 +139,7 @@ export const SignMessageDialog = ({ open, onOpenChange, walletFileName, ...dialo
   }
 
   const handleClose = () => {
-    onOpenChange(false)
+    onClose()
     handleReset()
   }
 
@@ -125,153 +148,147 @@ export const SignMessageDialog = ({ open, onOpenChange, walletFileName, ...dialo
   const doOnSubmit = handleSubmit(onSubmit)
 
   return (
-    <Dialog open={open} onOpenChange={handleClose} {...dialogProps}>
-      <DialogContent className="sm:max-w-2xl">
-        <form onSubmit={(event) => void doOnSubmit(event)} noValidate>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <PenLineIcon className="h-5 w-5" />
-              {t('settings.sign_message_modal.title')} <Badge variant="muted">{t('global.experimental')}</Badge>
-            </DialogTitle>
-            <DialogDescription>{t('settings.sign_message_modal.subtitle')}</DialogDescription>
-          </DialogHeader>
+    <form onSubmit={(event) => void doOnSubmit(event)} noValidate>
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <PenLineIcon className="h-5 w-5" />
+          {t('settings.sign_message_modal.title')} <Badge variant="muted">{t('global.experimental')}</Badge>
+        </DialogTitle>
+        <DialogDescription>{t('settings.sign_message_modal.subtitle')}</DialogDescription>
+      </DialogHeader>
 
-          <div className="space-y-4 py-2">
-            <Field data-invalid={errors.addressOrPath !== undefined}>
-              <div className="flex items-center justify-between">
-                <FieldLabel htmlFor="sign-message-address">{t('settings.sign_message_modal.label_address')}</FieldLabel>
-                {walletAddressOptions.length > 0 && (
-                  <Select
-                    onValueChange={(val) => {
-                      setValue('addressOrPath', val, {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                        shouldValidate: true,
-                      })
-                      if (signature) setSignature(undefined)
-                      if (signMutation.isError) signMutation.reset()
-                    }}
-                  >
-                    <SelectTrigger className="h-7 w-auto gap-1 text-xs">
-                      <SelectValue placeholder={t('settings.sign_message_modal.select_from_wallet')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {walletAddressOptions.map((opt) => (
-                        <SelectItem key={opt.address} value={opt.address} className="font-mono text-xs">
-                          {opt.address}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-              <Input
-                id="sign-message-address"
-                placeholder={t('settings.sign_message_modal.placeholder_address')}
-                {...register('addressOrPath', {
-                  onChange: () => {
-                    if (signature) setSignature(undefined)
-                    if (signMutation.isError) signMutation.reset()
-                  },
-                })}
-                disabled={signMutation.isPending}
-              />
-              {errors.addressOrPath?.message && <FieldError>{errors.addressOrPath.message}</FieldError>}
-            </Field>
-
-            <Field data-invalid={errors.message !== undefined}>
-              <FieldLabel htmlFor="sign-message-content">{t('settings.sign_message_modal.label_message')}</FieldLabel>
-              <Textarea
-                id="sign-message-content"
-                rows={3}
-                placeholder={t('settings.sign_message_modal.placeholder_message')}
-                {...register('message', {
-                  onChange: () => {
-                    if (signature) setSignature(undefined)
-                    if (signMutation.isError) signMutation.reset()
-                  },
-                })}
-                disabled={signMutation.isPending}
-              />
-              {errors.message?.message && <FieldError>{errors.message.message}</FieldError>}
-            </Field>
-
-            {signMutation.isError && (
-              <Alert variant="destructive">
-                <AlertTriangleIcon />
-                <AlertTitle>{t('settings.sign_message_modal.text_error_title')}</AlertTitle>
-                <AlertDescription>
-                  {getErrorReason(signMutation.error, t('global.errors.reason_unknown'))}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {signature && (
-              <div className="bg-muted animate-in fade-in space-y-2 rounded-lg p-4 duration-200">
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="sign-message-signature" className="font-semibold">
-                    {t('settings.sign_message_modal.label_signature')}
-                  </FieldLabel>
-                  <CopyButton
-                    value={signature}
-                    text={
-                      <span className="flex items-center gap-1 text-xs">
-                        <CopyIcon className="h-3.5 w-3.5" />
-                        {t('settings.sign_message_modal.button_copy')}
-                      </span>
-                    }
-                    successText={
-                      <span className="text-brand-success flex items-center gap-1 text-xs font-medium">
-                        <CheckIcon className="h-3.5 w-3.5" />
-                        {t('global.button_copy_text_confirmed')}
-                      </span>
-                    }
-                    onSuccess={() => toast.success(t('settings.sign_message_modal.alert_success_copied'))}
-                  />
-                </div>
-                <Textarea
-                  id="sign-message-signature"
-                  rows={3}
-                  readOnly
-                  value={signature}
-                  className="bg-background/50 font-mono text-xs select-all"
-                />
-              </div>
+      <div className="space-y-4 py-2">
+        <Field data-invalid={errors.addressOrPath !== undefined}>
+          <div className="flex items-center justify-between">
+            <FieldLabel htmlFor="sign-message-address">{t('settings.sign_message_modal.label_address')}</FieldLabel>
+            {walletAddressOptions.length > 0 && (
+              <Select
+                onValueChange={(val) => {
+                  setValue('addressOrPath', val, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  })
+                  if (signature) setSignature(undefined)
+                  if (signMutation.isError) signMutation.reset()
+                }}
+              >
+                <SelectTrigger className="h-7 w-auto gap-1 text-xs">
+                  <SelectValue placeholder={t('settings.sign_message_modal.select_from_wallet')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {walletAddressOptions.map((opt) => (
+                    <SelectItem key={opt.address} value={opt.address} className="font-mono text-xs">
+                      {opt.address}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
+          <Input
+            id="sign-message-address"
+            placeholder={t('settings.sign_message_modal.placeholder_address')}
+            {...register('addressOrPath', {
+              onChange: () => {
+                if (signature) setSignature(undefined)
+                if (signMutation.isError) signMutation.reset()
+              },
+            })}
+            disabled={signMutation.isPending}
+          />
+          {errors.addressOrPath?.message && <FieldError>{errors.addressOrPath.message}</FieldError>}
+        </Field>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <div className="flex w-full items-center justify-between">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                disabled={signMutation.isPending || (!addressOrPath && !message && !signature)}
-              >
-                {t('settings.sign_message_modal.button_reset')}
-              </Button>
-              <div className="flex items-center gap-2">
-                <Button type="button" variant="outline" onClick={handleClose}>
-                  {t('global.close')}
-                </Button>
-                {!signature && (
-                  <Button type="submit" disabled={!canSign || signMutation.isPending}>
-                    {signMutation.isPending ? (
-                      <>
-                        <Spinner className="motion-reduce:hidden" />
-                        {t('settings.sign_message_modal.button_signing')}
-                      </>
-                    ) : (
-                      t('settings.sign_message_modal.button_sign')
-                    )}
-                  </Button>
-                )}
-              </div>
+        <Field data-invalid={errors.message !== undefined}>
+          <FieldLabel htmlFor="sign-message-content">{t('settings.sign_message_modal.label_message')}</FieldLabel>
+          <Textarea
+            id="sign-message-content"
+            rows={3}
+            placeholder={t('settings.sign_message_modal.placeholder_message')}
+            {...register('message', {
+              onChange: () => {
+                if (signature) setSignature(undefined)
+                if (signMutation.isError) signMutation.reset()
+              },
+            })}
+            disabled={signMutation.isPending}
+          />
+          {errors.message?.message && <FieldError>{errors.message.message}</FieldError>}
+        </Field>
+
+        {signMutation.isError && (
+          <Alert variant="destructive">
+            <AlertTriangleIcon />
+            <AlertTitle>{t('settings.sign_message_modal.text_error_title')}</AlertTitle>
+            <AlertDescription>{getErrorReason(signMutation.error, t('global.errors.reason_unknown'))}</AlertDescription>
+          </Alert>
+        )}
+
+        {signature && (
+          <div className="bg-muted animate-in fade-in space-y-2 rounded-lg p-4 duration-200">
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="sign-message-signature" className="font-semibold">
+                {t('settings.sign_message_modal.label_signature')}
+              </FieldLabel>
+              <CopyButton
+                value={signature}
+                text={
+                  <span className="flex items-center gap-1 text-xs">
+                    <CopyIcon className="h-3.5 w-3.5" />
+                    {t('settings.sign_message_modal.button_copy')}
+                  </span>
+                }
+                successText={
+                  <span className="text-brand-success flex items-center gap-1 text-xs font-medium">
+                    <CheckIcon className="h-3.5 w-3.5" />
+                    {t('global.button_copy_text_confirmed')}
+                  </span>
+                }
+                onSuccess={() => toast.success(t('settings.sign_message_modal.alert_success_copied'))}
+              />
             </div>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <Textarea
+              id="sign-message-signature"
+              rows={3}
+              readOnly
+              value={signature}
+              className="bg-background/50 font-mono text-xs select-all"
+            />
+          </div>
+        )}
+      </div>
+
+      <DialogFooter className="gap-2 sm:gap-0">
+        <div className="flex w-full items-center justify-between">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            disabled={signMutation.isPending || (!addressOrPath && !message && !signature)}
+          >
+            {t('settings.sign_message_modal.button_reset')}
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" onClick={handleClose}>
+              {t('global.close')}
+            </Button>
+            {!signature && (
+              <Button type="submit" disabled={!canSign || signMutation.isPending}>
+                {signMutation.isPending ? (
+                  <>
+                    <Spinner className="motion-reduce:hidden" />
+                    {t('settings.sign_message_modal.button_signing')}
+                  </>
+                ) : (
+                  t('settings.sign_message_modal.button_sign')
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+      </DialogFooter>
+    </form>
   )
 }

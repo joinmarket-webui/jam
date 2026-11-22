@@ -9,6 +9,7 @@ import {
 import { DownloadIcon, PlusIcon, RefreshCwIcon, SearchIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { DevBadge } from '@/components/dev/DevBadge'
+import { earnReportToCsv } from '@/components/earn/report/hooks/earnReportParser'
 import { useQueryYieldgenReport, type EarnReportEntry } from '@/components/earn/report/hooks/useQueryYieldgenReport'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -19,13 +20,12 @@ import { SortIcon } from '@/components/ui/jam/SortIcon'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { isValidDate } from '@/lib/dateUtils'
 import { cn, pseudoRandomFloat, pseudoRandomInteger } from '@/lib/utils'
 import { useDeveloperMode } from '@/store/jamSettingsStore'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { EarnReportChart } from './EarnReportChart'
 import { earnReportTableFeatures } from './EarnReportContent.schema'
-
-const isValidDate = (date: Date) => !Number.isNaN(date.getTime())
 
 const sumEarned = (entries: EarnReportEntry[], since?: Date): AmountSats => {
   return entries
@@ -38,7 +38,7 @@ const generateDemoEntry = () => {
   const cjTotalAmount = pseudoRandomInteger(50_000, 1_000_000_000)
   return {
     timestamp: new Date(Date.now() - pseudoRandomInteger(0, daysAgo * MILLISECONDS_IN_A_DAY)),
-    cjTotalAmount: pseudoRandomInteger(50_000, 1_000_000_000),
+    cjTotalAmount,
     inputCount: pseudoRandomInteger(1, 8),
     earnedAmount: pseudoRandomInteger(100, 5_000),
     inputAmount: Math.floor(cjTotalAmount * pseudoRandomFloat(0.1, 0.9)),
@@ -148,20 +148,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   }, [setPageSize, isShowAll, allEntries.length])
 
   const downloadCsv = useCallback(() => {
-    const header = 'timestamp,cj_amount,input_count,input_amount,fee,earned,confirm_minutes,notes'
-    const rows = getSortedRowModel().rows.map((row) =>
-      [
-        isValidDate(row.original.timestamp) ? row.original.timestamp.toISOString() : '',
-        row.original.cjTotalAmount ?? '',
-        row.original.inputCount ?? '',
-        row.original.inputAmount ?? '',
-        row.original.fee ?? '',
-        row.original.earnedAmount ?? '',
-        row.original.confirmationDuration ?? '',
-        row.original.notes ?? '',
-      ].join(','),
-    )
-    const value = header + '\n' + rows.join('\n')
+    const value = earnReportToCsv(getSortedRowModel().rows.map((row) => row.original))
     const blob = new Blob([value], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')

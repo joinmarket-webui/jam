@@ -1,11 +1,12 @@
 import type { ComponentProps } from 'react'
 import { useCallback, useMemo } from 'react'
+import { getlogsOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert } from '@/components/ui/alert'
 import * as JAM from '@/constants/jam'
-import { fetchLog } from '@/lib/api/jam'
+import { useApiClient } from '@/hooks/useApiClient'
 import { getErrorReason } from '@/lib/errorReason'
 import { authStore } from '@/store/authStore'
 
@@ -26,6 +27,7 @@ export function useJmwalletdStdoutLog({
   enableAutoFollow = false,
 }: UseJmwalletdStdoutLogParameters = {}) {
   const { t } = useTranslation()
+  const client = useApiClient()
   const token = useStore(authStore, (state) => state.state?.auth?.token)
 
   const {
@@ -33,28 +35,19 @@ export function useJmwalletdStdoutLog({
     isFetched: logQueryIsFetched,
     data: logQueryData,
     error: logQueryError,
-  } = useQuery<string>({
-    // Keep query identity stable across token refreshes to avoid flashing back to "loading".
-    queryKey: ['logs', JMWALLETD_LOG_FILE_NAME],
+  } = useQuery({
+    // The query key does not include the token, so token refreshes do not flash back to "loading".
+    ...getlogsOptions({ client }),
     enabled: enabled && token !== undefined,
     retry: false,
     refetchOnWindowFocus: false,
     // Poll logs continuously only when auto-follow is enabled.
     refetchInterval: (query) => {
-      if (!enabled || !enableAutoFollow || token === undefined) return false
-      if (query.state.error) return false
+      if (!enabled || !enableAutoFollow || token === undefined || query.state.error) return false
       return JAM.JMWALLETD_LOGS_POLLING_INTERVAL
     },
     // Keep previous data during refetch to prevent content flicker on slower networks.
     placeholderData: (previousData) => previousData,
-    queryFn: ({ signal }) => {
-      if (token === undefined) return Promise.resolve('')
-      return fetchLog({
-        token,
-        fileName: JMWALLETD_LOG_FILE_NAME,
-        signal,
-      }).then((response) => response.text())
-    },
   })
 
   const alert = useMemo<SimpleAlert | undefined>(() => {

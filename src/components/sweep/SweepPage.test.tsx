@@ -1,7 +1,6 @@
 import type { TumblerPlanResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import test from 'node:test'
 import type { UseFormReturn } from 'react-hook-form'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -231,9 +230,9 @@ vi.mock('@/components/sweep/SweepDestinationInputs', () => ({
       type="button"
       disabled={disabled}
       onClick={() => {
-        VALID_DESTINATIONS.forEach((address, index) => {
+        for (const [index, address] of VALID_DESTINATIONS.entries()) {
           setValue(`destinations.${index}.address`, address, { shouldDirty: true, shouldValidate: true })
-        })
+        }
       }}
     >
       fill-destinations
@@ -261,6 +260,32 @@ vi.mock('@/components/sweep/SweepStartConfirmDialog', () => ({
       <button type="button" disabled={disabled} onClick={onConfirm}>
         confirm-sweep
       </button>
+    ) : null,
+}))
+
+vi.mock('@/components/sweep/SweepStopConfirmDialog', () => ({
+  SweepStopConfirmDialog: ({
+    isStopping,
+    onConfirm,
+    onOpenChange,
+    open,
+  }: {
+    isStopping: boolean
+    onConfirm: () => void
+    onOpenChange: (open: boolean) => void
+    open: boolean
+  }) =>
+    open ? (
+      <div data-testid="sweep-stop-confirm-dialog">
+        <span>scheduler.confirm_stop_modal.title</span>
+        <span>scheduler.confirm_stop_modal.text_body</span>
+        <button type="button" onClick={() => onOpenChange(false)} disabled={isStopping}>
+          modal.confirm_button_reject
+        </button>
+        <button type="button" onClick={onConfirm} disabled={isStopping}>
+          confirm-stop-sweep
+        </button>
+      </div>
     ) : null,
 }))
 
@@ -398,7 +423,7 @@ const setSession = (overrides: Record<string, unknown> = {}) => {
     overrides.schedule !== undefined && Array.isArray(overrides.schedule) && overrides.schedule.length > 0
 }
 
-describe('SweepPage', async () => {
+describe('SweepPage', () => {
   beforeEach(() => {
     mocks.debugFeatureEnabled = false
     mocks.feeConfigLoading = false
@@ -509,7 +534,7 @@ describe('SweepPage', async () => {
     })
   })
 
-  it('stops a running sweep schedule', async () => {
+  it('stops a running sweep schedule after confirmation', async () => {
     setSession({ coinjoin_in_process: true, schedule: ['anything'] })
     mocks.tumblerStatusData = activePlan
 
@@ -517,6 +542,14 @@ describe('SweepPage', async () => {
 
     expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
+
+    // Dialog is shown; stopTumbler is not yet called
+    expect(screen.getByText('scheduler.confirm_stop_modal.title')).toBeInTheDocument()
+    expect(screen.getByText('scheduler.confirm_stop_modal.text_body')).toBeInTheDocument()
+    expect(mocks.stopTumbler).not.toHaveBeenCalled()
+
+    // Confirm in dialog
+    fireEvent.click(screen.getByRole('button', { name: 'confirm-stop-sweep' }))
 
     await waitFor(() =>
       expect(mocks.stopTumbler).toHaveBeenCalledWith({
@@ -587,7 +620,7 @@ describe('SweepPage', async () => {
   })
 
   // TODO: currently skipped as the session schedule is a necessary flag - can be revisited on demand
-  await test.skip('renders the schedule converted from tumbler status when no session schedule is set', () => {
+  it.skip('renders the schedule converted from tumbler status when no session schedule is set', () => {
     setSession({ coinjoin_in_process: true })
     mocks.tumblerStatusData = activePlan
 
@@ -637,13 +670,14 @@ describe('SweepPage', async () => {
     expect(screen.getByRole('button', { name: 'scheduler.button_stop' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'scheduler.button_stop' }))
 
+    fireEvent.click(await screen.findByRole('button', { name: 'confirm-stop-sweep' }))
+
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalledTimes(1))
     expect(screen.getByText('global.error')).toBeInTheDocument() // title
     expect(screen.getByText('scheduler.error_stopping_schedule_failed:{"reason":"stop-boom"}')).toBeInTheDocument() // description
   })
 
-  // TODO: do not skip this
-  await test.skip('does not render non-running tumbler plans as a running schedule', () => {
+  it('does not render non-running tumbler plans as a running schedule', () => {
     setSession({ coinjoin_in_process: true, schedule: ['anything'] })
     mocks.tumblerStatusData = { ...activePlan, status: 'completed' }
 

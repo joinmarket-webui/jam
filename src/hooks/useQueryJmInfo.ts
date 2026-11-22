@@ -16,8 +16,8 @@ export function useQueryJmInfo(): UseQueryJmInfoResult {
 
   const queryResult = useQuery({
     ...versionOptions({ client }),
-    staleTime: Number.POSITIVE_INFINITY,
-    gcTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
+    gcTime: Infinity,
   })
 
   const result = useMemo(() => {

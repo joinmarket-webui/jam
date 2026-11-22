@@ -14,7 +14,7 @@ export function CreateFidelityBondDialog({
   walletFileName,
   ...dialogProps
 }: CreateFidelityBondDialogProps) {
-  const wizard = useCreateFidelityBondWizard(open, onOpenChange, walletFileName)
+  const wizard = useCreateFidelityBondWizard(open, onOpenChange, walletFileName, { preselectDefaults: true })
 
   const {
     step,

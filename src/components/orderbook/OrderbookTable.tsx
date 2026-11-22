@@ -132,7 +132,7 @@ export const OrderbookTable = ({
         columnHelper.accessor('minimumSize', {
           header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
           sortFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
-          cell: (info) => <Balance valueString={String(info.getValue())} showBalance={true} />,
+          cell: (info) => <Balance valueString={info.getValue()} showBalance={true} />,
           meta: {
             align: 'right',
             numeric: true,
@@ -141,7 +141,7 @@ export const OrderbookTable = ({
         columnHelper.accessor('maximumSize', {
           header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
           sortFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
-          cell: (info) => <Balance valueString={String(info.getValue())} showBalance={true} />,
+          cell: (info) => <Balance valueString={info.getValue()} showBalance={true} />,
           meta: {
             align: 'right',
             numeric: true,
@@ -150,7 +150,7 @@ export const OrderbookTable = ({
         columnHelper.accessor('minerFeeContribution', {
           header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
           sortFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
-          cell: (info) => <Balance valueString={String(info.getValue())} showBalance={true} />,
+          cell: (info) => <Balance valueString={info.getValue()} showBalance={true} />,
           enableHiding: true,
           meta: {
             align: 'right',
@@ -239,16 +239,16 @@ export const OrderbookTable = ({
 
   useEffect(() => {
     resetRowPinning(true)
-    getPrePaginatedRowModel().rows.forEach((row) => {
+    for (const row of getPrePaginatedRowModel().rows) {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
-    })
+    }
   }, [resetRowPinning, getPrePaginatedRowModel, pinnedEntries])
 
   useEffect(() => {
     resetRowSelection(true)
-    getPrePaginatedRowModel().rows.forEach((row) => {
+    for (const row of getPrePaginatedRowModel().rows) {
       row.toggleSelected(highlightedEntries.includes(row.original))
-    })
+    }
   }, [resetRowSelection, getPrePaginatedRowModel, highlightedEntries])
 
   useEffect(() => {

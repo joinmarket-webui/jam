@@ -117,7 +117,7 @@ export const WithIcon: Story = {
       icon={<CloudDownloadIcon />}
       message="Update available"
       description="A new version of the application is ready to install."
-      duration={Number.POSITIVE_INFINITY}
+      duration={Infinity}
     />
   ),
 }

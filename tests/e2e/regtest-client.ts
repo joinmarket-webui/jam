@@ -96,7 +96,13 @@ export async function getNewAddressFromBitcoinCore(): Promise<string> {
  * Fund a target address with the given amount in BTC.
  */
 export async function fundAddressViaBitcoinCore(address: string, amountBtc: number | string): Promise<string> {
-  const txid = await bitcoinRpcCall<string>('sendtoaddress', [address, amountBtc], FUNDING_WALLET)
+  // explicit fee rate (sat/vB), so funding does not depend on `-fallbackfee` being configured
+  const feeRateSatPerVbyte = 2
+  const txid = await bitcoinRpcCall<string>(
+    'sendtoaddress',
+    [address, amountBtc, '', '', false, true, null, 'unset', null, feeRateSatPerVbyte],
+    FUNDING_WALLET,
+  )
   return txid
 }
 
@@ -129,4 +135,31 @@ export async function checkNgBackendSession(baseUrl: string = 'http://localhost:
   } catch {
     return false
   }
+}
+
+/**
+ * Count the offers of the orderbook watcher reachable via the Jam proxy.
+ */
+export async function countOrderbookOffers(baseUrl: string = 'http://localhost:3000'): Promise<number> {
+  const response = await fetch(`${baseUrl}/obwatch/orderbook.json`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(10_000),
+  })
+  if (!response.ok) throw new Error(`Orderbook: HTTP ${response.status}`)
+  const data = (await response.json()) as { offers?: unknown[] }
+  return data.offers?.length ?? 0
+}
+
+/**
+ * Fetch the session of the NG backend via the Jam proxy.
+ */
+export async function fetchNgBackendSession(
+  baseUrl: string = 'http://localhost:3000',
+): Promise<{ session: boolean; wallet_name?: string }> {
+  const response = await fetch(`${baseUrl}/api/v1/session`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(5_000),
+  })
+  if (!response.ok) throw new Error(`Session: HTTP ${response.status}`)
+  return (await response.json()) as { session: boolean; wallet_name?: string }
 }

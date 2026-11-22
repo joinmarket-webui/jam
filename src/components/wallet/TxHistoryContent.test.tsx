@@ -138,8 +138,8 @@ describe('TxHistoryContent', () => {
     const mockDownload = () => {
       const createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/mock-blob')
       const revokeObjectURL = vi.fn()
-      globalThis.URL.createObjectURL = createObjectURL
-      globalThis.URL.revokeObjectURL = revokeObjectURL
+      URL.createObjectURL = createObjectURL
+      URL.revokeObjectURL = revokeObjectURL
 
       const clickSpy = vi.fn()
       const originalCreateElement = document.createElement.bind(document)

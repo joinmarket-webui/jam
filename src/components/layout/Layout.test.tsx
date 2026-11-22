@@ -11,7 +11,6 @@ type SessionState = {
 
 const mocks = vi.hoisted(() => ({
   cheatsheetOpen: false,
-  logsFeature: true,
   navigate: vi.fn(),
   onCheatsheetOpenChange: vi.fn<(open: boolean) => void>(),
   pathname: '/',
@@ -158,12 +157,6 @@ vi.mock('@/hooks/useCheatsheet', () => ({
   }),
 }))
 
-vi.mock('@/hooks/useFeatures', () => ({
-  useFeatures: () => ({
-    isFeatureEnabled: (feature: string) => feature === 'logs' && mocks.logsFeature,
-  }),
-}))
-
 vi.mock('@/hooks/useQueryJamInfo', () => ({
   useQueryJamInfo: () => {
     return (
@@ -200,7 +193,6 @@ const walletFileName = 'wallet.jmdat' as WalletFileName
 describe('Layout', () => {
   beforeEach(() => {
     mocks.cheatsheetOpen = false
-    mocks.logsFeature = true
     mocks.pathname = '/'
     mocks.theme = 'dark'
     mocks.navigate.mockReset()
@@ -262,9 +254,8 @@ describe('Layout', () => {
     ).toBeInTheDocument()
   })
 
-  it('disables logs and onboarding when the route or feature state requires it', () => {
+  it('disables onboarding when the route requires it', () => {
     mocks.cheatsheetOpen = true
-    mocks.logsFeature = false
     mocks.pathname = '/send'
 
     render(
@@ -273,7 +264,6 @@ describe('Layout', () => {
       </Layout>,
     )
 
-    expect(screen.queryByText('open-logs')).not.toBeInTheDocument()
     expect(screen.getByText('cheatsheet:true')).toBeInTheDocument()
     expect(screen.getByText('tour-enabled:false')).toBeInTheDocument()
   })

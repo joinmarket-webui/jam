@@ -209,6 +209,7 @@ describe('AccountXpubsDialog', () => {
     expect(screen.getByText('settings.xpubs_modal.title')).toBeInTheDocument()
   })
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
   const renderDialog = (onOpenChange = vi.fn()) =>
     render(
       <AccountXpubsDialog

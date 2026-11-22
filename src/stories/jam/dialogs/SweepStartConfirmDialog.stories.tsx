@@ -56,6 +56,7 @@ export const WithScheduleSummary: Story = {
     isStarting: false,
     totalBalanceInSats: 2500000,
     totalActions: 3,
+    estimatedTotalDurationInSeconds: 9015,
     destinationAddresses: ['bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', 'bc1qc7slrfxkvy5l643lydnw9re59gtzzwf5mdqxyz'],
   },
 }

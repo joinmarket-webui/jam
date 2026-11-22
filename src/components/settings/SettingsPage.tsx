@@ -36,7 +36,6 @@ import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { JAM_DOCS_URL, JAM_MATRIX_URL, JAM_REPO_URL, JAM_SEED_MODAL_TIMEOUT, JAM_TELEGRAM_URL } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { useFeatures } from '@/hooks/useFeatures'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -100,7 +99,6 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingBa
   const [showXpubsDialog, setShowXpubsDialog] = useState(false)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
-  const { isFeatureEnabled } = useFeatures()
 
   const lockWalletMutation = useMutation({
     mutationFn: async ({ navigate, t }: { navigate: NavigateFunction; t: TFunction<'translation', undefined> }) => {
@@ -229,12 +227,7 @@ export const SettingsBasicContent = ({ walletFileName, onLockWallet }: SettingBa
             to={routes.rescan}
           />
           <Separator className="opacity-50" />
-          <SettingsLink
-            icon={FileTextIcon}
-            title={t('settings.show_logs')}
-            to={routes.logs}
-            disabled={!isFeatureEnabled('logs')}
-          />
+          <SettingsLink icon={FileTextIcon} title={t('settings.show_logs')} to={routes.logs} />
         </CardContent>
       </Card>
 

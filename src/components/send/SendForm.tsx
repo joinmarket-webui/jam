@@ -128,6 +128,8 @@ interface SendFormProps {
   addressSummary: AddressSummary
   disabled?: boolean
   debug?: boolean
+  // e.g. to restore the values of a failed payment attempt
+  initialValues?: Partial<SendFormValues>
 }
 
 export function SendForm({
@@ -144,6 +146,7 @@ export function SendForm({
   walletBalanceSummary,
   addressSummary,
   debug,
+  initialValues,
 }: SendFormProps) {
   const { t } = useTranslation()
 
@@ -158,8 +161,11 @@ export function SendForm({
   )
 
   const defaultValues = useMemo<Partial<SendFormValues>>(() => {
-    return toSendFormDefaultValues({ minNumberOfCollaborators, feeConfigValues })
-  }, [minNumberOfCollaborators, feeConfigValues])
+    return {
+      ...toSendFormDefaultValues({ minNumberOfCollaborators, feeConfigValues }),
+      ...initialValues,
+    }
+  }, [minNumberOfCollaborators, feeConfigValues, initialValues])
 
   const { control, register, handleSubmit, formState, setValue, trigger, getValues, ...sendFormMethods } = useForm<
     SendFormValues,
@@ -205,7 +211,7 @@ export function SendForm({
 
   const destinationAddressInfo = useMemo(() => {
     try {
-      return destinationAddress !== undefined ? getAddressInfo(destinationAddress) : undefined
+      return destinationAddress ? getAddressInfo(destinationAddress) : undefined
     } catch (_ignoredOnPurpose) {
       return undefined
     }
@@ -232,13 +238,32 @@ export function SendForm({
     onSourceJarChange?.(sourceJarIndex)
   }, [onSourceJarChange, sourceJarIndex])
 
+  // A sweep pins the utxos that were spendable when "Sweep" was clicked. If they change while the
+  // form is editable, e.g. after (un)freezing utxos in the utxo selection dialog, end the sweep and
+  // let the user sweep again or enter an amount, instead of silently changing what is sent.
   useEffect(() => {
-    if (formState.dirtyFields.source?.fromJar) {
-      console.debug(
-        'Validating `source.fromJar` as wallet balance summary changed (e.g. frozen/unfrozen utxos, new transaction, etc.)',
-      )
-      void trigger('source.fromJar')
+    if (disabled || isSweep !== true) return
+
+    const sweepUtxos = availableUtxosForSweep(sourceJar)
+    const currentSweepUtxos = getValues('amount.sweepUtxos') ?? []
+    const isUnchanged =
+      sweepUtxos.length === currentSweepUtxos.length && sweepUtxos.every((it) => currentSweepUtxos.includes(it))
+    if (isUnchanged) return
+
+    setValue('amount.isSweep', false, { shouldValidate: true })
+    setValue('amount.sweepAmount', undefined, { shouldValidate: true })
+    setValue('amount.sweepUtxos', undefined, { shouldValidate: true })
+  }, [disabled, isSweep, sourceJar, getValues, setValue])
+
+  useEffect(() => {
+    if (!formState.dirtyFields.source?.fromJar) {
+      return
     }
+
+    console.debug(
+      'Validating `source.fromJar` as wallet balance summary changed (e.g. frozen/unfrozen utxos, new transaction, etc.)',
+    )
+    void trigger('source.fromJar')
   }, [walletBalanceSummary, trigger, formState.dirtyFields.source?.fromJar])
 
   const destinationJar = useMemo(() => {
@@ -394,7 +419,7 @@ export function SendForm({
                         if (destinationJarIndex === jar.jarIndex) {
                           setValue('destination.address', '', { shouldValidate: true })
                           setValue('destination.fromJar', undefined, { shouldValidate: true })
-                        } else if (destinationAddress !== undefined) {
+                        } else if (destinationAddress) {
                           void trigger('destination.address')
                         }
                       }}

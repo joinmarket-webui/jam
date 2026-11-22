@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ComponentType, PropsWithChildren } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
+import { CancelledError, QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -38,18 +38,17 @@ import {
   JAM_API_AUTH_TOKEN_RENEW_INTERVAL,
   JAM_API_AUTH_TOKEN_RENEW_MIN_INTERVAL,
   JAM_API_AUTH_TOKEN_RENEW_SAFETY_FACTOR,
-  JAM_JM_SESSION_REFRESH_INTERVAL,
 } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
 import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProvider'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
-import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient, withMutationDelay } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore, computeAuthExpiresAt } from '@/store/authStore'
 import { jamSettingsStore, useDeveloperMode } from '@/store/jamSettingsStore'
+import { jmConfigStore } from '@/store/jmConfigStore'
 import { EarnReportPage } from './components/earn/report/EarnReportPage'
 import { RootLayout } from './components/layout/RootLayout'
 import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDialog'
@@ -71,6 +70,7 @@ const DevErrorThrowingComponent = lazy(() => import('@/components/dev/DevErrorTh
 const clearAuthAndQueryCache = () => {
   authStore.getState().clear()
   queryClient.clear()
+  jmConfigStore.getState().clear()
 }
 
 const doOnLogout = async (navigate: NavigateFunction) => {
@@ -290,7 +290,6 @@ function App() {
           <JamSessionInfoContextProvider>
             <JmWebsocketContextProvider>
               <RefreshApiToken />
-              <RefreshJmSession />
               {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
               <RouterProvider router={router} />
               <Toaster closeButton />
@@ -374,18 +373,9 @@ function RefreshApiToken() {
   return <></>
 }
 
-function RefreshJmSession() {
-  useRefreshSession({
-    enabled: true,
-    refetchInterval: JAM_JM_SESSION_REFRESH_INTERVAL,
-  })
-
-  return <></>
-}
-
 function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName }) {
   const { t } = useTranslation()
-  const { fetchMissing } = useFeeConfigValidation({ walletFileName })
+  const { refetchAll } = useFeeConfigValidation({ walletFileName })
 
   useEffect(() => {
     const isDevMode = jamSettingsStore.getState().state.developerMode
@@ -393,16 +383,18 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
       console.debug('[DEV] Reloading fee values...')
     }
 
-    fetchMissing()
+    refetchAll()
       .then((values) => {
         const consoleInfo = 'Fee values loaded successfully.'
         console.info(consoleInfo)
-        if (isDevMode) {
-          console.table(values)
-          toast.success(`[DEV] ${consoleInfo}`, {
-            id: 'fee-values-success',
-          })
+        if (!isDevMode) {
+          return
         }
+
+        console.table(values)
+        toast.success(`[DEV] ${consoleInfo}`, {
+          id: 'fee-values-success',
+        })
       })
       .catch((error) => {
         const reason = getErrorReason(error, t('global.errors.reason_unknown'))
@@ -410,7 +402,7 @@ function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName 
         toast.error(errorMessage)
         console.error(errorMessage)
       })
-  }, [fetchMissing, t])
+  }, [refetchAll, t])
 
   return <></>
 }
@@ -441,6 +433,19 @@ const RELOAD_WALLET_INFO_DELAY: {
 
   // Small delay is sufficient after an incoming tx message via websocket
   AFTER_TX_MESSAGE: 210,
+}
+
+const logAutoReloadError = (
+  log: (...data: unknown[]) => void,
+  trigger: keyof typeof RELOAD_WALLET_INFO_DELAY,
+  error: unknown,
+) => {
+  // cancelled on purpose, e.g. the wallet has been locked in the meantime
+  if (error instanceof CancelledError) {
+    console.debug(`Auto-reloading wallet info ${trigger} has been cancelled.`)
+    return
+  }
+  log(`Error while auto-reloading wallet info ${trigger} finished`, error)
 }
 
 /**
@@ -486,7 +491,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.warn('Error while auto-reloading wallet info AFTER_RESCAN finished', error)
+        logAutoReloadError(console.warn, 'AFTER_RESCAN', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_RESCAN) ended')
     },
@@ -511,7 +516,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.warn('Error while auto-reloading wallet info AFTER_BLOCK_HEIGHT_CHANGE finished', error)
+        logAutoReloadError(console.warn, 'AFTER_BLOCK_HEIGHT_CHANGE', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_BLOCK_HEIGHT_CHANGE) ended')
     },
@@ -535,7 +540,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.error('Error while auto-reloading wallet info AFTER_UTXO_CHANGE finished', error)
+        logAutoReloadError(console.error, 'AFTER_UTXO_CHANGE', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_UTXO_CHANGE) ended')
     },
@@ -555,7 +560,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.warn('Error while auto-reloading wallet info AFTER_TX_MESSAGE finished', error)
+        logAutoReloadError(console.warn, 'AFTER_TX_MESSAGE', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_TX_MESSAGE) ended')
     },
@@ -575,7 +580,7 @@ export const WalletInfoAutoReload = () => {
 
       const abortCtrl = new AbortController()
       refetchWalletBalance({ delayBefore, signal: abortCtrl.signal }).catch((error: unknown) => {
-        console.error('Error while auto-reloading wallet info AFTER_TAKER_STOPPED finished', error)
+        logAutoReloadError(console.error, 'AFTER_TAKER_STOPPED', error)
       })
       return () => abortCtrl.abort('useEffect(AFTER_TAKER_STOPPED) ended')
     },

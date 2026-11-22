@@ -81,7 +81,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       },
     ),
     retry: false,
-    gcTime: Number.POSITIVE_INFINITY,
+    gcTime: Infinity,
     onError: (_error: unknown) => {
       toast.error(t('global.errors.error_loading_address_failed'))
     },
