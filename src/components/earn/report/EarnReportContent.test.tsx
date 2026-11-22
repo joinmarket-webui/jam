@@ -344,14 +344,17 @@ describe('EarnReportContent', () => {
         timestamp: new Date('2026-01-11T04:00:00.000Z'),
       })
 
-      mocks.entries = [entry30DaysAgoMorning, entry90DaysAgoMorning]
+      // day before each cutoff, inside the old `now - 30 * 24h` window but outside the new one
+      const entryBefore30DayCutoff = entry({ earnedAmount: 120, timestamp: new Date('2026-03-11T20:00:00.000Z') })
+      const entryBefore90DayCutoff = entry({ earnedAmount: 1200, timestamp: new Date('2026-01-10T20:00:00.000Z') })
+
+      mocks.entries = [entry30DaysAgoMorning, entry90DaysAgoMorning, entryBefore30DayCutoff, entryBefore90DayCutoff]
 
       render(<EarnReportContent enabled />)
 
-      // Total (750) and 90 days (750) stat cards
-      expect(screen.getAllByText('balance:750')).toHaveLength(2)
-      // 30 days card (250) + table row for entry30DaysAgoMorning (250)
-      expect(screen.getAllByText('balance:250')).toHaveLength(2)
+      expect(screen.getAllByText('balance:2070')).toHaveLength(1) // total
+      expect(screen.getAllByText('balance:870')).toHaveLength(1) // 90 days
+      expect(screen.getAllByText('balance:250')).toHaveLength(2) // 30 days + table row
     })
   })
 
@@ -368,12 +371,18 @@ describe('EarnReportContent', () => {
         timestamp: new Date('2026-02-08T10:00:00-05:00'),
       })
 
-      mocks.entries = [entryOnCutoffDay]
+      // February 7 is the day before the cutoff
+      const entryBeforeCutoffDay = entry({
+        earnedAmount: 120,
+        timestamp: new Date('2026-02-07T10:00:00-05:00'),
+      })
+
+      mocks.entries = [entryOnCutoffDay, entryBeforeCutoffDay]
 
       render(<EarnReportContent enabled />)
 
-      // Total (350), 90 days (350), 30 days (350) cards + 1 table row (350)
-      expect(screen.getAllByText('balance:350')).toHaveLength(4)
+      expect(screen.getAllByText('balance:470')).toHaveLength(2) // total + 90 days
+      expect(screen.getAllByText('balance:350')).toHaveLength(2) // 30 days + table row
     })
   })
 })
