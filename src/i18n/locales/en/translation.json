@@ -709,7 +709,8 @@
       "select_jar": {
         "title": "Select Source Jar",
         "description": "Select a jar to fund the Fidelity Bond from.",
-        "alert_no_jars_available": "No jars with eligible UTXOs found."
+        "alert_no_jars_available": "No jars with eligible UTXOs found.",
+        "feedback_invalid_source_jar": "Please select a jar to fund the Fidelity Bond from."
       },
       "select_utxos": {
         "title": "Select UTXOs",

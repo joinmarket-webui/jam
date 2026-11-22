@@ -414,7 +414,8 @@
         "description": "Fidelity Bond Auslaufdatum:"
       },
       "select_jar": {
-        "description": "Glas für Fidelity Bond Finanzierung auswählen"
+        "description": "Glas für Fidelity Bond Finanzierung auswählen",
+        "feedback_invalid_source_jar": "Bitte wähle ein Glas aus, um den Fidelity Bond zu finanzieren."
       },
       "select_utxos": {
         "description": "Wähle einen oder mehr UTXOs vom Glas {{ jar }} für den Fidelity Bond.",
