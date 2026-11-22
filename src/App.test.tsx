@@ -1,7 +1,7 @@
 import { type ReactNode, StrictMode } from 'react'
 import { token as tokenMock } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { CancelledError } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createBrowserRouter } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { setIntervalDebounced as setIntervalDebouncedMock } from '@/lib/utils'
@@ -245,6 +245,8 @@ vi.mock('./components/ui/jam/LockWalletConfirmDialog', () => ({
   ),
 }))
 
+const appRouter = vi.mocked(createBrowserRouter).mock.results[0].value as ReturnType<typeof createBrowserRouter>
+
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -267,6 +269,17 @@ describe('App', () => {
     expect(screen.getByTestId('session-provider')).toBeInTheDocument()
     expect(screen.getByTestId('wallet-provider')).toBeInTheDocument()
     expect(screen.getByTestId('toaster')).toBeInTheDocument()
+  })
+
+  it.each(['/send', '/sweep'])('renders the wallet page after navigating to %s', async (path) => {
+    render(<App />)
+    expect(await screen.findByText('main-wallet-page')).toBeInTheDocument()
+
+    await act(() => appRouter.navigate(path))
+    expect(await screen.findByText(`${path.slice(1)}-page`)).toBeInTheDocument()
+
+    await act(() => appRouter.navigate('/'))
+    expect(await screen.findByText('main-wallet-page')).toBeInTheDocument()
   })
 
   it('keeps the router stable across app rerenders', async () => {

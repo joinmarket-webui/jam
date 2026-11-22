@@ -4,6 +4,7 @@ import App from '@/App.tsx'
 import '@/i18n/config'
 import { JAM_REPO_URL } from './constants/jam'
 import './index.css'
+import { claimPreloadReload } from './lib/preloadRecovery'
 
 console.debug(
   `%c/${'*'.repeat(42)}
@@ -23,6 +24,12 @@ setTimeout(() => {
     'color:oklch(0.777 0.245 27.325);font-size:16px;',
   )
 }, 2_100)
+
+window.addEventListener('vite:preloadError', (event) => {
+  if (!claimPreloadReload(import.meta.url)) return
+  window.location.reload()
+  event.preventDefault()
+})
 
 createRoot(document.querySelector('#root')!).render(
   <StrictMode>
