@@ -325,6 +325,22 @@
       "nested_hint_wait_for_block_other": "Wähle ein anderes Glas für die Transaktion oder warte auf {{ count }} mehr Blöcke.",
       "nested_hint_fund_jar": "Wähle ein anderes Glas für die Transaktion oder warte auf einen weiteren Block. ",
       "nested_hint_fund_jar_other": "Wähle ein anderes Glas für die Transaktion oder warte auf {{ count }} weitere Blöcke."
+    },
+    "taker_status": {
+      "title": "Taker-Status",
+      "status_idle": "Warte...",
+      "status_fetching_orderbook": "Angebote werden geprüft...",
+      "status_filling": "Transaktion wird erstellt...",
+      "status_authenticating": "Authentifizierung...",
+      "status_collecting_signatures": "Signaturen werden gesammelt...",
+      "status_broadcasting": "Wird übertragen...",
+      "status_complete": "Abgeschlossen",
+      "status_complete_unverified": "Abgeschlossen (nicht verifiziert)",
+      "status_failed": "Fehlgeschlagen",
+      "status_cancelled": "Abgebrochen",
+      "status_unknown": "Beendet",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "Die Transaktion wurde zum Übertragen an die Transaktionspartner übergeben, aber ob sie im Mempool ist, konnte nicht überprüft werden. Prüfe deinen Transaktionsverlauf, um sicherzugehen, dass sie durchgegangen ist."
     }
   },
   "receive": {

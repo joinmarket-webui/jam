@@ -301,6 +301,22 @@
       "nested_hint_wait_for_block_other": "選擇另一個罐子作為來源或者再等{{ count }}個區塊。",
       "nested_hint_fund_jar": "選擇另一個罐子作為來源或者充值這個罐子並再等一個區塊。",
       "nested_hint_fund_jar_other": "選擇另一個罐子作為來源或者充值這個罐子並再等{{ count }}個區塊。"
+    },
+    "taker_status": {
+      "title": "Taker 狀態",
+      "status_idle": "等待中...",
+      "status_fetching_orderbook": "正在評估報價...",
+      "status_filling": "正在構建交易...",
+      "status_authenticating": "正在驗證身份...",
+      "status_collecting_signatures": "正在收集簽署...",
+      "status_broadcasting": "正在廣播...",
+      "status_complete": "已完成",
+      "status_complete_unverified": "已完成（未驗證）",
+      "status_failed": "失敗",
+      "status_cancelled": "已取消",
+      "status_unknown": "已結束",
+      "status_unmapped": "{{ value }}",
+      "text_complete_unverified": "交易已交給協作方廣播，但無法驗證它是否在內存池中。請查看交易歷史以確認交易是否成功。"
     }
   },
   "receive": {
