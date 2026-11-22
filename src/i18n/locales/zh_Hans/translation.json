@@ -306,7 +306,7 @@
       "title": "Taker 状态",
       "status_idle": "等待中...",
       "status_fetching_orderbook": "正在评估报价...",
-      "status_filling": "正在构建交易...",
+      "status_filling": "正在创建交易...",
       "status_authenticating": "正在验证身份...",
       "status_collecting_signatures": "正在收集签名...",
       "status_broadcasting": "正在广播...",

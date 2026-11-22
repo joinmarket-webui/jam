@@ -267,7 +267,7 @@
       "title": "Status do taker",
       "status_idle": "Aguardando...",
       "status_fetching_orderbook": "Avaliando ofertas...",
-      "status_filling": "Construindo transação...",
+      "status_filling": "Criando transação...",
       "status_authenticating": "Autenticando...",
       "status_collecting_signatures": "Coletando assinaturas...",
       "status_broadcasting": "Transmitindo...",

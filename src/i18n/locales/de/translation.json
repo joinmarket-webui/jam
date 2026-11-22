@@ -328,7 +328,7 @@
     },
     "taker_status": {
       "title": "Taker-Status",
-      "status_idle": "Warte...",
+      "status_idle": "Warten...",
       "status_fetching_orderbook": "Angebote werden geprüft...",
       "status_filling": "Transaktion wird erstellt...",
       "status_authenticating": "Authentifizierung...",
