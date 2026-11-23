@@ -200,6 +200,7 @@
       "modal_lock_wallet_title": "锁上钱包",
       "modal_lock_wallet_maker_running_text": "收益处于活跃状态。钱包上锁将停止服务。",
       "modal_lock_wallet_coinjoin_in_progress_text": "协作式交易正在进行中。钱包上锁将停止服务。",
+      "modal_lock_wallet_scheduler_running_text": "预定扫空正在进行中。钱包上锁将停止调度程序。",
       "modal_lock_wallet_alternative_action_text": "你可以关闭浏览器窗口并让它在背景中运行。"
     }
   },
@@ -457,6 +458,7 @@
     "label_auto_follow": "自动跟随",
     "label_search": "搜索日志",
     "placeholder_search": "搜索日志...",
+    "text_display_limit": "显示最新的 {{shown}} 行，共 {{count}} 行。搜索和下载包括所有已加载的行。",
     "text_search_matches_zero": "没有与「{{ searchValue }}」匹配的结果。",
     "text_search_matches_one": "{{ count }} 行匹配。",
     "text_search_matches_other": "{{ count }} 行匹配。"
@@ -528,6 +530,7 @@
     "confirm_send_modal": {
       "title": "确认付款",
       "label_amount": "金额",
+      "badge_sweep": "扫空",
       "text_sweep_balance": "扫空（<1></1>）",
       "text_sweep_info_popover": "确切的交易金额只能在执行交易时通过 JoinMarket 计算。",
       "label_recipient": "收款方",
@@ -690,6 +693,7 @@
       "error_loading_address": "无法加载时间锁地址。",
       "error_creating_fidelity_bond": "创建保证金的交易失败了。",
       "alert_all_funds_in_use": "<strong>请注意</strong>：当你使用所有可用资金来创建此保证金时，你将不会剩下任何 UTXO。<br /><br /> 保证金<strong>不会参与协作交易</strong>，你<strong>必须再次为你的钱包充值</strong>才能开始发送或收益。",
+      "alert_all_coinjoined_funds_in_use": "<strong>请注意</strong>：你正在使用所有已混币的资金创建此保证金。<br /><br />保证金<strong>不会参与协作式交易</strong>，因此在其到期之前，只有尚未混币的资金可用于发送或赚取收益。",
       "text_loading": "正在加载...",
       "text_creating": "正在创建...",
       "text_creating_subtitle": "这可能需要一点时间...",
@@ -704,7 +708,8 @@
       "select_jar": {
         "title": "选择来源罐子",
         "description": "选择保证金资金来源的罐子。",
-        "alert_no_jars_available": "未找到包含符合条件 UTXO 的罐子。"
+        "alert_no_jars_available": "未找到包含符合条件 UTXO 的罐子。",
+        "feedback_invalid_source_jar": "请选择保证金资金来源的罐子。"
       },
       "select_utxos": {
         "title": "选择 UTXO",
@@ -742,7 +747,8 @@
         "label_transaction_id": "交易 ID",
         "text_copy_transaction_id": "交易 ID 已复制",
         "label_utxos_to_unfreeze": "你是否想要解冻之前冻结的 UTXOs？",
-        "text_success_subtitle": "你的保证金已成功创建"
+        "text_success_subtitle": "你的保证金已成功创建",
+        "error_unfreezing_utxos_on_close": "为保证金冻结的部分 UTXO 无法解冻。你可以在罐子详情中将它们解冻。"
       },
       "unfreeze_utxos": {
         "done": "UTXOs 已解冻"
@@ -936,7 +942,14 @@
     },
     "confirm_start_modal": {
       "title": "开始预定扫空",
-      "text_body": "确定要开始预定扫空吗？"
+      "text_body": "确定要开始预定扫空吗？",
+      "actions_count_one": "{{ count }} 个操作",
+      "actions_count_other": "{{ count }} 个操作",
+      "estimated_duration": "预计时长"
+    },
+    "confirm_stop_modal": {
+      "title": "停止预定扫空",
+      "text_body": "确定要停止预定扫空吗？计划中仍待处理的交易将被取消。"
     },
     "alert_schedule_completed_title": "预定扫空已成功完成。",
     "alert_schedule_failed_title": "预定扫空失败。",

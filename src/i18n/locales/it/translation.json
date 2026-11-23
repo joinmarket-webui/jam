@@ -200,6 +200,7 @@
       "modal_lock_wallet_title": "Blocca portafoglio",
       "modal_lock_wallet_maker_running_text": "La funzione Guadagna è attiva. Il blocco del portafoglio interromperà il servizio.",
       "modal_lock_wallet_coinjoin_in_progress_text": "È attualmente in corso una transazione collaborativa. Il blocco del portafoglio interromperà il servizio.",
+      "modal_lock_wallet_scheduler_running_text": "È attualmente in corso uno Sweep programmato. Il blocco del portafoglio interromperà lo scheduler.",
       "modal_lock_wallet_alternative_action_text": "È possibile chiudere la finestra del browser per lasciarlo funzionare in background."
     }
   },
@@ -457,6 +458,7 @@
     "label_auto_follow": "Segui automaticamente",
     "label_search": "Cerca nei log",
     "placeholder_search": "Cerca nei log...",
+    "text_display_limit": "Vengono mostrate le ultime {{shown}} righe su {{count}}. La ricerca e il download includono tutte le righe caricate.",
     "text_search_matches_zero": "Nessun risultato per \"{{ searchValue }}\".",
     "text_search_matches_one": "{{ count }} riga corrispondente.",
     "text_search_matches_many": "{{ count }} righe corrispondenti.",
@@ -530,6 +532,7 @@
     "confirm_send_modal": {
       "title": "Conferma pagamento",
       "label_amount": "Importo",
+      "badge_sweep": "Sweep",
       "text_sweep_balance": "Sweep (<1></1>)",
       "text_sweep_info_popover": "L'importo esatto della transazione può essere calcolato da JoinMarket solo nel momento in cui la transazione viene creata.",
       "label_recipient": "Destinatario",
@@ -701,6 +704,7 @@
       "error_loading_address": "Impossibile caricare l'indirizzo bloccato con time-lock.",
       "error_creating_fidelity_bond": "La transazione per la creazione del Fidelity Bond è fallita.",
       "alert_all_funds_in_use": "<strong>Da tenere a mente</strong>: poiché si stanno usando tutti i fondi disponibili per creare questo Fidelity Bond, non resteranno UTXO. <br /><br />Un Fidelity Bond <strong>non partecipa alle transazioni collaborative</strong> e <strong>sarà necessario finanziare di nuovo il wallet</strong> per iniziare a inviare o guadagnare.",
+      "alert_all_coinjoined_funds_in_use": "<strong>Tieni presente</strong>: stai usando tutti i tuoi fondi mixati per creare questo Fidelity Bond. <br /><br />Un Fidelity Bond <strong>non partecipa alle transazioni collaborative</strong>, quindi fino alla sua scadenza restano disponibili per l'invio o per guadagnare solo i fondi non ancora mixati.",
       "text_loading": "Caricamento...",
       "text_creating": "Creazione...",
       "text_creating_subtitle": "Potrebbe volerci un momento...",
@@ -715,7 +719,8 @@
       "select_jar": {
         "title": "Seleziona il vaso di origine",
         "description": "Seleziona un vaso da cui finanziare il Fidelity Bond.",
-        "alert_no_jars_available": "Nessun vaso con UTXO idonei trovato."
+        "alert_no_jars_available": "Nessun vaso con UTXO idonei trovato.",
+        "feedback_invalid_source_jar": "Seleziona un vaso da cui finanziare il Fidelity Bond."
       },
       "select_utxos": {
         "title": "Seleziona UTXO",
@@ -756,7 +761,8 @@
         "label_transaction_id": "ID transazione",
         "text_copy_transaction_id": "ID transazione copiato",
         "label_utxos_to_unfreeze": "Vuoi scongelare gli UTXO che erano stati congelati precedentemente?",
-        "text_success_subtitle": "Il Fidelity Bond è stato creato con successo"
+        "text_success_subtitle": "Il Fidelity Bond è stato creato con successo",
+        "error_unfreezing_utxos_on_close": "Non è stato possibile scongelare alcuni UTXO congelati per il Fidelity Bond. Puoi scongelarli nei dettagli dei vasi."
       },
       "unfreeze_utxos": {
         "done": "UTXO scongelati"
@@ -952,7 +958,15 @@
     },
     "confirm_start_modal": {
       "title": "Avvia Sweep programmato",
-      "text_body": "Sei sicuro di voler avviare uno Sweep programmato?"
+      "text_body": "Sei sicuro di voler avviare uno Sweep programmato?",
+      "actions_count_one": "{{ count }} azione",
+      "actions_count_many": "{{ count }} azioni",
+      "actions_count_other": "{{ count }} azioni",
+      "estimated_duration": "Durata stimata"
+    },
+    "confirm_stop_modal": {
+      "title": "Ferma Sweep programmato",
+      "text_body": "Sei sicuro di voler fermare lo Sweep programmato? Le transazioni ancora in sospeso nel programma verranno annullate."
     },
     "alert_schedule_completed_title": "Sweep programmato completato con successo.",
     "alert_schedule_failed_title": "Sweep programmato non riuscito.",

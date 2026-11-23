@@ -163,6 +163,7 @@
       "modal_lock_wallet_title": "Confirmez le verrouillage",
       "modal_lock_wallet_maker_running_text": "Générer est actif. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Une transaction collaborative est actuellement en cours. Le verrouillage du porte-monnaie arrêtera le service.",
+      "modal_lock_wallet_scheduler_running_text": "Un balayage planifié est actuellement en cours. Le verrouillage du porte-monnaie arrêtera le planificateur.",
       "modal_lock_wallet_alternative_action_text": "Vous pouvez également fermer la fenêtre pour vous déconnecter."
     }
   },
@@ -420,6 +421,7 @@
     "label_auto_follow": "Suivi automatique",
     "label_search": "Rechercher dans les journaux",
     "placeholder_search": "Rechercher dans les journaux...",
+    "text_display_limit": "Affichage des {{shown}} dernières lignes sur {{count}}. La recherche et le téléchargement incluent toutes les lignes chargées.",
     "text_search_matches_zero": "Aucun résultat pour « {{ searchValue }} ».",
     "text_search_matches_one": "{{ count }} ligne correspondante.",
     "text_search_matches_many": "{{ count }} lignes correspondantes.",
@@ -493,6 +495,7 @@
     "confirm_send_modal": {
       "title": "Confirmer le paiement",
       "label_amount": "Montant",
+      "badge_sweep": "Balayage",
       "text_sweep_balance": "Balayage (<1></1>)",
       "text_sweep_info_popover": "Le montant exact de la transaction ne peut être calculé par JoinMarket qu'au moment où la transaction est effectuée.",
       "label_recipient": "Destinataire",
@@ -664,6 +667,7 @@
       "error_loading_address": "Impossible de charger l'adresse à verrouillage temporel.",
       "error_creating_fidelity_bond": "La transaction de création du Fidelity Bond a échoué.",
       "alert_all_funds_in_use": "<strong>À savoir</strong> : comme vous utilisez tous les fonds disponibles pour créer ce Fidelity Bond, il ne vous restera aucun UTXO. <br /><br />Un Fidelity Bond <strong>ne participe pas aux transactions collaboratives</strong> et vous <strong>devrez alimenter à nouveau votre portefeuille</strong> pour envoyer ou générer des revenus.",
+      "alert_all_coinjoined_funds_in_use": "<strong>À noter</strong> : vous utilisez tous vos fonds mélangés pour créer ce Fidelity Bond. <br /><br />Un Fidelity Bond <strong>ne participe pas aux transactions collaboratives</strong>, donc jusqu'à son expiration, seuls les fonds qui n'ont pas encore été mélangés restent disponibles pour envoyer ou générer.",
       "text_loading": "Chargement...",
       "text_creating": "Création...",
       "text_creating_subtitle": "Cela peut prendre un moment...",
@@ -678,7 +682,8 @@
       "select_jar": {
         "title": "Choisir le pot source",
         "description": "Choisissez un pot pour financer le Fidelity Bond.",
-        "alert_no_jars_available": "Aucun pot avec des UTXOs éligibles trouvé."
+        "alert_no_jars_available": "Aucun pot avec des UTXOs éligibles trouvé.",
+        "feedback_invalid_source_jar": "Veuillez choisir un pot pour financer le Fidelity Bond."
       },
       "select_utxos": {
         "title": "Choisir les UTXOs",
@@ -719,7 +724,8 @@
         "label_transaction_id": "ID de transaction",
         "text_copy_transaction_id": "ID de transaction copié",
         "label_utxos_to_unfreeze": "Voulez-vous dégeler les UTXOs gelés précédemment ?",
-        "text_success_subtitle": "Votre Fidelity Bond a été créé avec succès"
+        "text_success_subtitle": "Votre Fidelity Bond a été créé avec succès",
+        "error_unfreezing_utxos_on_close": "Certains UTXOs gelés pour le Fidelity Bond n'ont pas pu être dégelés. Vous pouvez les dégeler dans les détails des pots."
       },
       "unfreeze_utxos": {
         "done": "UTXOs dégelés"
@@ -915,7 +921,15 @@
     },
     "confirm_start_modal": {
       "title": "Démarrer le balayage planifié",
-      "text_body": "Voulez-vous vraiment démarrer un balayage planifié ?"
+      "text_body": "Voulez-vous vraiment démarrer un balayage planifié ?",
+      "actions_count_one": "{{ count }} action",
+      "actions_count_many": "{{ count }} actions",
+      "actions_count_other": "{{ count }} actions",
+      "estimated_duration": "Durée estimée"
+    },
+    "confirm_stop_modal": {
+      "title": "Arrêter le balayage planifié",
+      "text_body": "Voulez-vous vraiment arrêter le balayage planifié ? Les transactions encore en attente dans le planning seront annulées."
     },
     "alert_schedule_completed_title": "Balayage planifié terminé avec succès.",
     "alert_schedule_failed_title": "Le balayage planifié a échoué.",
