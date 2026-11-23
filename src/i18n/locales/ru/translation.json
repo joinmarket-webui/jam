@@ -42,7 +42,6 @@
     "duration_days_hours": "{{ days }} д {{ hours }} ч",
     "errors": {
       "error_loading_wallet_failed": "Ошибка открытия кошелька. {{ reason }}",
-      "error_reloading_wallet_failed": "Ошибка чтения кошелька. {{ reason }}",
       "error_copy_to_clipboard_failed": "Не удалось скопировать в буфер обмена. {{ reason }}",
       "reason_unknown": "Причина неизвестна.",
       "error_loading_address_failed": "Невозможно получить новый адрес.",

@@ -3,6 +3,7 @@ import { token as tokenMock } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { CancelledError } from '@tanstack/react-query'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createBrowserRouter } from 'react-router-dom'
+import { toast } from 'sonner'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { setIntervalDebounced as setIntervalDebouncedMock } from '@/lib/utils'
 import { flushActUpdates } from '@/test/flushActUpdates'
@@ -31,6 +32,8 @@ const {
   mutateAsync,
   refetchAllFeeConfig,
   clearJmConfig,
+  lockT,
+  getErrorReasonMock,
 } = vi.hoisted(() => {
   const holders: Holders = {
     walletFileName: 'wallet.jmdat',
@@ -54,6 +57,8 @@ const {
     mutateAsync: vi.fn<() => Promise<unknown>>().mockResolvedValue(undefined),
     refetchAllFeeConfig: vi.fn<() => Promise<unknown>>().mockResolvedValue([]),
     clearJmConfig: vi.fn(),
+    lockT: vi.fn((key: string) => key),
+    getErrorReasonMock: vi.fn((_error: unknown, _fallback: string) => 'reason'),
   }
 })
 
@@ -143,7 +148,7 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
 }))
 
 vi.mock('./lib/errorReason', () => ({
-  getErrorReason: () => 'reason',
+  getErrorReason: getErrorReasonMock,
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({ useApiClient: () => ({}) }))
@@ -191,7 +196,7 @@ vi.mock('@/components/layout/Layout', () => ({
     onLockWallet: (n: () => Promise<void>, t: (k: string) => string) => void
   }) => (
     <div>
-      <button onClick={() => onLockWallet(navigateStub, (k: string) => k)}>lock</button>
+      <button onClick={() => onLockWallet(navigateStub, lockT)}>lock</button>
       <button onClick={() => void onLogout(navigateStub)}>logout</button>
       {children}
     </div>
@@ -328,6 +333,25 @@ describe('App', () => {
     fireEvent.click(screen.getByTestId('confirm-lock'))
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
     expect(clearAuth).toHaveBeenCalled()
+  })
+
+  it('shows the reason when locking the wallet fails', async () => {
+    holders.jmSession = { maker_running: false, coinjoin_in_process: false, schedule: [] }
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    // API errors reach the UI as plain objects (see `normalizeAppError`), not as `Error` instances
+    const lockError = { message: 'Wallet is busy', error_message: 'Wallet is busy', context: {} }
+    mutateAsync.mockRejectedValueOnce(lockError)
+
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('lock')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('lock'))
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('global.errors.error_locking_wallet_failed'))
+    expect(getErrorReasonMock).toHaveBeenCalledWith(lockError, 'global.errors.reason_unknown')
+    expect(lockT).toHaveBeenCalledWith('global.errors.error_locking_wallet_failed', { reason: 'reason' })
+    expect(clearAuth).not.toHaveBeenCalled()
+
+    vi.mocked(console.error).mockRestore()
   })
 
   it('logs out directly via the layout', async () => {
