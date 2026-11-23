@@ -61,7 +61,6 @@
     "alert_rescan_in_progress_with_progress": "Nouvelle analyse en cours ({{progress}} %)..."
   },
   "navbar": {
-    "title": "Jam",
     "text_rescan_in_progress": "Analyse en cours...",
     "text_rescan_in_progress_with_progress": "Analyse en cours ({{progress}} %)...",
     "tab_send": "Envoyer",
@@ -172,7 +171,6 @@
     "subtitle_wallet_created": "Veuillez noter votre phrase graine et votre mot de passe ! Sans ces informations, vous ne serez pas en mesure d'accéder à votre portefeuille et de le récupérer !",
     "alert_other_wallet_unlocked": "<1>{{ walletName }}</1> est actuellement actif. Vous devez d'abord le verrouiller. <3>Retour.</3>",
     "alert_other_wallet_unlocked_generic": "Un autre portefeuille est actif. Vous devez d'abord le verrouiller. <1>Retour</1>.",
-    "alert_rescan_in_progress": "Une nouvelle analyse de la timechain est en cours. Veuillez attendre la fin du processus puis réessayer. <1>Retour</1>.",
     "label_wallet_name": "Nom du porte-monnaie",
     "placeholder_wallet_name": "Votre porte-monnaie...",
     "feedback_invalid_wallet_name": "Veuillez définir un nom de portefeuille.",

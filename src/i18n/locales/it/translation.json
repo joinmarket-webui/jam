@@ -61,7 +61,6 @@
     "alert_rescan_in_progress_with_progress": "Nuova scansione in corso ({{progress}}%)..."
   },
   "navbar": {
-    "title": "Jam",
     "text_rescan_in_progress": "Scansione...",
     "text_rescan_in_progress_with_progress": "Scansione ({{progress}}%)...",
     "tab_send": "Invia",
@@ -209,7 +208,6 @@
     "subtitle_wallet_created": "Per favore, annota la tua seed phrase e la tua password! Senza queste informazioni non sarai in grado di accedere e recuperare il tuo portafoglio!",
     "alert_other_wallet_unlocked": "Attualmente <1>{{ walletName }}</1> è attivo. Devi prima bloccarlo. <3>Torna indietro</3>.",
     "alert_other_wallet_unlocked_generic": "Un altro wallet è attivo. È necessario prima bloccarlo. <1>Torna indietro</1>.",
-    "alert_rescan_in_progress": "È in corso una nuova scansione della timechain. Attendere il termine del processo e riprovare. <1>Torna indietro</1>.",
     "label_wallet_name": "Nome del portafoglio",
     "placeholder_wallet_name": "Il tuo portafoglio...",
     "feedback_invalid_wallet_name": "Si prega di impostare un nome per il portafoglio.",

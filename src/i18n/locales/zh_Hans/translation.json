@@ -61,7 +61,6 @@
     "alert_rescan_in_progress_with_progress": "正在重新扫描（{{progress}}%）..."
   },
   "navbar": {
-    "title": "Jam",
     "text_rescan_in_progress": "正在重新扫描...",
     "text_rescan_in_progress_with_progress": "重新扫描中（{{progress}}%）...",
     "tab_send": "发送",
@@ -209,7 +208,6 @@
     "subtitle_wallet_created": "请写下你的种子词和密码！没有这些信息，你将无法访问和恢复你的钱包！",
     "alert_other_wallet_unlocked": "目前 <1>{{ walletName }}</1> 正处于活跃状态。你必须先将它锁上。<3>返回</3>。",
     "alert_other_wallet_unlocked_generic": "另一个钱包正在使用中，你需要先将其锁定。<1>返回</1>。",
-    "alert_rescan_in_progress": "正在重新扫描时间链，请等待该过程完成后再试。<1>返回</1>。",
     "label_wallet_name": "钱包名称",
     "placeholder_wallet_name": "你的钱包...",
     "feedback_invalid_wallet_name": "请给钱包取个名称。",
