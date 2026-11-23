@@ -172,7 +172,6 @@
     "subtitle_wallet_created": "Bitte schreibe dir deine Seed Phrase und dein Passwort auf! Ohne diese Information wirst du nicht in der Lage sein, auf deine Wallet zuzugreifen oder sie wiederherzustellen. ",
     "alert_other_wallet_unlocked": "Derzeit ist <1>{{ walletName }}</1>aktiv. Du musst sie zuerst sperren. <3>Einen Schritt zurück</3>.",
     "alert_other_wallet_unlocked_generic": "Eine andere Wallet ist aktiv. Du musst sie zuerst sperren. <1>Zurück</1>.",
-    "alert_rescan_in_progress": "Die Timechain wird gerade neu gescannt. Bitte warte, bis der Vorgang abgeschlossen ist, und versuche es dann erneut. <1>Zurück</1>.",
     "label_wallet_name": "Wallet Name",
     "placeholder_wallet_name": "Deine Wallet...",
     "feedback_invalid_wallet_name": "Bitte benenne deine Wallet.",

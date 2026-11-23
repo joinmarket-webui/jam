@@ -208,7 +208,6 @@
     "subtitle_wallet_created": "Por favor, anote sua seed e senha! Sem esta informação não conseguirá acessar e recuperar a sua carteira!",
     "alert_other_wallet_unlocked": "Atualmente <1>{{ walletName }}</1> está ativa. Você precisa trancá-la primeiro. <3>Voltar</3>.",
     "alert_other_wallet_unlocked_generic": "Outra carteira está ativa. Você precisa bloqueá-la primeiro. <1>Voltar</1>.",
-    "alert_rescan_in_progress": "O reescaneamento da timechain está em andamento. Aguarde até que o processo termine e tente novamente. <1>Voltar</1>.",
     "label_wallet_name": "Nome da carteira",
     "placeholder_wallet_name": "Sua Carteira...",
     "feedback_invalid_wallet_name": "Por favor, defina o nome da carteira.",
