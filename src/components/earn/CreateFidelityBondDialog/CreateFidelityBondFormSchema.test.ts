@@ -84,7 +84,12 @@ describe('createFidelityBondFormSchema', () => {
         confirmationAccepted: true,
       }),
     ).rejects.toMatchObject({
-      inner: [expect.objectContaining({ path: 'source.fromJar' })],
+      inner: [
+        expect.objectContaining({
+          path: 'source.fromJar',
+          message: 'earn.fidelity_bond.select_jar.feedback_invalid_source_jar',
+        }),
+      ],
     })
   })
 })

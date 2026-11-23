@@ -40,7 +40,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
   const selectedSourceJar = useMemo(() => {
     if (selectedSourceJarIndex === undefined) return
-    return jars[selectedSourceJarIndex]
+    return jars.find((it) => it.jarIndex === selectedSourceJarIndex)
   }, [jars, selectedSourceJarIndex])
 
   const [receiveFormDefaultValues] = useState({
@@ -88,8 +88,9 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   })
 
   const sourceJar = useMemo(() => {
-    if (getAddressMutation.data?.sourceJarIndex === undefined) return
-    return jars[getAddressMutation.data.sourceJarIndex]
+    const sourceJarIndex = getAddressMutation.data?.sourceJarIndex
+    if (sourceJarIndex === undefined) return
+    return jars.find((it) => it.jarIndex === sourceJarIndex)
   }, [jars, getAddressMutation.data])
 
   const address = getAddressMutation.data?.address ?? ''

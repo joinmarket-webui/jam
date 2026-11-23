@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { withTimeZone } from '@/test/withTimeZone'
 import { EarnReportContent } from './EarnReportContent'
 import type { EarnReportEntry } from './hooks/useQueryYieldgenReport'
 
@@ -321,5 +322,67 @@ describe('EarnReportContent', () => {
     } finally {
       random.mockRestore()
     }
+  })
+
+  it('aligns 30-day and 90-day earnings cutoff to start of day', () => {
+    withTimeZone('UTC', () => {
+      // Current time at 18:00:00 on April 10, 2026
+      const mockNow = new Date('2026-04-10T18:00:00.000Z').getTime()
+      vi.spyOn(Date, 'now').mockReturnValue(mockNow)
+
+      // 29 days ago in calendar math from April 10 is March 12
+      // Entry on March 12 at 06:00:00 UTC (earlier than 18:00:00)
+      const entry30DaysAgoMorning = entry({
+        earnedAmount: 250,
+        timestamp: new Date('2026-03-12T06:00:00.000Z'),
+      })
+
+      // 89 days ago in calendar math from April 10 is January 11
+      // Entry on January 11 at 04:00:00 UTC
+      const entry90DaysAgoMorning = entry({
+        earnedAmount: 500,
+        timestamp: new Date('2026-01-11T04:00:00.000Z'),
+      })
+
+      // day before each cutoff, inside the old `now - 30 * 24h` window but outside the new one
+      const entryBefore30DayCutoff = entry({ earnedAmount: 120, timestamp: new Date('2026-03-11T20:00:00.000Z') })
+      const entryBefore90DayCutoff = entry({ earnedAmount: 1200, timestamp: new Date('2026-01-10T20:00:00.000Z') })
+
+      mocks.entries = [entry30DaysAgoMorning, entry90DaysAgoMorning, entryBefore30DayCutoff, entryBefore90DayCutoff]
+
+      render(<EarnReportContent enabled />)
+
+      expect(screen.getAllByText('balance:2070')).toHaveLength(1) // total
+      expect(screen.getAllByText('balance:870')).toHaveLength(1) // 90 days
+      expect(screen.getAllByText('balance:250')).toHaveLength(2) // 30 days + table row
+    })
+  })
+
+  it('handles DST transitions without skipping calendar days', () => {
+    withTimeZone('America/New_York', () => {
+      // March 9, 2026 at 00:30 (shortly after US DST spring forward on March 8)
+      const mockNow = new Date('2026-03-09T00:30:00-04:00').getTime()
+      vi.spyOn(Date, 'now').mockReturnValue(mockNow)
+
+      // 29 calendar days ago from March 9 is February 8
+      // Entry on February 8 at 10:00 AM local time (-05:00 EST)
+      const entryOnCutoffDay = entry({
+        earnedAmount: 350,
+        timestamp: new Date('2026-02-08T10:00:00-05:00'),
+      })
+
+      // February 7 is the day before the cutoff
+      const entryBeforeCutoffDay = entry({
+        earnedAmount: 120,
+        timestamp: new Date('2026-02-07T10:00:00-05:00'),
+      })
+
+      mocks.entries = [entryOnCutoffDay, entryBeforeCutoffDay]
+
+      render(<EarnReportContent enabled />)
+
+      expect(screen.getAllByText('balance:470')).toHaveLength(2) // total + 90 days
+      expect(screen.getAllByText('balance:350')).toHaveLength(2) // 30 days + table row
+    })
   })
 })

@@ -30,8 +30,7 @@ export const createFidelityBondFormSchema = (
   t: TFunction<'translation', undefined>,
 ): yup.ObjectSchema<CreateFidelityBondFormValues> => {
   const requiredMessage = t('global.errors.reason_unknown')
-  /* TODO: i18n: provide dedicated fidelity-bond source-jar validation copy */
-  const invalidSourceJarFeedbackMessage = t('receive.feedback_invalid_source_jar')
+  const invalidSourceJarFeedbackMessage = t('earn.fidelity_bond.select_jar.feedback_invalid_source_jar')
   const validLockdates = lockdateOptions.map((option) => option.value)
 
   return yup
