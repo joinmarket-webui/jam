@@ -468,7 +468,7 @@ describe('EarnPage', () => {
 
   it('display debug output in developer mode', () => {
     mocks.developerMode = true
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 0 }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 1 }
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
@@ -534,7 +534,7 @@ describe('EarnPage', () => {
 
   it('enables fidelity bond actions on existing fidelity bond', async () => {
     const user = userEvent.setup()
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 0 }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 1 }
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
@@ -560,7 +560,7 @@ describe('EarnPage', () => {
 
   it('disables fidelity bond actions on existing fidelity bond when rescanning is active', async () => {
     const user = userEvent.setup()
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 0 }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 1 }
     setSession({
       rescanning: true,
     })
