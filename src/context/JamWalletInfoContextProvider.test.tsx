@@ -240,6 +240,40 @@ describe('<JamWalletInfoContextProvider />', () => {
     // both locked bonds come before the expired one; higher value wins among locked
     expect(fbUtxos).toHaveLength(3)
     expect(fbUtxos?.slice(0, 2)).toEqual([`${txid('e')}:1`, `${txid('d')}:0`])
+    expect(context?.fidelityBondSummary.numberOfUnfrozenFbOutputs).toBe(3)
+  })
+
+  it('calculates the number of unfrozen fidelity bond outputs', () => {
+    let context: ReturnType<typeof useJamWalletInfoContext> | undefined
+    mocks.utxos = [
+      utxo({
+        utxo: `${txid('a')}:0`,
+        locktime: '2999-01-01 00:00:00',
+        path: `m/84'/0'/0'/0/0:123`,
+        frozen: false,
+      }),
+      utxo({
+        utxo: `${txid('b')}:1`,
+        locktime: '2999-01-01 00:00:00',
+        path: `m/84'/0'/0'/0/1:123`,
+        frozen: true,
+      }),
+      utxo({
+        utxo: `${txid('c')}:2`,
+        locktime: '2999-01-01 00:00:00',
+        path: `m/84'/0'/0'/0/2:123`,
+        frozen: false,
+      }),
+    ]
+
+    render(
+      <JamWalletInfoContextProvider walletFileName="testing.jmdat">
+        <CaptureWalletInfo onContext={(value) => (context = value)} />
+      </JamWalletInfoContextProvider>,
+    )
+
+    expect(context?.fidelityBondSummary.fbOutputs).toHaveLength(3)
+    expect(context?.fidelityBondSummary.numberOfUnfrozenFbOutputs).toBe(2)
   })
 
   it('detects the network from a utxo sample when no address info is available', () => {

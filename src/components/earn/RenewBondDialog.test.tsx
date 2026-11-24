@@ -58,7 +58,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
         utxos: [{ utxo: 'tx1:0', value: 1000, frozen: h.utxoFrozen }, ...h.extraUtxos],
       },
     ],
-    fidelityBondSummary: { fbOutputs: h.fbOutputs },
+    fidelityBondSummary: { fbOutputs: h.fbOutputs, numberOfUnfrozenFbOutputs: 0 },
     refetch: h.refetch,
   }),
 }))

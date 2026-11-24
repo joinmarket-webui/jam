@@ -94,8 +94,11 @@ const toFidelityBondSummary = (utxos: Utxo[]): FidelityBondSummary => {
       }
       return aLocked ? -1 : 1
     })
+  const numberOfUnfrozenFbOutputs = fbOutputs.filter((it) => it.frozen !== true).length
+
   return {
     fbOutputs,
+    numberOfUnfrozenFbOutputs,
   }
 }
 

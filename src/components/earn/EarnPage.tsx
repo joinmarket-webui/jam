@@ -191,9 +191,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     (!hasFidelityBond || JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED)
   const showCreateAdditionalFidelityBond = JAM_EARN_CREATE_MULTIPLE_FIDELITY_BONDS_ENABLED
 
-  const numberOfNonFrozenFidelityBondOutputs = !hasFidelityBond
-    ? 0
-    : walletInfo.fidelityBondSummary.fbOutputs.filter((it) => it.frozen !== true).length
+  const numberOfNonFrozenFidelityBondOutputs = walletInfo.fidelityBondSummary.numberOfUnfrozenFbOutputs
 
   const earnPreconditionWarning =
     numberOfNonFrozenFidelityBondOutputs > 0

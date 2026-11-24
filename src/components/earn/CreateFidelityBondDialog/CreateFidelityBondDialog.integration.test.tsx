@@ -64,7 +64,7 @@ vi.mock('@/hooks/useApiClient', () => ({
 vi.mock('@/context/JamWalletInfoContext', () => ({
   useJamWalletInfoContext: () => ({
     jars: h.walletJars,
-    fidelityBondSummary: { fbOutputs: [] },
+    fidelityBondSummary: { fbOutputs: [], numberOfUnfrozenFbOutputs: 0 },
     addressSummary: { bcrt1qsource: { status: 'cj-out' } },
     refetch: h.refetchWallet,
   }),

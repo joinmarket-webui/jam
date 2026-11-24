@@ -373,7 +373,7 @@ const makeWalletInfo = (overrides: Partial<WalletInfo> = {}): WalletInfo => {
     addressSummary: {},
     detectedNetwork: null,
     error: null,
-    fidelityBondSummary: { fbOutputs: [] },
+    fidelityBondSummary: { fbOutputs: [], numberOfUnfrozenFbOutputs: 0 },
     hasEligibleFidelityBondUtxo: false,
     isFetching: false,
     isLoading: false,
