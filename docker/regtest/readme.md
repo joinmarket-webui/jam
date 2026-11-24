@@ -7,6 +7,26 @@ Communication between these containers is done via Tor and local directory serve
 All containers will have a wallet named `Satoshi.jmdat` with password `test`.
 The fourth container (`joinmarket4`) has basic auth enabled (username `joinmarket` and password `joinmarket`).
 
+## Host access
+
+Published ports bind to `127.0.0.1` on the Docker host. This environment uses shared
+regtest credentials and unlocked maker wallets; do not expose it to untrusted networks.
+Container-to-container connections still use the Docker network and service names.
+
+For remote development, run the dev server on the Docker host and forward its port
+through SSH, for example `ssh -N -L 5173:127.0.0.1:5173 user@docker-host`.
+If the dev server runs locally and the backend runs remotely, forward the required
+backend ports instead, for example `ssh -N -L 28183:127.0.0.1:28183 -L 31800:127.0.0.1:31800 user@docker-host`
+for the default NG API and orderbook watcher. Other backends may need additional
+ports from `docker-compose.yml`. Use `127.0.0.1` for the local forwarded endpoint.
+These examples assume the Docker daemon runs on that remote host.
+
+To check host bindings without starting containers (requires Docker Compose):
+
+```sh
+node --test docker/regtest/ports.test.mjs
+```
+
 ## Common flow
 
 ```sh
