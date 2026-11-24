@@ -3,6 +3,7 @@ import { yieldgenreport } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { yieldgenReportToEarnReportEntries } from '@/components/earn/report/hooks/earnReportParser'
 import { useApiClient } from '@/hooks/useApiClient'
+import { getErrorReason } from '@/lib/errorReason'
 
 // Re-export for consumers
 export type { EarnReportEntry } from '@/components/earn/report/hooks/earnReportParser'
@@ -17,7 +18,11 @@ export function useQueryYieldgenReport({ enabled = true }: { enabled?: boolean }
         const response = await yieldgenreport({ client, signal })
 
         if (response.response?.status === 404) return []
-        if (response.error !== undefined) throw response.error
+        if (response.error !== undefined) {
+          throw new Error(getErrorReason(response.error, 'Could not load the earnings report'), {
+            cause: response.error,
+          })
+        }
 
         const lines = response.data?.yigen_data ?? []
 

@@ -71,7 +71,7 @@ describe('useQueryYieldgenReport', () => {
     const error = { message: 'Report unavailable' }
     yieldgenreportMock.mockResolvedValue({ error, response: { status } })
     renderHook(() => useQueryYieldgenReport())
-    await expect(runQueryFn()).rejects.toBe(error)
+    await expect(runQueryFn()).rejects.toMatchObject({ message: 'Report unavailable', cause: error })
   })
 
   it('accepts the expected HTTP 404 error result as empty', async () => {
