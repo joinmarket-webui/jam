@@ -772,6 +772,7 @@
         "title_expired": "Fidelity Bond <1>expired</1>",
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
+        "text_recently_expired": "It can take an hour or more after expiry until the funds can be spent. If unlocking or renewing fails, please try again later.",
         "label_address": "Time-locked address",
         "button_spend": "Unlock Funds",
         "button_renew": "Renew Bond"
