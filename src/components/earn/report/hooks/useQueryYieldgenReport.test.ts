@@ -7,7 +7,7 @@ type QueryOptions = {
   enabled?: boolean
 }
 
-const yieldgenreportMock = vi.fn<() => Promise<{ data: unknown }>>()
+const yieldgenreportMock = vi.fn<() => Promise<{ data?: unknown; error?: unknown; response?: { status: number } }>>()
 const parserMock = vi.fn((lines: string[]) => lines)
 let capturedOptions: QueryOptions
 
@@ -65,6 +65,19 @@ describe('useQueryYieldgenReport', () => {
     renderHook(() => useQueryYieldgenReport())
 
     await expect(runQueryFn()).rejects.toEqual({ status: 500 })
+  })
+
+  it.each([401, 500, 503])('rejects an HTTP %i error result', async (status) => {
+    const error = { message: 'Report unavailable' }
+    yieldgenreportMock.mockResolvedValue({ error, response: { status } })
+    renderHook(() => useQueryYieldgenReport())
+    await expect(runQueryFn()).rejects.toBe(error)
+  })
+
+  it('accepts the expected HTTP 404 error result as empty', async () => {
+    yieldgenreportMock.mockResolvedValue({ error: { detail: 'Not found' }, response: { status: 404 } })
+    renderHook(() => useQueryYieldgenReport())
+    await expect(runQueryFn()).resolves.toEqual([])
   })
 
   it('passes enabled through to useQuery', () => {

@@ -61,7 +61,7 @@ interface EarnReportContentProps {
 
 export const EarnReportContent = ({ className, enabled }: EarnReportContentProps) => {
   const { t } = useTranslation()
-  const { data: entries, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled })
+  const { data: entries, error, isLoading, refetch, isRefetching } = useQueryYieldgenReport({ enabled })
   const { enabled: isDeveloperMode } = useDeveloperMode()
   const [now] = useState(() => Date.now())
 
@@ -166,6 +166,11 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
 
   return (
     <div className={cn('mx-auto min-w-0 flex-1 space-y-3', className)}>
+      {error && (
+        <Alert variant="destructive" role="alert">
+          <AlertTitle>{t('earn.report.error_loading')}</AlertTitle>
+        </Alert>
+      )}
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
           <Spinner />
