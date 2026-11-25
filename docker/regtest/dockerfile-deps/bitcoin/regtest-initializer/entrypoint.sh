@@ -1,5 +1,5 @@
 #!/bin/sh
-set -Eeuo pipefail
+set -eu
 
 export _BTC_USER="${RPC_USER}:${RPC_PASSWORD}"
 export _BTC_URL="http://${RPC_HOST}:${RPC_PORT}"
@@ -12,9 +12,9 @@ fi
 
 MINE_BLOCKS=101
 
-source /usr/local/bin/wait-for-bitcoind.sh
-source /usr/local/bin/mine-blocks.sh "${MINE_BLOCKS}"
-source /usr/local/bin/wait-for-blocks.sh "${MINE_BLOCKS}"
+wait-for-bitcoind.sh
+mine-blocks.sh "${MINE_BLOCKS}"
+wait-for-blocks.sh "${MINE_BLOCKS}"
 
 if [ "${READY_FILE}" ] && [ ! -f "${READY_FILE}" ]; then
     echo "Creating $READY_FILE..."
