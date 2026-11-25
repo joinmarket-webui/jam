@@ -77,7 +77,10 @@ vi.mock('@tanstack/react-query', () => ({
           return undefined
         }
       },
-      reset: vi.fn(),
+      reset: () => {
+        state.isPending = false
+        state.isSuccess = false
+      },
     }
   }),
   useQuery: vi.fn(() => {
@@ -694,5 +697,23 @@ describe('EarnPage', () => {
     mocks.startMutationState.isSuccess = true
     render(<EarnPage walletFileName="wallet.jmdat" />)
     expect(mocks.toastSuccess).toHaveBeenCalledWith('earn.alert_running', expect.anything())
+  })
+
+  it.each([
+    { name: 'start', makerRunning: true, state: mocks.startMutationState, message: 'earn.alert_running' },
+    { name: 'stop', makerRunning: false, state: mocks.stopMutationState, message: 'earn.alert_stopped' },
+  ])('announces a successful $name only once when the session changes', ({ makerRunning, state, message }) => {
+    const announcements = () => mocks.toastSuccess.mock.calls.filter(([it]) => it === message)
+    state.isSuccess = true
+    setSession({ maker_running: makerRunning, block_height: 100 })
+
+    const { rerender } = render(<EarnPage walletFileName="wallet.jmdat" />)
+    expect(announcements()).toHaveLength(1)
+
+    for (const blockHeight of [101, 102]) {
+      setSession({ maker_running: makerRunning, block_height: blockHeight })
+      rerender(<EarnPage walletFileName="wallet.jmdat" />)
+    }
+    expect(announcements()).toHaveLength(1)
   })
 })
