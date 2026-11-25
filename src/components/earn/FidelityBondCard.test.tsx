@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import { FidelityBondCard } from './FidelityBondCard'
 
-type UtxoLike = { isFb?: boolean; locked?: boolean; locktime?: string }
+type UtxoLike = { isFb?: boolean; locked?: boolean; recentlyExpired?: boolean; locktime?: string }
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -26,6 +26,7 @@ vi.mock('@/lib/fidelityBondUtils', () => ({
   utxo: {
     isFidelityBond: vi.fn((value: UtxoLike) => value.isFb),
     isLocked: vi.fn((value: UtxoLike) => value.locked),
+    isRecentlyExpired: vi.fn((value: UtxoLike) => value.recentlyExpired),
     getLocktime: vi.fn((value: UtxoLike) => value.locktime),
   },
 }))
@@ -83,6 +84,15 @@ describe('FidelityBondCard', () => {
 
     expect(screen.getByTestId('trans')).toHaveTextContent('earn.fidelity_bond.existing.title_expired')
     expect(screen.getByText('earn.fidelity_bond.existing.label_expired_on')).toBeInTheDocument()
+  })
+
+  it('hints that a recently expired fidelity bond might not be spendable yet', () => {
+    const recentlyExpiredUtxo = { ...expiredUtxo, recentlyExpired: true }
+    const { rerender } = render(<FidelityBondCard value={recentlyExpiredUtxo} />)
+    expect(screen.getByRole('status')).toHaveTextContent('earn.fidelity_bond.existing.text_recently_expired')
+
+    rerender(<FidelityBondCard value={expiredUtxo} />)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('renders children in footer', () => {
