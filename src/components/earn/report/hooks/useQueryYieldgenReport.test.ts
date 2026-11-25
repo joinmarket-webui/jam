@@ -7,7 +7,7 @@ type QueryOptions = {
   enabled?: boolean
 }
 
-const yieldgenreportMock = vi.fn<() => Promise<{ data: unknown }>>()
+const yieldgenreportMock = vi.fn<() => Promise<{ data?: unknown; error?: unknown; response?: { status: number } }>>()
 const parserMock = vi.fn((lines: string[]) => lines)
 let capturedOptions: QueryOptions
 
@@ -53,11 +53,12 @@ describe('useQueryYieldgenReport', () => {
     expect(parserMock).toHaveBeenCalledWith([])
   })
 
-  it('returns an empty array on a 404 error', async () => {
-    yieldgenreportMock.mockRejectedValue({ status: 404 })
+  it('propagates a thrown network error', async () => {
+    const error = new Error('Network unavailable')
+    yieldgenreportMock.mockRejectedValue(error)
     renderHook(() => useQueryYieldgenReport())
 
-    await expect(runQueryFn()).resolves.toEqual([])
+    await expect(runQueryFn()).rejects.toBe(error)
   })
 
   it('rethrows non-404 errors', async () => {
@@ -65,6 +66,19 @@ describe('useQueryYieldgenReport', () => {
     renderHook(() => useQueryYieldgenReport())
 
     await expect(runQueryFn()).rejects.toEqual({ status: 500 })
+  })
+
+  it.each([401, 500, 503])('rejects an HTTP %i error result', async (status) => {
+    const error = { message: 'Report unavailable' }
+    yieldgenreportMock.mockResolvedValue({ error, response: { status } })
+    renderHook(() => useQueryYieldgenReport())
+    await expect(runQueryFn()).rejects.toMatchObject({ message: 'Report unavailable', cause: error })
+  })
+
+  it('accepts the expected HTTP 404 error result as empty', async () => {
+    yieldgenreportMock.mockResolvedValue({ error: { detail: 'Not found' }, response: { status: 404 } })
+    renderHook(() => useQueryYieldgenReport())
+    await expect(runQueryFn()).resolves.toEqual([])
   })
 
   it('passes enabled through to useQuery', () => {
