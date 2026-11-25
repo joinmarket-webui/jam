@@ -227,21 +227,28 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     scrollToPageTop()
   }
 
+  const { isSuccess: startMakerIsSuccess, reset: startMakerReset } = startMaker
+  const { isSuccess: stopMakerIsSuccess, reset: stopMakerReset } = stopMaker
+
+  // Reset the mutations once the maker started/stopped: the session changes regularly (e.g. on every
+  // new block) and must not announce the same start/stop again.
   useEffect(() => {
-    if (!jmSession || !startMaker.isSuccess || !makerRunning) return
+    if (!jmSession || !startMakerIsSuccess || !makerRunning) return
+    startMakerReset()
     toast.dismiss('earn.alert_starting')
     toast.dismiss('earn.alert_stopping')
     toast.dismiss('earn.alert_stopped')
     toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
-  }, [jmSession, makerRunning, startMaker.isSuccess, t])
+  }, [jmSession, makerRunning, startMakerIsSuccess, startMakerReset, t])
 
   useEffect(() => {
-    if (!jmSession || !stopMaker.isSuccess || makerRunning) return
+    if (!jmSession || !stopMakerIsSuccess || makerRunning) return
+    stopMakerReset()
     toast.dismiss('earn.alert_stopping')
     toast.dismiss('earn.alert_starting')
     toast.dismiss('earn.alert_running')
     toast.success(t('earn.alert_stopped'), { id: 'earn.alert_stopped' })
-  }, [jmSession, makerRunning, stopMaker.isSuccess, t])
+  }, [jmSession, makerRunning, stopMakerIsSuccess, stopMakerReset, t])
 
   if (!jmSession || walletInfo.isLoading) {
     return <PageLoading />
