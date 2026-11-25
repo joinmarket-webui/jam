@@ -14,26 +14,19 @@ export function useQueryYieldgenReport({ enabled = true }: { enabled?: boolean }
   return useQuery<ReturnType<typeof yieldgenReportToEarnReportEntries>>({
     queryKey: yieldgenreportQueryKey(),
     queryFn: async ({ signal }) => {
-      try {
-        const response = await yieldgenreport({ client, signal })
+      const response = await yieldgenreport({ client, signal })
 
-        if (response.response?.status === 404) return []
-        if (response.error !== undefined) {
-          throw new Error(getErrorReason(response.error, 'Could not load the earnings report'), {
-            cause: response.error,
-          })
-        }
-
-        const lines = response.data?.yigen_data ?? []
-
-        return yieldgenReportToEarnReportEntries(lines)
-      } catch (error: unknown) {
-        // 404 is returned until the maker is started at least once
-        if (error && typeof error === 'object' && 'status' in error && (error as { status: number }).status === 404) {
-          return []
-        }
-        throw error
+      // Preserve the legacy backend's missing-report behavior. NG returns a
+      // header-only 200 for an empty report; its 404 can mean a missing wallet.
+      if (response.response?.status === 404) return []
+      if (response.error !== undefined) {
+        throw new Error(getErrorReason(response.error, 'Could not load the earnings report'), {
+          cause: response.error,
+        })
       }
+
+      const lines = response.data?.yigen_data ?? []
+      return yieldgenReportToEarnReportEntries(lines)
     },
     enabled,
   })

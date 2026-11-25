@@ -53,11 +53,12 @@ describe('useQueryYieldgenReport', () => {
     expect(parserMock).toHaveBeenCalledWith([])
   })
 
-  it('returns an empty array on a 404 error', async () => {
-    yieldgenreportMock.mockRejectedValue({ status: 404 })
+  it('propagates a thrown network error', async () => {
+    const error = new Error('Network unavailable')
+    yieldgenreportMock.mockRejectedValue(error)
     renderHook(() => useQueryYieldgenReport())
 
-    await expect(runQueryFn()).resolves.toEqual([])
+    await expect(runQueryFn()).rejects.toBe(error)
   })
 
   it('rethrows non-404 errors', async () => {

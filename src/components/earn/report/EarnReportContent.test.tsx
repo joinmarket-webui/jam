@@ -126,6 +126,14 @@ describe('EarnReportContent', () => {
     vi.restoreAllMocks()
   })
 
+  it('does not call a failed report empty', () => {
+    mocks.entries = []
+    mocks.error.mockReturnValue(new Error('Unavailable'))
+    render(<EarnReportContent enabled />)
+    expect(screen.getByRole('alert')).toHaveTextContent('earn.report.error_loading')
+    expect(screen.queryByText('earn.alert_empty_report')).not.toBeInTheDocument()
+  })
+
   it('shows a refresh error without discarding loaded entries', () => {
     mocks.entries = [entry({ earnedAmount: 123 })]
     mocks.error.mockReturnValue(new Error('Unavailable'))

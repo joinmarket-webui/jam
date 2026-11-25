@@ -167,7 +167,7 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
   return (
     <div className={cn('mx-auto min-w-0 flex-1 space-y-3', className)}>
       {error && (
-        <Alert variant="destructive" role="alert">
+        <Alert variant="destructive">
           <AlertTitle>{t('earn.report.error_loading')}</AlertTitle>
         </Alert>
       )}
@@ -266,11 +266,13 @@ export const EarnReportContent = ({ className, enabled }: EarnReportContentProps
 
           {/* Table or empty state */}
           {allEntries.length === 0 ? (
-            <div className="space-y-2">
-              <Alert variant="default">
-                <AlertTitle>{t('earn.alert_empty_report')}</AlertTitle>
-              </Alert>
-            </div>
+            !error && (
+              <div className="space-y-2">
+                <Alert variant="default">
+                  <AlertTitle>{t('earn.alert_empty_report')}</AlertTitle>
+                </Alert>
+              </div>
+            )
           ) : (
             <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
               <div className="flex-1 overflow-auto">
