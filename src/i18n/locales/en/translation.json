@@ -42,7 +42,7 @@
     "duration_days_hours": "{{ days }}d {{ hours }}h",
     "errors": {
       "error_loading_wallet_failed": "Loading wallet failed. {{ reason }}",
-      "error_reloading_wallet_failed": "Reloading wallet failed. {{ reason }}",
+      "error_locking_wallet_failed": "Locking wallet failed. {{ reason }}",
       "error_copy_to_clipboard_failed": "Failed to copy to clipboard. {{ reason }}",
       "reason_unknown": "Unknown reason.",
       "error_loading_address_failed": "Unable to get new address.",

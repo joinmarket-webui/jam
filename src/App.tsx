@@ -157,8 +157,9 @@ const ProtectedNavbarRoute = () => {
       setLockWalletDialogContext(undefined)
       await doOnLogout(navigate)
     } catch (error: unknown) {
-      const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
-      toast.error(t('global.errors.error_reloading_wallet_failed', { reason }))
+      // API errors are normalized to plain objects (not `Error` instances), see `normalizeAppError`
+      const reason = getErrorReason(error, t('global.errors.reason_unknown'))
+      toast.error(t('global.errors.error_locking_wallet_failed', { reason }))
       console.error('Failed to lock wallet:', error)
     }
   }

@@ -42,7 +42,7 @@
     "duration_days_hours": "{{ days }} T {{ hours }} h",
     "errors": {
       "error_loading_wallet_failed": "Fehler beim Laden der Wallet. {{ reason }}",
-      "error_reloading_wallet_failed": "Fehler beim erneuten Laden der Wallet. {{ reason }}",
+      "error_locking_wallet_failed": "Fehler beim Sperren der Wallet. {{ reason }}",
       "error_copy_to_clipboard_failed": "Kopieren in die Zwischenablage fehlgeschlagen. {{ reason }}",
       "reason_unknown": "Unbekannter Grund",
       "error_loading_address_failed": "Neue Adresse kann nicht ermittelt werden.",
