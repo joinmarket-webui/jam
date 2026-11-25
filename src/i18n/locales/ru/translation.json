@@ -200,6 +200,7 @@
       "modal_lock_wallet_title": "Заблокировать кошелек",
       "modal_lock_wallet_maker_running_text": "Заработок активен. Блокировка кошелька остановит процесс.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Совместная Транзакция в процессе выполнения. Блокировка кошелька остановит процесс.",
+      "modal_lock_wallet_scheduler_running_text": "Плановый Перенос в процессе выполнения. Блокировка кошелька остановит планировщик.",
       "modal_lock_wallet_alternative_action_text": "Браузер можно закрыть, работа продолжится в фоновом режиме."
     }
   },
@@ -457,6 +458,7 @@
     "label_auto_follow": "Автопрокрутка",
     "label_search": "Поиск по логам",
     "placeholder_search": "Поиск по логам...",
+    "text_display_limit": "Показаны последние {{shown}} из {{count}} строк. Поиск и загрузка включают все загруженные строки.",
     "text_search_matches_zero": "Нет совпадений для «{{ searchValue }}».",
     "text_search_matches_one": "{{ count }} совпадающая строка.",
     "text_search_matches_few": "{{ count }} совпадающие строки.",
@@ -532,6 +534,7 @@
     "confirm_send_modal": {
       "title": "Подтвердить платеж",
       "label_amount": "Сумма",
+      "badge_sweep": "Перенос",
       "text_sweep_balance": "Перенос (<1></1>)",
       "text_sweep_info_popover": "Точная сумма транзакции может быть рассчитана JoinMarket только на момент совершения транзакции.",
       "label_recipient": "Получатель",
@@ -712,6 +715,7 @@
       "error_loading_address": "Не удалось загрузить адрес с временной блокировкой.",
       "error_creating_fidelity_bond": "Сделка по созданию Fidelity Bond провалилась.",
       "alert_all_funds_in_use": "<strong>Имейте в виду</strong>: поскольку вы используете все доступные средства для создания этогг Fidelity Bond, у вас не останется никаких UTXO. <br /><br />Fidelity Bond<strong>не будет участвовать в Совместных Транзакциях</strong>, и вам <strong>придется снова пополнить свой кошелек</strong>, чтобы начать отправлять или зарабатывать.",
+      "alert_all_coinjoined_funds_in_use": "<strong>Учтите</strong>: вы используете все свои перемешанные средства для создания этого Fidelity Bond. <br /><br />Fidelity Bond <strong>не участвует в Совместных Транзакциях</strong>, поэтому до окончания его срока для отправки или заработка доступны только средства, которые ещё не были перемешаны.",
       "text_loading": "Загрузка",
       "text_creating": "Создание",
       "text_creating_subtitle": "Это может занять некоторое время...",
@@ -726,7 +730,8 @@
       "select_jar": {
         "title": "Выберите исходную банку",
         "description": "Выберите банку, из которой вы будете финансировать Fidelity Bond.",
-        "alert_no_jars_available": "Не найдено банок с подходящими UTXO."
+        "alert_no_jars_available": "Не найдено банок с подходящими UTXO.",
+        "feedback_invalid_source_jar": "Выберите банку, из которой вы будете финансировать Fidelity Bond."
       },
       "select_utxos": {
         "title": "Выберите UTXO",
@@ -770,7 +775,8 @@
         "label_transaction_id": "ID транзакции",
         "text_copy_transaction_id": "ID транзакции скопирован",
         "label_utxos_to_unfreeze": "Хотите ли вы разморозить UTXO, которые были заморожены ранее?",
-        "text_success_subtitle": "Ваш Fidelity Bond успешно создан"
+        "text_success_subtitle": "Ваш Fidelity Bond успешно создан",
+        "error_unfreezing_utxos_on_close": "Некоторые UTXO, замороженные для Fidelity Bond, не удалось разморозить. Вы можете разморозить их в деталях банок."
       },
       "unfreeze_utxos": {
         "done": "UTXOs разморожены"
@@ -968,7 +974,16 @@
     },
     "confirm_start_modal": {
       "title": "Запустить Плановый Перенос",
-      "text_body": "Вы уверены, что хотите запустить Плановый Перенос?"
+      "text_body": "Вы уверены, что хотите запустить Плановый Перенос?",
+      "actions_count_one": "{{ count }} действие",
+      "actions_count_few": "{{ count }} действия",
+      "actions_count_many": "{{ count }} действий",
+      "actions_count_other": "{{ count }} действия",
+      "estimated_duration": "Примерная длительность"
+    },
+    "confirm_stop_modal": {
+      "title": "Остановить Плановый Перенос",
+      "text_body": "Вы уверены, что хотите остановить Плановый Перенос? Ожидающие транзакции в плане будут отменены."
     },
     "alert_schedule_completed_title": "Плановый Перенос успешно завершён.",
     "alert_schedule_failed_title": "Плановый Перенос завершился с ошибкой.",

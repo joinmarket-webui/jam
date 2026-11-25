@@ -421,6 +421,7 @@
     "label_auto_follow": "Automatisch folgen",
     "label_search": "Logs durchsuchen",
     "placeholder_search": "Logs durchsuchen...",
+    "text_display_limit": "Zeigt die neuesten {{shown}} von {{count}} Zeilen. Suche und Download umfassen alle geladenen Zeilen.",
     "text_search_matches_zero": "Keine Treffer für „{{ searchValue }}“.",
     "text_search_matches_one": "{{ count }} passende Zeile.",
     "text_search_matches_other": "{{ count }} passende Zeilen."
@@ -492,6 +493,7 @@
     "confirm_send_modal": {
       "title": "Zahlung freigeben",
       "label_amount": "Betrag",
+      "badge_sweep": "Sweep",
       "text_sweep_balance": "Sweep (<1></1>)",
       "text_sweep_info_popover": "Der exakte Transaktionsbetrag kann nur von JoinMarket zum Transaktionszeitpunkt berechnet werden.",
       "label_recipient": "Empfänger",
@@ -654,6 +656,7 @@
       "error_loading_address": "Die zeitlich gesperrte Adresse konnte nicht geladen werden.",
       "error_creating_fidelity_bond": "Die Transaktion zur Erstellung des Fidelity Bond ist fehlgeschlagen. ",
       "alert_all_funds_in_use": "<strong>Denke daran</strong>: Da alle verfügbaren Mittel für die Erstellung des Fidelity Bonds verwendet werden, werden keine UTXOs übrig bleiben. <br /><br /> Ein Fidelity Bond <strong> wird nicht an gemeinsamen Transaktionen </strong> teilnehmen, und deshalb <strong> muss dein Wallet erneut </strong>aufgeladen werden, bevor du mit dem Senden oder Verdienen beginnen kannst.",
+      "alert_all_coinjoined_funds_in_use": "<strong>Bedenke</strong>: Du verwendest alle deine gemixten Gelder für diesen Fidelity Bond. <br /><br />Ein Fidelity Bond <strong>nimmt nicht an gemeinschaftlichen Transaktionen teil</strong>, daher stehen dir bis zu seinem Ablauf nur Gelder, die noch nicht gemixt wurden, zum Senden oder Verdienen zur Verfügung.",
       "text_loading": "Laden...",
       "text_creating": "Erstellen...",
       "text_creating_subtitle": "Das kann einen Moment dauern...",
@@ -707,7 +710,8 @@
         "label_transaction_id": "Transaktions-ID",
         "text_copy_transaction_id": "Transaktions-ID kopiert",
         "label_utxos_to_unfreeze": "Willst du die vorher eingefrorenen UTXOs wieder auftauen? ",
-        "text_success_subtitle": "Dein Fidelity Bond wurde erfolgreich erstellt"
+        "text_success_subtitle": "Dein Fidelity Bond wurde erfolgreich erstellt",
+        "error_unfreezing_utxos_on_close": "Einige UTXOs, die für den Fidelity Bond eingefroren wurden, konnten nicht aufgetaut werden. Du kannst sie in den Details der Gläser auftauen."
       },
       "unfreeze_utxos": {
         "done": "UTXOs aufgetaut"

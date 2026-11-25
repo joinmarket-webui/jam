@@ -200,6 +200,7 @@
       "modal_lock_wallet_title": "Trancar Carteira",
       "modal_lock_wallet_maker_running_text": "'Lucrar' está ativo. Tranque a carteira para parar o serviço.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Uma transação colaborativa está em andamento. Bloquear a carteira interromperá o serviço.",
+      "modal_lock_wallet_scheduler_running_text": "Uma limpeza programada está em andamento. Bloquear a carteira interromperá o agendador.",
       "modal_lock_wallet_alternative_action_text": "Você pode fechar a janela do navegador para deixá-lo rodar em segundo plano."
     }
   },
@@ -457,6 +458,7 @@
     "label_auto_follow": "Seguir automaticamente",
     "label_search": "Pesquisar nos logs",
     "placeholder_search": "Pesquisar nos logs...",
+    "text_display_limit": "Mostrando as últimas {{shown}} de {{count}} linhas. A busca e o download incluem todas as linhas carregadas.",
     "text_search_matches_zero": "Nenhum resultado para \"{{ searchValue }}\".",
     "text_search_matches_one": "{{ count }} linha correspondente.",
     "text_search_matches_many": "{{ count }} linhas correspondentes.",
@@ -530,6 +532,7 @@
     "confirm_send_modal": {
       "title": "Confirmar pagamento",
       "label_amount": "Quantidade",
+      "badge_sweep": "Limpar",
       "text_sweep_balance": "Limpar (<1></1>)",
       "text_sweep_info_popover": "O valor exato da transação só pode ser calculado pelo JoinMarket no momento em que a transação é feita.",
       "label_recipient": "Recebedor",
@@ -701,6 +704,7 @@
       "error_loading_address": "Não foi possível carregar o endereço bloqueado por time-lock.",
       "error_creating_fidelity_bond": "Falha ao criar o título de fidelidade.",
       "alert_all_funds_in_use": "<strong>Lembre-se</strong>: como você está usando todos os fundos disponíveis para criar este título de fidelidade, não sobrará nenhum UTXO. <br /><br />Um título de fidelidade <strong>não participa de transações colaborativas</strong> e você <strong>terá que depositar fundos na carteira novamente</strong> para começar a enviar ou lucrar.",
+      "alert_all_coinjoined_funds_in_use": "<strong>Atenção</strong>: você está usando todos os seus fundos misturados para criar este título de fidelidade. <br /><br />Um título de fidelidade <strong>não participa de transações colaborativas</strong>, então até ele expirar, apenas os fundos que ainda não foram misturados ficam disponíveis para enviar ou lucrar.",
       "text_loading": "Carregando...",
       "text_creating": "Criando...",
       "text_creating_subtitle": "Isso pode levar um momento...",
@@ -715,7 +719,8 @@
       "select_jar": {
         "title": "Selecionar frasco de origem",
         "description": "Selecione um frasco para financiar o título de fidelidade.",
-        "alert_no_jars_available": "Nenhum frasco com UTXOs elegíveis encontrado."
+        "alert_no_jars_available": "Nenhum frasco com UTXOs elegíveis encontrado.",
+        "feedback_invalid_source_jar": "Selecione um frasco para financiar o título de fidelidade."
       },
       "select_utxos": {
         "title": "Selecionar UTXOs",
@@ -756,7 +761,8 @@
         "label_transaction_id": "ID da transação",
         "text_copy_transaction_id": "ID da transação copiado",
         "label_utxos_to_unfreeze": "Deseja descongelar os UTXOs que foram congelados anteriormente?",
-        "text_success_subtitle": "Seu título de fidelidade foi criado com sucesso"
+        "text_success_subtitle": "Seu título de fidelidade foi criado com sucesso",
+        "error_unfreezing_utxos_on_close": "Alguns UTXOs congelados para o título de fidelidade não puderam ser descongelados. Você pode descongelá-los nos detalhes dos frascos."
       },
       "unfreeze_utxos": {
         "done": "UTXOs descongelados"
@@ -952,7 +958,15 @@
     },
     "confirm_start_modal": {
       "title": "Iniciar limpeza programada",
-      "text_body": "Tem certeza de que deseja iniciar uma limpeza programada?"
+      "text_body": "Tem certeza de que deseja iniciar uma limpeza programada?",
+      "actions_count_one": "{{ count }} ação",
+      "actions_count_many": "{{ count }} ações",
+      "actions_count_other": "{{ count }} ações",
+      "estimated_duration": "Duração estimada"
+    },
+    "confirm_stop_modal": {
+      "title": "Parar limpeza programada",
+      "text_body": "Tem certeza de que deseja parar a limpeza programada? As transações ainda pendentes no agendamento serão canceladas."
     },
     "alert_schedule_completed_title": "Limpeza programada concluída com sucesso.",
     "alert_schedule_failed_title": "A limpeza programada falhou.",
