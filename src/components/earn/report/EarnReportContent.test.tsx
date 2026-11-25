@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   createObjectURL: vi.fn<(blob: Blob) => string>(() => 'blob:earn-report'),
   developerMode: false,
   entries: [] as EarnReportEntry[],
+  error: vi.fn<() => Error | null>(() => null),
   isLoading: false,
   isRefetching: false,
   refetch: vi.fn<() => Promise<void>>(),
@@ -27,6 +28,7 @@ vi.mock('@/components/dev/DevBadge', () => ({
 vi.mock('@/components/earn/report/hooks/useQueryYieldgenReport', () => ({
   useQueryYieldgenReport: ({ enabled }: { enabled: boolean }) => ({
     data: enabled ? mocks.entries : undefined,
+    error: mocks.error(),
     isLoading: mocks.isLoading,
     isRefetching: mocks.isRefetching,
     refetch: mocks.refetch,
@@ -92,6 +94,7 @@ const entry = (overrides: Partial<EarnReportEntry>): EarnReportEntry => ({
 
 describe('EarnReportContent', () => {
   beforeEach(() => {
+    mocks.error.mockReturnValue(null)
     vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-06-14T12:00:00.000Z').getTime())
     mocks.developerMode = false
     mocks.entries = [
@@ -121,6 +124,22 @@ describe('EarnReportContent', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+  })
+
+  it('does not call a failed report empty', () => {
+    mocks.entries = []
+    mocks.error.mockReturnValue(new Error('Unavailable'))
+    render(<EarnReportContent enabled />)
+    expect(screen.getByRole('alert')).toHaveTextContent('earn.report.error_loading')
+    expect(screen.queryByText('earn.alert_empty_report')).not.toBeInTheDocument()
+  })
+
+  it('shows a refresh error without discarding loaded entries', () => {
+    mocks.entries = [entry({ earnedAmount: 123 })]
+    mocks.error.mockReturnValue(new Error('Unavailable'))
+    render(<EarnReportContent enabled />)
+    expect(screen.getByRole('alert')).toHaveTextContent('earn.report.error_loading')
+    expect(screen.getByText('chart:1')).toBeInTheDocument()
   })
 
   it('renders loading and report states', () => {

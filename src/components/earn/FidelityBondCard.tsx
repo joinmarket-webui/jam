@@ -18,6 +18,7 @@ export function FidelityBondCard({ value, className, children }: PropsWithChildr
   const { t, i18n } = useTranslation()
 
   const isExpired = !fb.utxo.isLocked(value)
+  const isRecentlyExpired = fb.utxo.isRecentlyExpired(value)
   const humanReadableLockDuration = useMemo(() => {
     const locktime = fb.utxo.getLocktime(value)
     if (!locktime) return '-'
@@ -73,6 +74,11 @@ export function FidelityBondCard({ value, className, children }: PropsWithChildr
             <span className="text-md block font-mono break-words">
               {value.locktime} ({humanReadableLockDuration})
             </span>
+            {isRecentlyExpired && (
+              <span className="text-muted-foreground block text-sm" role="status">
+                {t('earn.fidelity_bond.existing.text_recently_expired')}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-start gap-4">

@@ -273,6 +273,26 @@ describe('utils', () => {
       })
     })
 
+    describe('isRecentlyExpired', () => {
+      const locktime = Date.UTC(2025, 5, 1)
+      const bond = makeBond('foo:0', locktime / 1_000)
+      const lag = fb.__MEDIAN_TIME_PAST_LAG_ESTIMATE
+
+      it.each([
+        ['before the locktime', locktime - 1, false],
+        ['at the locktime', locktime, false],
+        ['right after the locktime', locktime + 1, true],
+        ['at the end of the window', locktime + lag - 1, true],
+        ['after the window', locktime + lag, false],
+      ])('%s', (_, refTime, expected) => {
+        expect(fb.utxo.isRecentlyExpired(bond, refTime)).toBe(expected)
+      })
+
+      it('should be false for a non-timelocked utxo', () => {
+        expect(fb.utxo.isRecentlyExpired(makeUtxo('foo:0'), locktime + 1)).toBe(false)
+      })
+    })
+
     describe('isFidelityBond', () => {
       it('should return true when locktime is present', () => {
         const utxo = { locktime: '2025-06-01 00:00:00', path: `m/84'/1'/0'/0/1:1748736000` } as Utxo

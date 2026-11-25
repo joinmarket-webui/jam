@@ -29,6 +29,8 @@ export const DEFAULT_TIMELOCK_YEARS_RANGE = toYearsRange(0, DEFAULT_MAX_TIMELOCK
 // Exported for tests only!
 export const __INITIAL_LOCKDATE_MONTH_AHEAD = 3
 
+export const __MEDIAN_TIME_PAST_LAG_ESTIMATE: Milliseconds = 2 * 60 * 60 * 1_000
+
 const DATE_LABEL_FORMAT: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
 
 export const lockdate = (() => {
@@ -132,6 +134,11 @@ export const utxo = (() => {
     return locktime !== null && locktime >= refTime
   }
 
+  const isRecentlyExpired = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
+    const locktime = getLocktime(utxo)
+    return locktime !== null && locktime < refTime && refTime < locktime + __MEDIAN_TIME_PAST_LAG_ESTIMATE
+  }
+
   return {
     isEqual,
     isInList,
@@ -140,6 +147,7 @@ export const utxo = (() => {
     isFidelityBond,
     isEligibleForCreation,
     isLocked,
+    isRecentlyExpired,
     getLocktime,
   }
 })()
