@@ -36,7 +36,7 @@ const mocks = vi.hoisted(() => ({
   toastSuccess: vi.fn(),
   walletInfo: {
     addressSummary: {},
-    fidelityBondSummary: { fbOutputs: [] as FidelityBondUtxo[] },
+    fidelityBondSummary: { fbOutputs: [] as FidelityBondUtxo[], numberOfUnfrozenFbOutputs: 0 },
     hasEligibleFidelityBondUtxo: true,
     isFetching: false,
     isLoading: false,
@@ -333,7 +333,7 @@ describe('EarnPage', () => {
     mocks.walletInfo.addressSummary = {
       [eligibleUtxo.address]: { status: 'cj-out' },
     }
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [] }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [], numberOfUnfrozenFbOutputs: 0 }
     mocks.walletInfo.hasEligibleFidelityBondUtxo = true
     mocks.walletInfo.isFetching = false
     mocks.walletInfo.isLoading = false
@@ -468,7 +468,7 @@ describe('EarnPage', () => {
 
   it('display debug output in developer mode', () => {
     mocks.developerMode = true
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 1 }
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
@@ -534,7 +534,7 @@ describe('EarnPage', () => {
 
   it('enables fidelity bond actions on existing fidelity bond', async () => {
     const user = userEvent.setup()
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 1 }
 
     render(<EarnPage walletFileName="wallet.jmdat" />)
 
@@ -560,7 +560,7 @@ describe('EarnPage', () => {
 
   it('disables fidelity bond actions on existing fidelity bond when rescanning is active', async () => {
     const user = userEvent.setup()
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond] }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [expiredBond], numberOfUnfrozenFbOutputs: 1 }
     setSession({
       rescanning: true,
     })
@@ -644,6 +644,7 @@ describe('EarnPage', () => {
 
   it('warns when there are unfrozen fidelity bonds', () => {
     mocks.walletInfo.fidelityBondSummary = {
+      numberOfUnfrozenFbOutputs: 1,
       fbOutputs: [
         {
           ...expiredBond,

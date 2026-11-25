@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => {
     isDeveloperMode: false,
     walletInfo: {
       jars: [] as Jar[],
-      fidelityBondSummary: { fbOutputs: [] as Utxo[] },
+      fidelityBondSummary: { fbOutputs: [] as Utxo[], numberOfUnfrozenFbOutputs: 0 },
       addressSummary,
       refetch: vi.fn(),
     },
@@ -147,7 +147,7 @@ describe('useCreateFidelityBondWizard', () => {
     mocks.walletInfo.refetch = mocks.walletInfoRefetch
     mocks.queryAddress = 'bcrt1qtimelockdestination'
     mocks.isDeveloperMode = false
-    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [] }
+    mocks.walletInfo.fidelityBondSummary = { fbOutputs: [], numberOfUnfrozenFbOutputs: 0 }
     mocks.walletInfo.addressSummary = {
       bcrt1qsource: { status: 'cj-out' },
     }
@@ -346,6 +346,7 @@ describe('useCreateFidelityBondWizard', () => {
     const timestampSeconds = Math.floor(new Date(`${lockdate}-01T00:00:00Z`).getTime() / 1000)
 
     mocks.walletInfo.fidelityBondSummary = {
+      numberOfUnfrozenFbOutputs: 0,
       fbOutputs: [
         utxo({
           utxo: 'existing-bond:0',
@@ -370,6 +371,7 @@ describe('useCreateFidelityBondWizard', () => {
     const timestampSeconds = Math.floor(new Date(`${expiredLockdate}-01T00:00:00Z`).getTime() / 1000)
 
     mocks.walletInfo.fidelityBondSummary = {
+      numberOfUnfrozenFbOutputs: 0,
       fbOutputs: [
         utxo({
           utxo: 'expired-bond:0',
@@ -390,6 +392,7 @@ describe('useCreateFidelityBondWizard', () => {
 
   it('ignores existing fidelity bonds whose locktime cannot be derived', () => {
     mocks.walletInfo.fidelityBondSummary = {
+      numberOfUnfrozenFbOutputs: 0,
       fbOutputs: [
         // locked (far-future locktime) but the path carries no parseable timestamp
         utxo({

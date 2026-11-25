@@ -121,7 +121,7 @@ vi.mock('@/context/JamWalletInfoContext', () => ({
     addressSummary: {},
     detectedNetwork: null,
     error: null,
-    fidelityBondSummary: { fbOutputs: [] },
+    fidelityBondSummary: { fbOutputs: [], numberOfUnfrozenFbOutputs: 0 },
     isFetching: false,
     isLoading: false,
     jars: [walletMocks.storyJar],
