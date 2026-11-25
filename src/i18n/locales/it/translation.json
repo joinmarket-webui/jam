@@ -42,6 +42,7 @@
     "duration_days_hours": "{{ days }} g {{ hours }} h",
     "errors": {
       "error_loading_wallet_failed": "Caricamento del portafoglio fallito. {{ reason }}",
+      "error_locking_wallet_failed": "Blocco del portafoglio fallito. {{ reason }}",
       "error_copy_to_clipboard_failed": "Copia negli appunti non riuscita. {{ reason }}",
       "reason_unknown": "Motivo sconosciuto.",
       "error_loading_address_failed": "Impossibile ottenere un nuovo indirizzo.",

@@ -42,6 +42,7 @@
     "duration_days_hours": "{{ days }} d {{ hours }} h",
     "errors": {
       "error_loading_wallet_failed": "Erro ao carregar carteira. {{ reason }}",
+      "error_locking_wallet_failed": "Erro ao trancar carteira. {{ reason }}",
       "error_copy_to_clipboard_failed": "Falha ao copiar para a área de transferência. {{ reason }}",
       "reason_unknown": "Razão desconhecida.",
       "error_loading_address_failed": "Não foi possível obter novo endereço.",

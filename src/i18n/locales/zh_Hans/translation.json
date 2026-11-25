@@ -42,6 +42,7 @@
     "duration_days_hours": "{{ days }} 天 {{ hours }} 小时",
     "errors": {
       "error_loading_wallet_failed": "加载钱包失败。{{ reason }}",
+      "error_locking_wallet_failed": "锁上钱包失败。{{ reason }}",
       "error_copy_to_clipboard_failed": "复制到剪贴板失败。{{ reason }}",
       "reason_unknown": "未知原因。",
       "error_loading_address_failed": "无法获取新地址。",

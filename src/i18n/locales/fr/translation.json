@@ -42,6 +42,7 @@
     "duration_days_hours": "{{ days }} j {{ hours }} h",
     "errors": {
       "error_loading_wallet_failed": "Le chargement du portefeuille a échoué. {{ reason }}",
+      "error_locking_wallet_failed": "Le verrouillage du portefeuille a échoué. {{ reason }}",
       "error_copy_to_clipboard_failed": "La copie dans le presse-papier a échoué. {{ reason }}",
       "reason_unknown": "Raison inconnue.",
       "error_loading_address_failed": "Le chargement de la nouvelle adresse a échoué.",
