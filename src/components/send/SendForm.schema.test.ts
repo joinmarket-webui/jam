@@ -203,12 +203,13 @@ describe('createSendFormSchema', () => {
   })
 
   it('rejects invalid amounts and clears collaborators for direct sends', async () => {
+    const sourceJar = jars.find((it) => it.jarIndex === validFormValues.source.fromJar)
     await expect(
       schema.validate({
         ...validFormValues,
         amount: {
           isSweep: false,
-          amount: jars[validFormValues.source.fromJar].balanceSummary.calculatedTotalBalanceInSats + 1,
+          amount: (sourceJar?.balanceSummary.calculatedTotalBalanceInSats ?? 0) + 1,
         },
       }),
     ).rejects.toThrow('send.feedback_amount_exceeds_balance')
