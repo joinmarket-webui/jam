@@ -342,11 +342,14 @@ function RefreshApiToken() {
   useEffect(() => {
     if (!hasRefreshToken) return
 
+    let disposed = false
     let intervalId: NodeJS.Timeout
     setIntervalDebounced(
       async () => {
+        if (disposed) return
         const isDevMode = jamSettingsStore.getState().state.developerMode
-        const currentRefreshToken = authStore.getState().state?.auth?.refresh_token
+        const requestAuthState = authStore.getState().state
+        const currentRefreshToken = requestAuthState?.auth?.refresh_token
         if (currentRefreshToken === undefined) return
 
         const response = await token({
@@ -356,6 +359,10 @@ function RefreshApiToken() {
             refresh_token: currentRefreshToken,
           },
         })
+
+        // Logout/relogin replaces Zustand state even when credentials are reused.
+        // Never let a response from that earlier session write into the current one.
+        if (disposed || authStore.getState().state !== requestAuthState) return
 
         if (!response.data) {
           const message = getErrorReason(response.error, 'Unknown error.')
@@ -380,6 +387,7 @@ function RefreshApiToken() {
     )
 
     return () => {
+      disposed = true
       clearInterval(intervalId)
     }
   }, [client, hasRefreshToken])

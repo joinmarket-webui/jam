@@ -13,6 +13,7 @@ type Holders = {
   token?: string
   refreshToken?: string
   expiresAt?: number
+  authRevision?: number
   developerMode: boolean
   jmSession: Record<string, unknown>
   rescanning: boolean
@@ -66,22 +67,40 @@ vi.mock('react-router-dom', async (importOriginal) => {
   return { ...original, createBrowserRouter: vi.fn(original.createBrowserRouter) }
 })
 
-vi.mock('@/store/authStore', () => ({
-  authStore: {
-    getState: () => ({
-      state: {
+vi.mock('@/store/authStore', () => {
+  let signature: string
+  let snapshot: { walletFileName?: string; auth?: { token: string; refresh_token?: string; expiresAt?: number } }
+  const getSnapshot = () => {
+    const nextSignature = JSON.stringify([
+      holders.walletFileName,
+      holders.token,
+      holders.refreshToken,
+      holders.expiresAt,
+      holders.authRevision,
+    ])
+    if (signature !== nextSignature) {
+      signature = nextSignature
+      snapshot = {
         walletFileName: holders.walletFileName,
         auth: holders.token
           ? { token: holders.token, refresh_token: holders.refreshToken, expiresAt: holders.expiresAt }
           : undefined,
-      },
-      clear: clearAuth,
-      update: updateAuth,
-    }),
-  },
-  computeAuthExpiresAt: (expiresInSeconds: number | undefined) =>
-    Date.now() + (expiresInSeconds !== undefined ? expiresInSeconds * 1_000 : 1_800_000),
-}))
+      }
+    }
+    return snapshot
+  }
+  return {
+    authStore: {
+      getState: () => ({
+        state: getSnapshot(),
+        clear: clearAuth,
+        update: updateAuth,
+      }),
+    },
+    computeAuthExpiresAt: (expiresInSeconds: number | undefined) =>
+      Date.now() + (expiresInSeconds !== undefined ? expiresInSeconds * 1_000 : 1_800_000),
+  }
+})
 
 vi.mock('@/store/jmConfigStore', () => ({
   jmConfigStore: { getState: () => ({ clear: clearJmConfig }) },
@@ -363,10 +382,10 @@ describe('RefreshApiToken', () => {
 
   // eslint-disable-next-line unicorn/consistent-function-scoping -- okay in tests
   const renderAndGetRenewalCallback = async () => {
-    render(<App />)
+    const view = render(<App />)
     await waitFor(() => expect(vi.mocked(setIntervalDebouncedMock)).toHaveBeenCalled())
     const [callback, delay] = vi.mocked(setIntervalDebouncedMock).mock.calls.at(-1)!
-    return { callback: callback as () => Promise<void>, delay }
+    return { callback: callback as () => Promise<void>, delay, unmount: view.unmount }
   }
 
   it('does not clear auth when a renewal request fails (e.g. a network error)', async () => {
@@ -395,6 +414,47 @@ describe('RefreshApiToken', () => {
       }) as unknown,
     })
     expect(clearAuth).not.toHaveBeenCalled()
+  })
+
+  it.each(['logout', 'new-login', 'same-credentials'])('discards a response after %s', async (transition) => {
+    let resolve!: (value: never) => void
+    vi.mocked(tokenMock).mockReturnValueOnce(
+      new Promise<never>((done) => {
+        resolve = done
+      }),
+    )
+    const { callback } = await renderAndGetRenewalCallback()
+    const pending = callback()
+    if (transition === 'logout') {
+      holders.token = undefined
+      holders.refreshToken = undefined
+    } else if (transition === 'new-login') {
+      holders.token = 'new-login'
+      holders.refreshToken = 'new-refresh'
+    } else {
+      // Zustand replaces state on clear/relogin even if credentials are reused.
+      holders.authRevision = (holders.authRevision ?? 0) + 1
+    }
+    resolve({ data: { token: 'late-token', refresh_token: 'late-refresh' } } as never)
+    await act(async () => {
+      await pending
+    })
+    expect(updateAuth).not.toHaveBeenCalled()
+  })
+
+  it('discards an in-flight response after unmount', async () => {
+    let resolve!: (value: never) => void
+    vi.mocked(tokenMock).mockReturnValueOnce(
+      new Promise<never>((done) => {
+        resolve = done
+      }),
+    )
+    const { callback, unmount } = await renderAndGetRenewalCallback()
+    const pending = callback()
+    unmount()
+    resolve({ data: { token: 'late-token', refresh_token: 'late-refresh' } } as never)
+    await pending
+    expect(updateAuth).not.toHaveBeenCalled()
   })
 
   it('schedules renewal based on the token expiry rather than a fixed interval', async () => {
