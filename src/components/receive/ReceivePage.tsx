@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useRescanStatus } from '@/context/JamSessionInfoContext'
+import { useJamSessionInfoContext } from '@/context/JamSessionInfoContext'
 import { useJars } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withMutationDelay } from '@/lib/queryClient'
@@ -34,7 +34,7 @@ interface ReceivePageProps {
 export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const { t } = useTranslation()
   const { jars } = useJars()
-  const { rescanInfo } = useRescanStatus()
+  const { operations } = useJamSessionInfoContext()
 
   const [selectedSourceJarIndex, setSelectedSourceJarIndex] = useState(jars.length > 0 ? jars[0].jarIndex : undefined)
 
@@ -111,7 +111,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   }
 
   const fetchNewAddress = async () => {
-    if (rescanInfo.rescanning) return
+    if (!operations.receive.enabled) return
     await getAddressMutation.mutateAsync()
   }
 
@@ -136,7 +136,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   variant={jarButtonVariant(selectedSourceJarIndex)}
                   size="lg"
                   onClick={() => void fetchNewAddress()}
-                  disabled={getAddressMutation.isPending || rescanInfo.rescanning}
+                  disabled={getAddressMutation.isPending || !operations.receive.enabled}
                 >
                   <HatGlassesIcon />
                   {t('receive.button_reveal_address')}
@@ -196,7 +196,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             <Button
               variant="outline"
               onClick={() => void fetchNewAddress()}
-              disabled={getAddressMutation.isPending || rescanInfo.rescanning}
+              disabled={getAddressMutation.isPending || !operations.receive.enabled}
             >
               {getAddressMutation.isPending ? (
                 <>

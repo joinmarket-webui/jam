@@ -61,6 +61,9 @@ vi.mock('@/components/ui/jam/Balance', () => ({
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useJamSessionInfoContext: () => ({
+    operations: {
+      walletUtxos: { enabled: !mocks.takerRunning && !mocks.makerRunning && !mocks.rescanning },
+    },
     takerInfo: { running: mocks.takerRunning },
     rescanInfo: { rescanning: mocks.rescanning },
     makerInfo: { running: mocks.makerRunning },

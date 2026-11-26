@@ -133,6 +133,16 @@ vi.mock('@/components/ui/jam/PageLoading', () => ({
 }))
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
+  useJamSessionInfoContext: () => ({
+    operations: {
+      earn: {
+        enabled:
+          mocks.jmSession?.maker_running !== true &&
+          mocks.jmSession?.coinjoin_in_process !== true &&
+          mocks.jmSession?.rescanning !== true,
+      },
+    },
+  }),
   useRawJmSession: () => ({
     jmSession: mocks.jmSession,
     updateSessionInfo: vi.fn(),

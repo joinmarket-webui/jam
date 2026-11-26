@@ -59,7 +59,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const {
-    rescanInfo,
+    operations,
     makerInfo: { running: makerRunning },
     takerInfo: {
       running: takerRunning,
@@ -235,12 +235,7 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   }, [schedulerRunning, stopScheduleMutationIsSuccess, stopScheduleMutationReset])
 
   const isOperationDisabled =
-    feeConfigValidation.maxFeesConfigMissing ||
-    makerRunning ||
-    takerRunning ||
-    rescanInfo.rescanning ||
-    makerRunning ||
-    !preconditionSummary.isFulfilled
+    feeConfigValidation.maxFeesConfigMissing || !operations.sweep.enabled || !preconditionSummary.isFulfilled
 
   const isStartDisabled =
     isOperationDisabled ||

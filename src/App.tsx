@@ -53,7 +53,7 @@ import { LockWalletConfirmDialog } from './components/ui/jam/LockWalletConfirmDi
 import { Spinner } from './components/ui/spinner'
 import { TxHistoryPage } from './components/wallet/TxHistoryPage'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
-import { useRawJmSession, useJamSessionInfoContext } from './context/JamSessionInfoContext'
+import { useJamSessionInfoContext } from './context/JamSessionInfoContext'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 import { useJamWalletInfoContext } from './context/JamWalletInfoContext'
 import { JmWebsocketContextProvider } from './context/JmWebsocketContextProvider'
@@ -115,10 +115,10 @@ const ProtectedRoute = () => {
 
 const ProtectedNavbarRoute = () => {
   const walletFileName = useOutletContext<WalletFileName>()
-  const { jmSession } = useRawJmSession()
-  const makerRunning = jmSession?.maker_running === true
-  const schedulerRunning = (jmSession?.schedule?.length || 0) > 0
-  const coinjoinInProgress = jmSession?.coinjoin_in_process === true && !schedulerRunning
+  const { operations } = useJamSessionInfoContext()
+  const makerRunning = operations.walletLock.reasons.includes('makerRunning')
+  const schedulerRunning = operations.walletLock.reasons.includes('schedulePending')
+  const coinjoinInProgress = operations.walletLock.reasons.includes('coinjoinRunning') && !schedulerRunning
   const client = useApiClient()
   const lockWalletQuery = useQuery(
     {

@@ -4,6 +4,7 @@ import type { SendFormValues } from '@/components/send/types'
 import type { TakerStatusInfo } from '@/lib/takerStatus'
 import type { WalletFileName } from '@/lib/utils'
 import type { Factor } from '@/types/global'
+import type { OperationsAvailability } from './operationAvailability'
 
 export interface RescanInfo {
   updatedAt: number
@@ -37,6 +38,7 @@ export interface MakerInfo {
 }
 
 interface JamSessionInfoContextType {
+  operations: OperationsAvailability
   blockHeight?: number
   takerInfo: TakerInfo
   rescanInfo: RescanInfo
