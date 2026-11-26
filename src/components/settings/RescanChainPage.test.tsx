@@ -23,6 +23,7 @@ const toastError = vi.fn()
 let mutationConfig: MutationConfig
 let rescanInfo: RescanInfo
 const currentBlockHeight: BlockHeight = SEGWIT_ACTIVATION_BLOCK
+const blockHeightMock = vi.hoisted(() => ({ current: undefined as BlockHeight | undefined }))
 
 vi.mock('@tanstack/react-query', () => ({
   useMutation: (config: MutationConfig) => {
@@ -58,7 +59,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/context/JamSessionInfoContext', () => ({
   useRescanStatus: () => ({ rescanInfo, setRescanInfo }),
-  useCurrentBlockHeight: () => ({ currentBlockHeight: SEGWIT_ACTIVATION_BLOCK }),
+  useCurrentBlockHeight: () => ({ currentBlockHeight: blockHeightMock.current }),
 }))
 
 vi.mock('@/hooks/useApiClient', () => ({
@@ -80,10 +81,32 @@ const renderPage = async (props: Omit<ComponentProps<typeof RescanChainPage>, 'w
   })
 }
 
+// renders before the block height is known, as after a page reload
+const renderWithoutBlockHeight = async () => {
+  blockHeightMock.current = undefined
+  let view: ReturnType<typeof render> | undefined
+  await act(async () => {
+    view = render(<RescanChainPage walletFileName={walletFileName} />)
+    await Promise.resolve()
+  })
+  const rerenderWithBlockHeight = async (blockHeight: BlockHeight) => {
+    blockHeightMock.current = blockHeight
+    await act(async () => {
+      view!.rerender(<RescanChainPage walletFileName={walletFileName} />)
+      await Promise.resolve()
+    })
+  }
+  return {
+    input: screen.getByRole('spinbutton', { name: 'rescan_chain.label_blockheight' }),
+    rerenderWithBlockHeight,
+  }
+}
+
 describe('RescanChainPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     rescanInfo = { updatedAt: 0, rescanning: false, progress: undefined, progressInPercentage: undefined }
+    blockHeightMock.current = currentBlockHeight
   })
 
   it('renders the form', async () => {
@@ -169,5 +192,27 @@ describe('RescanChainPage', () => {
     expect(toastError).toHaveBeenCalled()
     expect(setRescanInfo).toHaveBeenCalledWith(expect.objectContaining({ rescanning: false }))
     consoleSpy.mockRestore()
+  })
+
+  describe('when the block height is only known after rendering (e.g. after a page reload)', () => {
+    it('defaults to the last day of blocks once the block height is known', async () => {
+      const { input, rerenderWithBlockHeight } = await renderWithoutBlockHeight()
+      expect(input).toHaveValue(SEGWIT_ACTIVATION_BLOCK)
+
+      await rerenderWithBlockHeight(925_000)
+      expect(input).toHaveValue(924_856)
+
+      // later blocks do not change the default again
+      await rerenderWithBlockHeight(925_001)
+      expect(input).toHaveValue(924_856)
+    })
+
+    it('keeps a value entered before the block height is known', async () => {
+      const { input, rerenderWithBlockHeight } = await renderWithoutBlockHeight()
+      fireEvent.change(input, { target: { value: '800000' } })
+
+      await rerenderWithBlockHeight(925_000)
+      expect(input).toHaveValue(800_000)
+    })
   })
 })

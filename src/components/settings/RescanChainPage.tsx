@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
@@ -30,6 +30,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 type RescanChainFormValues = {
   blockHeight: BlockHeight
 }
+
+const defaultRescanBlockHeight = (currentBlockHeight: BlockHeight | undefined): BlockHeight =>
+  currentBlockHeight === undefined
+    ? SEGWIT_ACTIVATION_BLOCK
+    : Math.max(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight - AVERAGE_BLOCKS_PER_DAY)
 
 const rescanFormSchema = (currentBlockHeight: BlockHeight | undefined, t: TFunction) => {
   return yup
@@ -63,12 +68,24 @@ function RescanChainForm({ rescanInfo, defaultValues, currentBlockHeight, onSubm
     register,
     handleSubmit,
     setValue,
+    getValues,
+    resetField,
     formState: { errors, isSubmitting },
   } = useForm<RescanChainFormValues>({
     mode: 'onSubmit',
     defaultValues,
     resolver: yupResolver(schema),
   })
+
+  // The block height is not known yet on a page reload. Replace the fallback default once it is,
+  // unless another value has been entered in the meantime.
+  const isFallbackDefault = useRef(currentBlockHeight === undefined)
+  useEffect(() => {
+    if (!isFallbackDefault.current || currentBlockHeight === undefined) return
+    isFallbackDefault.current = false
+    if (getValues('blockHeight') !== defaultRescanBlockHeight(undefined)) return
+    resetField('blockHeight', { defaultValue: defaultRescanBlockHeight(currentBlockHeight) })
+  }, [currentBlockHeight, getValues, resetField])
 
   const doOnSubmit = handleSubmit(onSubmit)
 
@@ -180,10 +197,7 @@ export const RescanChainPage = ({ walletFileName, backLinkTarget }: RescanChainP
   const { currentBlockHeight } = useCurrentBlockHeight()
 
   const [defaultValues] = useState<Partial<RescanChainFormValues>>(() => ({
-    blockHeight:
-      currentBlockHeight === undefined
-        ? SEGWIT_ACTIVATION_BLOCK
-        : Math.max(INPUT_BLOCK_HEIGHT_MIN, currentBlockHeight - AVERAGE_BLOCKS_PER_DAY),
+    blockHeight: defaultRescanBlockHeight(currentBlockHeight),
   }))
 
   const { rescanInfo, setRescanInfo } = useRescanStatus()
