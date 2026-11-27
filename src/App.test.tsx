@@ -457,6 +457,39 @@ describe('RefreshApiToken', () => {
     expect(updateAuth).not.toHaveBeenCalled()
   })
 
+  it('clears the timer rescheduled after an in-flight renewal is disposed', async () => {
+    const { setIntervalDebounced } = await vi.importActual<typeof import('@/lib/utils')>('@/lib/utils')
+    let resolve!: (value: never) => void
+    vi.mocked(tokenMock).mockReturnValueOnce(
+      new Promise<never>((done) => {
+        resolve = done
+      }),
+    )
+    const { callback, unmount } = await renderAndGetRenewalCallback()
+    const notifyTimer = vi.mocked(setIntervalDebouncedMock).mock.calls.at(-1)![2]
+
+    vi.useFakeTimers()
+    try {
+      // Run the real loop with the effect's callback and timer registration.
+      setIntervalDebounced(callback, 10, notifyTimer)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10)
+      })
+      expect(tokenMock).toHaveBeenCalledTimes(1)
+      unmount()
+      resolve({ data: { token: 'late-token', refresh_token: 'late-refresh' } } as never)
+      await act(async () => {
+        await Promise.resolve()
+        await Promise.resolve()
+      })
+      expect(vi.getTimerCount()).toBe(0)
+      expect(updateAuth).not.toHaveBeenCalled()
+    } finally {
+      vi.clearAllTimers()
+      vi.useRealTimers()
+    }
+  })
+
   it('schedules renewal based on the token expiry rather than a fixed interval', async () => {
     holders.expiresAt = Date.now() + 4 * 60_000
 

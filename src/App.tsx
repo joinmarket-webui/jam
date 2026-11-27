@@ -383,7 +383,10 @@ function RefreshApiToken() {
         }
       },
       nextTokenRenewDelay,
-      (timerId) => (intervalId = timerId),
+      (timerId) => {
+        if (disposed) clearTimeout(timerId)
+        else intervalId = timerId
+      },
     )
 
     return () => {
