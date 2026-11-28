@@ -1,3 +1,4 @@
+import { StrictMode, useEffect, useState } from 'react'
 import { CancelledError } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -96,11 +97,44 @@ describe('useJmConfig', () => {
     const pending = result.current.refetch(key)
     act(() => jmConfigStore.getState().set({ key, value: '8' }))
     await act(async () => {
-      const rejected = expect(pending).rejects.toBeInstanceOf(CancelledError)
+      const resolved = expect(pending).resolves.toEqual({ key, value: '8' })
       response.resolve({ configvalue: '2' })
-      await rejected
+      await resolved
     })
     expect(jmConfigStore.getState().get(key)?.value).toBe('8')
+  })
+
+  it('loads minimum makers during StrictMode effect replay', async () => {
+    const key: ConfigKey = { section: 'POLICY', field: 'minimum_makers' }
+    const first = deferredConfigResponse()
+    const replay = deferredConfigResponse()
+    mocks.fetchConfig.mockReturnValueOnce(first.promise).mockReturnValueOnce(replay.promise)
+    const { result } = renderHook(
+      () => {
+        const { fetchIfMissing } = useJmConfig({ walletFileName: 'wallet.jmdat' })
+        const [minimumMakers, setMinimumMakers] = useState(4)
+        useEffect(() => {
+          let active = true
+          void fetchIfMissing(key)
+            .then(({ value }) => {
+              if (active) setMinimumMakers(Number(value))
+            })
+            .catch(() => {})
+          return () => {
+            active = false
+          }
+        }, [fetchIfMissing])
+        return minimumMakers
+      },
+      { wrapper: StrictMode },
+    )
+    await act(async () => {
+      first.resolve({ configvalue: '2' })
+      await first.promise
+      replay.resolve({ configvalue: '2' })
+      await replay.promise
+    })
+    expect(result.current).toBe(2)
   })
 
   it('allows concurrent different-key reads in the same cache generation', async () => {

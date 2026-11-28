@@ -32,7 +32,15 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
           field: key.field,
         },
       })
-      if (jmConfigStore.getState().getRevision(key) !== revision) {
+      const currentRevision = jmConfigStore.getState().getRevision(key)
+      if (currentRevision.generation !== revision.generation) {
+        throw new CancelledError()
+      }
+      if (currentRevision.revision !== revision.revision) {
+        // Another current-session read or write already supplied a newer value.
+        // Return it so duplicate consumers (including StrictMode replay) still complete.
+        const current = jmConfigStore.getState().get(key)
+        if (current !== null) return current
         throw new CancelledError()
       }
       const result: ConfigValue = {

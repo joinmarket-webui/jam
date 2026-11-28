@@ -10,7 +10,7 @@ interface JmConfigStoreState {
   state: JmConfigs
   get: (val: ConfigKey) => ConfigValue | null
   set: (val: ConfigValue) => void
-  getRevision: (key: ConfigKey) => string
+  getRevision: (key: ConfigKey) => { generation: number; revision: number }
   clear: () => void
 }
 
@@ -44,7 +44,7 @@ export const jmConfigStore = createStore<JmConfigStoreState>()(
           }
         })
       },
-      getRevision: (key) => `${generation}:${revisions.get(revisionKey(key)) ?? 0}`,
+      getRevision: (key) => ({ generation, revision: revisions.get(revisionKey(key)) ?? 0 }),
       clear: () => {
         generation++
         revisions.clear()
