@@ -10,10 +10,15 @@ interface JmConfigStoreState {
   state: JmConfigs
   get: (val: ConfigKey) => ConfigValue | null
   set: (val: ConfigValue) => void
+  getRevision: (key: ConfigKey) => string
   clear: () => void
 }
 
 const initial: JmConfigs = {}
+// Track resets and same-key writes without invalidating unrelated reads.
+let generation = 0
+const revisions = new Map<string, number>()
+const revisionKey = (key: ConfigKey) => `${key.section}:${key.field}`
 
 export const jmConfigStore = createStore<JmConfigStoreState>()(
   persist(
@@ -23,7 +28,9 @@ export const jmConfigStore = createStore<JmConfigStoreState>()(
         const value = get().state[key.section]?.[key.field]
         return value !== undefined ? { key, value } : null
       },
-      set: (val) =>
+      set: (val) => {
+        const key = revisionKey(val.key)
+        revisions.set(key, (revisions.get(key) ?? 0) + 1)
         set((state) => {
           const currentSection = state.state[val.key.section] || {}
           return {
@@ -35,8 +42,14 @@ export const jmConfigStore = createStore<JmConfigStoreState>()(
               },
             },
           }
-        }),
-      clear: () => set({ state: initial }),
+        })
+      },
+      getRevision: (key) => `${generation}:${revisions.get(revisionKey(key)) ?? 0}`,
+      clear: () => {
+        generation++
+        revisions.clear()
+        set({ state: initial })
+      },
     }),
     {
       name: 'jm-config-store',

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { configgetMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { useMutation } from '@tanstack/react-query'
+import { CancelledError, useMutation } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import type { ConfigKey, ConfigValue } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -24,6 +24,7 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
 
   const refetch = useCallback(
     async (key: ConfigKey): Promise<ConfigValue> => {
+      const revision = jmConfigStore.getState().getRevision(key)
       const { configvalue } = await fetchConfigAsync({
         path: { walletname: walletFileName },
         body: {
@@ -31,6 +32,9 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
           field: key.field,
         },
       })
+      if (jmConfigStore.getState().getRevision(key) !== revision) {
+        throw new CancelledError()
+      }
       const result: ConfigValue = {
         key,
         value: configvalue || null,
