@@ -1,3 +1,5 @@
+import { StrictMode, useEffect, useState } from 'react'
+import { CancelledError } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ConfigKey } from '@/constants/jm'
@@ -12,7 +14,8 @@ vi.mock('@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query', () => ({
   configgetMutation: vi.fn(() => ({})),
 }))
 
-vi.mock('@tanstack/react-query', () => ({
+vi.mock('@tanstack/react-query', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@tanstack/react-query')>()),
   useMutation: vi.fn(() => ({
     mutateAsync: mocks.fetchConfig,
   })),
@@ -23,6 +26,14 @@ vi.mock('@/hooks/useApiClient', () => ({
 }))
 
 const txFeesKey: ConfigKey = { section: 'POLICY', field: 'tx_fees' }
+
+const deferredConfigResponse = () => {
+  let resolve!: (value: { configvalue: string }) => void
+  const promise = new Promise<{ configvalue: string }>((done) => {
+    resolve = done
+  })
+  return { promise, resolve }
+}
 
 describe('useJmConfig', () => {
   beforeEach(() => {
@@ -58,5 +69,89 @@ describe('useJmConfig', () => {
 
     await expect(result.current.fetchIfMissing(txFeesKey)).resolves.toEqual({ key: txFeesKey, value: '5' })
     expect(mocks.fetchConfig).not.toHaveBeenCalled()
+  })
+  it.each([undefined, '8'])('discards pre-reset responses with replacement %s', async (replacement) => {
+    const pendingResponse = deferredConfigResponse()
+    mocks.fetchConfig.mockReturnValueOnce(pendingResponse.promise)
+    const { result } = renderHook(() => useJmConfig({ walletFileName: 'old.jmdat' }))
+    const pending = result.current.refetch(txFeesKey)
+    act(() => {
+      jmConfigStore.getState().clear()
+      if (replacement !== undefined) jmConfigStore.getState().set({ key: txFeesKey, value: replacement })
+    })
+    await act(async () => {
+      const rejected = expect(pending).rejects.toBeInstanceOf(CancelledError)
+      pendingResponse.resolve({ configvalue: '2' })
+      await rejected
+    })
+    expect(jmConfigStore.getState().get(txFeesKey)).toEqual(
+      replacement === undefined ? null : { key: txFeesKey, value: replacement },
+    )
+  })
+
+  it('preserves a newer same-key cache write without a reset', async () => {
+    const key: ConfigKey = { section: 'POLICY', field: 'minimum_makers' }
+    const response = deferredConfigResponse()
+    mocks.fetchConfig.mockReturnValueOnce(response.promise)
+    const { result } = renderHook(() => useJmConfig({ walletFileName: 'wallet.jmdat' }))
+    const pending = result.current.refetch(key)
+    act(() => jmConfigStore.getState().set({ key, value: '8' }))
+    await act(async () => {
+      const resolved = expect(pending).resolves.toEqual({ key, value: '8' })
+      response.resolve({ configvalue: '2' })
+      await resolved
+    })
+    expect(jmConfigStore.getState().get(key)?.value).toBe('8')
+  })
+
+  it('loads minimum makers during StrictMode effect replay', async () => {
+    const key: ConfigKey = { section: 'POLICY', field: 'minimum_makers' }
+    const first = deferredConfigResponse()
+    const replay = deferredConfigResponse()
+    mocks.fetchConfig.mockReturnValueOnce(first.promise).mockReturnValueOnce(replay.promise)
+    const { result } = renderHook(
+      () => {
+        const { fetchIfMissing } = useJmConfig({ walletFileName: 'wallet.jmdat' })
+        const [minimumMakers, setMinimumMakers] = useState(4)
+        useEffect(() => {
+          let active = true
+          void fetchIfMissing(key)
+            .then(({ value }) => {
+              if (active) setMinimumMakers(Number(value))
+            })
+            .catch(() => {})
+          return () => {
+            active = false
+          }
+        }, [fetchIfMissing])
+        return minimumMakers
+      },
+      { wrapper: StrictMode },
+    )
+    await act(async () => {
+      first.resolve({ configvalue: '2' })
+      await first.promise
+      replay.resolve({ configvalue: '2' })
+      await replay.promise
+    })
+    expect(result.current).toBe(2)
+  })
+
+  it('allows concurrent different-key reads in the same cache generation', async () => {
+    const first = deferredConfigResponse()
+    const second = deferredConfigResponse()
+    mocks.fetchConfig.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise)
+    const otherKey: ConfigKey = { section: 'POLICY', field: 'minimum_makers' }
+    const { result } = renderHook(() => useJmConfig({ walletFileName: 'wallet.jmdat' }))
+    const a = result.current.refetch(txFeesKey)
+    const b = result.current.refetch(otherKey)
+    await act(async () => {
+      second.resolve({ configvalue: '8' })
+      await b
+      first.resolve({ configvalue: '3' })
+      await a
+    })
+    expect(jmConfigStore.getState().get(txFeesKey)?.value).toBe('3')
+    expect(jmConfigStore.getState().get(otherKey)?.value).toBe('8')
   })
 })
